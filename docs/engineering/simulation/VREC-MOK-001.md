@@ -2,7 +2,7 @@
 id = "VREC-MOK-001"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-001"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-11"
 updated = "2026-08-11"
@@ -18,8 +18,8 @@ verifies_work_order = ["WO-MOK-001"]
 conforms_to = ["VER-MOK-001"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-001` to candidate commit `ecd03a89c0c8680d8ce82d7767b787a49aa815fb`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+Following review of the retained evidence by the accountable assurance owner, this record was transitioned from `ready` to `verified` on 2026-08-11. It binds `WO-MOK-001` to candidate commit `ecd03a89c0c8680d8ce82d7767b787a49aa815fb` without changing its captured provenance.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit, release, tag, publish, or deploy anything.
