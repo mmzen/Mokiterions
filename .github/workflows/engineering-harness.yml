@@ -1,0 +1,77 @@
+name: Engineering Harness
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Download and install exact released baseline
+        shell: bash
+        run: |
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output "$RUNNER_TEMP/se_harness-0.2.0-py3-none-any.whl" \
+            "https://github.com/mmzen/se_harness/releases/download/v0.2.0/se_harness-0.2.0-py3-none-any.whl"
+          printf '%s  %s\n' \
+            '56db717e5287492c421e11157545586b1e8f0ec2dd4011a9932ccf35f233d63d' \
+            "$RUNNER_TEMP/se_harness-0.2.0-py3-none-any.whl" |
+            sha256sum --check -
+          python -m pip install --disable-pip-version-check --no-deps \
+            "$RUNNER_TEMP/se_harness-0.2.0-py3-none-any.whl"
+      - name: Check installed structure and integrity
+        run: harnessctl doctor .
+      - name: Validate with the released distribution
+        run: >-
+          python -c "import runpy, sys;
+          from se_harness.installer import template_root;
+          sys.argv = ['validate_engineering_artifacts.py', '--root', '.'];
+          runpy.run_path(str(template_root() / 'scripts' / 'validate_engineering_artifacts.py'), run_name='__main__')"
+
+  candidate:
+    needs: independent-baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Prepare the declared candidate runtime
+        shell: bash
+        run: |
+          if [[ -f "se_harness/__init__.py" && -f "pyproject.toml" ]]; then
+            python -c "import se_harness; print('using reviewed repository candidate')"
+          else
+            python -m pip install --disable-pip-version-check --no-deps \
+              --only-binary=:all: "se-harness==0.2.1"
+          fi
+      - name: Select the pull-request work order
+        if: github.event_name == 'pull_request'
+        id: work_order
+        shell: bash
+        run: |
+          work_order="$(python scripts/select_harness_work_order.py --event "$GITHUB_EVENT_PATH")"
+          printf 'work_order=%s\n' "$work_order" >> "$GITHUB_OUTPUT"
+      - name: Review preflight
+        if: github.event_name == 'pull_request'
+        env:
+          HARNESS_WORK_ORDER: ${{ steps.work_order.outputs.work_order }}
+        run: python -m se_harness preflight . --work-order "$HARNESS_WORK_ORDER" --phase review
+      - name: Validate candidate artifact graph
+        run: python scripts/validate_engineering_artifacts.py --root .
+      - name: Generate candidate Harness Explorer
+        run: python scripts/generate_harness_dashboard.py --root .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: harness-dashboard
+          path: target/harness-dashboard
+
