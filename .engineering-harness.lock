@@ -1,0 +1,136 @@
+{
+  "files": {
+    ".engineering-harness.toml": {
+      "mode": "managed",
+      "sha256": "e6dac0a7c5df35eacc6bfa985f95f81e08540b24fa89f8a215ce774db4c93f73"
+    },
+    ".github/PULL_REQUEST_TEMPLATE.md": {
+      "mode": "seed",
+      "state": "present"
+    },
+    ".github/workflows/engineering-harness.yml": {
+      "mode": "managed",
+      "sha256": "cbee299ef2bb256950806c4c9f8f2350cbdf6269c034a8c3e63e788482a3ca1e"
+    },
+    ".gitignore": {
+      "mode": "fragment",
+      "sha256": "1b9c8af1917e119817b7160d3afa4e7277226d187b964c318fdbb6072beeaeaa"
+    },
+    "AGENTS.md": {
+      "mode": "fragment",
+      "sha256": "bcf46d13ceee8c2606834a897eba153a654f0092c1d41c8737723739a1405f1c"
+    },
+    "CLAUDE.md": {
+      "mode": "fragment",
+      "sha256": "a5d3b02b3200e5dc147578f81f2b80ca4a0f055a0a4a1c94a535352572ade2cd"
+    },
+    "ENGINEERING_HARNESS.md": {
+      "mode": "managed",
+      "sha256": "7154b9ddc1c63b4e318e6587f90df30ab52d4b06f5e03934f0e2309daf005fc2"
+    },
+    "docs/engineering/DECISION_RIGHTS.md": {
+      "mode": "managed",
+      "sha256": "9b94e9729f6e371b0279149ef046268edfd6cd1f1558547c6dbd627ce7b76211"
+    },
+    "docs/engineering/QUALITY_GATES.md": {
+      "mode": "managed",
+      "sha256": "ec956bbf15e62e50a42dbcc8140f67fad91a5986ff32e2c2e1462a3a6e6c1f55"
+    },
+    "docs/engineering/README.md": {
+      "mode": "seed",
+      "state": "present"
+    },
+    "docs/engineering/REPOSITORY_CONTEXT.md": {
+      "mode": "seed",
+      "state": "present"
+    },
+    "docs/engineering/TRACEABILITY.md": {
+      "mode": "managed",
+      "sha256": "e3130eef89821c12d0c8dc6d2d33be02d526363c1aaaa26b48771c2aabc18922"
+    },
+    "docs/engineering/WORKFLOW.md": {
+      "mode": "managed",
+      "sha256": "367aa56479bdbc70c09500dcace598197887a9dedd56f37a1d848824e9d8ab1a"
+    },
+    "docs/engineering/templates/ADR.template.md": {
+      "mode": "managed",
+      "sha256": "e943d08247bff8fc73b050d86a5b45162547646d8520d14d9bb1a6bbf80ba72f"
+    },
+    "docs/engineering/templates/ARCHITECTURE.template.md": {
+      "mode": "managed",
+      "sha256": "e9a38ac5a72555ed448b9aaf3b3a8733d0927cdfc3ea1b2ec64e4c8de209f1ad"
+    },
+    "docs/engineering/templates/CAPABILITY.template.md": {
+      "mode": "managed",
+      "sha256": "0f240b2f5c83b507df9f9d555230d115e43ac86015168047d30775bd58544fc8"
+    },
+    "docs/engineering/templates/INTENT.template.md": {
+      "mode": "managed",
+      "sha256": "e7ece0d79a2090518700183580f2f19ff357db885d1ec10e27c260c358869c23"
+    },
+    "docs/engineering/templates/OPERATING_CONTRACT.template.md": {
+      "mode": "managed",
+      "sha256": "68cdd0b736374729614022ccb7391999d30a5c190f20d22b616960136bfbfb3a"
+    },
+    "docs/engineering/templates/README.md": {
+      "mode": "managed",
+      "sha256": "23166bbeba4de52dfb45a22b1bea79dff6edb6f2a17998aade8423d7a8706f27"
+    },
+    "docs/engineering/templates/RELEASE_CONTRACT.template.md": {
+      "mode": "managed",
+      "sha256": "60e3828ba0a5865e97b94a7d1a3ec3ec988e6b66fc30ec1100468ad037fca6a8"
+    },
+    "docs/engineering/templates/RELEASE_RECORD.template.md": {
+      "mode": "managed",
+      "sha256": "61b30eb7f9f104e0278e953a3fa8d8397f5c346e680e0320890344e49fa43bb3"
+    },
+    "docs/engineering/templates/REQUIREMENT.template.md": {
+      "mode": "managed",
+      "sha256": "072030c531b4786c3d771613fea5151d3942c7a229b4d35d87ae7e8a86447ff6"
+    },
+    "docs/engineering/templates/SPECIFICATION.template.md": {
+      "mode": "managed",
+      "sha256": "53f57969eea2f3a99f46c71851328e9ef01185f9e834d6feb3b76a831a15c981"
+    },
+    "docs/engineering/templates/VERIFICATION.template.md": {
+      "mode": "managed",
+      "sha256": "ee6ca379624742dda1db745761d1e487667fcd4964cc7855e2f9267d95c4699c"
+    },
+    "docs/engineering/templates/VERIFICATION_RECORD.template.md": {
+      "mode": "managed",
+      "sha256": "9e3074bc439c5f58b18045b6a4a2fc64c380fceba47ef2b3b1fc8d613beb19d7"
+    },
+    "docs/engineering/templates/WORK_ORDER.template.md": {
+      "mode": "managed",
+      "sha256": "7d0e4d79bd26c83edc3d76406f8037f13a1c5e4761e8e7a1eeac88a7df8b031d"
+    },
+    "scripts/check_engineering_harness.ps1": {
+      "mode": "managed",
+      "sha256": "59bf668130aee9a05b183d3b90d6aa98d6aa44355d75fcdad7474b82674281fe"
+    },
+    "scripts/check_engineering_harness.sh": {
+      "mode": "managed",
+      "sha256": "053f2b3f7816405c856dfd4934348eee9d32e39e3d59d265fa321b437058f67d"
+    },
+    "scripts/generate_harness_dashboard.py": {
+      "mode": "managed",
+      "sha256": "1bfb75e613b2157ae67cd4469ceed462cab891a8692085abf9e45266d2dd3bf9"
+    },
+    "scripts/harness_explorer/index.template.html": {
+      "mode": "managed",
+      "sha256": "30f6908ece9404ad34262ab63760ee2e84e1c0724388c73a9961ad6b63a28481"
+    },
+    "scripts/select_harness_work_order.py": {
+      "mode": "managed",
+      "sha256": "1c2453e3cac2c7637d1a313baf8e3408e4e860fce614b017ffe18d568c98f5a1"
+    },
+    "scripts/validate_engineering_artifacts.py": {
+      "mode": "managed",
+      "sha256": "7b30ba2a2260745ff6a530b194f5cb8d643a636d36612b85304de64b087f5577"
+    }
+  },
+  "hash_algorithm": "sha256",
+  "hash_mode": "utf8-text-lf-v1",
+  "schema": 2,
+  "tool_version": "0.2.1"
+}

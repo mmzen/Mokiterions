@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>Harness Explorer</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: #f4f1ea;
+      --surface: #fffdf8;
+      --surface-strong: #ffffff;
+      --ink: #15211d;
+      --muted: #5c6a64;
+      --line: #ced5cf;
+      --line-strong: #9daaa3;
+      --brand: #146b53;
+      --brand-ink: #ffffff;
+      --accent: #d8eadf;
+      --error: #9f2d35;
+      --error-soft: #f7dfe1;
+      --warning: #8a5a13;
+      --warning-soft: #f5e8cb;
+      --info: #315f83;
+      --info-soft: #dcebf5;
+      --ok: #236a4a;
+      --ok-soft: #dceee4;
+      --shadow: 0 18px 50px rgba(24, 42, 34, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page: #111814;
+        --surface: #18211c;
+        --surface-strong: #1d2822;
+        --ink: #edf4ef;
+        --muted: #a8b7ae;
+        --line: #35443b;
+        --line-strong: #526359;
+        --brand: #69caa4;
+        --brand-ink: #102019;
+        --accent: #244b3b;
+        --error: #ff9fa5;
+        --error-soft: #502a2d;
+        --warning: #f1c46f;
+        --warning-soft: #4a3a20;
+        --info: #9ac9ea;
+        --info-soft: #263f51;
+        --ok: #8ad7b3;
+        --ok-soft: #244839;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--page); }
+    body { margin: 0; color: var(--ink); background: var(--page); }
+    button, select { font: inherit; }
+    button:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--brand);
+      outline-offset: 3px;
+    }
+    .shell { width: min(1480px, 100%); margin: 0 auto; padding: 28px clamp(16px, 3vw, 44px) 64px; }
+    .masthead { display: grid; gap: 16px; margin-bottom: 22px; }
+    .eyebrow { margin: 0; color: var(--brand); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    h1 { margin: 3px 0 0; font-size: clamp(2rem, 5vw, 4.2rem); line-height: 0.98; letter-spacing: -0.045em; max-width: 900px; }
+    .lede { max-width: 820px; margin: 10px 0 0; color: var(--muted); font-size: 1.02rem; line-height: 1.65; }
+    .snapshot-line { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; color: var(--muted); font-size: 0.88rem; }
+    .snapshot-line strong { color: var(--ink); font-weight: 650; }
+    .validation { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+    .validation::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+    .validation.valid { color: var(--ok); }
+    .validation.invalid { color: var(--error); }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 24px 0; }
+    .metric { background: var(--surface); border: 1px solid var(--line); padding: 16px; box-shadow: var(--shadow); }
+    .metric-label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    .metric-value { display: block; margin-top: 5px; font-size: clamp(1.45rem, 3vw, 2.1rem); font-weight: 750; letter-spacing: -0.04em; }
+    .metric-context { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+
+    .question-nav { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px; border-bottom: 1px solid var(--line); }
+    .question-nav button { flex: 0 0 auto; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px 14px; cursor: pointer; }
+    .question-nav button[aria-selected="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+
+    .view { padding-top: 24px; }
+    .view[hidden] { display: none; }
+    .view-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+    .view h2 { margin: 0; font-size: clamp(1.45rem, 3vw, 2.15rem); letter-spacing: -0.03em; }
+    .view-intro { margin: 6px 0 0; color: var(--muted); max-width: 760px; line-height: 1.5; }
+    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+    label.field { display: grid; gap: 5px; color: var(--muted); font-size: 0.8rem; font-weight: 650; }
+    select { min-width: min(340px, 82vw); max-width: 100%; color: var(--ink); background: var(--surface-strong); border: 1px solid var(--line-strong); padding: 10px 34px 10px 11px; }
+    .action { border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); padding: 10px 13px; cursor: pointer; }
+    .action[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+
+    .detail { background: var(--surface); border-left: 5px solid var(--brand); padding: 18px 20px; margin: 18px 0; box-shadow: var(--shadow); }
+    .detail-top { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+    .detail h3 { margin: 0; font-size: 1.17rem; }
+    .detail p { margin: 10px 0 0; line-height: 1.55; }
+    .detail dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 14px 0 0; font-size: 0.88rem; }
+    .detail dt { color: var(--muted); }
+    .detail dd { margin: 0; overflow-wrap: anywhere; }
+
+    .badge { display: inline-flex; align-items: center; width: fit-content; padding: 3px 7px; border-radius: 999px; font-size: 0.73rem; font-weight: 750; letter-spacing: 0.025em; border: 1px solid var(--line); background: var(--surface-strong); }
+    .badge.error, .badge.unsatisfied { color: var(--error); background: var(--error-soft); border-color: transparent; }
+    .badge.warning, .badge.not_assessable { color: var(--warning); background: var(--warning-soft); border-color: transparent; }
+    .badge.info { color: var(--info); background: var(--info-soft); border-color: transparent; }
+    .badge.satisfied, .badge.complete { color: var(--ok); background: var(--ok-soft); border-color: transparent; }
+    .badge.superseded { color: var(--muted); background: var(--line); border-color: transparent; }
+
+    .lane-grid { display: grid; grid-template-columns: repeat(6, minmax(180px, 1fr)); gap: 10px; align-items: start; }
+    .lane { min-width: 0; border-top: 3px solid var(--line-strong); padding-top: 10px; }
+    .lane h3 { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 9px; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .node-list { display: grid; gap: 7px; }
+    .node { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px; cursor: pointer; min-height: 82px; }
+    .node:hover { border-color: var(--brand); }
+    .node[aria-current="true"] { border: 2px solid var(--brand); background: var(--accent); }
+    .node-id { display: block; color: var(--brand); font-weight: 800; font-size: 0.78rem; letter-spacing: 0.03em; overflow-wrap: anywhere; }
+    .node-title { display: block; margin: 5px 0 8px; line-height: 1.25; }
+    .node-status { display: block; color: var(--muted); font-size: 0.74rem; text-transform: uppercase; }
+    .empty-lane { color: var(--muted); font-size: 0.82rem; padding: 8px 0; }
+
+    details.relations { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+    summary { cursor: pointer; color: var(--brand); font-weight: 750; }
+    .relation-list { display: grid; gap: 6px; padding: 12px 0 0; }
+    .relation-row { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(110px, auto) minmax(120px, 1fr); gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 0.84rem; }
+    .relation-name { color: var(--muted); text-align: center; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.92em; overflow-wrap: anywhere; }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; background: var(--surface-strong); }
+    tr:last-child td { border-bottom: 0; }
+    td code { color: var(--brand); font-weight: 700; }
+
+    .impact-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+    .impact-group { background: var(--surface); border: 1px solid var(--line); padding: 15px; }
+    .impact-group h3 { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 10px; font-size: 0.95rem; }
+    .artifact-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+    .artifact-link { border: 1px solid var(--line); background: var(--surface-strong); color: var(--brand); padding: 6px 8px; cursor: pointer; font-size: 0.78rem; font-weight: 750; overflow-wrap: anywhere; }
+    .note { color: var(--muted); font-size: 0.84rem; line-height: 1.5; margin-top: 14px; }
+
+    .finding-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .finding-list { display: grid; gap: 10px; }
+    .finding { background: var(--surface); border: 1px solid var(--line); border-left-width: 5px; padding: 14px 16px; }
+    .finding.error { border-left-color: var(--error); }
+    .finding.warning { border-left-color: var(--warning); }
+    .finding.info { border-left-color: var(--info); }
+    .finding-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .finding h3 { margin: 0; font-size: 0.95rem; }
+    .finding p { margin: 8px 0 0; line-height: 1.45; }
+    .finding-meta { margin-top: 8px; color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
+    .readiness { margin-top: 28px; }
+    .gate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+    .gate { border-top: 4px solid var(--line-strong); background: var(--surface); padding: 14px; }
+    .gate.satisfied { border-top-color: var(--ok); }
+    .gate.unsatisfied { border-top-color: var(--error); }
+    .gate.not_assessable { border-top-color: var(--warning); }
+    .gate-head { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+    .gate h3 { margin: 0; font-size: 0.95rem; }
+    .condition-list { display: grid; gap: 9px; margin-top: 12px; }
+    .condition { border-top: 1px solid var(--line); padding-top: 8px; }
+    .condition p { margin: 0; font-size: 0.83rem; line-height: 1.35; }
+    .condition-evidence { color: var(--muted); margin-top: 4px; font-size: 0.74rem; overflow-wrap: anywhere; }
+
+    .experiment-head { display: grid; gap: 5px; background: var(--surface); border-left: 5px solid var(--brand); padding: 16px; margin: 16px 0; }
+    .experiment-head strong { font-size: 1.05rem; }
+    .experiment-head span { color: var(--muted); font-size: 0.82rem; overflow-wrap: anywhere; }
+    .not-measured { color: var(--muted); font-style: italic; }
+    .empty-state { border: 1px dashed var(--line-strong); color: var(--muted); padding: 28px; text-align: center; line-height: 1.55; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 1080px) {
+      .lane-grid { grid-template-columns: repeat(3, minmax(180px, 1fr)); }
+      .impact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .gate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .shell { padding-top: 20px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .view-head { display: grid; align-items: start; }
+      .lane-grid, .impact-grid, .gate-grid { grid-template-columns: 1fr; }
+      .relation-row { grid-template-columns: 1fr; gap: 3px; }
+      .relation-name { text-align: left; }
+      .detail dl { grid-template-columns: 1fr; gap: 3px; }
+      .detail dd { margin-bottom: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Repository engineering evidence</p>
+        <h1>Harness Explorer</h1>
+        <p class="lede">Follow the decision chain, expose coverage and impact, inspect consistency, and compare controlled outcomes without creating a second source of truth.</p>
+      </div>
+      <div class="snapshot-line" aria-label="Snapshot provenance">
+        <span id="validation-state" class="validation"></span>
+        <span>Repository <strong id="repository-name"></strong></span>
+        <span>Revision <strong id="repository-revision"></strong></span>
+        <span>Artifact root <strong id="artifact-root"></strong></span>
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="Repository summary">
+      <article class="metric"><span class="metric-label">Formal artifacts</span><strong class="metric-value" id="metric-artifacts"></strong><span class="metric-context" id="metric-artifact-context"></span></article>
+      <article class="metric"><span class="metric-label">Declared relations</span><strong class="metric-value" id="metric-relations"></strong><span class="metric-context" id="metric-relation-context"></span></article>
+      <article class="metric"><span class="metric-label">Active coverage</span><strong class="metric-value" id="metric-coverage"></strong><span class="metric-context">specification + verification</span></article>
+      <article class="metric"><span class="metric-label">Consistency findings</span><strong class="metric-value" id="metric-findings"></strong><span class="metric-context" id="metric-finding-context"></span></article>
+    </section>
+
+    <nav class="question-nav" aria-label="Harness questions" role="tablist">
+      <button type="button" role="tab" data-view="explain" aria-selected="true">1. Why does this exist?</button>
+      <button type="button" role="tab" data-view="coverage" aria-selected="false">2. Is it covered?</button>
+      <button type="button" role="tab" data-view="impact" aria-selected="false">3. What changes?</button>
+      <button type="button" role="tab" data-view="findings" aria-selected="false">4. What is inconsistent?</button>
+      <button type="button" role="tab" data-view="compare" aria-selected="false">5. Does the harness help?</button>
+    </nav>
+
+    <main>
+      <section id="view-explain" class="view" role="tabpanel">
+        <div class="view-head">
+          <div><h2>Declared lineage</h2><p class="view-intro">The focused chain follows repository relations in both directions. Relation direction and type remain visible below the stage view.</p></div>
+          <div class="controls">
+            <label class="field">Selected artifact<select id="artifact-select"></select></label>
+            <button id="show-all" class="action" type="button" aria-pressed="false">Show complete graph</button>
+          </div>
+        </div>
+        <article id="artifact-detail" class="detail" aria-live="polite"></article>
+        <div id="lineage-lanes" class="lane-grid" aria-label="Focused artifact lineage"></div>
+        <details class="relations"><summary id="relation-summary"></summary><div id="relation-list" class="relation-list"></div></details>
+      </section>
+
+      <section id="view-coverage" class="view" role="tabpanel" hidden>
+        <div class="view-head"><div><h2>Requirement coverage</h2><p class="view-intro">Specification and verification are evaluated independently with the validator's active-status semantics.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Requirement</th><th>Lifecycle</th><th>Active specifications</th><th>Active verification</th><th>Coverage result</th></tr></thead><tbody id="coverage-body"></tbody></table></div>
+      </section>
+
+      <section id="view-impact" class="view" role="tabpanel" hidden>
+        <div class="view-head">
+          <div><h2>Change reassessment</h2><p class="view-intro">Impact shows declared connectivity. Affected means “reassess,” not “modify automatically.”</p></div>
+          <label class="field">Artifact to assess<select id="impact-select"></select></label>
+        </div>
+        <article id="impact-detail" class="detail" aria-live="polite"></article>
+        <div id="impact-grid" class="impact-grid"></div>
+        <p class="note">Direct impact is one typed relation away. Transitive impact is recursively reachable after direct neighbors are removed. Cycles and repeated targets are bounded.</p>
+      </section>
+
+      <section id="view-findings" class="view" role="tabpanel" hidden>
+        <div class="view-head"><div><h2>Consistency and readiness</h2><p class="view-intro">Validator errors block. Derived warnings request review. Lifecycle and not-assessable conditions do not masquerade as failures or approvals.</p></div></div>
+        <div id="finding-summary" class="finding-summary"></div>
+        <div id="finding-list" class="finding-list"></div>
+        <section class="readiness" aria-labelledby="readiness-title">
+          <div class="view-head"><div><h2 id="readiness-title">Quality-gate evidence</h2><p class="view-intro">Gate conditions link to recorded evidence and preserve what the repository cannot assess.</p></div><label class="field">Work order<select id="readiness-select"></select></label></div>
+          <div id="gate-grid" class="gate-grid"></div>
+        </section>
+      </section>
+
+      <section id="view-compare" class="view" role="tabpanel" hidden>
+        <div class="view-head"><div><h2>Controlled outcome comparison</h2><p class="view-intro">Only compatible treatments within one retained trial are compared. Missing measurements remain “not measured.”</p></div><label class="field" id="experiment-field">Controlled trial<select id="experiment-select"></select></label></div>
+        <div id="experiment-content"></div>
+      </section>
+    </main>
+  </div>
+
+  <script id="harness-snapshot" type="application/json">__HARNESS_SNAPSHOT_JSON__</script>
+  <script>
+    (() => {
+      "use strict";
+      const snapshot = JSON.parse(document.getElementById("harness-snapshot").textContent);
+      const artifacts = new Map(snapshot.artifacts.map((item) => [item.id, item]));
+      const validRelations = snapshot.relations.filter((item) => item.target_exists);
+      const experimentMeasures = ["clarifications", "retries", "evaluator_defects", "wall_seconds", "tokens", "cost"];
+      const state = { selected: null, impact: null, showAll: false, view: "explain" };
+      const stageDefinitions = [
+        { id: "intent", label: "Intent", types: ["intent"] },
+        { id: "capability", label: "Capability", types: ["capability"] },
+        { id: "requirement", label: "Requirements", types: ["requirement"] },
+        { id: "definition", label: "Definition", types: ["specification", "architecture", "adr"] },
+        { id: "delivery", label: "Delivery + proof", types: ["verification", "work_order", "verification_record"] },
+        { id: "operations", label: "Release + operations", types: ["release_contract", "release_record", "operating_contract", "risk_acceptance"] }
+      ];
+
+      function element(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = String(text);
+        return node;
+      }
+
+      function badge(text, kind) {
+        return element("span", `badge ${kind || ""}`.trim(), text);
+      }
+
+      function appendTextRow(container, term, value) {
+        container.append(element("dt", "", term), element("dd", "", value || "—"));
+      }
+
+      function artifactButton(id, compact = false) {
+        const artifact = artifacts.get(id);
+        const button = element("button", compact ? "artifact-link" : "node");
+        button.type = "button";
+        if (compact) {
+          button.textContent = id;
+        } else if (artifact) {
+          button.append(
+            element("span", "node-id", artifact.id),
+            element("span", "node-title", artifact.title),
+            element("span", "node-status", `${artifact.type.replaceAll("_", " ")} · ${artifact.status}`)
+          );
+          if (artifact.commit) button.append(element("span", "node-status", `declared commit ${artifact.commit.slice(0, 12)}`));
+          if (id === state.selected) button.setAttribute("aria-current", "true");
+        } else {
+          button.textContent = id;
+        }
+        button.addEventListener("click", () => selectArtifact(id));
+        return button;
+      }
+
+      function selectArtifact(id) {
+        if (!artifacts.has(id)) return;
+        state.selected = id;
+        state.impact = id;
+        document.getElementById("artifact-select").value = id;
+        document.getElementById("impact-select").value = id;
+        state.view = "explain";
+        activateView("explain");
+        renderExplain();
+        renderImpact();
+      }
+
+      function populateArtifactSelect(select, selectedId) {
+        select.replaceChildren();
+        snapshot.artifacts.forEach((artifact) => {
+          const option = element("option", "", `${artifact.id} — ${artifact.title}`);
+          option.value = artifact.id;
+          option.selected = artifact.id === selectedId;
+          select.append(option);
+        });
+      }
+
+      function renderHeader() {
+        const repository = snapshot.repository;
+        const validation = document.getElementById("validation-state");
+        validation.textContent = repository.valid ? "Graph valid" : "Graph invalid";
+        validation.classList.add(repository.valid ? "valid" : "invalid");
+        document.getElementById("repository-name").textContent = repository.name;
+        document.getElementById("repository-revision").textContent = repository.revision ? repository.revision.slice(0, 12) : "unavailable";
+        document.getElementById("artifact-root").textContent = repository.artifact_root;
+
+        const types = new Set(snapshot.artifacts.map((item) => item.type));
+        const activeCoverage = snapshot.coverage.filter((item) => item.active);
+        const completeCoverage = activeCoverage.filter((item) => item.specified && item.verified);
+        const errors = snapshot.findings.filter((item) => item.severity === "error").length;
+        const warnings = snapshot.findings.filter((item) => item.severity === "warning").length;
+        document.getElementById("metric-artifacts").textContent = snapshot.artifacts.length;
+        document.getElementById("metric-artifact-context").textContent = `${types.size} artifact types`;
+        document.getElementById("metric-relations").textContent = snapshot.relations.length;
+        document.getElementById("metric-relation-context").textContent = `${snapshot.relations.filter((item) => !item.target_exists).length} unresolved targets`;
+        document.getElementById("metric-coverage").textContent = activeCoverage.length ? `${completeCoverage.length}/${activeCoverage.length}` : "—";
+        document.getElementById("metric-findings").textContent = errors + warnings;
+        document.getElementById("metric-finding-context").textContent = `${errors} blocking · ${warnings} review`;
+      }
+
+      function connectedClosure(start) {
+        const adjacency = new Map();
+        validRelations.forEach((relation) => {
+          if (!adjacency.has(relation.source)) adjacency.set(relation.source, new Set());
+          if (!adjacency.has(relation.target)) adjacency.set(relation.target, new Set());
+          adjacency.get(relation.source).add(relation.target);
+          adjacency.get(relation.target).add(relation.source);
+        });
+        const seen = new Set([start]);
+        const queue = [start];
+        while (queue.length) {
+          const current = queue.shift();
+          Array.from(adjacency.get(current) || []).sort().forEach((neighbor) => {
+            if (!seen.has(neighbor)) {
+              seen.add(neighbor);
+              queue.push(neighbor);
+            }
+          });
+        }
+        return seen;
+      }
+
+      function renderArtifactDetail(container, artifact) {
+        container.replaceChildren();
+        const top = element("div", "detail-top");
+        top.append(element("h3", "", `${artifact.id} — ${artifact.title}`), badge(artifact.status, artifact.status));
+        container.append(top);
+        if (artifact.statement) container.append(element("p", "", artifact.statement));
+        const list = element("dl");
+        appendTextRow(list, "Type", artifact.type.replaceAll("_", " "));
+        appendTextRow(list, "Owners", artifact.owners.join(", "));
+        appendTextRow(list, "Updated", artifact.updated);
+        appendTextRow(list, "Verification", artifact.verification_method);
+        appendTextRow(list, "Declared commit", artifact.commit);
+        appendTextRow(list, "Git object format", artifact.git_object_format);
+        appendTextRow(list, "Worktree state", artifact.worktree_state);
+        appendTextRow(list, "Version", artifact.version);
+        appendTextRow(list, "Tag", artifact.tag);
+        appendTextRow(list, "Verified at", artifact.verified_at);
+        appendTextRow(list, "Released at", artifact.released_at);
+        appendTextRow(list, "Artifact snapshot", artifact.artifact_snapshot_sha256);
+        appendTextRow(list, "Evidence", artifact.evidence_paths ? artifact.evidence_paths.join(", ") : null);
+        const provenance = (snapshot.revision_provenance || []).find((item) => item.id === artifact.id);
+        if (provenance) {
+          appendTextRow(list, provenance.kind === "release" ? "Released work" : "Verified work", provenance.work_orders.join(", "));
+          appendTextRow(list, "Included verification records", provenance.verification_records.join(", "));
+          appendTextRow(list, "Governing contracts", provenance.contracts.join(", "));
+          appendTextRow(list, "Lifecycle class", provenance.lifecycle_class.replaceAll("_", " "));
+          appendTextRow(list, "Superseded by", provenance.superseded_by.join(", "));
+          appendTextRow(list, "Supersedes", provenance.supersedes.join(", "));
+          appendTextRow(list, "Superseded at", provenance.superseded_at);
+          appendTextRow(list, "Supersession authorized by", provenance.supersession_authorized_by);
+          appendTextRow(list, "Observed checkout", provenance.observed_revision);
+          appendTextRow(list, "Checkout comparison", provenance.match_state.replaceAll("_", " "));
+          appendTextRow(list, "Commit available locally", provenance.commit_available === null ? "not assessable" : provenance.commit_available ? "yes" : "no");
+        }
+        appendTextRow(list, "Repository source", artifact.path);
+        container.append(list);
+      }
+
+      function renderExplain() {
+        const artifact = artifacts.get(state.selected);
+        if (!artifact) return;
+        renderArtifactDetail(document.getElementById("artifact-detail"), artifact);
+        const visibleIds = state.showAll ? new Set(artifacts.keys()) : connectedClosure(state.selected);
+        const laneGrid = document.getElementById("lineage-lanes");
+        laneGrid.replaceChildren();
+        stageDefinitions.forEach((stage) => {
+          const lane = element("section", "lane");
+          const laneArtifacts = snapshot.artifacts.filter((item) => visibleIds.has(item.id) && stage.types.includes(item.type));
+          const heading = element("h3");
+          heading.append(element("span", "", stage.label), element("span", "", laneArtifacts.length));
+          lane.append(heading);
+          const list = element("div", "node-list");
+          if (!laneArtifacts.length) list.append(element("span", "empty-lane", "No connected artifacts"));
+          laneArtifacts.forEach((item) => list.append(artifactButton(item.id)));
+          lane.append(list);
+          laneGrid.append(lane);
+        });
+
+        const visibleRelations = snapshot.relations.filter((relation) => visibleIds.has(relation.source) && (visibleIds.has(relation.target) || !relation.target_exists));
+        const unique = [];
+        const seen = new Set();
+        visibleRelations.forEach((relation) => {
+          const key = `${relation.source}\u0000${relation.relation}\u0000${relation.target}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(relation);
+          }
+        });
+        document.getElementById("relation-summary").textContent = `${unique.length} typed relations in this view`;
+        const relationList = document.getElementById("relation-list");
+        relationList.replaceChildren();
+        unique.forEach((relation) => {
+          const row = element("div", "relation-row");
+          row.append(element("code", "", relation.source), element("span", "relation-name", relation.relation), element("code", "", relation.target));
+          if (!relation.target_exists) row.append(badge("missing target", "error"));
+          relationList.append(row);
+        });
+      }
+
+      function renderCoverage() {
+        const body = document.getElementById("coverage-body");
+        body.replaceChildren();
+        snapshot.coverage.forEach((coverage) => {
+          const row = element("tr");
+          const requirement = element("td");
+          requirement.append(element("code", "", coverage.requirement));
+          const lifecycle = element("td");
+          lifecycle.append(badge(coverage.status, coverage.active ? "info" : ""));
+          const specs = element("td", "", coverage.specifications.join(", ") || "—");
+          const verifications = element("td", "", coverage.verifications.join(", ") || "—");
+          const result = element("td");
+          if (!coverage.active) result.append(badge("lifecycle only", "info"));
+          else if (coverage.specified && coverage.verified) result.append(badge("complete", "complete"));
+          else result.append(badge(`missing ${coverage.missing.join(" + ")}`, "error"));
+          row.append(requirement, lifecycle, specs, verifications, result);
+          body.append(row);
+        });
+      }
+
+      function graphImpact(selected) {
+        const outbound = new Map();
+        const inbound = new Map();
+        validRelations.forEach((relation) => {
+          if (!outbound.has(relation.source)) outbound.set(relation.source, new Set());
+          if (!inbound.has(relation.target)) inbound.set(relation.target, new Set());
+          outbound.get(relation.source).add(relation.target);
+          inbound.get(relation.target).add(relation.source);
+        });
+        function closure(adjacency) {
+          const seen = new Set([selected]);
+          const queue = Array.from(adjacency.get(selected) || []).sort();
+          while (queue.length) {
+            const current = queue.shift();
+            if (seen.has(current)) continue;
+            seen.add(current);
+            Array.from(adjacency.get(current) || []).sort().forEach((item) => { if (!seen.has(item)) queue.push(item); });
+          }
+          seen.delete(selected);
+          return seen;
+        }
+        const directInbound = new Set(inbound.get(selected) || []);
+        const directOutbound = new Set(outbound.get(selected) || []);
+        const allInbound = closure(inbound);
+        const allOutbound = closure(outbound);
+        return {
+          directInbound: Array.from(directInbound).sort(),
+          directOutbound: Array.from(directOutbound).sort(),
+          transitiveInbound: Array.from(allInbound).filter((item) => !directInbound.has(item)).sort(),
+          transitiveOutbound: Array.from(allOutbound).filter((item) => !directOutbound.has(item)).sort()
+        };
+      }
+
+      function renderImpactGroup(container, title, values) {
+        const group = element("section", "impact-group");
+        const heading = element("h3");
+        heading.append(element("span", "", title), badge(values.length, "info"));
+        group.append(heading);
+        const buttons = element("div", "artifact-buttons");
+        if (!values.length) buttons.append(element("span", "empty-lane", "No affected artifacts"));
+        values.forEach((id) => buttons.append(artifactButton(id, true)));
+        group.append(buttons);
+        container.append(group);
+      }
+
+      function renderImpact() {
+        const artifact = artifacts.get(state.impact);
+        if (!artifact) return;
+        renderArtifactDetail(document.getElementById("impact-detail"), artifact);
+        const impact = graphImpact(state.impact);
+        const grid = document.getElementById("impact-grid");
+        grid.replaceChildren();
+        renderImpactGroup(grid, "Direct inbound", impact.directInbound);
+        renderImpactGroup(grid, "Direct outbound", impact.directOutbound);
+        renderImpactGroup(grid, "Transitive inbound", impact.transitiveInbound);
+        renderImpactGroup(grid, "Transitive outbound", impact.transitiveOutbound);
+      }
+
+      function renderFindings() {
+        const summary = document.getElementById("finding-summary");
+        summary.replaceChildren();
+        ["error", "warning", "info"].forEach((severity) => {
+          const count = snapshot.findings.filter((item) => item.severity === severity).length;
+          summary.append(badge(`${count} ${severity}`, severity));
+        });
+        const list = document.getElementById("finding-list");
+        list.replaceChildren();
+        if (!snapshot.findings.length) {
+          list.append(element("div", "empty-state", "No validator errors or supported derived warnings were found in this snapshot."));
+        }
+        snapshot.findings.forEach((finding) => {
+          const article = element("article", `finding ${finding.severity}`);
+          const head = element("div", "finding-head");
+          head.append(element("h3", "", finding.rule), badge(finding.severity, finding.severity), badge(finding.authority, "info"));
+          article.append(head, element("p", "", finding.message));
+          if (finding.artifacts.length) article.append(element("div", "finding-meta", `Artifacts: ${finding.artifacts.join(", ")}`));
+          if (finding.paths.length) article.append(element("div", "finding-meta", `Sources: ${finding.paths.join(", ")}`));
+          if (finding.evidence.length) article.append(element("div", "finding-meta", `Evidence: ${finding.evidence.join(", ")}`));
+          list.append(article);
+        });
+      }
+
+      function renderReadiness() {
+        const select = document.getElementById("readiness-select");
+        const selected = snapshot.readiness.find((item) => item.work_order === select.value) || snapshot.readiness[0];
+        const grid = document.getElementById("gate-grid");
+        grid.replaceChildren();
+        if (!selected) {
+          grid.append(element("div", "empty-state", "No work order readiness data is available."));
+          return;
+        }
+        selected.gates.forEach((gateData) => {
+          const gate = element("article", `gate ${gateData.state}`);
+          const head = element("div", "gate-head");
+          head.append(element("h3", "", `${gateData.gate} — ${gateData.label}`), badge(gateData.state.replaceAll("_", " "), gateData.state));
+          gate.append(head);
+          const conditions = element("div", "condition-list");
+          gateData.conditions.forEach((conditionData) => {
+            const condition = element("div", "condition");
+            const line = element("p");
+            line.append(badge(conditionData.state.replaceAll("_", " "), conditionData.state), document.createTextNode(` ${conditionData.label}`));
+            condition.append(line);
+            if (conditionData.evidence.length) condition.append(element("div", "condition-evidence", conditionData.evidence.join(", ")));
+            conditions.append(condition);
+          });
+          gate.append(conditions);
+          grid.append(gate);
+        });
+      }
+
+      function measured(value) {
+        if (value === null || value === undefined) return element("span", "not-measured", "not measured");
+        return document.createTextNode(String(value));
+      }
+
+      function renderExperiment() {
+        const content = document.getElementById("experiment-content");
+        content.replaceChildren();
+        if (!snapshot.experiments.length) {
+          content.append(element("div", "empty-state", "No controlled trial result is retained in this repository. Harness effectiveness is not measured."));
+          return;
+        }
+        const select = document.getElementById("experiment-select");
+        const experiment = snapshot.experiments.find((item) => item.path === select.value) || snapshot.experiments[0];
+        if (!experiment || experiment.status !== "valid") {
+          const invalid = element("article", "finding warning");
+          invalid.append(element("h3", "", "Experiment result is incompatible or invalid"));
+          (experiment ? experiment.issues : ["No result selected"]).forEach((issue) => invalid.append(element("p", "", issue)));
+          content.append(invalid);
+          return;
+        }
+        const head = element("div", "experiment-head");
+        head.append(
+          element("strong", "", experiment.trial_id),
+          element("span", "", `Work order ${experiment.work_order} · evaluator ${experiment.evaluator}`),
+          element("span", "", `Base ${experiment.base_revision} · protocol ${experiment.protocol} · source ${experiment.path}`)
+        );
+        content.append(head);
+        const wrap = element("div", "table-wrap");
+        const table = element("table");
+        const thead = element("thead");
+        const heading = element("tr");
+        ["Measure", "Maximum", "Baseline", "Harness"].forEach((label) => heading.append(element("th", "", label)));
+        thead.append(heading);
+        const body = element("tbody");
+        experiment.rubric.dimensions.forEach((dimension) => {
+          const row = element("tr");
+          row.append(element("td", "", dimension.id), element("td", "", dimension.maximum));
+          const baseline = element("td"); baseline.append(measured(experiment.treatments.baseline.scores[dimension.id]));
+          const harness = element("td"); harness.append(measured(experiment.treatments.harness.scores[dimension.id]));
+          row.append(baseline, harness); body.append(row);
+        });
+        experimentMeasures.forEach((measure) => {
+          const row = element("tr");
+          row.append(element("td", "", measure.replaceAll("_", " ")), element("td", "", "—"));
+          const baseline = element("td"); baseline.append(measured(experiment.treatments.baseline[measure]));
+          const harness = element("td"); harness.append(measured(experiment.treatments.harness[measure]));
+          row.append(baseline, harness); body.append(row);
+        });
+        table.append(thead, body); wrap.append(table); content.append(wrap);
+      }
+
+      function activateView(view) {
+        state.view = view;
+        document.querySelectorAll(".question-nav button").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.view === view)));
+        document.querySelectorAll("main > .view").forEach((section) => { section.hidden = section.id !== `view-${view}`; });
+      }
+
+      const defaultArtifact = artifacts.has("WO-HEX-001") ? "WO-HEX-001" : (snapshot.artifacts.find((item) => item.type === "work_order") || snapshot.artifacts[0] || {}).id;
+      state.selected = defaultArtifact || null;
+      state.impact = defaultArtifact || null;
+      renderHeader();
+      populateArtifactSelect(document.getElementById("artifact-select"), state.selected);
+      populateArtifactSelect(document.getElementById("impact-select"), state.impact);
+      document.getElementById("artifact-select").addEventListener("change", (event) => { state.selected = event.target.value; renderExplain(); });
+      document.getElementById("impact-select").addEventListener("change", (event) => { state.impact = event.target.value; renderImpact(); });
+      document.getElementById("show-all").addEventListener("click", (event) => {
+        state.showAll = !state.showAll;
+        event.currentTarget.setAttribute("aria-pressed", String(state.showAll));
+        event.currentTarget.textContent = state.showAll ? "Show focused lineage" : "Show complete graph";
+        renderExplain();
+      });
+      document.querySelectorAll(".question-nav button").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.view)));
+
+      const readinessSelect = document.getElementById("readiness-select");
+      snapshot.readiness.forEach((item) => { const option = element("option", "", `${item.work_order} — ${item.status}`); option.value = item.work_order; readinessSelect.append(option); });
+      readinessSelect.addEventListener("change", renderReadiness);
+
+      const experimentSelect = document.getElementById("experiment-select");
+      snapshot.experiments.forEach((item) => { const option = element("option", "", `${item.trial_id || "invalid result"} — ${item.path}`); option.value = item.path; experimentSelect.append(option); });
+      document.getElementById("experiment-field").hidden = snapshot.experiments.length === 0;
+      experimentSelect.addEventListener("change", renderExperiment);
+
+      renderExplain();
+      renderCoverage();
+      renderImpact();
+      renderFindings();
+      renderReadiness();
+      renderExperiment();
+    })();
+  </script>
+</body>
+</html>

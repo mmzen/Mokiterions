@@ -1,0 +1,15 @@
+[harness]
+schema_version = 2
+tool_version = "0.2.1"
+installed_at = "2026-08-11"
+project_name = "Mokiterions"
+artifact_root = "docs/engineering"
+dashboard_output = "target/harness-dashboard"
+
+[revision_provenance]
+require_full_commit = true
+require_clean_worktree = true
+required_for_verified_work = true
+required_for_release = true
+verification_record_status = "ready"
+release_record_status = "ready"

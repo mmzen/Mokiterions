@@ -1,0 +1,8 @@
+/target
+
+<!-- se-harness:begin -->
+# Generated SE Harness output
+/target/harness-dashboard/
+__pycache__/
+*.py[cod]
+<!-- se-harness:end -->
