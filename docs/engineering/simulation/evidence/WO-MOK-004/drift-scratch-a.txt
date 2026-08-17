@@ -1,0 +1,59 @@
+   Compiling Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.23s
+     Running tests\cli.rs (target\debug\deps\cli-ba62176239741a2c.exe)
+
+running 12 tests
+test duplicates_and_missing_values_are_rejected ... ok
+test the_help_text_states_order_and_repetition ... ok
+test each_declared_default_is_stated_once ... ok
+test options_work_in_any_order ... ok
+test every_option_the_synopsis_names_has_an_options_entry ... ok
+test the_entries_state_the_constraints_that_decide_validity ... ok
+test the_flags_state_their_effect_and_no_default_value ... ok
+test each_documented_default_parses_to_the_applied_default ... FAILED
+test both_policies_are_selectable_and_reference_is_the_default ... FAILED
+test defaults_are_stable ... FAILED
+test density_is_accepted_in_the_specified_forms_and_rejected_otherwise ... FAILED
+test the_documented_options_are_exactly_the_options_the_parser_accepts ... ok
+
+failures:
+
+---- each_documented_default_parses_to_the_applied_default stdout ----
+
+thread 'each_documented_default_parses_to_the_applied_default' (37092) panicked at tests\cli.rs:300:9:
+assertion `left == right` failed: the help states 100 as the default for --ticks, which is not the value the program applies when --ticks is omitted
+  left: Config { seed: 0, tick_limit: 100, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false }
+ right: Config { seed: 0, tick_limit: 1000, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false }
+
+---- both_policies_are_selectable_and_reference_is_the_default stdout ----
+
+thread 'both_policies_are_selectable_and_reference_is_the_default' (37024) panicked at tests\cli.rs:61:5:
+assertion `left == right` failed
+  left: Run(Config { seed: 0, tick_limit: 1000, policy: Baseline, density: Density { hundredths_of_percent: 75 }, trace_actions: false })
+ right: Run(Config { seed: 0, tick_limit: 100, policy: Baseline, density: Density { hundredths_of_percent: 75 }, trace_actions: false })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- defaults_are_stable stdout ----
+
+thread 'defaults_are_stable' (37040) panicked at tests\cli.rs:18:5:
+assertion `left == right` failed
+  left: Run(Config { seed: 0, tick_limit: 1000, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false })
+ right: Run(Config { seed: 0, tick_limit: 100, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false })
+
+---- density_is_accepted_in_the_specified_forms_and_rejected_otherwise stdout ----
+
+thread 'density_is_accepted_in_the_specified_forms_and_rejected_otherwise' (37044) panicked at tests\cli.rs:92:5:
+assertion `left == right` failed
+  left: Run(Config { seed: 0, tick_limit: 1000, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false })
+ right: Run(Config { seed: 0, tick_limit: 100, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false })
+
+
+failures:
+    both_policies_are_selectable_and_reference_is_the_default
+    defaults_are_stable
+    density_is_accepted_in_the_specified_forms_and_rejected_otherwise
+    each_documented_default_parses_to_the_applied_default
+
+test result: FAILED. 8 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test cli`

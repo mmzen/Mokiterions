@@ -1,0 +1,12 @@
+Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+                   [--density <percent>] [--trace-actions]
+       Mokiterions --help
+
+The reference policy is a deterministic development instrument, not autonomous
+behavior. It seeks and consumes perceived food so that world viability can be
+measured. The baseline policy selects uniformly among valid actions.
+
+--density is the percentage of a territory's cells that hold a resource, with at
+most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+territory capacity, and the replenishment target together. Only the densities
+declared in the requirements carry a population viability floor.

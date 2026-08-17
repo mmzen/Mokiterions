@@ -48,6 +48,24 @@ fn invalid_configuration_exits_with_code_two() {
     assert!(errors.contains("Usage:"));
 }
 
+/// Added under `WO-MOK-004`. The two existing standard-error assertions check the substring
+/// `Usage:`, which the synopsis alone satisfies, so neither would notice an options block
+/// that reached standard output and not standard error. `REQ-MOK-018` is a property of the
+/// text and holds on both paths, so this pins the diagnostic path to the whole constant.
+#[test]
+fn the_diagnostic_path_appends_the_whole_usage_text() {
+    let mut output = Vec::new();
+    let mut errors = Vec::new();
+
+    let code = execute(["--ticks", "0"], &mut output, &mut errors);
+
+    assert_eq!(code, 2);
+    assert!(output.is_empty());
+    let errors = String::from_utf8(errors).unwrap();
+    assert!(errors.starts_with("configuration error: "), "{errors}");
+    assert!(errors.ends_with(cli::USAGE), "{errors}");
+}
+
 #[test]
 fn a_density_resolving_to_no_resources_exits_with_code_two_before_initialization() {
     let mut output = Vec::new();

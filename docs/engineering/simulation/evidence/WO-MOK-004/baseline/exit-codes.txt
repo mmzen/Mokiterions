@@ -1,0 +1,278 @@
+=== help
+argv:        --help
+exit:        0
+stdout_sha:  6154a2efe7f1773b850cf2751e7309883150be417ee5ea40d76029852b091249
+stdout_len:  699
+stderr:
+=== ticks zero
+argv:        --ticks 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --ticks must be greater than zero
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== density zero cells
+argv:        --density 0.01
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0.01; resolves to zero resources per territory; the smallest usable density is 0.02
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== density literal zero
+argv:        --density 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0; resolves to zero resources per territory; the smallest usable density is 0.02
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== density precision
+argv:        --density 0.751
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0.751; at most two decimal places are accepted
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== density negative
+argv:        --density -1
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: -1; expected digits and at most one decimal point
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== density over 100
+argv:        --density 101
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 101; must not exceed 100
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== density non-numeric
+argv:        --density abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: abc; expected digits and at most one decimal point
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== policy invalid
+argv:        --policy random
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --policy value: random; expected baseline or reference
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== policy missing value
+argv:        --policy
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --policy
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== seed non-numeric
+argv:        --seed abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --seed value: abc
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== unknown option
+argv:        --unknown
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: unknown option: --unknown
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== duplicate seed
+argv:        --seed 1 --seed 2
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --seed may appear at most once
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== duplicate trace
+argv:        --trace-actions --trace-actions
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --trace-actions may appear at most once
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== ticks missing value
+argv:        --ticks
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --ticks
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  |                    [--density <percent>] [--trace-actions]
+  |        Mokiterions --help
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource, with at
+  | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+  | territory capacity, and the replenishment target together. Only the densities
+  | declared in the requirements carry a population viability floor.
+=== single tick
+argv:        --ticks 1 --seed 42
+exit:        0
+stdout_sha:  465e287e3b5b547824c2d2f8118d128467fd1dd583ce2f9880996c14b8f79ecf
+stdout_len:  13829
+stderr:
