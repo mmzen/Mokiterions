@@ -1,0 +1,5 @@
+seed0_reference_d0.75_traceoff -> reason=tick_limit ticks=1000 survivors=8 deaths=4 territory_a=3 territory_b=5 food_a_low=7 food_a_medium=9 food_a_high=45 food_b_low=7 food_b_medium=16 food_b_high=32
+seed1_reference_d0.75_traceoff -> reason=tick_limit ticks=1000 survivors=11 deaths=1 territory_a=4 territory_b=7 food_a_low=4 food_a_medium=10 food_a_high=43 food_b_low=7 food_b_medium=7 food_b_high=25
+seed42_reference_d0.75_traceoff -> reason=tick_limit ticks=1000 survivors=8 deaths=4 territory_a=3 territory_b=5 food_a_low=6 food_a_medium=17 food_a_high=38 food_b_low=8 food_b_medium=7 food_b_high=26
+seed123_reference_d0.75_traceoff -> reason=tick_limit ticks=1000 survivors=9 deaths=3 territory_a=4 territory_b=5 food_a_low=8 food_a_medium=11 food_a_high=42 food_b_low=4 food_b_medium=12 food_b_high=44
+seed777_reference_d0.75_traceoff -> reason=tick_limit ticks=1000 survivors=11 deaths=1 territory_a=6 territory_b=5 food_a_low=13 food_a_medium=20 food_a_high=28 food_b_low=8 food_b_medium=13 food_b_high=18

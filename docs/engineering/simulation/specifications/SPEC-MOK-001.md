@@ -43,6 +43,7 @@ This is the single behavior contract for the simulation core. It is amended in p
 |---|---|---|
 | 2026-08-11 | Original approved content for `CAP-MOK-001`. | Approved; implemented under `WO-MOK-001` and verified under `VREC-MOK-001`. |
 | 2026-08-17 | Added bounded perception, the reference decision source, the `--policy` input, and the decision-source output line. Changed satiety decay from `2` to `1` and regeneration from one resource to `2`. | Approved 2026-08-17 by the repository owner acting as technical owner, together with `REQ-MOK-013`, `REQ-MOK-014`, `REQ-MOK-015`, and `WO-MOK-002`. |
+| 2026-08-17 | Narrowed the *Explicitly unspecified decisions* entry on test organization: helper functions and the internal organization of a test module remain delegated, while crate target layout, the public interface, and test placement are governed by `SPEC-MOK-002`. No specified behavior changed. | Approved 2026-08-17 by the repository owner acting as technical owner, as required by `ADR-MOK-002` and as an approval precondition of `WO-MOK-003`. |
 | 2026-08-17 | Replaced the fixed initial endowment and fixed territory capacity with a single `--density` input that sets the initial density, the capacity ceiling, and the replenishment target together. Corrected rule 5 case 1 from a fixed satiety threshold to the non-wasteful rule `REQ-MOK-015` already required. | Approved 2026-08-17 by the repository owner acting as technical owner, together with the amended `REQ-MOK-014`, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-002/`. |
 | 2026-08-17 | Extended the rule 5 non-waste test from case 1 to case 3, so a Mokiterion neither eats nor approaches a resource whose restoration would be clipped. Removed the unreachable fallback clause from case 1. Retracted the false claim that correcting case 1 alone removed the two-cell oscillation. | Approved 2026-08-17 by the repository owner acting as technical owner, together with the amended `REQ-MOK-014`, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-002/density-curve.md`. |
 
@@ -305,5 +306,7 @@ There is no prior data or interface compatibility obligation. Future output or m
 - Rust file and private type names.
 - Choice of collection types where iteration is explicitly sorted before observable use.
 - Internal error type layout and message wording, except for exit codes and required clarity.
-- Test organization and helper functions.
+- Test helper functions, and the internal organization of a test module within the source file that owns it. Crate
+  target layout, the public interface, and which tier a test belongs to are not unspecified: they are governed by
+  `SPEC-MOK-002`.
 - Cosmetic whitespace in help text.

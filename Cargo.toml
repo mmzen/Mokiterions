@@ -3,4 +3,16 @@ name = "Mokiterions"
 version = "0.1.0"
 edition = "2024"
 
+# SPEC-MOK-002 rule 1: exactly two targets, no third target and no workspace.
+# SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
+# lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
+# that appears in the first line of `USAGE`.
+[lib]
+name = "mokiterions"
+path = "src/lib.rs"
+
+[[bin]]
+name = "Mokiterions"
+path = "src/main.rs"
+
 [dependencies]
