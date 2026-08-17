@@ -222,7 +222,7 @@ Under `docs/engineering/simulation/evidence/WO-MOK-004/`:
 | --- | --- |
 | Branched from | `master` at `08dc8d47aa569c77fb7c9b091e328eb8f40c5285`, the commit the baseline was captured at |
 | Implementation branch | `feature/help-output-options-block` |
-| Candidate commit | one commit on that branch, named by `VREC-MOK-004` |
+| Candidate commit | named by `VREC-MOK-004`; not stated here, because a count of commits on the branch is falsified by the next one |
 | Modified tracked files | `src/cli.rs`, `tests/cli.rs`, `tests/process.rs`, `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
 | Added paths | `REQ-MOK-018.md`, `VER-MOK-004.md`, `WO-MOK-004.md`, `evidence/WO-MOK-004/` |
 | Managed harness files | untouched; `doctor` PASS |

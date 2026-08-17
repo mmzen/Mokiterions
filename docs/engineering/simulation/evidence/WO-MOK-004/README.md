@@ -97,8 +97,13 @@ endings from the checkout.
 
 ## What is not here, and why
 
-- **No copy of `after/full/`.** The two post-change traced runs were compared file to file and are
-  identical to `baseline/full/`. Their digests are in `after/manifest.txt`, which is the durable record.
+- **Nothing about `after/full/`.** An earlier draft of this section claimed the two post-change traced
+  runs had not been retained. They were: `after/full/` holds both, and the claim was wrong, so it is
+  corrected here rather than left standing. The substance it misreported is stronger than it stated. Each
+  post-change file is byte-identical to its `baseline/full/` counterpart, and because git addresses
+  content, the two paths resolve to **the same blob object** — `470bdd8e` for the baseline-source run and
+  `1393ca97` for the reference-source run. Identity of the object name is not a comparison that can be
+  performed carelessly and pass anyway. Their digests are also in `after/manifest.txt`.
 - **No `SPEC-MOK-002` amendment.** Its rule 11 and `VER-MOK-003`'s *Behavior surface unchanged*
   invariant, which together forbid any byte of `USAGE` changing, are scoped to `WO-MOK-003`'s
   restructuring — a discharged contract that binds that work order and not this one. The reasoning is in
