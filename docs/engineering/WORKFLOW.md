@@ -2,11 +2,11 @@
 
 1. Capture the problem and accountable actors in an intent.
 2. Derive capabilities and observable normative requirements.
-3. Specify exact behavior, architecture constraints, and independent verification.
-4. Approve one bounded work order referencing the complete governing chain.
+3. Specify exact behavior, architecturally significant requirement drivers, conforming specification contracts, decision applicability, and independent verification. Before architecture approval, complete its typed traceability and `decision_assessment`; record an ADR for each coherent significant decision and select `no_significant_decision` only with the technical owner's accepted rationale and no active trigger.
+4. Record whether commit-bound verification is `required` or `not_required`, with an accountable rationale, then approve one bounded work order referencing the complete governing chain.
 5. Run `harnessctl preflight . --work-order WO-...`, read its manifest, implement, validate, and run repository-specific quality checks.
-6. Retain evidence keyed to every release-bearing work-order ID and run review preflight with `--phase review`.
-7. Commit the clean final candidate source and evidence, then run `harnessctl capture-verification`; repeat `--work-order`, `--verification`, and `--evidence` for an aggregate candidate. Commit the resulting ready verification record in a later governance commit.
+6. Retain evidence keyed to every work-order ID, run `harnessctl preflight . --work-order WO-... --phase review`, inspect current attention with `harnessctl inspect .`, generate Harness Explorer with `harnessctl dashboard .`, and review the candidate's consistency and anomaly findings.
+7. For work explicitly classified `required`, commit the clean final candidate source and evidence, then run `harnessctl capture-verification`; repeat `--work-order`, `--verification`, and `--evidence` for an aggregate candidate. Commit the resulting ready verification record in a later governance commit.
 8. Have the assurance owner review and transition the verification record to `verified`. If a later verified or released record fully covers an older ready record, a separate governance decision may transition only that older record to `superseded`, name exactly one eligible successor through `superseded_by`, and preserve its captured provenance.
 9. Run `harnessctl prepare-release`; repeat `--work-order` and `--verification-record` so released work exactly matches eligible coverage. Superseded records are historical and cannot qualify a release. Have the release owner review the prepared record, and separately create any authorized tag against the candidate commit.
 10. Evaluate operating contracts through accountable humans.
@@ -14,6 +14,8 @@
 Lifecycle values are `draft`, `ready`, `approved`, `in_progress`, `implemented`, `verified`, `released`, `superseded`, and `rejected`. A status change records authority; it is not a confidence estimate.
 
 For work orders, the normal path is `draft -> approved -> in_progress -> implemented`: approval authorizes bounded execution, while implementation records completed work and retained evidence. Use work-order status `verified` or `released` only when an eligible commit-bound VREC explicitly covers that work and configured provenance requires it. Governance-only work that authorizes verification, release, tagging, review, or publication stops at `implemented` unless a distinct later VREC selects it; the status of the target VREC does not recursively verify the governance work order.
+
+Every approved or in-progress work order declares commit-bound assurance applicability under `[assurance]`. Classify `required` when later engineering, assurance, operational, or release decisions rely on the correctness of the changed trusted state. Classify `not_required` only for work whose sole purpose is to record or transport an already authorized governance decision. Mixed or uncertain scope is `required` or escalated, never inferred by automation. Completed legacy work may omit the declaration, but renewed preflight selection requires it. Inspection reports implemented `required` work without active ready, verified, or released VREC coverage as non-authoritative assurance follow-up.
 
 The VREC is the authoritative commit-bound assurance record: it moves separately from `ready` to `verified` through an accountable human decision. The RLS is the authoritative release record and moves separately from `ready` to `released`. Work-order status never substitutes for either record.
 
@@ -26,3 +28,5 @@ Verification supersession is explicit and human-authorized. Only a `ready` VREC 
 Managed-file integrity uses schema-2 SHA-256 over the versioned `utf8-text-lf-v1` representation. LF, CRLF, and CR are equivalent line terminators; all other content distinctions remain significant. Schema-1 locks retain raw-byte semantics and migrate only when an exact legacy match or canonical equality to the rendered desired template proves the operation safe. `doctor` is read-only, and customized or ambiguous content is never overwritten.
 
 Pull-request CI declares exactly one work order with a standalone `Harness-Work-Order: WO-...` field. CI never infers the ID from a branch, commit, or diff. Start preflight accepts `approved` or `in_progress`; review preflight additionally accepts `implemented`, `verified`, or `released` so completed work retains honest lifecycle status.
+
+Decision applicability is explicit per architecture, not inferred from an absent ADR. `adr_required` means at least one active ADR must decide that architecture and be selected by the work order. `no_significant_decision` is valid only with no controlled triggers and an accountable rationale. One ADR may cover one coherent decision spanning several architectures or requirements; no one-ADR-per-requirement rule exists. Completed legacy architecture without an assessment remains temporarily assessable only when an already-active selected ADR decides it, and validation reports the migration advisory.

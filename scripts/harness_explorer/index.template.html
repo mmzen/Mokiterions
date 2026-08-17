@@ -3,690 +3,146 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' https://unpkg.com; img-src data:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
   <title>Harness Explorer</title>
   <style>
-    :root {
-      color-scheme: light dark;
-      --page: #f4f1ea;
-      --surface: #fffdf8;
-      --surface-strong: #ffffff;
-      --ink: #15211d;
-      --muted: #5c6a64;
-      --line: #ced5cf;
-      --line-strong: #9daaa3;
-      --brand: #146b53;
-      --brand-ink: #ffffff;
-      --accent: #d8eadf;
-      --error: #9f2d35;
-      --error-soft: #f7dfe1;
-      --warning: #8a5a13;
-      --warning-soft: #f5e8cb;
-      --info: #315f83;
-      --info-soft: #dcebf5;
-      --ok: #236a4a;
-      --ok-soft: #dceee4;
-      --shadow: 0 18px 50px rgba(24, 42, 34, 0.08);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    :root{--bg:oklch(.982 .006 255);--surface:oklch(1 0 0);--fg:oklch(.238 .024 255);--muted:oklch(.505 .022 255);--border:oklch(.882 .014 255);--accent:oklch(.49 .16 255);--soft:oklch(.955 .028 255);--warn:oklch(.59 .13 75);--warn-soft:oklch(.96 .035 75);--graph-1:oklch(.72 .14 255);--graph-2:oklch(.72 .14 165);--graph-3:oklch(.73 .15 320);--graph-4:oklch(.76 .14 120);--graph-5:oklch(.72 .14 35);--selected:oklch(.82 .17 82);--display:"Aptos Display","Segoe UI",sans-serif;--body:Aptos,"Segoe UI",sans-serif;--mono:SFMono-Regular,Consolas,monospace}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg)}body{font:15px/1.45 var(--body)}button,input,select{font:inherit;color:inherit;border-radius:0}button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}[hidden]{display:none!important}.app{min-height:100vh;display:grid;grid-template-columns:232px minmax(0,1fr)}
+    .sidebar{position:sticky;top:0;height:100vh;padding:24px 18px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:30px}.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}.brand-mark{display:block;width:24px;height:24px;flex:none;color:var(--fg)}.repo-label{margin:3px 0 0 34px;color:var(--muted);font:11px var(--mono);overflow-wrap:anywhere}.nav{display:grid;gap:4px}.nav button{min-height:44px;border:0;background:transparent;display:flex;align-items:center;gap:11px;padding:0 12px;text-align:left;cursor:pointer}.nav button:hover{background:oklch(from var(--bg) calc(l - .025) c h)}.nav svg{display:block;width:18px;height:18px;flex:none}.app[data-current-view=overview] [data-view=overview],.app[data-current-view=lineage] [data-view=lineage],.app[data-current-view=readiness] [data-view=readiness]{background:var(--soft);color:var(--accent);font-weight:700}.repo-state{margin-top:auto;padding:14px 12px;border-top:1px solid var(--border)}.state-line{display:flex;align-items:center;gap:8px;font-weight:650}.state-dot{width:8px;height:8px;border-radius:50%;background:var(--fg);flex:none}.repo-state p{margin:7px 0 0;color:var(--muted);font:11px/1.5 var(--mono);white-space:pre-line}
+    .workspace{min-width:0}.topbar{height:72px;padding:0 clamp(18px,3vw,38px);border-bottom:1px solid var(--border);background:oklch(.975754 .00574 264.533/.937);display:flex;align-items:center;justify-content:space-between;gap:20px;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}.eyebrow{margin:0 0 4px;color:var(--muted);font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase}h1,h2,h3,h4{font-family:var(--display)}h1{margin:0;font-size:22px}.view-title{display:none}.app[data-current-view=overview] [data-title-view=overview],.app[data-current-view=lineage] [data-title-view=lineage],.app[data-current-view=readiness] [data-title-view=readiness]{display:inline}.top-actions{display:flex;align-items:center;gap:9px}.search{width:min(310px,34vw);height:40px;border:1px solid var(--border);background:var(--surface);padding:0 13px}.icon-btn{width:40px;height:40px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer}.icon-btn:hover{border-color:var(--fg);background:oklch(from var(--surface) calc(l - .045) c h)}.icon-btn svg{display:block;width:17px;height:17px}.main{padding:28px clamp(18px,3vw,38px) 44px}.panel{background:var(--surface);border:1px solid var(--border);min-width:0}.empty-banner{padding:14px 16px;border:1px solid oklch(.834159 .054325 264.221);background:var(--soft);color:oklch(.419539 .109956 260.267);margin-bottom:18px;font-size:13px}.intro{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:22px}.intro h2{margin:0;max-width:760px;font-size:clamp(28px,4vw,46px);line-height:1.08}.intro p{max-width:500px;margin:0;color:var(--muted)}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--border);background:var(--surface)}.stat{padding:18px 20px;border-right:1px solid var(--border)}.stat:last-child{border:0}.stat strong{display:block;font:650 28px var(--display)}.stat span,.stat small{display:block}.stat span{margin-top:4px;color:var(--muted);font:10px var(--mono);text-transform:uppercase}.stat small{margin-top:9px;font:11px var(--mono)}.overview-grid{display:grid;gap:16px;margin-top:16px}.panel-pad{padding:20px}.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:17px}.section-head h3{margin:0;font-size:18px}.section-head span{color:var(--muted);font:10px var(--mono)}.controls{display:flex;gap:8px;flex-wrap:wrap}.controls label{display:grid;gap:4px;color:var(--muted);font:9px var(--mono);text-transform:uppercase}.controls select,.controls button{min-height:44px;border:1px solid var(--border);background:var(--surface);padding:0 11px}.topology-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;border:1px solid var(--border);min-height:500px}
+    .topology{position:relative;max-height:620px;overflow:auto;background:oklch(.252052 .045755 260.463);background-image:radial-gradient(oklch(.385041 .050765 260.623) 1px,transparent 1px);background-size:24px 24px}
+    .topology svg{width:900px;min-height:500px;display:block}
+    .topology line{stroke:oklch(.603474 .042086 260.62);stroke-width:1.2}
+    .topology g{cursor:pointer}
+    .topology circle{fill:oklch(.634758 .15948 261.722);stroke:oklch(.928987 .03385 263.575);stroke-width:1}
+    .topology text{fill:var(--surface);font:10px var(--mono);pointer-events:none}.graph-legend-wrap{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-top:14px}.graph-legend{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--muted);font:9px var(--mono)}.graph-legend span{display:inline-flex;align-items:center;gap:6px}.graph-legend i{width:8px;height:8px;border-radius:50%;background:var(--semantic-color)}.graph-legend-note{max-width:340px;margin:0;color:var(--muted);font:9px/1.45 var(--mono);text-align:right}
+    .inspector{padding:20px;border-left:1px solid var(--border)}.inspector h4{margin:8px 0;font-size:20px;overflow-wrap:anywhere}.inspector p{color:var(--muted);font-size:12px}.meta{display:grid;margin:18px 0}.meta div{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border)}.meta dt{color:var(--muted);font:9px var(--mono);text-transform:uppercase}.meta dd{margin:0;font:700 10px var(--mono)}.primary{width:100%;min-height:44px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);font-weight:700;cursor:pointer}.primary:disabled{background:var(--bg);border-color:var(--border);color:var(--muted)}.lens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 18px}.lens-item{display:grid;grid-template-columns:8px 1fr auto;gap:9px;padding:11px 0;border-top:1px solid var(--border)}.dot{width:7px;height:7px;margin-top:5px;background:var(--accent)}.lens-item small{display:block;color:var(--muted)}.queues{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border)}.queue{padding:17px 20px;border-right:1px solid var(--border)}.queue:last-child{border:0}.queue b{float:right;font:700 11px var(--mono)}.queue p{color:var(--muted);font-size:12px;min-height:50px}.link-button{min-height:44px;border:0;background:transparent;padding:0;font-weight:700;cursor:pointer;text-align:left}.link-button:hover{color:var(--accent)}
+    .context{display:flex;justify-content:space-between;margin-bottom:18px;color:var(--muted);font-size:13px}.context strong{color:var(--fg)}.lineage-canvas{position:relative;min-height:390px;overflow:auto;background:var(--surface);border:1px solid var(--border)}.lineage-canvas svg{display:block;width:1000px;height:390px;background-image:radial-gradient(var(--border) .8px,transparent .8px);background-size:24px 24px}.lineage-canvas line{stroke:oklch(.701386 .030263 256.516);stroke-width:1.5}.lineage-canvas line.derived{stroke-dasharray:5 5}.lineage-node{cursor:pointer}.lineage-node rect{fill:var(--surface);stroke:oklch(.832798 .023684 258.364)}.lineage-node.selected rect{fill:var(--soft);stroke:var(--accent);stroke-width:2}.lineage-node text{font:11px var(--mono);fill:var(--fg);pointer-events:none}.lineage-node .node-kind{fill:var(--muted);font-size:9px;text-transform:uppercase}.lineage-node .node-title{font:10px var(--body)}.lineage-legend{position:absolute;left:14px;bottom:12px;z-index:2;display:flex;gap:16px;padding:8px 10px;border:1px solid var(--border);background:oklch(1 0 0/.94);color:var(--muted);font:10px var(--mono)}.lineage-legend span{display:flex;align-items:center;gap:6px}.lineage-legend i{width:16px;border-top:1px solid var(--muted)}.lineage-legend .derived{border-top-style:dashed}.details{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr);gap:16px;margin-top:16px}.detail-head{padding:18px 20px 0;display:flex;justify-content:space-between}.detail-head h2{margin:0;font-size:26px}.badge{padding:5px 8px;background:var(--soft);font:10px var(--mono);height:max-content}.tabs{display:flex;gap:24px;margin:18px 20px 0;border-bottom:1px solid var(--border)}.tabs button{min-height:44px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer}.tabs button[aria-selected=true]{border-color:var(--fg);color:var(--fg);font-weight:700}.tab-content{padding:20px}.statement{line-height:1.65}.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}.detail-grid dt{color:var(--muted);font:9px var(--mono);text-transform:uppercase}.detail-grid dd{margin:5px 0;overflow-wrap:anywhere}.path{font-family:var(--mono)}.path-list{display:grid}.path-item{padding:13px 0;border-top:1px solid var(--border)}.path-item small{color:var(--muted)}
+    .scope{padding:20px;margin-bottom:22px}.scope-top{display:flex;justify-content:space-between;gap:24px}.scope h2{margin:4px 0;font-size:30px}.subject-control{display:grid;gap:5px;min-width:min(360px,42vw);color:var(--muted);font:9px var(--mono);text-transform:uppercase}.subject-control select{min-height:44px;border:1px solid var(--border);background:var(--surface);padding:0 11px}.scope-grid{display:grid;grid-template-columns:repeat(5,1fr);margin-top:18px;border-top:1px solid var(--border)}.scope-grid div{padding:15px 16px 0 0}.scope-grid div+div{padding-left:16px;border-left:1px solid var(--border)}.scope-grid dt{color:var(--muted);font:9px var(--mono);text-transform:uppercase}.scope-grid dd{margin:7px 0;font-size:12px;font-weight:650;overflow-wrap:anywhere}.gates{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--border);background:var(--surface)}.gate{padding:17px 16px;border-right:1px solid var(--border);border-bottom:3px solid var(--fg)}.gate:last-child{border-right:0}.gate.review{border-bottom-color:var(--accent)}.gate.blocked{border-bottom-color:var(--warn)}.gate small,.gate span{display:block;color:var(--muted)}.gate strong{display:block;margin:8px 0}.readiness-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.7fr);gap:16px;margin-top:16px}.evidence-table{width:100%;border-collapse:collapse}.evidence-table th,.evidence-table td{padding:12px 9px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-size:12px}.evidence-table th{color:var(--muted);font:9px var(--mono);text-transform:uppercase}.evidence-status{border-left:3px solid var(--border)}.evidence-status.clear{border-color:var(--graph-2)}.evidence-status.review{border-color:var(--graph-5)}.evidence-status.blocked{border-color:var(--warn)}.evidence-status.neutral{border-color:var(--muted)}.finding{padding:15px 0;border-top:1px solid var(--border)}.finding p{margin:6px 0;color:var(--muted);font-size:12px}.finding .badge{float:right}.warning{background:var(--warn-soft);color:var(--warn)}
+    @media(max-width:900px){.app{grid-template-columns:72px minmax(0,1fr)}.sidebar{padding:22px 12px;align-items:center}.brand span,.repo-label,.nav button span,.repo-state p,.state-line span{display:none}.nav button{width:46px;justify-content:center;padding:0}.topology-layout,.details,.readiness-grid{grid-template-columns:1fr}
+    .inspector{border-left:0;border-top:1px solid var(--border)}.lens{grid-template-columns:repeat(2,1fr)}.scope-grid{grid-template-columns:repeat(2,1fr)}.gates{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:640px){.app{display:block}.sidebar{position:fixed;inset:auto 0 0;width:100%;height:64px;z-index:20;padding:8px 14px;background:var(--surface);border:1px solid var(--border);flex-direction:row;justify-content:center}.sidebar>div,.repo-state{display:none}.nav{display:flex;width:100%;justify-content:space-around}.nav button{width:46px;justify-content:center;padding:0}.main{padding-bottom:85px}.topbar{flex-wrap:wrap;height:auto;min-height:72px;padding-block:10px}.search{max-width:50vw}.intro,.scope-top{display:grid}.stats{grid-template-columns:1fr 1fr}.queues{grid-template-columns:1fr}.queue{border-right:0;border-bottom:1px solid var(--border)}.scope-grid,.gates{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:1fr}.evidence-table th:nth-child(2),.evidence-table td:nth-child(2){display:none}.graph-legend-wrap{display:block}.graph-legend-note{max-width:none;margin-top:12px;text-align:left}.lineage-legend{display:none}}
+    .question-map{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:18px;border:1px solid var(--border);background:var(--surface)}.question-map article{padding:12px 14px;border-right:1px solid var(--border)}.question-map article:last-child{border-right:0}.question-map strong{display:block;color:var(--accent);font:11px var(--mono)}.question-map span{display:block;margin-top:5px;font-size:12px}.supplemental-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.record-list{display:grid}.record{padding:12px 0;border-top:1px solid var(--border)}.record:first-child{border-top:0}.record small{display:block;color:var(--muted);overflow-wrap:anywhere}.risk-note{margin:12px 0 0;padding:10px 12px;background:var(--warn-soft);color:var(--warn);font-size:12px}
+    @media(max-width:900px){.question-map{grid-template-columns:repeat(2,1fr)}.question-map article{border-bottom:1px solid var(--border)}.supplemental-grid{grid-template-columns:1fr}}@media(max-width:640px){.question-map{grid-template-columns:1fr}.question-map article{border-right:0}}
+    .controls{align-items:flex-end}.topology-layout{min-height:580px}.topology{min-height:580px;max-height:none;overflow:hidden;background:oklch(.17 .02 255);background-image:none}.topology #overviewGraph{position:absolute;inset:0}.topology #overviewGraph,.topology #overviewGraph>div,.topology canvas{width:100%!important;height:100%!important;display:block}.topology-fallback{position:absolute;inset:0;z-index:2;display:grid;place-items:center;padding:28px;color:oklch(.86 .02 255);text-align:center;pointer-events:none}.topology.ready .topology-fallback{display:none}.topology-fallback strong,.topology-fallback span{display:block}.topology-fallback strong{color:var(--surface);font:600 20px var(--display)}.topology-fallback span{margin-top:7px;font-size:12px}.selected-key{color:var(--selected)}.lens-item .dot{background:var(--semantic-color)}
+    @media(max-width:640px){.topology,.topology-layout{min-height:460px}}
+    .lineage-shell{position:relative;min-height:430px;overflow:hidden;background:var(--surface);border:1px solid var(--border)}.lineage-toolbar{position:absolute;right:14px;top:14px;z-index:4;display:flex;gap:6px}.lineage-toolbar button{width:36px;height:36px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font:16px var(--mono)}.lineage-toolbar button:hover{background:oklch(from var(--surface) calc(l - .045) c h);border-color:var(--fg)}.lineage-scroll{height:430px;overflow:auto}.lineage-graph{position:relative;width:1140px;min-height:430px;transform-origin:50% 50%;transition:transform .2s ease;background-image:radial-gradient(var(--border) .8px,transparent .8px);background-size:24px 24px}.lineage-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.lineage-edge{fill:none;stroke:oklch(from var(--border) calc(l - .09) c h);stroke-width:1.5}.lineage-edge.active{stroke:var(--fg);stroke-width:2}.lineage-edge.derived{stroke-dasharray:5 5}.lineage-edge-label{fill:var(--muted);font:10px var(--mono)}.lineage-card{position:absolute;width:170px;min-height:78px;border:1px solid var(--border);background:var(--surface);padding:12px;text-align:left;cursor:pointer;box-shadow:0 8px 20px oklch(.2 .02 255/.04);transition:border-color .15s,transform .15s,box-shadow .15s}.lineage-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 12px 26px oklch(.2 .02 255/.09)}.lineage-card[aria-pressed=true]{border:2px solid var(--accent);background:var(--soft);box-shadow:0 0 0 4px oklch(.49 .16 255/.1)}.lineage-card.past{opacity:.72}.lineage-card.future{border-style:dashed;background:oklch(from var(--surface) calc(l - .006) c h)}.lineage-card-kind{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font:9px var(--mono);letter-spacing:.07em;text-transform:uppercase}.lineage-card-status{display:inline-flex;align-items:center;gap:4px;font-style:normal}.lineage-card-status::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.lineage-card-id{display:block;margin-top:10px;color:var(--fg);font:700 12px var(--mono)}.lineage-card[aria-pressed=true] .lineage-card-id{color:var(--accent)}.lineage-card-title{display:block;margin-top:4px;font-size:12px;line-height:1.3}.lineage-shell .lineage-legend{position:absolute;left:14px;bottom:12px}.lineage-empty{display:none;position:absolute;inset:0;place-items:center;background:oklch(1 0 0/.92);color:var(--muted)}.lineage-empty.visible{display:grid}@media(max-width:640px){.lineage-shell .lineage-legend{display:none}}
+    /* Preserve the reviewed visual design's type rhythm and compact status treatments. */
+    h1{font:600 22px/1.1 var(--display);letter-spacing:-.015em}
+    .section-head h3{font:600 18px var(--display)}
+    .detail-head h2{font:600 clamp(20px,2.4vw,28px)/1.15 var(--display);letter-spacing:-.018em}
+    .badge{height:auto;padding:5px 8px;background:oklch(from var(--surface) calc(l - .045) c h);color:var(--fg);font:10px var(--mono);white-space:nowrap}
+    .badge.warning{background:var(--warn-soft);color:var(--warn)}
+    .gate{position:relative;padding:17px 16px 18px;border-bottom:0}
+    .gate-code{display:block;color:var(--muted);font:9px var(--mono);letter-spacing:.08em}
+    .gate strong{display:block;margin-top:9px;font-size:12px}
+    .gate span:not(.gate-code){display:block;margin-top:4px;color:var(--muted);font-size:11px}
+    .gate::after{content:"";position:absolute;inset:auto 16px 0;height:3px;background:var(--fg)}
+    .gate.review::after{background:var(--accent)}
+    .gate.blocked::after{background:var(--warn)}
+    .section-head h3,.queue h4{font-weight:600}
+    .lineage-card-title{white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.3}
+    .topology::after{content:"DRAG TO ROTATE · SCROLL TO ZOOM · CLICK TO INSPECT";position:absolute;left:14px;bottom:12px;z-index:3;padding:7px 9px;border:1px solid oklch(.38 .025 255);background:oklch(.17 .02 255/.82);color:oklch(.8 .025 255);font:9px var(--mono);pointer-events:none}
+    .topology:not(.ready)::after{display:none}
+    @media(max-width:900px){
+      .scope-grid div,.scope-grid div+div{padding:14px 14px 14px 0;border-left:0;border-bottom:1px solid var(--border)}
+      .scope-grid div:nth-child(even){padding-left:14px;border-left:1px solid var(--border)}
+      .scope-grid div:last-child{border-bottom:0}
+      .gates .gate:nth-child(3){border-right:0}
+      .gates .gate:nth-child(-n+3){border-bottom:1px solid var(--border)}
     }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --page: #111814;
-        --surface: #18211c;
-        --surface-strong: #1d2822;
-        --ink: #edf4ef;
-        --muted: #a8b7ae;
-        --line: #35443b;
-        --line-strong: #526359;
-        --brand: #69caa4;
-        --brand-ink: #102019;
-        --accent: #244b3b;
-        --error: #ff9fa5;
-        --error-soft: #502a2d;
-        --warning: #f1c46f;
-        --warning-soft: #4a3a20;
-        --info: #9ac9ea;
-        --info-soft: #263f51;
-        --ok: #8ad7b3;
-        --ok-soft: #244839;
-        --shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
-      }
+    @media(max-width:640px){
+      .lineage-shell{min-height:0;overflow:visible}
+      .lineage-scroll{height:auto;overflow:visible}
+      .lineage-graph{width:100%!important;height:auto!important;min-height:0;padding:58px 14px 18px;display:grid;gap:10px;transform:none!important;background-size:20px 20px}
+      .lineage-lines,.lineage-toolbar,.lineage-legend{display:none}
+      .lineage-card{position:static;width:100%;min-height:76px}
+      .stats .stat:nth-child(2){border-right:0}
+      .stats .stat:nth-child(-n+2){border-bottom:1px solid var(--border)}
+      .scope-grid{grid-template-columns:1fr}
+      .scope-grid div,.scope-grid div+div,.scope-grid div:nth-child(even){padding:13px 0;border-left:0;border-bottom:1px solid var(--border)}
+      .scope-grid div:last-child{border-bottom:0}
+      .gates .gate:nth-child(odd){border-right:1px solid var(--border)}
+      .gates .gate:nth-child(even){border-right:0}
+      .gates .gate:nth-child(-n+4){border-bottom:1px solid var(--border)}
+      #readinessView .evidence-table,#readinessView .evidence-table tbody,#readinessView .evidence-table tr,#readinessView .evidence-table td{display:block;width:100%!important}
+      #readinessView .evidence-table thead{display:none}
+      #readinessView .evidence-table tr{padding:10px 0;border-bottom:1px solid var(--border)}
+      #readinessView .evidence-table tbody tr:last-child{border-bottom:0}
+      #readinessView .evidence-table td,#readinessView .evidence-table td:nth-child(2){display:block;padding:5px 0;border:0}
+      #readinessView .evidence-table td::before{display:block;margin-bottom:2px;color:var(--muted);font:8px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+      #readinessView .evidence-table td:nth-child(1)::before{content:"Artifact"}
+      #readinessView .evidence-table td:nth-child(2)::before{content:"Gate evidence"}
+      #readinessView .evidence-table td:nth-child(3)::before{content:"State"}
     }
-
-    * { box-sizing: border-box; }
-    html { background: var(--page); }
-    body { margin: 0; color: var(--ink); background: var(--page); }
-    button, select { font: inherit; }
-    button:focus-visible, select:focus-visible, summary:focus-visible {
-      outline: 3px solid var(--brand);
-      outline-offset: 3px;
-    }
-    .shell { width: min(1480px, 100%); margin: 0 auto; padding: 28px clamp(16px, 3vw, 44px) 64px; }
-    .masthead { display: grid; gap: 16px; margin-bottom: 22px; }
-    .eyebrow { margin: 0; color: var(--brand); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-    h1 { margin: 3px 0 0; font-size: clamp(2rem, 5vw, 4.2rem); line-height: 0.98; letter-spacing: -0.045em; max-width: 900px; }
-    .lede { max-width: 820px; margin: 10px 0 0; color: var(--muted); font-size: 1.02rem; line-height: 1.65; }
-    .snapshot-line { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; color: var(--muted); font-size: 0.88rem; }
-    .snapshot-line strong { color: var(--ink); font-weight: 650; }
-    .validation { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
-    .validation::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-    .validation.valid { color: var(--ok); }
-    .validation.invalid { color: var(--error); }
-
-    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 24px 0; }
-    .metric { background: var(--surface); border: 1px solid var(--line); padding: 16px; box-shadow: var(--shadow); }
-    .metric-label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.07em; }
-    .metric-value { display: block; margin-top: 5px; font-size: clamp(1.45rem, 3vw, 2.1rem); font-weight: 750; letter-spacing: -0.04em; }
-    .metric-context { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
-
-    .question-nav { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px; border-bottom: 1px solid var(--line); }
-    .question-nav button { flex: 0 0 auto; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px 14px; cursor: pointer; }
-    .question-nav button[aria-selected="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
-
-    .view { padding-top: 24px; }
-    .view[hidden] { display: none; }
-    .view-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
-    .view h2 { margin: 0; font-size: clamp(1.45rem, 3vw, 2.15rem); letter-spacing: -0.03em; }
-    .view-intro { margin: 6px 0 0; color: var(--muted); max-width: 760px; line-height: 1.5; }
-    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
-    label.field { display: grid; gap: 5px; color: var(--muted); font-size: 0.8rem; font-weight: 650; }
-    select { min-width: min(340px, 82vw); max-width: 100%; color: var(--ink); background: var(--surface-strong); border: 1px solid var(--line-strong); padding: 10px 34px 10px 11px; }
-    .action { border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); padding: 10px 13px; cursor: pointer; }
-    .action[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
-
-    .detail { background: var(--surface); border-left: 5px solid var(--brand); padding: 18px 20px; margin: 18px 0; box-shadow: var(--shadow); }
-    .detail-top { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
-    .detail h3 { margin: 0; font-size: 1.17rem; }
-    .detail p { margin: 10px 0 0; line-height: 1.55; }
-    .detail dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 14px 0 0; font-size: 0.88rem; }
-    .detail dt { color: var(--muted); }
-    .detail dd { margin: 0; overflow-wrap: anywhere; }
-
-    .badge { display: inline-flex; align-items: center; width: fit-content; padding: 3px 7px; border-radius: 999px; font-size: 0.73rem; font-weight: 750; letter-spacing: 0.025em; border: 1px solid var(--line); background: var(--surface-strong); }
-    .badge.error, .badge.unsatisfied { color: var(--error); background: var(--error-soft); border-color: transparent; }
-    .badge.warning, .badge.not_assessable { color: var(--warning); background: var(--warning-soft); border-color: transparent; }
-    .badge.info { color: var(--info); background: var(--info-soft); border-color: transparent; }
-    .badge.satisfied, .badge.complete { color: var(--ok); background: var(--ok-soft); border-color: transparent; }
-    .badge.superseded { color: var(--muted); background: var(--line); border-color: transparent; }
-
-    .lane-grid { display: grid; grid-template-columns: repeat(6, minmax(180px, 1fr)); gap: 10px; align-items: start; }
-    .lane { min-width: 0; border-top: 3px solid var(--line-strong); padding-top: 10px; }
-    .lane h3 { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 9px; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
-    .node-list { display: grid; gap: 7px; }
-    .node { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px; cursor: pointer; min-height: 82px; }
-    .node:hover { border-color: var(--brand); }
-    .node[aria-current="true"] { border: 2px solid var(--brand); background: var(--accent); }
-    .node-id { display: block; color: var(--brand); font-weight: 800; font-size: 0.78rem; letter-spacing: 0.03em; overflow-wrap: anywhere; }
-    .node-title { display: block; margin: 5px 0 8px; line-height: 1.25; }
-    .node-status { display: block; color: var(--muted); font-size: 0.74rem; text-transform: uppercase; }
-    .empty-lane { color: var(--muted); font-size: 0.82rem; padding: 8px 0; }
-
-    details.relations { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
-    summary { cursor: pointer; color: var(--brand); font-weight: 750; }
-    .relation-list { display: grid; gap: 6px; padding: 12px 0 0; }
-    .relation-row { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(110px, auto) minmax(120px, 1fr); gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 0.84rem; }
-    .relation-name { color: var(--muted); text-align: center; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
-    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.92em; overflow-wrap: anywhere; }
-
-    .table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
-    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; background: var(--surface-strong); }
-    tr:last-child td { border-bottom: 0; }
-    td code { color: var(--brand); font-weight: 700; }
-
-    .impact-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
-    .impact-group { background: var(--surface); border: 1px solid var(--line); padding: 15px; }
-    .impact-group h3 { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 10px; font-size: 0.95rem; }
-    .artifact-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
-    .artifact-link { border: 1px solid var(--line); background: var(--surface-strong); color: var(--brand); padding: 6px 8px; cursor: pointer; font-size: 0.78rem; font-weight: 750; overflow-wrap: anywhere; }
-    .note { color: var(--muted); font-size: 0.84rem; line-height: 1.5; margin-top: 14px; }
-
-    .finding-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-    .finding-list { display: grid; gap: 10px; }
-    .finding { background: var(--surface); border: 1px solid var(--line); border-left-width: 5px; padding: 14px 16px; }
-    .finding.error { border-left-color: var(--error); }
-    .finding.warning { border-left-color: var(--warning); }
-    .finding.info { border-left-color: var(--info); }
-    .finding-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-    .finding h3 { margin: 0; font-size: 0.95rem; }
-    .finding p { margin: 8px 0 0; line-height: 1.45; }
-    .finding-meta { margin-top: 8px; color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
-    .readiness { margin-top: 28px; }
-    .gate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
-    .gate { border-top: 4px solid var(--line-strong); background: var(--surface); padding: 14px; }
-    .gate.satisfied { border-top-color: var(--ok); }
-    .gate.unsatisfied { border-top-color: var(--error); }
-    .gate.not_assessable { border-top-color: var(--warning); }
-    .gate-head { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
-    .gate h3 { margin: 0; font-size: 0.95rem; }
-    .condition-list { display: grid; gap: 9px; margin-top: 12px; }
-    .condition { border-top: 1px solid var(--line); padding-top: 8px; }
-    .condition p { margin: 0; font-size: 0.83rem; line-height: 1.35; }
-    .condition-evidence { color: var(--muted); margin-top: 4px; font-size: 0.74rem; overflow-wrap: anywhere; }
-
-    .experiment-head { display: grid; gap: 5px; background: var(--surface); border-left: 5px solid var(--brand); padding: 16px; margin: 16px 0; }
-    .experiment-head strong { font-size: 1.05rem; }
-    .experiment-head span { color: var(--muted); font-size: 0.82rem; overflow-wrap: anywhere; }
-    .not-measured { color: var(--muted); font-style: italic; }
-    .empty-state { border: 1px dashed var(--line-strong); color: var(--muted); padding: 28px; text-align: center; line-height: 1.55; }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-
-    @media (max-width: 1080px) {
-      .lane-grid { grid-template-columns: repeat(3, minmax(180px, 1fr)); }
-      .impact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .gate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 720px) {
-      .shell { padding-top: 20px; }
-      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .view-head { display: grid; align-items: start; }
-      .lane-grid, .impact-grid, .gate-grid { grid-template-columns: 1fr; }
-      .relation-row { grid-template-columns: 1fr; gap: 3px; }
-      .relation-name { text-align: left; }
-      .detail dl { grid-template-columns: 1fr; gap: 3px; }
-      .detail dd { margin-bottom: 5px; }
-    }
+    @media(max-width:900px){.nav button span{display:block;position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}}
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="masthead">
-      <div>
-        <p class="eyebrow">Repository engineering evidence</p>
-        <h1>Harness Explorer</h1>
-        <p class="lede">Follow the decision chain, expose coverage and impact, inspect consistency, and compare controlled outcomes without creating a second source of truth.</p>
-      </div>
-      <div class="snapshot-line" aria-label="Snapshot provenance">
-        <span id="validation-state" class="validation"></span>
-        <span>Repository <strong id="repository-name"></strong></span>
-        <span>Revision <strong id="repository-revision"></strong></span>
-        <span>Artifact root <strong id="artifact-root"></strong></span>
-      </div>
-    </header>
-
-    <section class="metrics" aria-label="Repository summary">
-      <article class="metric"><span class="metric-label">Formal artifacts</span><strong class="metric-value" id="metric-artifacts"></strong><span class="metric-context" id="metric-artifact-context"></span></article>
-      <article class="metric"><span class="metric-label">Declared relations</span><strong class="metric-value" id="metric-relations"></strong><span class="metric-context" id="metric-relation-context"></span></article>
-      <article class="metric"><span class="metric-label">Active coverage</span><strong class="metric-value" id="metric-coverage"></strong><span class="metric-context">specification + verification</span></article>
-      <article class="metric"><span class="metric-label">Consistency findings</span><strong class="metric-value" id="metric-findings"></strong><span class="metric-context" id="metric-finding-context"></span></article>
-    </section>
-
-    <nav class="question-nav" aria-label="Harness questions" role="tablist">
-      <button type="button" role="tab" data-view="explain" aria-selected="true">1. Why does this exist?</button>
-      <button type="button" role="tab" data-view="coverage" aria-selected="false">2. Is it covered?</button>
-      <button type="button" role="tab" data-view="impact" aria-selected="false">3. What changes?</button>
-      <button type="button" role="tab" data-view="findings" aria-selected="false">4. What is inconsistent?</button>
-      <button type="button" role="tab" data-view="compare" aria-selected="false">5. Does the harness help?</button>
-    </nav>
-
-    <main>
-      <section id="view-explain" class="view" role="tabpanel">
-        <div class="view-head">
-          <div><h2>Declared lineage</h2><p class="view-intro">The focused chain follows repository relations in both directions. Relation direction and type remain visible below the stage view.</p></div>
-          <div class="controls">
-            <label class="field">Selected artifact<select id="artifact-select"></select></label>
-            <button id="show-all" class="action" type="button" aria-pressed="false">Show complete graph</button>
-          </div>
+  <div class="app" data-current-view="overview">
+    <aside class="sidebar" data-od-id="primary-navigation"><div><div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5" cy="12" r="2.5" fill="currentColor"/><circle cx="19" cy="5" r="2.5" fill="currentColor"/><circle cx="19" cy="19" r="2.5" fill="currentColor"/><path d="M7.5 12h4.5m0 0 4.5-7m-4.5 7 4.5 7" stroke="currentColor" stroke-width="1.5"/></svg><span>Harness Explorer</span></div><p class="repo-label" id="repoLabel">Awaiting snapshot</p></div><nav class="nav" aria-label="Primary"><button type="button" data-view="overview" data-od-id="nav-overview"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="7" r="2" stroke="currentColor"/><circle cx="18" cy="7" r="2" stroke="currentColor"/><circle cx="12" cy="18" r="2" stroke="currentColor"/><path d="M8 7h8M7.5 9l3.5 7M16.5 9L13 16" stroke="currentColor"/></svg><span>Overview</span></button><button type="button" data-view="lineage" data-od-id="nav-lineage"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5" cy="12" r="2" stroke="currentColor"/><circle cx="19" cy="6" r="2" stroke="currentColor"/><circle cx="19" cy="18" r="2" stroke="currentColor"/><path d="M7 12h4m0 0 6-6m-6 6 6 6" stroke="currentColor"/></svg><span>Lineage</span></button><button type="button" data-view="readiness" data-od-id="nav-readiness"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l8 4v5c0 4.7-3.3 7.7-8 9-4.7-1.3-8-4.3-8-9V7z" stroke="currentColor"/><path d="M8.5 12l2.3 2.3 4.8-5" stroke="currentColor"/></svg><span>Readiness</span></button></nav><div class="repo-state" data-od-id="repository-state"><div class="state-line"><i class="state-dot" aria-hidden="true"></i><span id="validationState">Awaiting data</span></div><p id="repositoryMeta">harnessctl has not generated this dashboard.</p></div></aside>
+    <div class="workspace"><header class="topbar" data-od-id="top-bar"><div><p class="eyebrow">Repository evidence</p><h1 id="page-title" data-od-id="page-title"><span class="view-title" data-title-view="overview">Overview</span><span class="view-title" data-title-view="lineage">Lineage</span><span class="view-title" data-title-view="readiness">Readiness</span></h1></div><div class="top-actions"><input id="search" class="search" data-od-id="artifact-search" type="search" aria-label="Find an artifact" placeholder="Find an artifact..."><button class="icon-btn" id="snapshotInfo" type="button" data-od-id="snapshot-info" aria-label="Snapshot information"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="1.8"/></svg></button></div></header>
+      <main class="main"><div class="empty-banner" id="emptyState" data-od-id="snapshot-empty-state">Dashboard data is awaiting harnessctl generation.</div>
+        <section class="question-map" aria-label="Questions answered by Harness Explorer"><article><strong>01 · Overview</strong><span>Why does this exist?</span></article><article><strong>02 · Overview / Lineage</strong><span>Is the definition covered?</span></article><article><strong>03 · Lineage</strong><span>What needs reassessment?</span></article><article><strong>04 · Readiness</strong><span>What is inconsistent or unassessable?</span></article><article><strong>05 · Readiness</strong><span>Does the harness help?</span></article></section>
+        <div id="overviewView" data-od-id="overview-view"><section class="intro" data-od-id="overview-introduction"><div><p class="eyebrow">Repository snapshot</p><h2 id="overviewName" data-od-id="overview-heading">No repository snapshot</h2></div><p id="overviewSummary">Generate this static dashboard with harnessctl to inspect repository evidence.</p></section>
+          <section class="stats" data-od-id="graph-summary"><div class="stat" data-od-id="metric-formal-artifacts"><strong id="metricArtifacts">-</strong><span>Formal artifacts</span><small id="metricTypes">No data</small></div><div class="stat" data-od-id="metric-declared-relations"><strong id="metricRelations">-</strong><span>Declared relations</span><small id="metricUnresolved">No data</small></div><div class="stat" data-od-id="metric-definition-coverage"><strong id="metricCoverage">-</strong><span>Definition coverage</span><small id="metricCoverageDetail">No data</small></div><div class="stat" data-od-id="metric-consistency-findings"><strong id="metricConsistency">-</strong><span>Consistency findings</span><small id="metricConsistencyDetail">No data</small></div></section>
+           <div class="overview-grid"><section class="panel panel-pad" data-od-id="global-topology"><div class="section-head"><div><h3 data-od-id="global-topology-heading">Repository Topology</h3><span id="graphCount">NO SNAPSHOT</span></div><div class="controls"><label>Analyze by<select id="graphMode" data-od-id="graph-analysis-mode"><option value="state">State</option><option value="type">Type</option><option value="assurance">Assurance</option></select></label><label>Artifact type<select id="graphType" data-od-id="graph-type-filter"><option value="all">All types</option></select></label><label>Lifecycle<select id="graphStatus" data-od-id="graph-status-filter"><option value="all">All states</option></select></label><button id="graphFit" type="button" data-od-id="graph-fit" disabled>Fit graph</button><button id="graphReset" type="button" data-od-id="graph-reset">Reset</button></div></div><div class="topology-layout"><div class="topology" id="topology" data-od-id="three-dimensional-graph"><div id="overviewGraph" role="img" aria-label="Interactive three-dimensional artifact relationship graph"></div><div class="topology-fallback" id="graphFallback" role="status"><div><strong>Awaiting repository snapshot</strong><span>The interactive topology will appear after dashboard generation.</span></div></div></div><aside class="inspector" data-od-id="graph-node-inspector"><p class="eyebrow" id="inspectType">Global graph</p><h4 id="inspectId">Select an artifact</h4><p id="inspectTitle">Inspect a node and open its focused lineage.</p><dl class="meta"><div><dt>Status</dt><dd id="inspectStatus">-</dd></div><div><dt>Inbound</dt><dd id="inspectInbound">-</dd></div><div><dt>Outbound</dt><dd id="inspectOutbound">-</dd></div></dl><button class="primary" id="openLineage" type="button" data-od-id="open-focused-lineage" disabled>Open focused lineage</button></aside></div><div class="graph-legend-wrap"><div class="graph-legend" id="graphColorLegend" data-od-id="graph-color-legend" aria-label="Graph color legend"></div><p class="graph-legend-note" id="graphColorNote">Repository-declared lifecycle state. Color supports scanning; labels remain authoritative.</p></div></section>
+             <aside class="panel panel-pad" data-od-id="graph-lens-summary"><div class="section-head"><h3 id="lensTitle">State Lens</h3><span id="lensMode">CURRENT SCOPE</span></div><div class="lens" id="assuranceLens"></div></aside>
+              <section class="panel panel-pad" data-od-id="operator-queue"><div class="section-head"><h3 data-od-id="operator-queue-heading">Operator Queue</h3><span>DERIVED FROM SNAPSHOT</span></div><div class="queues"><article class="queue"><b id="queueUnresolved">-</b><small>Structural integrity</small><h4>Resolve Missing Targets</h4><p>Inspect unresolved declarations before relying on complete impact paths.</p><button class="link-button" data-action="unresolved">Inspect attention signals →</button></article><article class="queue"><b id="queueReady">-</b><small>Accountable decision</small><h4>Review Ready Artifacts</h4><p>Use explicit readiness records; no approval decision is inferred.</p><button class="link-button" data-action="ready">Review readiness →</button></article><article class="queue"><b id="queueDraft">-</b><small>Lifecycle progression</small><h4>Advance Drafts</h4><p>Clarify incomplete artifact definitions and ownership.</p><button class="link-button" data-action="draft">Show draft scope →</button></article></div></section></div>
+             <section class="panel panel-pad" data-od-id="definition-coverage"><div class="section-head"><h3>Definition Coverage</h3><span>SPECIFICATION + VERIFICATION CONTRACT</span></div><table class="evidence-table"><thead><tr><th>Requirement</th><th>Specifications</th><th>Verification contracts</th></tr></thead><tbody id="coverageRows"></tbody></table></section>
         </div>
-        <article id="artifact-detail" class="detail" aria-live="polite"></article>
-        <div id="lineage-lanes" class="lane-grid" aria-label="Focused artifact lineage"></div>
-        <details class="relations"><summary id="relation-summary"></summary><div id="relation-list" class="relation-list"></div></details>
-      </section>
-
-      <section id="view-coverage" class="view" role="tabpanel" hidden>
-        <div class="view-head"><div><h2>Requirement coverage</h2><p class="view-intro">Specification and verification are evaluated independently with the validator's active-status semantics.</p></div></div>
-        <div class="table-wrap"><table><thead><tr><th>Requirement</th><th>Lifecycle</th><th>Active specifications</th><th>Active verification</th><th>Coverage result</th></tr></thead><tbody id="coverage-body"></tbody></table></div>
-      </section>
-
-      <section id="view-impact" class="view" role="tabpanel" hidden>
-        <div class="view-head">
-          <div><h2>Change reassessment</h2><p class="view-intro">Impact shows declared connectivity. Affected means “reassess,” not “modify automatically.”</p></div>
-          <label class="field">Artifact to assess<select id="impact-select"></select></label>
-        </div>
-        <article id="impact-detail" class="detail" aria-live="polite"></article>
-        <div id="impact-grid" class="impact-grid"></div>
-        <p class="note">Direct impact is one typed relation away. Transitive impact is recursively reachable after direct neighbors are removed. Cycles and repeated targets are bounded.</p>
-      </section>
-
-      <section id="view-findings" class="view" role="tabpanel" hidden>
-        <div class="view-head"><div><h2>Consistency and readiness</h2><p class="view-intro">Validator errors block. Derived warnings request review. Lifecycle and not-assessable conditions do not masquerade as failures or approvals.</p></div></div>
-        <div id="finding-summary" class="finding-summary"></div>
-        <div id="finding-list" class="finding-list"></div>
-        <section class="readiness" aria-labelledby="readiness-title">
-          <div class="view-head"><div><h2 id="readiness-title">Quality-gate evidence</h2><p class="view-intro">Gate conditions link to recorded evidence and preserve what the repository cannot assess.</p></div><label class="field">Work order<select id="readiness-select"></select></label></div>
-          <div id="gate-grid" class="gate-grid"></div>
-        </section>
-      </section>
-
-      <section id="view-compare" class="view" role="tabpanel" hidden>
-        <div class="view-head"><div><h2>Controlled outcome comparison</h2><p class="view-intro">Only compatible treatments within one retained trial are compared. Missing measurements remain “not measured.”</p></div><label class="field" id="experiment-field">Controlled trial<select id="experiment-select"></select></label></div>
-        <div id="experiment-content"></div>
-      </section>
-    </main>
+        <div id="lineageView" hidden data-od-id="focused-lineage-view"><div class="context" data-od-id="lineage-context"><span id="breadcrumb">Focused lineage</span><span id="lineageCount">No artifacts</span></div><section class="lineage-shell" id="lineageGraphShell" data-od-id="lineage-graph" aria-labelledby="page-title"><div class="lineage-toolbar" aria-label="Graph controls"><button id="zoomOut" type="button" data-od-id="zoom-out" aria-label="Zoom out">−</button><button id="resetZoom" type="button" data-od-id="reset-zoom" aria-label="Reset zoom">⌾</button><button id="zoomIn" type="button" data-od-id="zoom-in" aria-label="Zoom in">+</button></div><div class="lineage-scroll" id="lineageScroll"><div class="lineage-graph" id="lineageGraph" role="group" aria-label="Focused artifact lineage"></div></div><div class="lineage-legend" aria-label="Lineage relation legend"><span><i></i> recorded relation</span><span><i class="derived"></i> derived relation</span></div><div class="lineage-empty" id="lineageEmpty">No visible artifact matches that search.</div></section><div class="details"><section class="panel" data-od-id="artifact-detail"><div class="detail-head"><div><p class="eyebrow" id="detailType">Artifact</p><h2 id="detailTitle" data-od-id="artifact-title">No artifact selected</h2></div><span class="badge" id="detailBadge">No data</span></div><div class="tabs" role="tablist"><button type="button" role="tab" data-tab="overview" aria-selected="true" data-od-id="tab-overview">Overview</button><button type="button" role="tab" data-tab="relations" aria-selected="false" data-od-id="tab-relations">Relations</button><button type="button" role="tab" data-tab="evidence" aria-selected="false" data-od-id="tab-evidence">Evidence</button></div><div class="tab-content" id="tabContent">Generate snapshot data to inspect artifact details.</div></section><aside class="panel panel-pad" data-od-id="next-steps"><h3>On This Path</h3><p class="eyebrow">Bounded graph neighborhood</p><div class="path-list" id="pathList"></div></aside></div></div>
+        <div id="readinessView" hidden data-od-id="readiness-view"><section class="panel scope" data-od-id="assurance-scope"><div class="scope-top"><div><p class="eyebrow">Assurance Subject</p><h2 id="subjectLabel" data-od-id="assurance-scope-heading">No readiness subject</h2></div><label class="subject-control">Change subject<select id="subjectSelect" data-od-id="assurance-subject-selector"><option value="">Awaiting data</option></select><span id="subjectStatus">No data</span></label></div><dl class="scope-grid"><div><dt>Originating Work Order</dt><dd id="subjectWorkOrder">-</dd></div><div><dt>Target Decision</dt><dd id="subjectDecision">-</dd></div><div><dt>Current Boundary</dt><dd id="subjectBoundary">-</dd></div><div><dt>Assessed Revision</dt><dd id="subjectRevision" class="path">-</dd></div><div><dt>Accountable Owner</dt><dd id="subjectOwner">-</dd></div></dl></section><section class="intro" data-od-id="readiness-introduction"><div><p class="eyebrow">Current Decision Boundary</p><h2 id="readinessHeadline" data-od-id="readiness-heading">Readiness data is awaiting generation.</h2></div><p id="readinessSummary">No approval, verification, or release decision is inferred by this dashboard.</p></section><section class="gates" id="gates" data-od-id="quality-gate-progress"></section><div class="readiness-grid"><section class="panel panel-pad" data-od-id="artifact-quality-evidence"><div class="section-head"><h3>Quality-Gate Evidence</h3><span id="evidenceCount">NO RECORDS</span></div><table class="evidence-table"><thead><tr><th>Artifact</th><th>Gate evidence</th><th>State</th></tr></thead><tbody id="evidenceRows"></tbody></table></section><aside class="panel panel-pad" data-od-id="consistency-findings"><div class="section-head"><h3>Consistency</h3><span>EXPLICIT RECORDS</span></div><div id="findings"></div></aside></div><div class="supplemental-grid"><section class="panel panel-pad"><div class="section-head"><h3>Commit-bound provenance</h3><span>VREC + RELEASE RECORDS</span></div><div class="record-list" id="provenanceRows"></div></section><section class="panel panel-pad"><div class="section-head"><h3>Controlled outcomes</h3><span>OBSERVATION, NOT AUTHORITY</span></div><div class="record-list" id="experimentRows"></div></section></div></div>
+      </main>
+    </div>
   </div>
-
-  <script id="harness-snapshot" type="application/json">__HARNESS_SNAPSHOT_JSON__</script>
+  <script id="harness-dashboard-snapshot" type="application/json">__HARNESS_SNAPSHOT_JSON__</script>
   <script>
-    (() => {
-      "use strict";
-      const snapshot = JSON.parse(document.getElementById("harness-snapshot").textContent);
-      const artifacts = new Map(snapshot.artifacts.map((item) => [item.id, item]));
-      const validRelations = snapshot.relations.filter((item) => item.target_exists);
-      const experimentMeasures = ["clarifications", "retries", "evaluator_defects", "wall_seconds", "tokens", "cost"];
-      const state = { selected: null, impact: null, showAll: false, view: "explain" };
-      const stageDefinitions = [
-        { id: "intent", label: "Intent", types: ["intent"] },
-        { id: "capability", label: "Capability", types: ["capability"] },
-        { id: "requirement", label: "Requirements", types: ["requirement"] },
-        { id: "definition", label: "Definition", types: ["specification", "architecture", "adr"] },
-        { id: "delivery", label: "Delivery + proof", types: ["verification", "work_order", "verification_record"] },
-        { id: "operations", label: "Release + operations", types: ["release_contract", "release_record", "operating_contract", "risk_acceptance"] }
-      ];
-
-      function element(tag, className, text) {
-        const node = document.createElement(tag);
-        if (className) node.className = className;
-        if (text !== undefined && text !== null) node.textContent = String(text);
-        return node;
-      }
-
-      function badge(text, kind) {
-        return element("span", `badge ${kind || ""}`.trim(), text);
-      }
-
-      function appendTextRow(container, term, value) {
-        container.append(element("dt", "", term), element("dd", "", value || "—"));
-      }
-
-      function artifactButton(id, compact = false) {
-        const artifact = artifacts.get(id);
-        const button = element("button", compact ? "artifact-link" : "node");
-        button.type = "button";
-        if (compact) {
-          button.textContent = id;
-        } else if (artifact) {
-          button.append(
-            element("span", "node-id", artifact.id),
-            element("span", "node-title", artifact.title),
-            element("span", "node-status", `${artifact.type.replaceAll("_", " ")} · ${artifact.status}`)
-          );
-          if (artifact.commit) button.append(element("span", "node-status", `declared commit ${artifact.commit.slice(0, 12)}`));
-          if (id === state.selected) button.setAttribute("aria-current", "true");
-        } else {
-          button.textContent = id;
-        }
-        button.addEventListener("click", () => selectArtifact(id));
-        return button;
-      }
-
-      function selectArtifact(id) {
-        if (!artifacts.has(id)) return;
-        state.selected = id;
-        state.impact = id;
-        document.getElementById("artifact-select").value = id;
-        document.getElementById("impact-select").value = id;
-        state.view = "explain";
-        activateView("explain");
-        renderExplain();
-        renderImpact();
-      }
-
-      function populateArtifactSelect(select, selectedId) {
-        select.replaceChildren();
-        snapshot.artifacts.forEach((artifact) => {
-          const option = element("option", "", `${artifact.id} — ${artifact.title}`);
-          option.value = artifact.id;
-          option.selected = artifact.id === selectedId;
-          select.append(option);
-        });
-      }
-
-      function renderHeader() {
-        const repository = snapshot.repository;
-        const validation = document.getElementById("validation-state");
-        validation.textContent = repository.valid ? "Graph valid" : "Graph invalid";
-        validation.classList.add(repository.valid ? "valid" : "invalid");
-        document.getElementById("repository-name").textContent = repository.name;
-        document.getElementById("repository-revision").textContent = repository.revision ? repository.revision.slice(0, 12) : "unavailable";
-        document.getElementById("artifact-root").textContent = repository.artifact_root;
-
-        const types = new Set(snapshot.artifacts.map((item) => item.type));
-        const activeCoverage = snapshot.coverage.filter((item) => item.active);
-        const completeCoverage = activeCoverage.filter((item) => item.specified && item.verified);
-        const errors = snapshot.findings.filter((item) => item.severity === "error").length;
-        const warnings = snapshot.findings.filter((item) => item.severity === "warning").length;
-        document.getElementById("metric-artifacts").textContent = snapshot.artifacts.length;
-        document.getElementById("metric-artifact-context").textContent = `${types.size} artifact types`;
-        document.getElementById("metric-relations").textContent = snapshot.relations.length;
-        document.getElementById("metric-relation-context").textContent = `${snapshot.relations.filter((item) => !item.target_exists).length} unresolved targets`;
-        document.getElementById("metric-coverage").textContent = activeCoverage.length ? `${completeCoverage.length}/${activeCoverage.length}` : "—";
-        document.getElementById("metric-findings").textContent = errors + warnings;
-        document.getElementById("metric-finding-context").textContent = `${errors} blocking · ${warnings} review`;
-      }
-
-      function connectedClosure(start) {
-        const adjacency = new Map();
-        validRelations.forEach((relation) => {
-          if (!adjacency.has(relation.source)) adjacency.set(relation.source, new Set());
-          if (!adjacency.has(relation.target)) adjacency.set(relation.target, new Set());
-          adjacency.get(relation.source).add(relation.target);
-          adjacency.get(relation.target).add(relation.source);
-        });
-        const seen = new Set([start]);
-        const queue = [start];
-        while (queue.length) {
-          const current = queue.shift();
-          Array.from(adjacency.get(current) || []).sort().forEach((neighbor) => {
-            if (!seen.has(neighbor)) {
-              seen.add(neighbor);
-              queue.push(neighbor);
-            }
-          });
-        }
-        return seen;
-      }
-
-      function renderArtifactDetail(container, artifact) {
-        container.replaceChildren();
-        const top = element("div", "detail-top");
-        top.append(element("h3", "", `${artifact.id} — ${artifact.title}`), badge(artifact.status, artifact.status));
-        container.append(top);
-        if (artifact.statement) container.append(element("p", "", artifact.statement));
-        const list = element("dl");
-        appendTextRow(list, "Type", artifact.type.replaceAll("_", " "));
-        appendTextRow(list, "Owners", artifact.owners.join(", "));
-        appendTextRow(list, "Updated", artifact.updated);
-        appendTextRow(list, "Verification", artifact.verification_method);
-        appendTextRow(list, "Declared commit", artifact.commit);
-        appendTextRow(list, "Git object format", artifact.git_object_format);
-        appendTextRow(list, "Worktree state", artifact.worktree_state);
-        appendTextRow(list, "Version", artifact.version);
-        appendTextRow(list, "Tag", artifact.tag);
-        appendTextRow(list, "Verified at", artifact.verified_at);
-        appendTextRow(list, "Released at", artifact.released_at);
-        appendTextRow(list, "Artifact snapshot", artifact.artifact_snapshot_sha256);
-        appendTextRow(list, "Evidence", artifact.evidence_paths ? artifact.evidence_paths.join(", ") : null);
-        const provenance = (snapshot.revision_provenance || []).find((item) => item.id === artifact.id);
-        if (provenance) {
-          appendTextRow(list, provenance.kind === "release" ? "Released work" : "Verified work", provenance.work_orders.join(", "));
-          appendTextRow(list, "Included verification records", provenance.verification_records.join(", "));
-          appendTextRow(list, "Governing contracts", provenance.contracts.join(", "));
-          appendTextRow(list, "Lifecycle class", provenance.lifecycle_class.replaceAll("_", " "));
-          appendTextRow(list, "Superseded by", provenance.superseded_by.join(", "));
-          appendTextRow(list, "Supersedes", provenance.supersedes.join(", "));
-          appendTextRow(list, "Superseded at", provenance.superseded_at);
-          appendTextRow(list, "Supersession authorized by", provenance.supersession_authorized_by);
-          appendTextRow(list, "Observed checkout", provenance.observed_revision);
-          appendTextRow(list, "Checkout comparison", provenance.match_state.replaceAll("_", " "));
-          appendTextRow(list, "Commit available locally", provenance.commit_available === null ? "not assessable" : provenance.commit_available ? "yes" : "no");
-        }
-        appendTextRow(list, "Repository source", artifact.path);
-        container.append(list);
-      }
-
-      function renderExplain() {
-        const artifact = artifacts.get(state.selected);
-        if (!artifact) return;
-        renderArtifactDetail(document.getElementById("artifact-detail"), artifact);
-        const visibleIds = state.showAll ? new Set(artifacts.keys()) : connectedClosure(state.selected);
-        const laneGrid = document.getElementById("lineage-lanes");
-        laneGrid.replaceChildren();
-        stageDefinitions.forEach((stage) => {
-          const lane = element("section", "lane");
-          const laneArtifacts = snapshot.artifacts.filter((item) => visibleIds.has(item.id) && stage.types.includes(item.type));
-          const heading = element("h3");
-          heading.append(element("span", "", stage.label), element("span", "", laneArtifacts.length));
-          lane.append(heading);
-          const list = element("div", "node-list");
-          if (!laneArtifacts.length) list.append(element("span", "empty-lane", "No connected artifacts"));
-          laneArtifacts.forEach((item) => list.append(artifactButton(item.id)));
-          lane.append(list);
-          laneGrid.append(lane);
-        });
-
-        const visibleRelations = snapshot.relations.filter((relation) => visibleIds.has(relation.source) && (visibleIds.has(relation.target) || !relation.target_exists));
-        const unique = [];
-        const seen = new Set();
-        visibleRelations.forEach((relation) => {
-          const key = `${relation.source}\u0000${relation.relation}\u0000${relation.target}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            unique.push(relation);
-          }
-        });
-        document.getElementById("relation-summary").textContent = `${unique.length} typed relations in this view`;
-        const relationList = document.getElementById("relation-list");
-        relationList.replaceChildren();
-        unique.forEach((relation) => {
-          const row = element("div", "relation-row");
-          row.append(element("code", "", relation.source), element("span", "relation-name", relation.relation), element("code", "", relation.target));
-          if (!relation.target_exists) row.append(badge("missing target", "error"));
-          relationList.append(row);
-        });
-      }
-
-      function renderCoverage() {
-        const body = document.getElementById("coverage-body");
-        body.replaceChildren();
-        snapshot.coverage.forEach((coverage) => {
-          const row = element("tr");
-          const requirement = element("td");
-          requirement.append(element("code", "", coverage.requirement));
-          const lifecycle = element("td");
-          lifecycle.append(badge(coverage.status, coverage.active ? "info" : ""));
-          const specs = element("td", "", coverage.specifications.join(", ") || "—");
-          const verifications = element("td", "", coverage.verifications.join(", ") || "—");
-          const result = element("td");
-          if (!coverage.active) result.append(badge("lifecycle only", "info"));
-          else if (coverage.specified && coverage.verified) result.append(badge("complete", "complete"));
-          else result.append(badge(`missing ${coverage.missing.join(" + ")}`, "error"));
-          row.append(requirement, lifecycle, specs, verifications, result);
-          body.append(row);
-        });
-      }
-
-      function graphImpact(selected) {
-        const outbound = new Map();
-        const inbound = new Map();
-        validRelations.forEach((relation) => {
-          if (!outbound.has(relation.source)) outbound.set(relation.source, new Set());
-          if (!inbound.has(relation.target)) inbound.set(relation.target, new Set());
-          outbound.get(relation.source).add(relation.target);
-          inbound.get(relation.target).add(relation.source);
-        });
-        function closure(adjacency) {
-          const seen = new Set([selected]);
-          const queue = Array.from(adjacency.get(selected) || []).sort();
-          while (queue.length) {
-            const current = queue.shift();
-            if (seen.has(current)) continue;
-            seen.add(current);
-            Array.from(adjacency.get(current) || []).sort().forEach((item) => { if (!seen.has(item)) queue.push(item); });
-          }
-          seen.delete(selected);
-          return seen;
-        }
-        const directInbound = new Set(inbound.get(selected) || []);
-        const directOutbound = new Set(outbound.get(selected) || []);
-        const allInbound = closure(inbound);
-        const allOutbound = closure(outbound);
-        return {
-          directInbound: Array.from(directInbound).sort(),
-          directOutbound: Array.from(directOutbound).sort(),
-          transitiveInbound: Array.from(allInbound).filter((item) => !directInbound.has(item)).sort(),
-          transitiveOutbound: Array.from(allOutbound).filter((item) => !directOutbound.has(item)).sort()
-        };
-      }
-
-      function renderImpactGroup(container, title, values) {
-        const group = element("section", "impact-group");
-        const heading = element("h3");
-        heading.append(element("span", "", title), badge(values.length, "info"));
-        group.append(heading);
-        const buttons = element("div", "artifact-buttons");
-        if (!values.length) buttons.append(element("span", "empty-lane", "No affected artifacts"));
-        values.forEach((id) => buttons.append(artifactButton(id, true)));
-        group.append(buttons);
-        container.append(group);
-      }
-
-      function renderImpact() {
-        const artifact = artifacts.get(state.impact);
-        if (!artifact) return;
-        renderArtifactDetail(document.getElementById("impact-detail"), artifact);
-        const impact = graphImpact(state.impact);
-        const grid = document.getElementById("impact-grid");
-        grid.replaceChildren();
-        renderImpactGroup(grid, "Direct inbound", impact.directInbound);
-        renderImpactGroup(grid, "Direct outbound", impact.directOutbound);
-        renderImpactGroup(grid, "Transitive inbound", impact.transitiveInbound);
-        renderImpactGroup(grid, "Transitive outbound", impact.transitiveOutbound);
-      }
-
-      function renderFindings() {
-        const summary = document.getElementById("finding-summary");
-        summary.replaceChildren();
-        ["error", "warning", "info"].forEach((severity) => {
-          const count = snapshot.findings.filter((item) => item.severity === severity).length;
-          summary.append(badge(`${count} ${severity}`, severity));
-        });
-        const list = document.getElementById("finding-list");
-        list.replaceChildren();
-        if (!snapshot.findings.length) {
-          list.append(element("div", "empty-state", "No validator errors or supported derived warnings were found in this snapshot."));
-        }
-        snapshot.findings.forEach((finding) => {
-          const article = element("article", `finding ${finding.severity}`);
-          const head = element("div", "finding-head");
-          head.append(element("h3", "", finding.rule), badge(finding.severity, finding.severity), badge(finding.authority, "info"));
-          article.append(head, element("p", "", finding.message));
-          if (finding.artifacts.length) article.append(element("div", "finding-meta", `Artifacts: ${finding.artifacts.join(", ")}`));
-          if (finding.paths.length) article.append(element("div", "finding-meta", `Sources: ${finding.paths.join(", ")}`));
-          if (finding.evidence.length) article.append(element("div", "finding-meta", `Evidence: ${finding.evidence.join(", ")}`));
-          list.append(article);
-        });
-      }
-
-      function renderReadiness() {
-        const select = document.getElementById("readiness-select");
-        const selected = snapshot.readiness.find((item) => item.work_order === select.value) || snapshot.readiness[0];
-        const grid = document.getElementById("gate-grid");
-        grid.replaceChildren();
-        if (!selected) {
-          grid.append(element("div", "empty-state", "No work order readiness data is available."));
-          return;
-        }
-        selected.gates.forEach((gateData) => {
-          const gate = element("article", `gate ${gateData.state}`);
-          const head = element("div", "gate-head");
-          head.append(element("h3", "", `${gateData.gate} — ${gateData.label}`), badge(gateData.state.replaceAll("_", " "), gateData.state));
-          gate.append(head);
-          const conditions = element("div", "condition-list");
-          gateData.conditions.forEach((conditionData) => {
-            const condition = element("div", "condition");
-            const line = element("p");
-            line.append(badge(conditionData.state.replaceAll("_", " "), conditionData.state), document.createTextNode(` ${conditionData.label}`));
-            condition.append(line);
-            if (conditionData.evidence.length) condition.append(element("div", "condition-evidence", conditionData.evidence.join(", ")));
-            conditions.append(condition);
-          });
-          gate.append(conditions);
-          grid.append(gate);
-        });
-      }
-
-      function measured(value) {
-        if (value === null || value === undefined) return element("span", "not-measured", "not measured");
-        return document.createTextNode(String(value));
-      }
-
-      function renderExperiment() {
-        const content = document.getElementById("experiment-content");
-        content.replaceChildren();
-        if (!snapshot.experiments.length) {
-          content.append(element("div", "empty-state", "No controlled trial result is retained in this repository. Harness effectiveness is not measured."));
-          return;
-        }
-        const select = document.getElementById("experiment-select");
-        const experiment = snapshot.experiments.find((item) => item.path === select.value) || snapshot.experiments[0];
-        if (!experiment || experiment.status !== "valid") {
-          const invalid = element("article", "finding warning");
-          invalid.append(element("h3", "", "Experiment result is incompatible or invalid"));
-          (experiment ? experiment.issues : ["No result selected"]).forEach((issue) => invalid.append(element("p", "", issue)));
-          content.append(invalid);
-          return;
-        }
-        const head = element("div", "experiment-head");
-        head.append(
-          element("strong", "", experiment.trial_id),
-          element("span", "", `Work order ${experiment.work_order} · evaluator ${experiment.evaluator}`),
-          element("span", "", `Base ${experiment.base_revision} · protocol ${experiment.protocol} · source ${experiment.path}`)
-        );
-        content.append(head);
-        const wrap = element("div", "table-wrap");
-        const table = element("table");
-        const thead = element("thead");
-        const heading = element("tr");
-        ["Measure", "Maximum", "Baseline", "Harness"].forEach((label) => heading.append(element("th", "", label)));
-        thead.append(heading);
-        const body = element("tbody");
-        experiment.rubric.dimensions.forEach((dimension) => {
-          const row = element("tr");
-          row.append(element("td", "", dimension.id), element("td", "", dimension.maximum));
-          const baseline = element("td"); baseline.append(measured(experiment.treatments.baseline.scores[dimension.id]));
-          const harness = element("td"); harness.append(measured(experiment.treatments.harness.scores[dimension.id]));
-          row.append(baseline, harness); body.append(row);
-        });
-        experimentMeasures.forEach((measure) => {
-          const row = element("tr");
-          row.append(element("td", "", measure.replaceAll("_", " ")), element("td", "", "—"));
-          const baseline = element("td"); baseline.append(measured(experiment.treatments.baseline[measure]));
-          const harness = element("td"); harness.append(measured(experiment.treatments.harness[measure]));
-          row.append(baseline, harness); body.append(row);
-        });
-        table.append(thead, body); wrap.append(table); content.append(wrap);
-      }
-
-      function activateView(view) {
-        state.view = view;
-        document.querySelectorAll(".question-nav button").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.view === view)));
-        document.querySelectorAll("main > .view").forEach((section) => { section.hidden = section.id !== `view-${view}`; });
-      }
-
-      const defaultArtifact = artifacts.has("WO-HEX-001") ? "WO-HEX-001" : (snapshot.artifacts.find((item) => item.type === "work_order") || snapshot.artifacts[0] || {}).id;
-      state.selected = defaultArtifact || null;
-      state.impact = defaultArtifact || null;
-      renderHeader();
-      populateArtifactSelect(document.getElementById("artifact-select"), state.selected);
-      populateArtifactSelect(document.getElementById("impact-select"), state.impact);
-      document.getElementById("artifact-select").addEventListener("change", (event) => { state.selected = event.target.value; renderExplain(); });
-      document.getElementById("impact-select").addEventListener("change", (event) => { state.impact = event.target.value; renderImpact(); });
-      document.getElementById("show-all").addEventListener("click", (event) => {
-        state.showAll = !state.showAll;
-        event.currentTarget.setAttribute("aria-pressed", String(state.showAll));
-        event.currentTarget.textContent = state.showAll ? "Show focused lineage" : "Show complete graph";
-        renderExplain();
-      });
-      document.querySelectorAll(".question-nav button").forEach((button) => button.addEventListener("click", () => activateView(button.dataset.view)));
-
-      const readinessSelect = document.getElementById("readiness-select");
-      snapshot.readiness.forEach((item) => { const option = element("option", "", `${item.work_order} — ${item.status}`); option.value = item.work_order; readinessSelect.append(option); });
-      readinessSelect.addEventListener("change", renderReadiness);
-
-      const experimentSelect = document.getElementById("experiment-select");
-      snapshot.experiments.forEach((item) => { const option = element("option", "", `${item.trial_id || "invalid result"} — ${item.path}`); option.value = item.path; experimentSelect.append(option); });
-      document.getElementById("experiment-field").hidden = snapshot.experiments.length === 0;
-      experimentSelect.addEventListener("change", renderExperiment);
-
-      renderExplain();
-      renderCoverage();
-      renderImpact();
-      renderFindings();
-      renderReadiness();
-      renderExperiment();
-    })();
+  (()=>{"use strict";
+    const GRAPH_SOURCE="https://unpkg.com/3d-force-graph@1.79.0/dist/3d-force-graph.min.js";
+    const $=id=>document.getElementById(id), array=value=>Array.isArray(value)?value:[], esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    let snapshot=null, selectedId=null, selectedTab="overview", graphSelection=null, graph=null, graphLoader=null, graphResize=null, semanticPalette=null, amber=null;
+    let lineageZoom=1;
+    function normalizeCanonical(raw){
+      if(!raw||typeof raw!=="object"||raw.schema!=="harness-dashboard-snapshot-v1")return null;
+      const artifacts=array(raw.artifacts),relations=array(raw.relations),coverage=array(raw.coverage),readiness=array(raw.readiness),findings=array(raw.findings),diagnostics=array(raw.diagnostics),provenance=array(raw.revision_provenance),evidence=array(raw.evidence),experiments=array(raw.experiments);
+      const coverageByRequirement=new Map(coverage.map(item=>[item.requirement,item])),evidenceByWorkOrder=new Map(evidence.map(item=>[item.work_order,array(item.paths)])),provenanceById=new Map(provenance.map(item=>[item.id,item]));
+      const nodes=artifacts.map(item=>{const definition=coverageByRequirement.get(item.id),paths=evidenceByWorkOrder.get(item.id)||[];return{...item,statement:item.statement||item.title||"No statement retained in the canonical projection.",coverage:{label:definition?(definition.specified&&definition.verified?"Definition covered":definition.specified?"Specification only":"Definition gap"):"Not applicable"},evidence:paths,revision_provenance:provenanceById.get(item.id)||null};});
+      const links=relations.map(item=>({...item,type:item.relation,resolved:item.target_exists!==false,derived:item.authority==="derived"}));
+      const declared=relations.filter(item=>item.authority==="declared").length,unresolved=relations.filter(item=>item.target_exists===false).length,blocking=findings.filter(item=>item.severity==="error"||item.severity==="blocking").length;
+      const subjects=readiness.map(item=>{const work=artifacts.find(artifact=>artifact.id===item.work_order)||{},gates=array(item.gates).map(gate=>{const conditions=array(gate.conditions),unsatisfied=conditions.filter(condition=>condition.state==="unsatisfied").length,unknown=conditions.filter(condition=>condition.state==="not_assessable").length;return{...gate,id:gate.gate,status:gate.state,detail:`${conditions.length} conditions · ${unsatisfied} unsatisfied · ${unknown} not assessable`};}),rows=gates.flatMap(gate=>array(gate.conditions).map(condition=>({artifactId:array(condition.evidence)[0]||item.work_order,label:`${gate.id} · ${condition.label}`,reference:array(condition.evidence).join(", ")||"No retained evidence reference",status:condition.state,tone:condition.state==="satisfied"?"clear":condition.state==="unsatisfied"?"blocked":"neutral"}))),relatedFindings=findings.filter(finding=>array(finding.artifacts).includes(item.work_order)).map(finding=>({title:finding.rule,summary:finding.message,severity:finding.severity}));return{id:item.work_order,label:item.work_order,status:item.status,workOrderId:item.work_order,targetDecision:"G0-G5 readiness observation",currentBoundary:{artifactId:item.work_order,label:"Implemented work and retained evidence"},revision:raw.repository?.revision||"unavailable",owner:array(work.owners).join(", ")||"Unassigned",headline:`${item.work_order} is ${item.status}.`,summary:"Gate states are derived observations; accountable approval, verification, and release remain explicit human decisions.",gates,evidence:rows,findings:relatedFindings};});
+      return{repository:{name:raw.repository?.name||"Repository",summary:`${artifacts.length} formal artifacts projected from the canonical harness snapshot.`,validation:{status:raw.repository?.valid?"passed":"failed"},branch:"observed checkout",revision:raw.repository?.revision||"unavailable",artifactRoot:raw.repository?.artifact_root||"docs/engineering"},metrics:{formalArtifacts:artifacts.length,artifactTypes:new Set(artifacts.map(item=>item.type)).size,declaredRelations:declared,unresolvedTargets:unresolved,activeCoverage:{total:coverage.filter(item=>item.active).length,specified:coverage.filter(item=>item.active&&item.specified).length,verified:coverage.filter(item=>item.active&&item.verified).length},consistency:{blocking,error:findings.filter(item=>item.severity==="error").length,warning:findings.filter(item=>item.severity==="warning").length,info:findings.filter(item=>item.severity==="info").length}},graph:{nodes,links},lineage:{defaultArtifactId:artifacts.find(item=>item.type==="intent")?.id||artifacts[0]?.id||null},readiness:{subjects},canonical:{coverage,diagnostics,findings,provenance,experiments,evidence,revisionPolicy:raw.revision_policy||{}}};
+    }
+    try{const parsed=JSON.parse($("harness-dashboard-snapshot").textContent);snapshot=normalizeCanonical(parsed);}catch(error){console.warn("Dashboard snapshot is not valid JSON.",error);}
+    const nodes=()=>array(snapshot?.graph?.nodes), links=()=>array(snapshot?.graph?.links), endpoint=value=>typeof value==="object"?value?.id:value, nodeById=id=>nodes().find(node=>node.id===id);
+    function text(id,value){$(id).textContent=value??"-";} function label(value){return String(value??"").replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());}
+    function showView(view){document.querySelector(".app").dataset.currentView=view;["overview","lineage","readiness"].forEach(name=>$(name+"View").hidden=name!==view);document.querySelectorAll("[data-view]").forEach(button=>button.setAttribute("aria-current",button.dataset.view===view?"page":"false"));if(view==="overview"&&graph)requestAnimationFrame(sizeGraph);}
+    function setRepository(){const r=snapshot?.repository||{},m=snapshot?.metrics||{},c=m.consistency||{},coverage=m.activeCoverage||{};$("emptyState").hidden=true;text("repoLabel",r.name);text("overviewName",r.name);text("overviewSummary",r.summary);text("validationState",`${label(r.validation?.status||"unknown")} validation`);text("repositoryMeta",`${r.branch??"-"} · ${r.revision??"-"}\nCanonical deterministic snapshot`);text("metricArtifacts",m.formalArtifacts);text("metricTypes",`${m.artifactTypes??nodes().length} artifact types`);text("metricRelations",m.declaredRelations);text("metricUnresolved",`${m.unresolvedTargets??links().filter(link=>!link.resolved).length} unresolved targets`);text("metricCoverage",`${coverage.verified??0} / ${coverage.total??0}`);text("metricCoverageDetail",`${coverage.specified??0} specified · ${coverage.verified??0} verification-contract covered`);text("metricConsistency",`${c.blocking??0} blocking`);text("metricConsistencyDetail",`${c.error??0} errors · ${c.warning??0} warnings · ${c.info??0} info`);}
+    function filteredNodes(){const type=$("graphType").value,status=$("graphStatus").value,q=$("search").value.trim().toLowerCase();return nodes().filter(n=>(type==="all"||n.type===type)&&(status==="all"||n.status===status)&&(!q||`${n.id??""} ${n.title??""}`.toLowerCase().includes(q)));}
+    function assurance(node){if(node.assurance?.signal)return node.assurance.signal;if(links().some(link=>endpoint(link.source)===node.id&&!link.resolved))return "attention";if(["verified","released"].includes(node.status))return "assured";if(node.status==="ready")return "decision_required";if(["draft","in_progress","rejected","unresolved"].includes(node.status))return "attention";return "not_assessed";}
+    function semanticValue(node){const mode=$("graphMode").value;return mode==="type"?(node.type??"untyped"):mode==="assurance"?assurance(node):(node.status??"unknown");}
+    function cssColor(token){const canvas=document.createElement("canvas"),context=canvas.getContext("2d"),value=getComputedStyle(document.documentElement).getPropertyValue(token).trim();canvas.width=canvas.height=1;context.fillStyle=value;context.fillRect(0,0,1,1);const [r,g,b]=context.getImageData(0,0,1,1).data;return `rgb(${r},${g},${b})`;}
+    function semanticCategoryColor(value){semanticPalette??=["--graph-1","--graph-2","--graph-3","--graph-4","--graph-5"].map(cssColor);const key=String(value);let hash=0;for(const character of key)hash=((hash<<5)-hash+character.charCodeAt(0))|0;return semanticPalette[Math.abs(hash)%semanticPalette.length];}
+    function semanticColor(node){amber??=cssColor("--selected");return graphSelection?.id===node.id?amber:semanticCategoryColor(semanticValue(node));}
+    function setGraphFallback(title,detail){$("topology").classList.remove("ready");$("graphFallback").innerHTML=`<div><strong>${esc(title)}</strong><span>${esc(detail)}</span></div>`;}
+    function loadGraphLibrary(){if(window.ForceGraph3D)return Promise.resolve(window.ForceGraph3D);if(graphLoader)return graphLoader;graphLoader=new Promise((resolve,reject)=>{let script=document.querySelector(`script[src="${GRAPH_SOURCE}"]`),created=false,settled=false;if(!script){script=document.createElement("script");script.src=GRAPH_SOURCE;script.async=true;script.crossOrigin="anonymous";created=true;}const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);if(error||!window.ForceGraph3D)reject(error||new Error("3D graph API unavailable"));else resolve(window.ForceGraph3D);};const timer=setTimeout(()=>finish(new Error("3D graph library timed out")),15000);script.addEventListener("load",()=>finish(),{once:true});script.addEventListener("error",()=>finish(new Error("3D graph library failed to load")),{once:true});if(created)document.head.appendChild(script);});return graphLoader;}
+    function sizeGraph(){if(!graph)return;const host=$("topology");graph.width(Math.max(host.clientWidth,1)).height(Math.max(host.clientHeight,1));}
+    function semanticLabel(mode,value){return mode==="type"?String(value):label(value);}
+    function renderLens(){const visible=filteredNodes(),mode=$("graphMode").value,counts=new Map();visible.forEach(node=>{const key=semanticValue(node);counts.set(key,(counts.get(key)||0)+1);});text("lensTitle",`${label(mode)} Lens`);text("lensMode",`${label(mode)} · ${visible.length} IN SCOPE`);$("assuranceLens").innerHTML=[...counts.entries()].sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]))).map(([name,count])=>`<div class="lens-item" style="--semantic-color:${semanticCategoryColor(name)}"><i class="dot"></i><div><strong>${esc(semanticLabel(mode,name))}</strong><small>${esc(label(mode))} in current filter scope</small></div><b>${count}</b></div>`).join("")||'<p>No artifacts match the current filter scope.</p>';$("graphColorLegend").innerHTML=[...counts.keys()].sort().map(name=>`<span style="--semantic-color:${semanticCategoryColor(name)}"><i></i>${esc(semanticLabel(mode,name))}</span>`).join("")||"No categories in scope.";text("graphColorNote",mode==="state"?"Repository-declared lifecycle state. Color supports scanning; labels remain authoritative.":mode==="type"?"Repository artifact type. Color supports scanning; labels remain authoritative.":"Derived assurance signal. Color supports scanning; labels remain authoritative.");const unresolved=links().filter(link=>!link.resolved).length;text("queueUnresolved",unresolved);text("queueReady",nodes().filter(n=>n.status==="ready").length);text("queueDraft",nodes().filter(n=>n.status==="draft").length);}
+    function renderOverviewGraph(){const visible=filteredNodes(),ids=new Set(visible.map(n=>n.id)),shownLinks=links().filter(link=>link.resolved&&ids.has(endpoint(link.source))&&ids.has(endpoint(link.target)));text("graphCount",`${visible.length} ARTIFACTS · ${shownLinks.length} RESOLVED CONNECTIONS`);renderLens();if(!graph)return;const data={nodes:visible.map(node=>({...node})),links:shownLinks.map(link=>({...link,source:endpoint(link.source),target:endpoint(link.target)}))};graph.nodeColor(semanticColor).nodeVal(node=>graphSelection?.id===node.id?18:5).graphData(data);}
+    async function createOverviewGraph(){if(!snapshot)return;setGraphFallback("Loading interactive topology","Loading pinned 3d-force-graph@1.79.0 from unpkg.com.");try{const ForceGraph3D=await loadGraphLibrary();graph=ForceGraph3D()($("overviewGraph")).backgroundColor(cssColor("--fg")).showNavInfo(false).nodeLabel(node=>`${esc(node.id)} · ${esc(node.type)} · ${esc(label(node.status))}`).nodeOpacity(.94).nodeResolution(12).linkColor(()=>cssColor("--border")).linkOpacity(.55).linkWidth(1).linkDirectionalArrowLength(1.8).linkDirectionalArrowRelPos(1).onNodeClick(node=>inspect(nodeById(node.id)));$("topology").classList.add("ready");$("graphFit").disabled=false;sizeGraph();renderOverviewGraph();if(window.ResizeObserver){graphResize=new ResizeObserver(sizeGraph);graphResize.observe($("topology"));}}catch(error){console.warn(error?.message||"Interactive topology unavailable");setGraphFallback("Interactive 3D topology unavailable","The CDN-backed visualization could not load. Canonical metrics, filters, focused lineage, readiness, provenance, and outcomes remain available.");}}
+    function inspect(node){if(!node)return;graphSelection=node;text("inspectType",node.type);text("inspectId",node.id);text("inspectTitle",node.title);text("inspectStatus",label(node.status));text("inspectInbound",links().filter(link=>endpoint(link.target)===node.id).length);text("inspectOutbound",links().filter(link=>endpoint(link.source)===node.id).length);$("openLineage").disabled=false;renderOverviewGraph();}
+    function neighborhood(root,maxDepth=2,maxNodes=9){const seen=new Set([root.id]),depth=new Map([[root.id,0]]),queue=[root.id];while(queue.length&&seen.size<maxNodes){const id=queue.shift(),d=depth.get(id);if(d>=maxDepth)continue;links().filter(link=>link.resolved&&(endpoint(link.source)===id||endpoint(link.target)===id)).forEach(link=>{const source=endpoint(link.source),target=endpoint(link.target),next=source===id?target:source;if(!seen.has(next)&&nodeById(next)&&seen.size<maxNodes){seen.add(next);depth.set(next,d+1);queue.push(next);}});}return{items:nodes().filter(n=>seen.has(n.id)),depth};}
+    function setLineageZoom(value){lineageZoom=Math.min(1.25,Math.max(.75,value));$("lineageGraph").style.transform=`scale(${lineageZoom})`;}
+    function lineageStateClass(node){if(["draft","planned","proposed","unresolved"].includes(node.status))return" future";if(["approved","verified","released","superseded"].includes(node.status))return" past";return"";}
+    function renderLineage(){const root=nodeById(selectedId)||nodes()[0];if(!root)return;selectedId=root.id;const scope=neighborhood(root),ids=new Set(scope.items.map(n=>n.id)),scopeLinks=links().filter(link=>link.resolved&&ids.has(endpoint(link.source))&&ids.has(endpoint(link.target))),rank=new Map([[root.id,0]]),queue=[root.id];while(queue.length){const id=queue.shift(),base=rank.get(id);scopeLinks.forEach(link=>{const source=endpoint(link.source),target=endpoint(link.target);if(target===id&&!rank.has(source)){rank.set(source,base-1);queue.push(source);}if(source===id&&!rank.has(target)){rank.set(target,base+1);queue.push(target);}});}scope.items.forEach(node=>{if(!rank.has(node.id))rank.set(node.id,scope.depth.get(node.id)||0);});const minRank=Math.min(...rank.values()),maxRank=Math.max(...rank.values()),groups=new Map();scope.items.forEach(node=>{const value=rank.get(node.id);if(!groups.has(value))groups.set(value,[]);groups.get(value).push(node);});groups.forEach(group=>group.sort((a,b)=>String(a.id).localeCompare(String(b.id))));const columns=maxRank-minRank+1,width=Math.max(1140,76+columns*215),height=Math.max(430,...[...groups.values()].map(group=>104+group.length*98)),pos=new Map();groups.forEach((group,value)=>{const x=38+(value-minRank)*215,yGap=group.length>1?Math.min(98,(height-126)/(group.length-1)):0,start=group.length>1?48:(height-78)/2;group.forEach((node,index)=>pos.set(node.id,{x,y:start+index*yGap}));});const edgePath=link=>{const a=pos.get(endpoint(link.source)),b=pos.get(endpoint(link.target)),x1=a.x+170,y1=a.y+39,x2=b.x,y2=b.y+39,curve=Math.max(24,Math.abs(x2-x1)*.46);return x2>=x1?`M${x1} ${y1}C${x1+curve} ${y1} ${x2-curve} ${y2} ${x2} ${y2}`:`M${a.x} ${y1}C${a.x-curve} ${y1} ${b.x+170+curve} ${y2} ${b.x+170} ${y2}`;};const edgeLabel=link=>String(link.relation||link.type||"relates").replaceAll("_"," ");$("lineageGraph").style.width=`${width}px`;$("lineageGraph").style.height=`${height}px`;$("lineageGraph").innerHTML=`<svg class="lineage-lines" viewBox="0 0 ${width} ${height}" aria-hidden="true"><defs><marker id="lineage-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5 0 7z" fill="context-stroke"/></marker></defs>${scopeLinks.map(link=>{const a=pos.get(endpoint(link.source)),b=pos.get(endpoint(link.target)),active=endpoint(link.source)===root.id||endpoint(link.target)===root.id,midX=(a.x+b.x+170)/2,midY=(a.y+b.y+78)/2-7;return`<path class="lineage-edge${active?" active":""}${link.derived?" derived":""}" d="${edgePath(link)}" marker-end="url(#lineage-arrow)"/><text class="lineage-edge-label" x="${midX}" y="${midY}">${esc(edgeLabel(link))}</text>`;}).join("")}</svg>${scope.items.map(node=>{const p=pos.get(node.id);return`<button class="lineage-card${lineageStateClass(node)}" type="button" aria-pressed="${node.id===selectedId}" data-lineage-id="${esc(node.id)}" data-od-id="artifact-${esc(String(node.id).toLowerCase().replace(/[^a-z0-9]+/g,"-"))}" style="left:${p.x}px;top:${p.y}px"><span class="lineage-card-kind">${esc(node.type)} <i class="lineage-card-status">${esc(label(node.status))}</i></span><strong class="lineage-card-id">${esc(node.id)}</strong><span class="lineage-card-title">${esc(node.title)}</span></button>`;}).join("")}`;setLineageZoom(lineageZoom);text("breadcrumb",`${snapshot.repository?.name??"Repository"} › ${root.id}`);text("lineageCount",`${scope.items.length} visible · ${scopeLinks.length} relations`);$("lineageEmpty").classList.toggle("visible",scope.items.length===0);$("pathList").innerHTML=scope.items.filter(n=>n.id!==root.id).map(n=>`<div class="path-item"><strong>${esc(n.id)}</strong><br><small>${esc(n.title)}</small></div>`).join("")||"<p>No adjacent artifacts.</p>";renderDetail();}
+    function renderDetail(){const n=nodeById(selectedId);if(!n)return;const coverage=n.coverage||{};text("detailType",`${n.type} · ${label(n.status)}`);text("detailTitle",n.title);text("detailBadge",coverage.label);if(selectedTab==="overview")$("tabContent").innerHTML=`<p class="statement">${esc(n.statement)}</p><dl class="detail-grid"><div><dt>Owners</dt><dd>${esc(array(n.owners).join(", ")||"Unassigned")}</dd></div><div><dt>Definition coverage</dt><dd>${esc(coverage.label)}</dd></div><div><dt>Repository source</dt><dd class="path">${esc(n.path)}</dd></div></dl>`;if(selectedTab==="relations")$("tabContent").innerHTML=`<div class="path-list">${links().filter(link=>endpoint(link.source)===n.id||endpoint(link.target)===n.id).map(link=>`<div class="path-item"><strong>${esc(link.relation)}</strong><br><small>${esc(endpoint(link.source))} → ${esc(endpoint(link.target))} · ${esc(link.authority)}${link.resolved?"":" · missing target"}</small></div>`).join("")||"No declared or derived relations."}</div>`;if(selectedTab==="evidence")$("tabContent").innerHTML=`<div class="path-list">${array(n.evidence).map(e=>`<div class="path-item">${esc(e)}</div>`).join("")||"No evidence records."}</div>`;}
+    function renderSubject(id){const subjects=array(snapshot?.readiness?.subjects),s=subjects.find(item=>item.id===id)||subjects[0];if(!s)return;text("subjectLabel",s.label);text("subjectStatus",label(s.status));text("subjectWorkOrder",s.workOrderId);text("subjectDecision",s.targetDecision);$("subjectBoundary").innerHTML=`<button class="link-button" data-artifact-id="${esc(s.currentBoundary.artifactId)}">${esc(s.currentBoundary.label)}</button><br><small>${esc(s.currentBoundary.artifactId)}</small>`;text("subjectRevision",s.revision);text("subjectOwner",s.owner);text("readinessHeadline",s.headline);text("readinessSummary",s.summary);$("gates").innerHTML=array(s.gates).map(g=>{const tone=g.status==="unsatisfied"?"blocked":g.status==="not_assessable"?"review":"";return `<div class="gate ${tone}"><span class="gate-code">${esc(g.id)}</span><strong>${esc(g.label)}</strong><span>${esc(g.detail)}</span></div>`;}).join("");text("evidenceCount",`${array(s.evidence).length} RECORDS`);$("evidenceRows").innerHTML=array(s.evidence).map(e=>`<tr><td><button class="link-button" data-artifact-id="${esc(e.artifactId)}">${esc(e.artifactId)}</button><br><small>${esc(e.label)}</small></td><td class="path">${esc(e.reference)}</td><td><span class="badge evidence-status ${esc(e.tone)}">${esc(e.status)}</span></td></tr>`).join("");$("findings").innerHTML=array(s.findings).map(f=>`<div class="finding"><strong>${esc(f.title)}</strong><span class="badge ${["warning","error","blocking"].includes(f.severity)?"warning":""}">${esc(label(f.severity))}</span><p>${esc(f.summary)}</p></div>`).join("")||"<p>No explicit findings.</p>";}
+    function renderCanonicalSections(){const canonical=snapshot?.canonical||{};$("coverageRows").innerHTML=array(canonical.coverage).filter(item=>item.active).map(item=>`<tr><td><button class="link-button" data-artifact-id="${esc(item.requirement)}">${esc(item.requirement)}</button></td><td>${esc(array(item.specifications).join(", ")||"Missing")}</td><td>${esc(array(item.verifications).join(", ")||"Missing")}</td></tr>`).join("")||'<tr><td colspan="3">No active requirement coverage records.</td></tr>';$("provenanceRows").innerHTML=array(canonical.provenance).map(item=>`<article class="record"><strong>${esc(item.id)} · ${esc(item.kind)} · ${esc(item.status)}</strong><small>commit ${esc(item.commit)} · ${esc(item.git_object_format)} · checkout ${esc(item.match_state)}</small><small>work orders: ${esc(array(item.work_orders).join(", ")||"none")}${array(item.superseded_by).length?` · Superseded by ${esc(item.superseded_by.join(", "))}`:""}</small>${item.supersession_authorized_by?`<small>Supersession authorized by ${esc(item.supersession_authorized_by)}${item.superseded_at?` · ${esc(item.superseded_at)}`:""}</small>`:""}</article>`).join("")||"<p>No commit-bound verification or release records.</p>";$("experimentRows").innerHTML=array(canonical.experiments).map(item=>`<article class="record"><strong>${esc(item.id||item.trial||"Controlled observation")}</strong><small>${esc(item.summary||item.result||"See canonical experiment fields for the retained observation.")}</small></article>`).join("")||'<p>No controlled experiment is retained; effectiveness is not measured.</p>';}
+    function init(){document.querySelector(".app").dataset.snapshotState=snapshot?"ready":"empty";if(!snapshot)return;setRepository();[...new Set(nodes().map(n=>n.type).filter(Boolean))].sort().forEach(v=>$("graphType").add(new Option(v,v)));[...new Set(nodes().map(n=>n.status).filter(Boolean))].sort().forEach(v=>$("graphStatus").add(new Option(label(v),v)));selectedId=nodeById(snapshot.lineage?.defaultArtifactId)?.id||nodes()[0]?.id||null;const subjects=array(snapshot.readiness?.subjects);$("subjectSelect").innerHTML=subjects.map(s=>`<option value="${esc(s.id)}">${esc(s.label)}</option>`).join("")||'<option value="">No subjects</option>';renderOverviewGraph();renderLineage();renderCanonicalSections();if(subjects[0])renderSubject(subjects[0].id);createOverviewGraph();}
+    $("zoomOut").addEventListener("click",()=>setLineageZoom(lineageZoom-.1));$("resetZoom").addEventListener("click",()=>setLineageZoom(1));$("zoomIn").addEventListener("click",()=>setLineageZoom(lineageZoom+.1));
+    document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));[$("graphMode"),$("graphType"),$("graphStatus")].forEach(el=>el.addEventListener("change",renderOverviewGraph));$("graphFit").addEventListener("click",()=>graph?.zoomToFit(500,48));$("graphReset").addEventListener("click",()=>{$("graphMode").value="state";$("graphType").value="all";$("graphStatus").value="all";$("search").value="";renderOverviewGraph();graph?.zoomToFit(500,48);});$("search").addEventListener("input",renderOverviewGraph);$("openLineage").addEventListener("click",()=>{if(graphSelection){selectedId=graphSelection.id;renderLineage();showView("lineage");}});$("lineageGraph").addEventListener("click",e=>{const g=e.target.closest("[data-lineage-id]");if(g){selectedId=g.dataset.lineageId;renderLineage();}});document.querySelectorAll("[role=tab]").forEach(b=>b.addEventListener("click",()=>{selectedTab=b.dataset.tab;document.querySelectorAll("[role=tab]").forEach(t=>t.setAttribute("aria-selected",String(t===b)));renderDetail();}));$("subjectSelect").addEventListener("change",e=>renderSubject(e.target.value));document.addEventListener("click",e=>{const b=e.target.closest("[data-artifact-id]");if(b&&nodeById(b.dataset.artifactId)){selectedId=b.dataset.artifactId;renderLineage();showView("lineage");}});document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.action==="ready")showView("readiness");else{if(b.dataset.action==="unresolved")$("graphMode").value="assurance";$("graphStatus").value=b.dataset.action==="draft"?"draft":"all";showView("overview");renderOverviewGraph();}}));$("snapshotInfo").addEventListener("click",()=>alert(snapshot?`${snapshot.repository?.validation?.status??"Unknown"} canonical snapshot for ${snapshot.repository?.name??"repository"} at observed revision ${snapshot.repository?.revision??"unknown revision"}. Generation time is intentionally outside the canonical snapshot.`:"Dashboard data is awaiting harnessctl generation."));init();
+  })();
   </script>
 </body>
 </html>

@@ -29,6 +29,33 @@
 - Files requiring specialized review: None identified at this stage.
 - Local conventions not captured elsewhere: Keep it simple. Prefer direct Rust code and the smallest useful design over speculative abstractions. Use Claude Code, primarily with Opus, as the implementation agent. The first stage has no graphical or web UI and reports through simple text output. A richer interface may be introduced later, but it is outside the current stage.
 
+## Git branching model
+
+Follow this Git branching model and naming convention:
+
+* **`master`** is the integration branch and contains all accepted engineering work.
+* Create normal development branches from `master`:
+
+    * **`feature/<short-description>`** for new functionality.
+    * **`bugfix/<short-description>`** for normal defect fixes.
+* Merge `feature/*` and `bugfix/*` back into `master` through pull requests.
+* Create **`release/<major>.<minor>`** from `master` when a release enters stabilization, e.g. `release/1.4`.
+* Only release-specific fixes may target a release branch. Use **`release-fix/<short-description>`**, created from the corresponding `release/*` branch.
+* If a release fix also applies to the current product, propagate it to `master`, preferably by forward-porting/cherry-picking the relevant fix.
+* Identify exact released versions using tags such as **`v1.4.0`**, `v1.4.1`, etc.
+
+Branch names must use lowercase words separated by hyphens, for example:
+
+`feature/resource-respawn`
+`bugfix/invalid-energy-calculation`
+`release/1.4`
+`release-fix/startup-crash`
+
+Do not develop normal features directly against a `release/*` branch.
+
+> **Note:** This branching model is repository guidance, not an authoritative governance rule. It does not supersede SE Harness requirements, policies, validations, or authorized-work constraints. If a conflict exists, the applicable harness-governed rules take precedence.
+
+
 ## Maintenance
 
 Review this file when commands, boundaries, ownership, or repository structure change. Put product decisions and approvals in the formal artifact chain under `docs/engineering/`, not in this context file.

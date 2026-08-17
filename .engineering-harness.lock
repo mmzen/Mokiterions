@@ -2,7 +2,7 @@
   "files": {
     ".engineering-harness.toml": {
       "mode": "managed",
-      "sha256": "e6dac0a7c5df35eacc6bfa985f95f81e08540b24fa89f8a215ce774db4c93f73"
+      "sha256": "366d6d7583ca704b925663f90f5d8e8f904443406a99295cee300a090f7e99b0"
     },
     ".github/PULL_REQUEST_TEMPLATE.md": {
       "mode": "seed",
@@ -10,7 +10,7 @@
     },
     ".github/workflows/engineering-harness.yml": {
       "mode": "managed",
-      "sha256": "cbee299ef2bb256950806c4c9f8f2350cbdf6269c034a8c3e63e788482a3ca1e"
+      "sha256": "0b850207fb04c054f3c936bcbf2e2a18c1d9f79de14232b25fa328a0159c5ed4"
     },
     ".gitignore": {
       "mode": "fragment",
@@ -26,15 +26,15 @@
     },
     "ENGINEERING_HARNESS.md": {
       "mode": "managed",
-      "sha256": "7154b9ddc1c63b4e318e6587f90df30ab52d4b06f5e03934f0e2309daf005fc2"
+      "sha256": "8b503c8a2c4a4a70725eb4355fc1ec55d10e8515bf342c0ac4718aeaf4769023"
     },
     "docs/engineering/DECISION_RIGHTS.md": {
       "mode": "managed",
-      "sha256": "9b94e9729f6e371b0279149ef046268edfd6cd1f1558547c6dbd627ce7b76211"
+      "sha256": "e873e18da307f2a8aeb12ea1fea9296761254c50f189b378bf11e8b86936bf2b"
     },
     "docs/engineering/QUALITY_GATES.md": {
       "mode": "managed",
-      "sha256": "ec956bbf15e62e50a42dbcc8140f67fad91a5986ff32e2c2e1462a3a6e6c1f55"
+      "sha256": "b68b28e8f999e6d8dd63d2901c43b16f1b73ad309ab545381b822eac018eb8ad"
     },
     "docs/engineering/README.md": {
       "mode": "seed",
@@ -46,19 +46,19 @@
     },
     "docs/engineering/TRACEABILITY.md": {
       "mode": "managed",
-      "sha256": "e3130eef89821c12d0c8dc6d2d33be02d526363c1aaaa26b48771c2aabc18922"
+      "sha256": "3ee0039ef5e342fd4b64b472587ebbb4d7985a9633dadc662120c4ae4c506c67"
     },
     "docs/engineering/WORKFLOW.md": {
       "mode": "managed",
-      "sha256": "367aa56479bdbc70c09500dcace598197887a9dedd56f37a1d848824e9d8ab1a"
+      "sha256": "8d0c32dbb9b00fb03b577933e135f79f19c853cafc26ca9b40cc24eacd958e97"
     },
     "docs/engineering/templates/ADR.template.md": {
       "mode": "managed",
-      "sha256": "e943d08247bff8fc73b050d86a5b45162547646d8520d14d9bb1a6bbf80ba72f"
+      "sha256": "e93969569c4942053b177bd985552c80a724ef150ef1bac6b5bb07251a292569"
     },
     "docs/engineering/templates/ARCHITECTURE.template.md": {
       "mode": "managed",
-      "sha256": "e9a38ac5a72555ed448b9aaf3b3a8733d0927cdfc3ea1b2ec64e4c8de209f1ad"
+      "sha256": "cbef4107518714c8589e56bcdd0a26c8370f0beec910a5d8d36a9b72a733264e"
     },
     "docs/engineering/templates/CAPABILITY.template.md": {
       "mode": "managed",
@@ -70,11 +70,11 @@
     },
     "docs/engineering/templates/OPERATING_CONTRACT.template.md": {
       "mode": "managed",
-      "sha256": "68cdd0b736374729614022ccb7391999d30a5c190f20d22b616960136bfbfb3a"
+      "sha256": "c43646bead3c08b0bee0cdf1326c7a95b95ceb8b9141bf0a5ac7418c48613468"
     },
     "docs/engineering/templates/README.md": {
       "mode": "managed",
-      "sha256": "23166bbeba4de52dfb45a22b1bea79dff6edb6f2a17998aade8423d7a8706f27"
+      "sha256": "d8b1a1de9ff26d7e888de1bf6b9d1f24f86488ea4801d09138991c4113c8f2c9"
     },
     "docs/engineering/templates/RELEASE_CONTRACT.template.md": {
       "mode": "managed",
@@ -102,7 +102,11 @@
     },
     "docs/engineering/templates/WORK_ORDER.template.md": {
       "mode": "managed",
-      "sha256": "7d0e4d79bd26c83edc3d76406f8037f13a1c5e4761e8e7a1eeac88a7df8b031d"
+      "sha256": "465a5dce3c76886c8e6d853fcaee32845f178333eb8e71e6ee9436ee603a9c75"
+    },
+    "scripts/artifact_layout_registry.py": {
+      "mode": "managed",
+      "sha256": "c9b9601ce49449304bdd5be497f911caff780d13fa3801667451ec23bf7df7ad"
     },
     "scripts/check_engineering_harness.ps1": {
       "mode": "managed",
@@ -114,11 +118,15 @@
     },
     "scripts/generate_harness_dashboard.py": {
       "mode": "managed",
-      "sha256": "1bfb75e613b2157ae67cd4469ceed462cab891a8692085abf9e45266d2dd3bf9"
+      "sha256": "d6fe46e4cafcd0524bdee8afdd65cea34d41effdac2fc3b12c4e3500ec02716d"
     },
     "scripts/harness_explorer/index.template.html": {
       "mode": "managed",
-      "sha256": "30f6908ece9404ad34262ab63760ee2e84e1c0724388c73a9961ad6b63a28481"
+      "sha256": "8c923a7dfc3b0722cca77d3c52804e81e8a25e875190aa8d6d6455d2505319e7"
+    },
+    "scripts/inspect_engineering_artifacts.py": {
+      "mode": "managed",
+      "sha256": "78ce4988c98ffa45fb927f54435d3a7525b13e0cb113950b1beeafe4f41e9831"
     },
     "scripts/select_harness_work_order.py": {
       "mode": "managed",
@@ -126,11 +134,11 @@
     },
     "scripts/validate_engineering_artifacts.py": {
       "mode": "managed",
-      "sha256": "7b30ba2a2260745ff6a530b194f5cb8d643a636d36612b85304de64b087f5577"
+      "sha256": "7c09ea29d076ef82be869f997bd002cb87dcaf2beabab4135b4bc20281f82667"
     }
   },
   "hash_algorithm": "sha256",
   "hash_mode": "utf8-text-lf-v1",
   "schema": 2,
-  "tool_version": "0.2.1"
+  "tool_version": "0.4.0"
 }

@@ -8,7 +8,7 @@ created = "YYYY-MM-DD"
 updated = "YYYY-MM-DD"
 
 [relations]
-assures = ["REQ-xxx", "REL-xxx"]
+assures = ["REQ-xxx"]
 +++
 
 # Operating Contract: <title>

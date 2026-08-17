@@ -1,12 +1,18 @@
 # Engineering Harness for Mokiterions
 
-This repository uses SE Harness 0.2.1. This file is the single managed contract and router. Repository-owned instructions may add stricter local constraints, but they cannot waive this contract.
+This repository uses SE Harness 0.4.0. This file is the single managed contract and router. Repository-owned instructions may add stricter local constraints, but they cannot waive this contract.
 
 ## Authority model
 
 - `docs/engineering/REPOSITORY_CONTEXT.md` contains owner-curated repository facts and commands. It informs execution but grants no product or governance authority.
 - Formal artifacts under `docs/engineering/` are the only repository-native source of product intent, requirements, architecture decisions, work authorization, verification contracts, and release constraints.
 - Source, tests, conversations, dashboards, preflight, and CI are observations or evidence. They do not approve work, verification, or release.
+
+## Author engineering artifacts
+
+Use `harnessctl scaffold-domain . --domain <lowercase-kebab-domain>` to establish the canonical domain organization. Use `harnessctl create-artifact . --domain <domain> --type <type> --id <ID>` to create one incomplete draft from the installed template in its canonical type directory. Complete accountable fields and validate the graph before approval.
+
+Canonical paths make repositories predictable, but paths never establish artifact identity, type, relations, lifecycle state, or authority. Existing valid flat layouts remain supported and may produce nonblocking migration guidance. Installation and upgrade never move repository-owned artifacts automatically.
 
 ## Start implementation
 
@@ -25,17 +31,17 @@ Preflight is read-only. It validates installed integrity, repository-context com
 | Creating or changing artifacts and lifecycle state | `docs/engineering/WORKFLOW.md` |
 | Approving work, assurance, release, risk, or operations | `docs/engineering/DECISION_RIGHTS.md` |
 | Defining or executing verification and release gates | `docs/engineering/QUALITY_GATES.md` |
-| Creating relations, evidence, VRECs, supersession, or releases | `docs/engineering/TRACEABILITY.md` |
+| Defining artifact purpose, applicability, reuse, or relations; recording evidence, VRECs, supersession, or releases | `docs/engineering/TRACEABILITY.md` |
 
 Use the repository-owned `docs/engineering/README.md` only as the index of local artifact domains and supporting engineering documentation.
 
 ## Review and visualization
 
-Run `harnessctl preflight . --work-order WO-... --phase review` for a completed pull-request candidate. Generate Harness Explorer with `harnessctl dashboard .` and open `target/harness-dashboard/index.html`. Both outputs are derived, read-only evidence.
+Review readiness and visualization follow `docs/engineering/WORKFLOW.md`, subject to `QUALITY_GATES.md`. Preflight and Harness Explorer outputs are derived, read-only evidence; neither approves work nor verifies a candidate.
 
 ## Commit-bound verification and release
 
-After a separately authorized candidate commit contains implementation and evidence, `harnessctl capture-verification` may prepare a `ready` VREC in a later governance commit. After accountable assurance review, `harnessctl prepare-release` may prepare a `ready` release record bound to the same candidate commit. These commands never commit, push, tag, approve, release, publish, or deploy.
+Verification and release follow `docs/engineering/WORKFLOW.md`, subject to `QUALITY_GATES.md`, `TRACEABILITY.md`, and `DECISION_RIGHTS.md`. VRECs and release records must identify the exact candidate commit they govern and therefore reside in later governance commits. Harness commands may prepare records, but never exercise accountable decision rights or commit, push, tag, release, publish, or deploy.
 
 ## Stop conditions
 

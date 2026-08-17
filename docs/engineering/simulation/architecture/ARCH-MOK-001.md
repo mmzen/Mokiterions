@@ -5,24 +5,31 @@ title = "Single-process simulation architecture"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-11"
-updated = "2026-08-11"
+updated = "2026-08-17"
 
 [relations]
-constrains = [
-  "SPEC-MOK-001",
-  "REQ-MOK-001",
-  "REQ-MOK-002",
-  "REQ-MOK-003",
+addresses = [
   "REQ-MOK-004",
-  "REQ-MOK-005",
-  "REQ-MOK-006",
-  "REQ-MOK-007",
   "REQ-MOK-008",
   "REQ-MOK-009",
   "REQ-MOK-010",
-  "REQ-MOK-011",
-  "REQ-MOK-012",
 ]
+conforms_to = ["SPEC-MOK-001"]
+
+[decision_assessment]
+outcome = "adr_required"
+triggers = [
+  "system-boundary",
+  "responsibility-or-dependency-direction",
+  "public-interface-or-protocol",
+  "security-privacy-or-trust-boundary",
+  "concurrency-consistency-reliability-or-failure-strategy",
+  "technology-framework-vendor-or-external-service",
+  "difficult-to-reverse",
+  "material-alternatives",
+]
+rationale = "This architecture establishes the foundation's system boundary as one in-process authoritative engine, fixes the dependency direction so decision sources never reach mutable world state, and defines the immutable observation and typed proposed-action contract as a maintained interface. It treats every decision source as untrusted and keeps future provider credentials outside the engine, selects deterministic single-owner state and seeded entropy as the consistency and reliability strategy, and defers an external model provider to an adapter at the same boundary. ADR-MOK-001 records the accepted alternatives and states that replacing engine authority requires a superseding ADR, which makes the decision materially difficult to reverse."
+assessed_by = "technical owner"
 +++
 
 # Architecture: Single-process simulation architecture
@@ -30,6 +37,8 @@ constrains = [
 ## Context and scope
 
 The minimum foundation is a local Rust command-line program. It must establish an authoritative deterministic engine and a replaceable decision boundary without importing the complexity of a service architecture, UI, persistence layer, or external model client.
+
+This architecture addresses the four requirement drivers that materially shape its boundaries rather than every requirement it conforms to: world authority (`REQ-MOK-004`), the in-process baseline decision source (`REQ-MOK-008`), reproducible entropy (`REQ-MOK-009`), and the text observation interface (`REQ-MOK-010`). The remaining foundation requirements are domain rules whose detailed behavior is governed by `SPEC-MOK-001`, which this architecture conforms to.
 
 ## Components and responsibilities
 

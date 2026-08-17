@@ -29,6 +29,8 @@ from validate_engineering_artifacts import (
     Artifact,
     Diagnostic,
     ValidationReport,
+    architecture_traceability_state,
+    decision_assessment_state,
     load_revision_policy,
     validate_repository,
 )
@@ -36,7 +38,7 @@ from validate_engineering_artifacts import (
 
 SNAPSHOT_SCHEMA = "harness-dashboard-snapshot-v1"
 EXPERIMENT_SCHEMA = "harness-experiment-result-v1"
-FINDING_RULES_VERSION = "harness-findings-v4"
+FINDING_RULES_VERSION = "harness-findings-v7"
 QUALITY_GATES_VERSION = "quality-gates-2026-08-10"
 DEFAULT_ARTIFACT_ROOT = Path("docs") / "engineering"
 DEFAULT_OUTPUT_ROOT = Path("target") / "harness-dashboard"
@@ -47,6 +49,19 @@ IMPLEMENTED_STATUSES = {"implemented", "verified", "released"}
 INACTIVE_GOVERNING_STATUSES = {"draft", "rejected", "superseded"}
 SEVERITY_ORDER = {"error": 0, "warning": 1, "info": 2}
 WORK_ORDER_RELATIONS = ("implements", "specifications", "architecture", "verification")
+TEMPORAL_REASSESSMENT_RELATIONS = {
+    "capability": frozenset({"derives_from"}),
+    "requirement": frozenset({"derives_from"}),
+    "specification": frozenset({"specifies"}),
+    "architecture": frozenset({"addresses", "conforms_to", "constrains"}),
+    "adr": frozenset({"decides"}),
+    "verification": frozenset({"verifies"}),
+    "release_contract": frozenset({"gates"}),
+    "operating_contract": frozenset({"assures"}),
+    "work_order": frozenset(WORK_ORDER_RELATIONS),
+}
+TEMPORAL_REASSESSMENT_INACTIVE_STATUSES = frozenset({"rejected", "superseded"})
+TEMPORAL_REASSESSMENT_WORK_ORDER_STATUSES = frozenset({"draft", "approved", "in_progress"})
 EXPERIMENT_MEASURES = (
     "clarifications",
     "retries",
@@ -184,6 +199,18 @@ def _string_list(value: Any) -> list[str]:
 
 
 def normalize_artifacts(report: ValidationReport, repository_root: Path) -> list[dict[str, Any]]:
+    catalog = {
+        artifact.artifact_id: artifact
+        for artifact in report.artifacts
+        if artifact.artifact_id != "<unknown>"
+    }
+    active_decisions_by_architecture: dict[str, set[str]] = defaultdict(set)
+    for decision in report.artifacts:
+        if decision.artifact_type != "adr" or decision.status not in ACTIVE_COVERAGE_STATUSES:
+            continue
+        for architecture_id in _string_list(decision.relations.get("decides")):
+            active_decisions_by_architecture[architecture_id].add(decision.artifact_id)
+
     normalized: list[dict[str, Any]] = []
     for artifact in report.artifacts:
         item: dict[str, Any] = {
@@ -200,6 +227,30 @@ def normalize_artifacts(report: ValidationReport, repository_root: Path) -> list
         if artifact.artifact_type == "requirement":
             item["statement"] = _string(artifact.metadata.get("statement")) or None
             item["verification_method"] = _string(artifact.metadata.get("verification_method")) or None
+        if artifact.artifact_type == "architecture":
+            item["architecture_traceability"] = architecture_traceability_state(
+                artifact,
+                catalog,
+            )
+            assessment = decision_assessment_state(artifact)
+            deciding_adrs = sorted(active_decisions_by_architecture.get(artifact.artifact_id, set()))
+            if assessment["state"] == "valid":
+                if assessment["outcome"] == "adr_required":
+                    state = "adr_required_covered" if deciding_adrs else "adr_required_missing"
+                else:
+                    state = "no_significant_decision_justified"
+            elif assessment["state"] == "legacy_missing":
+                state = "legacy_adr_covered" if deciding_adrs else "legacy_adr_missing"
+            else:
+                state = f"assessment_{assessment['state']}"
+            item["decision_assessment"] = {
+                "state": state,
+                "outcome": assessment["outcome"],
+                "triggers": assessment["triggers"],
+                "rationale": assessment["rationale"],
+                "assessed_by": assessment["assessed_by"],
+                "deciding_adrs": deciding_adrs,
+            }
         if artifact.artifact_type == "verification_record":
             item["commit"] = _string(artifact.metadata.get("commit")) or None
             item["git_object_format"] = _string(artifact.metadata.get("git_object_format")) or None
@@ -244,6 +295,39 @@ def build_declared_relations(artifacts: Sequence[Artifact]) -> list[dict[str, An
         relations,
         key=lambda item: (item["source"], item["relation"], item["target"], not item["target_exists"]),
     )
+
+
+def build_architecture_transitive_relations(artifacts: Sequence[Artifact]) -> list[dict[str, Any]]:
+    catalog = {
+        artifact.artifact_id: artifact
+        for artifact in artifacts
+        if artifact.artifact_id != "<unknown>"
+    }
+    paths: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for architecture in artifacts:
+        if architecture.artifact_type != "architecture":
+            continue
+        traceability = architecture_traceability_state(architecture, catalog)
+        if traceability["state"] not in {"typed", "dual_declared"}:
+            continue
+        for specification_id in traceability["conforms_to"]:
+            specification = catalog.get(specification_id)
+            if specification is None or specification.artifact_type != "specification":
+                continue
+            for requirement_id in _string_list(specification.relations.get("specifies")):
+                if requirement_id in catalog:
+                    paths[(architecture.artifact_id, requirement_id)].add(specification_id)
+    return [
+        {
+            "source": source,
+            "relation": "conforms_transitively_to_requirement",
+            "target": target,
+            "authority": "derived",
+            "target_exists": True,
+            "via": sorted(via),
+        }
+        for (source, target), via in sorted(paths.items())
+    ]
 
 
 def _diagnostic_payload(
@@ -436,6 +520,24 @@ def _finding(
     }
 
 
+def _supports_temporal_reassessment(
+    source: dict[str, Any],
+    relation: dict[str, Any],
+) -> bool:
+    """Return whether a declared edge has governed reassessment meaning."""
+
+    if relation.get("authority") != "declared":
+        return False
+    supported = TEMPORAL_REASSESSMENT_RELATIONS.get(source["type"], frozenset())
+    if relation["relation"] not in supported:
+        return False
+    if source["status"] in TEMPORAL_REASSESSMENT_INACTIVE_STATUSES:
+        return False
+    if source["type"] == "work_order":
+        return source["status"] in TEMPORAL_REASSESSMENT_WORK_ORDER_STATUSES
+    return True
+
+
 def build_findings(
     normalized_artifacts: Sequence[dict[str, Any]],
     relations: Sequence[dict[str, Any]],
@@ -498,7 +600,7 @@ def build_findings(
                 )
             )
 
-    stale_pairs: set[tuple[str, str]] = set()
+    stale_relations: set[tuple[str, str, str]] = set()
     for relation in relations:
         if not relation["target_exists"]:
             continue
@@ -506,16 +608,24 @@ def build_findings(
         target = artifacts.get(relation["target"])
         if source is None or target is None or not source["updated"] or not target["updated"]:
             continue
-        if source["updated"] < target["updated"] and (source["id"], target["id"]) not in stale_pairs:
-            stale_pairs.add((source["id"], target["id"]))
+        relation_key = (source["id"], relation["relation"], target["id"])
+        if (
+            _supports_temporal_reassessment(source, relation)
+            and source["updated"] < target["updated"]
+            and relation_key not in stale_relations
+        ):
+            stale_relations.add(relation_key)
             findings.append(
                 _finding(
                     "W-HEX-003",
                     "warning",
-                    f"{source['id']} predates newer declared dependency or parent {target['id']} and may require reassessment.",
+                    f"{source['id']} predates newer declared {relation['relation']} target {target['id']} and may require reassessment.",
                     [source["id"], target["id"]],
                     [source["path"], target["path"]],
-                    [f"{source['updated']} < {target['updated']}"],
+                    [
+                        f"relation={relation['relation']}",
+                        f"{source['updated']} < {target['updated']}",
+                    ],
                 )
             )
 
@@ -1138,7 +1248,18 @@ def build_snapshot(
     report: ValidationReport,
 ) -> dict[str, Any]:
     normalized_artifacts = normalize_artifacts(report, repository_root)
-    relations = build_declared_relations(report.artifacts)
+    relations = sorted(
+        [
+            *build_declared_relations(report.artifacts),
+            *build_architecture_transitive_relations(report.artifacts),
+        ],
+        key=lambda item: (
+            item["source"],
+            item["relation"],
+            item["target"],
+            item["authority"],
+        ),
+    )
     diagnostics = normalize_diagnostics(report, normalized_artifacts)
     observed_revision = git_revision(repository_root)
     revision_policy = load_revision_policy(repository_root)
