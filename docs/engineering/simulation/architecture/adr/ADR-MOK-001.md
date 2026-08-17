@@ -5,7 +5,7 @@ title = "Engine-authoritative in-process decision boundary"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-11"
-updated = "2026-08-11"
+updated = "2026-08-17"
 
 [relations]
 decides = ["ARCH-MOK-001"]
@@ -15,7 +15,9 @@ decides = ["ARCH-MOK-001"]
 
 ## Status
 
-Accepted.
+Accepted. Amended in place 2026-08-17 on one structural point, as recorded in the *Decision* section below and
+required by `ADR-MOK-002`. The substantive decision — option 3, engine authority, and the immutable observation and
+typed proposal boundary — is unchanged, so this ADR is not superseded.
 
 ## Context
 
@@ -51,7 +53,12 @@ The engine owns all mutable state. A decision source receives an immutable bound
 
 Adopt option 3.
 
-- Run the foundation as one Rust process and one binary crate.
+- Run the foundation as one Rust process and one Cargo package, built as a library target and a thin binary target.
+  *(Amended in place 2026-08-17 under `ADR-MOK-002`, which narrows "one binary crate" to this. The library and
+  binary targets of the single package are not separate crates in the sense prohibited by `ARCH-MOK-001`, and the
+  library target's public interface is a closed read-only enumeration owned by `SPEC-MOK-002` rule 5. Engine
+  authority, and the prohibition on exposing mutable state to a decision source, are unchanged and now apply to a
+  surface that is actually reachable.)*
 - Give the simulation engine exclusive ownership of mutable world, agent, food, time, and entropy state.
 - Expose copied or immutable observations to decision sources.
 - Accept only typed proposed actions: wait, sleep, eat a selected resource, or move one cardinal cell.

@@ -1,0 +1,18 @@
+WO-MOK-003 static checks. Toolchain:
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+cargo 1.97.1 (c980f4866 2026-06-30)
+clippy 0.1.97 (8bab26f4f6 2026-07-14)
+rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)
+
+$ cargo fmt --all -- --check
+exit=0  (no output means no differences)
+
+$ cargo clippy --all-targets --all-features -- -D warnings
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.69s
+exit=0
+
+$ cargo build
+   Compiling Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.39s
+exit=0
