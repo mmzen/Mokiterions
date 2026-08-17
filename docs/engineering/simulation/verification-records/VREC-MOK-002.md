@@ -2,7 +2,7 @@
 id = "VREC-MOK-002"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-002"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
@@ -18,11 +18,13 @@ verifies_work_order = ["WO-MOK-002"]
 conforms_to = ["VER-MOK-002"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-002` to candidate commit `68163ac452619e2f8d5a05ed3a73d42b920ba5f6`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+Following review of the retained evidence by the accountable assurance owner, this record was transitioned from `ready` to `verified` on 2026-08-17. It binds `WO-MOK-002` to candidate commit `68163ac452619e2f8d5a05ed3a73d42b920ba5f6` without changing its captured provenance.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit, release, tag, publish, or deploy anything.
+
+The record was prepared after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## What this record claims
 
@@ -45,10 +47,11 @@ named test or a retained evidence file in `requirement-to-test-mapping.md`.
 `INT-MOK-002`'s scarcity principle holds and the adverse-observation condition in `VER-MOK-002` is
 not triggered.
 
-## What the accountable assurance owner should weigh before transitioning to `verified`
+## What the accountable assurance owner weighed before verifying
 
-Neither item below is a failure against this contract. Both are disclosed here because verifying
-this record endorses the judgement that they are acceptable.
+Neither item below is a failure against this contract. Both were disclosed before the decision and
+both are accepted by the verification recorded above, which endorses the judgement that they are
+acceptable at this candidate commit.
 
 1. **The floor has no margin.** Eight is the measured worst case and it is reached on two of five
    declared seeds. `VER-MOK-002` records this as a deliberate trade rather than an oversight, since
@@ -70,7 +73,16 @@ per-seed survivor counts are demonstrably non-monotonic in density.
 
 ## Authority
 
-This record is `ready`. Preparing it exercised no accountable decision: it did not verify, approve,
-release, tag, publish, or deploy, and it did not alter the candidate commit. Transition to
-`verified` is the accountable assurance owner's decision, and release remains a separate record and
-a separate decision after that.
+This record is `verified`. The verification decision was taken by the repository owner acting as
+accountable assurance owner on 2026-08-17, after review of the evidence listed above; it was not
+taken by an implementation agent, and `DECISION_RIGHTS` places it outside what such an agent may
+inherit. Recording the decision changed the record's status and this prose only.
+
+Every captured provenance field is preserved exactly as the managed capture produced it: the
+candidate commit, the git object format, the clean worktree state, the capture timestamp, the
+artifact snapshot hash, the evidence paths, the verified work order, and the verification contract.
+`WO-MOK-002` remains `implemented`; verification is carried by this record, not by a change to the
+work order.
+
+Verification is not release. Nothing here releases, tags, publishes, or deploys, and no release
+record exists. Release remains a separate record and a separate accountable decision.
