@@ -36,9 +36,12 @@ is demonstrated byte-for-byte against the pre-change baseline captured at commit
 evidence retained; it asserts no verification verdict.
 
 Commit-bound verification is classified `required` above, so assurance acceptance requires a separate
-verification record naming a candidate commit. That record is not created here, and no commit was made: the work is
-on branch `feature/library-target-and-test-placement` with the working tree uncommitted, awaiting the owner's
-decision to commit.
+verification record naming a candidate commit. The work was retained on branch
+`feature/library-target-and-test-placement` in one clean candidate commit,
+`a7f39f18520433cddc72c044c6fca1b24104bb7d`, and `VREC-MOK-003` was then prepared by
+`harnessctl capture-verification` at `ready`, binding that commit. This work order stays `implemented`: verification
+is carried by that record, and its transition from `ready` to `verified` is the accountable assurance owner's
+separate later act.
 
 Architecture is selected, unlike `WO-MOK-002`, and the selection is not nominal. `ARCH-MOK-001` states one binary
 crate as a quality attribute and as a conformance check and prohibits separate crates without an approved
