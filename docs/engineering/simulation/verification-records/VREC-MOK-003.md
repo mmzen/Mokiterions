@@ -2,7 +2,7 @@
 id = "VREC-MOK-003"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-003"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
@@ -18,11 +18,13 @@ verifies_work_order = ["WO-MOK-003"]
 conforms_to = ["VER-MOK-003"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-003` to candidate commit `a7f39f18520433cddc72c044c6fca1b24104bb7d`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+Following review of the retained evidence by the accountable assurance owner, this record was transitioned from `ready` to `verified` on 2026-08-17. It binds `WO-MOK-003` to candidate commit `a7f39f18520433cddc72c044c6fca1b24104bb7d` without changing its captured provenance.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit, release, tag, publish, or deploy anything.
+
+The record was prepared after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## What this record claims
 
@@ -79,11 +81,11 @@ accessor call returning the same value.
 `VREC-MOK-002` recorded, not merely above the floor. Four 10,000-tick runs complete without panic with
 survivors plus deaths equal to twelve in each, at the same termination ticks as `WO-MOK-002` recorded.
 
-## What verifying this record would endorse
+## What the accountable assurance owner weighed before verifying
 
-Neither matter below is a failure against this contract. Both are disclosed here before any decision, so
-that verifying this record is an informed endorsement of the judgement that they are acceptable at this
-candidate commit.
+Neither matter below is a failure against this contract. Both were disclosed before the decision and both
+are accepted by the verification recorded above, which endorses the judgement that they are acceptable at
+this candidate commit.
 
 1. **Two of `SPEC-MOK-002` rule 8's per-file subjects remain covered from the internal tier.**
    Termination by extinction requires clearing the resource collection and writing agent health and
@@ -92,15 +94,15 @@ candidate commit.
    their assertions intact, and the shortfall is recorded rather than resolved by widening the
    interface. This did not trigger the work order's stop-and-escalate condition, which fires only when
    leaving a test inline would leave a `VER-MOK-001` or `VER-MOK-002` case covered *only by a weaker
-   assertion*; both tests keep their original assertions at their original strength. Endorsing this
-   record endorses recording the insufficiency against rule 8's subject wording instead of growing the
-   public interface, and accepts that a future amendment may reword those subject lists.
+   assertion*; both tests keep their original assertions at their original strength. The verification
+   recorded above endorses recording the insufficiency against rule 8's subject wording instead of
+   growing the public interface, and accepts that a future amendment may reword those subject lists.
 2. **`RunSummary` carries a pre-existing `Debug` derive that renders the two withheld counts as text.**
    Rule 5 authorizes six accessors and four are exposed; population per territory and resource counts
    per class were deliberately omitted because no relocated test reads either, the enumeration being a
    ceiling rather than a checklist. The derive predates this work, the values it renders are already
    printed on every summary line, and it grants no borrow and no mutation path — so it is recorded as an
-   observation rather than waived. Endorsing this record accepts that judgement.
+   observation rather than waived. The verification recorded above accepts that judgement.
 
 No new test was written to close either gap, because `VER-MOK-003` conserves the census at 52 and
 adding one would itself have been a violation.
@@ -140,22 +142,31 @@ from 26 MB to 88 MB.
 
 ## Authority
 
-This record is `ready`, not `verified`. Preparing it exercised no accountable decision: nothing was
-verified, approved, tagged, released, or published, and the candidate commit is unchanged. The
-transition from `ready` to `verified` is the accountable assurance owner's separate later act, taken
-after review of the evidence listed above; `DECISION_RIGHTS.md` places it outside what an
-implementation agent may inherit, and an implementation agent did not take it here.
+This record is `verified`. The verification decision was taken by the repository owner acting as
+accountable assurance owner on 2026-08-17, after review of the evidence listed above; it was not taken
+by an implementation agent, and `DECISION_RIGHTS.md` places it outside what such an agent may inherit.
+Recording the decision changed the record's status and this prose only.
 
-Every provenance field above was produced by `harnessctl capture-verification` rather than authored by
-hand: the candidate commit, the git object format, the clean worktree state, the capture timestamp, the
-artifact snapshot hash, the evidence paths, the verified work order, and the verification contract. The
-snapshot was taken before this record was written, so it records the graph the record binds rather than
-the graph containing the record. Any later transition must preserve those fields exactly.
+Every captured provenance field is preserved exactly as the managed capture produced it: the candidate
+commit, the git object format, the clean worktree state, the capture timestamp, the artifact snapshot
+hash, the evidence paths, the verified work order, and the verification contract. The snapshot was taken
+before this record was written, so it records the graph the record binds rather than the graph containing
+the record. No provenance field was recomputed for this transition, and the candidate commit is
+unchanged.
 
 `WO-MOK-003` remains `implemented`; verification is carried by this record, not by a change to the work
-order. Until this record is `verified`, the Harness Explorer raises `W-HEX-001` against `WO-MOK-003`, as
-it does for every implemented work order awaiting commit-bound verification; that warning clears on the
-transition and not by adding further evidence.
+order, matching how `VREC-MOK-001` and `VREC-MOK-002` were verified.
+
+One derived observation survives this transition and is recorded here rather than left to be
+rediscovered. The Harness Explorer raises `W-HEX-001` against `WO-MOK-003`, reporting no evidence
+document keyed to its ID. That is a detection mismatch, not a shortfall: `discover_evidence` in
+`scripts/generate_harness_dashboard.py` keys evidence on the *file name*, while this work order's
+evidence is retained in a *directory* named for the work order, so no file name matches the pattern.
+`docs/mokiterions/ROADMAP.md` already records the mismatch and the need to align the convention in one
+direction. It applies identically to `WO-MOK-001` and `WO-MOK-002`, whose records are also `verified`,
+and because the rule's status set includes `verified` and `released`, the observation does not clear on
+verification and would not clear on release. The 29 retained evidence files are enumerated in
+`evidence_paths` above and were reviewed for this decision.
 
 Verification is not release. Nothing here releases, tags, publishes, or deploys, and no release record
 exists. Release remains a separate record and a separate accountable decision.
