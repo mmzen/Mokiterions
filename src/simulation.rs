@@ -154,7 +154,7 @@ impl fmt::Display for Policy {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Territory {
+pub enum Territory {
     A,
     B,
 }
@@ -173,9 +173,9 @@ impl fmt::Display for Territory {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Coordinate {
-    x: u8,
-    y: u8,
+pub struct Coordinate {
+    pub x: u8,
+    pub y: u8,
 }
 
 impl Coordinate {
@@ -231,7 +231,7 @@ impl fmt::Display for Coordinate {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
+pub enum Direction {
     North,
     East,
     South,
@@ -318,7 +318,7 @@ impl fmt::Display for RelativeDirection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum FoodClass {
+pub enum FoodClass {
     Low,
     Medium,
     High,
@@ -382,7 +382,7 @@ struct Mokiterion {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum Action {
+pub enum Action {
     Wait,
     Sleep,
     Eat { food_id: String },
@@ -680,7 +680,7 @@ impl SplitMix64 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum TerminationReason {
+pub enum TerminationReason {
     TickLimit,
     Extinction,
 }
@@ -712,6 +712,378 @@ struct ActionResult {
     detail: String,
 }
 
+/// Why regeneration declined to place a resource. `SPEC-MOK-001` fixes both words.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RegenerationSkipReason {
+    /// The territory holds no resource, so rule 15 can never restock it again.
+    Depleted,
+    /// The territory already stands at the capacity the run's density implies.
+    Capacity,
+}
+
+impl fmt::Display for RegenerationSkipReason {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Depleted => formatter.write_str("depleted"),
+            Self::Capacity => formatter.write_str("capacity"),
+        }
+    }
+}
+
+/// The event vocabulary `SPEC-MOK-001` fixes. Eleven core types plus `action_trace`.
+///
+/// The type is enumerated rather than left as a string so that a consumer filtering or
+/// mapping by type cannot invent a type the engine does not emit, and so that adding a
+/// type is a compile error everywhere it is handled.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum EventType {
+    WorldInitialized,
+    FoodInitialized,
+    AgentInitialized,
+    DecisionSourceSelected,
+    SurvivalChanged,
+    AgentDied,
+    FoodConsumed,
+    FoodRegenerated,
+    FoodRegenerationSkipped,
+    TerritoryCrossed,
+    SimulationEnded,
+    ActionTrace,
+}
+
+impl EventType {
+    /// Every type, in a stable order. A consumer cycling a filter through the vocabulary
+    /// uses this, so the vocabulary cannot drift out of step with what is emitted.
+    pub const ALL: [Self; 12] = [
+        Self::WorldInitialized,
+        Self::FoodInitialized,
+        Self::AgentInitialized,
+        Self::DecisionSourceSelected,
+        Self::SurvivalChanged,
+        Self::AgentDied,
+        Self::FoodConsumed,
+        Self::FoodRegenerated,
+        Self::FoodRegenerationSkipped,
+        Self::TerritoryCrossed,
+        Self::SimulationEnded,
+        Self::ActionTrace,
+    ];
+
+    /// The `event=` field of the text record. These strings are fixed by `SPEC-MOK-001`.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::WorldInitialized => "world_initialized",
+            Self::FoodInitialized => "food_initialized",
+            Self::AgentInitialized => "agent_initialized",
+            Self::DecisionSourceSelected => "decision_source_selected",
+            Self::SurvivalChanged => "survival_changed",
+            Self::AgentDied => "agent_died",
+            Self::FoodConsumed => "food_consumed",
+            Self::FoodRegenerated => "food_regenerated",
+            Self::FoodRegenerationSkipped => "food_regeneration_skipped",
+            Self::TerritoryCrossed => "territory_crossed",
+            Self::SimulationEnded => "simulation_ended",
+            Self::ActionTrace => "action_trace",
+        }
+    }
+}
+
+impl fmt::Display for EventType {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.as_str())
+    }
+}
+
+/// The typed payload of an event. It renders to the `result=` field of the text record
+/// and is the same value a host reads structurally, so the record and the structure can
+/// never disagree.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EventDetail {
+    WorldInitialized {
+        width: u8,
+        height: u8,
+        territories: u8,
+    },
+    FoodInitialized {
+        class: FoodClass,
+        position: Coordinate,
+        territory: Territory,
+    },
+    AgentInitialized {
+        position: Coordinate,
+        territory: Territory,
+        health: u8,
+        satiety: u8,
+        energy: u8,
+    },
+    DecisionSourceSelected {
+        source: String,
+    },
+    SurvivalChanged {
+        health: (u8, u8),
+        satiety: (u8, u8),
+        energy: (u8, u8),
+    },
+    AgentDied {
+        health: u8,
+    },
+    FoodConsumed {
+        food: String,
+        class: FoodClass,
+        satiety: (u8, u8),
+        energy: (u8, u8),
+    },
+    FoodRegenerated {
+        food: String,
+        class: FoodClass,
+        position: Coordinate,
+    },
+    FoodRegenerationSkipped {
+        reason: RegenerationSkipReason,
+        count: usize,
+    },
+    TerritoryCrossed {
+        from: Territory,
+        to: Territory,
+    },
+    SimulationEnded {
+        reason: TerminationReason,
+    },
+    ActionTrace {
+        proposal: Action,
+        accepted: bool,
+        detail: String,
+        position: Coordinate,
+        territory: Territory,
+        health: u8,
+        satiety: u8,
+        energy: u8,
+    },
+}
+
+impl EventDetail {
+    pub fn event_type(&self) -> EventType {
+        match self {
+            Self::WorldInitialized { .. } => EventType::WorldInitialized,
+            Self::FoodInitialized { .. } => EventType::FoodInitialized,
+            Self::AgentInitialized { .. } => EventType::AgentInitialized,
+            Self::DecisionSourceSelected { .. } => EventType::DecisionSourceSelected,
+            Self::SurvivalChanged { .. } => EventType::SurvivalChanged,
+            Self::AgentDied { .. } => EventType::AgentDied,
+            Self::FoodConsumed { .. } => EventType::FoodConsumed,
+            Self::FoodRegenerated { .. } => EventType::FoodRegenerated,
+            Self::FoodRegenerationSkipped { .. } => EventType::FoodRegenerationSkipped,
+            Self::TerritoryCrossed { .. } => EventType::TerritoryCrossed,
+            Self::SimulationEnded { .. } => EventType::SimulationEnded,
+            Self::ActionTrace { .. } => EventType::ActionTrace,
+        }
+    }
+}
+
+impl fmt::Display for EventDetail {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::WorldInitialized {
+                width,
+                height,
+                territories,
+            } => write!(
+                formatter,
+                "width:{width},height:{height},territories:{territories}"
+            ),
+            Self::FoodInitialized {
+                class,
+                position,
+                territory,
+            } => write!(
+                formatter,
+                "class:{class},position:{position},territory:{territory}"
+            ),
+            Self::AgentInitialized {
+                position,
+                territory,
+                health,
+                satiety,
+                energy,
+            } => write!(
+                formatter,
+                "position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy}"
+            ),
+            Self::DecisionSourceSelected { source } => write!(formatter, "source:{source}"),
+            Self::SurvivalChanged {
+                health,
+                satiety,
+                energy,
+            } => write!(
+                formatter,
+                "health:{}->{},satiety:{}->{},energy:{}->{}",
+                health.0, health.1, satiety.0, satiety.1, energy.0, energy.1
+            ),
+            Self::AgentDied { health } => write!(formatter, "health:{health}"),
+            Self::FoodConsumed {
+                food,
+                class,
+                satiety,
+                energy,
+            } => write!(
+                formatter,
+                "food:{food},class:{class},satiety:{}->{},energy:{}->{}",
+                satiety.0, satiety.1, energy.0, energy.1
+            ),
+            Self::FoodRegenerated {
+                food,
+                class,
+                position,
+            } => write!(formatter, "food:{food},class:{class},position:{position}"),
+            Self::FoodRegenerationSkipped { reason, count } => {
+                write!(formatter, "reason:{reason},count:{count}")
+            }
+            Self::TerritoryCrossed { from, to } => write!(formatter, "from:{from},to:{to}"),
+            Self::SimulationEnded { reason } => write!(formatter, "reason:{reason}"),
+            Self::ActionTrace {
+                proposal,
+                accepted,
+                detail,
+                position,
+                territory,
+                health,
+                satiety,
+                energy,
+            } => write!(
+                formatter,
+                "proposal:{proposal},status:{},detail:{detail},position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy}",
+                if *accepted { "accepted" } else { "rejected" }
+            ),
+        }
+    }
+}
+
+/// One authoritative event. `Display` renders the exact `REQ-MOK-010` record line, so a
+/// host that writes events and a host that reads them structurally see one order and one
+/// content.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Event {
+    pub tick: u64,
+    pub subject: String,
+    pub detail: EventDetail,
+}
+
+impl Event {
+    fn new(tick: u64, subject: impl Into<String>, detail: EventDetail) -> Self {
+        Self {
+            tick,
+            subject: subject.into(),
+            detail,
+        }
+    }
+
+    pub fn event_type(&self) -> EventType {
+        self.detail.event_type()
+    }
+}
+
+impl fmt::Display for Event {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "tick={} subject={} event={} result={}",
+            self.tick,
+            self.subject,
+            self.detail.event_type(),
+            self.detail
+        )
+    }
+}
+
+/// The engine's verdict on one proposed action, as `REQ-MOK-004` defines it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DecisionOutcome {
+    Accepted,
+    /// The ground the engine stated. It is an expected outcome of the authority
+    /// boundary, not a fault.
+    Rejected {
+        ground: String,
+    },
+}
+
+/// One decision opportunity from the most recently completed tick.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DecisionSnapshot {
+    pub agent_id: String,
+    pub proposed: Action,
+    pub outcome: DecisionOutcome,
+    /// The action the engine applied, absent when the proposal was rejected.
+    pub applied: Option<Action>,
+}
+
+/// A territory's standing resources at a completed-tick boundary.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TerritorySnapshot {
+    pub id: Territory,
+    pub standing: usize,
+    pub low: usize,
+    pub medium: usize,
+    pub high: usize,
+    pub capacity: usize,
+    /// `SPEC-MOK-001` rule 15 makes regeneration conditional on at least one standing
+    /// resource, so a standing count of zero is irreversible rather than merely low.
+    pub permanently_depleted: bool,
+}
+
+/// One living Mokiterion at a completed-tick boundary.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgentSnapshot {
+    pub id: String,
+    pub position: Coordinate,
+    pub territory: Territory,
+    pub health: u8,
+    pub satiety: u8,
+    pub energy: u8,
+    /// The action the engine applied on the most recently completed tick. Absent before
+    /// tick 1 completes and when the proposal was rejected.
+    pub applied_action: Option<Action>,
+}
+
+/// One standing resource at a completed-tick boundary.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResourceSnapshot {
+    pub id: String,
+    pub position: Coordinate,
+    pub territory: Territory,
+    pub class: FoodClass,
+}
+
+/// A complete, owned picture of authoritative state at a completed-tick boundary.
+///
+/// Every field is an owned value. There is no reference into engine state, no shared
+/// handle, no interior mutability, and no method that mutates, so holding a snapshot
+/// cannot influence the run it came from.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorldSnapshot {
+    pub tick: u64,
+    pub living_count: usize,
+    pub deaths: usize,
+    pub territories: [TerritorySnapshot; 2],
+    /// Living Mokiterions only, in ascending identifier order, which is the order
+    /// `SPEC-MOK-001` processes them in.
+    pub agents: Vec<AgentSnapshot>,
+    /// Standing resources only, in the engine's stable order.
+    pub resources: Vec<ResourceSnapshot>,
+    /// The most recently completed tick's decision opportunities, ascending identifier.
+    /// Empty before tick 1 completes.
+    pub decisions: Vec<DecisionSnapshot>,
+}
+
+/// What one call to [`Simulation::advance_tick`] produced.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TickOutcome {
+    /// The tick's authoritative events, in authoritative order.
+    pub events: Vec<Event>,
+    pub finished: bool,
+    /// The engine's termination reason, present exactly when `finished`.
+    pub reason: Option<TerminationReason>,
+}
+
 pub struct Simulation {
     config: Config,
     tick: u64,
@@ -719,6 +1091,15 @@ pub struct Simulation {
     foods: Vec<Food>,
     entropy: SplitMix64,
     next_food_id: u32,
+    /// Set once the run has ended. `SPEC-MOK-002` rule 1.4 requires a further advance to
+    /// be refused rather than to restart or to extend a finished run.
+    outcome: Option<TerminationReason>,
+    /// The most recently completed tick's decision records. Presentation reads them; no
+    /// rule does.
+    decisions: Vec<DecisionSnapshot>,
+    /// Present only while [`Simulation::advance_tick`] is collecting. The text-stream host
+    /// leaves it absent, so a long run retains nothing it does not need.
+    collected_events: Option<Vec<Event>>,
 }
 
 impl Simulation {
@@ -780,6 +1161,9 @@ impl Simulation {
             foods,
             entropy,
             next_food_id,
+            outcome: None,
+            decisions: Vec::new(),
+            collected_events: None,
         })
     }
 
@@ -808,78 +1192,251 @@ impl Simulation {
             ));
         }
 
-        self.emit_initialization(output)?;
-        write_event(
-            output,
+        for event in self.entity_initialization_events() {
+            self.emit(output, event)?;
+        }
+        let event = Event::new(
             0,
             "world",
-            "decision_source_selected",
-            &format!("source:{}", decision_source.name()),
-        )?;
+            EventDetail::DecisionSourceSelected {
+                source: decision_source.name().to_string(),
+            },
+        );
+        self.emit(output, event)?;
 
         loop {
-            self.tick += 1;
-            self.run_tick(output, decision_source)?;
-
-            let extinct = self.agents.iter().all(|agent| !agent.alive);
-            let tick_limit_reached = self.tick >= self.config.tick_limit;
-            if extinct || tick_limit_reached {
-                let reason = if extinct {
-                    TerminationReason::Extinction
-                } else {
-                    TerminationReason::TickLimit
-                };
+            if let Some(reason) = self.step(output, decision_source)? {
                 let summary = self.summary(reason);
-                write_event(
-                    output,
-                    self.tick,
-                    "world",
-                    "simulation_ended",
-                    &format!("reason:{reason}"),
-                )?;
                 self.emit_summary(output, &summary)?;
                 return Ok(summary);
             }
         }
     }
 
-    fn emit_initialization<W: Write>(&self, output: &mut W) -> io::Result<()> {
-        write_event(
-            output,
+    /// Advances the simulation exactly one tick and returns that tick's events.
+    ///
+    /// This is the only operation on this type that changes simulation state, and it takes
+    /// no host data, so a host's whole influence over a run is *when* it calls this.
+    /// Advancing a finished run is refused with no state change, as `SPEC-MOK-002` rule 1.4
+    /// requires.
+    ///
+    /// The error is the engine's own: `SPEC-MOK-001` rule 15 finding no free cell for a
+    /// resource it must place. `Simulation::new` reports its own failures the same way, and
+    /// `ARCH-MOK-001` requires ordinary `Result` propagation rather than a panic.
+    pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+        if let Some(reason) = self.outcome {
+            return Ok(TickOutcome {
+                events: Vec::new(),
+                finished: true,
+                reason: Some(reason),
+            });
+        }
+
+        match self.config.policy {
+            Policy::Baseline => {
+                let mut source = BaselineDecisionSource;
+                self.advance_tick_with_source(&mut source)
+            }
+            Policy::Reference => {
+                let mut source = ReferenceDecisionSource;
+                self.advance_tick_with_source(&mut source)
+            }
+        }
+    }
+
+    fn advance_tick_with_source<D: DecisionSource>(
+        &mut self,
+        decision_source: &mut D,
+    ) -> Result<TickOutcome, String> {
+        self.collected_events = Some(Vec::new());
+        let stepped = self.step(&mut io::sink(), decision_source);
+        let events = self.collected_events.take().unwrap_or_default();
+        match stepped {
+            Ok(reason) => Ok(TickOutcome {
+                events,
+                finished: reason.is_some(),
+                reason,
+            }),
+            // `io::sink` cannot fail, so a step's only error is the engine's own.
+            Err(error) => Err(error.to_string()),
+        }
+    }
+
+    /// Whether the run has ended. A finished run refuses to advance and stays inspectable.
+    pub fn is_finished(&self) -> bool {
+        self.outcome.is_some()
+    }
+
+    /// The engine's termination reason, present exactly once the run has ended. A host
+    /// presents this value rather than deriving its own verdict.
+    pub fn termination_reason(&self) -> Option<TerminationReason> {
+        self.outcome
+    }
+
+    /// The configuration this run was constructed with, defaults resolved. A defaulted
+    /// value and an explicitly supplied one are indistinguishable here, which is what
+    /// `SPEC-MOK-002` rule 8.1 requires of a host presenting provenance.
+    pub fn configuration(&self) -> Config {
+        self.config
+    }
+
+    /// An owned picture of authoritative state at the current completed-tick boundary.
+    ///
+    /// Every value is owned. Nothing here references engine state, so holding a snapshot
+    /// for any length of time cannot influence the run it came from.
+    pub fn snapshot(&self) -> WorldSnapshot {
+        let agents: Vec<AgentSnapshot> = self
+            .agents
+            .iter()
+            .filter(|agent| agent.alive)
+            .map(|agent| AgentSnapshot {
+                id: agent.id.clone(),
+                position: agent.position,
+                territory: agent.position.territory(),
+                health: agent.health,
+                satiety: agent.satiety,
+                energy: agent.energy,
+                applied_action: self
+                    .decisions
+                    .iter()
+                    .find(|decision| decision.agent_id == agent.id)
+                    .and_then(|decision| decision.applied.clone()),
+            })
+            .collect();
+
+        let resources: Vec<ResourceSnapshot> = self
+            .foods
+            .iter()
+            .map(|food| ResourceSnapshot {
+                id: food.id.clone(),
+                position: food.position,
+                territory: food.position.territory(),
+                class: food.class,
+            })
+            .collect();
+
+        let living_count = agents.len();
+        WorldSnapshot {
+            tick: self.tick,
+            living_count,
+            deaths: self.agents.len() - living_count,
+            territories: [
+                self.territory_snapshot(Territory::A),
+                self.territory_snapshot(Territory::B),
+            ],
+            agents,
+            resources,
+            decisions: self.decisions.clone(),
+        }
+    }
+
+    fn territory_snapshot(&self, territory: Territory) -> TerritorySnapshot {
+        let counts = self.food_counts(territory);
+        let standing = counts[0] + counts[1] + counts[2];
+        TerritorySnapshot {
+            id: territory,
+            standing,
+            low: counts[0],
+            medium: counts[1],
+            high: counts[2],
+            capacity: self.config.density.resources_per_territory(),
+            permanently_depleted: standing == 0,
+        }
+    }
+
+    /// The tick-0 events: the world, every resource, every Mokiterion, and the selected
+    /// decision source, in the order `SPEC-MOK-001` fixes.
+    ///
+    /// A host that did not call [`Simulation::run`] obtains them here rather than by
+    /// reading the text stream, so the two hosts present one vocabulary.
+    pub fn initialization_events(&self) -> Vec<Event> {
+        let source = match self.config.policy {
+            Policy::Baseline => BaselineDecisionSource.name().to_string(),
+            Policy::Reference => ReferenceDecisionSource.name().to_string(),
+        };
+        let mut events = self.entity_initialization_events();
+        events.push(Event::new(
             0,
             "world",
-            "world_initialized",
-            "width:128,height:128,territories:2",
-        )?;
+            EventDetail::DecisionSourceSelected { source },
+        ));
+        events
+    }
+
+    fn entity_initialization_events(&self) -> Vec<Event> {
+        let mut events = Vec::with_capacity(1 + self.foods.len() + self.agents.len());
+        events.push(Event::new(
+            0,
+            "world",
+            EventDetail::WorldInitialized {
+                width: WORLD_SIZE,
+                height: WORLD_SIZE,
+                territories: Territory::ALL.len() as u8,
+            },
+        ));
         for food in &self.foods {
-            write_event(
-                output,
+            events.push(Event::new(
                 0,
-                &food.id,
-                "food_initialized",
-                &format!(
-                    "class:{},position:{},territory:{}",
-                    food.class,
-                    food.position,
-                    food.position.territory()
-                ),
-            )?;
+                food.id.clone(),
+                EventDetail::FoodInitialized {
+                    class: food.class,
+                    position: food.position,
+                    territory: food.position.territory(),
+                },
+            ));
         }
         for agent in &self.agents {
-            write_event(
-                output,
+            events.push(Event::new(
                 0,
-                &agent.id,
-                "agent_initialized",
-                &format!(
-                    "position:{},territory:{},health:{},satiety:{},energy:{}",
-                    agent.position,
-                    agent.position.territory(),
-                    agent.health,
-                    agent.satiety,
-                    agent.energy
-                ),
-            )?;
+                agent.id.clone(),
+                EventDetail::AgentInitialized {
+                    position: agent.position,
+                    territory: agent.position.territory(),
+                    health: agent.health,
+                    satiety: agent.satiety,
+                    energy: agent.energy,
+                },
+            ));
+        }
+        events
+    }
+
+    /// One complete tick: every living Mokiterion's turn in `SPEC-MOK-001` order, any
+    /// regeneration, and the termination check.
+    ///
+    /// Both hosts call this, so neither can apply a tick the other would not, and a run is
+    /// the same sequence whether it was watched or not.
+    fn step<W: Write, D: DecisionSource>(
+        &mut self,
+        output: &mut W,
+        decision_source: &mut D,
+    ) -> io::Result<Option<TerminationReason>> {
+        self.tick += 1;
+        self.run_tick(output, decision_source)?;
+
+        let extinct = self.agents.iter().all(|agent| !agent.alive);
+        let tick_limit_reached = self.tick >= self.config.tick_limit;
+        if extinct || tick_limit_reached {
+            let reason = if extinct {
+                TerminationReason::Extinction
+            } else {
+                TerminationReason::TickLimit
+            };
+            self.outcome = Some(reason);
+            let event = Event::new(self.tick, "world", EventDetail::SimulationEnded { reason });
+            self.emit(output, event)?;
+            return Ok(Some(reason));
+        }
+        Ok(None)
+    }
+
+    /// Writes one authoritative event to the host's sink and retains it when a host is
+    /// collecting. Every event passes through here, which is why a collected `TickOutcome`
+    /// and the `REQ-MOK-010` record cannot disagree about order or content.
+    fn emit<W: Write>(&mut self, output: &mut W, event: Event) -> io::Result<()> {
+        writeln!(output, "{event}")?;
+        if let Some(collected) = &mut self.collected_events {
+            collected.push(event);
         }
         Ok(())
     }
@@ -889,6 +1446,7 @@ impl Simulation {
         output: &mut W,
         decision_source: &mut D,
     ) -> io::Result<()> {
+        self.decisions.clear();
         for agent_index in 0..self.agents.len() {
             if !self.agents[agent_index].alive {
                 continue;
@@ -900,6 +1458,18 @@ impl Simulation {
                 decision_source.decide(&observation, &mut entropy)
             };
             let result = self.apply_action(output, agent_index, &proposal)?;
+            self.decisions.push(DecisionSnapshot {
+                agent_id: self.agents[agent_index].id.clone(),
+                outcome: if result.accepted {
+                    DecisionOutcome::Accepted
+                } else {
+                    DecisionOutcome::Rejected {
+                        ground: result.detail.clone(),
+                    }
+                },
+                applied: result.accepted.then(|| proposal.clone()),
+                proposed: proposal.clone(),
+            });
 
             if self.config.trace_actions {
                 self.emit_action_trace(output, agent_index, &proposal, &result)?;
@@ -1043,13 +1613,15 @@ impl Simulation {
                 let current_territory = destination.territory();
                 self.agents[agent_index].position = destination;
                 if previous_territory != current_territory {
-                    write_event(
-                        output,
+                    let event = Event::new(
                         self.tick,
-                        &self.agents[agent_index].id,
-                        "territory_crossed",
-                        &format!("from:{previous_territory},to:{current_territory}"),
-                    )?;
+                        self.agents[agent_index].id.clone(),
+                        EventDetail::TerritoryCrossed {
+                            from: previous_territory,
+                            to: current_territory,
+                        },
+                    );
+                    self.emit(output, event)?;
                 }
                 Ok(ActionResult {
                     accepted: true,
@@ -1071,32 +1643,30 @@ impl Simulation {
 
                 let food = self.foods.remove(food_index);
                 let (satiety_restored, energy_restored) = food.class.restoration();
-                let agent = &mut self.agents[agent_index];
-                let previous_satiety = agent.satiety;
-                let previous_energy = agent.energy;
-                agent.satiety = agent
-                    .satiety
-                    .saturating_add(satiety_restored)
-                    .min(ATTRIBUTE_MAX);
-                agent.energy = agent
-                    .energy
-                    .saturating_add(energy_restored)
-                    .min(ATTRIBUTE_MAX);
-                write_event(
-                    output,
-                    self.tick,
-                    &agent.id,
-                    "food_consumed",
-                    &format!(
-                        "food:{},class:{},satiety:{}->{},energy:{}->{}",
-                        food.id,
-                        food.class,
-                        previous_satiety,
-                        agent.satiety,
-                        previous_energy,
-                        agent.energy
-                    ),
-                )?;
+                let event = {
+                    let agent = &mut self.agents[agent_index];
+                    let previous_satiety = agent.satiety;
+                    let previous_energy = agent.energy;
+                    agent.satiety = agent
+                        .satiety
+                        .saturating_add(satiety_restored)
+                        .min(ATTRIBUTE_MAX);
+                    agent.energy = agent
+                        .energy
+                        .saturating_add(energy_restored)
+                        .min(ATTRIBUTE_MAX);
+                    Event::new(
+                        self.tick,
+                        agent.id.clone(),
+                        EventDetail::FoodConsumed {
+                            food: food.id.clone(),
+                            class: food.class,
+                            satiety: (previous_satiety, agent.satiety),
+                            energy: (previous_energy, agent.energy),
+                        },
+                    )
+                };
+                self.emit(output, event)?;
                 Ok(ActionResult {
                     accepted: true,
                     detail: format!("food:{};class:{}", food.id, food.class),
@@ -1106,61 +1676,70 @@ impl Simulation {
     }
 
     fn emit_action_trace<W: Write>(
-        &self,
+        &mut self,
         output: &mut W,
         agent_index: usize,
         action: &Action,
         result: &ActionResult,
     ) -> io::Result<()> {
-        let agent = &self.agents[agent_index];
-        let status = if result.accepted {
-            "accepted"
-        } else {
-            "rejected"
+        let event = {
+            let agent = &self.agents[agent_index];
+            Event::new(
+                self.tick,
+                agent.id.clone(),
+                EventDetail::ActionTrace {
+                    proposal: action.clone(),
+                    accepted: result.accepted,
+                    detail: result.detail.clone(),
+                    position: agent.position,
+                    territory: agent.position.territory(),
+                    health: agent.health,
+                    satiety: agent.satiety,
+                    energy: agent.energy,
+                },
+            )
         };
-        write_event(
-            output,
-            self.tick,
-            &agent.id,
-            "action_trace",
-            &format!(
-                "proposal:{action},status:{status},detail:{},position:{},territory:{},health:{},satiety:{},energy:{}",
-                result.detail,
-                agent.position,
-                agent.position.territory(),
-                agent.health,
-                agent.satiety,
-                agent.energy
-            ),
-        )
+        self.emit(output, event)
     }
 
     fn apply_survival<W: Write>(&mut self, output: &mut W, agent_index: usize) -> io::Result<()> {
-        let agent = &mut self.agents[agent_index];
-        let previous_health = agent.health;
-        let previous_satiety = agent.satiety;
-        let previous_energy = agent.energy;
+        let (event, died) = {
+            let agent = &mut self.agents[agent_index];
+            let previous_health = agent.health;
+            let previous_satiety = agent.satiety;
+            let previous_energy = agent.energy;
 
-        agent.satiety = agent.satiety.saturating_sub(SATIETY_DECAY);
-        agent.energy = agent.energy.saturating_sub(ENERGY_DECAY);
-        if agent.satiety == 0 || agent.energy == 0 {
-            agent.health = agent.health.saturating_sub(5);
-        }
+            agent.satiety = agent.satiety.saturating_sub(SATIETY_DECAY);
+            agent.energy = agent.energy.saturating_sub(ENERGY_DECAY);
+            if agent.satiety == 0 || agent.energy == 0 {
+                agent.health = agent.health.saturating_sub(5);
+            }
 
-        write_event(
-            output,
-            self.tick,
-            &agent.id,
-            "survival_changed",
-            &format!(
-                "health:{previous_health}->{},satiety:{previous_satiety}->{},energy:{previous_energy}->{}",
-                agent.health, agent.satiety, agent.energy
-            ),
-        )?;
+            let event = Event::new(
+                self.tick,
+                agent.id.clone(),
+                EventDetail::SurvivalChanged {
+                    health: (previous_health, agent.health),
+                    satiety: (previous_satiety, agent.satiety),
+                    energy: (previous_energy, agent.energy),
+                },
+            );
 
-        if agent.health == 0 {
-            agent.alive = false;
-            write_event(output, self.tick, &agent.id, "agent_died", "health:0")?;
+            let died = agent.health == 0;
+            if died {
+                agent.alive = false;
+            }
+            (event, died)
+        };
+        self.emit(output, event)?;
+
+        if died {
+            let event = Event::new(
+                self.tick,
+                self.agents[agent_index].id.clone(),
+                EventDetail::AgentDied { health: 0 },
+            );
+            self.emit(output, event)?;
         }
         Ok(())
     }
@@ -1179,17 +1758,19 @@ impl Simulation {
 
         if current_count == 0 || current_count >= capacity {
             let reason = if current_count == 0 {
-                "depleted"
+                RegenerationSkipReason::Depleted
             } else {
-                "capacity"
+                RegenerationSkipReason::Capacity
             };
-            return write_event(
-                output,
+            let event = Event::new(
                 self.tick,
-                &territory.to_string(),
-                "food_regeneration_skipped",
-                &format!("reason:{reason},count:{current_count}"),
+                territory.to_string(),
+                EventDetail::FoodRegenerationSkipped {
+                    reason,
+                    count: current_count,
+                },
             );
+            return self.emit(output, event);
         }
 
         // Add the specified yield, or only as many as the remaining capacity allows.
@@ -1211,13 +1792,16 @@ impl Simulation {
                 position,
                 class,
             });
-            write_event(
-                output,
+            let event = Event::new(
                 self.tick,
-                &territory.to_string(),
-                "food_regenerated",
-                &format!("food:{id},class:{class},position:{position}"),
-            )?;
+                territory.to_string(),
+                EventDetail::FoodRegenerated {
+                    food: id,
+                    class,
+                    position,
+                },
+            );
+            self.emit(output, event)?;
         }
         Ok(())
     }
@@ -1298,19 +1882,6 @@ fn choose_free_coordinate(
 
 fn food_id(number: u32) -> String {
     format!("F{number:04}")
-}
-
-fn write_event<W: Write>(
-    output: &mut W,
-    tick: u64,
-    subject: &str,
-    event: &str,
-    result: &str,
-) -> io::Result<()> {
-    writeln!(
-        output,
-        "tick={tick} subject={subject} event={event} result={result}"
-    )
 }
 
 #[cfg(test)]

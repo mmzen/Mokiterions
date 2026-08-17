@@ -1,12 +1,9 @@
-mod cli;
-mod simulation;
-
 use std::env;
 use std::io::{self, BufWriter, Write};
 use std::process::ExitCode;
 
-use cli::Command;
-use simulation::Simulation;
+use mokiterions_core::cli::{self, Command};
+use mokiterions_core::simulation::Simulation;
 
 fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8
 where

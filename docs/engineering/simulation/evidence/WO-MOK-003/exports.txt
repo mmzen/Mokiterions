@@ -1,0 +1,33 @@
+# Exports — WO-MOK-003
+
+`SPEC-MOK-002` rules 9.4 to 9.6: an export carries authoritative records only, in
+authoritative order, in the `SPEC-MOK-001` line format, and it ignores any active filter.
+It is the observer's only retainable artifact and the only observer output admissible as
+evidence.
+
+An export is the engine's records followed by one closing statement, `# retained=N
+truncated=B`. The engine binary's stream is the same records followed by its `summary` line.
+Comparing the two therefore means comparing every line but the last of each.
+
+## What is retained here
+
+`exports/events-seed<N>-ticks20.log`, one per declared seed, complete with its closing
+statement. Twenty ticks rather than the default hundred keeps each file reviewable: a
+default run is about 1,400 records and 134 KB, so five of them would add two thirds of a
+megabyte of generated log to the repository. The byte comparison below is performed at both
+tick limits, and the default-configuration figures are retained as counts and digests.
+
+## Reproducibility
+
+seed 0    ticks 20    74855 bytes    623 records   two runs, one interacted with andfiltered: BYTE-IDENTICAL
+seed 1    ticks 20    74909 bytes    622 records   two runs, one interacted with andfiltered: BYTE-IDENTICAL
+seed 42   ticks 20    74811 bytes    623 records   two runs, one interacted with andfiltered: BYTE-IDENTICAL
+seed 123  ticks 20    75001 bytes    621 records   two runs, one interacted with andfiltered: BYTE-IDENTICAL
+seed 777  ticks 20    74717 bytes    622 records   two runs, one interacted with andfiltered: BYTE-IDENTICAL
+
+A filter changes what is presented and never what is exported, which is why the second
+run above is filtered before its export is taken.
+
+Tests: verification::exports_are_reproducible_and_are_the_engines_own_records,
+       export::tests::records_use_the_engines_own_line_format_in_authoritative_order,
+       export::tests::nothing_environment_specific_reaches_the_file

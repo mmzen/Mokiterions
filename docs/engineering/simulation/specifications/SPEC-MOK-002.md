@@ -1,0 +1,612 @@
++++
+id = "SPEC-MOK-002"
+type = "specification"
+title = "Terminal observer presentation and read-only observation contract"
+status = "approved"
+owners = ["technical owner"]
+created = "2026-08-17"
+updated = "2026-08-17"
+
+[relations]
+specifies = [
+  "REQ-MOK-016",
+  "REQ-MOK-017",
+  "REQ-MOK-018",
+  "REQ-MOK-019",
+  "REQ-MOK-020",
+  "REQ-MOK-021",
+  "REQ-MOK-022",
+  "REQ-MOK-023",
+  "REQ-MOK-024",
+]
++++
+
+# Specification: Terminal observer presentation and read-only observation contract
+
+## Scope
+
+This specification fixes the exact behavior of a terminal observer over the existing simulation engine, and the
+read-only interface through which the observer obtains authoritative state.
+
+It governs `REQ-MOK-016` through `REQ-MOK-024`. It does not govern any simulation rule. Every world rule —
+dimensions, territories, attributes, food classes, tick order, actions, validation, perception, decay, death,
+regeneration, density, entropy, the event vocabulary, and the text stream — remains fixed by `SPEC-MOK-001`, which
+this specification never restates as authority and never contradicts. Where a figure from `SPEC-MOK-001` appears
+here, it appears as a consumed input; if the two ever disagree, `SPEC-MOK-001` governs the world and this document
+has a defect.
+
+This specification adds no simulation behavior and no simulation state.
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-17 | Original content for `CAP-MOK-003`, covering `REQ-MOK-016` through `REQ-MOK-024`. | Approved by the technical owner. |
+| 2026-08-17 | Corrected two derived figures in rule 5 before approval. The `100 × 30` row omitted the pane border and claimed a whole-world presentation its 98 × 24 interior cannot deliver, since 24 cells address 96 of 128 world rows; the tier C example stated a 71 × 42 canvas where the arithmetic yields 71 × 36. A `120 × 48` row was added so tier C carries a checkable obligation. No rule changed. | Approved by the technical owner. |
+
+## Actors and external systems
+
+- **Operator.** A person at an interactive terminal. The only actor. Observes and navigates; never mutates world
+  state.
+- **Terminal emulator.** An external system whose dimensions, colour support and Unicode support the observer does
+  not control and must not assume. It is entered in an alternate screen with raw input and must be restored on every
+  exit path.
+- **Terminal user-interface library.** `ratatui` version `0.30.2` with `default-features = false` and features
+  `crossterm`, `layout-cache`, `underline-color`. This resolves to a measured surface of **57 crates** including
+  itself, and it is a dependency of the observer component alone. The `serde` feature is off, and no feature enabling
+  networking, an asynchronous runtime, or serialization is enabled.
+- **Filesystem.** Written to exactly once per operator-requested export, at an operator-supplied or default path.
+  Never read from.
+
+No network, credential, model provider, database, or asynchronous runtime is involved in either component.
+
+## Inputs
+
+### Start-up inputs
+
+The observer accepts the same simulation inputs as the engine binary, with identical names, identical parsing,
+identical validation, identical defaults and identical rejection behavior: `--seed`, `--ticks`, `--density`,
+`--policy`, and `--help`. Their semantics are fixed by `SPEC-MOK-001` and are not restated here.
+
+It additionally accepts:
+
+| Input | Values | Default | Meaning |
+|---|---|---|---|
+| `--speed` | integer in `{1, 2, 4, 8, 16, 32, 64}` | `8` | ticks advanced per second while progression is running |
+| `--start-paused` | flag | absent | begin held before tick 1 rather than running |
+| `--export` | path | absent | default path used by the export control; the export still requires the operator's key press |
+
+An invalid value for any input is rejected before the terminal is entered, with a diagnostic on standard error and
+exit code `2`. `--export` is validated as a string only; it is never opened at start-up, never interpreted as code,
+and never used to read.
+
+### Runtime inputs
+
+Key presses, and terminal resize notifications. Nothing else. There is no configuration file, no environment
+variable, and no standard-input protocol.
+
+## Outputs
+
+- Rendered frames to the terminal's alternate screen. Frames are presentation, not a record, and no claim rests on
+  them alone.
+- One export file per operator request, written to the resolved path.
+- Diagnostics to standard error, before the terminal is entered or after it is restored, never interleaved with
+  frames.
+- Exit codes: `0` on normal exit; `2` for invalid configuration or a viewport below the floor at start-up; `1` for an
+  unrecoverable runtime or terminal failure. This matches `SPEC-MOK-001` so the two binaries cannot be confused by
+  their status.
+
+The observer does not write the `REQ-MOK-010` text stream to standard output. That stream remains the engine
+binary's output and is unchanged.
+
+## State model
+
+The observer holds one `Simulation` value and its own presentation state. Presentation state is not simulation
+state, is never persisted, and never influences any engine computation.
+
+| Field | Domain | Initial |
+|---|---|---|
+| `progression` | `Running` \| `Held` | `Running`, or `Held` when `--start-paused` |
+| `speed` | `{1,2,4,8,16,32,64}` ticks per second | `--speed`, default `8` |
+| `selection` | Mokiterion identifier or none | none |
+| `follow` | on \| off | off |
+| `zoom` | `Overview` \| `Detail` | `Overview` |
+| `camera` | top-left world cell of the visible region | `0:0` |
+| `filter` | none \| event type \| subject | none |
+| `overlay` | none \| roster \| log \| inspector \| help \| authority | none |
+| `events` | ring buffer, capacity `100_000` records | empty |
+| `truncated` | bool — capacity was reached and records were dropped | false |
+
+`events` retains the authoritative events the observer has seen this run. It is a presentation buffer: dropping the
+oldest record when full loses presentability, never authority, because the engine binary's text stream remains the
+unbounded record. `truncated` is displayed and exported when true.
+
+## Behavioral rules
+
+### Rule 1 — Progression
+
+The observer advances the simulation by calling the engine's single-tick advance and by no other means.
+
+1. While `Held`, the engine is not advanced. The observer holds the simulation at a **completed-tick boundary**: a
+   tick is either fully applied, including all twelve agent turns in `SPEC-MOK-001` order and any regeneration, or
+   not started. There is no state in which the observer presents a partially applied tick.
+2. While `Running`, the observer advances one tick every `1000 / speed` milliseconds, measured from the previous
+   advance. If the observer falls behind, it advances at most one tick per scheduling opportunity and never advances
+   two ticks to catch up in zero elapsed time; falling behind slows the run and never changes it.
+3. The single-step control is accepted only while `Held`. It advances exactly one tick and remains `Held`.
+4. Advancing is refused, with no state change, once the engine reports the run finished. The final state remains
+   fully inspectable, selectable and exportable.
+5. Wall-clock time is read only to decide *when* rule 1.2 advances and when rule 6 draws. It is never passed to the
+   engine and never enters any authoritative value.
+
+### Rule 2 — The spatial view
+
+The spatial view is a bordered pane containing a canvas of `Cw × Ch` character cells, determined by rule 5.
+
+**Overview zoom.** The canvas uses braille marker cells: each character cell carries a 2-wide by 4-tall grid of
+independently addressable dots, so a canvas of `Cw × Ch` cells addresses `2·Cw × 4·Ch` world cells at one dot per
+world cell. The 128 × 128 world is therefore presented in full, at one dot per world cell, exactly when
+`Cw ≥ 64` and `Ch ≥ 32`.
+
+**Detail zoom.** One character cell is one world cell. The visible region is `Cw × Ch` world cells.
+
+In both zooms:
+
+1. **Orientation.** World `y` increases downward on screen, so territory A (`y` 0–63) is presented above territory B
+   (`y` 64–127), matching `SIMULATION_RULES.md`. The canvas coordinate system is bottom-up, so the observer maps
+   world `y` to canvas `127 − y`. A view that presents territory A below territory B is a defect.
+2. **Territory boundary.** A horizontal rule is drawn between world rows 63 and 64 whenever that boundary lies in
+   the visible region.
+3. **Region indication.** When the visible region is smaller than the world in either axis, the pane title states the
+   visible world range, so absence from the view is never read as death.
+
+**Overview rendering layers**, drawn in this order:
+
+| Layer | Encoding |
+|---|---|
+| Resources | one braille dot per standing resource |
+| Territory boundary | a rule as in 2.2 |
+| Mokiterions | the identifier's last character as an uppercase glyph filling the whole character cell containing it |
+
+An overview Mokiterion glyph therefore locates its subject to within the 2 × 4 block of world cells that character
+cell covers, and it replaces the braille content of that cell. This is a consequence of a character cell being
+indivisible for text, not a choice: a cell can carry braille dots or a letter, never both. Positional exactness is
+obtained by switching to detail zoom, and the selected Mokiterion's exact coordinates are always shown numerically
+in the inspector and the roster, so no exact value is ever only available graphically.
+
+**Detail rendering** places, per world cell, at most one glyph, with this precedence: a Mokiterion glyph over a
+resource glyph.
+
+| Entity | Glyph | Colour |
+|---|---|---|
+| Mokiterion, `M01`–`M09` | `1`–`9` | by current territory |
+| Mokiterion, `M10`–`M12` | `A`, `B`, `C` | by current territory |
+| Resource, low | `○` | class colour |
+| Resource, medium | `◎` | class colour |
+| Resource, high | `●` | class colour |
+
+Mokiterion glyphs are derived mechanically from the engine's identifiers, which are `M01`–`M12` and carry no names.
+When agent naming is introduced by a later phase, the glyph becomes the name's first character and this table is
+amended; nothing here anticipates that value.
+
+4. **Shared cells.** When two or more Mokiterions fall in the same rendered cell, the one with the lowest identifier
+   is drawn and the cell is underlined to mark the cell as shared. The count of Mokiterions in the selected cell is
+   shown in the inspector. Two resources sharing an overview dot are indistinguishable by construction; the
+   authoritative per-territory, per-class counts of rule 3 are the exact figures.
+5. **Colour independence.** Every distinction that carries identity is available without colour: Mokiterions by
+   glyph, resource class by glyph in detail zoom, sharing by underline, territory by position relative to the
+   boundary. Colour is redundant reinforcement in every case. In overview zoom, per-resource class is not encoded
+   at all — a single dot cannot carry three states and a character cell has one foreground colour for eight world
+   cells — and class is obtained from rule 3's counts or from detail zoom.
+6. **Panning** moves `camera` by one world cell per press, or by one visible region per paged press, clamped so the
+   visible region never leaves the world. **Following** sets `camera` each frame so the selected Mokiterion is
+   centred, clamped identically; following is ignored while nothing is selected.
+
+### Rule 3 — Territory resource headline
+
+For each territory the observer presents the standing resource count, its breakdown into low, medium and high, and
+the capacity implied by the run's density.
+
+1. A territory whose standing count is `0` is presented as **permanently depleted**, not as a count of zero, because
+   `SPEC-MOK-001` makes regeneration conditional on at least one remaining resource and the state is therefore
+   irreversible.
+2. A territory whose standing count is `1` is presented as **one from sterile**, since consuming that resource
+   destroys the territory for the remainder of the run.
+3. Both indications are textual as well as coloured.
+
+### Rule 4 — Roster
+
+The roster lists every living Mokiterion in ascending identifier order, which is the order in which
+`SPEC-MOK-001` processes them, so reading position in the roster corresponds to acting order.
+
+Each entry occupies two lines at widths of 47 columns or more:
+
+```text
+M05  A  81:14         eat F0058
+     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72
+```
+
+Line one carries the identifier, current territory, position, and the action the engine applied on the most recently
+completed tick. Line two carries health, satiety and energy, each as a twenty-cell proportional bar and a numeric
+value. Below 47 columns each entry collapses to one line carrying identifier, territory and the three numeric values
+without bars.
+
+1. Twelve living entries in the two-line form require 24 lines plus the pane border, which the reference viewport
+   provides; the no-scroll obligation of `REQ-MOK-017` is an obligation at the reference size and rule 5 states what
+   happens below it.
+2. The living count is presented in the pane title.
+3. A Mokiterion is removed from the roster on the tick its death is applied. The pane states the number of deaths so
+   far, so a disappearance is corroborated by a total.
+4. A value of `0` renders as `0` with an empty bar, which is distinguishable from an absent value because absent
+   values render as `—`.
+5. Attributes the engine does not compute are absent. The line-two bar row reserves trailing space for a fourth bar
+   so that Phase 2's `fear` occupies it without re-specifying the pane, and that space renders empty with no label,
+   no dash and no zero. An inert `fear 0` would be a claim the engine cannot support.
+6. Selecting a roster entry and selecting a Mokiterion are the same operation; the selected entry is highlighted by
+   reversed video, not by colour alone.
+
+### Rule 5 — Layout and degradation
+
+Layout is a pure function of viewport width `W` and height `H`. It depends on nothing else — not tick, not run
+state, not entropy, not wall-clock time — so the same dimensions always produce the same layout.
+
+**Floor.** When `W < 34` or `H < 22`, the observer does not enter the terminal. It writes the current and required
+dimensions to standard error and exits `2`. The floor is derived: a canvas of 32 × 16 cells is the minimum fidelity
+of rule 2, its pane border adds two cells in each axis, and the header and footer occupy four rows.
+
+**Tiers.** The first matching row applies.
+
+| Tier | Condition | Vertical constraints, top to bottom | Body, left to right |
+|---|---|---|---|
+| A — full | `W ≥ 140` and `H ≥ 48` | header `3`, body `Min(34)`, log `10`, footer `1` | roster `47`, view `Min(0)`, inspector `44` |
+| B — compact log | `W ≥ 140` and `44 ≤ H < 48` | header `3`, body `Min(34)`, log `6`, footer `1` | roster `47`, view `Min(0)`, inspector `44` |
+| C — narrow | `100 ≤ W < 140` and `H ≥ 38` | header `3`, body `Min(0)`, log `6`, footer `1` | roster `47`, view `Min(0)` |
+| D — minimal | otherwise, above the floor | header `3`, body `Min(0)`, footer `1` | view `Min(0)` |
+
+Every pane a tier excludes is reachable as a full-body overlay by its bound key. The header and the footer are never
+excluded, because the footer carries the provenance of rule 8 and a frame without provenance cannot serve as
+evidence.
+
+**Derived consequences**, which are obligations because they are checkable at named sizes:
+
+| Viewport | Tier | Canvas cells | Overview presents |
+|---|---|---|---|
+| 160 × 48 | A | 67 × 32 | the whole world at one dot per world cell |
+| 160 × 44 | B | 67 × 32 | the whole world at one dot per world cell |
+| 140 × 44 | B | 47 × 32 | world columns 0–93 of 128; a region, so annotated |
+| 120 × 48 | C | 71 × 36 | the whole world at one dot per world cell |
+| 100 × 30 | D | 98 × 24 | all 128 columns but only world rows 0–95 of 128; a region, so annotated |
+| 34 × 22 | D | 32 × 16 | world 64 × 64 of 128 × 128; a region, so annotated |
+
+Each canvas figure is the pane's interior: the tier's width and height constraints less the two cells its border occupies in
+each axis. Width alone never suffices. A viewport can be wide enough to address every world column and still be too short
+to address every world row, which is what the `100 × 30` row shows: 98 cells address 196 world columns, more than the 128
+that exist, while 24 cells address 96 world rows of 128. Presenting the whole world requires `Cw ≥ 64` **and** `Ch ≥ 32`,
+and a canvas that satisfies one and not the other presents a region and is annotated as one.
+
+The 1:1 threshold with the inspector shown is `W ≥ 157`, since `47 + 44 + 66 = 157`. Between 140 and 156 columns the
+inspector is retained and the overview presents a region, which is the declared trade at widths already below the
+reference size.
+
+**Announcement.** Whenever any pane is excluded, any roster entry is not visible, or the view presents a region, the
+observer states it: the header lists the panes currently available only as overlays, the roster title states how
+many entries are hidden, and the view title states the visible world range.
+
+**Resize.** The layout is recomputed for the new dimensions on the next frame. Selection, filter, zoom, camera,
+progression, speed and retained events all survive a resize. A resize below the floor mid-run suspends drawing,
+presents nothing, does not terminate the run, and resumes drawing when the viewport is large enough; the simulation
+is unaffected either way.
+
+### Rule 6 — Frames and input
+
+1. The observer draws at most one frame every `33` milliseconds, and always draws immediately after a single-step so
+   that stepping is never invisible.
+2. Input is polled at most every `16` milliseconds. A key press is applied exactly once. Polling never blocks the
+   engine and never causes a tick to be skipped or repeated.
+3. Draw cadence, input timing and resize events do not reach the engine.
+4. An unbound key is ignored: no action, no state change, no diagnostic.
+
+### Rule 7 — Key bindings
+
+| Key | Control |
+|---|---|
+| `Space` | hold or release progression |
+| `.` | advance exactly one tick; accepted only while held |
+| `+` / `-` | next faster / next slower speed step, clamped to `1` and `64` |
+| `Tab` / `Shift-Tab` | select next / previous living Mokiterion in roster order |
+| `Esc` | close an overlay if one is open, otherwise clear the selection |
+| `f` | toggle follow |
+| `z` | toggle overview and detail zoom |
+| `←` `↓` `↑` `→` or `h` `j` `k` `l` | pan one world cell |
+| `PageUp` / `PageDown` | pan one visible region vertically |
+| `e` | cycle the event-type filter through the vocabulary of rule 9 and none |
+| `u` | filter the log to the selected Mokiterion; ignored while nothing is selected |
+| `c` | clear the filter |
+| `x` | export |
+| `t` | open the authority overlay for the highlighted event type |
+| `r` / `L` / `i` | open the roster / log / inspector overlay |
+| `?` | open the key-binding overlay |
+| `q` | quit |
+
+No binding mutates world state. The complete set of operator influence over the simulation is when rule 1 advances
+it.
+
+### Rule 8 — Provenance footer
+
+One row, present in every tier, containing the entropy seed, the configured tick limit, the resource density as
+supplied, the active decision source, the current tick, and the retained-event count with a truncation marker when
+`truncated` is set.
+
+1. Values are read from the engine's configuration, so a defaulted value and an explicitly supplied value present
+   identically.
+2. The candidate commit is displayed when it was supplied to the build as a compile-time value, and the field is
+   absent otherwise. The observer does not read repository files, invoke git, or guess.
+3. The footer contains no wall-clock time, no absolute path, no environment variable and no credential.
+
+### Rule 9 — Event log, filtering and export
+
+The observer presents the events the engine emits, in authoritative order, with the fields and vocabulary
+`SPEC-MOK-001` fixes: `tick`, `subject`, `event`, `result`. It defines no event type and renames no field.
+
+1. The newest events are visible without operator action. Older retained events are reachable by scrolling within
+   the log overlay.
+2. Filtering by event type restricts the presentation to one of the eleven core types or to `action_trace`.
+   Filtering by subject restricts it to one Mokiterion or one territory. Filtering changes presentation only.
+3. When a filter matches nothing, the pane states that the filter matched no retained event.
+4. **Export** writes every retained event, ignoring any active filter, to the resolved path: `--export` when
+   supplied, otherwise `mokiterions-events-seed<seed>-ticks<tick>.log` in the working directory. Records use exactly
+   the `SPEC-MOK-001` line format, in authoritative order. A final line states the retained-event count and whether
+   truncation occurred.
+5. An export contains no wall-clock timestamp, no absolute path, no environment-specific value and no credential.
+   Two exports from runs sharing seed, configuration, decision source and stopping tick are byte-identical.
+6. A failed export is reported in the header, leaves the run running, and does not present a partial file as
+   complete. A partially written file is removed if it can be.
+
+### Rule 10 — Inspector
+
+For the selected Mokiterion the inspector presents its identifier, exact position, territory, health, satiety,
+energy, the count of Mokiterions sharing its rendered cell, and the decision record of the most recently completed
+tick: the proposed action with its target where it has one, the engine outcome as accepted or rejected, the engine's
+stated ground on rejection, and the action applied.
+
+1. Accepted and rejected are distinguished by an explicit word and by symbol, not by colour alone.
+2. A rejection is presented as an expected outcome of the authority boundary, never as a program fault or warning.
+3. The proposal and the outcome presented are always from the same tick. Presenting a proposal from one tick beside
+   an outcome from another is a defect.
+4. Before tick 1 completes, the pane states that no proposal has yet been made.
+5. With nothing selected, the pane states that nothing is selected. It never defaults to an arbitrary Mokiterion.
+6. When the selected Mokiterion dies, the selection is retained and the pane presents the death, the tick of death,
+   and the final attribute values. The next selection control moves to the nearest living Mokiterion in roster
+   order.
+7. Fields for values the engine does not compute — fear, traits, name, age, kills, combats, remembered locations,
+   model latency and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+
+### Rule 11 — Authority mapping
+
+The observer carries a static, exhaustive mapping from event type to the identifier of the requirement that
+authorizes the behavior the event reports. The `t` control presents it for the highlighted event type.
+
+| Event type | Authorizing requirement |
+|---|---|
+| `world_initialized` | `REQ-MOK-001` |
+| `food_initialized` | `REQ-MOK-001` |
+| `agent_initialized` | `REQ-MOK-002` |
+| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference` |
+| `survival_changed` | `REQ-MOK-003` |
+| `agent_died` | `REQ-MOK-003` |
+| `food_consumed` | `REQ-MOK-006` |
+| `food_regenerated` | `REQ-MOK-007` |
+| `food_regeneration_skipped` | `REQ-MOK-007` |
+| `territory_crossed` | `REQ-MOK-005` |
+| `simulation_ended` | `REQ-MOK-011` |
+| `action_trace` | `REQ-MOK-012` |
+
+The inspector's proposal-and-outcome presentation maps to `REQ-MOK-004`, and perceived-entity information maps to
+`REQ-MOK-013`.
+
+1. The mapping names identifiers only. It never restates requirement text, which could drift from the artifact that
+   holds it.
+2. Every event type the observer can present has an entry. A type without one is a defect in this table, and the
+   observer states that the mapping is missing rather than presenting a plausible identifier.
+
+### Rule 12 — Outcome preservation
+
+1. The observer's only call that changes simulation state is the single-tick advance of rule 1.
+2. The observer draws no value from the simulation entropy source. Entropy draw counts per tick are identical
+   observed and unobserved.
+3. The observer does not reorder ticks, reorder agent turns within a tick, skip a tick, or apply a tick twice.
+4. A failure inside the observer never leaves a tick partially applied.
+5. A run ended early by the operator yields a prefix of the unobserved run's events, identical up to the stopping
+   tick, and reports itself as ended early rather than completed.
+
+## Error and recovery behavior
+
+| Condition | Behavior |
+|---|---|
+| Invalid start-up input | diagnostic on standard error before entering the terminal; exit `2` |
+| Viewport below the floor at start-up | required and actual dimensions on standard error; exit `2` |
+| Viewport below the floor mid-run | drawing suspended, run continues, resumes when large enough |
+| Draw failure | reported in the header; the run continues; not a simulation result |
+| Input read failure | reported in the header; progression continues under rule 1 |
+| Export failure | reported in the header; run continues; no partial file presented as complete |
+| Terminal cannot be entered | diagnostic on standard error; exit `1`; no frame drawn |
+| Panic on any path | terminal restored before the process exits |
+| Run finished | advance refused; final state remains inspectable and exportable |
+
+Terminal restoration is unconditional. Leaving an operator's terminal in raw mode on an alternate screen is treated
+as a defect of the same severity as a wrong displayed value.
+
+## Data and interface contracts
+
+The engine component exposes a read-only observation surface and exactly one mutating operation.
+
+```text
+Simulation::new(Configuration)          -> Simulation
+Simulation::snapshot(&self)             -> WorldSnapshot
+Simulation::advance_tick(&mut self)     -> TickOutcome
+Simulation::is_finished(&self)          -> bool
+Simulation::configuration(&self)        -> Configuration
+```
+
+```text
+WorldSnapshot {
+  tick, living_count, deaths,
+  territories: [TerritorySnapshot; 2],
+  agents:      [AgentSnapshot],        // living only, ascending identifier
+  resources:   [ResourceSnapshot],     // standing only, stable order
+  decisions:   [DecisionSnapshot],     // most recent completed tick, ascending identifier
+}
+
+TerritorySnapshot { id, standing, low, medium, high, capacity, permanently_depleted }
+AgentSnapshot     { id, position, territory, health, satiety, energy, applied_action }
+ResourceSnapshot  { id, position, territory, class }
+DecisionSnapshot  { agent_id, proposed, outcome: Accepted | Rejected(ground), applied }
+TickOutcome       { events: [Event], finished, reason }
+```
+
+1. Every snapshot type contains owned values only: no reference into engine state, no shared handle, no interior
+   mutability, and no method that mutates.
+2. `advance_tick` is the only operation that changes simulation state, and the surface exposes no other `&mut self`
+   method that does. This is checkable by inspecting the public surface.
+3. Dependency direction is one-way: the observer depends on the engine; the engine has no knowledge of the observer.
+4. Snapshot ordering is stable and specified, so two frames of the same tick present identically.
+5. The engine's own `SPEC-MOK-001` behavior — including the text stream, the trace lines and the summary — is
+   unchanged by the existence of this surface.
+
+The host process owning the `Simulation` and calling `advance_tick` is the role the existing engine binary already
+performs. The invariant `ADR-MOK-001` protects concerns decision sources, which receive an `Observation` and return a
+`ProposedAction` and are unchanged by this specification.
+
+### Component layout
+
+```text
+Cargo.toml                 # package mokiterions-core; [workspace] members = ["mokiterions-tui"]
+src/                       # unchanged location: engine, CLI, binary
+mokiterions-tui/
+  Cargo.toml               # package mokiterions-tui; the only ratatui dependency
+  src/
+```
+
+1. The engine package's external dependency set is empty and admits no exception, including a dependency shared with
+   the observer.
+2. The observer package depends on the engine package by path.
+3. The engine's sources are not relocated, so the `REQ-MOK-010` text stream does not move and its verified behavior
+   is not disturbed by this change.
+4. The engine binary is named `mokiterions`. The observer binary is named `mokiterions-tui`.
+5. `cargo test` at the workspace root runs both packages' tests. `cargo tree -p mokiterions-core` demonstrates the
+   empty set required by `REQ-MOK-023`.
+
+## Security and privacy properties
+
+- No network access, no credential, no model provider, no asynchronous runtime, no database in either component.
+- The filesystem is written once per requested export and never read.
+- An operator-supplied export path is data. It is never interpreted as code and never used to read.
+- No credential, secret, environment variable, absolute path or wall-clock value appears in a frame or an export.
+- The observer receives no mutable handle to world, agent, resource or event-log state, and offers the operator no
+  control that mutates the world.
+- The observer's dependency surface is 57 crates and is confined to the observer package, so it cannot reach the
+  engine. Whether that surface is acceptable is decided by `ADR-MOK-002`, not here.
+
+## Performance and capacity
+
+- A frame at the reference viewport renders at most 12 Mokiterion glyphs and the standing resources of the run; at
+  the default density that is 122 dots. Work per frame is bounded by viewport area and by population, not by tick
+  count.
+- Frames are bounded to one per 33 ms and input polling to one per 16 ms, so observer work per wall-clock second is
+  bounded independently of speed.
+- At speed `64` the observer advances at most 64 ticks per second; the engine's own per-tick work is bounded by
+  `SPEC-MOK-001` and unchanged.
+- The event buffer is bounded at `100_000` records. Memory is therefore bounded for an unbounded run, and the bound
+  is declared rather than silent.
+- Falling behind the requested speed slows the run and never alters it.
+
+## Observability
+
+- The header reports observer conditions: draw failures, input failures, export outcomes, panes available only as
+  overlays, and hidden roster entries.
+- The footer reports run provenance per rule 8.
+- The export is the observer's retainable artifact and the only observer output admissible as evidence.
+- Observer diagnostics are never written into an export, so an export contains authoritative events only.
+
+## Compatibility and migration
+
+- Additive. No `SPEC-MOK-001` behavior changes: the engine binary, its inputs, its text stream, its trace lines, its
+  summary and its exit codes are untouched.
+- The engine gains a public read-only surface and a library target. Adding them changes no existing output.
+- The engine package is renamed from `Mokiterions` to `mokiterions-core` and its binary is named `mokiterions`, so
+  the produced binary's filename changes case and form. No artifact, script, CI step or document depends on the
+  binary's filename; all of them invoke `cargo run`, `cargo build` or `cargo test`.
+- `Cargo.toml` and `Cargo.lock` change from an empty dependency set to a workspace with a 57-crate observer surface.
+  This is the change `ADR-MOK-002` decides and `ARCH-MOK-001` must be amended to permit.
+- When a later phase adds an attribute the observer reserves space for, this specification is amended to define its
+  presentation. Nothing here presents such a value before then.
+
+## Examples and counterexamples
+
+### Example: the reference viewport
+
+At 160 × 48, tier A applies. The canvas is 67 × 32 cells, so the whole 128 × 128 world appears at one dot per world
+cell with territory A above territory B. Twelve roster entries are visible in the two-line form without scrolling.
+The inspector occupies 44 columns. The log shows 8 records. The footer reads the seed, tick limit, density, source,
+tick and retained count.
+
+### Example: single-stepping to a rejection
+
+Held at tick 40 with `M03` selected at the world's western edge. Pressing `.` completes tick 41 exactly once. The
+inspector shows the proposed westward move, the outcome `rejected` with the engine's ground, and no applied
+movement. The log gains tick 41's records. Pressing `t` on the highlighted `action_trace` type presents
+`REQ-MOK-012`.
+
+### Example: a shrinking terminal
+
+At 160 × 48 the operator narrows the terminal to 120 columns. Tier C applies: the inspector leaves the body and the
+header states that it is available as an overlay; the log shrinks to 6 rows; the roster keeps 47 columns; the canvas
+becomes 71 × 36 and still presents the whole world, since 71 ≥ 64 and 36 ≥ 32. Selection, filter, zoom and retained
+events are unchanged, and the run does not pause.
+
+### Counterexample: territory A drawn below territory B
+
+The canvas coordinate system increases `y` upward. Plotting world `y` directly places territory A at the bottom,
+contradicting rule 2.1 and every diagram in the project. The mapping `canvas_y = 127 − world_y` is required.
+
+### Counterexample: letters in the 1:1 overview
+
+Presenting a Mokiterion as a braille dot in overview zoom to preserve exact position defeats `REQ-MOK-016`'s
+requirement that Mokiterions be distinguishable from resources, since both would be dots. Presenting resource class
+by glyph in overview zoom is impossible, since a glyph consumes the whole character cell that eight world cells share.
+Rule 2 resolves both: letters at cell granularity over dots, and class in detail zoom or from rule 3's counts.
+
+### Counterexample: `fear 0`
+
+Rendering the reserved fourth bar as an empty gauge labelled `fear` with value `0` would present a computed value
+the engine does not produce. Rule 4.5 requires the reserved space to render with no label and no value.
+
+### Counterexample: a filtered export
+
+Exporting only the records matching the active filter would produce an evidence file whose completeness depended on
+an interface setting at the moment of the key press, and no reviewer could distinguish it from a complete export.
+Rule 9.4 requires export to ignore the filter.
+
+### Counterexample: catching up
+
+Advancing several ticks in one scheduling opportunity after the observer falls behind would make the number of ticks
+applied per unit of wall-clock time depend on host load. It cannot change the run's outcome, because the tick
+sequence is the same, but it does make single-stepping and speed meaningless and it hides overload. Rule 1.2 forbids
+it.
+
+## Explicitly unspecified decisions
+
+The implementation may choose:
+
+- private Rust type, function, module and file names in both packages, and how rendering is decomposed;
+- how snapshots are built internally, provided the specified content, ordering and ownership hold;
+- the concrete widget used for each pane, provided the specified content, constraints and announcements hold;
+- exact diagnostic and title wording, and the exact palette, provided every distinction remains available without
+  colour;
+- test organization, fixtures and helpers;
+- whether the reserved fourth bar is reserved by layout arithmetic or by a placeholder that renders nothing.
+
+The implementation may not choose: the dependency, its version or its feature set; the package layout or dependency
+direction; the coordinate mapping or orientation; the fidelity thresholds, the tier table or the floor; the glyph
+assignments; the key bindings; the buffer capacity; the export format or filter semantics; the authority mapping; the
+snapshot contract; any figure fixed by `SPEC-MOK-001`; or any lifecycle status.

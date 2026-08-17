@@ -1,6 +1,20 @@
+[workspace]
+members = ["mokiterions-tui"]
+
 [package]
-name = "Mokiterions"
+name = "mokiterions-core"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "mokiterions_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mokiterions"
+path = "src/main.rs"
+
+# `ARCH-MOK-001` as amended requires this table to stay empty, with no exception,
+# including a dependency shared with `mokiterions-tui`. `cargo tree -p mokiterions-core`
+# is the check.
 [dependencies]

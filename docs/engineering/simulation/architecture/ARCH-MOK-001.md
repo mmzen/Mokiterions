@@ -34,11 +34,20 @@ assessed_by = "technical owner"
 
 # Architecture: Single-process simulation architecture
 
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-11 | Original approved content for `CAP-MOK-001`. | Approved; implemented under `WO-MOK-001` and verified under `VREC-MOK-001`. |
+| 2026-08-17 | Scoped this architecture to the **simulation engine package** rather than to the repository. The one-binary-crate rule, the empty-dependency-graph rule, and the prohibition on UI frameworks now bind the engine package specifically, where they are stronger than before because they became checkable per package. A terminal observer is admitted as a separate package outside this architecture's boundary, governed by `ARCH-MOK-002` and decided by `ADR-MOK-002`, on the approved requirement `REQ-MOK-023` that the prohibition on separate crates always required. No engine boundary, dependency direction, trust boundary, or determinism property is relaxed. | Approved by the technical owner on 2026-08-17, together with `ARCH-MOK-002`, `ADR-MOK-002`, and `REQ-MOK-023`. |
+
 ## Context and scope
 
 The minimum foundation is a local Rust command-line program. It must establish an authoritative deterministic engine and a replaceable decision boundary without importing the complexity of a service architecture, UI, persistence layer, or external model client.
 
 This architecture addresses the four requirement drivers that materially shape its boundaries rather than every requirement it conforms to: world authority (`REQ-MOK-004`), the in-process baseline decision source (`REQ-MOK-008`), reproducible entropy (`REQ-MOK-009`), and the text observation interface (`REQ-MOK-010`). The remaining foundation requirements are domain rules whose detailed behavior is governed by `SPEC-MOK-001`, which this architecture conforms to.
+
+**Boundary of this architecture, as amended.** This architecture governs the **simulation engine package** and the command-line binary it produces: the components in the next section, the `SPEC-MOK-001` behavior they implement, and the `REQ-MOK-010` text stream. It does not govern the terminal observer package, which is a separate component boundary governed by `ARCH-MOK-002`. Every rule below is read as a rule about the engine package unless it explicitly says otherwise. That reading narrows nothing: each rule previously applied to a repository containing only the engine, and the engine package is exactly that scope. What the amendment removes is the implication that no other package may exist — an implication the prohibition on separate crates already qualified with "without an approved requirement", now satisfied by `REQ-MOK-023`.
 
 ## Components and responsibilities
 
@@ -46,13 +55,15 @@ This architecture addresses the four requirement drivers that materially shape i
 2. **Simulation engine** owns the world, agents, food, tick, entropy state, validation, rule application, event creation, termination, and summary.
 3. **Decision boundary** defines read-only observations and proposed core actions. Its only foundation implementation is the local seeded baseline.
 
-These responsibilities may be represented by a small number of Rust modules in one binary crate. They are logical boundaries, not a requirement to create a separate crate or framework for each component.
+These responsibilities may be represented by a small number of Rust modules in one crate — the engine package. They are logical boundaries, not a requirement to create a separate crate or framework for each component.
+
+The engine package additionally exposes a read-only observation surface, specified by `SPEC-MOK-002`, through which a host process obtains an owned snapshot of authoritative state and advances the simulation one tick. That surface is a fourth responsibility of the engine package and not a fourth component: it mutates nothing, decides nothing, and grants no handle. The command-line binary and the observer are both hosts of it.
 
 ## Dependency direction
 
 - The application entry point may depend on the simulation engine and baseline decision implementation.
 - The baseline may depend on immutable observation and proposed-action types exposed by the simulation boundary.
-- The simulation engine must not depend on a concrete baseline, OpenAI client, terminal UI, database, or web framework.
+- The simulation engine must not depend on a concrete baseline, OpenAI client, terminal UI, database, or web framework. As amended, this is enforced by the package boundary rather than by convention: the engine package cannot depend on the observer package, and the observer package holds every user-interface dependency.
 - No component depends on network or persistence infrastructure.
 
 ## Data and control flow
@@ -90,13 +101,13 @@ The decision boundary is untrusted with respect to world authority. All returned
 - Mutable world references, callbacks, or engine handles exposed to decision sources.
 - Global mutable simulation or entropy state.
 - Wall-clock time, operating-system randomness, unordered iteration, or thread scheduling affecting results.
-- Network calls, API credentials, asynchronous runtimes, databases, UI frameworks, plugin systems, or dependency injection containers in the foundation.
+- Network calls, API credentials, asynchronous runtimes, databases, UI frameworks, plugin systems, or dependency injection containers in the engine package. The engine package's external dependency set is empty and admits no exception, including a dependency shared with another package in the same workspace.
 - Panics for invalid operator input or invalid proposed actions.
-- Separate crates or services without an approved requirement.
+- Separate crates or services without an approved requirement. `REQ-MOK-023` is the approved requirement for exactly one further package, the terminal observer; it authorizes no service, no network boundary, no separate release artifact, and no third package.
 
 ## Quality attributes
 
-- **Simplicity:** one binary crate and the minimum modules needed to make authority boundaries legible.
+- **Simplicity:** one engine crate and the minimum modules needed to make authority boundaries legible, plus at most the one further package `REQ-MOK-023` approves.
 - **Determinism:** the same inputs produce byte-identical events and final state.
 - **Testability:** rules can be tested through engine inputs and observable outputs without launching external systems.
 - **Debuggability:** optional action tracing exposes every decision opportunity without altering engine behavior.
@@ -106,11 +117,15 @@ The decision boundary is untrusted with respect to world authority. All returned
 ## Conformance checks
 
 - Review dependency direction and public APIs for mutable-state leakage.
-- Confirm the dependency graph contains no network, async-runtime, database, or UI libraries.
+- Confirm the **engine package's** dependency graph is empty, and therefore contains no network, async-runtime, database, or UI libraries. Resolve the graph per package rather than for the workspace, since a workspace graph containing the observer would not answer the question.
+- Confirm the engine package does not depend on the observer package, directly or transitively.
+- Confirm the engine package's read-only observation surface exposes no mutating operation other than the single-tick advance, and returns owned values with no reference into engine state.
 - Run deterministic replay tests and invalid-action atomicity tests.
 - Confirm all stochastic code is reachable from the explicit seeded entropy owner.
-- Confirm the program builds as one Rust binary crate.
+- Confirm the engine package builds and its tests run as one Rust crate, independently of the observer package and with no terminal present.
 
-## Related ADRs
+## Related architecture and ADRs
 
-- `ADR-MOK-001` records the engine-authoritative in-process decision boundary and its consequences for future model integration.
+- `ADR-MOK-001` records the engine-authoritative in-process decision boundary and its consequences for future model integration. It remains accepted and is not superseded: it requires a superseding ADR only for replacing engine authority, and a read-only observer replaces none of it.
+- `ARCH-MOK-002` governs the terminal observer package, outside this architecture's boundary.
+- `ADR-MOK-002` decides the two-package split and the user-interface dependency, and is the deciding ADR for `ARCH-MOK-002` and for this amendment.

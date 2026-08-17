@@ -1,0 +1,77 @@
+# Additivity proof — WO-MOK-003
+
+`WO-MOK-003` states that a test which must change to accommodate this work is a stop condition,
+not a task. The check is therefore stronger than a passing count: the engine's test code is
+compared byte for byte against the commit this work started from.
+
+## The commit this work started from
+
+$ git log -1 --format='%H %s' HEAD
+48d16bd40bf66081a6a6f9f58d3ca33691a0d855 Merge pull request #5 from mmzen/feature/simulation-rules-guide
+
+## The engine's test count is unchanged at 52
+
+WO-MOK-002's retained test run recorded 52 engine tests. This run:
+
+$ cargo test -p mokiterions-core 2>&1 | grep -E '^test result'
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+(48 in the library target plus 4 in the binary target = 52)
+
+## Every engine test module is byte-identical to HEAD
+
+The engine's sources at HEAD were a single crate at src/; they are unmoved, so the paths compare
+directly. Each file's #[cfg(test)] module is extracted from HEAD and from the working tree and
+diffed.
+
+src/cli.rs           test module IDENTICAL to HEAD (107 lines)
+src/main.rs          test module IDENTICAL to HEAD (70 lines)
+src/simulation.rs    test module IDENTICAL to HEAD (1202 lines)
+
+## The set of engine test names is unchanged
+
+src/cli.rs           6 test-module functions, name set IDENTICAL
+src/main.rs          6 test-module functions, name set IDENTICAL
+src/simulation.rs    51 test-module functions, name set IDENTICAL
+
+## What did change in the engine package
+
+$ git diff --stat HEAD -- src/ Cargo.toml
+warning: in the working copy of 'Cargo.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/simulation.rs', LF will be replaced by CRLF the next time Git touches it
+ Cargo.toml        |  16 +-
+ src/main.rs       |   7 +-
+ src/simulation.rs | 897 ++++++++++++++++++++++++++++++++++++++++++++----------
+ 3 files changed, 751 insertions(+), 169 deletions(-)
+
+No test body, no test name and no simulation rule was altered. The engine's non-test code was
+changed in three ways, and the 169 deleted lines are all of the second and third kind:
+
+1. Added: the library target, the public observation surface (`snapshot`, `observation`,
+   `initialization_events`, `advance_tick`, the snapshot types), and the manifest's workspace,
+   `[lib]` and `[[bin]]` tables.
+2. Widened visibility: `enum Territory`, `struct Coordinate` and its fields, `enum Direction`,
+   `enum FoodClass`, `enum Action`, `enum TerminationReason` and their members gained `pub`, which
+   rewrites each declaration line and so registers as a deletion plus an insertion.
+3. Refactored, behavior-preserving: the places that previously formatted a record straight to the
+   writer now build an `Event` value and write that, so the same records are available to a caller
+   that is not a writer. `emit_initialization` became `initialization_events`, and the run loop's
+   termination record became a value the same way.
+
+Kind 3 is the only change that could alter observable behavior, and it is exactly what the
+unchanged test module pins: `VER-MOK-001` and `VER-MOK-002` assert the text stream's records and
+their order literally, including `initialization_is_seeded_and_reproducible` and the per-event
+format cases. Those tests are byte-identical to HEAD and pass, which is the evidence that the
+refactor preserved the stream rather than an assertion that it did.
+
+The formatter also reflowed parts of this file; `git diff -w` accounts for 847 of the 897 changed
+lines, so 50 are whitespace alone.
+
+## Why the observer package cannot violate this
+
+Every test in `mokiterions-tui` is new: the package did not exist at HEAD, and no `VER-MOK-001` or
+`VER-MOK-002` case lives in it. Adding a case there — including the four added after this file's
+first pass, which closed `VER-MOK-003` rows that had no automated case behind them — changes no
+existing test and so is not the situation the stop condition describes. The stop condition is about
+a test that must change; the check above is the one that could detect it, and it detects nothing.

@@ -1,0 +1,135 @@
+# Terminal restoration — WO-MOK-003
+
+`VER-MOK-003`'s invariant: "For every exit path, including panic, raw mode is off and the alternate
+screen is left." Acceptance scenario 7 names the three paths: quitting normally, exiting on an
+injected terminal failure, and panicking.
+
+## Measured, against the real terminal
+
+Raw mode is a property of the console, not of a buffer, so this is measured by asking crossterm
+what the console's state actually is — `is_raw_mode_enabled()` — around each transition. Raw mode
+is process-global, so the measurement runs alone on one test thread.
+
+before try_init        raw mode off
+try_init               Ok(terminal)
+after try_init         raw mode ON
+try_restore            Ok(())
+after try_restore      raw mode off
+
+-- the panic path --
+after try_init         raw mode ON
+panic caught           yes
+after the panic        raw mode off
+after try_restore      raw mode off
+
+The panic line is a real panic — `panic!("a deliberate panic inside the drawing loop")` inside
+`catch_unwind`, with the terminal entered. Raw mode is off when control returns, before any
+explicit restoration runs, because the hook `try_init` installed had already restored.
+
+The alternate screen is the other half. Counted over the same run's captured standard output:
+
+  EnterAlternateScreen (ESC [ ? 1 0 4 9 h)   2
+  LeaveAlternateScreen (ESC [ ? 1 0 4 9 l)   4
+
+Two enters for the two `try_init` calls, and four leaves: one for the explicit restore, one for the
+final restore, and two from the panic. The two are because each `try_init` installs a restoring
+panic hook that wraps the previous one, so the second call's hook chain restores twice before the
+default hook prints the message — visible in the raw stream as `1049l 1049l`, then the panic
+message, then the final `1049l`. Restoring an already-restored terminal is a no-op, and the
+observer binary calls `try_init` exactly once, so the chain is one deep in the shipped path.
+
+## The code paths, all three
+
+`main` in `mokiterions-tui/src/main.rs`:
+
+    let outcome = observe(&mut terminal, &mut observer);
+    // Unconditional: the success path, the failure path and the panic path all restore.
+    let restoration = ratatui::try_restore();
+
+    let mut code = 0u8;
+    if let Err(error) = outcome { ...; code = 1; }
+    if let Err(error) = restoration { ...; code = 1; }
+
+`try_restore` is not inside a conditional, is not inside the `Ok` arm, and is not deferred to a
+guard that a caller could forget: it is the next statement after the loop returns, whatever the
+loop returned. So:
+
+- **normal quit** — `q` sets `response.quit`, `observe` marks the run ended early and returns
+  `Ok(())`, restoration runs, `report` states the tick. Test:
+  `tests::a_run_the_operator_ended_reports_itself_as_ended_early`,
+  `state::tests::quit_is_the_only_key_that_asks_to_exit`.
+- **error exit** — `observe` returns `Err` from a failed advance or a failed key application;
+  restoration runs first, then the diagnostic goes to standard error and the exit code is 1. A
+  restoration that itself fails also sets 1 and says so, so a terminal left in a bad state is
+  reported rather than hidden.
+- **panic** — the hook installed by `try_init` runs before the process unwinds out. This is the one
+  path `main` cannot code for, and it is why `try_init` is used rather than a hand-rolled
+  enter/leave pair.
+
+Note that a run reaching its tick limit is not an exit path: the observer keeps the finished run
+inspectable and exportable until the operator quits (`VER-MOK-003`, "Finished run refuses to
+advance"). Test: `verification::a_finished_run_stays_inspectable_and_exportable`.
+
+## What the library guarantees, from its own source
+
+The panic path's guarantee is the library's, so it is cited from the resolved source rather than
+from documentation. `~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ratatui-0.30.2/src/init.rs`:
+
+    397  pub fn try_init() -> io::Result<DefaultTerminal> {
+    398      set_panic_hook();
+    399      enable_raw_mode()?;
+    400      execute!(stdout(), EnterAlternateScreen)?;
+    401      let backend = CrosstermBackend::new(stdout());
+    402      Terminal::new(backend)
+    403  }
+
+    554  pub fn try_restore() -> io::Result<()> {
+    555      // disabling raw mode first is important as it has more side effects than leaving the
+    556      // alternate screen buffer
+    557      disable_raw_mode()?;
+    558      execute!(stdout(), LeaveAlternateScreen)?;
+    559      Ok(())
+    560  }
+
+    566  fn set_panic_hook() {
+    567      let hook = std::panic::take_hook();
+    568      std::panic::set_hook(alloc::boxed::Box::new(move |info| {
+    569          restore();
+    570          hook(info);
+    571      }));
+    572  }
+
+The hook is installed before raw mode is enabled, so there is no window in which the terminal is
+altered and no hook is in place. It takes the existing hook rather than discarding it, so the
+panic message still reaches standard error after the terminal is restored — which is what makes a
+panic diagnostic readable instead of arriving into a raw alternate screen that is about to vanish.
+
+## What could not be measured, and why
+
+A live quit could not be driven from this shell. On Windows, crossterm reads the console input
+buffer, not the process's standard input, so a keypress written to a pipe never reaches
+`event::read`. Measured:
+
+    $ printf 'q' | timeout 4 ./target/debug/mokiterions-tui.exe --seed 42 --ticks 5 --speed 1
+    exit=124                      # the timeout killed it; the `q` was never seen
+    stdout 7017 bytes, beginning  ESC[?1049h ESC[1;1H ESC[1m ... RUNNING ...
+    stderr empty
+
+Two facts follow from this run and are worth keeping. The binary does enter the alternate screen
+and does draw a real frame into a pipe, and `try_init` returned `Ok`, which means
+`enable_raw_mode` succeeded on this console. And a process killed by a signal cannot restore
+anything — `SIGTERM` is not one of the three specified exit paths, and no in-process hook can cover
+it.
+
+The consequence is that the *live-terminal* halves of these paths remain manual assessments, which
+is where `VER-MOK-003` puts them: "Confirm the terminal is usable after a deliberate panic, by
+inspection of the live terminal rather than only by an automated assertion." They are recorded as
+outstanding in `manual-assessment.md`. What is measured above is the console state itself, not a
+buffer, so it is stronger than a code argument and weaker than a person's report that the shell
+still works afterwards.
+
+Measurement: scratch harness, removed after this file was written. The state it reports is
+crossterm's own reading of the console, reproducible by calling `is_raw_mode_enabled()` around
+`ratatui::try_init()` and `ratatui::try_restore()` on a machine with a console attached. It is
+deliberately not a retained test: a build machine need not have one, and a retained test that
+depends on the environment having a console would fail for a reason that is not a defect.

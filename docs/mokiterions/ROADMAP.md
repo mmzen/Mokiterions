@@ -29,8 +29,24 @@ Implemented and verified under `VREC-MOK-001` (commit `ecd03a8`):
 - Line-oriented text observation stream and optional `--trace-actions`
 - A local seeded baseline decision source, explicitly a development placeholder
 
-Not yet implemented: perception beyond the agent's own cell, `fear`, per-agent individuality, social and
-combat behavior, LLM-backed decisions, structured or aggregate observability.
+Added and verified under `VREC-MOK-002` (commit `68163ac`), completing Phase 1:
+
+- Bounded perception: nearby resources and nearby living Mokiterions with direction and distance, radius 16
+- Resource density as an explicit simulation input, binding initialization, capacity, and replenishment
+- A deterministic reference decision source (eat → sustain → approach → search), selectable by `--policy`
+- A measured population viability floor of eight of twelve survivors at 1,000 ticks on five declared seeds
+
+Not yet implemented: `fear`, per-agent individuality, social and combat behavior, LLM-backed decisions, any
+interactive or structured observability.
+
+Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
+restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
+about tick 1,000 rather than a steady state.
+
+**The two hard blockers of the next section are resolved.** Constraints 1 and 2 below are retained as the recorded
+rationale for the phase ordering, not as a description of the current system. Their figures describe the
+pre-Phase-1 constants and are superseded by the measurements in
+`docs/engineering/simulation/evidence/WO-MOK-002/`.
 
 ## Three constraints that shape the ordering
 
@@ -84,12 +100,16 @@ Phase 0  Harness upgrade landed under governance
 Phase 1  Perceptible, survivable world  ── prerequisite for everything below
    │
    ▼
+Phase 1.5  Terminal observer  ── the instrument every later phase is assessed with
+   │
+   ▼
 Phase 2  Individuality: traits and fear
    │
    ├──────────────┬───────────────┐
    ▼              ▼               │
 Phase 3        Phase 4            │   (3 and 4 are independent
-Conflict       Observability      │    and may run in parallel)
+Conflict       Analytical         │    and may run in parallel)
+   │           observability      │
    │              │               │
    └──────┬───────┘               │
           ▼                       │
@@ -98,6 +118,10 @@ Conflict       Observability      │    and may run in parallel)
           ▼
     Phase 6  Emergence evaluation
 ```
+
+Phase 1.5 is not a prerequisite of Phase 2 in a technical sense — Phase 2 could be built without it. It is placed
+here because it is the instrument by which Phases 2 through 6 are *judged*, and building it after the behavior it
+would have helped assess wastes its main benefit.
 
 Running alongside Phases 1–2: a bounded **LLM feasibility experiment** (see Cross-cutting work).
 
@@ -165,6 +189,71 @@ conflicting survival values.
 
 **Key verification.** Heuristic policy sustains at least the target capacity across ≥1,000 ticks on multiple
 seeds; measured carrying capacity within an approved tolerance; byte-identical determinism preserved.
+
+**Status.** Delivered. `WO-MOK-002` is `implemented` and verified under `VREC-MOK-002` at commit `68163ac`.
+
+---
+
+## Phase 1.5 — Terminal observer
+
+**Goal.** Build the instrument for watching behavior, as a separate component that cannot affect what it watches.
+
+**Why here, and why it is numbered 1.5.** It was not in the original sequence. It is inserted because Phase 1
+produced the first result the text stream could not explain: extinction with 122 resources standing and both
+territories at capacity. Position, not supply, decides outcomes, and position is exactly what a line-oriented
+stream conveys worst. Every phase after this one produces behavior whose plausibility is a question about a
+spatial situation at a specific tick — *why did that agent walk away from food*, *why did those two fight*, *is
+this model output reasonable given what the agent could see*. Deferring the instrument means assessing those
+phases without the means to assess them, and the cost of building it does not fall over time.
+
+It is numbered 1.5 rather than made a new Phase 2 because it delivers no simulation behavior. Nothing about the
+world changes.
+
+**In scope**
+
+- A terminal user interface as a **second package**, over a read-only observation surface on the engine package
+- Whole-world spatial view, survival state for every living Mokiterion, an inspector exposing each proposal and
+  the engine's verdict on it, a filterable and exportable event log, keyboard control of progression and focus,
+  and run provenance with the authorizing requirement for each event type
+- Layout that degrades across viewport sizes without losing authoritative information
+
+**Out of scope.** Every simulation rule. This phase is additive to `SPEC-MOK-001` and changes nothing in it. Also
+out of scope: every attribute the target design anticipates that the engine does not compute — fear, traits,
+names, combat outcomes, remembered locations, per-agent entropy, model latency. The specification reserves space
+for one of them and requires that space to render empty. An inert `fear 0` would be a claim the engine cannot
+support, and it is prohibited rather than merely discouraged.
+
+**This phase ends two properties the project has held since `WO-MOK-001`,** and both are the product owner's
+decision rather than a technical detail:
+
+1. **The empty dependency set.** `ratatui 0.30.2` resolves to a measured 57 crates. Trimming features saves six.
+   This is the project's first external dependency, and the containment strategy is that it is confined to the
+   observer package — which is *why* the two-package split is a requirement rather than a preference.
+2. **The single crate.** `ARCH-MOK-001` prohibited separate crates *without an approved requirement*.
+   `REQ-MOK-023` is that requirement, for exactly one further package.
+
+**Distinct from Phase 4.** Phase 4 is a batch measuring instrument: structured output, multi-seed runs, outcome
+distributions, statistics over many runs. Phase 1.5 is a live interactive instrument for one run. They answer
+different questions — *what happens across many runs* against *what is happening in this one* — and neither
+substitutes for the other. Phase 4 remains where it is.
+
+**Artifact chain.** The packet drafted on 2026-08-17 is: `INT-MOK-003`, `CAP-MOK-003`, `REQ-MOK-016` through
+`REQ-MOK-024`, `SPEC-MOK-002`, `ARCH-MOK-002`, `ADR-MOK-002`, an in-place amendment of `ARCH-MOK-001`,
+`VER-MOK-003`, and `WO-MOK-003`. Every artifact is `draft` and awaits its accountable owner.
+
+Two of those artifacts are load-bearing rather than procedural. `REQ-MOK-023` is the approved requirement that
+`ARCH-MOK-001`'s prohibition on separate crates has always named as its own unlock. The `ARCH-MOK-001` amendment
+scopes its prohibition on user-interface frameworks to the engine package, where it becomes checkable per package
+and therefore stronger than before. Without both, this phase is prohibited outright.
+
+`ADR-MOK-001` is **not** superseded. Its migration clause requires a superseding ADR only for replacing engine
+authority, and a read-only observer replaces none of it.
+
+**Key verification.** An observed run and an unobserved run at the same seed are byte-identical in authoritative
+events and final state, under heavy operator interaction, with identical per-tick entropy draw counts. The engine
+package's dependency set is empty, proved per package. Rendering is asserted cell by cell from an in-memory
+buffer at each declared viewport, because a claim about a screen only a human has seen is the weakest evidence
+this project accepts — and the observer's whole value is being trusted about what it shows.
 
 ---
 
@@ -247,6 +336,13 @@ modules, no shared dependency — so the two may proceed in parallel.
 
 **Constraint.** Preserve the existing text output so `REQ-MOK-010` remains satisfied. Add, do not replace.
 
+**Relationship to Phase 1.5.** Phase 1.5's terminal observer does not deliver any part of this phase, and this
+phase does not make it redundant. Phase 1.5 answers *what is happening in this run*; this phase answers *what
+happens across many runs*. Phase 1.5's event export is a per-run record in the existing text format, deliberately
+not a structured stream, so the structured output this phase adds is still new work. If Phase 1.5's snapshot
+contract turns out to be the natural source for structured output, that is a convenience to exploit rather than a
+dependency to rely on.
+
 ---
 
 ## Phase 5 — LLM decision source
@@ -318,6 +414,7 @@ means to the same risk reduction.
 |---|---|
 | 0 | `ARCH-MOK-001` schema migration; managed harness files; evidence-naming convention |
 | 1 | `SPEC-MOK-001` amended in place; new intent and capability added; no existing requirement changed |
+| 1.5 | `ARCH-MOK-001` amended in place to scope its one-crate, empty-dependency and UI-framework rules to the engine package; new intent, capability, nine requirements, specification, architecture and ADR added; `ADR-MOK-001` not superseded; `SPEC-MOK-001` unchanged |
 | 2 | New requirements only; observation contract extended |
 | 3 | `REQ-MOK-005` extended or superseded |
 | 4 | `REQ-MOK-010` preserved, extended additively |
