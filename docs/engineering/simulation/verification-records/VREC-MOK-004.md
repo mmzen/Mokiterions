@@ -2,7 +2,7 @@
 id = "VREC-MOK-004"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-004"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
@@ -18,11 +18,13 @@ verifies_work_order = ["WO-MOK-004"]
 conforms_to = ["VER-MOK-004"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-004` to candidate commit `95f0aa2079d4abced1c01f4c09b5c66dc5ab29fe`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+Following review of the retained evidence by the accountable assurance owner, this record was transitioned from `ready` to `verified` on 2026-08-17. It binds `WO-MOK-004` to candidate commit `95f0aa2079d4abced1c01f4c09b5c66dc5ab29fe` without changing its captured provenance.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit, release, tag, publish, or deploy anything.
+
+The record was prepared after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## What this record claims
 
@@ -117,10 +119,12 @@ per-territory population and per-class resource counts. Two seeds sit on the flo
 both still do, at the same tick, with the same distribution. Four 10,000-tick runs at seed `123` are
 byte-identical to `WO-MOK-003`'s record, with survivors plus deaths equal to twelve in every run.
 
-## What the accountable assurance owner must weigh before verifying
+## What the accountable assurance owner weighed before verifying
 
-None of the following is a failure against this contract. All are disclosed before the decision so that
-transitioning this record to `verified` endorses them explicitly rather than by silence.
+None of the eight matters below is a failure against this contract. All were disclosed before the
+decision and all are accepted by the verification recorded above, which endorses the judgement that they
+are acceptable at this candidate commit. They are retained in full rather than summarized away, because a
+disclosure that survives only until it is accepted is not a disclosure.
 
 1. **Two statements in the evidence were wrong about the repository, and the candidate commit is the
    correction.** `README.md`'s *What is not here* section claimed the two post-change traced runs had not
@@ -236,16 +240,17 @@ which do bind here, hold unchanged.
 
 ## Authority
 
-This record is `ready`. It does not verify anything. The transition to `verified` is a separate
-accountable decision reserved to the assurance owner, which `DECISION_RIGHTS.md` places outside what an
-implementation agent may inherit, and nothing above should be read as taking it.
+This record is `verified`. The verification decision was taken by the repository owner acting as
+accountable assurance owner on 2026-08-17, after review of the evidence listed above and of the eight
+disclosures; it was not taken by an implementation agent, and `DECISION_RIGHTS.md` places it outside what
+such an agent may inherit. Recording the decision changed the record's status and this prose only.
 
 Every captured provenance field is preserved exactly as the managed capture produced it: the candidate
 commit, the git object format, the clean worktree state, the capture timestamp, the artifact snapshot
 hash, the 34 evidence paths, the verified work order, and the verification contract. The snapshot was
 taken before this record was written, so it records the 40-artifact graph the record binds rather than
-the graph containing the record. No provenance field was recomputed, and the candidate commit is
-unchanged.
+the graph containing the record. No provenance field was recomputed for this transition, and the candidate
+commit is unchanged.
 
 `WO-MOK-004` remains `implemented`. Verification is carried by this record rather than by a change to
 the work order, matching how `VREC-MOK-001`, `VREC-MOK-002`, and `VREC-MOK-003` were verified.

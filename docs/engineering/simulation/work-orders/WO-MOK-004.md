@@ -52,9 +52,10 @@ Committed on 2026-08-17 to `feature/help-output-options-block`, branched from `m
 diff under review is the whole of the change the comparison measured. `c565cd09` carries the implementation and the
 evidence; `95f0aa20` corrects two statements in that evidence which described the repository wrongly, one claiming the
 post-change traced runs had not been retained when `after/full/` holds both, the other stating a commit count that
-the next commit falsified. Opened as pull request #8. `VREC-MOK-004` names `95f0aa20` as the candidate commit and is
-`ready`; the transition to `verified` is the accountable assurance owner's separate act and has not been performed.
-Nothing was tagged, released, published, or merged, and no release record exists.
+the next commit falsified. Opened as pull request #8. `VREC-MOK-004` was then prepared by `harnessctl capture-verification`
+at `ready`, binding `95f0aa20`. This work order stays `implemented`: verification is carried by that record, and its
+transition from `ready` to `verified` is the accountable assurance owner's separate later act. Nothing here tags,
+releases, publishes, or merges anything, and no release record exists.
 
 `SPEC-MOK-001` is selected because it is the contract that must be amended: it declares all five defaults in its
 *Inputs* section and says nothing about what the help text contains, so the content this work adds has no specified
