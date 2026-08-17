@@ -47,9 +47,14 @@ One authorized local decision differs in name from the list below: the second te
 `every_documented_option_is_accepted_by_the_parser`, because it asserts both directions. Test names are inside the
 authorized decision envelope, and the change is recorded in the evidence rather than left implicit.
 
-Nothing was committed. Commit-bound verification is classified `required` and the work sits uncommitted on the
-default branch, so no candidate commit exists yet; creating a branch, a commit, and any verification record is the
-owner's act and has not been performed.
+Committed on 2026-08-17 to `feature/help-output-options-block`, branched from `master` at
+`08dc8d47aa569c77fb7c9b091e328eb8f40c5285` — the exact commit the pre-change baseline was captured at, so that the
+diff under review is the whole of the change the comparison measured. `c565cd09` carries the implementation and the
+evidence; `95f0aa20` corrects two statements in that evidence which described the repository wrongly, one claiming the
+post-change traced runs had not been retained when `after/full/` holds both, the other stating a commit count that
+the next commit falsified. Opened as pull request #8. `VREC-MOK-004` names `95f0aa20` as the candidate commit and is
+`ready`; the transition to `verified` is the accountable assurance owner's separate act and has not been performed.
+Nothing was tagged, released, published, or merged, and no release record exists.
 
 `SPEC-MOK-001` is selected because it is the contract that must be amended: it declares all five defaults in its
 *Inputs* section and says nothing about what the help text contains, so the content this work adds has no specified
