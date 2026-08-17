@@ -1,0 +1,35 @@
+   Compiling Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.81s
+     Running tests\cli.rs (target\debug\deps\cli-ba62176239741a2c.exe)
+
+running 12 tests
+test both_policies_are_selectable_and_reference_is_the_default ... ok
+test duplicates_and_missing_values_are_rejected ... ok
+test density_is_accepted_in_the_specified_forms_and_rejected_otherwise ... ok
+test the_entries_state_the_constraints_that_decide_validity ... ok
+test options_work_in_any_order ... ok
+test each_declared_default_is_stated_once ... ok
+test every_option_the_synopsis_names_has_an_options_entry ... ok
+test defaults_are_stable ... ok
+test the_flags_state_their_effect_and_no_default_value ... ok
+test the_documented_options_are_exactly_the_options_the_parser_accepts ... FAILED
+test the_help_text_states_order_and_repetition ... ok
+test each_documented_default_parses_to_the_applied_default ... ok
+
+failures:
+
+---- the_documented_options_are_exactly_the_options_the_parser_accepts stdout ----
+
+thread 'the_documented_options_are_exactly_the_options_the_parser_accepts' (27912) panicked at tests\cli.rs:273:5:
+assertion `left == right` failed: every option the parser accepts is described, and nothing else is
+  left: ["--density", "--help", "--policy", "--seed", "--ticks", "--trace-actions"]
+ right: ["--density", "--help", "--policy", "--seed", "--ticks", "--trace-actions", "--verbose"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    the_documented_options_are_exactly_the_options_the_parser_accepts
+
+test result: FAILED. 11 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test cli`

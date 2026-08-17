@@ -1,0 +1,35 @@
+   Compiling Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.04s
+     Running tests\cli.rs (target\debug\deps\cli-ba62176239741a2c.exe)
+
+running 12 tests
+test defaults_are_stable ... ok
+test both_policies_are_selectable_and_reference_is_the_default ... ok
+test duplicates_and_missing_values_are_rejected ... ok
+test the_entries_state_the_constraints_that_decide_validity ... ok
+test options_work_in_any_order ... ok
+test density_is_accepted_in_the_specified_forms_and_rejected_otherwise ... ok
+test every_option_the_synopsis_names_has_an_options_entry ... ok
+test each_documented_default_parses_to_the_applied_default ... FAILED
+test the_documented_options_are_exactly_the_options_the_parser_accepts ... ok
+test each_declared_default_is_stated_once ... ok
+test the_flags_state_their_effect_and_no_default_value ... ok
+test the_help_text_states_order_and_repetition ... ok
+
+failures:
+
+---- each_documented_default_parses_to_the_applied_default stdout ----
+
+thread 'each_documented_default_parses_to_the_applied_default' (37272) panicked at tests\cli.rs:300:9:
+assertion `left == right` failed: the help states 1 as the default for --seed, which is not the value the program applies when --seed is omitted
+  left: Config { seed: 1, tick_limit: 100, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false }
+ right: Config { seed: 0, tick_limit: 100, policy: Reference, density: Density { hundredths_of_percent: 75 }, trace_actions: false }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    each_documented_default_parses_to_the_applied_default
+
+test result: FAILED. 11 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test cli`
