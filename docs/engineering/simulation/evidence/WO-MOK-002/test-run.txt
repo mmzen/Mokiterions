@@ -1,0 +1,69 @@
+# Test run — WO-MOK-002
+
+Regenerated 2026-08-17 after the third SPEC-MOK-001 amendment. Every test passes,
+including the population viability test that was deliberately left failing under the
+previous amendment. The floor it now asserts is eight of twelve at the declared
+density of 0.75%, on all five declared seeds.
+
+$ cargo test
+
+   Compiling Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.50s
+     Running unittests src\main.rs (target\debug\deps\Mokiterions-2675a0e46fef1cd6.exe)
+
+running 52 tests
+test cli::tests::defaults_are_stable ... ok
+test cli::tests::both_policies_are_selectable_and_reference_is_the_default ... ok
+test cli::tests::density_is_accepted_in_the_specified_forms_and_rejected_otherwise ... ok
+test cli::tests::duplicates_and_missing_values_are_rejected ... ok
+test cli::tests::options_work_in_any_order ... ok
+test simulation::tests::a_density_resolving_to_no_resources_is_rejected ... ok
+test simulation::tests::density_resolves_to_the_specified_resource_count ... ok
+test simulation::tests::co_located_entities_are_reported_at_distance_zero_without_a_direction ... ok
+test simulation::tests::building_an_observation_consumes_no_entropy_and_mutates_nothing ... ok
+test simulation::tests::eating_is_atomic_bounded_and_single_use ... ok
+test simulation::tests::extinction_takes_precedence_at_the_tick_limit ... ok
+test simulation::tests::food_regenerates_only_in_nonempty_nonfull_territories ... ok
+test simulation::tests::food_regeneration_respects_capacity ... ok
+test simulation::tests::initial_world_population_and_food_match_the_contract ... ok
+test simulation::tests::movement_crosses_territory_and_is_observable ... ok
+test simulation::tests::invalid_move_does_not_mutate_action_state ... ok
+test simulation::tests::perception_crosses_the_territory_boundary ... ok
+test simulation::tests::initialization_is_seeded_and_reproducible ... ok
+test simulation::tests::perception_excludes_distant_resources_and_dead_neighbours ... ok
+test simulation::tests::perception_grants_no_ability_to_act_at_a_distance ... ok
+test simulation::tests::perception_order_is_stable_and_independent_of_collection_order ... ok
+test simulation::tests::perception_is_symmetric_between_living_mokiterions ... ok
+test simulation::tests::perception_reports_living_neighbours_and_never_the_observer ... ok
+test simulation::tests::perception_reports_in_radius_food_with_class_direction_and_distance ... ok
+test simulation::tests::splitmix64_sequence_is_stable ... ok
+test simulation::tests::sleep_restores_energy_without_exceeding_the_maximum ... ok
+test simulation::tests::regeneration_adds_only_what_remaining_capacity_allows ... ok
+test simulation::tests::action_tracing_is_optional_complete_and_observational ... ok
+test simulation::tests::the_radius_boundary_is_inclusive_and_exclusive_by_one_cell ... ok
+test simulation::tests::survival_decay_saturates_and_death_is_final ... ok
+test simulation::tests::the_reference_source_approaches_then_consumes_a_perceived_resource ... ok
+test simulation::tests::the_reference_source_does_not_approach_a_resource_it_would_decline ... ok
+test simulation::tests::the_reference_source_does_not_consume_a_resource_it_does_not_need ... ok
+test simulation::tests::the_reference_source_cannot_mutate_authoritative_state ... ok
+test simulation::tests::the_reference_source_prefers_the_horizontal_axis_on_a_diagonal_approach ... ok
+test simulation::tests::the_reference_source_prefers_the_nearest_then_richest_resource ... ok
+test simulation::tests::the_reference_source_searches_rather_than_waiting_when_it_perceives_nothing ... ok
+test simulation::tests::the_reference_source_sustains_itself_before_seeking_or_searching ... ok
+test tests::a_density_resolving_to_no_resources_exits_with_code_two_before_initialization ... ok
+test tests::help_exits_successfully ... ok
+test tests::invalid_configuration_exits_with_code_two ... ok
+test simulation::tests::tick_limit_terminates_with_one_summary ... ok
+test simulation::tests::untrusted_decisions_are_validated_and_traced ... ok
+test tests::output_failure_exits_with_code_one ... ok
+test simulation::tests::a_long_configured_run_is_bounded_and_does_not_panic ... ok
+test simulation::tests::repeated_runs_are_byte_identical ... ok
+test simulation::tests::the_reference_source_never_waits_and_never_runs_its_energy_to_zero ... ok
+test simulation::tests::both_sources_run_are_reported_and_are_byte_identically_reproducible ... ok
+test simulation::tests::attributes_stay_within_bounds_across_a_long_reference_run ... ok
+test simulation::tests::density_binds_initialization_capacity_and_the_replenishment_target ... ok
+test simulation::tests::a_long_run_is_bounded_under_either_source ... ok
+test simulation::tests::the_reference_source_sustains_the_population_at_every_declared_density ... ok
+
+test result: ok. 52 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+

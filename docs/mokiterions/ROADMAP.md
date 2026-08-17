@@ -134,9 +134,12 @@ agent can locate food and the food economy can support a population.
 **In scope**
 
 - Perception radius: nearby food with direction and distance, nearby Mokiterions, territory boundaries
-- The `explore` action
 - Rebalanced food economy governed by an explicit **target carrying capacity**
-- A deterministic heuristic reference policy (eat → seek nearest food → sleep) proving the world is survivable
+- A deterministic heuristic reference policy (eat → sustain → seek nearest food → search) proving the world is
+  survivable
+
+No `explore` action. Directed navigation is movement plus perception, so a separate action would add a verified
+behavior without adding capability. It was dropped when the packet was drafted.
 
 **The carrying-capacity decision.** Target capacity should become an approved, verified requirement parameter
 rather than an accidental consequence of constants. The productive regime is *narrow scarcity*: capacity
@@ -149,9 +152,16 @@ difference between a defensible result and an unsupported claim.
 
 **Out of scope.** Fear, combat, social behavior, model integration, structured output.
 
-**Artifact chain.** New intent — `INT-MOK-001`'s non-goals bar this work, so it cannot simply be widened —
-plus a new capability, roughly 8–10 requirements, a new specification, a verification contract, and 2–3 work
-orders. `SPEC-MOK-001`'s food-economy constants require explicit amendment or supersession.
+**Artifact chain.** New intent. `INT-MOK-001` is not widened, because its purpose and success measures were
+achieved and verified under `VREC-MOK-001`; its non-goals do not exclude perception or food balance, but a
+completed intent is not the place to record new outcomes.
+
+The packet drafted on 2026-08-17 is: `INT-MOK-002`, `CAP-MOK-002`, `REQ-MOK-013` (perception), `REQ-MOK-014`
+(viable population), `REQ-MOK-015` (reference decision source), `VER-MOK-002`, `WO-MOK-002`, and an in-place
+amendment of `SPEC-MOK-001`. It is deliberately smaller than the 8–10 requirements estimated here: every
+existing requirement is constant-free, so the food rebalance needs no requirement change, only the amended
+specification. `SPEC-MOK-001` is amended rather than superseded so that no two active specifications state
+conflicting survival values.
 
 **Key verification.** Heuristic policy sustains at least the target capacity across ≥1,000 ticks on multiple
 seeds; measured carrying capacity within an approved tolerance; byte-identical determinism preserved.
@@ -173,11 +183,25 @@ written against a final contract instead of being rewritten twice.
   sociability)
 - `fear` as the fourth dynamic attribute, with defined rise and decay dynamics
 - Per-agent entropy substreams, so identical situations can diverge across individuals
+- **Carried in from Phase 1: high-class resource accumulation.** `SPEC-MOK-001` rule 5 makes a resource both
+  eatable and approachable only while its satiety restoration would not be clipped, which for high class means
+  satiety of at most `50`. High-class resources are therefore sought least often and accumulate against the
+  capacity that density fixes — roughly three quarters of standing supply by tick 1,000 — so territories stay
+  full while the food anyone will walk to grows scarce. The population declines against a full larder, and a
+  10,000-tick run at the default density reaches extinction at tick 9,154. This was measured, disclosed, and
+  accepted by the product owner on 2026-08-17 because no Phase 1 requirement speaks past tick 1,000, where the
+  rule is decisively better than its predecessor. See
+  `docs/engineering/simulation/evidence/WO-MOK-002/density-curve.md`.
 
 **Out of scope.** Combat resolution, model integration.
 
 **Key verification.** Identical situations demonstrably produce divergent choices across agents; traits fully
 reproducible from seed; fear dynamics bounded and observable.
+
+**Note on the carried-in item.** Fixing accumulation means changing when a rich resource may be consumed, which
+moves the density curve and invalidates `REQ-MOK-014`'s floor of eight. Expect that requirement to need
+re-approval on a fresh measurement rather than an argument. A long-horizon stability requirement should be stated
+at the same time, because the current floor is a claim about tick 1,000 and deliberately not about a steady state.
 
 ---
 
@@ -293,7 +317,7 @@ means to the same risk reduction.
 | Phase | Existing artifacts affected |
 |---|---|
 | 0 | `ARCH-MOK-001` schema migration; managed harness files; evidence-naming convention |
-| 1 | `SPEC-MOK-001` food-economy constants amended or superseded; new intent and capability required |
+| 1 | `SPEC-MOK-001` amended in place; new intent and capability added; no existing requirement changed |
 | 2 | New requirements only; observation contract extended |
 | 3 | `REQ-MOK-005` extended or superseded |
 | 4 | `REQ-MOK-010` preserved, extended additively |
@@ -304,8 +328,9 @@ means to the same risk reduction.
 
 Two decisions are cheaper to settle now than at the phase in which they bind:
 
-1. **Target carrying capacity for Phase 1.** The roadmap argues for 8–10 of 12 to hold the system in narrow
-   scarcity. This value shapes the Phase 1 requirement set and its verification tolerances.
+1. **Target carrying capacity for Phase 1.** *Decided 2026-08-17:* a floor of at least eight of twelve survivors
+   at 1,000 ticks under the reference source, recorded as `REQ-MOK-014` and measured on the seed set declared in
+   `VER-MOK-002`. All twelve surviving on every declared seed is an adverse observation, not a success.
 2. **Determinism strategy for Phase 5.** Record/replay is recommended. This propagates into Phase 4's output
    format, so deciding it before Phase 4 avoids rework.
 

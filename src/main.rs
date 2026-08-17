@@ -105,6 +105,23 @@ mod tests {
     }
 
     #[test]
+    fn a_density_resolving_to_no_resources_exits_with_code_two_before_initialization() {
+        let mut output = Vec::new();
+        let mut errors = Vec::new();
+
+        let code = execute(["--density", "0.01"], &mut output, &mut errors);
+
+        assert_eq!(code, 2);
+        assert!(
+            output.is_empty(),
+            "rejection must happen before any simulation output"
+        );
+        let errors = String::from_utf8(errors).unwrap();
+        assert!(errors.contains("zero resources"), "{errors}");
+        assert!(errors.contains("Usage:"));
+    }
+
+    #[test]
     fn output_failure_exits_with_code_one() {
         let mut output = FailingWriter;
         let mut errors = Vec::new();
