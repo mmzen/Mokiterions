@@ -1,0 +1,44 @@
+RUNNING  x8  overview  sel M01  filter none  tier B compact-log                                                                             
+A  standing 61/61  low 14  medium 23  high 24                                                                                               
+B  standing 44/61  low 8  medium 13  high 23                                                                                                
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-93 y0-127  region ─────────┐┌ inspector ───────────────────────────────┐
+│M01  A  4:3           move:north             ││  1                                       ⢀    ││M01                                       │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20││                             ⠂  ⠁              ││position  4:3  territory A                │
+│M02  B  8:119         move:west              ││                         ⠠⣀     ⠈              ││sharing   1 in this rendered cell         │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                       ⠠                       ││health 100  satiety 60  energy 20         │
+│M03  A  0:26          move:south             ││         ⡀                    ⡀           ⠐    ││                                          │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35││                     ⡀      ⡀    ⠈       ⠁     ││decision, tick 200                        │
+│M04  A  60:63         move:east              ││3                 ⡀      ⠂  ⢀ ⡀      ⡈         ││proposed  move:north                      │
+│     h ██████ 100  s █████░  85  e ██░░░░  45││               ⠂          ⢀                  ⡀ ││outcome   + accepted                      │
+│M05  A  118:40        move:east              ││                                ⠂       ⠄⡀     ││applied   move:north                      │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                              ⠠        ⠁      ⠈││authority REQ-MOK-004                     │
+│M06  B  12:71         eat:F0174              ││                             ⠐     ⠄           ││                                          │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40││⠠                               ⠄         ⠠   ⠂││                                          │
+│M07  B  26:124        move:north             ││                               ⡀              ⠄││                                          │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                     ⡀                       ⠁ ││                                          │
+│M08  B  118:120       move:east              ││⠠                ⠂      ⠄                 ⢀    ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀4⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││                                          │
+│M09  B  36:92         move:west              ││            ⡀                                  ││                                          │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40││      6                       ⡀    ⠁           ││                                          │
+│M10  B  112:81        move:east              ││        ⢀     ⠂                                ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││      ⠠                           ⠠            ││                                          │
+│M11  B  111:78        eat:F0172              ││                 ⠐                             ││                                          │
+│     h ██████ 100  s ███░░░  55  e ██░░░░  35││⠐⠈  ⠄    ⠐                    ⠂                ││                                          │
+│M12  B  118:124       move:east              ││        ⠠       ⠈                              ││                                          │
+│     h ███░░░  65  s ███░░░  61  e ██░░░░  35││    ⠄             9 ⢀⢀   ⠁                     ││                                          │
+│                                             ││                                               ││                                          │
+│                                             ││              ⠁                                ││                                          │
+│                                             ││      ⢀     ⠔        ⠄                         ││                                          │
+│                                             ││                         ⠂                     ││                                          │
+│                                             ││⠈           ⠐                                  ││                                          │
+│                                             ││    2        ⠂                                 ││                                          │
+│                                             ││ ⢀                  ⠁                          ││                                          │
+│                                             ││             7                                 ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=200 subject=M12 event=survival_changed result=health:65->65,satiety:62->61,energy:36->35                                             │
+│tick=200 subject=A event=food_regeneration_skipped result=reason:capacity,count:61                                                        │
+│tick=200 subject=B event=food_regenerated result=food:F0187,class:low,position:3:84                                                       │
+│tick=200 subject=B event=food_regenerated result=food:F0188,class:medium,position:33:88                                                   │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                  

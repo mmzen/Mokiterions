@@ -2,7 +2,7 @@
 id = "ADR-MOK-004"
 type = "adr"
 title = "Observer library target with a provenance-closed interface, and one directory per package"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-18"
 updated = "2026-08-18"
@@ -15,14 +15,17 @@ decides = ["ARCH-MOK-002"]
 
 ## Status
 
-Proposed. It refines `ARCH-MOK-002` on two points — the observer package's target shape and the repository's
-package-directory layout — and supersedes nothing. `ARCH-MOK-001`, `ADR-MOK-001`, `ADR-MOK-002` and `ADR-MOK-003`
-are unaffected in substance: engine authority, the trust boundary, the dependency direction, the two-package count
-and the measured dependency surface are all exactly as decided.
+Accepted by the technical owner on 2026-08-18, together with `ARCH-MOK-002`'s amendment. It refines `ARCH-MOK-002`
+on two points — the observer package's target shape and the repository's package-directory layout — and supersedes
+nothing. `ARCH-MOK-001`, `ADR-MOK-001`, `ADR-MOK-002` and `ADR-MOK-003` are unaffected in substance: engine
+authority, the trust boundary, the dependency direction, the two-package count and the measured dependency surface
+are all exactly as decided.
 
 The amendments this ADR requires are listed under *Required amendments* and are the technical owner's act. This ADR
 does not claim them, and `WO-MOK-006` makes them approval preconditions in the same way `WO-MOK-003` and
-`WO-MOK-005` did for their own chains.
+`WO-MOK-005` did for their own chains. The owner's approval of this ADR on 2026-08-18 covered those four
+amendments as stated here; `WO-MOK-006`'s *Approval record* states that reading, and it is disclosed in the
+completion report rather than treated as settled.
 
 ## Context
 

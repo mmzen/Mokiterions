@@ -185,7 +185,7 @@ So a creature that starts full and never eats:
 - then loses 5 health per turn, 20 times,
 - and **dies on tick 119**.
 
-That is not an estimate. Run `cargo run -- --seed 42 --ticks 200 --density 0.02` — a world with a
+That is not an estimate. Run `cargo run --bin Mokiterions -- --seed 42 --ticks 200 --density 0.02` — a world with a
 single piece of food in each half — and **eleven of the twelve die together on tick 119**. The
 twelfth happened to be standing near the one piece of food, ate it, and lasted until tick 134.
 
@@ -372,13 +372,17 @@ instant its satiety crossed the threshold, it walked four squares in a straight 
 ## 15. Running it yourself
 
 ```bash
-cargo run -- --help                      # what all the options do
-cargo run                                # defaults: seed 0, 100 turns, food-seeker, 0.75%
-cargo run -- --seed 42 --ticks 1000      # the standard measurement
-cargo run -- --policy baseline           # watch the random decider starve
-cargo run -- --density 1.5               # a kinder world
-cargo run -- --ticks 40 --trace-actions  # show every single decision
+cargo run --bin Mokiterions -- --help                      # what all the options do
+cargo run --bin Mokiterions                                # defaults: seed 0, 100 turns, food-seeker, 0.75%
+cargo run --bin Mokiterions -- --seed 42 --ticks 1000      # the standard measurement
+cargo run --bin Mokiterions -- --policy baseline           # watch the random decider starve
+cargo run --bin Mokiterions -- --density 1.5               # a kinder world
+cargo run --bin Mokiterions -- --ticks 40 --trace-actions  # show every single decision
 ```
+
+`--bin Mokiterions` says which program to run. There are two: this one, which prints the run as
+text, and `mokiterions-tui`, which shows the same run in a live terminal display. If you want that
+one instead, `cargo run -p mokiterions-tui -- --help` will tell you how.
 
 Exit codes: `0` fine, `2` you typed something invalid, `1` something broke while running.
 

@@ -1,0 +1,266 @@
+# Test census: every test before the change and after it, reconciled name by name
+#
+# `VER-MOK-006` conformance check: "The workspace's test population is 169 before and 169 after:
+# 60 in the engine and 109 in the observer. No test is added, removed, renamed, disabled or
+# skipped. Every name is accounted for on both sides."
+#
+# Method. `cargo test -- --list` is not used, because it reports what a build produced and would
+# report the same number for a test that had been silently rewritten. Instead each `#[test]`
+# function is found by parsing the source, on both sides, and identified by the module it belongs
+# to together with its own name. Before the change every observer test was
+# `<module>::tests::<leaf>` or `verification::<leaf>` inside one binary; after it, a relocated
+# test is a bare `<leaf>` in `tests/<module>.rs` whose file names its module, and a retained test
+# keeps its in-crate path. Matching on `(module, leaf)` therefore follows a test across the move,
+# and a name on one side only is a finding, not a rounding difference.
+#
+# Predecessor: 191db01.
+
+## Mokiterions
+
+### Before, at 191db01
+  engine package (Mokiterions): 60 tests across 7 test binaries
+  lib mokiterions <- src/lib.rs: 37
+  bin Mokiterions <- src/main.rs: 0
+  test cli <- tests/cli.rs: 12
+  test density <- tests/density.rs: 2
+  test process <- tests/process.rs: 5
+  test termination <- tests/termination.rs: 3
+  test viability <- tests/viability.rs: 1
+
+### After
+  engine package (Mokiterions): 60 tests across 7 test binaries
+  lib mokiterions <- mokiterions-core/src/lib.rs: 37
+  bin Mokiterions <- mokiterions-core/src/main.rs: 0
+  test cli <- mokiterions-core/tests/cli.rs: 12
+  test density <- mokiterions-core/tests/density.rs: 2
+  test process <- mokiterions-core/tests/process.rs: 5
+  test termination <- mokiterions-core/tests/termination.rs: 3
+  test viability <- mokiterions-core/tests/viability.rs: 1
+
+### Reconciliation: 60 before, 60 after
+  Every name is accounted for on both sides: no test added, removed or renamed.
+
+   37  internal -> internal
+   23  public   -> public
+
+### The 60 names, module by module
+
+  module         test                                                                       before    after
+  cli            both_policies_are_selectable_and_reference_is_the_default                  public    public
+  cli            defaults_are_stable                                                        public    public
+  cli            density_is_accepted_in_the_specified_forms_and_rejected_otherwise          public    public
+  cli            duplicates_and_missing_values_are_rejected                                 public    public
+  cli            each_declared_default_is_stated_once                                       public    public
+  cli            each_documented_default_parses_to_the_applied_default                      public    public
+  cli            every_option_the_synopsis_names_has_an_options_entry                       public    public
+  cli            options_work_in_any_order                                                  public    public
+  cli            the_documented_options_are_exactly_the_options_the_parser_accepts          public    public
+  cli            the_entries_state_the_constraints_that_decide_validity                     public    public
+  cli            the_flags_state_their_effect_and_no_default_value                          public    public
+  cli            the_help_text_states_order_and_repetition                                  public    public
+  density        a_density_resolving_to_no_resources_is_rejected                            public    public
+  density        density_resolves_to_the_specified_resource_count                           public    public
+  process        a_density_resolving_to_no_resources_exits_with_code_two_before_initialization public    public
+  process        help_exits_successfully                                                    public    public
+  process        invalid_configuration_exits_with_code_two                                  public    public
+  process        output_failure_exits_with_code_one                                         public    public
+  process        the_diagnostic_path_appends_the_whole_usage_text                           public    public
+  simulation     action_tracing_is_optional_complete_and_observational                      internal  internal
+  simulation     attributes_stay_within_bounds_across_a_long_reference_run                  internal  internal
+  simulation     both_sources_run_are_reported_and_are_byte_identically_reproducible        internal  internal
+  simulation     building_an_observation_consumes_no_entropy_and_mutates_nothing            internal  internal
+  simulation     co_located_entities_are_reported_at_distance_zero_without_a_direction      internal  internal
+  simulation     density_binds_initialization_capacity_and_the_replenishment_target         internal  internal
+  simulation     eating_is_atomic_bounded_and_single_use                                    internal  internal
+  simulation     extinction_takes_precedence_at_the_tick_limit                              internal  internal
+  simulation     food_regenerates_only_in_nonempty_nonfull_territories                      internal  internal
+  simulation     food_regeneration_respects_capacity                                        internal  internal
+  simulation     initial_world_population_and_food_match_the_contract                       internal  internal
+  simulation     initialization_is_seeded_and_reproducible                                  internal  internal
+  simulation     invalid_move_does_not_mutate_action_state                                  internal  internal
+  simulation     movement_crosses_territory_and_is_observable                               internal  internal
+  simulation     perception_crosses_the_territory_boundary                                  internal  internal
+  simulation     perception_excludes_distant_resources_and_dead_neighbours                  internal  internal
+  simulation     perception_grants_no_ability_to_act_at_a_distance                          internal  internal
+  simulation     perception_is_symmetric_between_living_mokiterions                         internal  internal
+  simulation     perception_order_is_stable_and_independent_of_collection_order             internal  internal
+  simulation     perception_reports_in_radius_food_with_class_direction_and_distance        internal  internal
+  simulation     perception_reports_living_neighbours_and_never_the_observer                internal  internal
+  simulation     regeneration_adds_only_what_remaining_capacity_allows                      internal  internal
+  simulation     repeated_runs_are_byte_identical                                           internal  internal
+  simulation     sleep_restores_energy_without_exceeding_the_maximum                        internal  internal
+  simulation     splitmix64_sequence_is_stable                                              internal  internal
+  simulation     survival_decay_saturates_and_death_is_final                                internal  internal
+  simulation     the_radius_boundary_is_inclusive_and_exclusive_by_one_cell                 internal  internal
+  simulation     the_reference_source_approaches_then_consumes_a_perceived_resource         internal  internal
+  simulation     the_reference_source_cannot_mutate_authoritative_state                     internal  internal
+  simulation     the_reference_source_does_not_approach_a_resource_it_would_decline         internal  internal
+  simulation     the_reference_source_does_not_consume_a_resource_it_does_not_need          internal  internal
+  simulation     the_reference_source_never_waits_and_never_runs_its_energy_to_zero         internal  internal
+  simulation     the_reference_source_prefers_the_horizontal_axis_on_a_diagonal_approach    internal  internal
+  simulation     the_reference_source_prefers_the_nearest_then_richest_resource             internal  internal
+  simulation     the_reference_source_searches_rather_than_waiting_when_it_perceives_nothing internal  internal
+  simulation     the_reference_source_sustains_itself_before_seeking_or_searching           internal  internal
+  simulation     untrusted_decisions_are_validated_and_traced                               internal  internal
+  termination    a_long_configured_run_is_bounded_and_does_not_panic                        public    public
+  termination    a_long_run_is_bounded_under_either_source                                  public    public
+  termination    tick_limit_terminates_with_one_summary                                     public    public
+  viability      the_reference_source_sustains_the_population_at_every_declared_density     public    public
+
+## mokiterions-tui
+
+### Before, at 191db01
+  observer package (mokiterions-tui): 109 tests across 1 test binaries
+  bin mokiterions-tui <- mokiterions-tui/src/main.rs: 109
+
+### After
+  observer package (mokiterions-tui): 109 tests across 10 test binaries
+  lib mokiterions_tui <- mokiterions-tui/src/lib.rs: 24
+  bin mokiterions-tui <- mokiterions-tui/src/main.rs: 8
+  test authority <- mokiterions-tui/tests/authority.rs: 4
+  test export <- mokiterions-tui/tests/export.rs: 7
+  test layout <- mokiterions-tui/tests/layout.rs: 7
+  test options <- mokiterions-tui/tests/options.rs: 7
+  test render <- mokiterions-tui/tests/render.rs: 8
+  test spatial <- mokiterions-tui/tests/spatial.rs: 7
+  test state <- mokiterions-tui/tests/state.rs: 21
+  test verification <- mokiterions-tui/tests/verification.rs: 16
+
+### Reconciliation: 109 before, 109 after
+  Every name is accounted for on both sides: no test added, removed or renamed.
+
+   32  internal -> internal
+   77  internal -> public   <- the relocation
+
+### The 109 names, module by module
+
+  module         test                                                                       before    after
+  authority      an_ordinary_record_resolves_from_its_own_payload                           internal  public  moved
+  authority      every_event_type_the_observer_can_present_has_an_entry                     internal  public  moved
+  authority      the_decision_source_maps_by_the_source_the_record_names                    internal  public  moved
+  authority      the_mapping_is_the_specified_one                                           internal  public  moved
+  export         a_written_file_holds_exactly_the_rendered_records                          internal  public  moved
+  export         an_unwritable_path_is_reported_and_leaves_nothing_behind                   internal  public  moved
+  export         nothing_environment_specific_reaches_the_file                              internal  public  moved
+  export         records_use_the_engines_own_line_format_in_authoritative_order             internal  public  moved
+  export         the_closing_line_states_the_count_and_the_truncation                       internal  public  moved
+  export         the_default_path_is_relative_and_derived_from_the_run                      internal  public  moved
+  export         the_same_records_always_produce_the_same_bytes                             internal  public  moved
+  layout         every_region_stays_inside_the_viewport_and_the_body_rows_are_contiguous    internal  public  moved
+  layout         excluded_panes_are_the_ones_the_tier_omits                                 internal  public  moved
+  layout         the_declared_viewports_yield_the_declared_canvases                         internal  public  moved
+  layout         the_floor_is_the_specified_one                                             internal  public  moved
+  layout         the_one_to_one_threshold_with_the_inspector_shown_is_157_columns           internal  public  moved
+  layout         tier_minimums_hold_wherever_the_tier_declares_one                          internal  public  moved
+  layout         tiers_match_the_specified_table_including_its_boundaries                   internal  public  moved
+  options        an_export_path_is_taken_verbatim_as_data                                   internal  public  moved
+  options        defaults_match_the_specified_values                                        internal  public  moved
+  options        help_wins_over_every_other_input                                           internal  public  moved
+  options        observer_inputs_are_validated                                              internal  public  moved
+  options        simulation_inputs_keep_the_engine_parser_and_its_rejections                internal  public  moved
+  options        speed_steps_are_clamped_at_both_ends                                       internal  public  moved
+  options        tracing_is_always_on_and_cannot_be_turned_off                              internal  public  moved
+  render         a_bar_row_shrinks_to_its_pane_and_never_overflows_it                       internal  internal
+  render         a_depleted_territory_is_stated_in_words_at_every_width                     internal  internal
+  render         a_region_states_the_world_range_it_presents                                internal  public  moved
+  render         a_reported_failure_reaches_the_header                                      internal  public  moved
+  render         a_resize_changes_the_layout_and_nothing_else                               internal  internal
+  render         a_zero_value_is_a_zero_and_an_absent_value_is_a_dash                       internal  internal
+  render         an_overlay_covers_the_body_and_leaves_the_header_and_the_footer            internal  internal
+  render         below_the_floor_nothing_is_presented                                       internal  public  moved
+  render         detail_zoom_places_every_visible_entity_at_its_mapped_cell                 internal  public  moved
+  render         drawing_never_advances_the_simulation                                      internal  public  moved
+  render         every_declared_viewport_renders_and_annotates_what_it_presents             internal  public  moved
+  render         the_authority_overlay_names_identifiers_for_every_event_type               internal  internal
+  render         the_bar_row_reproduces_the_specified_form                                  internal  internal
+  render         the_footer_carries_the_provenance_and_nothing_environment_specific         internal  public  moved
+  render         the_footer_survives_the_narrowest_viewport                                 internal  internal
+  render         the_header_names_the_panes_that_are_only_overlays                          internal  public  moved
+  render         the_help_overlay_lists_every_bound_key                                     internal  internal
+  render         the_inspector_states_absence_rather_than_inventing_a_subject               internal  internal
+  render         the_log_shows_the_newest_records_and_reports_an_empty_filter               internal  internal
+  render         the_territory_rule_marks_the_row_between_the_territories                   internal  internal
+  spatial        a_character_cell_covers_two_by_four_world_cells_in_overview_and_one_in_detail internal  public  moved
+  spatial        glyphs_are_the_assigned_ones                                               internal  public  moved
+  spatial        territory_a_is_above_territory_b                                           internal  public  moved
+  spatial        the_camera_is_clamped_so_the_region_never_leaves_the_world                 internal  public  moved
+  spatial        the_overview_dot_grid_is_one_dot_per_world_cell                            internal  public  moved
+  spatial        the_territory_rule_is_present_exactly_when_the_boundary_is_visible         internal  public  moved
+  spatial        the_whole_world_needs_both_axes_and_never_width_alone                      internal  public  moved
+  state          a_dead_selection_is_retained_and_the_next_control_finds_a_living_neighbour internal  internal
+  state          a_death_carries_the_tick_and_the_engine_computed_final_values              internal  public  moved
+  state          a_finished_run_refuses_to_advance_and_stays_inspectable                    internal  public  moved
+  state          a_key_release_is_not_a_press                                               internal  public  moved
+  state          a_single_step_is_accepted_only_while_held_and_advances_exactly_one_tick    internal  public  moved
+  state          a_subject_filter_needs_a_selection                                         internal  public  moved
+  state          a_whole_world_overview_cannot_be_panned_off_the_world                      internal  public  moved
+  state          an_unbound_key_changes_nothing                                             internal  public  moved
+  state          escape_closes_an_overlay_before_it_clears_a_selection                      internal  public  moved
+  state          every_overlay_has_its_bound_key                                            internal  public  moved
+  state          filtering_changes_presentation_only                                        internal  public  moved
+  state          following_centres_the_selection_and_clamps_identically                     internal  public  moved
+  state          initial_state_is_the_specified_one                                         internal  public  moved
+  state          initialization_events_are_retained_in_authoritative_order                  internal  public  moved
+  state          panning_moves_one_world_cell_and_clamps_at_every_edge                      internal  public  moved
+  state          quit_is_the_only_key_that_asks_to_exit                                     internal  public  moved
+  state          selection_clears_itself_when_no_living_mokiterion_remains                  internal  internal
+  state          selection_cycles_in_roster_order_and_escape_clears_it                      internal  public  moved
+  state          shared_cells_are_counted_at_the_rendered_granularity                       internal  public  moved
+  state          speed_steps_through_the_fixed_ladder_and_clamps                            internal  public  moved
+  state          the_event_buffer_drops_the_oldest_record_and_says_so                       internal  public  moved
+  state          the_highlighted_record_is_the_newest_until_the_operator_scrolls            internal  internal
+  state          the_log_cursor_scrolls_only_inside_the_log_overlay                         internal  internal
+  state          the_type_filter_cycles_the_whole_vocabulary_then_returns_to_none           internal  public  moved
+  state          the_world_extent_matches_the_engine                                        internal  public  moved
+  tests          a_cadence_that_has_never_run_is_due_and_one_just_run_is_not                internal  internal
+  tests          a_run_the_operator_ended_reports_itself_as_ended_early                     internal  internal
+  tests          a_viewport_below_the_floor_is_refused_with_both_dimensions_and_code_two    internal  internal
+  tests          an_export_path_is_not_touched_at_start_up                                  internal  internal
+  tests          an_invalid_input_is_refused_before_the_terminal_with_code_two              internal  internal
+  tests          help_exits_successfully_on_standard_output                                 internal  internal
+  tests          the_idle_wait_never_exceeds_the_nearest_deadline                           internal  internal
+  tests          the_tick_interval_is_a_thousand_milliseconds_over_the_speed                internal  internal
+  verification   a_death_removes_the_subject_from_the_presentation_and_is_corroborated      internal  public  moved
+  verification   a_degenerate_world_still_draws_a_frame                                     internal  internal
+  verification   a_filter_changes_what_is_presented_and_nothing_else                        internal  internal
+  verification   a_finished_run_stays_inspectable_and_exportable                            internal  public  moved
+  verification   a_smaller_world_row_never_renders_below_a_larger_one                       internal  public  moved
+  verification   an_injected_export_failure_leaves_the_tick_intact                          internal  public  moved
+  verification   an_operator_ended_run_is_a_prefix_of_the_unobserved_run                    internal  public  moved
+  verification   drawing_is_pure                                                            internal  internal
+  verification   every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer  internal  public  moved
+  verification   every_distinction_survives_the_loss_of_colour                              internal  internal
+  verification   every_presented_value_is_the_snapshots                                     internal  internal
+  verification   exports_are_reproducible_and_are_the_engines_own_records                   internal  public  moved
+  verification   holding_consumes_nothing_however_long_it_is_held                           internal  public  moved
+  verification   layout_reads_nothing_but_the_dimensions                                    internal  public  moved
+  verification   no_frame_carries_an_environment_value                                      internal  public  moved
+  verification   no_shipped_decision_source_has_a_proposal_rejected                         internal  public  moved
+  verification   observed_and_unobserved_runs_are_identical_on_every_declared_seed          internal  public  moved
+  verification   one_advance_is_one_tick_and_a_finished_run_refuses                         internal  public  moved
+  verification   overview_encodes_no_resource_class_and_detail_zoom_does                    internal  internal
+  verification   per_tick_records_match_so_the_observer_draws_no_entropy                    internal  public  moved
+  verification   presentation_state_survives_every_resize                                   internal  internal
+  verification   the_applied_action_presented_is_always_the_engines                         internal  public  moved
+  verification   the_declared_sets_are_the_contracts                                        internal  public  moved
+  verification   the_presented_verdict_is_the_snapshots_and_a_rejection_is_not_a_fault      internal  internal
+
+## The workspace, both packages together
+
+   69  internal -> internal
+   77  internal -> public
+   23  public   -> public
+  169  total, against 169 before and 169 after
+
+  169 = 60 + 109 on both sides. 77 tests changed tier; 92 did not; none changed identity.
+
+## Nothing is disabled or skipped
+
+  No `#[ignore]` attribute exists anywhere in the workspace, and every one of the 17 test
+  binaries reports `0 ignored` — `test-run.txt` carries the result line of each. A relocated
+  test that had been quietly neutralised would still be counted by the census above, so this is
+  a separate check and not a restatement of it.
+
+  `verbatim-comparison.txt` closes the last gap: it compares each test's body, character for
+  character, against the predecessor's. The census proves the names survived; that file proves
+  the assertions did.

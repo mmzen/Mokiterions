@@ -2,7 +2,7 @@
 id = "REQ-MOK-028"
 type = "requirement"
 title = "Expose the observer's contract through a library target"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-18"
 updated = "2026-08-18"

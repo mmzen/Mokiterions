@@ -1,0 +1,47 @@
+# Non-test content: the observer's seven `pub mod` files, predecessor versus candidate
+#
+# `VER-MOK-006` conformance check: "No non-test line of the observer's presentation logic changes."
+#
+# Predecessor: 191db01. Method: from each file, every `#[cfg(test)]` item is removed by a brace
+# scanner that ignores braces inside strings, characters and comments; the remainder — module
+# documentation, imports, constants, types, functions, every line of presentation logic — is
+# hashed with SHA-256. Comparing hashes rather than reading a diff is what makes the check able
+# to fail on a single altered byte, including a byte inside a comment.
+
+  module         bytes  predecessor sha256                                                candidate sha256                                                  verdict
+  authority.rs    2865  3032447329df8368692030cfb1ca9b998a335a14f4b6a3854d4cd2b86c7650ab  3032447329df8368692030cfb1ca9b998a335a14f4b6a3854d4cd2b86c7650ab  IDENTICAL
+  export.rs       1934  c64ed2793d3a99ac4f4c79a637b92ce60536fcc5ae8b378aae631ed4e3e665ab  c64ed2793d3a99ac4f4c79a637b92ce60536fcc5ae8b378aae631ed4e3e665ab  IDENTICAL
+  layout.rs       5912  5bdc25de8a12189b12f4db98f832bbbf8219dfc273dd7b59354bc673f181e503  5bdc25de8a12189b12f4db98f832bbbf8219dfc273dd7b59354bc673f181e503  IDENTICAL
+  options.rs      6523  92dad845d59afb2c542e18887235c649f714329837fdb4e6132047576c3ac3f9  92dad845d59afb2c542e18887235c649f714329837fdb4e6132047576c3ac3f9  IDENTICAL
+  render.rs      34365  4c6ccbe17ab6f6826371cf04d50d9c7ec4369aae590ee3ffa5d35eb4611799bf  4c6ccbe17ab6f6826371cf04d50d9c7ec4369aae590ee3ffa5d35eb4611799bf  IDENTICAL
+  spatial.rs      6202  23362e7e54e879b47b7e97ad64d50d746a4f1731fbdfc7b7a2c0a9f758da5536  23362e7e54e879b47b7e97ad64d50d746a4f1731fbdfc7b7a2c0a9f758da5536  IDENTICAL
+  state.rs       20531  06cb91c4b8d2f5bceb7f57e7e3b4c0ba66da8cc348c8ee705658fd84158ef7d3  06cb91c4b8d2f5bceb7f57e7e3b4c0ba66da8cc348c8ee705658fd84158ef7d3  IDENTICAL
+
+  Seven files, seven identical digests, 78,332 bytes of presentation logic unchanged.
+
+# A second, independent count of the same thing: `pub` occurrences outside every `#[cfg(test)]`
+# block. A moved, added or withdrawn public declaration would change a count here even if the
+# hash comparison above had been performed wrongly.
+
+  module       predecessor  candidate
+  authority.rs           5          5
+  export.rs              3          3
+  layout.rs             21         21
+  options.rs            12         12
+  render.rs              2          2
+  spatial.rs            25         25
+  state.rs              54         54
+  ----------------------------------
+  total                122        122
+
+# What did change in the observer's `src/`, and why each change is not presentation logic
+#
+#   src/lib.rs   new file. The seven `pub mod` declarations that used to stand in `main.rs`, plus
+#                module documentation and `#[cfg(test)] mod verification;`. It declares modules;
+#                it contains no presentation logic of its own.
+#   src/main.rs  its seven `mod` declarations became three `use mokiterions_tui::...` lines. The
+#                binary now reaches the presentation layer the way anything outside the crate
+#                does. `verbatim-comparison.txt` shows every one of its 8 tests unchanged.
+#
+# Neither file appears in the table above, because neither is one of the seven `pub mod` files
+# whose content the conformance check is about. `file-comparison.txt` accounts for both.

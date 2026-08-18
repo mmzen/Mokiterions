@@ -2,7 +2,7 @@
 id = "WO-MOK-006"
 type = "work_order"
 title = "Give each package its own directory and the observer its own tested contract"
-status = "draft"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-18"
 updated = "2026-08-18"
@@ -29,6 +29,20 @@ completed change and retained evidence. Verification and release require separat
 
 Commit-bound verification is classified `required` above.
 
+**Approval record.** On 2026-08-18 the repository owner, acting in all four accountable roles, approved the complete
+governing chain — `INT-MOK-005`, `CAP-MOK-005`, `REQ-MOK-028`, `REQ-MOK-029`, `REQ-MOK-030`, `SPEC-MOK-004`,
+`ADR-MOK-004` and `VER-MOK-006` — and authorized this work order, which was transitioned `draft` → `approved` →
+`in_progress` on the same date. The implementation agent recorded the transitions; it did not make the decision.
+
+The four amendments below are covered by that same authorization, by way of `ADR-MOK-004`, whose *Required
+amendments* section states each of them in full and which the technical owner approved on the same date. What the
+owner approved is therefore the requirement that these four artifacts be amended and the substance each amendment
+must carry. The implementation agent writes the amended text; it does not decide it, and each amendment record says
+which of the two happened. The distinction is load-bearing because two of the four artifacts are bound by a
+`verified` record, so the amendment record must also show that the bound records themselves are not edited. This
+reading — that approving `ADR-MOK-004` approved its enumerated amendments — is disclosed in the completion report as
+an item the assurance owner must weigh rather than treated as settled here.
+
 **This work order cannot be approved before its governing artifacts are.** It depends on `INT-MOK-005`,
 `CAP-MOK-005`, `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030` being approved by the product owner; on `SPEC-MOK-004`
 and `ADR-MOK-004` being approved by the technical owner; and on `VER-MOK-006` being approved by the assurance owner.
@@ -54,7 +68,8 @@ a `verified` record. `ADR-MOK-004`'s *Required amendments* section states them i
   weakens it. `REPOSITORY_CONTEXT.md` is repository-owned guidance, not a governed artifact, so it is brought into
   line rather than amended.
 
-**None of the four is part of any prior approval, and all four are outstanding.** They are the technical owner's act.
+**None of the four is part of any approval that predates this work order.** They are the technical owner's act, and
+the approval record above states the authorization they rest on and the reading it depends on.
 Writing the amended text is implementation; approving it is not, and each amendment record must say which of the two
 happened. `ARCH-MOK-001` requires no amendment, which is itself an obligation to confirm rather than an assumption:
 it names no source path, and every quality attribute and conformance check it states about the engine holds after the

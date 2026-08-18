@@ -2,7 +2,7 @@
 id = "VER-MOK-006"
 type = "verification"
 title = "Package layout, observer contract, and observer test placement verification"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-18"
 updated = "2026-08-18"

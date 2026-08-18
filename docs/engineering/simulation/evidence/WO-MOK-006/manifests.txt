@@ -1,0 +1,149 @@
+# Manifests: the three of them, in full, after the change
+#
+# `VER-MOK-006` conformance check: "The root manifest declares a workspace and nothing else. The
+# engine package keeps its name `Mokiterions`, its library target `mokiterions` and its binary
+# `Mokiterions`. The observer keeps its package name and its binary name and gains a library target
+# named in snake case. Neither package's dependency table changes except for the engine's path."
+#
+# Retained in full rather than as a diff, because what matters here is what each file now says.
+# `file-comparison.txt` accounts for what changed and why; this is the resulting state.
+
+## Cargo.toml — the workspace manifest, at the repository root
+
+  # `SPEC-MOK-004` rule 2: this file is a workspace manifest and nothing else. It declares no
+  # package, no target, no dependency and no workspace dependency table. Each package's
+  # manifest, sources and tests are under that package's own directory, which is what
+  # `REQ-MOK-030` requires and `ADR-MOK-004` decides.
+  #
+  # Before that rule, this file was both the workspace manifest and the engine package's
+  # manifest, so the root held one package's implementation and the other package's directory
+  # side by side. The engine package moved to `mokiterions-core/` unchanged: the package is
+  # still `Mokiterions`, its library target is still `mokiterions`, its binary is still
+  # `Mokiterions`, and `mokiterions-core` is a directory name only.
+  #
+  # `SPEC-MOK-002` rule 1 as amended is what admits a workspace at all: exactly two packages,
+  # on the approved requirement `REQ-MOK-026`, with `ADR-MOK-003` deciding the split. No third
+  # member is admitted.
+  [workspace]
+  members = ["mokiterions-core", "mokiterions-tui"]
+  
+  # Both members declare `edition = "2024"`, whose default resolver is 3. A virtual manifest
+  # does not inherit a member's edition default, so the resolver is declared here rather than
+  # left to a Cargo warning.
+  resolver = "3"
+
+  A virtual manifest: `[workspace]` and nothing else. No `[package]`, so the root declares no
+  package for a command to resolve to implicitly; no `[dependencies]`, no `[workspace.dependencies]`,
+  no `[lib]`, no `[[bin]]`, no `[profile]`. `REQ-MOK-030` requires each package's manifest, sources
+  and tests to sit under that package's own directory, and this is what makes it true of both.
+
+  `resolver = "3"` is declared because a virtual manifest does not inherit a member's edition
+  default. Both members declare `edition = "2024"`, whose default resolver is 3; omitting the line
+  leaves Cargo warning that it fell back to resolver 1, and a warning in the build is a defect under
+  the lint gate's spirit even where `-D warnings` does not reach it. Declaring 3 keeps the resolved
+  dependency graph identical to the predecessor's, which `dependencies.txt` measures.
+
+## mokiterions-core/Cargo.toml — the engine package
+
+  # The engine package. `SPEC-MOK-004` rule 3 moved this manifest, `src/` and `tests/` from the
+  # repository root into this directory, with every table unchanged. The package name, both
+  # target names, both target kinds and the empty dependency table are exactly as
+  # `SPEC-MOK-002` rules 1 and 2 fix them; `mokiterions-core` is a directory name only.
+  #
+  # The paths below are unchanged by the move, because a package manifest's paths were always
+  # relative to the manifest.
+  [package]
+  name = "Mokiterions"
+  version = "0.1.0"
+  edition = "2024"
+  
+  # SPEC-MOK-002 rule 1: exactly two targets for this package, and no build script.
+  # SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
+  # lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
+  # that appears in the first line of `USAGE`.
+  [lib]
+  name = "mokiterions"
+  path = "src/lib.rs"
+  
+  [[bin]]
+  name = "Mokiterions"
+  path = "src/main.rs"
+  
+  # `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
+  # empty, with no exception, including a dependency shared with `mokiterions-tui`.
+  # `cargo tree -p Mokiterions` is the check, and `REQ-MOK-026` is what it discharges.
+  [dependencies]
+
+  Every name the owner decided to keep is kept, and the decision is visible in three places at once:
+  the package is `Mokiterions`, the library target is `mokiterions`, the binary target is
+  `Mokiterions`. `mokiterions-core` is a directory name and nothing else — it appears in no target
+  name, no import, no command and no diagnostic. `command-forms.txt` shows `cargo run --bin
+  Mokiterions` and `cargo test -p Mokiterions` still working under exactly those names.
+
+  Both `path` entries are unchanged from the predecessor, because a package manifest's paths were
+  always relative to the manifest: `src/lib.rs` meant `<manifest dir>/src/lib.rs` before the move
+  and means the same after it. That is why the nine engine files needed no edit at all.
+
+  `[dependencies]` is present and empty. `ARCH-MOK-001` as amended admits no exception to that,
+  "including a dependency shared with another package in the same workspace", and the empty table
+  is the declaration; `dependencies.txt` carries the `cargo tree` output that measures it.
+
+## mokiterions-tui/Cargo.toml — the observer package
+
+  [package]
+  name = "mokiterions-tui"
+  version = "0.1.0"
+  edition = "2024"
+  
+  # `SPEC-MOK-004` rule 4: two targets. The library target carries the presentation layer so
+  # that a tier of tests can reach the observer's contract from outside the crate, which
+  # `REQ-MOK-028` requires; the binary keeps the operator-facing name and every terminal
+  # concern. The library target is named in snake case because the declared lint gate implies
+  # `non_snake_case`, exactly as `SPEC-MOK-002` rule 2 requires of the engine's.
+  [lib]
+  name = "mokiterions_tui"
+  path = "src/lib.rs"
+  
+  [[bin]]
+  name = "mokiterions-tui"
+  path = "src/main.rs"
+  
+  # `SPEC-MOK-003` fixes this dependency, its version and its feature set, and
+  # `ADR-MOK-003` decides them. Changing any of the three is a specification amendment,
+  # not an implementation choice. Every user-interface dependency lives here and nowhere
+  # else; `Mokiterions` depends on nothing.
+  [dependencies]
+  Mokiterions = { path = "../mokiterions-core" }
+  ratatui = { version = "0.30.2", default-features = false, features = [
+    "crossterm",
+    "layout-cache",
+    "underline-color",
+  ] }
+
+  Two changes from the predecessor, and no others:
+
+    the `[lib]` table                 new. `name = "mokiterions_tui"`, `path = "src/lib.rs"`.
+    `Mokiterions = { path = ".." }`   became `{ path = "../mokiterions-core" }`.
+
+  The dependency is the same package reached at its new location — same name, same package, no
+  version requirement, no features, no `default-features` clause. Nothing about the engine's
+  identity as a dependency changed, which is why `Cargo.lock` is byte-identical.
+
+  The `[lib]` table is the substance of this work order rather than a consequence of the move. It is
+  what gives `REQ-MOK-028` something to be true of: a library target is the only thing a file under
+  `tests/` can link, so without it the public tier could not exist. The snake-case name is forced by
+  the lint gate, as `static-checks.txt` explains. The binary keeps `mokiterions-tui`, the name an
+  operator types.
+
+  ratatui's version and its three features are untouched: `0.30.2`, `default-features = false`,
+  `crossterm`, `layout-cache`, `underline-color`. `SPEC-MOK-003` fixes all of them and `ADR-MOK-003`
+  decides them, so changing one would be an amendment and not an implementation choice. This work
+  order changed none.
+
+## What is absent from all three, and stays absent
+#
+  No `[build-dependencies]`, no `[dev-dependencies]`, no build script, no `[patch]`, no `[profile]`,
+  no `[workspace.dependencies]` and no third member. `SPEC-MOK-002` rule 1 admits exactly two
+  packages on the approved requirement `REQ-MOK-026`; there is no fourth manifest anywhere in the
+  repository. `SPEC-MOK-001`'s prohibitions hold as written: no network, model, credential,
+  persistence, serialization, async-runtime or database dependency appears in any table above.

@@ -1,0 +1,115 @@
+# File comparison: the engine moved, and nothing in it changed
+#
+# `VER-MOK-006` conformance check: "Every one of the engine's nine source and test files is
+# byte-identical to its predecessor at 191db01. The only changes anywhere are path references."
+#
+# Method. A working-tree file cannot be compared with a committed blob by reading bytes off disk:
+# this repository normalises line endings, so every retained file is CRLF on disk and LF in the
+# object store, and a naive `diff` reports nine spurious differences. The comparison is therefore
+# made in the object store. `git hash-object --path=<new path> <file>` applies the same clean
+# filter Git would apply on commit and prints the blob id the file would have; `git rev-parse
+# 191db01:<old path>` prints the blob id it had. Equal ids mean equal content, and the method is
+# immune to line-ending translation because both sides pass through the same filter.
+
+# The engine's nine files
+
+  old path               new path                               at 191db01 candidate  verdict
+  src/lib.rs             mokiterions-core/src/lib.rs            fe6cf9e6a9 fe6cf9e6a9 IDENTICAL (73 lines)
+  src/main.rs            mokiterions-core/src/main.rs           7302d06f4f 7302d06f4f IDENTICAL (19 lines)
+  src/cli.rs             mokiterions-core/src/cli.rs            6a52e79ef9 6a52e79ef9 IDENTICAL (146 lines)
+  src/simulation.rs      mokiterions-core/src/simulation.rs     aa1ce41fb5 aa1ce41fb5 IDENTICAL (2993 lines)
+  tests/cli.rs           mokiterions-core/tests/cli.rs          61d8da560f 61d8da560f IDENTICAL (380 lines)
+  tests/density.rs       mokiterions-core/tests/density.rs      2b76af7fed 2b76af7fed IDENTICAL (55 lines)
+  tests/process.rs       mokiterions-core/tests/process.rs      4d32cb71da 4d32cb71da IDENTICAL (95 lines)
+  tests/termination.rs   mokiterions-core/tests/termination.rs  5800fd0ba6 5800fd0ba6 IDENTICAL (76 lines)
+  tests/viability.rs     mokiterions-core/tests/viability.rs    76256c716d 76256c716d IDENTICAL (61 lines)
+
+  Nine files, nine equal blob ids, 3,898 lines of engine unchanged. Not one line of the
+  engine's implementation or its tests was edited to make the move work, which is what
+  `ARCH-MOK-001`'s isolation predicts: a package whose paths are relative to its own manifest
+  and whose dependency table is empty has nothing in it that names where it sits.
+
+# The same fact, told by Git's own rename detection
+
+  RM Cargo.toml -> mokiterions-core/Cargo.toml
+  R  src/cli.rs -> mokiterions-core/src/cli.rs
+  R  src/lib.rs -> mokiterions-core/src/lib.rs
+  R  src/main.rs -> mokiterions-core/src/main.rs
+  R  src/simulation.rs -> mokiterions-core/src/simulation.rs
+  R  tests/cli.rs -> mokiterions-core/tests/cli.rs
+  R  tests/density.rs -> mokiterions-core/tests/density.rs
+  R  tests/process.rs -> mokiterions-core/tests/process.rs
+  R  tests/termination.rs -> mokiterions-core/tests/termination.rs
+  R  tests/viability.rs -> mokiterions-core/tests/viability.rs
+
+  `git status` reports nine of these as `R` with no similarity percentage, which is Git's notation
+  for a rename at 100% similarity — it found no content change to record. `mokiterions-core/Cargo.toml`
+  is reported `RM`: a rename with a modification, which the next section accounts for in full.
+
+# Every path reference that changed, and why each one had to
+#
+# The conformance check permits path references to change and nothing else. There are seven, and
+# this is all of them.
+#
+#  1. `Cargo.toml` at the root — REPLACED, and the old one MOVED
+#
+#     The old root manifest was two things at once: the workspace manifest and the engine package's
+#     manifest. It moved to `mokiterions-core/Cargo.toml`, where its `[package]`, `[lib]`, `[[bin]]`
+#     and `[dependencies]` tables stand unchanged, and its `[workspace]` table was removed from it.
+#     A new virtual manifest took its place at the root, holding `[workspace]` and nothing else:
+#
+#         members = ["mokiterions-core", "mokiterions-tui"]
+#         resolver = "3"
+#
+#     `members` names both packages where it named one, because the engine is no longer the root
+#     package that a workspace implicitly includes. `resolver = "3"` is declared because a virtual
+#     manifest does not inherit a member's edition default and Cargo warns without it.
+#
+#  2. `mokiterions-core/Cargo.toml` — the `[workspace]` table removed, and a new comment
+#
+#     Every path inside it is unchanged: `path = "src/lib.rs"`, `path = "src/main.rs"`. A package
+#     manifest's paths were always relative to the manifest, so moving the manifest and the two
+#     directories together left them correct. `manifests.txt` shows the whole file.
+#
+#  3. `mokiterions-tui/Cargo.toml` — `path = ".."` became `path = "../mokiterions-core"`
+#
+#     The dependency is the same package, `Mokiterions`, reached at its new location. The `[lib]`
+#     table added beside it is not a path reference; it is the new library target, which is the
+#     substance of the change and not a consequence of the move.
+#
+#  4. `mokiterions-tui/src/main.rs` — seven `mod` declarations became three `use` statements
+#
+#     `mod authority; mod export; ... mod state;` became
+#     `use mokiterions_tui::{layout, options, render};` and two more `use` lines. The binary now
+#     reaches the presentation layer the way anything outside the crate does. Declaring the same
+#     modules in both targets would compile them twice and give the package two copies of every
+#     type, so this substitution is forced rather than stylistic. `verbatim-comparison.txt` records
+#     that all eight of the file's tests are byte-identical across it.
+#
+#  5. `mokiterions-tui/src/lib.rs` — NEW
+#
+#     The seven `pub mod` declarations, module documentation citing `ARCH-MOK-002` component 5,
+#     `REQ-MOK-028` and `SPEC-MOK-004` rules 4 to 7, and `#[cfg(test)] mod verification;`.
+#
+#  6. `crate::state::EVENT_CAPACITY` became `mokiterions_tui::state::EVENT_CAPACITY`
+#
+#     Two occurrences, both inside one relocated test. `verbatim-comparison.txt` shows the diff.
+#     This is the only path reference that changed inside any test body.
+#
+#  7. `.idea/Mokiterions.iml` — the module's source roots
+#
+#     A tracked JetBrains module file that lists the project's source and test roots. It named
+#     `src` and `tests` at the repository root, which no longer exist. It now names
+#     `mokiterions-core/src`, `mokiterions-core/tests`, `mokiterions-tui/src` and
+#     `mokiterions-tui/tests`. The IDE had already added the four new entries on its own; the two
+#     stale ones were removed by hand, because a tracked file that describes the layout should not
+#     go on describing the old one. No other `.idea` file names a path that moved: `.gitignore`,
+#     `modules.xml` and `vcs.xml` are unchanged.
+#
+# Nothing else in the observer's `src/` names a path. The seven `pub mod` files use `crate::` to
+# reach each other and they are still one crate, so `non-test-content.txt` finds all seven
+# byte-identical outside their test blocks — including every `use` line in them.
+#
+# The eight new files under `mokiterions-tui/tests/` are new files, not changed ones. Each carries a
+# `use mokiterions_tui::...` header, which is the path reference by which a separate crate reaches
+# the library; `test-placement.md` bounds what those headers may name and the compiler enforces it.

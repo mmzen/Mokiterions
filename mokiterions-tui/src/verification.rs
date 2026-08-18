@@ -1,4 +1,4 @@
-//! `VER-MOK-005`'s cross-cutting cases.
+//! `VER-MOK-005`'s cross-cutting cases that reach a `#[cfg(test)]` hook.
 //!
 //! The per-module tests verify one obligation at a time. The cases here verify the properties
 //! that span the whole observer, and above all the contract's primary property: an observed run
@@ -14,12 +14,14 @@
 //! Non-perturbation is established by comparison and never by reading the observer for mutating
 //! calls, which is why every case below drives two runs and diffs them rather than asserting
 //! something about the observer's structure.
-
-use std::collections::BTreeMap;
+//!
+//! `SPEC-MOK-004` rule 10 keeps these eight cases inside the crate: each reaches a
+//! `#[cfg(test)]` hook, which does not exist in the build an integration test links, so no
+//! test outside the crate could name one. The other sixteen are in `tests/verification.rs`.
 
 use mokiterions::simulation::{
     Action, AgentSnapshot, Coordinate, DecisionOutcome, DecisionSnapshot, Direction, EventType,
-    FoodClass, Policy, ResourceSnapshot, Simulation, TerminationReason, Territory, WorldSnapshot,
+    FoodClass, ResourceSnapshot, TerminationReason, Territory, WorldSnapshot,
 };
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
@@ -29,11 +31,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier};
 
 use crate::state::{Filter, Observer, Progression};
-use crate::{authority, export, layout, options, render, spatial};
-
-/// The declared verification seed set, fixed by `VER-MOK-005` so that observed runs are compared
-/// against runs whose unobserved behavior is already recorded evidence.
-const SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
+use crate::{export, layout, options, render, spatial};
 
 /// The declared viewport set. `33 x 21` is the one-below-floor case and is refused, not rendered.
 const VIEWPORTS: [(u16, u16); 7] = [
@@ -78,25 +76,6 @@ fn tap(observer: &mut Observer, code: KeyCode) {
     observer.handle_key(press(code)).expect("no binding fails");
 }
 
-/// The engine binary's stream for one configuration: its event lines and its summary line.
-///
-/// This is the authoritative reference. Nothing in it comes from the observer.
-fn unobserved(args: &[&str]) -> (Vec<String>, String) {
-    let config = match options::parse(args.to_vec()) {
-        Ok(options::Startup::Run(options)) => options.config,
-        other => panic!("{args:?} did not yield a runnable configuration: {other:?}"),
-    };
-    let mut simulation = Simulation::new(config).expect("the configuration is valid");
-    let mut bytes = Vec::new();
-    simulation.run(&mut bytes).expect("writing to a vector");
-    let text = String::from_utf8(bytes).expect("the stream is text");
-
-    let mut lines: Vec<String> = text.lines().map(str::to_string).collect();
-    let summary = lines.pop().expect("the stream ends with a summary");
-    assert!(summary.starts_with("summary "), "{summary}");
-    (lines, summary)
-}
-
 /// The observer's retained records as stream lines, which is what an export contains.
 fn observed_lines(observer: &Observer) -> Vec<String> {
     observer
@@ -104,50 +83,6 @@ fn observed_lines(observer: &Observer) -> Vec<String> {
         .iter()
         .map(|event| event.to_string())
         .collect()
-}
-
-/// The summary line the observer's final state implies, in the engine binary's own words.
-///
-/// Reconstructing it from the snapshot rather than reading it from the engine is deliberate: it
-/// asserts that the observer's picture of the final state is the engine's, field by field.
-fn summary_from(observer: &Observer) -> String {
-    let snapshot = observer.snapshot();
-    let survivors = snapshot.agents.len();
-    let territory_a = snapshot
-        .agents
-        .iter()
-        .filter(|agent| agent.territory == Territory::A)
-        .count();
-    let [a, b] = &snapshot.territories;
-    format!(
-        "summary reason={} ticks={} survivors={survivors} deaths={} territory_a={territory_a} \
-         territory_b={} food_a_low={} food_a_medium={} food_a_high={} food_b_low={} \
-         food_b_medium={} food_b_high={}",
-        observer.termination_reason().expect("the run has ended"),
-        snapshot.tick,
-        snapshot.deaths,
-        survivors - territory_a,
-        a.low,
-        a.medium,
-        a.high,
-        b.low,
-        b.medium,
-        b.high,
-    )
-}
-
-/// Groups stream lines by the tick each belongs to.
-fn by_tick(lines: &[String]) -> BTreeMap<u64, Vec<&String>> {
-    let mut grouped: BTreeMap<u64, Vec<&String>> = BTreeMap::new();
-    for line in lines {
-        let tick = line
-            .strip_prefix("tick=")
-            .and_then(|rest| rest.split(' ').next())
-            .and_then(|value| value.parse::<u64>().ok())
-            .unwrap_or_else(|| panic!("no tick in {line}"));
-        grouped.entry(tick).or_default().push(line);
-    }
-    grouped
 }
 
 /// A frame drawn at `(width, height)`, or `None` below the floor, where nothing is presented.
@@ -176,242 +111,6 @@ fn region(buffer: &Buffer, area: Rect) -> String {
         .join("\n")
 }
 
-/// Everything the operator can reach that must not perturb the run, applied every tick.
-///
-/// The sequence deliberately mixes progression, selection, panning, zooming, filtering, overlays,
-/// log paging and an unbound key, and it is applied while the run is advancing rather than between
-/// runs, because `REQ-MOK-025`'s claim is about interaction during a run.
-fn interact(observer: &mut Observer, round: u64) {
-    const KEYS: [KeyCode; 12] = [
-        KeyCode::Tab,
-        KeyCode::Char('z'),
-        KeyCode::Char('l'),
-        KeyCode::Char('j'),
-        KeyCode::Char('e'),
-        KeyCode::Char('f'),
-        KeyCode::BackTab,
-        KeyCode::Char('L'),
-        KeyCode::PageUp,
-        KeyCode::Char('c'),
-        KeyCode::Esc,
-        // Unbound: it must change nothing at all.
-        KeyCode::Char('W'),
-    ];
-    let step = usize::try_from(round % 12).expect("a small remainder");
-    tap(observer, KEYS[step]);
-    // Speed is walked too, since it is what a host would otherwise use to schedule ticks.
-    if step % 3 == 0 {
-        tap(observer, KeyCode::Char('+'));
-    }
-    if step % 5 == 0 {
-        tap(observer, KeyCode::Char('-'));
-    }
-}
-
-/// Drives an observed run to the engine's own end, interacting and drawing throughout.
-///
-/// The viewport rotates through the declared set, including below the floor, so a run is observed
-/// at every layout tier and while drawing is suspended.
-fn observed_run(args: &[&str]) -> Observer {
-    let mut observer = observer_for(args);
-    let mut round = 0u64;
-    while !observer.is_finished() {
-        let (width, height) = VIEWPORTS[usize::try_from(round % 7).expect("a small remainder")];
-        frame(&mut observer, width, height);
-        interact(&mut observer, round);
-        observer.advance().expect("the engine advances");
-        round += 1;
-    }
-    // A finished run is still drawn and still interacted with.
-    frame(&mut observer, 160, 48);
-    interact(&mut observer, round);
-    observer
-}
-
-// ---- the primary property ------------------------------------------------------------------
-
-/// `REQ-MOK-025`: on every declared seed, an observed run's authoritative stream and final state
-/// are the engine binary's, byte for byte, under interaction throughout.
-#[test]
-fn observed_and_unobserved_runs_are_identical_on_every_declared_seed() {
-    for seed in SEEDS {
-        let seed = seed.to_string();
-        let args = ["--seed", &seed, "--ticks", "60"];
-        let (expected, summary) = unobserved(&args);
-        let observer = observed_run(&args);
-        let observed = observed_lines(&observer);
-
-        assert_eq!(
-            observed.len(),
-            expected.len(),
-            "seed {seed}: {} records observed, {} unobserved",
-            observed.len(),
-            expected.len()
-        );
-        for (index, (left, right)) in observed.iter().zip(expected.iter()).enumerate() {
-            assert_eq!(left, right, "seed {seed} record {index}");
-        }
-        assert_eq!(summary_from(&observer), summary, "seed {seed} final state");
-    }
-}
-
-/// `REQ-MOK-025`: per-tick entropy draw counts are identical observed and unobserved.
-///
-/// The specified observation surface exposes no draw counter, so the comparison is made on what
-/// the stream shows of every entropy-consuming operation: each regenerated resource's placement,
-/// each regeneration the engine skipped, and each applied action, tick by tick. The engine's
-/// entropy is one sequential stream shared by placement and by the decision source, so a tick in
-/// which the observer had drawn even once would shift every later value; per-tick record identity
-/// across a whole run is therefore the observable form of draw-count identity.
-#[test]
-fn per_tick_records_match_so_the_observer_draws_no_entropy() {
-    fn entropy_bearing(line: &str) -> bool {
-        [
-            "event=food_regenerated",
-            "event=food_regeneration_skipped",
-            "event=action_trace",
-        ]
-        .iter()
-        .any(|marker| line.contains(marker))
-    }
-
-    for seed in SEEDS {
-        let seed = seed.to_string();
-        let args = ["--seed", &seed, "--ticks", "40"];
-        let (expected, _) = unobserved(&args);
-        let observer = observed_run(&args);
-        let observed = observed_lines(&observer);
-
-        let mine = by_tick(&observed);
-        let theirs = by_tick(&expected);
-        assert_eq!(
-            mine.keys().collect::<Vec<_>>(),
-            theirs.keys().collect::<Vec<_>>(),
-            "seed {seed}: the runs cover different ticks"
-        );
-        for (tick, lines) in &mine {
-            let left: Vec<&&String> = lines.iter().filter(|line| entropy_bearing(line)).collect();
-            let right: Vec<&&String> = theirs[tick]
-                .iter()
-                .filter(|line| entropy_bearing(line))
-                .collect();
-            assert_eq!(
-                left.len(),
-                right.len(),
-                "seed {seed} tick {tick}: {} entropy-bearing records observed, {} unobserved",
-                left.len(),
-                right.len()
-            );
-            assert_eq!(left, right, "seed {seed} tick {tick}");
-        }
-    }
-}
-
-/// `REQ-MOK-025`: held across many frames and many key presses, nothing advances.
-#[test]
-fn holding_consumes_nothing_however_long_it_is_held() {
-    let mut observer = observer_for(&["--start-paused", "--seed", "42"]);
-    let before = observer.snapshot().clone();
-    let retained = observer.events().len();
-
-    for round in 0..200u64 {
-        frame(&mut observer, 160, 48);
-        interact(&mut observer, round);
-    }
-    assert_eq!(observer.snapshot(), &before, "held state changed");
-    assert_eq!(
-        observer.events().len(),
-        retained,
-        "records accrued while held"
-    );
-
-    // Advancing once then produces exactly the engine's own first tick, unaffected by all of it.
-    let (expected, _) = unobserved(&["--seed", "42"]);
-    observer.advance().expect("the engine advances");
-    assert_eq!(observer.snapshot().tick, 1);
-    let observed = observed_lines(&observer);
-    let grouped = by_tick(&expected);
-    assert_eq!(observed.len(), grouped[&0].len() + grouped[&1].len());
-    for (index, (left, right)) in observed.iter().zip(expected.iter()).enumerate() {
-        assert_eq!(left, right, "record {index}");
-    }
-}
-
-/// `REQ-MOK-025`: a run the operator ended yields a prefix of the unobserved run.
-#[test]
-fn an_operator_ended_run_is_a_prefix_of_the_unobserved_run() {
-    let args = ["--seed", "123", "--ticks", "80"];
-    let (expected, _) = unobserved(&args);
-    let mut observer = observer_for(&args);
-    for round in 0..25u64 {
-        frame(&mut observer, 120, 48);
-        interact(&mut observer, round);
-        observer.advance().expect("the engine advances");
-    }
-    observer.mark_ended_early();
-
-    let observed = observed_lines(&observer);
-    assert!(
-        observed.len() < expected.len(),
-        "an early exit retained the whole run"
-    );
-    assert_eq!(observed, expected[..observed.len()], "not a prefix");
-    assert!(observer.ended_early());
-    assert!(
-        !observer.is_finished(),
-        "an operator's exit is not the engine's end"
-    );
-}
-
-/// `REQ-MOK-025`: no catch-up. One advance is one tick, and a finished run refuses to advance.
-#[test]
-fn one_advance_is_one_tick_and_a_finished_run_refuses() {
-    let mut observer = observer_for(&["--start-paused", "--ticks", "10"]);
-    for expected in 1..=10u64 {
-        observer.advance().expect("the engine advances");
-        assert_eq!(observer.snapshot().tick, expected);
-    }
-    assert!(observer.is_finished());
-    for _ in 0..5 {
-        observer.advance().expect("a refusal is not an error");
-        assert_eq!(observer.snapshot().tick, 10);
-    }
-    assert_eq!(
-        observer.termination_reason(),
-        Some(TerminationReason::TickLimit)
-    );
-}
-
-/// `REQ-MOK-023`: a finished run stays inspectable and exportable, and refuses progression.
-#[test]
-fn a_finished_run_stays_inspectable_and_exportable() {
-    let mut observer = observer_for(&["--ticks", "20"]);
-    while !observer.is_finished() {
-        observer.advance().expect("the engine advances");
-    }
-    let retained = observer.events().len();
-
-    tap(&mut observer, KeyCode::Char(' '));
-    tap(&mut observer, KeyCode::Char('.'));
-    assert_eq!(observer.snapshot().tick, 20);
-    assert_eq!(observer.events().len(), retained);
-
-    let buffer = frame(&mut observer, 160, 48).expect("above the floor");
-    assert!(
-        flatten(&buffer).contains("tick_limit"),
-        "the engine's reason is not presented"
-    );
-
-    let mut bytes = Vec::new();
-    export::write_records(&mut bytes, observer.events()).expect("writing to a vector");
-    let text = String::from_utf8(bytes).expect("the export is text");
-    assert_eq!(
-        text.lines().count(),
-        retained + 1,
-        "every record plus the trailer"
-    );
-}
-
 // ---- rendering and layout purity -----------------------------------------------------------
 
 /// `VER-MOK-005`: drawing the same state at the same viewport twice produces identical buffers,
@@ -436,114 +135,6 @@ fn drawing_is_pure() {
             "{width}x{height} changed state"
         );
         assert_eq!(observed_lines(&observer), records, "{width}x{height}");
-    }
-}
-
-/// `REQ-MOK-024`: layout is a function of dimensions alone.
-///
-/// The same dimensions are resolved at different ticks, speeds, selections, filters, overlays and
-/// run states; every pane must land in the same place.
-#[test]
-fn layout_reads_nothing_but_the_dimensions() {
-    let mut observer = observer_for(&["--seed", "1", "--start-paused"]);
-    let reference: Vec<_> = VIEWPORTS
-        .iter()
-        .map(|(width, height)| layout::resolve(Rect::new(0, 0, *width, *height)))
-        .collect();
-
-    for round in 0..30u64 {
-        observer.advance().expect("the engine advances");
-        interact(&mut observer, round);
-        for (index, (width, height)) in VIEWPORTS.iter().enumerate() {
-            assert_eq!(
-                layout::resolve(Rect::new(0, 0, *width, *height)),
-                reference[index],
-                "{width}x{height} at tick {}",
-                observer.snapshot().tick
-            );
-        }
-    }
-}
-
-/// `REQ-MOK-024`: the canvas interior at every declared viewport is the derived one, the header
-/// and footer are present at every one of them including the floor itself, and the one-below-floor
-/// case presents nothing.
-#[test]
-fn every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer() {
-    let mut observer = observer_for(&["--seed", "42", "--start-paused"]);
-    observer.advance().expect("the engine advances");
-
-    for (width, height, canvas_width, canvas_height) in RENDERABLE {
-        let panes = layout::resolve(Rect::new(0, 0, width, height));
-        assert_eq!(
-            layout::canvas_cells(panes.view),
-            (canvas_width, canvas_height),
-            "{width}x{height}"
-        );
-        assert_eq!(panes.header.height, 3, "{width}x{height}");
-        assert_eq!(panes.footer.height, 1, "{width}x{height}");
-
-        let buffer = frame(&mut observer, width, height).expect("above the floor");
-        let text = flatten(&buffer);
-        let lines: Vec<&str> = text.lines().collect();
-        assert_eq!(lines.len(), usize::from(height), "{width}x{height}");
-        // The header states the run and both territories; the footer states the provenance.
-        assert!(lines[0].contains("HELD"), "{width}x{height}: {}", lines[0]);
-        assert!(lines[1].starts_with('A'), "{width}x{height}: {}", lines[1]);
-        assert!(lines[2].starts_with('B'), "{width}x{height}: {}", lines[2]);
-        let footer = lines[lines.len() - 1];
-        assert!(
-            footer.contains("42") && footer.contains("reference"),
-            "{width}x{height}: {footer}"
-        );
-    }
-
-    assert!(frame(&mut observer, 33, 21).is_none());
-}
-
-/// `VER-MOK-005`: orientation. Within a visible region, a smaller world row never renders below a
-/// larger one, at any declared viewport, either zoom, or any camera position.
-#[test]
-fn a_smaller_world_row_never_renders_below_a_larger_one() {
-    let mut observer = observer_for(&["--seed", "0", "--start-paused"]);
-    observer.advance().expect("the engine advances");
-
-    for (width, height, _, _) in RENDERABLE {
-        for zoom_presses in 0..2 {
-            for pans in [0usize, 5, 40, 200] {
-                for _ in 0..zoom_presses {
-                    tap(&mut observer, KeyCode::Char('z'));
-                }
-                for _ in 0..pans {
-                    tap(&mut observer, KeyCode::Char('j'));
-                }
-                frame(&mut observer, width, height);
-
-                let viewport = observer.viewport();
-                let zoom = observer.zoom();
-                let mut previous: Option<u16> = None;
-                for world_y in viewport.origin_y..=viewport.last_y() {
-                    let row = viewport
-                        .cell_of(zoom, viewport.origin_x, world_y)
-                        .expect("inside the region")
-                        .1;
-                    if let Some(previous) = previous {
-                        assert!(
-                            row >= previous,
-                            "{width}x{height}: world row {world_y} rose above its predecessor"
-                        );
-                    }
-                    previous = Some(row);
-                }
-                // Return the camera and the zoom for the next case.
-                for _ in 0..200 {
-                    tap(&mut observer, KeyCode::Char('k'));
-                }
-                for _ in 0..zoom_presses {
-                    tap(&mut observer, KeyCode::Char('z'));
-                }
-            }
-        }
     }
 }
 
@@ -631,42 +222,6 @@ fn a_filter_changes_what_is_presented_and_nothing_else() {
     assert_eq!(observer.presented().len(), records.len());
 }
 
-/// `REQ-MOK-022`: two exports from runs sharing seed, configuration, source and stopping tick are
-/// byte-identical, and each is the engine binary's stream with the trailer appended.
-#[test]
-fn exports_are_reproducible_and_are_the_engines_own_records() {
-    fn rendered(observer: &Observer) -> String {
-        let mut bytes = Vec::new();
-        export::write_records(&mut bytes, observer.events()).expect("writing to a vector");
-        String::from_utf8(bytes).expect("the export is text")
-    }
-
-    for seed in SEEDS {
-        let seed = seed.to_string();
-        let args = ["--seed", &seed, "--ticks", "30"];
-        let (expected, _) = unobserved(&args);
-
-        // One run interacted with heavily, one run left alone: the exports must agree.
-        let busy = observed_run(&args);
-        let mut quiet = observer_for(&args);
-        while !quiet.is_finished() {
-            quiet.advance().expect("the engine advances");
-        }
-
-        let first = rendered(&busy);
-        assert_eq!(first, rendered(&quiet), "seed {seed}");
-        assert_eq!(first, rendered(&busy), "seed {seed} is not stable");
-
-        let lines: Vec<&str> = first.lines().collect();
-        assert_eq!(&lines[..lines.len() - 1], &expected[..], "seed {seed}");
-        assert_eq!(
-            lines[lines.len() - 1],
-            format!("# retained={} truncated=false", expected.len()),
-            "seed {seed}"
-        );
-    }
-}
-
 // ---- faithfulness --------------------------------------------------------------------------
 
 /// `REQ-MOK-019`, `REQ-MOK-020` and `REQ-MOK-021`: every presented value is the snapshot's.
@@ -708,60 +263,6 @@ fn every_presented_value_is_the_snapshots() {
         Some(action) => assert!(text.contains(&action.to_string())),
         // Rule 10.3 makes a rejected proposal's applied action an absence, never an invention.
         None => assert!(text.contains("rejected")),
-    }
-}
-
-/// `REQ-MOK-019`: an action the engine applied is the action presented, for every living
-/// Mokiterion, at every tick of a short run.
-#[test]
-fn the_applied_action_presented_is_always_the_engines() {
-    let mut observer = observer_for(&["--seed", "1", "--start-paused"]);
-    for _ in 0..15 {
-        observer.advance().expect("the engine advances");
-        let buffer = frame(&mut observer, 160, 48).expect("above the floor");
-        let text = flatten(&buffer);
-        let applied: Vec<(String, Option<Action>)> = observer
-            .snapshot()
-            .agents
-            .iter()
-            .map(|agent| (agent.id.clone(), agent.applied_action.clone()))
-            .collect();
-        for (id, action) in applied {
-            if let Some(action) = action {
-                let rendered = action.to_string();
-                assert!(
-                    text.contains(&rendered),
-                    "{id}'s applied action {rendered} is not presented"
-                );
-            }
-        }
-    }
-}
-
-/// Neither shipped decision source can have a proposal rejected.
-///
-/// `BaselineDecisionSource` selects from the observation's valid actions and
-/// `ReferenceDecisionSource` guards every candidate with the observation's own `allows`, so both
-/// propose only what the engine has already declared valid. A rejection is therefore unreachable
-/// through a run of either policy, which is asserted here as the fact it is: `VER-MOK-005`'s
-/// acceptance scenario 2 describes a state no shipped source produces, and the case that follows
-/// reaches it the only way it can be reached.
-#[test]
-fn no_shipped_decision_source_has_a_proposal_rejected() {
-    for policy in ["baseline", "reference"] {
-        let mut observer = observer_for(&["--policy", policy, "--seed", "42", "--ticks", "400"]);
-        while !observer.is_finished() {
-            observer.advance().expect("the engine advances");
-            for decision in &observer.snapshot().decisions {
-                assert_eq!(
-                    decision.outcome,
-                    DecisionOutcome::Accepted,
-                    "{policy} had {} rejected at tick {}",
-                    decision.agent_id,
-                    observer.snapshot().tick
-                );
-            }
-        }
     }
 }
 
@@ -825,94 +326,6 @@ fn the_presented_verdict_is_the_snapshots_and_a_rejection_is_not_a_fault() {
     assert_eq!(red, 0, "a rejection is presented in fault colouring");
 }
 
-// ---- security ------------------------------------------------------------------------------
-
-/// `REQ-MOK-027`: no frame carries an environment value, at any declared viewport, at any tick.
-#[test]
-fn no_frame_carries_an_environment_value() {
-    let mut observer = observer_for(&["--seed", "777"]);
-    for round in 0..40u64 {
-        observer.advance().expect("the engine advances");
-        interact(&mut observer, round);
-        for (width, height, _, _) in RENDERABLE {
-            let buffer = frame(&mut observer, width, height).expect("above the floor");
-            let text = flatten(&buffer);
-            for forbidden in [
-                "C:\\",
-                "/home/",
-                "/Users/",
-                "AppData",
-                "PATH=",
-                "TEMP",
-                "token",
-                "secret",
-                "api_key",
-                "ANTHROPIC",
-            ] {
-                assert!(
-                    !text.contains(forbidden),
-                    "{width}x{height} carries {forbidden}"
-                );
-            }
-        }
-    }
-}
-
-/// `REQ-MOK-025`: an injected export failure leaves the run running and no tick partly applied.
-#[test]
-fn an_injected_export_failure_leaves_the_tick_intact() {
-    let directory = std::env::temp_dir().join("mokiterions-verification-absent");
-    let _ = std::fs::remove_dir_all(&directory);
-    let unwritable = directory.join("nested").join("events.log");
-    let unwritable = unwritable.to_str().expect("a text path").to_string();
-
-    let mut observer = observer_for(&["--start-paused", "--export", &unwritable, "--seed", "42"]);
-    for _ in 0..5 {
-        observer.advance().expect("the engine advances");
-    }
-    let before = observer.snapshot().clone();
-    let records = observed_lines(&observer);
-
-    tap(&mut observer, KeyCode::Char('x'));
-    assert!(
-        observer
-            .notice()
-            .is_some_and(|text| text.starts_with("export failed")),
-        "the failure is not reported: {:?}",
-        observer.notice()
-    );
-    assert_eq!(observer.snapshot(), &before);
-    assert_eq!(observed_lines(&observer), records);
-    assert!(!std::fs::exists(&unwritable).unwrap_or(false));
-
-    // The run continues from exactly where it was.
-    observer.advance().expect("the engine advances");
-    assert_eq!(observer.snapshot().tick, 6);
-}
-
-// ---- the declared sets ---------------------------------------------------------------------
-
-/// Guards the declared sets themselves, so a later edit cannot quietly shrink coverage.
-#[test]
-fn the_declared_sets_are_the_contracts() {
-    assert_eq!(SEEDS, [0, 1, 42, 123, 777]);
-    assert_eq!(VIEWPORTS.len(), 7);
-    assert_eq!(RENDERABLE.len(), 6);
-    assert!(VIEWPORTS.contains(&(33, 21)));
-    assert!(layout::below_floor(33, 21));
-    for (width, height, _, _) in RENDERABLE {
-        assert!(VIEWPORTS.contains(&(width, height)));
-        assert!(!layout::below_floor(width, height));
-    }
-    // Rule 11's mapping covers every event type the observer can retain.
-    for event_type in EventType::ALL {
-        assert!(
-            authority::for_type(event_type, Some(Policy::Reference)).is_some(),
-            "{event_type} has no authority"
-        );
-    }
-}
-
 // ---- what is not drawn ---------------------------------------------------------------------
 
 /// The canvas interior of the view pane at one viewport: the cells rule 2 maps the world onto.
@@ -950,60 +363,6 @@ fn symbols(cells: &[Vec<(String, Modifier)>]) -> String {
         })
         .collect::<Vec<String>>()
         .join("\n")
-}
-
-/// `REQ-MOK-019` and `REQ-MOK-020`: a dead Mokiterion leaves the presentation, and the death is
-/// corroborated by the counts on the tick it is applied.
-///
-/// The engine's snapshot carries living Mokiterions only, so this cannot be satisfied by filtering
-/// in the observer. The case is here to assert the consequence at the buffer, which is that no
-/// identifier and no glyph for the dead subject survives where the living are presented.
-#[test]
-fn a_death_removes_the_subject_from_the_presentation_and_is_corroborated() {
-    let mut observer = observer_for(&["--policy", "baseline", "--ticks", "400", "--start-paused"]);
-    let mut previous = observer.snapshot().clone();
-    let dead = loop {
-        assert!(!observer.is_finished(), "the run ended before any death");
-        observer.advance().expect("the engine advances");
-        let now = observer.snapshot().clone();
-        if now.deaths > previous.deaths {
-            let gone: Vec<String> = previous
-                .agents
-                .iter()
-                .filter(|was| !now.agents.iter().any(|is| is.id == was.id))
-                .map(|was| was.id.clone())
-                .collect();
-            // The counts corroborate each other: the entries that disappeared are exactly the
-            // deaths the engine reported, and the living count fell by the same number.
-            assert_eq!(gone.len(), now.deaths - previous.deaths);
-            assert_eq!(now.living_count, previous.living_count - gone.len());
-            assert_eq!(now.living_count, now.agents.len());
-            break gone[0].clone();
-        }
-        previous = now;
-    };
-
-    let buffer = frame(&mut observer, 160, 48).expect("above the floor");
-    let roster = layout::resolve(*buffer.area())
-        .roster
-        .expect("the reference viewport shows the roster");
-    assert!(
-        !region(&buffer, roster).contains(&dead),
-        "{dead} is still in the roster:\n{}",
-        region(&buffer, roster)
-    );
-
-    // Rule 2's glyphs are one per identifier, so the dead subject's glyph cannot be another's.
-    let glyph = spatial::agent_glyph(&dead);
-    for zoom in ["overview", "detail"] {
-        let buffer = frame(&mut observer, 160, 48).expect("above the floor");
-        let canvas = region(&buffer, canvas_of(160, 48));
-        assert!(
-            !canvas.contains(glyph),
-            "{dead}'s glyph {glyph} is still drawn in {zoom} zoom:\n{canvas}"
-        );
-        tap(&mut observer, KeyCode::Char('z'));
-    }
 }
 
 /// `REQ-MOK-019`: a world with no living Mokiterions, one with no standing resources, and one with

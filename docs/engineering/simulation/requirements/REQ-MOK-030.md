@@ -2,7 +2,7 @@
 id = "REQ-MOK-030"
 type = "requirement"
 title = "Locate each package's manifest, sources and tests under its own directory"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-18"
 updated = "2026-08-18"

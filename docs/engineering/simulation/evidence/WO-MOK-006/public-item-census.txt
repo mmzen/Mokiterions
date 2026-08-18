@@ -1,0 +1,181 @@
+# Public-item census: the interface the observer's library target exposes
+#
+# `VER-MOK-006` conformance check: "The observer's library target exposes the same interface its
+# binary reached before, and no more: 97 public items across seven modules. A public field of a
+# public struct and a variant of a public enum are parts of the item that declares them and are
+# not counted again; there are 25 of them, so the same interface counted the other way is 122."
+#
+# Method. Each of the seven `pub mod` files is parsed outside every `#[cfg(test)]` block. A public
+# item is a `pub const`, `pub static`, `pub fn`, `pub struct`, `pub enum`, `pub trait` or `pub type`
+# declaration, including an inherent `pub fn` inside an `impl`. Public fields and enum variants are
+# counted separately, because they are parts of an item already counted and not items in their own
+# right. The predecessor's figures are not tabulated separately: `non-test-content.txt` establishes
+# that all seven files are byte-identical outside their test blocks, so any census of one side is a
+# census of both. The census is of the same seven files whether they are reached from `main.rs` by
+# `mod` (predecessor) or from `lib.rs` by `pub mod` (candidate) — which is the point of the check.
+
+  module         items  public fields  enum variants
+  authority          5              0              0
+  export             3              0              0
+  layout            13              8              7
+  options            8              4              2
+  render             2              0              0
+  spatial           19              6              2
+  state             47              7             11
+  ------------------------------------------------
+  total             97             25             22
+
+  97 public items — the recorded figure, exactly.
+  97 + 25 = 122 — the recorded second figure, exactly, on a fields-only reading.
+
+  No item is visibility-restricted: there is no `pub(crate)`, `pub(super)` or `pub(in ...)`
+  declaration anywhere in the seven modules. Everything public is public to the binary, which is
+  what makes the binary able to reach it through `use mokiterions_tui::...`.
+
+# An adverse observation about the contract's own wording, recorded and not corrected
+#
+# The sentence quoted above says fields and variants "are parts of the item that declares them and
+# are not counted again; there are 25 of them". Read as written, "them" names both fields and
+# variants, and there are 25 + 22 = 47 of those, so the interface counted the other way would be
+# 97 + 47 = 144. Read as fields only, both recorded figures — 25 and 122 — are exactly right, and
+# 122 is independently corroborated by the count of `pub` occurrences in `non-test-content.txt`,
+# which is also 122. The fields-only reading is therefore the one the author measured.
+#
+# This is an ambiguity in the wording of an approved contract, not an arithmetic error in it. The
+# measured interface satisfies the check on the reading its own numbers came from. `VER-MOK-006`
+# is approved, and amending an approved contract's pass condition is the assurance owner's act
+# under `DECISION_RIGHTS.md`; it is not among the four amendments `ADR-MOK-004` enumerates. The
+# contract is left as it stands and the observation is carried into the completion report and the
+# verification record for the owner to dispose of.
+
+# The enumeration, module by module — every public item by kind and name
+#
+# This is the census's raw material. It is retained so the figures above can be re-added by hand.
+
+## authority — 5 items, 0 public fields, 0 variants
+   const   DECISION_AUTHORITY
+   const   PERCEPTION_AUTHORITY
+   fn      for_type
+   fn      for_event
+   fn      table
+
+## export — 3 items, 0 public fields, 0 variants
+   fn      default_path
+   fn      write_records
+   fn      write_file
+
+## layout — 13 items, 8 public fields, 7 variants
+   const   MIN_WIDTH
+   const   MIN_HEIGHT
+   const   ROSTER_TWO_LINE_WIDTH
+   enum    Tier
+   fn      label
+   enum    Pane
+   fn      label
+   struct  Panes
+   fn      overlay_only
+   fn      below_floor
+   fn      tier_for
+   fn      resolve
+   fn      canvas_cells
+   -- 8 public fields: Panes.tier, Panes.header, Panes.roster, Panes.view, Panes.inspector, Panes.log, Panes.footer, Panes.overlay
+   -- 7 variants: Tier::A, Tier::B, Tier::C, Tier::D, Pane::Roster, Pane::Inspector, Pane::Log
+
+## options — 8 items, 4 public fields, 2 variants
+   const   USAGE
+   const   SPEED_STEPS
+   const   DEFAULT_SPEED
+   struct  Options
+   enum    Startup
+   fn      parse
+   fn      faster
+   fn      slower
+   -- 4 public fields: Options.config, Options.speed, Options.start_paused, Options.export_path
+   -- 2 variants: Startup::Help, Startup::Run
+
+## render — 2 items, 0 public fields, 0 variants
+   const   COMMIT
+   fn      draw
+
+## spatial — 19 items, 6 public fields, 2 variants
+   const   WORLD_SIZE
+   const   TERRITORY_A_LAST_ROW
+   const   DOTS_PER_CELL_X
+   enum    Zoom
+   fn      label
+   fn      toggled
+   struct  Viewport
+   fn      resolve
+   fn      is_whole_world
+   fn      last_x
+   fn      last_y
+   fn      contains
+   fn      camera_limit
+   fn      cell_of
+   fn      dot_of
+   fn      bounds
+   fn      shows_territory_boundary
+   fn      agent_glyph
+   fn      resource_glyph
+   -- 6 public fields: Viewport.origin_x, Viewport.origin_y, Viewport.width, Viewport.height, Viewport.span_x, Viewport.span_y
+   -- 2 variants: Zoom::Overview, Zoom::Detail
+
+## state — 47 items, 7 public fields, 11 variants
+   const   EVENT_CAPACITY
+   enum    Progression
+   fn      label
+   enum    Filter
+   fn      matches
+   fn      label
+   enum    Overlay
+   struct  EventBuffer
+   fn      new
+   fn      push
+   fn      len
+   fn      is_empty
+   fn      truncated
+   fn      iter
+   struct  Death
+   struct  KeyResponse
+   struct  Observer
+   fn      new
+   fn      advance
+   fn      snapshot
+   fn      config
+   fn      is_finished
+   fn      termination_reason
+   fn      progression
+   fn      speed
+   fn      zoom
+   fn      follow
+   fn      camera
+   fn      filter
+   fn      overlay
+   fn      events
+   fn      selection
+   fn      notice
+   fn      set_notice
+   fn      ended_early
+   fn      mark_ended_early
+   fn      deaths
+   fn      death_of
+   fn      log_cursor
+   fn      presented
+   fn      highlighted
+   fn      selected_agent
+   fn      shared_cell_count
+   fn      record_geometry
+   fn      apply_follow
+   fn      viewport
+   fn      handle_key
+   -- 7 public fields: Death.id, Death.tick, Death.health, Death.satiety, Death.energy, KeyResponse.quit, KeyResponse.force_draw
+   -- 11 variants: Progression::Running, Progression::Held, Filter::None, Filter::Type, Filter::Subject, Overlay::None, Overlay::Roster, Overlay::Log, Overlay::Inspector, Overlay::Help, Overlay::Authority
+
+# "and no more"
+#
+# The check's second half is negative: the library must not expose more than the binary reached.
+# Nothing was made public to enable the relocation. The `pub` counts in `non-test-content.txt` are
+# unchanged file by file, which is that claim measured: had a private item been published so that
+# a relocated test could reach it, that file's count would have risen. `test-placement.md` shows
+# the other side of the same fact — the 32 tests that stayed inline are exactly those that reach a
+# private item or a `#[cfg(test)]` hook, and they stayed inline instead of the item being published.

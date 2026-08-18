@@ -19,11 +19,23 @@ specifies = ["REQ-MOK-016", "REQ-MOK-017"]
 |---|---|---|
 | 2026-08-17 | Original approved content for `REQ-MOK-016` and `REQ-MOK-017`. | Approved; implemented under `WO-MOK-003` and verified under `VREC-MOK-003`. |
 | 2026-08-18 | Four provisions amended so that the terminal observer of `SPEC-MOK-003` can be conformed to. **Rule 1**: "no second package, no workspace" narrowed to a workspace of exactly two packages, on the approved requirement `REQ-MOK-026` that the clause reserved the exception for. **Rule 3**: the clause freezing `src/cli.rs` and `src/simulation.rs` scoped to the `WO-MOK-003` restructuring it was written for, so that an approved requirement may add code to them. **Rule 5**: the closed enumeration grown by the read-only observation surface, under rule 5's own growth clause. **Rule 6**: the prohibition narrowed from five named value types to the capability it was written to deny. Nothing about mutation, dependency direction, determinism or observable behavior is relaxed, and the engine package's dependency table stays empty. | **OUTSTANDING.** Requires the technical owner. All four are approval preconditions of `WO-MOK-005`, alongside the 2026-08-18 amendment to `ARCH-MOK-001`. None could have been part of the 2026-08-17 approval of the observer chain: this specification was not on that branch when the approval was given, and it reached `master` afterwards. |
+| 2026-08-18 | Every root-relative path re-based on `mokiterions-core/`, the engine package's own directory, and rule 1's "unchanged in source location" clause corrected. Stated once in *Scope* under **Paths** and at rule 1, so that no rule's substance is restated and none is re-opened. The two target paths in rule 1's table, the file list in *Inputs*, the rule 3 and rule 4 file names, rule 5's `grep` check, rule 8's file table and rule 9's locations all move by prefix alone. No file is renamed, no rule changes what it requires, no target, target name, target kind or package name changes, and the engine package's dependency table stays empty. `REQ-MOK-030` is the approved requirement; `SPEC-MOK-004` rules 1 to 3 fix the layout and `ADR-MOK-004` decides it. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-003`, which binds this specification's 2026-08-17 content to `WO-MOK-003`'s commit, is not edited: the paths it names were correct at its commit and this row records why they differ afterwards. The 2026-08-18 row above is untouched and remains **OUTSTANDING**. |
 
 ## Scope
 
 This is the structural contract for the **simulation engine package**: which targets it builds, exactly which items
 its library target makes public, and where every automated test of that package lives.
+
+**Paths, as amended 2026-08-18 for `REQ-MOK-030`.** Every path this specification writes relative to the repository
+root — `Cargo.toml`, `src/lib.rs`, `src/main.rs`, `src/cli.rs`, `src/simulation.rs`, `tests/` and each file under it,
+and the `grep` check in rule 5 — is read relative to `mokiterions-core/`, the engine package's own directory. The
+paths in the manifest are unchanged, because a package manifest's paths were always relative to the manifest. The
+paths that move are the ones this document writes as though the package were the whole repository, and they move by
+prefix alone: no file is renamed, no rule changes what it requires, and no target, target name, target kind or
+package name changes.
+Rule 1's claim that this package is at the root "unchanged in source location" is corrected by this amendment; the
+root now holds a workspace manifest and no package's sources. Where a rule's substance depends on the correction it
+says so at the rule.
 
 **Boundary, as amended 2026-08-18.** Every rule below is a rule about the engine package. It was written when the
 repository contained only that package, so the scoping narrows nothing: each rule previously bound a repository that
@@ -79,13 +91,20 @@ No third target and no build script. The dependency and dev-dependency tables st
 including a dependency shared with another package in the same workspace.
 
 **Amended 2026-08-18.** This rule read "No third target, no second package, no workspace, no build script." The
-repository is a Cargo workspace of exactly two packages: this one at the root, unchanged in package name, in both
-target names and in source location, and the terminal observer `mokiterions-tui` as its only other member.
-`REQ-MOK-026` is the approved requirement that this rule and `ARCH-MOK-001`'s prohibited-pattern list both reserved
-the exception for; `ADR-MOK-003` decides the split and `SPEC-MOK-003` governs the observer package. No third package,
-no service, no network boundary and no separate release artifact is admitted. Every other clause of this rule is
-unchanged, and the empty dependency table is the check that the split cost this package nothing: `cargo tree -p
-Mokiterions` resolves to one crate.
+repository is a Cargo workspace of exactly two packages: this one, unchanged in package name and in both target
+names, and the terminal observer `mokiterions-tui` as its only other member. `REQ-MOK-026` is the approved
+requirement that this rule and `ARCH-MOK-001`'s prohibited-pattern list both reserved the exception for;
+`ADR-MOK-003` decides the split and `SPEC-MOK-003` governs the observer package. No third package, no service, no
+network boundary and no separate release artifact is admitted. Every other clause of this rule is unchanged, and the
+empty dependency table is the check that the split cost this package nothing: `cargo tree -p Mokiterions` resolves to
+one crate.
+
+That amendment also described this package as "at the root, unchanged in package name, in both target names and in
+source location". The location half is superseded by the second amendment of the same date: this package's manifest,
+sources and tests are under `mokiterions-core/`, and the two target paths in the table above are relative to that
+manifest, as a manifest's paths always were. `REQ-MOK-030` is the approved requirement, `SPEC-MOK-004` rules 1 to 3
+fix the layout, and `ADR-MOK-004` decides it. Both target names, the package name and the target kinds are unchanged
+by that move, which is what keeps the rest of this rule intact.
 
 ### 2. Target names
 

@@ -1,0 +1,99 @@
+# Resilience: the long runs, re-measured on both sides
+#
+# `VER-MOK-006` conformance check: "The 10,000-tick runs and the observer's long run produce the
+# results the retained records of `WO-MOK-003` and `WO-MOK-005` state."
+#
+# The 43-cell matrix runs 1,000 ticks. These runs go ten times further, which is where a state
+# machine that had drifted would diverge visibly even if the short runs matched. They are also the
+# only figures in the packet compared against records from *two* earlier work orders rather than
+# against a freshly captured baseline, so they test the retained evidence too.
+#
+# THE ARGUMENT VECTOR IS RECORDED IN FULL, DELIBERATELY. `WO-MOK-004`'s
+# `resilience-and-viability.md` documents a wrong first attempt at exactly this comparison under the
+# heading "A wrong first attempt, recorded": the seed is 123, and `WO-MOK-003` fixed that in prose
+# only, so a later reader who assumes the default seed gets different numbers and concludes there is
+# a regression. That happened again here, on the first attempt, and was caught by the same document.
+# Writing the vector down is the fix that document asked for.
+
+## The engine, 10,000 ticks, both decision sources at both declared densities
+
+  # Candidate tree (the restructured layout)
+  # Full argument vector recorded, per WO-MOK-004's lesson: the seed is 123, which WO-MOK-003 fixed in prose only.
+  $ Mokiterions --seed 123 --ticks 10000 --policy reference --density 0.75
+  policy=reference density=0.75 exit=0 wall_ms=419
+    summary reason=extinction ticks=9154 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=5 food_a_medium=11 food_a_high=45 food_b_low=12 food_b_medium=4 food_b_high=45
+  $ Mokiterions --seed 123 --ticks 10000 --policy reference --density 1.50
+  policy=reference density=1.50 exit=0 wall_ms=1108
+    summary reason=tick_limit ticks=10000 survivors=7 deaths=5 territory_a=3 territory_b=4 food_a_low=7 food_a_medium=12 food_a_high=103 food_b_low=7 food_b_medium=11 food_b_high=104
+  $ Mokiterions --seed 123 --ticks 10000 --policy baseline --density 0.75
+  policy=baseline density=0.75 exit=0 wall_ms=74
+    summary reason=extinction ticks=168 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+  $ Mokiterions --seed 123 --ticks 10000 --policy baseline --density 1.50
+  policy=baseline density=1.50 exit=0 wall_ms=79
+    summary reason=extinction ticks=119 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=41 food_a_medium=41 food_a_high=40 food_b_low=41 food_b_medium=41 food_b_high=40
+
+  Predecessor 191db01, same four runs, same vectors. The four `summary` lines are what is
+  compared, because the `policy=` line also carries a wall-clock reading, which is not an
+  authoritative value and is reported separately below: 0 differing summary lines.
+
+    IDENTICAL  summary reason=extinction ticks=9154 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=5 food_a_medium=11 food_a_high=45 food_b_low=12 food_b_medium=4 food_b_high=45
+    IDENTICAL  summary reason=tick_limit ticks=10000 survivors=7 deaths=5 territory_a=3 territory_b=4 food_a_low=7 food_a_medium=12 food_a_high=103 food_b_low=7 food_b_medium=11 food_b_high=104
+    IDENTICAL  summary reason=extinction ticks=168 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+    IDENTICAL  summary reason=extinction ticks=119 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=41 food_a_medium=41 food_a_high=40 food_b_low=41 food_b_medium=41 food_b_high=40
+
+  Wall-clock, for the record only, predecessor against candidate:
+
+    reference  density=0.75      393 ms  ->     419 ms
+    reference  density=1.50     1113 ms  ->    1108 ms
+    baseline   density=0.75       75 ms  ->      74 ms
+    baseline   density=1.50       76 ms  ->      79 ms
+
+  And against `WO-MOK-003`'s own retained record, `resilience-10k.txt`: 0 differing lines. Three
+  independent sides agree — the predecessor commit, the candidate, and a record written two work
+  orders ago.
+
+  The four outcomes, in words:
+
+    reference, 0.75%   extinction at tick 9154, 12 deaths       a long run that ends in extinction
+    reference, 1.50%   tick limit at 10000, 7 survivors, 5 deaths   a population that persists
+    baseline,  0.75%   extinction at tick 168, 12 deaths        the random decider starves
+    baseline,  1.50%   extinction at tick 119, 12 deaths        and starves faster with more food
+
+  Conservation holds in all four: survivors + deaths = 12 everywhere, on both sides. That is the
+  invariant a drifting state machine breaks first, and it is checked at 10,000 ticks and not only at
+  1,000. `SPEC-MOK-001`'s determinism claim is what makes the comparison meaningful at all: the same
+  seed and the same vector must produce the same run, or the whole matrix method is worthless.
+
+  The baseline source starving *faster* at the higher density is not an anomaly. It moves at random,
+  so more food does not help it find any; the shorter run is the seed's own arithmetic, and both
+  sides produce tick 119 from it.
+
+## The observer, 10,000 ticks with a frame every 33rd tick
+
+  Measured with a scratch oracle placed in each tree in turn, then deleted from both. It parses the
+  same argument vector `WO-MOK-005` used, advances to the finish, draws into a 160 x 48
+  `TestBackend` at every 33rd tick, and writes the retained records through `export::write_records`.
+
+    $ --seed 42 --ticks 10000 --speed 64 --policy reference
+
+                             predecessor 191db01   candidate    WO-MOK-005's record
+      final tick                          10000        10000        10000
+      termination reason               TickLimit    TickLimit    TickLimit
+      survivors                                1            1            1
+      deaths                                  11           11           11
+      frames drawn                           303          303          303
+      records retained              68948/100000 68948/100000 68948/100000
+      truncated                            false        false        false
+      export bytes                       8826610      8826610      8826610
+      mean draw cost                     4.33 ms      4.58 ms       — 
+      frame budget (rule 6.1)              33 ms        33 ms        33 ms
+
+  Every authoritative figure identical across all three columns. The mean draw cost is the one
+  number that moves, and it is wall-clock on a shared machine rather than a property of the code:
+  4.58 ms against a 33 ms budget leaves the same seven-fold margin 4.33 ms did, and
+  `non-test-content.txt` shows the drawing code is byte-identical, so there is no mechanism by which
+  it could have got slower. It is recorded rather than smoothed over.
+
+  Survivors 1 and deaths 11 at 10,000 ticks, against the engine's own 0 and 12 at seed 123: the two
+  runs use different seeds and different densities and are not meant to match each other. What must
+  match is each run against itself on the other side, and each does.

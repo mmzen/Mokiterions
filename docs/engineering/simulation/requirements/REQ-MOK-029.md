@@ -2,7 +2,7 @@
 id = "REQ-MOK-029"
 type = "requirement"
 title = "Place every observer test by the access it requires"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-18"
 updated = "2026-08-18"

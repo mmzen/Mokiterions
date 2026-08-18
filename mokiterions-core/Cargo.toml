@@ -1,0 +1,28 @@
+# The engine package. `SPEC-MOK-004` rule 3 moved this manifest, `src/` and `tests/` from the
+# repository root into this directory, with every table unchanged. The package name, both
+# target names, both target kinds and the empty dependency table are exactly as
+# `SPEC-MOK-002` rules 1 and 2 fix them; `mokiterions-core` is a directory name only.
+#
+# The paths below are unchanged by the move, because a package manifest's paths were always
+# relative to the manifest.
+[package]
+name = "Mokiterions"
+version = "0.1.0"
+edition = "2024"
+
+# SPEC-MOK-002 rule 1: exactly two targets for this package, and no build script.
+# SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
+# lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
+# that appears in the first line of `USAGE`.
+[lib]
+name = "mokiterions"
+path = "src/lib.rs"
+
+[[bin]]
+name = "Mokiterions"
+path = "src/main.rs"
+
+# `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
+# empty, with no exception, including a dependency shared with `mokiterions-tui`.
+# `cargo tree -p Mokiterions` is the check, and `REQ-MOK-026` is what it discharges.
+[dependencies]

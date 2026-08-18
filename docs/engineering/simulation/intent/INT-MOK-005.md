@@ -2,7 +2,7 @@
 id = "INT-MOK-005"
 type = "intent"
 title = "Give each package its own directory and its own tested public contract"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-18"
 updated = "2026-08-18"

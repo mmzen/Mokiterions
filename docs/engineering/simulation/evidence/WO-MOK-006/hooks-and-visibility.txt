@@ -1,0 +1,64 @@
+# The `#[cfg(test)]` hooks, and why a test that reaches one cannot live in `tests/`
+#
+# `INT-MOK-003` places a test in the public tier when it can be written through the package's
+# public interface, and in the internal tier otherwise. The decisive fact for the observer is a
+# property of Rust's compilation model, not a matter of taste:
+#
+#   A file under `tests/` is its own crate. It links the library target as an external dependency,
+#   compiled WITHOUT `--cfg test`. An item marked `#[cfg(test)]` does not exist in that build. It
+#   is not private to the integration test — it is absent. No import, no re-export and no
+#   visibility change can reach it, because there is nothing there to reach.
+#
+# The same model settles the binary target: `src/main.rs` is compiled as a binary and exposes no
+# linkable interface of any kind, so no test outside it can call anything it declares.
+
+# The four hooks, all in `mokiterions-tui/src/state.rs`, all on `impl Observer`
+
+  line  hook                                              purpose
+   588  pub fn select_for_test(&mut self, id: &str)        sets the selection without a key sequence
+   593  pub fn set_overlay_for_test(&mut self, overlay)    opens an overlay without a key sequence
+   605  pub fn replace_decisions_for_test(&mut self, ...)  substitutes the snapshot's decisions
+   618  pub fn replace_snapshot_for_test(&mut self, ...)   substitutes the retained snapshot wholesale
+
+  Every one carries `#[cfg(test)]` on the line immediately above it. There are exactly nine
+  `#[cfg(test)]` attributes in the observer's `src/`, and these four are the only ones that gate a
+  callable item:
+
+    lib.rs:32      mod verification;                    the internal-tier verification module
+    main.rs:280    mod tests {                          the binary's own test module
+    render.rs:932  mod tests {                          a test module
+    state.rs:9     use mokiterions::simulation::DecisionSnapshot;   the type in a hook's signature
+    state.rs:587   pub fn select_for_test               hook
+    state.rs:592   pub fn set_overlay_for_test          hook
+    state.rs:604   pub fn replace_decisions_for_test    hook
+    state.rs:617   pub fn replace_snapshot_for_test     hook
+    state.rs:623   mod tests {                          a test module
+
+  Four hooks, four test modules, and one import that exists only to type a hook. `authority.rs`,
+  `export.rs`, `layout.rs`, `options.rs` and `spatial.rs` contain no `#[cfg(test)]` attribute at
+  all, which is why every one of their tests could move.
+
+  The last two exist because the state they reach is unreachable through a run. Their own
+  documentation says so and names the requirement: `replace_decisions_for_test` reaches a rejected
+  decision, which no shipped decision source can produce; `replace_snapshot_for_test` reaches a
+  world stripped of every standing resource, which `SPEC-MOK-001` rule 15 makes unreachable while
+  anything is alive. Both are needed by `VER-MOK-005` and both are compiled out of the shipped
+  binary. This work order neither added, removed nor altered a hook.
+
+# Why the hooks were kept rather than made unconditional
+#
+# Publishing them unconditionally would have let all eight `src/verification.rs` tests and four
+# `render.rs` tests move to `tests/`, and would have raised the observer's public-tier count from
+# 77 to 89. It was not done. A hook that exists in the shipped binary is a way for an operator to
+# set presentation state that no key sequence can set, which is a live interface and not a test
+# affordance; `VER-MOK-006`'s "and no more" and the unchanged `pub` counts in
+# `non-test-content.txt` are the record that nothing was published to make the relocation easier.
+# `INT-MOK-003`'s internal tier is the correct home for these tests, not a concession.
+
+# Visibility of everything else
+#
+# No `pub(crate)`, `pub(super)` or `pub(in ...)` declaration exists anywhere in the observer. Each
+# item in the seven modules is either fully public — and therefore reachable from `tests/` through
+# `use mokiterions_tui::...` — or fully private. There is no intermediate case to adjudicate, so
+# the tier of every test follows mechanically from which of the two it touches.
+# `test-placement.md` carries out that adjudication, test by test.

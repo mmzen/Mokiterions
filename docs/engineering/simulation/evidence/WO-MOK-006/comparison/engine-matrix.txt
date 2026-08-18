@@ -1,0 +1,38 @@
+# Engine matrix and observer-argument matrix: pre-change versus post-change
+#
+# Method. `baseline/capture-engine.sh` is WO-MOK-003's oracle, byte for byte, run once at the
+# predecessor commit 191db01 in a scratch worktree and once in the candidate tree. It captures
+# 43 cells: 5 seeds x 2 decision sources x 2 declared densities x 2 trace settings at 1000 ticks
+# (40 cells, SHA-256 per cell with a line count and an exit code), two full short runs at seed 42
+# and 20 ticks kept as readable text, and the no-argument run. `baseline/capture-observer.sh`
+# captures 24 observer start-up cases: `--help` plus 23 rejections, with exit code and diagnostic.
+#
+# Comparison is `diff` on the captured files. A differing line is a defect, not a new baseline.
+
+  engine/manifest.txt                                      43 lines   0 differing lines  the 40-cell digest manifest, 1000 ticks each
+  engine/summaries.txt                                     40 lines   0 differing lines  the summary line of every cell
+  engine/exit-codes.txt                                   460 lines   0 differing lines  every rejection case: exit code and standard-error text
+  engine/full/short_seed42_baseline_trace_on.txt          623 lines   0 differing lines  the full event stream, seed 42, baseline, 20 ticks, tracing on
+  engine/full/short_seed42_reference_trace_on.txt         624 lines   0 differing lines  the full event stream, seed 42, reference, 20 ticks, tracing on
+  observer/arguments.txt                                  651 lines   0 differing lines  the observer's 23 rejections and its exit codes
+  observer/usage.txt                                       21 lines   0 differing lines  the observer's USAGE text
+
+  0 differing lines in all seven files. The engine's 43 cells and the observer's 24 start-up
+  cases are unchanged by the restructuring.
+
+# The 1,000-tick per-seed survivor counts, from the two summaries files above
+#
+# `VER-MOK-004` fixed these in advance and `VREC-MOK-002` and `VREC-MOK-003` recorded them:
+# 8, 11, 8, 9, 11 on seeds 0, 1, 42, 123, 777, under the reference source at the declared 0.75%.
+
+  seed     predecessor 191db01            candidate                      verdict
+  0        survivors=8                    survivors=8                    IDENTICAL
+  1        survivors=11                   survivors=11                   IDENTICAL
+  42       survivors=8                    survivors=8                    IDENTICAL
+  123      survivors=9                    survivors=9                    IDENTICAL
+  777      survivors=11                   survivors=11                   IDENTICAL
+
+  8, 11, 8, 9, 11 — the counts fixed in advance, on both sides, and the whole summary line
+  matches in each case and not only the survivor total, which is what summaries.txt compares.
+  `mokiterions-core/tests/viability.rs::the_reference_source_sustains_the_population_at_every_declared_density`
+  is the test that asserts the floor; it passes at its new location.

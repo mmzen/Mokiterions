@@ -1,0 +1,98 @@
+# Compile time and target-directory size: the cost the split actually charges
+#
+# `SPEC-MOK-004`'s Performance section predicts a cost and attaches no threshold to it. There is no
+# conformance check here to pass or fail. This file exists because the prediction was made and should
+# be measured rather than assumed, and because the number it predicted turns out to be off by one.
+#
+# Method. Each tree gets `cargo clean` and then a timed cold `cargo build --workspace`, followed by
+# `cargo test --workspace --no-run`, which reuses the build above and so measures only the extra work
+# of linking the test binaries. The predecessor was measured in a scratch worktree at 191db01 with
+# its own `target/`. Wall-clock on a shared laptop: treat these as the right order of magnitude, not
+# as repeatable benchmarks.
+
+## Predecessor, 191db01
+
+  # Predecessor commit 191db01 (scratch worktree), cold: cargo clean first
+       Removed 1091 files, 296.5MiB total
+  cargo build --workspace          14295 ms   exit=0
+  cargo test --workspace --no-run  2974 ms   exit=0   (warm: the build above is reused)
+  test binaries produced           8
+    Executable unittests src\lib.rs (target\debug\deps\mokiterions-683841e8392040c3.exe)
+    Executable unittests src\main.rs (target\debug\deps\Mokiterions-0d9b18d60b411d97.exe)
+    Executable tests\cli.rs (target\debug\deps\cli-ba62176239741a2c.exe)
+    Executable tests\density.rs (target\debug\deps\density-18ed08f7ace7714f.exe)
+    Executable tests\process.rs (target\debug\deps\process-b00616153fb0e2d1.exe)
+    Executable tests\termination.rs (target\debug\deps\termination-f3853505235fa970.exe)
+    Executable tests\viability.rs (target\debug\deps\viability-eb288da69c330417.exe)
+    Executable unittests src\main.rs (target\debug\deps\mokiterions_tui-01712cb44ef5de8b.exe)
+  target/ size                     349M
+
+## Candidate
+
+  # Candidate tree (the restructured layout), cold: cargo clean first
+       Removed 6287 files, 1.2GiB total
+  cargo build --workspace          10714 ms   exit=0
+  cargo test --workspace --no-run  3735 ms   exit=0   (warm: the build above is reused)
+  test binaries produced           17
+    Executable unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+    Executable unittests src\main.rs (target\debug\deps\Mokiterions-c8f7f3eae82c82c7.exe)
+    Executable tests\cli.rs (target\debug\deps\cli-ea1fe31a556a11ea.exe)
+    Executable tests\density.rs (target\debug\deps\density-aa384b05c61f2961.exe)
+    Executable tests\process.rs (target\debug\deps\process-44af230791f0b687.exe)
+    Executable tests\termination.rs (target\debug\deps\termination-3962b6ea9d95e5a7.exe)
+    Executable tests\viability.rs (target\debug\deps\viability-6b215a30b755f00d.exe)
+    Executable unittests src\lib.rs (target\debug\deps\mokiterions_tui-2fbcc6609753ce76.exe)
+    Executable unittests src\main.rs (target\debug\deps\mokiterions_tui-cacaff985fad9c9e.exe)
+    Executable tests\authority.rs (target\debug\deps\authority-eff95bcdd131dbd9.exe)
+    Executable tests\export.rs (target\debug\deps\export-a7c26a0bd291cfde.exe)
+    Executable tests\layout.rs (target\debug\deps\layout-428970b899246a03.exe)
+    Executable tests\options.rs (target\debug\deps\options-9145103ef3454b8b.exe)
+    Executable tests\render.rs (target\debug\deps\render-672d1ffbd6e3eb65.exe)
+    Executable tests\spatial.rs (target\debug\deps\spatial-6b42680631cd88b2.exe)
+    Executable tests\state.rs (target\debug\deps\state-269098bb3c362ab5.exe)
+    Executable tests\verification.rs (target\debug\deps\verification-eddf947fada740f8.exe)
+  target/ size                     499M
+  
+  # Warm re-runs, both trees, for the incremental cost an operator actually pays
+  cargo build --workspace, warm   270 ms
+  cargo test --no-run, warm       263 ms
+
+## Read together
+
+                                predecessor   candidate   change
+    cold `cargo build`             14295 ms    10714 ms   -25%
+    `cargo test --no-run`           2974 ms     3735 ms   +26%  (+761 ms)
+    warm `cargo build`                    —      270 ms
+    warm `cargo test --no-run`            —      263 ms
+    test binaries                         8          17   +9
+    `target/` after a full test build    349M        499M   +150M
+
+  The cold build got *faster*, which is measurement noise rather than an effect of the change: the
+  same 59 crates are compiled either way — `dependencies.txt` shows the graph is identical and
+  `Cargo.lock` is byte-identical — and a 25% swing between two cold builds on a laptop is ordinary.
+  Nothing in this change could make compilation faster.
+
+  The honest cost is the +761 ms on `cargo test --no-run` and the +150M in `target/`. Nine more test
+  binaries is where both come from: eight new integration binaries under `mokiterions-tui/tests/`
+  plus the observer's new library test binary. Each links the library and ratatui separately, and
+  each is a separate executable on disk. That is the price of the public tier, it is paid once per
+  clean build, and the warm figures — 270 ms and 263 ms — are what anyone iterating actually pays.
+
+  A three-quarter-second addition to a cold test link, against 77 tests that now assert the
+  observer's contract from outside the crate as `REQ-MOK-028` requires. `INT-MOK-005` accepted that
+  trade when it was proposed; this is the invoice.
+
+## The prediction, and where it is off
+#
+  `SPEC-MOK-004`'s Performance section says "the observer contributes eleven test binaries where it
+  contributed one". The measured figure is ten: the library, the binary, and eight integration
+  binaries — visible in the candidate listing above, where the observer accounts for `mokiterions_tui`
+  twice (`src\lib.rs` and `src\main.rs`) and then eight `tests\*.rs`. Eleven is the number of *result
+  lines* `cargo test -p mokiterions-tui` prints, which includes the `Doc-tests mokiterions_tui`
+  target — a target, not a test binary, and one that runs 0 tests.
+
+  Nothing follows from the discrepancy: the section states an expected cost, sets no threshold and
+  imposes no obligation, so there is no check to fail. It is recorded because a specification's
+  number should be right, and carried to the completion report for the owner to dispose of.
+
+  The workspace total the same section implies is 8 + 9 = 17, and 17 is what was measured.

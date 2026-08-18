@@ -1,30 +1,21 @@
-# `SPEC-MOK-002` rule 1 as amended: the repository is a Cargo workspace of exactly two
-# packages. The engine package stays at the root, keeps its name and both of its target
-# names, and keeps its sources where they are; `mokiterions-tui` is the only other member.
-# `SPEC-MOK-003` owns the observer package and `ADR-MOK-003` decides the split. Before that
-# amendment rule 1 read "no third target, no second package, no workspace"; the exception it
-# reserved for an approved requirement is `REQ-MOK-026`.
+# `SPEC-MOK-004` rule 2: this file is a workspace manifest and nothing else. It declares no
+# package, no target, no dependency and no workspace dependency table. Each package's
+# manifest, sources and tests are under that package's own directory, which is what
+# `REQ-MOK-030` requires and `ADR-MOK-004` decides.
+#
+# Before that rule, this file was both the workspace manifest and the engine package's
+# manifest, so the root held one package's implementation and the other package's directory
+# side by side. The engine package moved to `mokiterions-core/` unchanged: the package is
+# still `Mokiterions`, its library target is still `mokiterions`, its binary is still
+# `Mokiterions`, and `mokiterions-core` is a directory name only.
+#
+# `SPEC-MOK-002` rule 1 as amended is what admits a workspace at all: exactly two packages,
+# on the approved requirement `REQ-MOK-026`, with `ADR-MOK-003` deciding the split. No third
+# member is admitted.
 [workspace]
-members = ["mokiterions-tui"]
+members = ["mokiterions-core", "mokiterions-tui"]
 
-[package]
-name = "Mokiterions"
-version = "0.1.0"
-edition = "2024"
-
-# SPEC-MOK-002 rule 1: exactly two targets for this package, and no build script.
-# SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
-# lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
-# that appears in the first line of `USAGE`.
-[lib]
-name = "mokiterions"
-path = "src/lib.rs"
-
-[[bin]]
-name = "Mokiterions"
-path = "src/main.rs"
-
-# `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
-# empty, with no exception, including a dependency shared with `mokiterions-tui`.
-# `cargo tree -p Mokiterions` is the check, and `REQ-MOK-026` is what it discharges.
-[dependencies]
+# Both members declare `edition = "2024"`, whose default resolver is 3. A virtual manifest
+# does not inherit a member's edition default, so the resolver is declared here rather than
+# left to a Cargo warning.
+resolver = "3"

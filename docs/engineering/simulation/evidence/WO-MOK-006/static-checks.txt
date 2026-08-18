@@ -1,0 +1,107 @@
+# Static checks: formatting, lints and builds, in every form the harness and CI use
+#
+# `VER-MOK-006` conformance check: "`cargo fmt --all --check`, `cargo clippy --all-targets
+# --all-features -- -D warnings` and `cargo build` all succeed, at the workspace root and for each
+# package by name."
+#
+# Two things are being checked at once. The first is that the code is clean. The second is that
+# every command form still resolves after the layout change: a form that used to name the root
+# package implicitly now has to reach a member by name, and a form CI runs from the repository root
+# has to keep working there. This is why each check is run four ways rather than once — the failure
+# this work order most plausibly introduces is a command that no longer finds what it used to.
+#
+# Rule 14 of `SPEC-MOK-002` names the bare form, `cargo clippy --all-targets --all-features -- -D
+# warnings`, with no `--workspace`. At the root of a virtual manifest Cargo applies it to the
+# default members, which is both packages; before the change it applied to the root package alone.
+# It is run below in the bare form deliberately, because that is the form the specification names.
+
+## cargo fmt
+
+  $ cargo fmt --all --check
+  exit=0
+
+  $ cargo fmt --check --package Mokiterions
+  exit=0
+
+  $ cargo fmt --check --package mokiterions-tui
+  exit=0
+
+## cargo clippy
+
+  $ cargo clippy --workspace --all-targets --all-features -- -D warnings
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
+  exit=0
+
+  $ cargo clippy --all-targets --all-features -- -D warnings   (the rule 14 form, at the root)
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+  exit=0
+
+  $ cargo clippy -p Mokiterions --all-targets --all-features -- -D warnings
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s
+  exit=0
+
+  $ cargo clippy -p mokiterions-tui --all-targets --all-features -- -D warnings
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+  exit=0
+
+### The same check again, with the cache cleared, so the result is not served from it
+
+  A sub-second `Finished` line means Clippy replayed a cached verdict rather than re-linting. The
+  four runs above are honest but they are replays, so the check was repeated after clearing both
+  workspace packages. This is the run the conformance check rests on:
+
+  $ cargo clean -p Mokiterions -p mokiterions-tui
+       Removed 1635 files, 358.3MiB total
+
+  $ cargo clippy --workspace --all-targets --all-features -- -D warnings
+      Checking Mokiterions v0.1.0 (...\Mokiterions\mokiterions-core)
+      Checking mokiterions-tui v0.1.0 (...\Mokiterions\mokiterions-tui)
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.23s
+  exit=0
+
+  Both packages re-linted from source. Lines beginning `warning` in the full output: 0.
+
+  `-D warnings` makes any lint a failure, so a zero here also means no dead code, no unused import
+  and no unused `use` left behind by the relocation. That matters for this change in particular:
+  the eight new files under `mokiterions-tui/tests/` each carry a freshly written `use` header —
+  `use super::*` imports the parent module's private `use` bindings and a file in `tests/` inherits
+  none of them — and an over-broad header would have failed this gate rather than passed quietly.
+
+  `--all-features` turns on every feature of both packages. The engine declares none. The observer
+  declares none of its own and pins ratatui's, so `--all-features` neither adds a dependency nor
+  changes the resolved feature set; `dependencies.txt` shows the resolution is identical to
+  `WO-MOK-005`'s, crate for crate.
+
+  The library target is named `mokiterions_tui` in snake case for this gate's sake: `--all-targets`
+  lints the library, and `-D warnings` promotes `non_snake_case` to an error, so a target named
+  `mokiterions-tui` would fail here. `SPEC-MOK-002` rule 2 fixes the engine's `mokiterions` for the
+  same reason, and `SPEC-MOK-004` rule 4 extends it. The two binaries keep their operator-facing
+  names, `Mokiterions` and `mokiterions-tui`, which the lint does not reach.
+
+## cargo build
+
+  $ cargo build --workspace
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+  exit=0
+
+  $ cargo build -p Mokiterions
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s
+  exit=0
+
+  $ cargo build -p mokiterions-tui
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+  exit=0
+
+  $ cargo build --release --workspace
+      ... 57 dependency crates, then:
+      Compiling Mokiterions v0.1.0 (...\Mokiterions\mokiterions-core)
+      Compiling mokiterions-tui v0.1.0 (...\Mokiterions\mokiterions-tui)
+      Finished `release` profile [optimized] target(s) in 12.72s
+  exit=0
+
+  The release line is a full cold rebuild of every crate: 12.72 s. `compile-and-target.txt` records
+  the cold and warm figures against the predecessor's, and the four extra test binaries the split
+  introduces.
+
+  Nothing here needed a `--manifest-path`. Both packages resolve by name from the workspace root,
+  and the root's own `Cargo.toml` declares no package to be confused with either of them.

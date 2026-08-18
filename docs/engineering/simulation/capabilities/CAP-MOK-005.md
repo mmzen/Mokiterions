@@ -2,7 +2,7 @@
 id = "CAP-MOK-005"
 type = "capability"
 title = "Find and exercise each package's contract in the package's own directory"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-18"
 updated = "2026-08-18"

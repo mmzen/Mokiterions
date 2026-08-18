@@ -1,0 +1,91 @@
+# Observer matrix: pre-change versus post-change, cell by cell
+#
+# Method. One oracle file, `baseline/frame-and-export-oracle.rs`, is written into a scratch worktree
+# at the predecessor commit 191db01 and into the candidate tree. The two copies differ in exactly one
+# token — the path the observer's modules are reached by, `crate` on one side and `mokiterions_tui` on
+# the other — which is the change being verified. At the predecessor the file is a `#[cfg(test)]`
+# module of the binary, because there is no library target to link; at the candidate it is a public
+# tier integration test. Each copy is run once and deleted.
+#
+# The 40 cells: 5 seeds x 7 declared viewports = 35 frames, plus 5 exports, one per seed.
+# Frames are taken at tick 200 of a 400-tick run with one Tab press applied, which is what
+# `WO-MOK-005`'s retained dumps carry; the exports are the whole record stream of a 20-tick run.
+# Each cell is SHA-256'd. A frame is the TestBackend buffer's rows joined with newlines, so a
+# one-cell difference anywhere in the frame changes the digest.
+
+  cell                               sha256 (identical on both sides)                                 verdict
+  events-seed0-ticks20.log           a1d6d6abad5f01851da40b95dc0c8dc66fd80b719590d3ba04357ff5d8bdb9ad IDENTICAL
+  events-seed1-ticks20.log           e4c17caa3f2bfd07e3f1b544106232eb51f1b22ed5510a4a1a983fdf9966260b IDENTICAL
+  events-seed123-ticks20.log         a07a4b51b7e73e07be246c742fedf04ddf4602e78da5c866e0254aeb97a39bb5 IDENTICAL
+  events-seed42-ticks20.log          033902eccd9a96669b5a93c33bd1fe8a5ba3d265970f6d53713e09ee1bd53610 IDENTICAL
+  events-seed777-ticks20.log         098a8135863832f5119f9afaf014916b655181ca9ef2e6796d42aedbc6a8a569 IDENTICAL
+  frame-seed0-100x30.txt             fbf3f733a1fa7bbef6dc23d05434a0eeb9c865d960ff4c44bcd8d05ad14e6666 IDENTICAL
+  frame-seed0-120x48.txt             9fcd9c68953f3a964709b138b1f40fae81a819658f2317fd6031a74b91398ac7 IDENTICAL
+  frame-seed0-140x44.txt             05e02a4d96e5be0a2b25cd8debe99836a1306552775e285737f55e6147476617 IDENTICAL
+  frame-seed0-160x44.txt             0f169ec4ddb2e7e1d3923346ba0cc9d878d6f19ebbb25b6c44589ad36ade1c0c IDENTICAL
+  frame-seed0-160x48.txt             dffda6a1d6d9a87c0bd0d47048dcf0c6a6bfaa5fe5fc43ca8221aca407a62338 IDENTICAL
+  frame-seed0-33x21.txt              42b6f9864188dcc0f5700c1523fe3bedf8c8a741f16061d89451a5654476e238 IDENTICAL
+  frame-seed0-34x22.txt              69c61489bce485670ee543831a565044f9dad9dd8fba2664571ec522a09a2ae3 IDENTICAL
+  frame-seed1-100x30.txt             8c69e55712a874274b39e9469e368c747f34ffededa85f62a201a696a93c7fba IDENTICAL
+  frame-seed1-120x48.txt             465d4ce4d8b29405612ff44d5fa5ac6bb220dfa7f035670ca3c73a6b3407faff IDENTICAL
+  frame-seed1-140x44.txt             6e37ebd09c3b84817d2085e87743bbbd367881e70b976e5ed6f3d86357b10273 IDENTICAL
+  frame-seed1-160x44.txt             796a5f8c70fc1f0f967d09a3f7231da47d71c771a80078fdf2c8b49a24d9a55d IDENTICAL
+  frame-seed1-160x48.txt             333b5498b51c1fa34cc59ab2e07ac0729d35d4566273a9bf75a28aed0d12d4c7 IDENTICAL
+  frame-seed1-33x21.txt              42b6f9864188dcc0f5700c1523fe3bedf8c8a741f16061d89451a5654476e238 IDENTICAL
+  frame-seed1-34x22.txt              6fcf98a1a1bf329d7f5fbd4f91fe91d978902fcc0ae02dcfd8fcf58d6b32a0d4 IDENTICAL
+  frame-seed123-100x30.txt           f8d62bbf1dff6984524cf018844402131c2a764d31a1f6530c7594c51842bb5f IDENTICAL
+  frame-seed123-120x48.txt           25dc678317482b84968deb06784ef4e3d963842334fb9cc6995163eb22cb0a35 IDENTICAL
+  frame-seed123-140x44.txt           574507d1cb6ed0b9747ed51ab62e92da8db7498ed2936560384ded7ec92a824b IDENTICAL
+  frame-seed123-160x44.txt           d088045ae3dddb22df2e376aa34b631c92457f373a01ce1d234e7d31d4aa98ca IDENTICAL
+  frame-seed123-160x48.txt           2c17f70da0acc1ddc873af5fa9c6f4ef06fb952a335fa572824efec45239a3bb IDENTICAL
+  frame-seed123-33x21.txt            42b6f9864188dcc0f5700c1523fe3bedf8c8a741f16061d89451a5654476e238 IDENTICAL
+  frame-seed123-34x22.txt            160c7b333a19294eaeee6ebfb504f6909fa1e61a563ad8d05d87349367f7d606 IDENTICAL
+  frame-seed42-100x30.txt            81354895603c3f36871476f0f639281e138a7c88d6d77c9612fadd32d18c6cf2 IDENTICAL
+  frame-seed42-120x48.txt            5c624ddcd1a22ef2e5b4d0e610a4f2b660bf8080c244947c851efb83cb4f0586 IDENTICAL
+  frame-seed42-140x44.txt            4b66572a4d1fa79a8533da672d741dfd199f7495ef08c4560baf6262f83fd77d IDENTICAL
+  frame-seed42-160x44.txt            eaae81e40dbff1765ac9c5b45527013a66ad71c812c50217c0a9a1cacbe79aeb IDENTICAL
+  frame-seed42-160x48.txt            688433faaea95a2e2663c696755aca35989fb64535c16d91cee34fcab6cb52be IDENTICAL
+  frame-seed42-33x21.txt             42b6f9864188dcc0f5700c1523fe3bedf8c8a741f16061d89451a5654476e238 IDENTICAL
+  frame-seed42-34x22.txt             ec89ce3ea921452c1543de003817af50cb4fbf108369e22370d10ee505beb3e1 IDENTICAL
+  frame-seed777-100x30.txt           948f56dd0d6b064f9a4ac14844345335f6a6d156e19e4097c429910ea26e060b IDENTICAL
+  frame-seed777-120x48.txt           1adc07c083052e2a19b75ff180d44a87c1de6d019669d08f2de56bb4518b82c7 IDENTICAL
+  frame-seed777-140x44.txt           e0eb2bdf4fe683b28229b697ecc74f058eddd522b8e24fa6ca0043bc01d2760b IDENTICAL
+  frame-seed777-160x44.txt           0aa687be5b9eda4971ce6c3e083c6c05362ffda9becb36c64e6c5e9f737ca383 IDENTICAL
+  frame-seed777-160x48.txt           8233ee2dd44470086495fe8e5ddd3fe2f823f41ddfbb27d96c9cd85448578c71 IDENTICAL
+  frame-seed777-33x21.txt            42b6f9864188dcc0f5700c1523fe3bedf8c8a741f16061d89451a5654476e238 IDENTICAL
+  frame-seed777-34x22.txt            792cc585050e7b8b1b5648392581ccd41a99c5934b28d92506197b833c5c5828 IDENTICAL
+
+  40 cells, 40 identical, 0 differing.
+
+# A second, independent comparison: against WO-MOK-005's retained and already-verified evidence
+#
+# The comparison above proves the candidate equals the predecessor. It would also pass if both
+# sides were wrong together. So the seed-42 frames and all five exports are additionally compared
+# against the dumps `VREC-MOK-005` verified at commit 1355290, produced by a different harness
+# written for a different work order. A viewport section's dump is extracted as the lines of
+# exactly the viewport's width inside that section, which is what a TestBackend row is.
+
+  viewport      rows retained sha256      candidate sha256     verdict
+  160 x 48        48 3d4446d1ed265760     3d4446d1ed265760     IDENTICAL
+  160 x 44        44 ebc7bc19d65e1768     ebc7bc19d65e1768     IDENTICAL
+  140 x 44        44 1c89935e25a5f360     1c89935e25a5f360     IDENTICAL
+  120 x 48        48 974a13c074ffb528     974a13c074ffb528     IDENTICAL
+  100 x 30        30 98075d98982d6380     98075d98982d6380     IDENTICAL
+  34 x 22         22 ec89ce3ea921452c     ec89ce3ea921452c     IDENTICAL
+  33 x 21          0 e3b0c44298fc1c14     42b6f9864188dcc0     NO DUMP IN THE RETAINED FILE (0 rows of width 33, expected 21)
+
+  6 of the six renderable viewports byte-identical to the retained dump, at seed 42.
+  `33 x 21` is below the floor: WO-MOK-005 retained the refusal text rather than a dump, and the
+  candidate's cell for it is the suspended frame the oracle records, so there is nothing to compare.
+  It is compared pre against post in the matrix above like every other cell.
+
+  export                           bytes  records retained sha256      candidate sha256     verdict
+  events-seed0-ticks20.log         74855      624 a1d6d6abad5f0185     a1d6d6abad5f0185     IDENTICAL
+  events-seed1-ticks20.log         74909      623 e4c17caa3f2bfd07     e4c17caa3f2bfd07     IDENTICAL
+  events-seed42-ticks20.log        74811      624 033902eccd9a9666     033902eccd9a9666     IDENTICAL
+  events-seed123-ticks20.log       75001      622 a07a4b51b7e73e07     a07a4b51b7e73e07     IDENTICAL
+  events-seed777-ticks20.log       74717      623 098a8135863832f5     098a8135863832f5     IDENTICAL
+
+  5 of 5 exports byte-identical to WO-MOK-005's retained files, byte count and record
+  count included. WO-MOK-005 recorded 74855 / 74909 / 74811 / 75001 / 74717 bytes for seeds
+  0 / 1 / 42 / 123 / 777; the figures above are those figures.

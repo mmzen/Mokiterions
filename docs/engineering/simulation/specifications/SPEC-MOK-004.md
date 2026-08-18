@@ -2,7 +2,7 @@
 id = "SPEC-MOK-004"
 type = "specification"
 title = "Package directories, observer targets, and observer test placement"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-18"
 updated = "2026-08-18"
