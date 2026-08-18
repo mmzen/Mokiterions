@@ -3,7 +3,7 @@
 //! Every function here reads presentation state and an engine snapshot and produces cells. None
 //! of them advances the simulation, reads a clock, reads an environment variable at run time, or
 //! reads a repository file, so a frame is a pure function of the state it is given and the
-//! viewport it is given (`SPEC-MOK-002` rules 5 and 12).
+//! viewport it is given (`SPEC-MOK-003` rules 5 and 12).
 //!
 //! Colour is redundant everywhere: rule 2.5's identity distinctions are carried by glyph,
 //! underline and position, and every textual indication rule 3 and rule 10 require is a word.
@@ -28,7 +28,7 @@ use crate::state::{Observer, Overlay, Progression};
 
 /// The candidate commit, supplied to the build as a compile-time value.
 ///
-/// `SPEC-MOK-002` rule 8.2 authorizes exactly this: the field is present when the build supplied
+/// `SPEC-MOK-003` rule 8.2 authorizes exactly this: the field is present when the build supplied
 /// it and absent otherwise. The observer never reads a repository file, never invokes a
 /// version-control command, and never guesses.
 pub const COMMIT: Option<&str> = option_env!("MOKITERIONS_COMMIT");

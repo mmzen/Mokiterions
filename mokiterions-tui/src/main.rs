@@ -2,7 +2,7 @@
 //!
 //! The observer is a separate package from the engine and depends on it as a library. It reads
 //! authoritative state through the engine's read-only observation surface and changes simulation
-//! state only through the single-tick advance of `SPEC-MOK-002` rule 1.
+//! state only through the single-tick advance of `SPEC-MOK-003` rule 1.
 //!
 //! Start-up order is fixed by the specification's error table: inputs are parsed and rejected,
 //! then the configuration is rejected, then the viewport floor is checked — all on standard error,
@@ -17,7 +17,7 @@ mod render;
 mod spatial;
 mod state;
 
-/// `VER-MOK-003`'s cross-cutting cases, which need every module at once and ship no code.
+/// `VER-MOK-005`'s cross-cutting cases, which need every module at once and ship no code.
 #[cfg(test)]
 mod verification;
 

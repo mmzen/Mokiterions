@@ -1,4 +1,4 @@
-//! `SPEC-MOK-002` rule 11's authority mapping.
+//! `SPEC-MOK-003` rule 11's authority mapping.
 //!
 //! The mapping names identifiers only. It never restates requirement text, which could drift
 //! from the artifact that holds it. Where an identifier cannot be resolved the caller states

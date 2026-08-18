@@ -1,5 +1,5 @@
 +++
-id = "WO-MOK-003"
+id = "WO-MOK-005"
 type = "work_order"
 title = "Split the workspace and implement the terminal observer"
 status = "in_progress"
@@ -14,19 +14,19 @@ decided_by = "engineering owner"
 
 [relations]
 implements = [
-  "REQ-MOK-016",
-  "REQ-MOK-017",
-  "REQ-MOK-018",
   "REQ-MOK-019",
   "REQ-MOK-020",
   "REQ-MOK-021",
   "REQ-MOK-022",
   "REQ-MOK-023",
   "REQ-MOK-024",
+  "REQ-MOK-025",
+  "REQ-MOK-026",
+  "REQ-MOK-027",
 ]
-specifications = ["SPEC-MOK-002"]
-architecture = ["ARCH-MOK-002", "ADR-MOK-002"]
-verification = ["VER-MOK-003"]
+specifications = ["SPEC-MOK-003"]
+architecture = ["ARCH-MOK-002", "ADR-MOK-003"]
+verification = ["VER-MOK-005"]
 +++
 
 # Work Order: Split the workspace and implement the terminal observer
@@ -39,19 +39,19 @@ completed change and retained evidence. Verification and release require separat
 
 Commit-bound verification is classified `required` above.
 
-**This work order cannot be approved before its governing artifacts are.** It depends on `INT-MOK-003`, `CAP-MOK-003`,
-and `REQ-MOK-016` through `REQ-MOK-024` being approved by the product owner; on `SPEC-MOK-002`, `ARCH-MOK-002`,
-`ADR-MOK-002`, and the 2026-08-17 amendment to `ARCH-MOK-001` being approved by the technical owner; and on
-`VER-MOK-003` being approved by the assurance owner. Every one of them was `draft` at the time this work order was
+**This work order cannot be approved before its governing artifacts are.** It depends on `INT-MOK-004`, `CAP-MOK-004`,
+and `REQ-MOK-019` through `REQ-MOK-027` being approved by the product owner; on `SPEC-MOK-003`, `ARCH-MOK-002`,
+`ADR-MOK-003`, and the 2026-08-17 amendment to `ARCH-MOK-001` being approved by the technical owner; and on
+`VER-MOK-005` being approved by the assurance owner. Every one of them was `draft` at the time this work order was
 written. Preflight must report this exact work order as eligible before implementation begins.
 
 **Approval record.** On 2026-08-17 the repository owner, acting in all four accountable roles, approved the complete
-governing chain — `INT-MOK-003`, `CAP-MOK-003`, `REQ-MOK-016` through `REQ-MOK-024`, `SPEC-MOK-002`, `ARCH-MOK-002`,
-`ADR-MOK-002`, the `ARCH-MOK-001` amendment, and `VER-MOK-003` — and authorized this work order, which was
+governing chain — `INT-MOK-004`, `CAP-MOK-004`, `REQ-MOK-019` through `REQ-MOK-027`, `SPEC-MOK-003`, `ARCH-MOK-002`,
+`ADR-MOK-003`, the `ARCH-MOK-001` amendment, and `VER-MOK-005` — and authorized this work order, which was
 transitioned `draft` → `approved` → `in_progress` on the same date. The implementation agent recorded the
 transitions; it did not make the decision.
 
-Two of those approvals are load-bearing rather than procedural. `REQ-MOK-023` is the approved requirement that
+Two of those approvals are load-bearing rather than procedural. `REQ-MOK-026` is the approved requirement that
 `ARCH-MOK-001`'s prohibition on separate crates has always required as its unlock, and without it a second package is
 prohibited outright. The `ARCH-MOK-001` amendment is what scopes its prohibition on user-interface frameworks to the
 engine package, and without it the dependency this work order adds is prohibited outright. Neither can be assumed and
@@ -67,7 +67,7 @@ omitted rather than fabricated. The technical owner confirms this omission at ap
 ## Objective
 
 Restructure the repository into two packages and implement a terminal observer over a read-only engine surface,
-exactly as specified by `SPEC-MOK-002`, governed by `ARCH-MOK-002` and `ADR-MOK-002`, and covered by `VER-MOK-003`,
+exactly as specified by `SPEC-MOK-003`, governed by `ARCH-MOK-002` and `ADR-MOK-003`, and covered by `VER-MOK-005`,
 without changing any simulation rule or any verified engine behavior.
 
 ## In scope
@@ -75,7 +75,7 @@ without changing any simulation rule or any verified engine behavior.
 - Convert the repository to a Cargo workspace with exactly two packages: the engine package `mokiterions-core` at the
   root with its sources in their existing location, and the observer package `mokiterions-tui` as a member.
 - Rename the engine package from `Mokiterions` to `mokiterions-core` and name its binary `mokiterions`.
-- Add a library target to the engine package and expose the read-only observation surface of `SPEC-MOK-002`:
+- Add a library target to the engine package and expose the read-only observation surface of `SPEC-MOK-003`:
   `snapshot`, `advance_tick`, `is_finished`, `configuration`, and the snapshot types, all owning their data.
 - Refactor the existing engine binary to drive the simulation through that same surface, so the command-line host and
   the observer are peer hosts of one interface rather than two paths through the engine.
@@ -88,9 +88,9 @@ without changing any simulation rule or any verified engine behavior.
   unconditional terminal restoration on every exit path.
 - Implement progression under rule 1: single-tick advance only, held at completed-tick boundaries, at most one tick
   per scheduling opportunity, and refusal to advance a finished run.
-- Add automated tests covering every case, invariant and check in `VER-MOK-003`, including buffer assertions at every
+- Add automated tests covering every case, invariant and check in `VER-MOK-005`, including buffer assertions at every
   declared viewport and observed-versus-unobserved comparison on every declared seed.
-- Record and retain the evidence `VER-MOK-003` lists under this work-order ID.
+- Record and retain the evidence `VER-MOK-005` lists under this work-order ID.
 
 ## Out of scope
 
@@ -100,7 +100,7 @@ without changing any simulation rule or any verified engine behavior.
   disturbed.
 - Any third package, service, network boundary, or separate release artifact.
 - Fear, traits, names, combat, memory, model-provider integration, credentials, prompts, or per-agent entropy — every
-  attribute the target design anticipates and the engine does not compute. `SPEC-MOK-002` reserves space for one of
+  attribute the target design anticipates and the engine does not compute. `SPEC-MOK-003` reserves space for one of
   them and requires that space to render empty.
 - Serialization, persistence, asynchronous runtimes, threads sharing simulation state, databases, and networking.
 - Mouse input, configuration files, environment-variable configuration, and a standard-input protocol.
@@ -135,7 +135,7 @@ make a test easier to write.
 
 ## Constraints
 
-- Follow `INT-MOK-003`, `CAP-MOK-003`, `SPEC-MOK-002`, `ARCH-MOK-002`, `ADR-MOK-002`, and `ARCH-MOK-001` as amended.
+- Follow `INT-MOK-004`, `CAP-MOK-004`, `SPEC-MOK-003`, `ARCH-MOK-002`, `ADR-MOK-003`, and `ARCH-MOK-001` as amended.
 - Preserve everything verified under `VREC-MOK-001` and `VREC-MOK-002`. Every existing test must pass unmodified. A
   test that must change to accommodate this work is a stop condition, not a task, because this change is specified as
   additive.
@@ -165,13 +165,13 @@ make a test easier to write.
   existing binary to drive the simulation through that surface. No simulation rule changes.
 - A new `mokiterions-tui/` directory with its manifest, sources and tests.
 - Automated tests in both packages.
-- Work-order-keyed evidence under `docs/engineering/simulation/evidence/WO-MOK-003/`.
+- Work-order-keyed evidence under `docs/engineering/simulation/evidence/WO-MOK-005/`.
 - `docs/mokiterions/ROADMAP.md`, to record the observer phase.
 - No other product domain and no harness-managed policy file.
 
 ## Required verification
 
-- Complete every case, invariant, check and manual assessment in `VER-MOK-003`.
+- Complete every case, invariant, check and manual assessment in `VER-MOK-005`.
 - Run `cargo fmt --all -- --check`.
 - Run `cargo clippy --workspace --all-targets --all-features -- -D warnings`.
 - Run `cargo test` at the workspace root, and `cargo test -p mokiterions-core` alone.
@@ -189,7 +189,7 @@ make a test easier to write.
 
 ## Evidence to record
 
-Retain, under `docs/engineering/simulation/evidence/WO-MOK-003/`, every item listed in `VER-MOK-003`'s evidence
+Retain, under `docs/engineering/simulation/evidence/WO-MOK-005/`, every item listed in `VER-MOK-005`'s evidence
 retention section. The `cargo tree -p mokiterions-core` output and the per-seed observed-versus-unobserved comparison
 are the two records that carry the load: the first is the only proof that the engine's dependency set survived this
 change, and the second is the only proof that observation did not perturb a run. No screenshot or recording is
@@ -198,7 +198,7 @@ admissible for any rendering obligation; retain buffer dumps accompanying their 
 ## Stop and escalate conditions
 
 Stop before implementation if preflight does not report this exact work order as eligible, or if any governing
-artifact remains `draft` or unapproved — in particular `REQ-MOK-023` and the `ARCH-MOK-001` amendment, without which
+artifact remains `draft` or unapproved — in particular `REQ-MOK-026` and the `ARCH-MOK-001` amendment, without which
 a second package and a user-interface dependency are both prohibited.
 
 During implementation, stop and escalate if:
@@ -208,9 +208,9 @@ During implementation, stop and escalate if:
   wrong and must be corrected rather than tolerated or documented;
 - per-tick entropy draw counts differ observed and unobserved;
 - the specified layout arithmetic does not close at any declared viewport, or a canvas interior does not match the
-  figure `SPEC-MOK-002` derives. The specification is the authority, so a mismatch requires an amended specification
+  figure `SPEC-MOK-003` derives. The specification is the authority, so a mismatch requires an amended specification
   and re-approval, never a quietly adjusted constraint or a relaxed assertion;
-- the whole world cannot be presented at one dot per world cell at a viewport where `SPEC-MOK-002` says it can;
+- the whole world cannot be presented at one dot per world cell at a viewport where `SPEC-MOK-003` says it can;
 - the observation surface cannot be exposed without leaking a reference into engine state, an interior-mutable value,
   or a second mutating operation;
 - the engine package cannot be kept free of external dependencies, or the observer's dependency cannot be confined to
@@ -239,7 +239,7 @@ Report:
 3. verification commands and results;
 4. the `cargo tree -p mokiterions-core` output, and the observer's crate count and enabled feature set as resolved;
 5. the per-seed observed-versus-unobserved comparison result and the interaction sequence performed;
-6. the per-viewport canvas interiors as measured, against the figures `SPEC-MOK-002` derives;
+6. the per-viewport canvas interiors as measured, against the figures `SPEC-MOK-003` derives;
 7. retained evidence paths;
 8. residual limitations and explicitly deferred features, including every attribute of the target design left absent;
 9. final worktree and candidate-commit status.

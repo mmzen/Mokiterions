@@ -1,4 +1,4 @@
-//! `SPEC-MOK-002` rule 9.4 to 9.6: the export.
+//! `SPEC-MOK-003` rule 9.4 to 9.6: the export.
 //!
 //! The export is the observer's only retainable artifact and the only observer output
 //! admissible as evidence. It therefore carries authoritative records only, in authoritative

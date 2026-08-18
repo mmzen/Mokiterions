@@ -1,4 +1,4 @@
-//! `VER-MOK-003`'s cross-cutting cases.
+//! `VER-MOK-005`'s cross-cutting cases.
 //!
 //! The per-module tests verify one obligation at a time. The cases here verify the properties
 //! that span the whole observer, and above all the contract's primary property: an observed run
@@ -8,7 +8,7 @@
 //! **The unobserved run is the engine binary's run.** The binary's whole behavior is
 //! `Simulation::run`, which is called here directly, one function away from the binary's `main`.
 //! The engine's own tests cover the step from `main` to that call, so comparing against it here
-//! compares against the binary. The evidence retained for `WO-MOK-003` closes the loop by running
+//! compares against the binary. The evidence retained for `WO-MOK-005` closes the loop by running
 //! the real binary and comparing its bytes against an export.
 //!
 //! Non-perturbation is established by comparison and never by reading the observer for mutating
@@ -31,7 +31,7 @@ use ratatui::style::{Color, Modifier};
 use crate::state::{Filter, Observer, Progression};
 use crate::{authority, export, layout, options, render, spatial};
 
-/// The declared verification seed set, fixed by `VER-MOK-003` so that observed runs are compared
+/// The declared verification seed set, fixed by `VER-MOK-005` so that observed runs are compared
 /// against runs whose unobserved behavior is already recorded evidence.
 const SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
 
@@ -180,7 +180,7 @@ fn region(buffer: &Buffer, area: Rect) -> String {
 ///
 /// The sequence deliberately mixes progression, selection, panning, zooming, filtering, overlays,
 /// log paging and an unbound key, and it is applied while the run is advancing rather than between
-/// runs, because `REQ-MOK-022`'s claim is about interaction during a run.
+/// runs, because `REQ-MOK-025`'s claim is about interaction during a run.
 fn interact(observer: &mut Observer, round: u64) {
     const KEYS: [KeyCode; 12] = [
         KeyCode::Tab,
@@ -230,7 +230,7 @@ fn observed_run(args: &[&str]) -> Observer {
 
 // ---- the primary property ------------------------------------------------------------------
 
-/// `REQ-MOK-022`: on every declared seed, an observed run's authoritative stream and final state
+/// `REQ-MOK-025`: on every declared seed, an observed run's authoritative stream and final state
 /// are the engine binary's, byte for byte, under interaction throughout.
 #[test]
 fn observed_and_unobserved_runs_are_identical_on_every_declared_seed() {
@@ -255,7 +255,7 @@ fn observed_and_unobserved_runs_are_identical_on_every_declared_seed() {
     }
 }
 
-/// `REQ-MOK-022`: per-tick entropy draw counts are identical observed and unobserved.
+/// `REQ-MOK-025`: per-tick entropy draw counts are identical observed and unobserved.
 ///
 /// The specified observation surface exposes no draw counter, so the comparison is made on what
 /// the stream shows of every entropy-consuming operation: each regenerated resource's placement,
@@ -307,7 +307,7 @@ fn per_tick_records_match_so_the_observer_draws_no_entropy() {
     }
 }
 
-/// `REQ-MOK-022`: held across many frames and many key presses, nothing advances.
+/// `REQ-MOK-025`: held across many frames and many key presses, nothing advances.
 #[test]
 fn holding_consumes_nothing_however_long_it_is_held() {
     let mut observer = observer_for(&["--start-paused", "--seed", "42"]);
@@ -337,7 +337,7 @@ fn holding_consumes_nothing_however_long_it_is_held() {
     }
 }
 
-/// `REQ-MOK-022`: a run the operator ended yields a prefix of the unobserved run.
+/// `REQ-MOK-025`: a run the operator ended yields a prefix of the unobserved run.
 #[test]
 fn an_operator_ended_run_is_a_prefix_of_the_unobserved_run() {
     let args = ["--seed", "123", "--ticks", "80"];
@@ -363,7 +363,7 @@ fn an_operator_ended_run_is_a_prefix_of_the_unobserved_run() {
     );
 }
 
-/// `REQ-MOK-022`: no catch-up. One advance is one tick, and a finished run refuses to advance.
+/// `REQ-MOK-025`: no catch-up. One advance is one tick, and a finished run refuses to advance.
 #[test]
 fn one_advance_is_one_tick_and_a_finished_run_refuses() {
     let mut observer = observer_for(&["--start-paused", "--ticks", "10"]);
@@ -382,7 +382,7 @@ fn one_advance_is_one_tick_and_a_finished_run_refuses() {
     );
 }
 
-/// `REQ-MOK-020`: a finished run stays inspectable and exportable, and refuses progression.
+/// `REQ-MOK-023`: a finished run stays inspectable and exportable, and refuses progression.
 #[test]
 fn a_finished_run_stays_inspectable_and_exportable() {
     let mut observer = observer_for(&["--ticks", "20"]);
@@ -414,7 +414,7 @@ fn a_finished_run_stays_inspectable_and_exportable() {
 
 // ---- rendering and layout purity -----------------------------------------------------------
 
-/// `VER-MOK-003`: drawing the same state at the same viewport twice produces identical buffers,
+/// `VER-MOK-005`: drawing the same state at the same viewport twice produces identical buffers,
 /// and drawing changes no authoritative state.
 #[test]
 fn drawing_is_pure() {
@@ -439,7 +439,7 @@ fn drawing_is_pure() {
     }
 }
 
-/// `REQ-MOK-021`: layout is a function of dimensions alone.
+/// `REQ-MOK-024`: layout is a function of dimensions alone.
 ///
 /// The same dimensions are resolved at different ticks, speeds, selections, filters, overlays and
 /// run states; every pane must land in the same place.
@@ -465,7 +465,7 @@ fn layout_reads_nothing_but_the_dimensions() {
     }
 }
 
-/// `REQ-MOK-021`: the canvas interior at every declared viewport is the derived one, the header
+/// `REQ-MOK-024`: the canvas interior at every declared viewport is the derived one, the header
 /// and footer are present at every one of them including the floor itself, and the one-below-floor
 /// case presents nothing.
 #[test]
@@ -501,7 +501,7 @@ fn every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer() {
     assert!(frame(&mut observer, 33, 21).is_none());
 }
 
-/// `VER-MOK-003`: orientation. Within a visible region, a smaller world row never renders below a
+/// `VER-MOK-005`: orientation. Within a visible region, a smaller world row never renders below a
 /// larger one, at any declared viewport, either zoom, or any camera position.
 #[test]
 fn a_smaller_world_row_never_renders_below_a_larger_one() {
@@ -547,7 +547,7 @@ fn a_smaller_world_row_never_renders_below_a_larger_one() {
     }
 }
 
-/// `REQ-MOK-021`: presentation state survives every resize between declared viewports, including
+/// `REQ-MOK-024`: presentation state survives every resize between declared viewports, including
 /// below the floor and back, and a resize does not pause the run.
 #[test]
 fn presentation_state_survives_every_resize() {
@@ -585,7 +585,7 @@ fn presentation_state_survives_every_resize() {
 
 // ---- records, filters and the export -------------------------------------------------------
 
-/// `REQ-MOK-019`: a filter restricts presentation only. The retained buffer, its order, its count
+/// `REQ-MOK-022`: a filter restricts presentation only. The retained buffer, its order, its count
 /// and the export are unchanged by applying and clearing any filter.
 #[test]
 fn a_filter_changes_what_is_presented_and_nothing_else() {
@@ -631,7 +631,7 @@ fn a_filter_changes_what_is_presented_and_nothing_else() {
     assert_eq!(observer.presented().len(), records.len());
 }
 
-/// `REQ-MOK-019`: two exports from runs sharing seed, configuration, source and stopping tick are
+/// `REQ-MOK-022`: two exports from runs sharing seed, configuration, source and stopping tick are
 /// byte-identical, and each is the engine binary's stream with the trailer appended.
 #[test]
 fn exports_are_reproducible_and_are_the_engines_own_records() {
@@ -669,7 +669,7 @@ fn exports_are_reproducible_and_are_the_engines_own_records() {
 
 // ---- faithfulness --------------------------------------------------------------------------
 
-/// `REQ-MOK-016`, `REQ-MOK-017` and `REQ-MOK-018`: every presented value is the snapshot's.
+/// `REQ-MOK-019`, `REQ-MOK-020` and `REQ-MOK-021`: every presented value is the snapshot's.
 #[test]
 fn every_presented_value_is_the_snapshots() {
     let mut observer = observer_for(&["--seed", "42", "--start-paused"]);
@@ -711,7 +711,7 @@ fn every_presented_value_is_the_snapshots() {
     }
 }
 
-/// `REQ-MOK-016`: an action the engine applied is the action presented, for every living
+/// `REQ-MOK-019`: an action the engine applied is the action presented, for every living
 /// Mokiterion, at every tick of a short run.
 #[test]
 fn the_applied_action_presented_is_always_the_engines() {
@@ -743,7 +743,7 @@ fn the_applied_action_presented_is_always_the_engines() {
 /// `BaselineDecisionSource` selects from the observation's valid actions and
 /// `ReferenceDecisionSource` guards every candidate with the observation's own `allows`, so both
 /// propose only what the engine has already declared valid. A rejection is therefore unreachable
-/// through a run of either policy, which is asserted here as the fact it is: `VER-MOK-003`'s
+/// through a run of either policy, which is asserted here as the fact it is: `VER-MOK-005`'s
 /// acceptance scenario 2 describes a state no shipped source produces, and the case that follows
 /// reaches it the only way it can be reached.
 #[test]
@@ -765,7 +765,7 @@ fn no_shipped_decision_source_has_a_proposal_rejected() {
     }
 }
 
-/// `REQ-MOK-018`: the observer presents the snapshot's verdict and never re-derives one, and a
+/// `REQ-MOK-021`: the observer presents the snapshot's verdict and never re-derives one, and a
 /// rejection is presented as an authority outcome rather than as a fault.
 ///
 /// The injected decision is deliberately self-contradictory: a westward move from an interior
@@ -827,7 +827,7 @@ fn the_presented_verdict_is_the_snapshots_and_a_rejection_is_not_a_fault() {
 
 // ---- security ------------------------------------------------------------------------------
 
-/// `REQ-MOK-024`: no frame carries an environment value, at any declared viewport, at any tick.
+/// `REQ-MOK-027`: no frame carries an environment value, at any declared viewport, at any tick.
 #[test]
 fn no_frame_carries_an_environment_value() {
     let mut observer = observer_for(&["--seed", "777"]);
@@ -858,7 +858,7 @@ fn no_frame_carries_an_environment_value() {
     }
 }
 
-/// `REQ-MOK-022`: an injected export failure leaves the run running and no tick partly applied.
+/// `REQ-MOK-025`: an injected export failure leaves the run running and no tick partly applied.
 #[test]
 fn an_injected_export_failure_leaves_the_tick_intact() {
     let directory = std::env::temp_dir().join("mokiterions-verification-absent");
@@ -952,7 +952,7 @@ fn symbols(cells: &[Vec<(String, Modifier)>]) -> String {
         .join("\n")
 }
 
-/// `REQ-MOK-016` and `REQ-MOK-017`: a dead Mokiterion leaves the presentation, and the death is
+/// `REQ-MOK-019` and `REQ-MOK-020`: a dead Mokiterion leaves the presentation, and the death is
 /// corroborated by the counts on the tick it is applied.
 ///
 /// The engine's snapshot carries living Mokiterions only, so this cannot be satisfied by filtering
@@ -1006,7 +1006,7 @@ fn a_death_removes_the_subject_from_the_presentation_and_is_corroborated() {
     }
 }
 
-/// `REQ-MOK-016`: a world with no living Mokiterions, one with no standing resources, and one with
+/// `REQ-MOK-019`: a world with no living Mokiterions, one with no standing resources, and one with
 /// neither each draw a frame at every renderable viewport without panicking.
 ///
 /// Extinction is reached through a run. A world stripped of every standing resource is not
@@ -1139,7 +1139,7 @@ fn contrived(base: &WorldSnapshot) -> WorldSnapshot {
     snapshot
 }
 
-/// `REQ-MOK-016`: overview zoom encodes no per-resource class, and detail zoom does.
+/// `REQ-MOK-019`: overview zoom encodes no per-resource class, and detail zoom does.
 ///
 /// One braille dot has one state, so a class it appeared to carry would be an invention. The class
 /// stays available from rule 3's per-territory counts, which is asserted in the same frame.
@@ -1177,7 +1177,7 @@ fn overview_encodes_no_resource_class_and_detail_zoom_does() {
     }
 }
 
-/// `REQ-MOK-016`: every distinction is present in glyph, position or underline with all styling
+/// `REQ-MOK-019`: every distinction is present in glyph, position or underline with all styling
 /// removed.
 ///
 /// The observer uses colour in four places — a Mokiterion's territory, a resource's class, a

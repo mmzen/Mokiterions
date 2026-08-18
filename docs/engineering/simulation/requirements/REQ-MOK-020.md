@@ -1,105 +1,98 @@
 +++
 id = "REQ-MOK-020"
 type = "requirement"
-title = "Control run progression and observation focus by keyboard"
+title = "Present survival state for every living Mokiterion"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
-statement = "WHEN the operator presses a bound key, THE SYSTEM SHALL perform the bound observation control — pausing, resuming, advancing exactly one tick, changing progression speed, changing or clearing the selection, following the selection, changing the view region or fidelity, changing the filter, exporting, or exiting — and SHALL apply no other effect."
+statement = "WHEN an observed simulation is running or paused, THE SYSTEM SHALL display for every living Mokiterion its identifier, territory, health, satiety, energy, and the action applied on the most recently completed tick, without requiring the operator to scroll at the reference viewport size."
 verification_method = "automated-test"
 
 [relations]
-derives_from = ["CAP-MOK-003"]
+derives_from = ["CAP-MOK-004"]
 +++
 
-# Requirement: Control run progression and observation focus by keyboard
+# Requirement: Present survival state for every living Mokiterion
 
 ## Rationale
 
-Single-stepping is the operator's primary instrument, and it cannot be approximated by slowing the run down. The
-questions this interface exists to answer are of the form "what did that agent propose on the tick it died", which
-requires stopping between two specific ticks and looking. A run that only plays at a chosen rate forces the
-operator to catch the moment, and the moment is usually one tick wide.
+The spatial view shows where Mokiterions are; it cannot show how close each one is to dying. Health, satiety and
+energy are the three numbers that decide the outcome, and the mechanism that kills is a threshold rather than a
+gradient: satiety or energy reaching zero costs five health per tick, and health reaching zero is final. An
+operator watching for the moment a population turns needs to see all three numbers for all twelve agents
+simultaneously, because the interesting event is one agent crossing a threshold while the others do not.
 
-Pausing must hold the engine *between* ticks rather than inside one. A tick applies twelve agent turns in fixed
-order and then may regenerate resources; stopping partway through would present a state that no completed tick
-ever produced, and an operator reading it would draw conclusions about a state the simulation does not have.
+The no-scroll obligation exists because scrolling defeats the purpose. A roster the operator must page through
+presents the same sequential access problem as the text stream, and the population is small and fixed at twelve,
+so simultaneous presentation is achievable rather than aspirational.
 
-Keyboard binding rather than pointer interaction follows from the medium: a terminal interface has a keyboard
-available everywhere and a mouse available inconsistently, and every control here is a discrete verb rather than a
-spatial gesture.
-
-The closing clause matters as much as the list. Every operator input is an observation control. There is no input
-that mutates world state, because `ADR-MOK-001` gives the engine exclusive ownership of mutable state and an
-operator is not an exception. Choosing *when* the engine advances is the full extent of operator influence, and it
-changes when the engine runs rather than what it computes.
+The action applied on the last tick is included here, rather than only in the inspector, because the roster is
+where divergence becomes visible: eleven agents searching while one sleeps is a pattern, and it is only a pattern
+if all twelve actions are readable at once.
 
 ## Preconditions and trigger
 
-The observer is running and has an input source. The trigger is a key press.
+An observed run has been initialized and the observer is drawing a frame.
 
 ## Required response
 
-Each bound key performs exactly its bound control:
+For each living Mokiterion, in a stable order that does not change between frames, the display presents:
 
-- **hold and release progression** — stop the engine between completed ticks, and resume from that point;
-- **advance one tick** — complete exactly one further tick and stop again;
-- **change progression speed** — alter how frequently the engine advances while running;
-- **select and clear selection** — move the selection between living Mokiterions, and remove it;
-- **follow** — keep the view region centred on the selected Mokiterion as it moves;
-- **change view region or fidelity** — pan and zoom the spatial view;
-- **change filter** — apply or clear the event-log restriction;
-- **export** — write the observed events to a file;
-- **exit** — leave the observer and restore the terminal.
+- its identifier;
+- the territory it currently occupies;
+- health, satiety and energy, each as a value and as a proportional visual indicator so that relative magnitude
+  is readable without reading digits;
+- the action the engine applied to it on the most recently completed tick.
 
-Advancing one tick while already held completes one tick and returns to held. Advancing is available only while
-held, so that a single-step and a running engine cannot both be driving progression.
+The display also presents the count of living Mokiterions, so that a death is visible as a change to a total and
+not only as a row disappearing.
 
-An unbound key is ignored. It produces no action, no state change, and no error condition that interrupts
-observation.
+Dead Mokiterions are excluded from the roster. A Mokiterion that dies during observation is removed from the
+roster on the tick its death is applied.
+
+At the reference viewport size, every living Mokiterion's entry is visible at once with no scrolling and no
+truncation of the values named above.
 
 ## Failure and boundary behavior
 
-- Exiting restores the terminal to its prior mode. An abnormal termination must also restore it rather than
-  leaving the operator's terminal unusable.
-- Advancing past the configured tick limit, or past extinction, does not advance the simulation. The observer
-  reports that the run has terminated and remains inspectable, so the final state can be examined.
-- Speed changes are bounded by declared limits and cannot be set to a value that prevents the observer from
-  responding to further input.
-- A key pressed while a frame is being drawn is not lost, and it is not applied twice.
-- No key press mutates health, satiety, energy, position, entropy, resource placement, tick order, or agent turn
-  order.
+- When the viewport cannot present all living entries, the display indicates how many entries are hidden rather
+  than silently omitting them.
+- A value of zero is presented as zero and remains distinguishable from an absent or not-yet-computed value.
+- When every Mokiterion is dead, the roster presents an explicit extinction state rather than an empty pane whose
+  emptiness could be read as a rendering fault.
 
 ## Constraints
 
-- The complete key binding table, speed steps and their bounds, selection order, and the terminal modes entered
-  and restored are fixed by `SPEC-MOK-002`.
-- Input handling consumes no simulation entropy. Whether, when, and how often the operator presses a key must not
-  appear in any authoritative outcome.
-- Holding progression must leave the engine at a completed-tick boundary.
-- The observer is quit by a bound key. No on-screen control element is required, and the presence of one must not
-  become the only way to perform any control.
+- Values are read from authoritative engine state. The display computes no derived survival estimate, no
+  predicted time to death, and no quantity the engine does not produce.
+- Attributes the engine does not compute — including fear, traits, per-agent names, age, kills, combats, and
+  remembered locations — are absent from the roster. The layout may reserve their position, and it must not
+  render an inert value that reads as a computed zero.
+- Ordering, field selection, indicator form, reserved positions, and the reference viewport size are fixed by
+  `SPEC-MOK-003`.
+- Displaying state consumes no simulation entropy and does not mutate state.
 
 ## Acceptance examples
 
 ### Example: normal behavior
 
-**Given** an observed run held at tick 40
+**Given** an observed run at the reference viewport size with twelve living Mokiterions
 
-**When** the operator presses the advance-one-tick key three times
+**When** a frame is drawn
 
-**Then** the run stands at tick 43, held, and every intervening tick was applied exactly once in order.
+**Then** twelve entries are visible simultaneously, each showing its identifier, territory, health, satiety,
+energy and last applied action, and the living count reads twelve.
 
 ### Example: failure behavior
 
-**Given** an observed run configured for 100 ticks and currently held at tick 100
+**Given** eleven Mokiterions have died and one remains with satiety zero
 
-**When** the operator presses the advance-one-tick key
+**When** a frame is drawn
 
-**Then** the tick count remains 100, the observer reports the run as terminated by its tick limit, and the final
-state remains inspectable.
+**Then** one entry is visible, its satiety reads zero rather than appearing blank, and the living count reads one.
 
 ## Open decisions
 
-None. The binding table, speed bounds, selection order and terminal-mode handling are fixed by `SPEC-MOK-002`.
+None. Field selection, ordering, indicator form, treatment of not-yet-computed attributes, and the reference
+viewport size are fixed by `SPEC-MOK-003`.

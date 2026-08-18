@@ -1,7 +1,7 @@
-# Layout and viewports — WO-MOK-003
+# Layout and viewports — WO-MOK-005
 
-`SPEC-MOK-002` rule 5's tier table and canvas derivation, measured at every viewport
-`VER-MOK-003` declares. Every figure below is read from a resolved layout or from a drawn
+`SPEC-MOK-003` rule 5's tier table and canvas derivation, measured at every viewport
+`VER-MOK-005` declares. Every figure below is read from a resolved layout or from a drawn
 in-memory buffer; none is asserted from the specification's text.
 
 ## The declared viewport set

@@ -1,6 +1,6 @@
-# Requirement-to-test mapping — WO-MOK-003
+# Requirement-to-test mapping — WO-MOK-005
 
-One row per case in `VER-MOK-003`'s requirement-to-evidence matrix, in the contract's own order,
+One row per case in `VER-MOK-005`'s requirement-to-evidence matrix, in the contract's own order,
 against the test or the retained file that discharges it. Test names are as `cargo test -- --list`
 reports them; the `mokiterions-tui` package's targets are unqualified, and engine tests are marked.
 
@@ -9,7 +9,7 @@ The last section lists every such case in one place, because a case covered by a
 by a structural argument is weaker evidence than a case with its own assertion, and a reviewer
 should not have to find that out by reading the table.
 
-## `REQ-MOK-016` — Render the whole world in one view
+## `REQ-MOK-019` — Render the whole world in one view
 
 | Case | Test | Note |
 |---|---|---|
@@ -28,7 +28,7 @@ should not have to find that out by reading the table.
 | Degenerate worlds render | `verification::a_degenerate_world_still_draws_a_frame` | No living Mokiterions, no standing resources, and both, each at all six renderable viewports |
 | Legibility without colour | `verification::every_distinction_survives_the_loss_of_colour` | Reads a projection of the frame that colour has been discarded from, so it cannot pass by colour |
 
-## `REQ-MOK-017` — Present survival state for every living Mokiterion
+## `REQ-MOK-020` — Present survival state for every living Mokiterion
 
 | Case | Test | Note |
 |---|---|---|
@@ -41,7 +41,7 @@ should not have to find that out by reading the table.
 | Death is corroborated | `verification::a_death_removes_the_subject_from_the_presentation_and_is_corroborated`, `state::tests::a_death_carries_the_tick_and_the_engine_computed_final_values` | The entry disappears, the living count falls by exactly the number of deaths, and the death total rises by the same |
 | Applied action is the engine's | `verification::the_applied_action_presented_is_always_the_engines` | Every living Mokiterion, every tick of a fifteen-tick run |
 
-## `REQ-MOK-018` — Expose proposed action and engine authority decision
+## `REQ-MOK-021` — Expose proposed action and engine authority decision
 
 | Case | Test | Note |
 |---|---|---|
@@ -55,7 +55,7 @@ should not have to find that out by reading the table.
 | Selected Mokiterion dies | `state::tests::a_dead_selection_is_retained_and_the_next_control_finds_a_living_neighbour`, `state::tests::a_death_carries_the_tick_and_the_engine_computed_final_values` | |
 | Absent attributes are absent | `render::tests::a_zero_value_is_a_zero_and_an_absent_value_is_a_dash`, `render::tests::the_bar_row_reproduces_the_specified_form` | No fear, traits, name, age, kills, combats, remembered locations, latency or per-agent entropy field exists to render |
 
-## `REQ-MOK-019` — Present and export a filterable event log
+## `REQ-MOK-022` — Present and export a filterable event log
 
 | Case | Test |
 |---|---|
@@ -71,7 +71,7 @@ should not have to find that out by reading the table.
 | Export failure handling | `export::tests::an_unwritable_path_is_reported_and_leaves_nothing_behind`, `render::tests::a_reported_failure_reaches_the_header`, `verification::an_injected_export_failure_leaves_the_tick_intact` |
 | Exports contain no environment values | `export::tests::nothing_environment_specific_reaches_the_file` |
 
-## `REQ-MOK-020` — Control run progression and observation focus by keyboard
+## `REQ-MOK-023` — Control run progression and observation focus by keyboard
 
 | Case | Test |
 |---|---|
@@ -88,7 +88,7 @@ should not have to find that out by reading the table.
 | Finished run refuses to advance | `state::tests::a_finished_run_refuses_to_advance_and_stays_inspectable`, `verification::a_finished_run_stays_inspectable_and_exportable`, `verification::one_advance_is_one_tick_and_a_finished_run_refuses` |
 | Quit is the only exit control | `state::tests::quit_is_the_only_key_that_asks_to_exit` |
 
-## `REQ-MOK-021` — Degrade the layout across viewport sizes
+## `REQ-MOK-024` — Degrade the layout across viewport sizes
 
 | Case | Test |
 |---|---|
@@ -103,7 +103,7 @@ should not have to find that out by reading the table.
 | State survives resize | `verification::presentation_state_survives_every_resize`, `render::tests::a_resize_changes_the_layout_and_nothing_else` |
 | Layout is a pure function of dimensions | `verification::layout_reads_nothing_but_the_dimensions`, `layout::tests::every_region_stays_inside_the_viewport_and_the_body_rows_are_contiguous` |
 
-## `REQ-MOK-022` — Preserve simulation outcome under observation
+## `REQ-MOK-025` — Preserve simulation outcome under observation
 
 | Case | Test |
 |---|---|
@@ -118,7 +118,7 @@ should not have to find that out by reading the table.
 | Observer failure leaves the tick intact | `verification::an_injected_export_failure_leaves_the_tick_intact`, `render::tests::a_reported_failure_reaches_the_header` |
 | Rendering purity | `verification::drawing_is_pure`, `render::tests::drawing_never_advances_the_simulation` |
 
-## `REQ-MOK-023` — Keep the engine component independent of the observer
+## `REQ-MOK-026` — Keep the engine component independent of the observer
 
 | Case | Evidence |
 |---|---|
@@ -132,7 +132,7 @@ should not have to find that out by reading the table.
 | Resolved dependency graph and feature set | `dependency-review.txt`: `serde` absent, features exactly `crossterm`, `layout-cache`, `underline-color`, crate count measured |
 | Two packages exactly | `static-checks.txt`: `cargo tree --workspace --depth 0` |
 
-## `REQ-MOK-024` — Display run provenance and the authority for each event type
+## `REQ-MOK-027` — Display run provenance and the authority for each event type
 
 | Case | Test |
 |---|---|
@@ -147,7 +147,7 @@ should not have to find that out by reading the table.
 
 ## Caveats a reviewer should read before trusting the table
 
-1. **`REQ-MOK-021`'s hidden-roster-entry case is unreachable at every declared viewport.** The
+1. **`REQ-MOK-024`'s hidden-roster-entry case is unreachable at every declared viewport.** The
    roster pane is 34 rows at tiers A and B and 38 at tier C, so its interior holds 32 or 36 rows
    against twelve two-line entries, and the tier-D roster overlay holds sixteen one-line rows
    against twelve entries. Nothing is ever hidden in the declared set, so the branch that states
@@ -155,30 +155,30 @@ should not have to find that out by reading the table.
    population `SPEC-MOK-001` sets, so this is a branch that exists for a population the engine
    cannot currently produce, and the honest statement is that it is unverified rather than that it
    is covered.
-2. **`REQ-MOK-018`'s rejection cases are reached through a test-only hook.** Neither shipped
+2. **`REQ-MOK-021`'s rejection cases are reached through a test-only hook.** Neither shipped
    decision source can have a proposal rejected — `verification::no_shipped_decision_source_has_a_proposal_rejected`
    asserts that as a fact over 400 ticks of both policies — so acceptance scenario 2 describes an
    unreachable state, and `replace_decisions_for_test` is the only way to reach it. The hook is
    `#[cfg(test)]` and is not in the shipped binary. This is a finding about the contract, recorded
    in the completion summary, not a shortcut in the evidence.
-3. **`REQ-MOK-016`'s no-standing-resources case is reached the same way.** Rule 15 makes
+3. **`REQ-MOK-019`'s no-standing-resources case is reached the same way.** Rule 15 makes
    regeneration conditional on one remaining resource, and neither source consumes fast enough to
    empty a territory before the population dies, so `replace_snapshot_for_test` reaches it. The
    no-living-Mokiterions half of the same case is reached through a real run.
-4. **`REQ-MOK-022`'s entropy case compares records, not a counter.** The specified observation
+4. **`REQ-MOK-025`'s entropy case compares records, not a counter.** The specified observation
    surface exposes no draw counter and adding one would be public surface no artifact specifies, so
    the comparison is per-tick identity of every entropy-bearing record. The engine's entropy is one
    sequential stream, so a single extra draw would shift every later value; per-tick identity across
    a whole run therefore cannot hold if the counts differed. This is the observable form of the
    claim, argued in `non-perturbation.txt`, not the claim itself.
-5. **`REQ-MOK-017`'s bar arithmetic is asserted at three values, not swept.** The exact rendered
+5. **`REQ-MOK-020`'s bar arithmetic is asserted at three values, not swept.** The exact rendered
    line is asserted for health 100, satiety 81 and energy 72, and separately for 0, which pins
    `round(value / 5)` at four points including both ends. No test sweeps 0 through 100.
-6. **`REQ-MOK-024`'s commit field is verified absent, not present.** `COMMIT` is `option_env!`, so
+6. **`REQ-MOK-027`'s commit field is verified absent, not present.** `COMMIT` is `option_env!`, so
    the present case needs a build with the variable set, and this run had none. What is verified is
    that no repository file is read and no version-control command is invoked to obtain it — which
    is the part of the case that could go wrong at run time.
-7. **`REQ-MOK-023`'s surface cases are a review, not a test.** That the public surface has exactly
+7. **`REQ-MOK-026`'s surface cases are a review, not a test.** That the public surface has exactly
    one `&mut self` operation is a statement about the surface as a whole, which a test can only
    sample. It is discharged in `boundary-and-security-review.md` by enumerating the surface. The
    nearest measured corroboration is `verification::drawing_is_pure`, which holds a cloned snapshot

@@ -1,6 +1,6 @@
-# Buffer dumps — WO-MOK-003
+# Buffer dumps — WO-MOK-005
 
-`VER-MOK-003`: rendered frames are retained only as buffer dumps accompanying an assertion.
+`VER-MOK-005`: rendered frames are retained only as buffer dumps accompanying an assertion.
 No screenshot or recording is admissible evidence for any obligation in this contract.
 
 Each dump below is the in-memory character buffer a `TestBackend` holds after one draw:

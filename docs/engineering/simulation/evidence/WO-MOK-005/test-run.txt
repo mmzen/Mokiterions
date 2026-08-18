@@ -1,7 +1,7 @@
-# Build and test — WO-MOK-003
+# Build and test — WO-MOK-005
 
 The workspace first, then the engine package alone. The engine package alone is the check that
-matters for `REQ-MOK-023`: it builds and its tests pass with the observer package excluded and
+matters for `REQ-MOK-026`: it builds and its tests pass with the observer package excluded and
 no terminal attached, which is what makes the engine independent rather than merely separate.
 
 ## cargo build --workspace

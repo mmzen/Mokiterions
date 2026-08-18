@@ -7,8 +7,8 @@ edition = "2024"
 name = "mokiterions-tui"
 path = "src/main.rs"
 
-# `SPEC-MOK-002` fixes this dependency, its version and its feature set, and
-# `ADR-MOK-002` decides them. Changing any of the three is a specification amendment,
+# `SPEC-MOK-003` fixes this dependency, its version and its feature set, and
+# `ADR-MOK-003` decides them. Changing any of the three is a specification amendment,
 # not an implementation choice. Every user-interface dependency lives here and nowhere
 # else; `mokiterions-core` depends on nothing.
 [dependencies]

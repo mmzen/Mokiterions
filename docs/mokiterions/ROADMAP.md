@@ -230,18 +230,18 @@ decision rather than a technical detail:
    This is the project's first external dependency, and the containment strategy is that it is confined to the
    observer package — which is *why* the two-package split is a requirement rather than a preference.
 2. **The single crate.** `ARCH-MOK-001` prohibited separate crates *without an approved requirement*.
-   `REQ-MOK-023` is that requirement, for exactly one further package.
+   `REQ-MOK-026` is that requirement, for exactly one further package.
 
 **Distinct from Phase 4.** Phase 4 is a batch measuring instrument: structured output, multi-seed runs, outcome
 distributions, statistics over many runs. Phase 1.5 is a live interactive instrument for one run. They answer
 different questions — *what happens across many runs* against *what is happening in this one* — and neither
 substitutes for the other. Phase 4 remains where it is.
 
-**Artifact chain.** The packet drafted on 2026-08-17 is: `INT-MOK-003`, `CAP-MOK-003`, `REQ-MOK-016` through
-`REQ-MOK-024`, `SPEC-MOK-002`, `ARCH-MOK-002`, `ADR-MOK-002`, an in-place amendment of `ARCH-MOK-001`,
-`VER-MOK-003`, and `WO-MOK-003`. Every artifact is `draft` and awaits its accountable owner.
+**Artifact chain.** The packet drafted on 2026-08-17 is: `INT-MOK-004`, `CAP-MOK-004`, `REQ-MOK-019` through
+`REQ-MOK-027`, `SPEC-MOK-003`, `ARCH-MOK-002`, `ADR-MOK-003`, an in-place amendment of `ARCH-MOK-001`,
+`VER-MOK-005`, and `WO-MOK-005`. Every artifact is `draft` and awaits its accountable owner.
 
-Two of those artifacts are load-bearing rather than procedural. `REQ-MOK-023` is the approved requirement that
+Two of those artifacts are load-bearing rather than procedural. `REQ-MOK-026` is the approved requirement that
 `ARCH-MOK-001`'s prohibition on separate crates has always named as its own unlock. The `ARCH-MOK-001` amendment
 scopes its prohibition on user-interface frameworks to the engine package, where it becomes checkable per package
 and therefore stronger than before. Without both, this phase is prohibited outright.

@@ -1,6 +1,6 @@
-# Export fidelity against the engine binary — WO-MOK-003
+# Export fidelity against the engine binary — WO-MOK-005
 
-`REQ-MOK-022` is a claim about the engine binary's stream, and `verification.rs` compares against
+`REQ-MOK-025` is a claim about the engine binary's stream, and `verification.rs` compares against
 `Simulation::run` called in-process, one function away from the binary's `main`. This file closes
 that last step: the real binary is executed as a separate process, its standard output is captured,
 and it is compared byte for byte against an export taken from an observed run of the same

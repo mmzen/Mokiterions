@@ -1,5 +1,5 @@
 +++
-id = "SPEC-MOK-002"
+id = "SPEC-MOK-003"
 type = "specification"
 title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
@@ -9,15 +9,15 @@ updated = "2026-08-17"
 
 [relations]
 specifies = [
-  "REQ-MOK-016",
-  "REQ-MOK-017",
-  "REQ-MOK-018",
   "REQ-MOK-019",
   "REQ-MOK-020",
   "REQ-MOK-021",
   "REQ-MOK-022",
   "REQ-MOK-023",
   "REQ-MOK-024",
+  "REQ-MOK-025",
+  "REQ-MOK-026",
+  "REQ-MOK-027",
 ]
 +++
 
@@ -28,7 +28,7 @@ specifies = [
 This specification fixes the exact behavior of a terminal observer over the existing simulation engine, and the
 read-only interface through which the observer obtains authoritative state.
 
-It governs `REQ-MOK-016` through `REQ-MOK-024`. It does not govern any simulation rule. Every world rule —
+It governs `REQ-MOK-019` through `REQ-MOK-027`. It does not govern any simulation rule. Every world rule —
 dimensions, territories, attributes, food classes, tick order, actions, validation, perception, decay, death,
 regeneration, density, entropy, the event vocabulary, and the text stream — remains fixed by `SPEC-MOK-001`, which
 this specification never restates as authority and never contradicts. Where a figure from `SPEC-MOK-001` appears
@@ -41,7 +41,7 @@ This specification adds no simulation behavior and no simulation state.
 
 | Date | Change | Approval |
 |---|---|---|
-| 2026-08-17 | Original content for `CAP-MOK-003`, covering `REQ-MOK-016` through `REQ-MOK-024`. | Approved by the technical owner. |
+| 2026-08-17 | Original content for `CAP-MOK-004`, covering `REQ-MOK-019` through `REQ-MOK-027`. | Approved by the technical owner. |
 | 2026-08-17 | Corrected two derived figures in rule 5 before approval. The `100 × 30` row omitted the pane border and claimed a whole-world presentation its 98 × 24 interior cannot deliver, since 24 cells address 96 of 128 world rows; the tier C example stated a 71 × 42 canvas where the arithmetic yields 71 × 36. A `120 × 48` row was added so tier C carries a checkable obligation. No rule changed. | Approved by the technical owner. |
 
 ## Actors and external systems
@@ -232,7 +232,7 @@ value. Below 47 columns each entry collapses to one line carrying identifier, te
 without bars.
 
 1. Twelve living entries in the two-line form require 24 lines plus the pane border, which the reference viewport
-   provides; the no-scroll obligation of `REQ-MOK-017` is an obligation at the reference size and rule 5 states what
+   provides; the no-scroll obligation of `REQ-MOK-020` is an obligation at the reference size and rule 5 states what
    happens below it.
 2. The living count is presented in the pane title.
 3. A Mokiterion is removed from the roster on the tick its death is applied. The pane states the number of deaths so
@@ -494,7 +494,7 @@ mokiterions-tui/
    is not disturbed by this change.
 4. The engine binary is named `mokiterions`. The observer binary is named `mokiterions-tui`.
 5. `cargo test` at the workspace root runs both packages' tests. `cargo tree -p mokiterions-core` demonstrates the
-   empty set required by `REQ-MOK-023`.
+   empty set required by `REQ-MOK-026`.
 
 ## Security and privacy properties
 
@@ -505,7 +505,7 @@ mokiterions-tui/
 - The observer receives no mutable handle to world, agent, resource or event-log state, and offers the operator no
   control that mutates the world.
 - The observer's dependency surface is 57 crates and is confined to the observer package, so it cannot reach the
-  engine. Whether that surface is acceptable is decided by `ADR-MOK-002`, not here.
+  engine. Whether that surface is acceptable is decided by `ADR-MOK-003`, not here.
 
 ## Performance and capacity
 
@@ -537,7 +537,7 @@ mokiterions-tui/
   the produced binary's filename changes case and form. No artifact, script, CI step or document depends on the
   binary's filename; all of them invoke `cargo run`, `cargo build` or `cargo test`.
 - `Cargo.toml` and `Cargo.lock` change from an empty dependency set to a workspace with a 57-crate observer surface.
-  This is the change `ADR-MOK-002` decides and `ARCH-MOK-001` must be amended to permit.
+  This is the change `ADR-MOK-003` decides and `ARCH-MOK-001` must be amended to permit.
 - When a later phase adds an attribute the observer reserves space for, this specification is amended to define its
   presentation. Nothing here presents such a value before then.
 
@@ -571,7 +571,7 @@ contradicting rule 2.1 and every diagram in the project. The mapping `canvas_y =
 
 ### Counterexample: letters in the 1:1 overview
 
-Presenting a Mokiterion as a braille dot in overview zoom to preserve exact position defeats `REQ-MOK-016`'s
+Presenting a Mokiterion as a braille dot in overview zoom to preserve exact position defeats `REQ-MOK-019`'s
 requirement that Mokiterions be distinguishable from resources, since both would be dots. Presenting resource class
 by glyph in overview zoom is impossible, since a glyph consumes the whole character cell that eight world cells share.
 Rule 2 resolves both: letters at cell granularity over dots, and class in detail zoom or from rule 3's counts.

@@ -1,4 +1,4 @@
-# Static and architecture checks — WO-MOK-003
+# Static and architecture checks — WO-MOK-005
 
 Captured against the working tree the completion summary names. Nothing is patched for these
 runs, and no scratch measurement harness is present in the tree they were taken from.

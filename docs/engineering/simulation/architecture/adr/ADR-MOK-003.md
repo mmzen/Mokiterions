@@ -1,5 +1,5 @@
 +++
-id = "ADR-MOK-002"
+id = "ADR-MOK-003"
 type = "adr"
 title = "Two-package split with a terminal observer over a read-only engine surface"
 status = "approved"
@@ -21,10 +21,10 @@ Accepted by the technical owner on 2026-08-17, together with `ARCH-MOK-002` and 
 
 ## Context
 
-`INT-MOK-003` establishes that the project needs an instrument for watching behavior, and that the need grows with
+`INT-MOK-004` establishes that the project needs an instrument for watching behavior, and that the need grows with
 each later phase rather than shrinking: traits and fear in Phase 2, conflict in Phase 3, and an untrusted
 model-backed decision source in Phase 5 all produce behavior whose plausibility is a question about a spatial
-situation at a specific tick. `CAP-MOK-003` states what the instrument does.
+situation at a specific tick. `CAP-MOK-004` states what the instrument does.
 
 Building it collides with two prohibitions in `ARCH-MOK-001`, which is `approved` and was verified under
 `VREC-MOK-001` and `VREC-MOK-002`:
@@ -38,7 +38,7 @@ and with two of its conformance checks, which require the dependency graph to co
 program to build as one binary crate.
 
 The second prohibition names its own unlock: separate crates are prohibited *without an approved requirement*, and
-`REQ-MOK-023` is drafted as that requirement. The first does not, and requires this decision.
+`REQ-MOK-026` is drafted as that requirement. The first does not, and requires this decision.
 
 Three properties of the current system constrain every option:
 
@@ -95,11 +95,11 @@ Run the engine unchanged and pipe its output to an observer that parses it. Two 
 dependency in the engine, and the strongest imaginable isolation.
 
 It cannot deliver the capability. The text stream does not carry full world state — there is no per-tick record of
-every agent's position and every standing resource — so the whole-world view of `REQ-MOK-016` cannot be
+every agent's position and every standing resource — so the whole-world view of `REQ-MOK-019` cannot be
 reconstructed from it. Delivering it would require extending `REQ-MOK-010`'s output, which is verified behavior, to
 carry a full state dump per tick, at which point the text stream is being redesigned to serve a display. It also
 makes single-stepping impossible: a pipe cannot ask the producer to stop between ticks. Rejected as unable to meet
-`REQ-MOK-016` and `REQ-MOK-020` rather than on cost.
+`REQ-MOK-019` and `REQ-MOK-023` rather than on cost.
 
 ### Option 4: Serialized snapshot protocol between engine and observer
 
@@ -117,7 +117,7 @@ would be serialized.
 Continue with text output and richer post-run analysis.
 
 It is the only option that preserves every current property at zero cost, and it is a real alternative rather than a
-strawman. It is rejected on the grounds `INT-MOK-003` states: the phases that follow produce behavior whose
+strawman. It is rejected on the grounds `INT-MOK-004` states: the phases that follow produce behavior whose
 assessment is a spatial question, and deferring the instrument means evaluating those phases without the means to
 evaluate them. The cost of adding it does not fall over time, and the cost of not having it rises.
 
@@ -129,7 +129,7 @@ Adopt option 2.
    `mokiterions-tui`, the observer. No third package, no service, no separate release artifact.
 2. Keep the engine package at the repository root with its sources in their existing location, so the
    `REQ-MOK-010` text stream does not move and its verified behavior is not disturbed by relocation.
-3. Give the engine package a public read-only observation surface as specified by `SPEC-MOK-002`: owned,
+3. Give the engine package a public read-only observation surface as specified by `SPEC-MOK-003`: owned,
    reference-free snapshots out; exactly one mutating operation, the single-tick advance, taking no operator data.
 4. Keep the engine package's external dependency set **empty**, with no exception, including a dependency shared with
    the observer.
@@ -244,7 +244,7 @@ and verification assumptions, and requires a superseding ADR.
   filtered, exported and resized.
 - Per-tick entropy draw counts are identical observed and unobserved.
 - The engine package's tests pass with no terminal attached.
-- Rendering is asserted from an in-memory buffer at each named viewport size in `SPEC-MOK-002`, including the floor and
+- Rendering is asserted from an in-memory buffer at each named viewport size in `SPEC-MOK-003`, including the floor and
   the size at which the whole world is presented at one dot per world cell.
 - Dependency review confirms the observer's resolved graph matches the specified version and feature set, that
   `serde` is absent, and that no networking, asynchronous-runtime, database or model-provider crate appears.

@@ -1,105 +1,104 @@
 +++
 id = "REQ-MOK-021"
 type = "requirement"
-title = "Degrade the layout across viewport sizes without losing authoritative information"
+title = "Expose proposed action and engine authority decision"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
-statement = "WHEN the terminal viewport is smaller than the reference size, THE SYSTEM SHALL apply the declared degradation order, indicate which panes are hidden and whether the spatial view is showing a region rather than the whole world, and refuse to start with a stated required size when the viewport is below the declared floor."
+statement = "WHEN an operator selects a Mokiterion, THE SYSTEM SHALL display that Mokiterion's authoritative state together with the action its decision source proposed on the most recently completed tick and whether the engine accepted or rejected that proposal."
 verification_method = "automated-test"
 
 [relations]
-derives_from = ["CAP-MOK-003"]
+derives_from = ["CAP-MOK-004"]
 +++
 
-# Requirement: Degrade the layout across viewport sizes without losing authoritative information
+# Requirement: Expose proposed action and engine authority decision
 
 ## Rationale
 
-A terminal interface has no control over its own dimensions. The operator's terminal is whatever it is, and it can
-be resized while the run is in progress. An interface that assumes one size produces one of two failures: it draws
-outside the viewport and corrupts the display, or it silently compresses panes until the values in them are wrong.
-The second failure is the dangerous one, because a truncated satiety value or a spatial view showing a quarter of
-the world without saying so leads an operator to a confident wrong conclusion.
+`ADR-MOK-001` establishes that a decision source proposes and only the engine mutates, and that a rejected
+proposal is a consumed action opportunity rather than a fault. That boundary is the project's central design
+commitment and it is currently invisible in practice: an accepted move and a rejected move both appear as text
+among thousands of lines, so the one thing the architecture exists to guarantee cannot be observed at the moment
+it operates.
 
-Refusing to start below a floor is preferable to drawing something degraded past usefulness. The spatial view has
-a fidelity below which distinct world positions become indistinguishable, and a view in which two Mokiterions
-sixteen cells apart appear to share a position is not a weaker instrument but a misleading one.
+The requirement matters more with each later phase. A model-backed decision source is untrusted input that must
+pass the same validation as the local baseline. Judging whether such a source behaves plausibly, and whether the
+engine correctly refused it when it did not, requires seeing the proposal and the verdict side by side for a
+chosen agent at a chosen tick. Without this, an operator can only observe that the world did not change and must
+guess whether the source proposed nothing, proposed a wait, or proposed something illegal.
 
-Announcing what is hidden is the requirement's core. Degradation itself is unavoidable; degradation the operator
-cannot detect is a defect.
+Selection is the mechanism because the information is per-agent and detailed. Presenting proposal and verdict for
+all twelve simultaneously would either truncate the detail or displace the spatial view.
 
 ## Preconditions and trigger
 
-The observer is starting, or is drawing a frame, and the viewport dimensions are known. A resize during the run is
-a trigger, not an error.
+An observed run has been initialized, at least one tick has completed, and the operator has selected a
+Mokiterion. Selection persists across ticks until changed or cleared.
 
 ## Required response
 
-**At or above the reference size**, every pane specified for the complete layout is present, and the spatial view
-presents the whole world at full fidelity.
+For the selected Mokiterion, the display presents:
 
-**Below the reference size**, panes are hidden, overlaid, or restacked in the order `SPEC-MOK-002` declares, and
-the layout adapts in the same way for the same dimensions every time. Degradation is deterministic in viewport
-size and in nothing else.
+- its identifier, position, and territory;
+- its health, satiety and energy;
+- the action its decision source proposed on the most recently completed tick, including the target of that
+  proposal where the action has one;
+- whether the engine accepted or rejected the proposal;
+- when the proposal was rejected, the engine's stated ground for rejection;
+- the action the engine actually applied.
 
-**Whenever anything is hidden or reduced**, the observer indicates it: which panes are unavailable at the current
-size, how they can be reached if they can be reached, how many roster entries are not visible, and whether the
-spatial view is presenting a region of the world rather than all of it.
+Accepted and rejected outcomes are visually distinguishable from each other without relying on colour alone.
 
-**Below the declared floor**, the observer does not draw. It reports the current dimensions and the dimensions it
-requires, and exits with the specified status.
-
-**On resize**, the layout is recomputed for the new dimensions and the run continues. A resize does not restart the
-run, lose the selection, discard retained events, or alter the simulation.
+When a selected Mokiterion dies, the display presents its death rather than continuing to show stale live state,
+and the selection is handled by the rule declared in `SPEC-MOK-003` rather than left undefined.
 
 ## Failure and boundary behavior
 
-- No pane is drawn outside the viewport, and no content is clipped in a way that could be read as a different
-  value. A number that does not fit is not shown truncated.
-- The spatial view's fidelity does not fall below the declared minimum. When the space available would require
-  less, the view presents a region and says so.
-- A resize to below the floor mid-run does not terminate the run: the observer reports the required size and
-  resumes drawing when the viewport is large enough again.
-- A viewport reported as zero in either dimension, or a viewport whose size cannot be determined, is handled as
-  below the floor rather than causing an arithmetic failure.
-- Degradation never hides the run's provenance, since a screen capture that does not identify its own run cannot
-  serve as evidence.
+- Before the first tick completes, the pane indicates that no proposal has yet been made rather than displaying an
+  empty or fabricated proposal.
+- When no Mokiterion is selected, the pane indicates that nothing is selected. It does not default to an
+  arbitrary agent, since an operator could then read one agent's proposal as another's.
+- A rejected proposal is presented as an expected outcome, not as an error condition or a warning about the
+  program's own health.
+- The displayed proposal and verdict are those of the tick most recently completed for that Mokiterion. The
+  display must not present a proposal from one tick beside a verdict from another.
 
 ## Constraints
 
-- The reference size, the floor, the complete pane set, the degradation order, the thresholds at which each step
-  applies, the spatial view's minimum fidelity, and the exit status used on refusal are fixed by `SPEC-MOK-002`.
-- Layout selection depends only on viewport dimensions. It does not depend on run state, tick number, entropy, or
-  wall-clock time, so that the same dimensions always yield the same layout.
-- Layout computation consumes no simulation entropy and does not mutate simulation state.
-- Degradation changes what is presented and never what is retained. Hidden events remain exportable, and hidden
-  roster entries remain part of the population.
+- The observer reads the proposal and the verdict from the engine. It does not re-derive, re-evaluate, or predict
+  either, since a display that computed its own verdict could disagree with the engine and would then be
+  asserting authority the engine holds.
+- The observer receives no mutable handle to world, agent, resource, event-log, or engine state, consistent with
+  `ADR-MOK-001`.
+- Obtaining proposal and verdict information consumes no simulation entropy and does not alter any decision, in
+  keeping with the existing obligation that action tracing be observational only.
+- Pane content, layout, the accepted-and-rejected distinction, and selection behavior on death are fixed by
+  `SPEC-MOK-003`.
 
 ## Acceptance examples
 
 ### Example: normal behavior
 
-**Given** a viewport at the reference size, resized during the run to a width below the threshold at which the
-inspector pane is dropped
+**Given** an observed run in which the selected Mokiterion is standing on a low-class resource at satiety 81
 
-**When** the next frame is drawn
+**When** the tick completes and a frame is drawn
 
-**Then** the inspector is no longer occupying width, the observer indicates that it is available as an overlay, the
-spatial view and roster remain correct for the new width, the selection is retained, and the run continues
-uninterrupted.
+**Then** the pane shows the proposed action as eating that resource, the engine outcome as accepted, and the
+applied action as the same eat.
 
 ### Example: failure behavior
 
-**Given** a viewport below the declared floor at start-up
+**Given** the selected Mokiterion is at the western edge of the world and its decision source proposes a move
+further west
 
-**When** the observer starts
+**When** the tick completes and a frame is drawn
 
-**Then** it draws no interface, reports the current and required dimensions, and exits with the specified status
-rather than rendering a corrupt view.
+**Then** the pane shows the proposed westward move, the engine outcome as rejected with the engine's stated
+ground, and no applied movement — and the run continues normally.
 
 ## Open decisions
 
-None. The reference size, floor, pane set, degradation order and thresholds, minimum spatial fidelity, and refusal
-exit status are fixed by `SPEC-MOK-002`.
+None. Pane content, the visual distinction between accepted and rejected, behavior before the first tick, and
+selection behavior when the selected Mokiterion dies are fixed by `SPEC-MOK-003`.

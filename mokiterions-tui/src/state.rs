@@ -2,7 +2,7 @@
 //!
 //! Presentation state is not simulation state. Nothing here is persisted, and the only call
 //! that changes simulation state is [`Observer::advance`], which calls the engine's
-//! single-tick advance and nothing else (`SPEC-MOK-002` rule 12.1).
+//! single-tick advance and nothing else (`SPEC-MOK-003` rule 12.1).
 
 use std::collections::{BTreeMap, VecDeque};
 
@@ -18,7 +18,7 @@ use crate::export;
 use crate::options::{self, Options};
 use crate::spatial::{Viewport, Zoom};
 
-/// The event buffer's capacity, fixed by `SPEC-MOK-002`.
+/// The event buffer's capacity, fixed by `SPEC-MOK-003`.
 pub const EVENT_CAPACITY: usize = 100_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -596,7 +596,7 @@ impl Observer {
 
     /// Replaces the retained snapshot's decisions.
     ///
-    /// `VER-MOK-003` requires the observer to be shown a snapshot whose outcome contradicts what
+    /// `VER-MOK-005` requires the observer to be shown a snapshot whose outcome contradicts what
     /// a validation rule would produce, and to present the snapshot's outcome anyway. Neither
     /// shipped decision source can produce a rejection, since both propose only actions the
     /// engine has already declared valid, so that case is unreachable through a run and this hook
@@ -608,7 +608,7 @@ impl Observer {
 
     /// Replaces the retained snapshot wholesale.
     ///
-    /// `VER-MOK-003` requires a frame to be drawn on a world with no living Mokiterions, one with
+    /// `VER-MOK-005` requires a frame to be drawn on a world with no living Mokiterions, one with
     /// no standing resources, and one with neither. Extinction is reachable through a run, but a
     /// world stripped of every standing resource is not: rule 15 makes regeneration conditional on
     /// one remaining resource, and no shipped decision source consumes fast enough to empty a

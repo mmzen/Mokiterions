@@ -1,6 +1,6 @@
-# Terminal restoration — WO-MOK-003
+# Terminal restoration — WO-MOK-005
 
-`VER-MOK-003`'s invariant: "For every exit path, including panic, raw mode is off and the alternate
+`VER-MOK-005`'s invariant: "For every exit path, including panic, raw mode is off and the alternate
 screen is left." Acceptance scenario 7 names the three paths: quitting normally, exiting on an
 injected terminal failure, and panicking.
 
@@ -67,7 +67,7 @@ loop returned. So:
   enter/leave pair.
 
 Note that a run reaching its tick limit is not an exit path: the observer keeps the finished run
-inspectable and exportable until the operator quits (`VER-MOK-003`, "Finished run refuses to
+inspectable and exportable until the operator quits (`VER-MOK-005`, "Finished run refuses to
 advance"). Test: `verification::a_finished_run_stays_inspectable_and_exportable`.
 
 ## What the library guarantees, from its own source
@@ -122,7 +122,7 @@ anything — `SIGTERM` is not one of the three specified exit paths, and no in-p
 it.
 
 The consequence is that the *live-terminal* halves of these paths remain manual assessments, which
-is where `VER-MOK-003` puts them: "Confirm the terminal is usable after a deliberate panic, by
+is where `VER-MOK-005` puts them: "Confirm the terminal is usable after a deliberate panic, by
 inspection of the live terminal rather than only by an automated assertion." They are recorded as
 outstanding in `manual-assessment.md`. What is measured above is the console state itself, not a
 buffer, so it is stronger than a code argument and weaker than a person's report that the shell

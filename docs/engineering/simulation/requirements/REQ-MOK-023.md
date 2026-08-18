@@ -1,100 +1,105 @@
 +++
 id = "REQ-MOK-023"
 type = "requirement"
-title = "Keep the engine component independent of the observer component"
+title = "Control run progression and observation focus by keyboard"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
-statement = "WHEN the repository is built or tested, THE SYSTEM SHALL build and test the simulation engine component with no external dependency and with no dependency on the observer component, and SHALL confine every user-interface dependency to the observer component."
+statement = "WHEN the operator presses a bound key, THE SYSTEM SHALL perform the bound observation control — pausing, resuming, advancing exactly one tick, changing progression speed, changing or clearing the selection, following the selection, changing the view region or fidelity, changing the filter, exporting, or exiting — and SHALL apply no other effect."
 verification_method = "automated-test"
 
 [relations]
-derives_from = ["CAP-MOK-003"]
+derives_from = ["CAP-MOK-004"]
 +++
 
-# Requirement: Keep the engine component independent of the observer component
+# Requirement: Control run progression and observation focus by keyboard
 
 ## Rationale
 
-`ARCH-MOK-001` states that the simulation engine must not depend on a terminal UI, and until now that has been
-guaranteed by there being no terminal UI. Once one exists in the same repository, the guarantee needs an
-enforcement mechanism, and prose is not one. Nothing in a single-crate layout stops an engine module from
-importing a rendering type, and such an import would not fail any check the repository currently runs.
+Single-stepping is the operator's primary instrument, and it cannot be approximated by slowing the run down. The
+questions this interface exists to answer are of the form "what did that agent propose on the tick it died", which
+requires stopping between two specific ticks and looking. A run that only plays at a chosen rate forces the
+operator to catch the moment, and the moment is usually one tick wide.
 
-A component boundary makes the property structural instead of aspirational. If the engine is a component that does
-not depend on the observer, the engine cannot import from it — not by oversight, not under time pressure, not in a
-refactor. The build refuses.
+Pausing must hold the engine *between* ticks rather than inside one. A tick applies twelve agent turns in fixed
+order and then may regenerate resources; stopping partway through would present a state that no completed tick
+ever produced, and an operator reading it would draw conclusions about a state the simulation does not have.
 
-The zero-dependency property is worth preserving for reasons beyond taste. It is what lets the engine be built and
-tested in an environment with no package registry access; it is what makes the claim "no network, no credentials,
-no async runtime" checkable by inspection rather than by audit; and it is the property `ADR-MOK-001` relies on when
-it asserts that the foundation requires no network and no credentials. The observer's 57-crate dependency surface
-is acceptable precisely because it can be shown not to reach the engine.
+Keyboard binding rather than pointer interaction follows from the medium: a terminal interface has a keyboard
+available everywhere and a mouse available inconsistently, and every control here is a discrete verb rather than a
+spatial gesture.
 
-Stating the obligation as a requirement is also what makes the component split legitimate. `ARCH-MOK-001`
-prohibits separate crates *without an approved requirement*; this is that requirement.
+The closing clause matters as much as the list. Every operator input is an observation control. There is no input
+that mutates world state, because `ADR-MOK-001` gives the engine exclusive ownership of mutable state and an
+operator is not an exception. Choosing *when* the engine advances is the full extent of operator influence, and it
+changes when the engine runs rather than what it computes.
 
 ## Preconditions and trigger
 
-The repository is built, tested, or has its dependency graph inspected.
+The observer is running and has an input source. The trigger is a key press.
 
 ## Required response
 
-- The engine component builds and its tests run with an empty external dependency set.
-- The engine component's dependency graph contains no user-interface, terminal, network, asynchronous-runtime,
-  database, or model-provider library.
-- The engine component does not depend on the observer component, directly or transitively.
-- The observer component depends on the engine component and obtains authoritative state only through the engine's
-  declared read-only interface.
-- Every user-interface dependency is a dependency of the observer component alone.
-- The `REQ-MOK-010` text stream continues to be produced by the engine component, so the verified text behavior does
-  not acquire an external dependency by relocation.
+Each bound key performs exactly its bound control:
 
-The direction of dependency is one-way and checkable per component rather than asserted for the repository as a
-whole.
+- **hold and release progression** — stop the engine between completed ticks, and resume from that point;
+- **advance one tick** — complete exactly one further tick and stop again;
+- **change progression speed** — alter how frequently the engine advances while running;
+- **select and clear selection** — move the selection between living Mokiterions, and remove it;
+- **follow** — keep the view region centred on the selected Mokiterion as it moves;
+- **change view region or fidelity** — pan and zoom the spatial view;
+- **change filter** — apply or clear the event-log restriction;
+- **export** — write the observed events to a file;
+- **exit** — leave the observer and restore the terminal.
+
+Advancing one tick while already held completes one tick and returns to held. Advancing is available only while
+held, so that a single-step and a running engine cannot both be driving progression.
+
+An unbound key is ignored. It produces no action, no state change, and no error condition that interrupts
+observation.
 
 ## Failure and boundary behavior
 
-- An added dependency that violates the direction, or any external dependency added to the engine component, is a
-  build-level or check-level failure rather than a review observation.
-- A shared dependency required by both components is not permitted for the engine component, since the engine's
-  external dependency set is empty and admits no exception.
-- The engine component remains independently testable with no terminal present, so its tests do not require a
-  terminal, a display, or an interactive session.
-- The observer component may fail to build or run without affecting whether the engine component builds, tests, or
-  runs.
+- Exiting restores the terminal to its prior mode. An abnormal termination must also restore it rather than
+  leaving the operator's terminal unusable.
+- Advancing past the configured tick limit, or past extinction, does not advance the simulation. The observer
+  reports that the run has terminated and remains inspectable, so the final state can be examined.
+- Speed changes are bounded by declared limits and cannot be set to a value that prevents the observer from
+  responding to further input.
+- A key pressed while a frame is being drawn is not lost, and it is not applied twice.
+- No key press mutates health, satiety, energy, position, entropy, resource placement, tick order, or agent turn
+  order.
 
 ## Constraints
 
-- The component names, their layout, the engine's read-only interface, and the mechanism used to demonstrate the
-  dependency direction are fixed by `SPEC-MOK-002` and governed by `ARCH-MOK-002`.
-- The engine's external dependency set is empty. This is not a preference for few dependencies.
-- Both components share one repository, one version, and one candidate commit. This requirement creates a component
-  boundary, not a service boundary, a release boundary, or a separately published artifact.
-- No network call, credential, asynchronous runtime, or database is introduced into either component.
+- The complete key binding table, speed steps and their bounds, selection order, and the terminal modes entered
+  and restored are fixed by `SPEC-MOK-003`.
+- Input handling consumes no simulation entropy. Whether, when, and how often the operator presses a key must not
+  appear in any authoritative outcome.
+- Holding progression must leave the engine at a completed-tick boundary.
+- The observer is quit by a bound key. No on-screen control element is required, and the presence of one must not
+  become the only way to perform any control.
 
 ## Acceptance examples
 
 ### Example: normal behavior
 
-**Given** the repository containing both components
+**Given** an observed run held at tick 40
 
-**When** the engine component's dependency graph is resolved and its tests are run in isolation
+**When** the operator presses the advance-one-tick key three times
 
-**Then** the graph contains the engine component alone with no external dependency, the tests pass with no terminal
-present, and the observer component does not appear in the graph.
+**Then** the run stands at tick 43, held, and every intervening tick was applied exactly once in order.
 
 ### Example: failure behavior
 
-**Given** a change that adds a rendering dependency to the engine component
+**Given** an observed run configured for 100 ticks and currently held at tick 100
 
-**When** the repository is built and checked
+**When** the operator presses the advance-one-tick key
 
-**Then** the violation is reported as a failure rather than being accepted, and the engine's empty dependency set is
-identified as the obligation breached.
+**Then** the tick count remains 100, the observer reports the run as terminated by its tick limit, and the final
+state remains inspectable.
 
 ## Open decisions
 
-None. Component names and layout, the engine's read-only interface, and the demonstration mechanism are fixed by
-`SPEC-MOK-002` and `ARCH-MOK-002`.
+None. The binding table, speed bounds, selection order and terminal-mode handling are fixed by `SPEC-MOK-003`.

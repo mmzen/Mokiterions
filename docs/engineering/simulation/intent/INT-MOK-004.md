@@ -1,5 +1,5 @@
 +++
-id = "INT-MOK-003"
+id = "INT-MOK-004"
 type = "intent"
 title = "Make emergent behavior observable and attributable"
 status = "approved"

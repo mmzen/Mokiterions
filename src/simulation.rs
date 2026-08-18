@@ -1091,7 +1091,7 @@ pub struct Simulation {
     foods: Vec<Food>,
     entropy: SplitMix64,
     next_food_id: u32,
-    /// Set once the run has ended. `SPEC-MOK-002` rule 1.4 requires a further advance to
+    /// Set once the run has ended. `SPEC-MOK-003` rule 1.4 requires a further advance to
     /// be refused rather than to restart or to extend a finished run.
     outcome: Option<TerminationReason>,
     /// The most recently completed tick's decision records. Presentation reads them; no
@@ -1217,7 +1217,7 @@ impl Simulation {
     ///
     /// This is the only operation on this type that changes simulation state, and it takes
     /// no host data, so a host's whole influence over a run is *when* it calls this.
-    /// Advancing a finished run is refused with no state change, as `SPEC-MOK-002` rule 1.4
+    /// Advancing a finished run is refused with no state change, as `SPEC-MOK-003` rule 1.4
     /// requires.
     ///
     /// The error is the engine's own: `SPEC-MOK-001` rule 15 finding no free cell for a
@@ -1275,7 +1275,7 @@ impl Simulation {
 
     /// The configuration this run was constructed with, defaults resolved. A defaulted
     /// value and an explicitly supplied one are indistinguishable here, which is what
-    /// `SPEC-MOK-002` rule 8.1 requires of a host presenting provenance.
+    /// `SPEC-MOK-003` rule 8.1 requires of a host presenting provenance.
     pub fn configuration(&self) -> Config {
         self.config
     }

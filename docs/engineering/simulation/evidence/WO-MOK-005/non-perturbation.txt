@@ -1,6 +1,6 @@
-# Non-perturbation — WO-MOK-003
+# Non-perturbation — WO-MOK-005
 
-`REQ-MOK-022`: an observed run and an unobserved run of the same seed and configuration
+`REQ-MOK-025`: an observed run and an unobserved run of the same seed and configuration
 produce the same authoritative stream and the same final state, however hard the operator
 works the instrument.
 
@@ -77,7 +77,7 @@ sharing is the argument, not a measurement.
 So the honest statement is that non-perturbation is measured under a 13-control script on
 five seeds, and the remaining twelve controls rest on the structural argument — the only
 call that reaches the engine is `advance_tick`, and it takes no argument — plus the public
-surface review. `VER-MOK-003`'s residual-uncertainty section anticipates that the script
+surface review. `VER-MOK-005`'s residual-uncertainty section anticipates that the script
 is not the whole control set; what it does not say, and this does, is which controls are
 outside it.
 

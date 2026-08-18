@@ -9,11 +9,11 @@ updated = "2026-08-17"
 
 [relations]
 addresses = [
-  "REQ-MOK-018",
-  "REQ-MOK-022",
-  "REQ-MOK-023",
+  "REQ-MOK-021",
+  "REQ-MOK-025",
+  "REQ-MOK-026",
 ]
-conforms_to = ["SPEC-MOK-002"]
+conforms_to = ["SPEC-MOK-003"]
 
 [decision_assessment]
 outcome = "adr_required"
@@ -33,8 +33,8 @@ assessed_by = "technical owner"
 
 ## Context and scope
 
-`ARCH-MOK-001` establishes one authoritative in-process engine and, until this architecture, one crate. `INT-MOK-003`
-argues that the project now needs an instrument for watching behavior, and `CAP-MOK-003` states what that instrument
+`ARCH-MOK-001` establishes one authoritative in-process engine and, until this architecture, one crate. `INT-MOK-004`
+argues that the project now needs an instrument for watching behavior, and `CAP-MOK-004` states what that instrument
 does. Providing it requires the two things `ARCH-MOK-001` prohibited without an approved requirement: an external
 user-interface framework, and a second package.
 
@@ -45,16 +45,16 @@ where they became checkable per package rather than asserted for a repository.
 
 It addresses the three requirement drivers that materially shape its boundaries rather than every requirement it
 conforms to: the promotion of proposal-and-authority information to a cross-boundary public interface
-(`REQ-MOK-018`), the preservation of simulation outcome under observation (`REQ-MOK-022`), and the component
-independence that makes the engine's empty dependency set enforceable (`REQ-MOK-023`). The remaining observer
-requirements are presentation rules whose detailed behavior is governed by `SPEC-MOK-002`, which this architecture
+(`REQ-MOK-021`), the preservation of simulation outcome under observation (`REQ-MOK-025`), and the component
+independence that makes the engine's empty dependency set enforceable (`REQ-MOK-026`). The remaining observer
+requirements are presentation rules whose detailed behavior is governed by `SPEC-MOK-003`, which this architecture
 conforms to.
 
 ## Components and responsibilities
 
 1. **Engine package** — unchanged in authority. Owns world, agents, resources, tick, entropy, validation, rule
    application, event creation, termination, summary, and the `REQ-MOK-010` text stream. Additionally exposes the
-   read-only observation surface of `SPEC-MOK-002`. Holds no dependency on anything.
+   read-only observation surface of `SPEC-MOK-003`. Holds no dependency on anything.
 2. **Observation surface** — the engine package's public boundary toward hosts: owned snapshots out, one single-tick
    advance in. It is a maintained interface, not an internal convenience.
 3. **Command-line host** — the existing binary. Constructs a run, advances it to completion, streams text events.
@@ -180,7 +180,7 @@ The engine's own text-stream path is untouched and continues to exist beside thi
   selection, panning, zooming, filtering, export and resizing.
 - Confirm per-tick entropy draw counts are identical observed and unobserved.
 - Confirm layout and world-to-canvas mapping are exercised by tests that construct no terminal.
-- Confirm rendered output is asserted from an in-memory buffer at each named viewport size in `SPEC-MOK-002`.
+- Confirm rendered output is asserted from an in-memory buffer at each named viewport size in `SPEC-MOK-003`.
 - Confirm the terminal is restored on normal exit, on error exit, and on panic.
 - Confirm no repository read, version-control invocation, or network access occurs at run time.
 
@@ -190,5 +190,5 @@ The engine's own text-stream path is untouched and continues to exist beside thi
   properties and dependency direction are unchanged by this architecture.
 - `ADR-MOK-001` remains accepted. It requires a superseding ADR only for replacing engine authority; a read-only
   observer replaces none of it, and the observation-and-proposal semantics it fixes are untouched.
-- `ADR-MOK-002` is the deciding ADR for this architecture and for the `ARCH-MOK-001` amendment. It records the
+- `ADR-MOK-003` is the deciding ADR for this architecture and for the `ARCH-MOK-001` amendment. It records the
   rejected alternatives and the measured dependency surface.

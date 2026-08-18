@@ -1,4 +1,4 @@
-//! The mapping from world cells to canvas cells and braille dots, as `SPEC-MOK-002` rule 2
+//! The mapping from world cells to canvas cells and braille dots, as `SPEC-MOK-003` rule 2
 //! fixes it.
 //!
 //! Nothing here reads engine state. It is arithmetic over a viewport size and a camera, so
@@ -146,7 +146,7 @@ impl Viewport {
 
 /// The glyph for a Mokiterion, derived mechanically from the engine's identifier.
 ///
-/// `SPEC-MOK-002` rule 2 assigns `1`–`9` to `M01`–`M09` and `A`, `B`, `C` to `M10`–`M12`.
+/// `SPEC-MOK-003` rule 2 assigns `1`–`9` to `M01`–`M09` and `A`, `B`, `C` to `M10`–`M12`.
 /// The identifier's numeric suffix written as an uppercase base-13 digit is exactly that
 /// assignment. An identifier without a numeric suffix falls back to its last character
 /// uppercased, which is the layer table's general rule.

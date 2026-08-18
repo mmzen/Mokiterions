@@ -1,104 +1,105 @@
 +++
 id = "REQ-MOK-024"
 type = "requirement"
-title = "Display run provenance and the authority for each event type"
+title = "Degrade the layout across viewport sizes without losing authoritative information"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-17"
 updated = "2026-08-17"
-statement = "WHEN the observer displays simulation state or events, THE SYSTEM SHALL display alongside them the run's entropy seed, tick limit, resource density and active decision source, and SHALL name, for any displayed event type, the requirement that authorizes the behavior that event reports."
+statement = "WHEN the terminal viewport is smaller than the reference size, THE SYSTEM SHALL apply the declared degradation order, indicate which panes are hidden and whether the spatial view is showing a region rather than the whole world, and refuse to start with a stated required size when the viewport is below the declared floor."
 verification_method = "automated-test"
 
 [relations]
-derives_from = ["CAP-MOK-003"]
+derives_from = ["CAP-MOK-004"]
 +++
 
-# Requirement: Display run provenance and the authority for each event type
+# Requirement: Degrade the layout across viewport sizes without losing authoritative information
 
 ## Rationale
 
-Two distinct problems are solved by putting provenance on the screen.
+A terminal interface has no control over its own dimensions. The operator's terminal is whatever it is, and it can
+be resized while the run is in progress. An interface that assumes one size produces one of two failures: it draws
+outside the viewport and corrupts the display, or it silently compresses panes until the values in them are wrong.
+The second failure is the dangerous one, because a truncated satiety value or a spatial view showing a quarter of
+the world without saying so leads an operator to a confident wrong conclusion.
 
-**A screen capture must identify its own run.** The most likely way an observation enters a discussion is as an
-image or a pasted pane. Without the seed and configuration beside it, such a capture is unfalsifiable: nobody can
-reproduce it, and nobody can tell whether it came from the default density or a favourable one. Per-seed survivor
-counts are demonstrably non-monotonic in density, so an observation whose density is unknown supports no
-comparison at all. Provenance on screen makes every capture a reproducible claim.
+Refusing to start below a floor is preferable to drawing something degraded past usefulness. The spatial view has
+a fidelity below which distinct world positions become indistinguishable, and a view in which two Mokiterions
+sixteen cells apart appear to share a position is not a weaker instrument but a misleading one.
 
-**An operator should be able to tell authorized behavior from incidental behavior.** The project's whole premise is
-that behavior traces to approved artifacts, and `ENGINEERING_HARNESS.md` makes typed artifacts the only carriers of
-authority. When an operator sees a Mokiterion refuse a feast it is standing on, the useful question is whether that
-is specified behavior or an accident. Naming the requirement behind each event type answers it at the point of
-confusion instead of sending the operator to search the documentation, and it makes the traceability chain
-something the operator uses rather than something that exists in a directory.
-
-The second half is deliberately scoped to event *types* rather than event instances. A type-to-requirement mapping
-is a finite, reviewable table that can be verified as complete and correct. Deriving authority per instance would
-require the observer to reason about which artifact governs a particular occurrence, which is a judgement the
-observer is not entitled to make.
+Announcing what is hidden is the requirement's core. Degradation itself is unavoidable; degradation the operator
+cannot detect is a defect.
 
 ## Preconditions and trigger
 
-The observer is drawing a frame for an initialized run.
+The observer is starting, or is drawing a frame, and the viewport dimensions are known. A resize during the run is
+a trigger, not an error.
 
 ## Required response
 
-**Provenance.** The entropy seed, the configured tick limit, the resource density, the active decision source, and
-the current tick are displayed with the run, in a position that remains present at every viewport size at which the
-observer draws.
+**At or above the reference size**, every pane specified for the complete layout is present, and the spatial view
+presents the whole world at full fidelity.
 
-**Authority.** For any event type the observer presents, the operator can obtain the identifier of the requirement
-that authorizes the behavior that event reports. The mapping covers every event type the observer can display, and
-it is declared rather than inferred.
+**Below the reference size**, panes are hidden, overlaid, or restacked in the order `SPEC-MOK-003` declares, and
+the layout adapts in the same way for the same dimensions every time. Degradation is deterministic in viewport
+size and in nothing else.
 
-Where the run's provenance includes the commit under which it was built, and that value is available to the
-observer without reading the repository at run time, it is displayed too. Where it is not available, the field is
-absent rather than filled with a guess.
+**Whenever anything is hidden or reduced**, the observer indicates it: which panes are unavailable at the current
+size, how they can be reached if they can be reached, how many roster entries are not visible, and whether the
+spatial view is presenting a region of the world rather than all of it.
+
+**Below the declared floor**, the observer does not draw. It reports the current dimensions and the dimensions it
+requires, and exits with the specified status.
+
+**On resize**, the layout is recomputed for the new dimensions and the run continues. A resize does not restart the
+run, lose the selection, discard retained events, or alter the simulation.
 
 ## Failure and boundary behavior
 
-- Provenance is never the information sacrificed to degradation. If the layout must shed content, provenance is
-  retained.
-- Every displayable event type has a mapping. An event type without one is a defect in the mapping rather than an
-  event displayed with unknown authority, and the observer states that the mapping is missing rather than
-  displaying a plausible identifier.
-- Displayed provenance is the configuration actually in force for the run, read from the engine's configuration
-  rather than re-parsed from operator input, so that a defaulted value and an explicitly supplied value display
-  identically.
-- No credential, secret, absolute filesystem path, environment variable, or wall-clock timestamp appears in
-  provenance.
+- No pane is drawn outside the viewport, and no content is clipped in a way that could be read as a different
+  value. A number that does not fit is not shown truncated.
+- The spatial view's fidelity does not fall below the declared minimum. When the space available would require
+  less, the view presents a region and says so.
+- A resize to below the floor mid-run does not terminate the run: the observer reports the required size and
+  resumes drawing when the viewport is large enough again.
+- A viewport reported as zero in either dimension, or a viewport whose size cannot be determined, is handled as
+  below the floor rather than causing an arithmetic failure.
+- Degradation never hides the run's provenance, since a screen capture that does not identify its own run cannot
+  serve as evidence.
 
 ## Constraints
 
-- The provenance fields, their placement, the complete event-type-to-requirement mapping, and how the mapping is
-  reached by the operator are fixed by `SPEC-MOK-002`.
-- The mapping names requirement identifiers only. The observer does not restate requirement text, since a restated
-  obligation could drift from the artifact that holds it and `SIMULATION_RULES.md` already carries the standing rule
-  that only the artifact is binding.
-- The observer does not read repository files at run time to build the mapping or to obtain provenance.
-- Displaying provenance consumes no simulation entropy and does not mutate simulation state.
+- The reference size, the floor, the complete pane set, the degradation order, the thresholds at which each step
+  applies, the spatial view's minimum fidelity, and the exit status used on refusal are fixed by `SPEC-MOK-003`.
+- Layout selection depends only on viewport dimensions. It does not depend on run state, tick number, entropy, or
+  wall-clock time, so that the same dimensions always yield the same layout.
+- Layout computation consumes no simulation entropy and does not mutate simulation state.
+- Degradation changes what is presented and never what is retained. Hidden events remain exportable, and hidden
+  roster entries remain part of the population.
 
 ## Acceptance examples
 
 ### Example: normal behavior
 
-**Given** an observed run started with seed 42, a 1,000-tick limit, the default density and the reference decision
-source
+**Given** a viewport at the reference size, resized during the run to a width below the threshold at which the
+inspector pane is dropped
 
-**When** any frame is drawn
+**When** the next frame is drawn
 
-**Then** the seed, tick limit, density, decision source and current tick are visible with the run.
+**Then** the inspector is no longer occupying width, the observer indicates that it is available as an overlay, the
+spatial view and roster remain correct for the new width, the selection is retained, and the run continues
+uninterrupted.
 
 ### Example: failure behavior
 
-**Given** the operator asks for the authority behind a food-regeneration-skipped event
+**Given** a viewport below the declared floor at start-up
 
-**When** the mapping is consulted
+**When** the observer starts
 
-**Then** the identifier of the requirement authorizing conditional regeneration is displayed, and no requirement
-text is restated in place of the identifier.
+**Then** it draws no interface, reports the current and required dimensions, and exits with the specified status
+rather than rendering a corrupt view.
 
 ## Open decisions
 
-None. Provenance fields and placement, the event-type-to-requirement mapping, and the means of reaching it are fixed
-by `SPEC-MOK-002`.
+None. The reference size, floor, pane set, degradation order and thresholds, minimum spatial fidelity, and refusal
+exit status are fixed by `SPEC-MOK-003`.

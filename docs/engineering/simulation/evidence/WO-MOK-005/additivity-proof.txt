@@ -1,6 +1,6 @@
-# Additivity proof — WO-MOK-003
+# Additivity proof — WO-MOK-005
 
-`WO-MOK-003` states that a test which must change to accommodate this work is a stop condition,
+`WO-MOK-005` states that a test which must change to accommodate this work is a stop condition,
 not a task. The check is therefore stronger than a passing count: the engine's test code is
 compared byte for byte against the commit this work started from.
 
@@ -72,6 +72,6 @@ lines, so 50 are whitespace alone.
 
 Every test in `mokiterions-tui` is new: the package did not exist at HEAD, and no `VER-MOK-001` or
 `VER-MOK-002` case lives in it. Adding a case there — including the four added after this file's
-first pass, which closed `VER-MOK-003` rows that had no automated case behind them — changes no
+first pass, which closed `VER-MOK-005` rows that had no automated case behind them — changes no
 existing test and so is not the situation the stop condition describes. The stop condition is about
 a test that must change; the check above is the one that could detect it, and it detects nothing.

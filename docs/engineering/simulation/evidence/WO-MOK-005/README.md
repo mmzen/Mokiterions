@@ -1,6 +1,6 @@
-# WO-MOK-003 evidence packet
+# WO-MOK-005 evidence packet
 
-`VER-MOK-003`'s evidence-retention list has ten bullets. Each is below with the file that discharges
+`VER-MOK-005`'s evidence-retention list has ten bullets. Each is below with the file that discharges
 it, so retention completeness is checkable without reading the packet.
 
 | Retention bullet | File |
@@ -18,24 +18,24 @@ it, so retention completeness is checkable without reading the packet.
 | Dependency, boundary and credential review | `dependency-review.txt`, `boundary-and-security-review.md` |
 | A completion summary naming the final affected components | `completion-summary.md` |
 
-`additivity-proof.txt` is not on the retention list. It is here because `WO-MOK-003` makes a changed
+`additivity-proof.txt` is not on the retention list. It is here because `WO-MOK-005` makes a changed
 existing test a stop condition, and a passing test count does not establish that nothing changed; the
 file compares the engine's test modules byte for byte against `48d16bd4`.
 
 ## Read these three first
 
 - `completion-summary.md` — the final components, the gate results, and fourteen disclosures. Three
-  are artifact errors that should be corrected: `ADR-MOK-002`'s `Cargo.lock` figure, the ambiguous
+  are artifact errors that should be corrected: `ADR-MOK-003`'s `Cargo.lock` figure, the ambiguous
   57-crate measurement, and the rule 4 / rule 5 roster-width contradiction.
-- `manual-assessment.md` — the packet's completeness gap. Every manual assessment `VER-MOK-003`
+- `manual-assessment.md` — the packet's completeness gap. Every manual assessment `VER-MOK-005`
   requires is unperformed, three of them because this environment cannot deliver a keypress to the
   observer at all.
-- `boundary-and-security-review.md` — the surface claims `SPEC-MOK-002` makes, and the one that does
+- `boundary-and-security-review.md` — the surface claims `SPEC-MOK-003` makes, and the one that does
   not hold as written: the public surface has two mutating operations, not one.
 
 ## What none of this establishes
 
 Every automated result in this packet is an assertion about an in-memory character buffer.
-`VER-MOK-003` forbids screenshots and recordings as evidence, so buffer dumps are what `frames.txt`
+`VER-MOK-005` forbids screenshots and recordings as evidence, so buffer dumps are what `frames.txt`
 carries — and a correct buffer is not evidence that a person can read the rendered result. That gap
 is what the outstanding manual assessments exist to close.

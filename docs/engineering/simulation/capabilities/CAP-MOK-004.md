@@ -1,5 +1,5 @@
 +++
-id = "CAP-MOK-003"
+id = "CAP-MOK-004"
 type = "capability"
 title = "Observe and inspect a running simulation in a terminal"
 status = "approved"
@@ -8,7 +8,7 @@ created = "2026-08-17"
 updated = "2026-08-17"
 
 [relations]
-derives_from = ["INT-MOK-003"]
+derives_from = ["INT-MOK-004"]
 +++
 
 # Capability: Observe and inspect a running simulation in a terminal
@@ -99,11 +99,11 @@ corrupt world.
 
 ## Rationale
 
-`INT-MOK-003` argues that position is this world's dominant variable and that later phases increase behavioral
+`INT-MOK-004` argues that position is this world's dominant variable and that later phases increase behavioral
 unpredictability by design. A capability that presents position, state, and the authority decision together, at a
 tick the operator chooses, is the smallest thing that makes those phases assessable. Anything smaller — richer
 text, a summary table, a post-run report — still asks the operator to reconstruct a spatial situation from a
-sequence, which `INT-MOK-003` identifies as the actual failure.
+sequence, which `INT-MOK-004` identifies as the actual failure.
 
 The capability is deliberately stated as observation with no mutation. The moment an operator can place a
 resource or move an agent, every run becomes an intervention, determinism stops being a property of seed and

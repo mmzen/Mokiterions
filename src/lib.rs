@@ -1,7 +1,7 @@
 //! The Mokiterions simulation engine.
 //!
 //! This crate owns every simulation rule fixed by `SPEC-MOK-001` and the read-only
-//! observation surface fixed by `SPEC-MOK-002`. It has no external dependencies, and
+//! observation surface fixed by `SPEC-MOK-003`. It has no external dependencies, and
 //! `ARCH-MOK-001` as amended admits no exception to that.
 //!
 //! Two hosts drive the same surface: the `mokiterions` binary, which streams the

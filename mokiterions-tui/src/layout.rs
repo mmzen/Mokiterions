@@ -1,4 +1,4 @@
-//! Layout, tiers and the viewport floor, as `SPEC-MOK-002` rule 5 fixes them.
+//! Layout, tiers and the viewport floor, as `SPEC-MOK-003` rule 5 fixes them.
 //!
 //! Layout is a pure function of viewport width and height. It reads no tick, no run state,
 //! no entropy and no clock, so the same dimensions always produce the same layout. The
@@ -7,7 +7,7 @@
 
 use ratatui::layout::Rect;
 
-/// The floor `SPEC-MOK-002` rule 5 fixes: a 32 x 16 canvas, its border, and four rows of
+/// The floor `SPEC-MOK-003` rule 5 fixes: a 32 x 16 canvas, its border, and four rows of
 /// header and footer.
 pub const MIN_WIDTH: u16 = 34;
 pub const MIN_HEIGHT: u16 = 22;

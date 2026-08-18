@@ -1,6 +1,6 @@
-# Boundary and security review — WO-MOK-003
+# Boundary and security review — WO-MOK-005
 
-`SPEC-MOK-002`'s data-and-interface contract and its security-and-privacy properties are claims
+`SPEC-MOK-003`'s data-and-interface contract and its security-and-privacy properties are claims
 about the shape of a surface, which a test can only sample. This file enumerates the surface instead
 and states, for each claim, whether it holds. Where it does not hold as written, the deviation is
 stated before the argument for it, not after.
@@ -48,7 +48,7 @@ returns exactly those two and no others.
 its reachability, because at `48d16bd4` the engine had no library target, so `simulation` was a
 private module of the binary and nothing in it was externally callable. Adding `pub mod simulation`
 to expose the observation surface exposed `run` with it. Narrowing it again would mean either
-relocating the engine's sources — which `WO-MOK-003` puts out of scope and `SPEC-MOK-002` rule 3 of
+relocating the engine's sources — which `WO-MOK-005` puts out of scope and `SPEC-MOK-003` rule 3 of
 the component layout forbids, because the text stream must not move — or duplicating the run loop,
 which would give two implementations of the rules.
 
@@ -60,7 +60,7 @@ consequence. The deviation is that the rule as written describes the surface, an
 one more mutating operation than it says.
 
 Two further `&self` methods are on the surface but absent from the rule's listing at
-`SPEC-MOK-002` line 443: `termination_reason` and `initialization_events`. Neither mutates, so
+`SPEC-MOK-003` line 443: `termination_reason` and `initialization_events`. Neither mutates, so
 rule 2 is untouched, but the listing is not the whole surface and should not be read as one.
 `new` returns `Result<Self, String>` and `advance_tick` returns `Result<TickOutcome, String>` where
 the listing shows the bare types; that shape difference is recorded in the completion summary.
@@ -94,7 +94,7 @@ The engine's *code* contains no reference to the observer. To be exact about wha
 'mokiterions-tui\|mokiterions_tui' src/ Cargo.toml` does return, since "no reference" would be
 wrong: `src/lib.rs:8`, a doc comment naming the two hosts; `Cargo.toml:2`, the workspace
 `members` list; and `Cargo.toml:18`, the comment on the empty `[dependencies]` table. The
-`members` entry is a workspace-root declaration that `SPEC-MOK-002`'s component layout mandates,
+`members` entry is a workspace-root declaration that `SPEC-MOK-003`'s component layout mandates,
 not a dependency edge — `cargo tree -p mokiterions-core` is the check that distinguishes them, and
 it resolves to the engine alone. There is no `use`, no `extern crate` and no dependency entry.
 
@@ -131,8 +131,8 @@ tick counts.
 | An operator-supplied export path is data; never code, never read | Holds. `options.rs:79-89` checks only that the value is present, non-empty and appears at most once, then stores the `&str` as an owned `String`. It is not canonicalized, not joined to anything, not compared against a root, not passed to a shell, and never opened at start-up. It reaches exactly one call, `fs::File::create(path)` (`export.rs:40`), when the operator presses the export key. `options::tests::an_export_path_is_taken_verbatim_as_data` asserts verbatim retention for four strings — `-x`, `a b/c.log`, `../../events.log` and `sub/dir/events.log` — so a value that looks like a flag, holds a space, or traverses upward is still a string. The accompanying disclosure is that a writable path outside the working directory *is* written if the operator supplies one, which is the specified behavior and is the operator's own instruction. |
 | No credential, secret, environment variable, absolute path or wall-clock value in a frame or an export | Holds. `grep -rn 'env::'` over shipped code returns three sites: `env::args()` in each binary, which is operator input rather than environment state, and `option_env!("MOKITERIONS_COMMIT")` at `render.rs:34`, which is a compile-time substitution with no run-time read. No `SystemTime`, no `Instant` value and no `Local::now` reaches a rendered string. `Instant` appears only in `main.rs`, where it schedules sleeps and computes the idle wait; it is never formatted into a frame or an export. `SystemTime` and `UNIX_EPOCH` appear nowhere in either package, so no wall-clock reading exists to leak. The measured part is narrower than the claim: `verification::no_frame_carries_an_environment_value` searches every frame at every renderable viewport across 40 interacting ticks, and `export::tests::nothing_environment_specific_reaches_the_file` searches the export bytes, for a **fixed forbidden list** — `C:\`, `/home/`, `/Users/`, `AppData`, `PATH=`, `TEMP`, `token`, `secret`, `api_key`, `ANTHROPIC` — not for the live environment's own values. The export test additionally requires every line to be either a `tick=` record or the single trailer, which is a whitelist and therefore the stronger of the two. `render::tests::the_footer_carries_the_provenance_and_nothing_environment_specific` pins the footer's fields to the four specified ones. |
 | The observer offers the operator no control that mutates the world | Holds. `state.rs` handles every bound key; the only branch that reaches the engine is the one calling `advance_tick`, and it passes no operator data — `advance_tick(&mut self)` takes no argument, so there is no channel by which a key press could become a rule input. Speed, pause, zoom, pan, follow, select, filter, overlay and export all change observer state only. `verification::a_filter_changes_what_is_presented_and_nothing_else` and `verification::holding_consumes_nothing_however_long_it_is_held` measure it. |
-| No `unsafe` | Holds. `grep -rn unsafe` over both packages returns nothing. The observer inherits `unsafe` from its dependencies, which is what `ADR-MOK-002` decides on; `dependency-review.txt` carries the crate list that decision rests on. |
-| Dependency surface is confined to the observer | Holds; see rule 3. The figure `SPEC-MOK-002` line 507 states as "57 crates" is the `--edges normal` count. With build edges it is 59 and without proc-macros 37, so the specified number is one of three defensible readings rather than the only one — recorded in the completion summary. |
+| No `unsafe` | Holds. `grep -rn unsafe` over both packages returns nothing. The observer inherits `unsafe` from its dependencies, which is what `ADR-MOK-003` decides on; `dependency-review.txt` carries the crate list that decision rests on. |
+| Dependency surface is confined to the observer | Holds; see rule 3. The figure `SPEC-MOK-003` line 507 states as "57 crates" is the `--edges normal` count. With build edges it is 59 and without proc-macros 37, so the specified number is one of three defensible readings rather than the only one — recorded in the completion summary. |
 
 ## Two properties this review cannot establish
 
@@ -143,5 +143,5 @@ tick counts.
 2. **That the terminal is restored on a path other than the three specified ones.**
    `terminal-restoration.txt` measures the normal exit, the refusal exit and the panic exit, and
    states plainly that a signal-terminated process was not measured because a signal is not one of
-   the three paths `SPEC-MOK-002` names. A process killed outside the panic hook's reach leaves the
+   the three paths `SPEC-MOK-003` names. A process killed outside the panic hook's reach leaves the
    terminal in raw mode, and no code in either package can change that.

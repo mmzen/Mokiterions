@@ -1,15 +1,15 @@
-# Manual assessment record — WO-MOK-003
+# Manual assessment record — WO-MOK-005
 
-`VER-MOK-003` names seven manual assessments and requires this record to carry them "including the
+`VER-MOK-005` names seven manual assessments and requires this record to carry them "including the
 legibility and colour-independence assessments and their author".
 
 **Every one of the seven is OUTSTANDING. None has been performed. This record has no author for any
 assessment because no person has made one.**
 
-That is a completeness gap in the `WO-MOK-003` evidence, stated here rather than left to be
-discovered. `VER-MOK-003` itself says of the first assessment that a pass on every automated case
+That is a completeness gap in the `WO-MOK-005` evidence, stated here rather than left to be
+discovered. `VER-MOK-005` itself says of the first assessment that a pass on every automated case
 with a negative answer here "is an adverse observation requiring product review", which only means
-anything if the assessment is actually made. The verification decision on `WO-MOK-003` should not
+anything if the assessment is actually made. The verification decision on `WO-MOK-005` should not
 be taken as covering these seven.
 
 ## Why they were not performed
@@ -28,7 +28,7 @@ shell to an interactive observer session.
 
 The four that do not name a live terminal — the rejection reading, the reserved-slot reading, the
 overview-granularity judgment, and by extension any reading of a retained dump — were not performed
-because each is a judgment about what a person perceives, and I am not the person `VER-MOK-003` is
+because each is a judgment about what a person perceives, and I am not the person `VER-MOK-005` is
 asking. Reading a buffer dump and reporting that it "reads as" something would be the automated
 assertion restated in prose, which is precisely the gap the contract's residual-uncertainty section
 says cannot be automated away. What is below is the material an assessor needs and the procedure to
@@ -40,8 +40,8 @@ follow, not a substitute verdict.
 
 **Status: OUTSTANDING. Author: —**
 
-`VER-MOK-003` asks for at least 200 ticks on one declared seed, confirming the instrument answers
-the three questions `INT-MOK-003` names: where the population is, why a selected Mokiterion did what
+`VER-MOK-005` asks for at least 200 ticks on one declared seed, confirming the instrument answers
+the three questions `INT-MOK-004` names: where the population is, why a selected Mokiterion did what
 it did, and which requirement authorizes a highlighted event.
 
 Procedure: `cargo run -p mokiterions-tui -- --seed 42 --policy reference --speed 8` in an interactive
@@ -101,7 +101,7 @@ speed or interaction that will display a rejection. The presentation is exercise
 `#[cfg(test)]` hook `replace_decisions_for_test`. To assess it, read the rejection rendering that
 `verification::the_presented_verdict_is_the_snapshots_and_a_rejection_is_not_a_fault` produces, or
 add a temporary decision source that proposes an illegal action. This is a finding about
-`VER-MOK-003`'s acceptance scenario 2 rather than about the observer, and it is in the completion
+`VER-MOK-005`'s acceptance scenario 2 rather than about the observer, and it is in the completion
 summary.
 
 ### 5. The reserved fourth roster bar reads as empty space
@@ -123,7 +123,7 @@ asserts that nothing follows the third value: no label, no dash, no zero.
 
 An overview Mokiterion glyph locates its subject to within a 2 × 4 block of world cells by
 construction; `spatial::tests::a_character_cell_covers_two_by_four_world_cells_in_overview_and_one_in_detail`
-pins the mapping. `VER-MOK-003` says in advance that if an operator misreads a position because of
+pins the mapping. `VER-MOK-005` says in advance that if an operator misreads a position because of
 this, it is an adverse observation about rule 2 requiring a specification decision, not a defect to
 patch. So the outcome of this assessment is an artifact decision either way, and it is the owner's.
 
@@ -139,7 +139,7 @@ off before init, ON after, and off again after a panic was caught, with the alte
 enter/leave counts and the `ratatui` source citations for `try_init`, `try_restore` and
 `set_panic_hook`. That is a measurement of the console's own state, not of a buffer.
 
-`VER-MOK-003` asks for this "by inspection of the live terminal rather than only by an automated
+`VER-MOK-005` asks for this "by inspection of the live terminal rather than only by an automated
 assertion", and the words "rather than only" make the automated result insufficient by construction.
 Procedure: run the observer, trigger a panic, and confirm the shell still echoes typed characters
 and that the prompt is on the normal screen rather than the alternate one.
@@ -147,8 +147,8 @@ and that the prompt is on the normal screen rather than the alternate one.
 ## For the owner
 
 Six of the seven are unperformed with no partial result. The seventh has an automated result the
-contract explicitly declines to accept alone. If `WO-MOK-003` is to be verified with these
+contract explicitly declines to accept alone. If `WO-MOK-005` is to be verified with these
 outstanding, the verification record should say so, because the residual-uncertainty section of
-`VER-MOK-003` identifies exactly this gap — "a claim about a screen that only a human has seen is
+`VER-MOK-005` identifies exactly this gap — "a claim about a screen that only a human has seen is
 the weakest evidence this repository accepts", and its inverse, that a buffer nobody has seen
 rendered is not evidence of legibility at all.
