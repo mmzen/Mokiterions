@@ -1,22 +1,25 @@
 # Dependency and boundary evidence — WO-MOK-005
 
+Re-derived against the merged tree. The engine package keeps the name `SPEC-MOK-002` rule 1
+fixes, `Mokiterions`, so every command below names that package rather than a renamed one.
+
 ## REQ-MOK-026: the engine package's external dependency set is empty
 
-$ cargo tree -p mokiterions-core
-mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+$ cargo tree -p Mokiterions
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
 
-$ cargo tree -p mokiterions-core --edges all   # normal, build, dev and proc-macro edges
-mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+$ cargo tree -p Mokiterions --edges all   # normal, build, dev and proc-macro edges
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
 
-$ cargo tree -p mokiterions-core --all-features --edges all
-mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+$ cargo tree -p Mokiterions --all-features --edges all
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
 
 $ tail -n 6 Cargo.toml   # the engine package manifest's dependency table
 path = "src/main.rs"
 
-# `ARCH-MOK-001` as amended requires this table to stay empty, with no exception,
-# including a dependency shared with `mokiterions-tui`. `cargo tree -p mokiterions-core`
-# is the check.
+# `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
+# empty, with no exception, including a dependency shared with `mokiterions-tui`.
+# `cargo tree -p Mokiterions` is the check, and `REQ-MOK-026` is what it discharges.
 [dependencies]
 
 ## The observer package's declared dependency
@@ -34,9 +37,9 @@ path = "src/main.rs"
 # `SPEC-MOK-003` fixes this dependency, its version and its feature set, and
 # `ADR-MOK-003` decides them. Changing any of the three is a specification amendment,
 # not an implementation choice. Every user-interface dependency lives here and nowhere
-# else; `mokiterions-core` depends on nothing.
+# else; `Mokiterions` depends on nothing.
 [dependencies]
-mokiterions-core = { path = ".." }
+Mokiterions = { path = ".." }
 ratatui = { version = "0.30.2", default-features = false, features = [
   "crossterm",
   "layout-cache",
@@ -47,7 +50,7 @@ ratatui = { version = "0.30.2", default-features = false, features = [
 
 $ cargo tree -p mokiterions-tui
 mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
-├── mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+├── Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
 └── ratatui v0.30.2
     ├── instability v0.3.13 (proc-macro)
     │   ├── darling v0.24.0
@@ -160,11 +163,11 @@ mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions
 
 ## Measured crate count of the observer's resolution
 
-$ cargo tree -p mokiterions-tui --prefix none --no-dedupe | sort -u | grep -c .
+$ cargo tree -p mokiterions-tui --prefix none --no-dedupe | (strip markers) | sort -u | grep -c .
 61
 (includes the two workspace packages; the external count is that figure minus two)
 
-$ cargo tree -p mokiterions-tui --prefix none --no-dedupe | grep -v mokiterions | sort -u | grep -c .
+$ ... | grep -vi mokiterions | sort -u | grep -c .   # external crates only
 59
 
 ### Distinct crates, by edge kind
@@ -238,16 +241,23 @@ unicode-width v0.2.2
 winapi v0.3.9
 windows-link v0.2.1
 
-### Crates reachable only through a build edge
 
+### Crates reachable only through a build-script or dev edge
+
+$ comm -13 <(cargo tree -p mokiterions-tui --edges normal ...) \
+           <(cargo tree -p mokiterions-tui --edges normal,build,dev ...)
 rustc_version v0.4.1
 semver v1.0.28
+
+Two crates are reachable only through a build-script edge. Neither is linked into either
+binary. They are counted in the 59-crate default-edge figure and excluded from the 57-crate
+normal-edge figure that WO-MOK-005 and SPEC-MOK-003 declare.
 
 ## The enabled feature set
 
 $ cargo tree -p mokiterions-tui -e features --depth 1
 mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
-├── mokiterions-core feature "default"
+├── Mokiterions feature "default"
 ├── ratatui feature "crossterm"
 ├── ratatui feature "layout-cache"
 └── ratatui feature "underline-color"
@@ -276,9 +286,9 @@ $ grep -c '^\[\[package\]\]' Cargo.lock
 ### Why the lockfile is larger than the compiled surface, and why 'serde' appears in it
 
 `Cargo.lock` records the maximal resolution: every optional dependency of every resolved package,
-whether or not the feature enabling it is on. `serde` is listed there as an optional dependency of
-`ratatui`, `ratatui-core`, `ratatui-widgets` and `wezterm-input-types`. The observer enables none of
-those features, so `serde` is absent from the resolved graph above and is never compiled.
+whether or not the feature enabling it is on. `serde`, `serde_core` or `serde_derive` is listed there as
+an optional dependency of the packages named below. The observer enables none of those features, so no
+serde crate appears in the resolved graph above and none is ever compiled.
 
 $ grep -n '^name = "serde' Cargo.lock
 1126:name = "serde"
@@ -286,7 +296,7 @@ $ grep -n '^name = "serde' Cargo.lock
 1145:name = "serde_derive"
 
 packages in Cargo.lock whose dependency list mentions serde:
-  ratatui, ratatui-core, ratatui-widgets, wezterm-input-types  (all optional, all off)
+  ratatui-core, ratatui-widgets, ratatui, wezterm-input-types, time
 
 The figure that matters for the containment claim is the resolved graph, not the lockfile:
-`cargo tree -p mokiterions-core` is a single line, so nothing in the lockfile reaches the engine.
+`cargo tree -p Mokiterions` is a single line, so nothing in the lockfile reaches the engine.

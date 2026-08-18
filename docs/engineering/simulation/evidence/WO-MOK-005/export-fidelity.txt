@@ -19,10 +19,18 @@ therefore passed to the binary so the two streams are the same run rather than t
 configurations. Tracing is observational and changes no outcome, which the engine's own
 `action_tracing_is_optional_complete_and_observational` test establishes.
 
-$ cargo build   # both binaries, debug profile
+$ cargo build --workspace   # both binaries, debug profile
 
-engine binary                                      target/debug/mokiterions.exe
+engine binary                                      target/debug/Mokiterions.exe
 observer binary                                    target/debug/mokiterions-tui.exe
+
+Re-verified on the merged tree. An earlier revision of this file recorded the engine binary as
+`target/debug/mokiterions.exe`, from a revision of this work that renamed the target; the name
+`Mokiterions` is `master`'s and is what `SPEC-MOK-002` rule 2 fixes. Every figure below was
+re-derived against the rebuilt `Mokiterions.exe` and is unchanged, which is the expected result
+because `src/cli.rs`, `src/main.rs` and the whole engine test corpus are byte-identical to
+`origin/master` — see `additivity-proof.txt`. The 20-tick comparison was re-run against the
+retained files in `exports/`, so it checks those artifacts and not a fresh pair.
 
 ## The retained exports, at 20 ticks
 

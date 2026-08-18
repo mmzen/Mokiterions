@@ -7,7 +7,7 @@ it, so retention completeness is checkable without reading the packet.
 |---|---|
 | Formatter, linter, test and build output for the workspace and for the engine package alone | `static-checks.txt`, `test-run.txt` |
 | The requirement-to-test mapping | `requirement-to-test-mapping.md` |
-| `cargo tree -p mokiterions-core` output, as the empty-dependency-set proof | `dependency-review.txt` |
+| `cargo tree -p Mokiterions` output, as the empty-dependency-set proof | `dependency-review.txt` |
 | The observer's resolved dependency graph, measured crate count and enabled feature set | `dependency-review.txt` |
 | Per-seed observed-versus-unobserved comparison, with method and interaction performed | `non-perturbation.txt` |
 | Per-tick entropy draw-count comparisons | `non-perturbation.txt` — compared as record identity, not a counter; see disclosure 13 |
@@ -20,7 +20,8 @@ it, so retention completeness is checkable without reading the packet.
 
 `additivity-proof.txt` is not on the retention list. It is here because `WO-MOK-005` makes a changed
 existing test a stop condition, and a passing test count does not establish that nothing changed; the
-file compares the engine's test modules byte for byte against `48d16bd4`.
+file compares the engine's test files and inline test module byte for byte against `origin/master`
+at `903c9943`, which is an ancestor of this branch's head.
 
 ## Read these three first
 

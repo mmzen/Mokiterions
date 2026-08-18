@@ -2,76 +2,130 @@
 
 `WO-MOK-005` states that a test which must change to accommodate this work is a stop condition,
 not a task. The check is therefore stronger than a passing count: the engine's test code is
-compared byte for byte against the commit this work started from.
+compared byte for byte against the integration branch this work merges into.
 
-## The commit this work started from
+## The baseline this work is measured against
 
-$ git log -1 --format='%H %s' HEAD
-48d16bd40bf66081a6a6f9f58d3ca33691a0d855 Merge pull request #5 from mmzen/feature/simulation-rules-guide
+$ git log -1 --format='%H %s' origin/master
+903c9943d713a3760398026d8c67ee16d4c55deb Merge pull request #9 from mmzen/governance/vrec-mok-004-verified
 
-## The engine's test count is unchanged at 52
+$ git merge-base --is-ancestor origin/master HEAD && echo "origin/master is an ancestor of HEAD"
+origin/master is an ancestor of HEAD
 
-WO-MOK-002's retained test run recorded 52 engine tests. This run:
+The second check matters. It means every commit on the integration branch is already contained in
+this work, so the comparison below is a clean before-and-after of the same lineage and not a
+comparison across a fork. An earlier revision of this file compared against 48d16bd4, the commit
+this branch was originally cut from. That baseline went stale twice. `master` afterwards merged
+`WO-MOK-003`, which added the library target and relocated 15 tests from inline modules into
+`tests/` — 5 from `src/cli.rs`, 4 from `src/main.rs`, 6 from `src/simulation.rs` — and then
+`WO-MOK-004`, which added 8 help-output cases, taking the engine from 52 tests to 60. Comparing
+against 48d16bd4 would have attributed all of that to this work order. This revision compares
+against 903c9943.
 
-$ cargo test -p mokiterions-core 2>&1 | grep -E '^test result'
-test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-(48 in the library target plus 4 in the binary target = 52)
+## The engine's test count is unchanged at 60
 
-## Every engine test module is byte-identical to HEAD
+`WO-MOK-004`'s retained test run recorded 60 engine tests, in the placement `SPEC-MOK-002` rules 7
+to 10 require: 37 inline in `src/simulation.rs`, 23 in `tests/`. This run, from `test-run.txt`:
 
-The engine's sources at HEAD were a single crate at src/; they are unmoved, so the paths compare
-directly. Each file's #[cfg(test)] module is extracted from HEAD and from the working tree and
-diffed.
+  Engine, inline tier   unittests src/lib.rs   37
+  Engine, public tier   tests/cli.rs           12
+  Engine, public tier   tests/density.rs        2
+  Engine, public tier   tests/process.rs        5
+  Engine, public tier   tests/termination.rs    3
+  Engine, public tier   tests/viability.rs      1
+  Engine total                                 60
 
-src/cli.rs           test module IDENTICAL to HEAD (107 lines)
-src/main.rs          test module IDENTICAL to HEAD (70 lines)
-src/simulation.rs    test module IDENTICAL to HEAD (1202 lines)
+The count is the weak check. The two below are the ones that could detect a modified test.
+
+## Every engine test file is byte-identical to origin/master
+
+$ git diff --stat origin/master -- tests/
+(no output: every file in tests/ is byte-identical)
+
+$ git diff --stat origin/master -- src/main.rs
+(no output: src/main.rs is byte-identical, including the tests it does not contain)
+
+`src/simulation.rs` is the only engine file with an inline `#[cfg(test)] mod tests`. It begins at
+line 1351 at origin/master and at line 1922 in the working tree, because non-test code was added
+above it. The module itself was extracted from both and diffed:
+
+$ diff <(git show origin/master:src/simulation.rs | sed -n '1351,$p') <(sed -n '1922,$p' src/simulation.rs)
+(no output)
+
+src/simulation.rs    inline test module IDENTICAL to origin/master (1072 lines, 37 `#[test]`)
 
 ## The set of engine test names is unchanged
 
-src/cli.rs           6 test-module functions, name set IDENTICAL
-src/main.rs          6 test-module functions, name set IDENTICAL
-src/simulation.rs    51 test-module functions, name set IDENTICAL
+$ diff <(names at origin/master) <(names in the working tree)
+(no output)
+
+src/simulation.rs    45 functions in the inline test module, 37 of them `#[test]`,
+                     name set IDENTICAL to origin/master
+tests/               23 `#[test]` functions across five files, all files byte-identical
 
 ## What did change in the engine package
 
-$ git diff --stat HEAD -- src/ Cargo.toml
-warning: in the working copy of 'Cargo.toml', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'src/simulation.rs', LF will be replaced by CRLF the next time Git touches it
- Cargo.toml        |  16 +-
- src/main.rs       |   7 +-
- src/simulation.rs | 897 ++++++++++++++++++++++++++++++++++++++++++++----------
- 3 files changed, 751 insertions(+), 169 deletions(-)
+$ git diff --stat origin/master -- src/ tests/ Cargo.toml
+ Cargo.toml        |  14 +-
+ src/lib.rs        |  29 +-
+ src/simulation.rs | 895 ++++++++++++++++++++++++++++++++++++++++++++----------
+ 3 files changed, 767 insertions(+), 171 deletions(-)
 
-No test body, no test name and no simulation rule was altered. The engine's non-test code was
-changed in three ways, and the 169 deleted lines are all of the second and third kind:
+No test body, no test name and no simulation rule was altered. The three files changed in four
+ways, and the 171 deleted lines are all of the second, third and fourth kind:
 
-1. Added: the library target, the public observation surface (`snapshot`, `observation`,
-   `initialization_events`, `advance_tick`, the snapshot types), and the manifest's workspace,
-   `[lib]` and `[[bin]]` tables.
-2. Widened visibility: `enum Territory`, `struct Coordinate` and its fields, `enum Direction`,
-   `enum FoodClass`, `enum Action`, `enum TerminationReason` and their members gained `pub`, which
-   rewrites each declaration line and so registers as a deletion plus an insertion.
-3. Refactored, behavior-preserving: the places that previously formatted a record straight to the
-   writer now build an `Event` value and write that, so the same records are available to a caller
-   that is not a writer. `emit_initialization` became `initialization_events`, and the run loop's
-   termination record became a value the same way.
+1. Added, in `src/simulation.rs`: the read-only observation surface — `Simulation::snapshot`,
+   `advance_tick`, `is_finished`, `termination_reason`, `configuration`,
+   `initialization_events` — and the value types they return: `WorldSnapshot`,
+   `TerritorySnapshot`, `AgentSnapshot`, `ResourceSnapshot`, `DecisionSnapshot`, `TickOutcome`,
+   `Event`, `EventDetail`, `EventType`, `DecisionOutcome`, `RegenerationSkipReason`. Eleven new
+   public types, none of which existed at origin/master in any visibility.
+
+2. Widened visibility, in `src/simulation.rs`: exactly five existing types gained `pub`, and their
+   fields and members with them.
+
+     at origin/master              in the working tree
+     enum Action                   pub enum Action
+     enum Direction                pub enum Direction
+     enum FoodClass                pub enum FoodClass
+     enum Territory                pub enum Territory
+     struct Coordinate             pub struct Coordinate
+
+   These are the five `SPEC-MOK-003` names in its narrowing of `SPEC-MOK-002` rule 6, and no
+   others. `Policy`, `TerminationReason`, `Config`, `Density`, `RunSummary` and `Simulation` were
+   already public at origin/master and were not touched. The ten remaining rule-6 names —
+   `Mokiterion`, `Food`, `RelativeDirection`, `ActionResult`, `Observation`, `PerceivedFood`,
+   `PerceivedMokiterion`, `SplitMix64`, `DecisionEntropy`, `DecisionSource` — are still private.
+   A widened declaration rewrites its own line, so it registers as a deletion plus an insertion.
+
+3. Refactored, behavior-preserving, in `src/simulation.rs`: the places that previously formatted a
+   record straight to the writer now build an `Event` value and write that, so the same records are
+   available to a caller that is not a writer. `emit_initialization` became
+   `initialization_events`, and the run loop's termination record became a value the same way.
+   `Simulation::run` and `advance_tick` were routed through one internal step so the two hosts
+   share it.
+
+4. Documentation and manifest, in `src/lib.rs` and `Cargo.toml`: the crate doc comment rewritten
+   for two hosts, and the workspace table added with the rule-1 amendment cited in a comment. The
+   `[dependencies]` table is still empty; see `dependency-review.txt`.
 
 Kind 3 is the only change that could alter observable behavior, and it is exactly what the
-unchanged test module pins: `VER-MOK-001` and `VER-MOK-002` assert the text stream's records and
+unchanged test files pin. `VER-MOK-001` and `VER-MOK-002` assert the text stream's records and
 their order literally, including `initialization_is_seeded_and_reproducible` and the per-event
-format cases. Those tests are byte-identical to HEAD and pass, which is the evidence that the
-refactor preserved the stream rather than an assertion that it did.
+format cases. Those tests are byte-identical to origin/master and pass, which is the evidence that
+the refactor preserved the stream rather than an assertion that it did.
 
-The formatter also reflowed parts of this file; `git diff -w` accounts for 847 of the 897 changed
-lines, so 50 are whitespace alone.
+The formatter also reflowed parts of `src/simulation.rs`:
+
+$ git diff    --numstat origin/master -- src/simulation.rs   ->  733 insertions, 162 deletions
+$ git diff -w --numstat origin/master -- src/simulation.rs   ->  708 insertions, 137 deletions
+
+so 25 insertions and 25 deletions — 50 of the 895 changed lines — are whitespace alone.
 
 ## Why the observer package cannot violate this
 
-Every test in `mokiterions-tui` is new: the package did not exist at HEAD, and no `VER-MOK-001` or
-`VER-MOK-002` case lives in it. Adding a case there — including the four added after this file's
-first pass, which closed `VER-MOK-005` rows that had no automated case behind them — changes no
+Every test in `mokiterions-tui` is new: the package did not exist at origin/master, and no
+`VER-MOK-001`, `VER-MOK-002` or `VER-MOK-004` case lives in it. Adding a case there changes no
 existing test and so is not the situation the stop condition describes. The stop condition is about
-a test that must change; the check above is the one that could detect it, and it detects nothing.
+a test that must change; the checks above are the ones that could detect it, and they detect
+nothing.

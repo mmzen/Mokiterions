@@ -122,11 +122,11 @@ should not have to find that out by reading the table.
 
 | Case | Evidence |
 |---|---|
-| Engine dependency set is empty | `dependency-review.txt`: `cargo tree -p mokiterions-core` on every edge kind resolves to the package alone |
+| Engine dependency set is empty | `dependency-review.txt`: `cargo tree -p Mokiterions` on every edge kind resolves to the package alone |
 | No engine-to-observer edge | `dependency-review.txt`: the observer appears in no engine resolution |
 | User-interface dependency is confined | `dependency-review.txt`: `ratatui` and its transitive crates appear only in the observer's resolution |
-| Engine builds and tests without a terminal | `test-run.txt`: `cargo build -p mokiterions-core` and `cargo test -p mokiterions-core`, 52 tests |
-| Surface exposes one mutating operation | `boundary-and-security-review.md` — a review of the public surface, not a test |
+| Engine builds and tests without a terminal | `test-run.txt`: `cargo build -p Mokiterions` and `cargo test -p Mokiterions`, 60 tests |
+| Surface exposes one mutating operation | **Does not hold as written.** `boundary-and-security-review.md` finds two, `run` and `advance_tick`; `SPEC-MOK-003` rule 2 is amended accordingly and the amendment is outstanding. A review of the public surface, not a test |
 | Snapshots are owned and inert | `verification::drawing_is_pure`, `boundary-and-security-review.md` — see the caveats |
 | Advance takes no operator data | `boundary-and-security-review.md`: `advance_tick(&mut self)` takes no argument |
 | Resolved dependency graph and feature set | `dependency-review.txt`: `serde` absent, features exactly `crossterm`, `layout-cache`, `underline-color`, crate count measured |

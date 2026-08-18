@@ -44,6 +44,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-17 | Original content for `CAP-MOK-004`, covering `REQ-MOK-019` through `REQ-MOK-027`. | Approved by the technical owner. |
 | 2026-08-17 | Corrected two derived figures in rule 5 before approval. The `100 × 30` row omitted the pane border and claimed a whole-world presentation its 98 × 24 interior cannot deliver, since 24 cells address 96 of 128 world rows; the tier C example stated a 71 × 42 canvas where the arithmetic yields 71 × 36. A `120 × 48` row was added so tier C carries a checkable obligation. No rule changed. | Approved by the technical owner. |
 | 2026-08-18 | Corrected the statement of required `SPEC-MOK-002` amendments in *Compatibility and migration*, which the merge with `master` exposed as understated. Rule 3 is added as a fourth required amendment: it freezes `src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code. Rule 6's required narrowing is extended to the "by … return value" path, since every accessor returns an owned copy. The list of names that stay private is corrected from nine to **ten** — `DecisionEntropy` was omitted. No rule of this specification changed, and no obligation on the observer changed. | Corrected by the implementation agent as a statement of fact about another artifact; the four amendments it states remain the technical owner's act and are outstanding. |
+| 2026-08-18 | *Data and interface contracts* corrected on a claim about the engine's surface that does not hold as written, and which `WO-MOK-005` requires be fixed by amending the specification rather than by relaxing the assertion. Clause 2 said `advance_tick` was the only `&mut self` method on the surface that changes state; `Simulation::run`, the pre-existing `REQ-MOK-010` whole-run entry point, is a second. The clause now states the two, why `run` is there, why it cannot be narrowed away without relocating the engine's sources or duplicating the run loop, and the checks that can actually be met — including that the observer reaches neither `run` nor anything leading to it. The method listing is corrected to the real signatures and completed with `termination_reason` and `initialization_events`, with a note that it is what the observer calls and not the whole public interface. No obligation on the observer changed, and the non-perturbation property is unaffected. | **OUTSTANDING.** Requires the technical owner, as a correction to an approved specification. `boundary-and-security-review.md` under `WO-MOK-005` is the measurement that found it. |
 
 ## Actors and external systems
 
@@ -439,15 +440,22 @@ as a defect of the same severity as a wrong displayed value.
 
 ## Data and interface contracts
 
-The engine component exposes a read-only observation surface and exactly one mutating operation.
+The engine component exposes a read-only observation surface, and the observer drives it through exactly one mutating
+operation.
 
 ```text
-Simulation::new(Configuration)          -> Simulation
-Simulation::snapshot(&self)             -> WorldSnapshot
-Simulation::advance_tick(&mut self)     -> TickOutcome
-Simulation::is_finished(&self)          -> bool
-Simulation::configuration(&self)        -> Configuration
+Simulation::new(Config)                       -> Result<Simulation, String>
+Simulation::snapshot(&self)                   -> WorldSnapshot
+Simulation::advance_tick(&mut self)           -> Result<TickOutcome, String>
+Simulation::is_finished(&self)                -> bool
+Simulation::termination_reason(&self)         -> Option<TerminationReason>
+Simulation::configuration(&self)              -> Config
+Simulation::initialization_events(&self)      -> Vec<Event>
 ```
+
+This is the whole of what the observer calls. It is not the whole of the library target's public interface, which
+`SPEC-MOK-002` rule 5 enumerates and which additionally carries the command-line entry point, the argument parser and
+the whole-run method `Simulation::run`.
 
 ```text
 WorldSnapshot {
@@ -467,8 +475,18 @@ TickOutcome       { events: [Event], finished, reason }
 
 1. Every snapshot type contains owned values only: no reference into engine state, no shared handle, no interior
    mutability, and no method that mutates.
-2. `advance_tick` is the only operation that changes simulation state, and the surface exposes no other `&mut self`
-   method that does. This is checkable by inspecting the public surface.
+2. `advance_tick` is the only operation the observer uses to change simulation state, and the only mutating operation
+   this specification adds. Amended 2026-08-18: the library target carries a second `&mut self` method that changes
+   state, `Simulation::run`, and this clause previously said there was no such method. `run` is the `REQ-MOK-010`
+   whole-run entry point; it predates this specification, `SPEC-MOK-002` rule 5's first list already carries it, and
+   it is reachable because rule 3 of that specification places the `simulation` module in the library target — not
+   because anything here admits it. Narrowing it away would mean relocating the engine's sources, which the component
+   layout below forbids, or writing a second run loop, which would give the rules two implementations. So the check is
+   stated as it can be met: `grep -n 'pub fn .*&mut self' src/simulation.rs` returns exactly `run` and `advance_tick`;
+   the observer imports neither the whole-run method nor anything that reaches it; and no `&self` method mutates
+   through interior mutability, because no engine type contains a `Cell`, a `RefCell`, an `Rc`, an `Arc`, a lock or an
+   atomic. Both methods route through one internal step, which is what makes the two hosts execute the identical tick
+   sequence.
 3. Dependency direction is one-way: the observer depends on the engine; the engine has no knowledge of the observer.
 4. Snapshot ordering is stable and specified, so two frames of the same tick present identically.
 5. The engine's own `SPEC-MOK-001` behavior — including the text stream, the trace lines and the summary — is

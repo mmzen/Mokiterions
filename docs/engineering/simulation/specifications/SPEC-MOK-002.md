@@ -188,7 +188,15 @@ every item below; this list is the enumeration that closes the interface, and th
 Every item is a value, a pure function of a value, or an accessor returning a copy, exactly as `ADR-MOK-002` requires
 of an admission. Five of the type names — `Coordinate`, `Territory`, `Direction`, `FoodClass` and `Action` — are named
 by rule 6 as it was written; rule 6's 2026-08-18 amendment is what admits them, and it admits them as values only.
-`advance_tick` is the only `&mut self` method in the whole interface, and that is checkable by inspection.
+
+**Mutating methods on the interface: exactly two, and both are simulation steps.** `advance_tick`, added by this list,
+and `Simulation::run`, already in the first list, are the only `pub fn` items in the library target taking `&mut self`.
+`grep -n 'pub fn .*&mut self' src/simulation.rs` returning exactly those two is the check. `run` predates this list —
+it is the `REQ-MOK-010` whole-run entry point — and it is on the interface because rule 3 places `simulation` in the
+library target, not because this list admits it. Both route through one internal step, so the two hosts execute the
+identical tick sequence, and the observer calls only `advance_tick`. Nothing else on the interface takes `&mut self`,
+and no `&self` method mutates through interior mutability, because no engine type contains a `Cell`, a `RefCell`, an
+`Rc`, an `Arc`, a lock or an atomic.
 
 ### 6. Prohibited public interface
 
@@ -214,7 +222,9 @@ mutation", and "return value" appeared in the list of paths above it. Together t
 copy of state the program already prints, which is what rule 5's observation surface returns and what
 `REQ-MOK-019` through `REQ-MOK-027` require. What is denied is the capability: no public item hands out a borrow of
 engine-owned state, a reference into it, an iterator over its collections, an interior-mutable value, or a handle
-that permits mutation. A copy grants none of those, and `advance_tick` remains the only mutating operation.
+that permits mutation. A copy grants none of those. The two mutating methods rule 5 accounts for, `run` and
+`advance_tick`, are unaffected: both take `&mut self` on a `Simulation` the caller owns, which is not a handle into
+another owner's state.
 
 The second bullet named fifteen types. `Coordinate`, `Direction`, `Territory`, `FoodClass` and `Action` are removed
 from it, because rule 5's snapshots carry all five by value and cannot be expressed without them: a position, a

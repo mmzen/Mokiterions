@@ -92,9 +92,10 @@ without changing any simulation rule or any verified engine behavior.
 - Keep the engine package's name and both of its target names exactly as `SPEC-MOK-002` rules 1 and 2 fix them, so
   that no operator-facing string and no verified test changes for a cosmetic reason.
 - Extend the engine's existing library target with the read-only observation surface of `SPEC-MOK-003`: `snapshot`,
-  `advance_tick`, `is_finished`, `configuration`, and the snapshot types, all owning their data. The target itself is
-  already there under `ADR-MOK-002`; what this work order does is grow its enumerated public interface, which
-  `SPEC-MOK-002` rule 5 provides for on an approved requirement.
+  `advance_tick`, `is_finished`, `termination_reason`, `configuration`, `initialization_events`, and the snapshot
+  types, all owning their data. The target itself is already there under `ADR-MOK-002`; what this work order does is
+  grow its enumerated public interface, which `SPEC-MOK-002` rule 5 provides for on an approved requirement, and
+  rule 5's third list is where the grown enumeration is written.
 - Route the engine's whole-run entry point and the observer's single-tick advance through one internal step, so the
   command-line host and the observer are peer hosts of one interface rather than two paths through the engine.
 - Add `ratatui` version `0.30.2` with `default-features = false` and features `crossterm`, `layout-cache`,

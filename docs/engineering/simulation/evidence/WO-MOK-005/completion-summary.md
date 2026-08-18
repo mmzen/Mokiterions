@@ -2,12 +2,17 @@
 
 ## Final affected components
 
-**`mokiterions-core`** — the engine, at its original location. `src/lib.rs` is new (13 lines) and
-declares the two public modules. `src/simulation.rs` gained the observation surface and the snapshot
-types, and its record-emitting code was refactored to build `Event` values that both hosts consume;
-`src/main.rs` changed 7 lines to route through the library. `Cargo.toml` became both the workspace
-root and this package's manifest, with an empty `[dependencies]` table. No simulation rule and no
-test changed: `additivity-proof.txt` shows all three test modules byte-identical to `48d16bd4`.
+**`Mokiterions`** — the engine, at its original location, with its package name and both target
+names unchanged. `src/simulation.rs` gained the observation surface and the snapshot types, and its
+record-emitting code was refactored to build `Event` values that both hosts consume. `src/lib.rs`
+changed only its crate doc comment; `src/main.rs`, `src/cli.rs` and all five files under `tests/`
+are byte-identical to `origin/master`. `Cargo.toml` became the workspace root in addition to this
+package's manifest, and its `[dependencies]` table is still empty. No simulation rule and no test
+changed: `additivity-proof.txt` shows the whole engine test corpus byte-identical to `origin/master`
+at `903c9943`.
+
+The library target `mokiterions` and the `pub mod cli` / `pub mod simulation` declarations were not
+created by this work. `WO-MOK-003` created them on `master`, and this work grew what they expose.
 
 **`mokiterions-tui`** — new package, 5,500 lines across nine modules: `main.rs` (the loop and
 start-up, 431), `state.rs` (observer state and key handling, 1,138), `render.rs` (every pane, 1,445),
@@ -19,9 +24,11 @@ event-type-to-requirement mapping, 132), `verification.rs` (`VER-MOK-005`'s cros
 **`Cargo.lock`** — from one entry to 182.
 
 **Gate results on the final tree:** `cargo fmt --all -- --check` exit 0; `cargo clippy --workspace
---all-targets --all-features -- -D warnings` exit 0; `cargo test --workspace` 161 passed, 0 failed
-(48 engine library + 4 engine binary + 109 observer). `cargo test -p mokiterions-core` alone: 52
-passed. Retained in `static-checks.txt` and `test-run.txt`.
+--all-targets --all-features -- -D warnings` exit 0, and again exit 0 for `-p Mokiterions` alone;
+`cargo test --workspace` 169 passed, 0 failed (60 engine + 109 observer). `cargo test -p
+Mokiterions` alone: 60 passed — 37 inline in `src/simulation.rs` and 23 across the five files in
+`tests/`, the same 60 `WO-MOK-004` recorded. `cargo build --workspace` and `cargo build -p
+Mokiterions` both exit 0. Retained in `static-checks.txt` and `test-run.txt`.
 
 ## Disclosures
 
@@ -30,7 +37,7 @@ not say. Fourteen items, grouped by what a reader should do about them.
 
 ### Artifacts that are wrong and should be corrected
 
-1. **`ADR-MOK-003` line 198 is wrong.** It says "`Cargo.lock` acquires 57 entries". `Cargo.lock` has
+1. **`ADR-MOK-003` line 205 is wrong.** It says "`Cargo.lock` acquires 57 entries". `Cargo.lock` has
    **182** `[[package]]` entries. 57 is the crate count from `cargo tree --edges normal`, which is a
    different measurement: the lock file records every platform's and every optional feature's
    packages, while `cargo tree` resolves for this host. The consequence the sentence draws — that the
@@ -38,44 +45,58 @@ not say. Fourteen items, grouped by what a reader should do about them.
    strongly at 182. The number does not.
 
 2. **The 57-crate figure is one of three defensible readings and is stated as if it were the only
-   one.** It appears in `SPEC-MOK-003` (lines 55, 507, 539), `ARCH-MOK-002` (lines 28, 159) and
-   `ADR-MOK-003` (six times). Measured: 57 with `--edges normal`, 59 counting build dependencies, 37
-   excluding proc-macro crates. `dependency-review.txt` records all three. The decision
-   `ADR-MOK-003` takes is unaffected — no reading makes the surface small — but a reviewer comparing
-   a future `cargo tree` against "57" needs to know which invocation produced it.
+   one.** It appears in `SPEC-MOK-003` (lines 57, 528, 589), `ARCH-MOK-002` (lines 28, 159) and
+   `ADR-MOK-003` (five times). Measured: 57 with `--edges normal`, 59 counting build dependencies, 37
+   excluding proc-macro crates, 61 counting both workspace members. `dependency-review.txt` records
+   all of them and names the two crates — `rustc_version` and `semver` — that the build-edge reading
+   adds and neither binary links. The decision `ADR-MOK-003` takes is unaffected — no reading makes
+   the surface small — but a reviewer comparing a future `cargo tree` against "57" needs to know
+   which invocation produced it.
 
 3. **`SPEC-MOK-003`'s rule 4 mockup does not fit the width rule 5 assigns.** The two-line roster
-   entry at line 226 shows three twenty-cell bars with labels and values, which needs about 87
+   entry at lines 226–229 shows three twenty-cell bars with labels and values, which needs about 87
    columns, plus rule 4.5's reserved fourth slot, which needs about 26 more. Rule 5 gives the roster
    47 columns, a 45-column interior. The two rules cannot both be satisfied literally. Resolved in
    the implementation by treating the mockup as the full form and scaling: `bar_width(interior) =
    min(20, (interior − 27) / 3)`, which is 6 at the reference roster and 20 where there is room, with
-   `3 × bar_width + 27` never exceeding the interior. `render.rs:483-497`.
+   `3 × bar_width + 27` never exceeding the interior. `render.rs:495-498`, with the constants at
+   `render.rs:53,56`.
 
 4. **Rule 2's layer table and its glyph table disagree about `M10`–`M12`.** The glyph table assigns
    `A`, `B`, `C`; the layer table's general rule is the identifier's last character uppercased, which
    would give `0`, `1`, `2`. Resolved by deriving the glyph from the numeric suffix as an uppercase
    base-13 digit, which reproduces the glyph table exactly for all twelve and falls back to the layer
-   table's rule for an identifier with no digits. `spatial.rs:153-169`.
+   table's rule for an identifier with no digits. `spatial.rs:153-169`, `agent_glyph`.
 
-### The specification's shape differs from the implementation's
+### The specification's shape differed from the implementation's, and the specification was amended
 
-5. **`advance_tick` returns `Result<TickOutcome, String>`, not `TickOutcome`.** `SPEC-MOK-003`
-   line 446 shows the bare type. The engine's tick can fail — a refused advance on a finished run is
-   the specified case, and rule 1.4 requires the refusal — so the error channel is what makes the
-   refusal expressible. `new` likewise returns `Result<Self, String>` where line 444 shows
-   `Simulation`. Neither is a behavior difference; both are surface the listing does not show.
+All three items below were found by measurement, not by reading. `WO-MOK-005` states that such a
+mismatch "requires an amended specification and re-approval, never a quietly adjusted constraint or
+a relaxed assertion", so each is corrected in `SPEC-MOK-003`'s *Data and interface contracts* and
+recorded in its amendment record marked **OUTSTANDING** — the technical owner has not approved them.
+
+5. **`advance_tick` returns `Result<TickOutcome, String>`, not `TickOutcome`.** The listing showed
+   the bare type. The engine's tick can fail — a refused advance on a finished run is the specified
+   case, and rule 1.4 requires the refusal — so the error channel is what makes the refusal
+   expressible. `new` likewise returns `Result<Self, String>` where the listing showed `Simulation`.
+   Neither is a behavior difference; both are surface the listing did not show. Corrected to the
+   real signatures at `SPEC-MOK-003` lines 446–452.
 
 6. **The public surface exposes two `&mut self` methods that change simulation state, not one.**
-   `SPEC-MOK-003` rule 2 says `advance_tick` is the only one. `run`, the `REQ-MOK-010` whole-run
-   entry point, is the second. It predates this work; adding `pub mod simulation` to expose the
-   observation surface made it publicly reachable for the first time. Narrowing it would require
-   relocating the engine's sources, which this work order puts out of scope. The observer never calls
-   it. Analysed in full in `boundary-and-security-review.md`.
+   Rule 2 said `advance_tick` was the only one. `run`, the `REQ-MOK-010` whole-run entry point, is
+   the second, and it was already publicly reachable at `origin/master`: `903c9943` has
+   `pub mod simulation` in `src/lib.rs` and `pub fn run<W: Write>(&mut self, …)` at
+   `src/simulation.rs:821`, both created by `WO-MOK-003` and bound by a `verified` `VREC-MOK-003`.
+   This work did not expose it, and the rule was already inaccurate about the surface before this
+   work began. Narrowing it would require relocating the engine's sources or duplicating the run
+   loop, neither of which is in this work order's envelope. The observer never calls it. Rule 2 now
+   states both methods, why `run` is there, and the checks that can be met. Analysed in full in
+   `boundary-and-security-review.md`.
 
-7. **`termination_reason` and `initialization_events` are on the surface and absent from the
-   listing.** Both `&self`. The observer needs the second for the pre-tick-1 records the event log
-   presents.
+7. **`termination_reason` and `initialization_events` were on the surface and absent from the
+   listing.** Both `&self`, so the mutation count is untouched. The observer needs the second for
+   the pre-tick-1 records the event log presents. Both are now in the listing, with a note that the
+   listing is what the observer calls and not the whole public interface.
 
 ### States the contract describes that a run cannot reach
 
@@ -143,10 +164,22 @@ not say. Fourteen items, grouped by what a reader should do about them.
   and there is no flag to disable it. Tracing does not change a run — `additivity-proof.txt` and the
   engine's own unchanged tests cover that — but the observer's default differs from the engine
   binary's, where tracing is off unless `--trace-actions` is given.
-- **`cli::USAGE` still says `Usage: Mokiterions` with a capital M** while the binary is
-  `mokiterions`. Pre-existing, untouched: `src/cli.rs` is under `VER-MOK-001`'s literal assertions
-  and changing the string would change a verified test, which this work order makes a stop condition.
-  The observer has its own `options::USAGE` with the correct lowercase name.
+- **The engine's three names differ in case, deliberately, and the observer's manifest keys on the
+  package name.** The package and the binary target are `Mokiterions`; the library target is
+  `mokiterions`, because the declared lint gate implies `non_snake_case` and `SPEC-MOK-002` rule 2
+  fixes it in snake case. So `cli::USAGE` opens `Usage: Mokiterions`, matching the binary an operator
+  invokes; the observer writes `use mokiterions::simulation::…`, matching the library; and
+  `mokiterions-tui/Cargo.toml` writes `Mokiterions = { path = ".." }`, because a path dependency is
+  keyed by package name. An earlier revision of this work renamed the engine package to
+  `mokiterions-core` and its binary to `mokiterions`; that was reverted. Renaming the binary target
+  makes `USAGE`'s synopsis wrong until `src/cli.rs` is edited too, and `src/cli.rs` is one of the
+  files this work keeps byte-identical to `origin/master` — it is the subject of `VER-MOK-001`'s and
+  `VER-MOK-004`'s help-output cases, and `WO-MOK-005` scopes out changing an operator-facing string
+  for a cosmetic reason. To be exact about the strength of that: no test asserts the synopsis line
+  literally. `tests/process.rs:48,83` assert only `errors.contains("Usage:")`, and `tests/cli.rs:128`
+  asserts the `Options:` block against the parser's real defaults. So the reason to keep the name is
+  the scope rule and the unchanged-file property, not a literal assertion that would have failed.
+  The observer has its own `options::USAGE` naming `mokiterions-tui`.
 
 ## Behavioural observations, not defects
 

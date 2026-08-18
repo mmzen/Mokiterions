@@ -1,7 +1,10 @@
 # Static and architecture checks — WO-MOK-005
 
-Captured against the working tree the completion summary names. Nothing is patched for these
-runs, and no scratch measurement harness is present in the tree they were taken from.
+Captured against the final merged working tree the completion summary names, after
+`origin/master` at 903c9943 was merged in and the engine package's own names were adopted.
+Nothing is patched for these runs, and no scratch measurement harness is present in the tree
+they were taken from. Both packages are cleaned before each invocation below, so no line is a
+cache hit standing in for a check that did not run.
 
 ## Toolchain
 
@@ -13,7 +16,7 @@ rustc 1.97.1 (8bab26f4f 2026-07-14)
 ## The workspace contains exactly two packages
 
 $ cargo tree --workspace --depth 0
-mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
 
 mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
 
@@ -22,17 +25,18 @@ mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions
 (no differences)
 exit=0
 
-## cargo clippy --workspace --all-targets --all-features -- -D warnings
+## cargo clippy -p Mokiterions --all-targets --all-features -- -D warnings
 
-    Checking mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
-    Checking mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.94s
+The engine package alone and first, so a finding in it cannot be masked by the observer's
+build or served from its cache.
+
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.75s
 exit=0
 
-## cargo clippy -p mokiterions-core --all-targets --all-features -- -D warnings
+## cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-The engine package alone, so a finding in it cannot be masked by the observer's build.
-
-    Checking mokiterions-core v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.32s
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+    Checking mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.59s
 exit=0

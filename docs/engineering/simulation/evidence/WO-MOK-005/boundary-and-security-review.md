@@ -11,18 +11,26 @@ stated before the argument for it, not after.
 `src/cli.rs` and `src/simulation.rs`. Enumerated with `awk` over both files:
 
 ```
-mokiterions_core::cli
+mokiterions::cli
   const USAGE: &str
   enum Command { Help, Run(Config) }
   fn parse<I, S>(args: I) -> Result<Command, String>
 
-mokiterions_core::simulation
+mokiterions::simulation
+  const CELLS_PER_TERRITORY: usize
   struct Config { seed, tick_limit, policy, density, trace_actions }   all fields pub
-  struct Density                          fn parse(&str) -> Result<Self, String>
+  struct Density                          const DEFAULT: Self
+                                          fn parse(&str) -> Result<Self, String>
+                                          fn resources_per_territory(self) -> usize
   enum Policy                             fn parse(&str) -> Option<Self>
   enum Territory · struct Coordinate · enum Direction · enum FoodClass · enum Action
-  enum TerminationReason · struct RunSummary · enum RegenerationSkipReason
-  enum EventType                          fn as_str(self) -> &'static str
+  enum TerminationReason · enum RegenerationSkipReason
+  struct RunSummary                       fn reason(&self) -> TerminationReason
+                                          fn ticks(&self) -> u64
+                                          fn survivors(&self) -> usize
+                                          fn deaths(&self) -> usize
+  enum EventType                          const ALL: [Self; 12]
+                                          fn as_str(self) -> &'static str
   enum EventDetail                        fn event_type(&self) -> EventType
   struct Event { tick, subject, detail }  fn event_type(&self) -> EventType
   enum DecisionOutcome · struct DecisionSnapshot · struct TerritorySnapshot
@@ -38,32 +46,43 @@ mokiterions_core::simulation
     fn initialization_events(&self) -> Vec<Event>
 ```
 
+The crate is `mokiterions` in snake case; see rule 3 below for why the package is `Mokiterions` and
+the library target is not.
+
 ### Rule 2 — "`advance_tick` is the only operation that changes simulation state, and the surface exposes no other `&mut self` method that does"
 
-**This does not hold as written.** The surface exposes two `&mut self` methods that change
-simulation state: `advance_tick` and `run`. `grep -n 'pub fn .*&mut self'` over the whole engine
-returns exactly those two and no others.
+**This did not hold as written, and `SPEC-MOK-003` rule 2 has been amended to state the surface as
+it is.** The surface exposes two `&mut self` methods that change simulation state: `advance_tick`
+and `run`. `grep -rn 'pub fn .*&mut self' src/` returns exactly those two and no others.
 
-`run` is the `REQ-MOK-010` whole-run entry point. It predates this work; what this work changed is
-its reachability, because at `48d16bd4` the engine had no library target, so `simulation` was a
-private module of the binary and nothing in it was externally callable. Adding `pub mod simulation`
-to expose the observation surface exposed `run` with it. Narrowing it again would mean either
-relocating the engine's sources — which `WO-MOK-005` puts out of scope and `SPEC-MOK-003` rule 3 of
-the component layout forbids, because the text stream must not move — or duplicating the run loop,
-which would give two implementations of the rules.
+`run` is the `REQ-MOK-010` whole-run entry point, and this work did not expose it. At
+`origin/master` — `903c9943` — `src/lib.rs` already declared `pub mod cli` and `pub mod simulation`,
+and `simulation.rs:821` already read `pub fn run<W: Write>(&mut self, …)`. Both were established by
+`WO-MOK-003`, which created the library target, and both are bound by a `verified` `VREC-MOK-003`.
+So `run`'s public reachability is inherited, not introduced, and the rule as originally written was
+already inaccurate about the surface before this work began. What this work added above it is the
+observation surface; what it did not do is add a second way to change state.
+
+Narrowing `run` again would mean either relocating the engine's sources — which `WO-MOK-005` puts
+out of scope and `SPEC-MOK-003` rule 3 of the component layout forbids, because the text stream must
+not move — or duplicating the run loop, which would give two implementations of the rules. Neither
+is available inside this work order's envelope, and `WO-MOK-005` states that a mismatch between the
+specification and the tree "requires an amended specification and re-approval, never a quietly
+adjusted constraint or a relaxed assertion". The amendment is therefore the correct disposition and
+is recorded in `SPEC-MOK-003`'s amendment record, marked **outstanding**: writing the amended text
+is implementation, and approving it is the technical owner's act.
 
 What is true, and is the property the rule exists to protect, is that the *observer* calls only
-`advance_tick`. Every `mokiterions_core` import in `mokiterions-tui` is listed below; none reaches
-`run`, and `verification::one_advance_is_one_tick_and_a_finished_run_refuses` and
+`advance_tick`. Every `mokiterions` import in `mokiterions-tui` is listed under rule 3 below; none
+reaches `run`, and `verification::one_advance_is_one_tick_and_a_finished_run_refuses` and
 `verification::observed_and_unobserved_runs_are_identical_on_every_declared_seed` are the measured
-consequence. The deviation is that the rule as written describes the surface, and the surface has
-one more mutating operation than it says.
+consequence. Both checks the rule *can* meet are met; the one it cannot is that the count is two.
 
-Two further `&self` methods are on the surface but absent from the rule's listing at
-`SPEC-MOK-003` line 443: `termination_reason` and `initialization_events`. Neither mutates, so
-rule 2 is untouched, but the listing is not the whole surface and should not be read as one.
-`new` returns `Result<Self, String>` and `advance_tick` returns `Result<TickOutcome, String>` where
-the listing shows the bare types; that shape difference is recorded in the completion summary.
+Two further `&self` methods are on the surface but were absent from the rule's method listing:
+`termination_reason` and `initialization_events`. Neither mutates, so the mutation count is
+untouched, but the listing was not the whole surface. `new` returns `Result<Self, String>` and
+`advance_tick` returns `Result<TickOutcome, String>` where the listing showed the bare types. The
+listing has been corrected to the real signatures in the same amendment.
 
 ### Rule 1 — "Every snapshot type contains owned values only: no reference into engine state, no shared handle, no interior mutability, and no method that mutates"
 
@@ -85,24 +104,35 @@ every declared viewport in both zooms, and requires the clone unchanged.
 
 ### Rule 3 — "Dependency direction is one-way"
 
-**Holds.** `mokiterions-tui/Cargo.toml` depends on `mokiterions-core` by path; the engine manifest's
-`[dependencies]` table is empty and carries a comment saying `ARCH-MOK-001` requires it to stay so.
-`dependency-review.txt` records `cargo tree -p mokiterions-core` on every edge kind resolving to the
-package alone, and the observer absent from every engine resolution.
+**Holds.** `mokiterions-tui/Cargo.toml` depends on `Mokiterions` by path; the engine manifest's
+`[dependencies]` table is empty and carries a comment saying `SPEC-MOK-002` rule 1 and
+`ARCH-MOK-001` both require it to stay so. `dependency-review.txt` records
+`cargo tree -p Mokiterions` on every edge kind resolving to the package alone, and the observer
+absent from every engine resolution.
 
 The engine's *code* contains no reference to the observer. To be exact about what `grep -rn
-'mokiterions-tui\|mokiterions_tui' src/ Cargo.toml` does return, since "no reference" would be
-wrong: `src/lib.rs:8`, a doc comment naming the two hosts; `Cargo.toml:2`, the workspace
-`members` list; and `Cargo.toml:18`, the comment on the empty `[dependencies]` table. The
-`members` entry is a workspace-root declaration that `SPEC-MOK-003`'s component layout mandates,
-not a dependency edge — `cargo tree -p mokiterions-core` is the check that distinguishes them, and
-it resolves to the engine alone. There is no `use`, no `extern crate` and no dependency entry.
+'mokiterions-tui\|mokiterions_tui' src/ tests/ Cargo.toml` does return, since "no reference" would
+be wrong: `src/lib.rs:7` and `src/lib.rs:20`, both doc comments — one naming the dependency the
+engine may not share, one naming the two hosts; `Cargo.toml:3`, a comment on the workspace table;
+`Cargo.toml:8`, the workspace `members` list; and `Cargo.toml:28`, the comment on the empty
+`[dependencies]` table. Nothing under `tests/` matches. The `members` entry is a workspace-root
+declaration that `SPEC-MOK-003`'s component layout mandates, not a dependency edge —
+`cargo tree -p Mokiterions` is the check that distinguishes them, and it resolves to the engine
+alone. There is no `use`, no `extern crate` and no dependency entry.
 
-In the other direction, `mokiterions_core` appears in the observer at exactly twelve sites —
-`authority.rs:7,70`, `export.rs:55`, `options.rs:8,9,151`, `render.rs:13,936`, `spatial.rs:8`,
-`state.rs:10,11`, `verification.rs:20` — of which five are compiled out of the shipped binary: the
-four inside `mod tests` blocks, plus `verification.rs`, whose whole module is `#[cfg(test)]`
-(`main.rs:21-22`).
+In the other direction, `grep -rn 'mokiterions::|use mokiterions|mokiterions =' mokiterions-tui/src/`
+returns exactly thirteen sites: `authority.rs:7,70`, `export.rs:55`, `options.rs:4,8,9,151`,
+`render.rs:13,936`, `spatial.rs:8`, `state.rs:10,11`, `verification.rs:20`. One is not code —
+`options.rs:4` is a doc comment. Five of the remaining twelve are compiled out of the shipped
+binary: the four inside `#[cfg(test)] mod tests` blocks (`authority.rs:70` under `authority.rs:67`,
+`export.rs:55` under `export.rs:52`, `options.rs:151` under `options.rs:148`, `render.rs:936` under
+`render.rs:932`), plus `verification.rs:20`, whose whole module is `#[cfg(test)]`
+(`main.rs:21-22`). Seven `use` statements reach the engine in the shipped binary.
+
+The crate is imported as `mokiterions`, in snake case, while the package and binary are
+`Mokiterions`: the package's `[lib] name` is what an importing crate names, and `SPEC-MOK-002`
+rule 2 fixes it in snake case because the declared lint gate implies `non_snake_case`. The path
+dependency in the observer manifest is keyed by package name, hence `Mokiterions = { path = ".." }`.
 
 ### Rule 4 — "Snapshot ordering is stable and specified"
 
@@ -114,8 +144,10 @@ resources in the engine's insertion order, and copies the retained decision list
 
 ### Rule 5 — "The engine's own `SPEC-MOK-001` behavior is unchanged"
 
-**Holds, and is the strongest-evidenced claim in this file.** `additivity-proof.txt` shows all three
-engine test modules byte-identical to `48d16bd4` and passing, and `export-fidelity.txt` shows the
+**Holds, and is the strongest-evidenced claim in this file.** `additivity-proof.txt` shows the
+engine's whole test corpus byte-identical to `origin/master` at `903c9943` and passing — the five
+files under `tests/` unchanged, `src/main.rs` unchanged, and the inline `#[cfg(test)] mod tests` in
+`src/simulation.rs` diffing empty at 1072 lines and 37 cases. `export-fidelity.txt` shows the
 observer's exports byte-identical to the engine binary process's own stdout on five seeds at two
 tick counts.
 
@@ -132,14 +164,15 @@ tick counts.
 | No credential, secret, environment variable, absolute path or wall-clock value in a frame or an export | Holds. `grep -rn 'env::'` over shipped code returns three sites: `env::args()` in each binary, which is operator input rather than environment state, and `option_env!("MOKITERIONS_COMMIT")` at `render.rs:34`, which is a compile-time substitution with no run-time read. No `SystemTime`, no `Instant` value and no `Local::now` reaches a rendered string. `Instant` appears only in `main.rs`, where it schedules sleeps and computes the idle wait; it is never formatted into a frame or an export. `SystemTime` and `UNIX_EPOCH` appear nowhere in either package, so no wall-clock reading exists to leak. The measured part is narrower than the claim: `verification::no_frame_carries_an_environment_value` searches every frame at every renderable viewport across 40 interacting ticks, and `export::tests::nothing_environment_specific_reaches_the_file` searches the export bytes, for a **fixed forbidden list** — `C:\`, `/home/`, `/Users/`, `AppData`, `PATH=`, `TEMP`, `token`, `secret`, `api_key`, `ANTHROPIC` — not for the live environment's own values. The export test additionally requires every line to be either a `tick=` record or the single trailer, which is a whitelist and therefore the stronger of the two. `render::tests::the_footer_carries_the_provenance_and_nothing_environment_specific` pins the footer's fields to the four specified ones. |
 | The observer offers the operator no control that mutates the world | Holds. `state.rs` handles every bound key; the only branch that reaches the engine is the one calling `advance_tick`, and it passes no operator data — `advance_tick(&mut self)` takes no argument, so there is no channel by which a key press could become a rule input. Speed, pause, zoom, pan, follow, select, filter, overlay and export all change observer state only. `verification::a_filter_changes_what_is_presented_and_nothing_else` and `verification::holding_consumes_nothing_however_long_it_is_held` measure it. |
 | No `unsafe` | Holds. `grep -rn unsafe` over both packages returns nothing. The observer inherits `unsafe` from its dependencies, which is what `ADR-MOK-003` decides on; `dependency-review.txt` carries the crate list that decision rests on. |
-| Dependency surface is confined to the observer | Holds; see rule 3. The figure `SPEC-MOK-003` line 507 states as "57 crates" is the `--edges normal` count. With build edges it is 59 and without proc-macros 37, so the specified number is one of three defensible readings rather than the only one — recorded in the completion summary. |
+| Dependency surface is confined to the observer | Holds; see rule 3. The figure `SPEC-MOK-003` states as "57 crates" at its lines 57, 528 and 589 is the `--edges normal` count. With build edges it is 59 and without proc-macros 37, so the specified number is one of three defensible readings rather than the only one — recorded in the completion summary and measured in `dependency-review.txt`, which now names the two build-edge-only crates. |
 
 ## Two properties this review cannot establish
 
 1. **That no future call to `run` can be made through the surface.** Rule 2's deviation above is
    a shape finding, not a behavior finding. Nothing prevents a third host from calling
-   `mokiterions_core::simulation::Simulation::run`; what is established is that the observer does
-   not. Closing it would need an artifact change, which is the owner's decision, not this work's.
+   `mokiterions::simulation::Simulation::run`, and nothing did before this work either — that
+   reachability arrived with `WO-MOK-003`. What is established is that the observer does not call
+   it. Closing it would need an artifact change, which is the owner's decision, not this work's.
 2. **That the terminal is restored on a path other than the three specified ones.**
    `terminal-restoration.txt` measures the normal exit, the refusal exit and the panic exit, and
    states plainly that a signal-terminated process was not measured because a signal is not one of
