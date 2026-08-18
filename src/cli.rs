@@ -1,6 +1,39 @@
 use crate::simulation::{Config, Density, Policy};
 
-pub const USAGE: &str = "Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]\n                   [--density <percent>] [--trace-actions]\n       Mokiterions --help\n\nThe reference policy is a deterministic development instrument, not autonomous\nbehavior. It seeks and consumes perceived food so that world viability can be\nmeasured. The baseline policy selects uniformly among valid actions.\n\n--density is the percentage of a territory's cells that hold a resource, with at\nmost two decimal places. It defaults to 0.75. It sets the initial endowment, the\nterritory capacity, and the replenishment target together. Only the densities\ndeclared in the requirements carry a population viability floor.\n";
+/// The usage text, whose content is specified by `SPEC-MOK-001`'s *Help output* section
+/// under `REQ-MOK-018`. Every default stated below is the value `parse` applies when the
+/// option is omitted; `tests/cli.rs` holds the two equal, so neither can move alone.
+///
+/// One literal per output line, concatenated at compile time: the alternative is a single
+/// escaped literal too long to read, and a multi-line literal would take its line endings
+/// from however the file was checked out.
+pub const USAGE: &str = concat!(
+    "Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]\n",
+    "                   [--density <percent>] [--trace-actions]\n",
+    "       Mokiterions --help\n",
+    "\n",
+    "Options:\n",
+    "  --seed <u64>                   Entropy stream seed. Default: 0.\n",
+    "  --ticks <u64>                  Ticks to run; must be greater than zero.\n",
+    "                                 Default: 100.\n",
+    "  --policy <baseline|reference>  Decision source. Default: reference.\n",
+    "  --density <percent>            Resource density per territory, at most two\n",
+    "                                 decimal places. Default: 0.75.\n",
+    "  --trace-actions                Emit one action trace per living-agent decision\n",
+    "                                 opportunity. Off unless given.\n",
+    "  --help                         Print this usage and exit without running.\n",
+    "\n",
+    "Options may appear in any order and at most once.\n",
+    "\n",
+    "The reference policy is a deterministic development instrument, not autonomous\n",
+    "behavior. It seeks and consumes perceived food so that world viability can be\n",
+    "measured. The baseline policy selects uniformly among valid actions.\n",
+    "\n",
+    "--density is the percentage of a territory's cells that hold a resource. It sets\n",
+    "the initial endowment, the territory capacity, and the replenishment target\n",
+    "together. Only the densities declared in the requirements carry a population\n",
+    "viability floor.\n",
+);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Command {
@@ -110,112 +143,4 @@ fn option_value<'a>(args: &'a [String], index: usize, option: &str) -> Result<&'
         return Err(format!("missing value for {option}"));
     }
     Ok(value)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn defaults_are_stable() {
-        assert_eq!(
-            parse(Vec::<String>::new()).unwrap(),
-            Command::Run(Config {
-                seed: 0,
-                tick_limit: 100,
-                policy: Policy::Reference,
-                density: Density::DEFAULT,
-                trace_actions: false,
-            })
-        );
-    }
-
-    #[test]
-    fn options_work_in_any_order() {
-        assert_eq!(
-            parse([
-                "--trace-actions",
-                "--ticks",
-                "7",
-                "--density",
-                "1.5",
-                "--policy",
-                "baseline",
-                "--seed",
-                "42"
-            ])
-            .unwrap(),
-            Command::Run(Config {
-                seed: 42,
-                tick_limit: 7,
-                policy: Policy::Baseline,
-                density: Density::parse("1.50").unwrap(),
-                trace_actions: true,
-            })
-        );
-    }
-
-    #[test]
-    fn both_policies_are_selectable_and_reference_is_the_default() {
-        let baseline = parse(["--policy", "baseline"]).unwrap();
-        let reference = parse(["--policy", "reference"]).unwrap();
-        let default = parse(Vec::<String>::new()).unwrap();
-
-        assert_eq!(baseline, Command::Run(config_with(Policy::Baseline)));
-        assert_eq!(reference, Command::Run(config_with(Policy::Reference)));
-        assert_eq!(default, reference);
-    }
-
-    fn config_with(policy: Policy) -> Config {
-        Config {
-            seed: 0,
-            tick_limit: 100,
-            policy,
-            density: Density::DEFAULT,
-            trace_actions: false,
-        }
-    }
-
-    #[test]
-    fn duplicates_and_missing_values_are_rejected() {
-        assert!(parse(["--seed", "1", "--seed", "2"]).is_err());
-        assert!(parse(["--ticks", "--trace-actions"]).is_err());
-        assert!(parse(["--trace-actions", "--trace-actions"]).is_err());
-        assert!(parse(["--unknown"]).is_err());
-        assert!(parse(["--policy", "baseline", "--policy", "reference"]).is_err());
-        assert!(parse(["--policy", "random"]).is_err());
-        assert!(parse(["--policy"]).is_err());
-        assert!(parse(["--density", "0.75", "--density", "1.50"]).is_err());
-        assert!(parse(["--density"]).is_err());
-    }
-
-    #[test]
-    fn density_is_accepted_in_the_specified_forms_and_rejected_otherwise() {
-        // The default is the declared default density, and it is written as a percentage.
-        assert_eq!(
-            parse(Vec::<String>::new()).unwrap(),
-            Command::Run(config_with(Policy::Reference))
-        );
-
-        // Trailing zeros and omitted decimals denote the same density.
-        assert_eq!(
-            parse(["--density", "1.5"]).unwrap(),
-            parse(["--density", "1.50"]).unwrap()
-        );
-        assert_eq!(
-            parse(["--density", "2"]).unwrap(),
-            parse(["--density", "2.00"]).unwrap()
-        );
-
-        // A density resolving to no resources is invalid configuration, not a valid empty
-        // world, because an emptied territory can never regenerate.
-        assert!(parse(["--density", "0.01"]).is_err());
-        assert!(parse(["--density", "0"]).is_err());
-
-        assert!(parse(["--density", "0.751"]).is_err());
-        assert!(parse(["--density", "abc"]).is_err());
-        assert!(parse(["--density", "1.2.3"]).is_err());
-        assert!(parse(["--density", "-1"]).is_err());
-        assert!(parse(["--density", "101"]).is_err());
-    }
 }

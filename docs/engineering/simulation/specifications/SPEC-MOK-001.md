@@ -24,6 +24,7 @@ specifies = [
   "REQ-MOK-013",
   "REQ-MOK-014",
   "REQ-MOK-015",
+  "REQ-MOK-018",
 ]
 +++
 
@@ -43,8 +44,10 @@ This is the single behavior contract for the simulation core. It is amended in p
 |---|---|---|
 | 2026-08-11 | Original approved content for `CAP-MOK-001`. | Approved; implemented under `WO-MOK-001` and verified under `VREC-MOK-001`. |
 | 2026-08-17 | Added bounded perception, the reference decision source, the `--policy` input, and the decision-source output line. Changed satiety decay from `2` to `1` and regeneration from one resource to `2`. | Approved 2026-08-17 by the repository owner acting as technical owner, together with `REQ-MOK-013`, `REQ-MOK-014`, `REQ-MOK-015`, and `WO-MOK-002`. |
+| 2026-08-17 | Narrowed the *Explicitly unspecified decisions* entry on test organization: helper functions and the internal organization of a test module remain delegated, while crate target layout, the public interface, and test placement are governed by `SPEC-MOK-002`. No specified behavior changed. | Approved 2026-08-17 by the repository owner acting as technical owner, as required by `ADR-MOK-002` and as an approval precondition of `WO-MOK-003`. |
 | 2026-08-17 | Replaced the fixed initial endowment and fixed territory capacity with a single `--density` input that sets the initial density, the capacity ceiling, and the replenishment target together. Corrected rule 5 case 1 from a fixed satiety threshold to the non-wasteful rule `REQ-MOK-015` already required. | Approved 2026-08-17 by the repository owner acting as technical owner, together with the amended `REQ-MOK-014`, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-002/`. |
 | 2026-08-17 | Extended the rule 5 non-waste test from case 1 to case 3, so a Mokiterion neither eats nor approaches a resource whose restoration would be clipped. Removed the unreachable fallback clause from case 1. Retracted the false claim that correcting case 1 alone removed the two-cell oscillation. | Approved 2026-08-17 by the repository owner acting as technical owner, together with the amended `REQ-MOK-014`, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-002/density-curve.md`. |
+| 2026-08-17 | Specified the content of the help text: an options block stating each accepted option's effect, its default where it has one, and its value constraint where it has one, with the stated defaults required to equal the applied defaults. Narrowed the *Explicitly unspecified decisions* entry on help text to alignment, width, and wrapping. No simulation behavior changed. | Approved 2026-08-17 by the repository owner acting as technical owner, together with `REQ-MOK-018`, `VER-MOK-004`, and `WO-MOK-004`, as an approval precondition of that work order. |
 
 The released implementation at commit `09c4e1a` conforms to the 2026-08-11 content. `VREC-MOK-001` remains the
 commit-bound record of that earlier content.
@@ -87,6 +90,39 @@ Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
 - Options may appear in any order and may appear at most once.
 - `--help` prints usage and exits successfully without starting a simulation.
 - Unknown, duplicate, missing, or invalid option values are invalid configuration.
+
+### Help output
+
+`--help` writes the usage text to standard output and exits `0`. The same usage text follows the
+`configuration error:` line on standard error when configuration is invalid. There is one usage text and two paths
+that emit it, so the content below is a property of that text and not of either path.
+
+The usage text contains, in order: the synopsis block above; an options block; a statement that options may appear
+in any order and at most once; and the explanatory prose on the decision sources and on what `--density` binds
+together.
+
+The options block contains one entry for each option the program accepts — `--seed`, `--ticks`, `--policy`,
+`--density`, `--trace-actions`, and `--help`, in that order. Each entry states the option, its value placeholder
+where it takes a value, and a short description of its effect that is intelligible without this specification at
+hand. Each entry additionally states:
+
+| Option | Stated default | Stated constraint |
+|---|---|---|
+| `--seed` | `0` | none |
+| `--ticks` | `100` | must be greater than zero |
+| `--policy` | `reference` | only `baseline` and `reference` are valid, which the value placeholder states |
+| `--density` | `0.75` | at most two decimal places |
+| `--trace-actions` | no value; the entry states that tracing is off unless the option is given | none |
+| `--help` | none | none |
+
+Every default stated in the options block is the value the program applies when the option is omitted. The two are
+required to be equal, and that equality is verified rather than maintained by convention.
+
+Each of these facts is stated once. Where the explanatory prose previously repeated a default or a value constraint
+that the options block now states, the repetition is removed.
+
+The options block states no behavior this specification does not state elsewhere. It restates the *Inputs* list for
+the operator's benefit, and where the two differ this specification's *Inputs* list governs.
 
 ## Outputs
 
@@ -305,5 +341,9 @@ There is no prior data or interface compatibility obligation. Future output or m
 - Rust file and private type names.
 - Choice of collection types where iteration is explicitly sorted before observable use.
 - Internal error type layout and message wording, except for exit codes and required clarity.
-- Test organization and helper functions.
-- Cosmetic whitespace in help text.
+- Test helper functions, and the internal organization of a test module within the source file that owns it. Crate
+  target layout, the public interface, and which tier a test belongs to are not unspecified: they are governed by
+  `SPEC-MOK-002`.
+- Column alignment, column widths, line wrapping, and cosmetic whitespace in the help text. Which options the
+  options block describes, and which defaults and constraints it states, are not unspecified: they are fixed by the
+  *Help output* section above.

@@ -1,0 +1,342 @@
+4,5c4,5
+< stdout_sha:  6154a2efe7f1773b850cf2751e7309883150be417ee5ea40d76029852b091249
+< stdout_len:  699
+---
+> stdout_sha:  f13bfeeed47885da2496aa0c582f42baa50153851b503b6e30400418a8451150
+> stdout_len:  1325
+17a18,30
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+22,25c35,38
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+36a50,62
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+41,44c67,70
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+55a82,94
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+60,63c99,102
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+74a114,126
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+79,82c131,134
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+93a146,158
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+98,101c163,166
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+112a178,190
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+117,120c195,198
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+131a210,222
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+136,139c227,230
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+150a242,254
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+155,158c259,262
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+169a274,286
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+174,177c291,294
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+188a306,318
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+193,196c323,326
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+207a338,350
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+212,215c355,358
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+226a370,382
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+231,234c387,390
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+245a402,414
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+250,253c419,422
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.
+264a434,446
+>   | Options:
+>   |   --seed <u64>                   Entropy stream seed. Default: 0.
+>   |   --ticks <u64>                  Ticks to run; must be greater than zero.
+>   |                                  Default: 100.
+>   |   --policy <baseline|reference>  Decision source. Default: reference.
+>   |   --density <percent>            Resource density per territory, at most two
+>   |                                  decimal places. Default: 0.75.
+>   |   --trace-actions                Emit one action trace per living-agent decision
+>   |                                  opportunity. Off unless given.
+>   |   --help                         Print this usage and exit without running.
+>   | 
+>   | Options may appear in any order and at most once.
+>   | 
+269,272c451,454
+<   | --density is the percentage of a territory's cells that hold a resource, with at
+<   | most two decimal places. It defaults to 0.75. It sets the initial endowment, the
+<   | territory capacity, and the replenishment target together. Only the densities
+<   | declared in the requirements carry a population viability floor.
+---
+>   | --density is the percentage of a territory's cells that hold a resource. It sets
+>   | the initial endowment, the territory capacity, and the replenishment target
+>   | together. Only the densities declared in the requirements carry a population
+>   | viability floor.

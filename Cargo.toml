@@ -1,7 +1,9 @@
 # `SPEC-MOK-002` rule 1 as amended: the repository is a Cargo workspace of exactly two
 # packages. The engine package stays at the root, keeps its name and both of its target
 # names, and keeps its sources where they are; `mokiterions-tui` is the only other member.
-# `SPEC-MOK-003` owns the observer package and `ADR-MOK-003` decides the split.
+# `SPEC-MOK-003` owns the observer package and `ADR-MOK-003` decides the split. Before that
+# amendment rule 1 read "no third target, no second package, no workspace"; the exception it
+# reserved for an approved requirement is `REQ-MOK-026`.
 [workspace]
 members = ["mokiterions-tui"]
 
@@ -10,6 +12,7 @@ name = "Mokiterions"
 version = "0.1.0"
 edition = "2024"
 
+# SPEC-MOK-002 rule 1: exactly two targets for this package, and no build script.
 # SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
 # lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
 # that appears in the first line of `USAGE`.
@@ -21,7 +24,7 @@ path = "src/lib.rs"
 name = "Mokiterions"
 path = "src/main.rs"
 
-# `ARCH-MOK-001` as amended requires this table to stay empty, with no exception,
-# including a dependency shared with `mokiterions-tui`. `cargo tree -p Mokiterions` is
-# the check, and `REQ-MOK-026` is the requirement it discharges.
+# `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
+# empty, with no exception, including a dependency shared with `mokiterions-tui`.
+# `cargo tree -p Mokiterions` is the check, and `REQ-MOK-026` is what it discharges.
 [dependencies]

@@ -12,7 +12,10 @@ const PERCEPTION_RADIUS: u8 = 16;
 const REFERENCE_SLEEP_THRESHOLD: u8 = 20;
 
 /// Cells in one territory. Density is expressed relative to this, not to the world.
-const CELLS_PER_TERRITORY: usize = WORLD_SIZE as usize * TERRITORY_HEIGHT as usize;
+///
+/// Public under `SPEC-MOK-002` rule 5: a fixed world dimension already implied by
+/// `SPEC-MOK-001`. It is the only simulation constant rule 6 admits to the interface.
+pub const CELLS_PER_TERRITORY: usize = WORLD_SIZE as usize * TERRITORY_HEIGHT as usize;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Config {
@@ -104,7 +107,10 @@ impl Density {
     /// Resolves the density to a resource count using integer arithmetic that
     /// truncates toward zero, as `SPEC-MOK-001` requires. `0.15%` yields 12, `0.75%`
     /// yields 61, and `1.50%` yields 122.
-    fn resources_per_territory(self) -> usize {
+    ///
+    /// Public under `SPEC-MOK-002` rule 5: a pure function of a value, taking `self` by
+    /// copy and returning a count the program already reports.
+    pub fn resources_per_territory(self) -> usize {
         self.hundredths_of_percent as usize * CELLS_PER_TERRITORY / 10_000
     }
 }
@@ -679,6 +685,10 @@ impl SplitMix64 {
     }
 }
 
+/// Why a run ended.
+///
+/// Public under `SPEC-MOK-002` rule 5: a reported outcome, already emitted in the
+/// `simulation_ended` event and the summary line, and required by `RunSummary::reason`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminationReason {
     TickLimit,
@@ -704,6 +714,31 @@ pub struct RunSummary {
     territory_b: usize,
     food_a: [usize; 3],
     food_b: [usize; 3],
+}
+
+/// Read-only accessors, public under `SPEC-MOK-002` rule 5. Each returns an owned copy of
+/// a value the summary line already prints, so a summary cannot be used as a window into
+/// live state. The fields stay private and the type stays opaque.
+///
+/// Rule 5 also authorizes accessors for population per territory and for the resource
+/// counts per territory by calorie class. Neither is added: the enumeration is a ceiling
+/// rather than a checklist, and no relocated test requires them.
+impl RunSummary {
+    pub fn reason(&self) -> TerminationReason {
+        self.reason
+    }
+
+    pub fn ticks(&self) -> u64 {
+        self.ticks
+    }
+
+    pub fn survivors(&self) -> usize {
+        self.survivors
+    }
+
+    pub fn deaths(&self) -> usize {
+        self.deaths
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1920,17 +1955,6 @@ mod tests {
         }
     }
 
-    /// The seed set declared by `VER-MOK-002`, fixed so that viability cannot be
-    /// demonstrated on a favourable seed chosen after the fact.
-    const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
-
-    /// The declared density from `VER-MOK-002` paired with the survivor floor `REQ-MOK-014`
-    /// states for it. One density is declared and it is the default, so the floor is verified
-    /// at the scarce density the system ships with. Survivors are not monotonic in density
-    /// and a floor may not be interpolated or extrapolated from this point; other densities
-    /// are swept as evidence in `density-curve.md` and carry no obligation.
-    const DECLARED_FLOORS: [(&str, usize); 1] = [("0.75", 8)];
-
     fn decide_once(simulation: &Simulation, agent_index: usize) -> (Action, u32) {
         let observation = simulation.observation(agent_index);
         let mut stream = simulation.entropy;
@@ -2317,24 +2341,6 @@ mod tests {
     }
 
     #[test]
-    fn tick_limit_terminates_with_one_summary() {
-        let mut simulation = Simulation::new(config(1, 1, false)).unwrap();
-        let mut output = Vec::new();
-
-        let summary = simulation.run(&mut output).unwrap();
-
-        assert_eq!(summary.reason, TerminationReason::TickLimit);
-        assert_eq!(summary.ticks, 1);
-        assert_eq!(
-            String::from_utf8(output)
-                .unwrap()
-                .matches("summary ")
-                .count(),
-            1
-        );
-    }
-
-    #[test]
     fn extinction_takes_precedence_at_the_tick_limit() {
         let mut simulation = Simulation::new(config(1, 1, false)).unwrap();
         simulation.foods.clear();
@@ -2350,16 +2356,6 @@ mod tests {
         assert_eq!(summary.survivors, 0);
         let output = String::from_utf8(output).unwrap();
         assert!(output.contains("event=simulation_ended result=reason:extinction"));
-    }
-
-    #[test]
-    fn a_long_configured_run_is_bounded_and_does_not_panic() {
-        let mut simulation = Simulation::new(config(123, 10_000, false)).unwrap();
-
-        let summary = simulation.run(&mut io::sink()).unwrap();
-
-        assert!(summary.ticks <= 10_000);
-        assert_eq!(summary.survivors + summary.deaths, 12);
     }
 
     #[test]
@@ -2642,47 +2638,6 @@ mod tests {
     // REQ-MOK-014: population viability.
 
     #[test]
-    fn density_resolves_to_the_specified_resource_count() {
-        // The mapping is fixed by `SPEC-MOK-001`: hundredths of a percent times the cells
-        // in one territory, divided by 10,000, truncating toward zero. These three counts
-        // are the ones the specification states.
-        assert_eq!(CELLS_PER_TERRITORY, 8_192);
-        for (density, expected) in [("0.15", 12), ("0.75", 61), ("1.50", 122)] {
-            assert_eq!(
-                Density::parse(density).unwrap().resources_per_territory(),
-                expected,
-                "density {density}% must resolve to {expected} resources per territory"
-            );
-        }
-        assert_eq!(Density::DEFAULT.resources_per_territory(), 61);
-
-        // Written forms that denote the same density resolve identically, and the display
-        // form round-trips.
-        assert_eq!(Density::parse("1.5"), Density::parse("1.50"));
-        assert_eq!(Density::parse(".75"), Density::parse("0.75"));
-        assert_eq!(Density::DEFAULT.to_string(), "0.75");
-    }
-
-    #[test]
-    fn a_density_resolving_to_no_resources_is_rejected() {
-        // Truncation makes `0.01%` resolve to zero. That is invalid configuration rather
-        // than an empty world, because an emptied territory can never regenerate.
-        let error = Density::parse("0.01").unwrap_err();
-        assert!(error.contains("zero resources"), "{error}");
-        assert!(
-            error.contains("0.02"),
-            "the usable floor must be reported: {error}"
-        );
-        assert_eq!(Density::parse("0.02").unwrap().resources_per_territory(), 1);
-
-        assert!(Density::parse("0").is_err());
-        assert!(Density::parse("0.751").is_err());
-        assert!(Density::parse("101").is_err());
-        assert!(Density::parse("").is_err());
-        assert!(Density::parse("-1").is_err());
-    }
-
-    #[test]
     fn density_binds_initialization_capacity_and_the_replenishment_target() {
         for density in ["0.02", "0.50", "1.50"] {
             let resolved = Density::parse(density).unwrap().resources_per_territory();
@@ -2725,37 +2680,6 @@ mod tests {
             resolved,
             "replenishment must reach the resolved count and stop there"
         );
-    }
-
-    #[test]
-    fn the_reference_source_sustains_the_population_at_every_declared_density() {
-        for (density, floor) in DECLARED_FLOORS {
-            for seed in DECLARED_SEEDS {
-                let mut simulation = Simulation::new(config_at(seed, 1_000, density)).unwrap();
-                let mut output = Vec::new();
-
-                let summary = simulation.run(&mut output).unwrap();
-                let consumed = String::from_utf8(output)
-                    .unwrap()
-                    .matches("event=food_consumed")
-                    .count();
-
-                assert_eq!(
-                    summary.reason,
-                    TerminationReason::TickLimit,
-                    "seed {seed} at density {density}% ended in extinction"
-                );
-                assert!(
-                    summary.survivors >= floor,
-                    "seed {seed} at density {density}% left only {} survivors, below the stated floor of {floor}",
-                    summary.survivors
-                );
-                assert!(
-                    consumed > 0,
-                    "seed {seed} at density {density}% consumed no food"
-                );
-            }
-        }
     }
 
     #[test]
@@ -3064,25 +2988,6 @@ mod tests {
         assert_eq!(output.matches("proposal:wait").count(), 0);
         for agent in simulation.agents.iter().filter(|agent| agent.alive) {
             assert!(agent.energy > 0, "{} ran its energy to zero", agent.id);
-        }
-    }
-
-    #[test]
-    fn a_long_run_is_bounded_under_either_source() {
-        for policy in [Policy::Baseline, Policy::Reference] {
-            let mut simulation = Simulation::new(Config {
-                seed: 123,
-                tick_limit: 10_000,
-                policy,
-                density: Density::DEFAULT,
-                trace_actions: false,
-            })
-            .unwrap();
-
-            let summary = simulation.run(&mut io::sink()).unwrap();
-
-            assert!(summary.ticks <= 10_000);
-            assert_eq!(summary.survivors + summary.deaths, 12);
         }
     }
 }

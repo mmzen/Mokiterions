@@ -18,13 +18,14 @@
 
 ## Architecture
 
-- Entry points: `src/main.rs` is the application entry point.
-- Major components and responsibilities: The first stage is a single Rust application containing the simulation rules and state, a bounded model-decision boundary, and simple text output. Introduce additional modules only when concrete requirements make them useful.
+- Entry points: The package builds two targets. `src/lib.rs` is the library target `mokiterions`, which owns the modules and the process-boundary function `execute`; `src/main.rs` is the binary target `Mokiterions`, a thin shim that locks and buffers the standard streams, calls `execute`, and converts its return value to a process exit code. The library target is named in snake case because the declared lint gate implies `non_snake_case`; the binary keeps the operator-facing name. `SPEC-MOK-002` is the contract for both.
+- Major components and responsibilities: The first stage is a single Rust application containing the simulation rules and state, a bounded model-decision boundary, and simple text output. Introduce additional modules only when concrete requirements make them useful. The library target's public interface is a closed read-only enumeration owned by `SPEC-MOK-002` rule 5; it carries values only and grows only when an approved requirement needs it to.
 - External services or dependencies: The intended runtime decision model for simulated agents is owner-described as `OpenAI GPT nano`. Confirm the exact OpenAI API model identifier before integration. Project implementation is expected to be performed with Claude Code, primarily using Opus. No other external service is currently required.
 
 ## Repository constraints
 
 - Generated paths: `target/` and `target/harness-dashboard/`.
+- Test placement: Put a test where its subject is. A test that exercises the public contract — argument parsing, exit codes, emitted event lines, the run summary, density resolution, termination, and the population floor — belongs in `tests/` and reaches the code through the library target's public API. A test that asserts engine internals — direct state mutation, observation construction, action application, survival decay, or regeneration — stays in a `#[cfg(test)] mod tests` beside the code it covers. `cargo test` runs both tiers and neither is optional. Do not widen a type, field, or method to `pub` in order to relocate a test: `ARCH-MOK-001` prohibits exposing mutable world state, so a test that needs to reach authoritative state is evidence that it belongs inline, not that the boundary should be opened.
 - Restricted or sensitive paths: Model-provider credentials and other secrets must remain outside the repository and must not be committed.
 - Files requiring specialized review: None identified at this stage.
 - Local conventions not captured elsewhere: Keep it simple. Prefer direct Rust code and the smallest useful design over speculative abstractions. Use Claude Code, primarily with Opus, as the implementation agent. The first stage has no graphical or web UI and reports through simple text output. A richer interface may be introduced later, but it is outside the current stage.

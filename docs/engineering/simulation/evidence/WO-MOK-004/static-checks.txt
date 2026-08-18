@@ -1,0 +1,25 @@
+=== cargo fmt --all -- --check
+exit=0
+
+=== cargo clippy --all-targets --all-features -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+exit=0
+
+=== cargo build
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+exit=0
+
+=== git status --short (source and manifests)
+ M src/cli.rs
+ M tests/cli.rs
+ M tests/process.rs
+
+=== forced recheck after 'cargo clean -p Mokiterions'
+--- cargo clippy --all-targets --all-features -- -D warnings
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.66s
+exit=0
+--- cargo build
+   Compiling Mokiterions v0.1.0 (C:\Users\mathi\claude-bro\Mokiterions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.90s
+exit=0
