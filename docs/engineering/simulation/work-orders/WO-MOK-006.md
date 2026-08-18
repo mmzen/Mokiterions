@@ -2,7 +2,7 @@
 id = "WO-MOK-006"
 type = "work_order"
 title = "Give each package its own directory and the observer its own tested contract"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-18"
 updated = "2026-08-18"
@@ -80,6 +80,45 @@ changes — the observer's target shape and the repository's package-directory l
 because it decides the same architecture and remains in force unchanged: exactly two packages, one repository, one
 version, one candidate commit, and an engine free of external dependencies. `VER-MOK-006` re-runs its validation
 checks rather than assuming the move preserved them.
+
+**Moved to `implemented` on 2026-08-18**, on the repository owner's explicit instruction. The implementation agent
+recorded the transition; it did not make the decision. The change is complete and the evidence `VER-MOK-006` requires
+is retained under `docs/engineering/simulation/evidence/WO-MOK-006/` — 67 files, indexed by its `README.md` against
+each of `VER-MOK-006`'s 19 retention bullets, and reported in `completion-summary.md` in the thirteen-item form the
+*Completion report format* section below requires, with ten disclosures. `manual-assessment.md` answers the eight
+manual judgements, seven finding nothing adverse and one **qualified adverse**: the observer's 97-item public
+interface cannot be enumerated from any approved artifact, which is a property of `SPEC-MOK-004` rule 6 as approved
+rather than a defect in the change.
+
+The central claim — that none of this changed a byte of either package's behaviour — is carried by four independent
+oracles rather than by one measurement: a baseline recorded at `191db01` before any file moved and re-run after (40
+observer cells, 43 engine cells, 24 observer start-up cases, **0 differing lines**); content comparison against that
+commit (nine engine files byte-identical at blob level, the seven observer modules byte-identical outside their test
+blocks, the observer binary's 396-line retained region identical by SHA-256, `Cargo.lock` byte-identical); a
+name-by-name test census in both directions (169 before, 169 after, with 76 of the 77 relocated bodies byte-identical
+and the 77th changing one path twice); and Cargo's own resolution of every command form in `SPEC-MOK-004` rule 14.
+The tier split measured 77 / 32, exactly what rules 9 and 10 predicted, so rule 9's provision for a corrected count
+was not needed; of the 32 held inside, 16 call a private item and 16 reach one of the four `#[cfg(test)]` hooks, and
+none is held inside by both. Gates: `cargo fmt`, `cargo clippy --all-targets --all-features -- -D warnings` and
+`cargo build` exit `0` at the root and per package; `cargo test --workspace` reports **169 passed, 0 failed, 0
+ignored**; `harnessctl validate` PASS at 67 / 0 / 0; `preflight --work-order WO-MOK-006` PASS; `doctor` PASS.
+
+Committed on 2026-08-18 to `feature/package-layout-and-test-tiers`, branched from `master` at
+`1355290c046d604f4d84f19effb5c0936f825fea`. `191db01` carries the artifact pack; `83e487f` the implementation, 112
+files; `dd0c2c0` two corrections binding the evidence packet to the commit it describes, since two of its statements
+were written while the tree was uncommitted and said so; `0edeaef` and `8b1dbee` the verification record. Opened as
+pull request **#13** and merged to `master` as `04e146e`. No workflow change was needed and that was measured rather
+than assumed: neither `.github/workflows/engineering-harness.yml` nor any of the nine files in `scripts/` references
+`cargo`, `Cargo.toml`, `src/` or a package name, and both CI jobs pass on the merged head.
+
+`VREC-MOK-006` binds `dd0c2c0` and was transitioned `ready` → `verified` by the repository owner as accountable
+assurance owner on 2026-08-18, again recorded by the agent rather than decided by it. **That transition preceded this
+one, which inverts the order the four earlier work orders used** — `WO-MOK-001` through `WO-MOK-004` each reached
+`implemented` before their records were verified. Nothing depends on the order: `harnessctl validate` reported no
+error and no warning against a `verified` record on an `in_progress` work order, and verification is carried by the
+record rather than by this status. The inversion is recorded because a reader comparing the six chains will see it.
+This work order stays `implemented`. Nothing here tags, releases, publishes or deploys anything, and no release
+record exists.
 
 ## Objective
 
