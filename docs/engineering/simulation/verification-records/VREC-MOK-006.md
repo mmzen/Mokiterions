@@ -2,7 +2,7 @@
 id = "VREC-MOK-006"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-006"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-18"
 updated = "2026-08-18"
@@ -18,11 +18,13 @@ verifies_work_order = ["WO-MOK-006"]
 conforms_to = ["VER-MOK-006"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-006` to candidate commit `dd0c2c0f7fc12c4fd11c457cfdc166d50b3d6ae4`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+Following review of the retained evidence by the accountable assurance owner, this record was transitioned from `ready` to `verified` on 2026-08-18. It binds `WO-MOK-006` to candidate commit `dd0c2c0f7fc12c4fd11c457cfdc166d50b3d6ae4` without changing its captured provenance.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit, merge, release, tag, publish, or deploy anything.
+
+The record was prepared after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## What this record claims
 
@@ -128,12 +130,22 @@ artifact. **The other three are recorded as approved by way of `ADR-MOK-004`**, 
 amendments* section states each of them in full and which the owner approved with the rest of the chain
 on 2026-08-18.
 
-**That is a reading, and it is the first thing the assurance owner should weigh.** An alternative
+**That is a reading, and it was the first thing put in front of the assurance owner.** An alternative
 reading exists in which approving an ADR that *requires* amendments is not the same act as approving
 the amended text; under it, the three remain outstanding until approved individually. The distinction is
 not academic — two of the three artifacts are bound by a `verified` verification record. Nothing in the
-evidence depends on the reading: if the owner takes the narrower one, three Approval columns in
+evidence depends on the reading: under the narrower one, three Approval columns in
 `amendment-approvals.md` change and no measurement does.
+
+**What the verification settles, and what it does not.** The record was verified with disclosure A
+disclosed and named first, by the repository owner, who also holds the technical-owner role that
+approved `ADR-MOK-004` on 2026-08-18. So the decision was taken knowing the reading, by the party whose
+earlier approval the reading construes, which is the strongest signal available that the broader reading
+is the intended one. It is still not the same act: **this verification does not itself approve the three
+amended texts, and no separate amendment-approval record was created.** If the owner intends the
+narrower reading, the correct follow-up is three individual amendment approvals recorded against
+`SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-002`, and nothing in this record's evidence changes when
+they are given.
 
 Nine lifecycle transitions in the `INT-MOK-005` → `WO-MOK-006` chain were **recorded by the
 implementation agent on the owner's explicit instruction** (*"You approve, I record it"*).
@@ -148,12 +160,15 @@ longer exist and stay as they are, with `requirement-to-test-mapping.md` in this
 superseding mapping `ADR-MOK-004` prescribed for that purpose. All 152 cited tests resolve at their new
 locations.
 
-## What the accountable assurance owner must weigh before verifying
+## What the accountable assurance owner weighed before verifying
 
-The self-assessment limitation and the amendment reading above are the first two items.
-`completion-summary.md` discloses ten findings, A through J. None is a failure against `VER-MOK-006`;
-each is stated so that verification, if given, is given knowingly. The six that bear on how much the
-green gates mean:
+The self-assessment limitation and the amendment reading above are the first two items, and both were
+in front of the owner before the decision. `completion-summary.md` discloses ten findings, A through J.
+**None is a failure against `VER-MOK-006`. All were disclosed before the decision, and all are accepted
+by the verification recorded above, which endorses the judgement that they are acceptable at this
+candidate commit.** They are retained in full rather than summarized away, because a disclosure that
+survives only until it is accepted is not a disclosure. The six that bear on how much the green gates
+mean:
 
 1. **The observer's public interface cannot be enumerated from any approved artifact** (disclosure C,
    and the one qualified adverse manual assessment). `SPEC-MOK-004` rule 6 gives per-module counts and a
@@ -231,17 +246,49 @@ rule 7 forbids.
   which is the decision `ADR-MOK-004` records and which is why nine engine source files could move with
   a byte-identical blob each.
 
-## Scope of the transition being requested
+## Scope of the transition that was taken
 
-Transitioning this record to `verified` would record that the assurance owner accepts the evidence at
-this candidate commit **with all eight manual assessments performed by the implementation agent rather
-than independently, one of them qualified adverse, and three amendments to approved artifacts resting on
-a reading of what approving `ADR-MOK-004` covered**. It would not perform those assessments
-independently, would not supply or ratify any approval, and would not merge, release, tag, publish or
-deploy anything.
+This record's transition to `verified` records that the assurance owner accepts the evidence at this
+candidate commit **with all eight manual assessments performed by the implementation agent rather than
+independently, one of them qualified adverse, and three amendments to approved artifacts resting on a
+reading of what approving `ADR-MOK-004` covered**. Accepting the evidence is what was decided. The
+decision did not perform those assessments independently, did not supply or ratify any approval, and did
+not merge, release, tag, publish or deploy anything.
 
-If independent assessment is to gate verification instead, this record should stay `ready` until a
-reader other than the implementation agent has worked through `manual-assessment.md`'s eight items and
-is recorded as their author. If the narrower reading of `ADR-MOK-004`'s approval is the correct one,
-this record should stay `ready` until the three amendments are approved by the technical owner who owns
-them.
+Two consequences follow from the shape of that acceptance, and are stated here rather than left to be
+rediscovered:
+
+- **The eight manual assessments are now accepted as authored by the implementation agent.** No
+  independent reader worked through `manual-assessment.md`, and verification does not retrospectively
+  supply one. If a later reader disagrees with any of the eight, that is a new observation against this
+  commit, not a defect in this record.
+- **`VER-MOK-005`'s seven manual assessments remain outstanding.** `VREC-MOK-005` is still `ready` and
+  this transition does not touch it. The observer still cannot be driven from this environment, so those
+  seven still have no author.
+
+## Authority
+
+This record is `verified`. **The verification decision was taken by the repository owner acting as
+accountable assurance owner on 2026-08-18, on the explicit instruction "i approve VREC-MOK-006, you can
+transition it, commit and push"; the implementation agent recorded the transition and did not make the
+decision.** `DECISION_RIGHTS.md` places the decision outside what such an agent may inherit, and
+`ENGINEERING_HARNESS.md` states that harness commands may prepare records but never exercise accountable
+decision rights. Recording the decision changed the record's status and this prose only.
+
+Every captured provenance field is preserved exactly as the managed capture produced it: the candidate
+commit `dd0c2c0f7fc12c4fd11c457cfdc166d50b3d6ae4`, the git object format, the clean worktree state, the
+capture timestamp `2026-08-18T09:34:13Z`, the artifact snapshot hash, the 67 evidence paths, the verified
+work order and the verification contract. The snapshot was taken before this record was written, so it
+records the 67-artifact graph the record binds rather than the graph containing the record. No provenance
+field was recomputed for this transition, and the candidate commit is unchanged.
+
+**`WO-MOK-006` remains `in_progress`, which differs from the four verified precedents.** `VREC-MOK-001`
+through `VREC-MOK-004` each verify a work order that had been transitioned to `implemented` first;
+`WO-MOK-005` and `WO-MOK-006` are both still `in_progress`. Verification is carried by this record rather
+than by a change to the work order, so the transition is coherent as it stands and `harnessctl validate`
+reports no error or warning against it. Whether `WO-MOK-006` should also move to `implemented` is a
+separate lifecycle decision belonging to the owner; it was not instructed and was not taken.
+
+Verification is not release, and it is not merge. Nothing here releases, tags, publishes or deploys, no
+release record exists, and pull request **#13** is left open for the owner to merge. Release remains a
+separate record and a separate accountable decision.
