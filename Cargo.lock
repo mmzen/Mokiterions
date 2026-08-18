@@ -3,6 +3,10 @@
 version = 4
 
 [[package]]
+name = "Mokiterions"
+version = "0.1.0"
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -651,14 +655,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "mokiterions-core"
-version = "0.1.0"
-
-[[package]]
 name = "mokiterions-tui"
 version = "0.1.0"
 dependencies = [
- "mokiterions-core",
+ "Mokiterions",
  "ratatui",
 ]
 

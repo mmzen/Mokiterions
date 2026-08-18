@@ -10,7 +10,7 @@
 
 use std::collections::BTreeMap;
 
-use mokiterions_core::simulation::{
+use mokiterions::simulation::{
     AgentSnapshot, DecisionOutcome, FoodClass, Territory, TerritorySnapshot,
 };
 use ratatui::Frame;
@@ -933,7 +933,7 @@ fn justified(left: Vec<Span<'static>>, right: Vec<Span<'static>>, width: usize) 
 mod tests {
     use super::*;
     use crate::options::{self, Startup};
-    use mokiterions_core::simulation::{Action, Coordinate};
+    use mokiterions::simulation::{Action, Coordinate};
     use ratatui::Terminal;
     use ratatui::backend::TestBackend;
     use ratatui::buffer::Buffer;

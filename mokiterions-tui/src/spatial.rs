@@ -5,7 +5,7 @@
 //! the orientation obligation and the fidelity thresholds are checkable without a terminal
 //! and without a simulation.
 
-use mokiterions_core::simulation::FoodClass;
+use mokiterions::simulation::FoodClass;
 
 /// The world's extent in each axis. `SPEC-MOK-001` fixes it; it is consumed here, never
 /// restated as authority. `crate::state` asserts it against the engine's own

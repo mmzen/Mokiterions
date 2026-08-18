@@ -4,7 +4,7 @@
 //! from the artifact that holds it. Where an identifier cannot be resolved the caller states
 //! that the mapping is missing rather than presenting a plausible one.
 
-use mokiterions_core::simulation::{Event, EventDetail, EventType, Policy};
+use mokiterions::simulation::{Event, EventDetail, EventType, Policy};
 
 /// The requirement authorizing the inspector's proposal-and-outcome presentation.
 pub const DECISION_AUTHORITY: &str = "REQ-MOK-004";
@@ -67,7 +67,7 @@ pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mokiterions_core::simulation::{Event, EventDetail};
+    use mokiterions::simulation::{Event, EventDetail};
 
     #[test]
     fn every_event_type_the_observer_can_present_has_an_entry() {

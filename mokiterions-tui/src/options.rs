@@ -1,12 +1,12 @@
 //! Start-up inputs, as `SPEC-MOK-003` fixes them.
 //!
 //! The four simulation inputs are not re-parsed here. The observer extracts its own three
-//! inputs from the argument list and hands the remainder to `mokiterions_core::cli::parse`,
+//! inputs from the argument list and hands the remainder to `mokiterions::cli::parse`,
 //! so "identical names, identical parsing, identical validation, identical defaults and
 //! identical rejection behavior" holds by construction rather than by duplication.
 
-use mokiterions_core::cli::{self, Command};
-use mokiterions_core::simulation::Config;
+use mokiterions::cli::{self, Command};
+use mokiterions::simulation::Config;
 
 /// The observer's own usage text. It is not the engine's, because the binary name and the
 /// three additional inputs differ; every shared input keeps the engine's meaning.
@@ -148,7 +148,7 @@ pub fn slower(speed: u32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mokiterions_core::simulation::{Density, Policy};
+    use mokiterions::simulation::{Density, Policy};
 
     fn run(args: &[&str]) -> Options {
         match parse(args.to_vec()).unwrap() {

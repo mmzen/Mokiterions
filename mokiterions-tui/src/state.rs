@@ -7,8 +7,8 @@
 use std::collections::{BTreeMap, VecDeque};
 
 #[cfg(test)]
-use mokiterions_core::simulation::DecisionSnapshot;
-use mokiterions_core::simulation::{
+use mokiterions::simulation::DecisionSnapshot;
+use mokiterions::simulation::{
     AgentSnapshot, Config, Event, EventDetail, EventType, Simulation, TerminationReason,
     WorldSnapshot,
 };

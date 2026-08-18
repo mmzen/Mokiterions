@@ -52,7 +52,7 @@ pub fn write_file(path: &str, events: &EventBuffer) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mokiterions_core::simulation::{Event, EventDetail, TerminationReason};
+    use mokiterions::simulation::{Event, EventDetail, TerminationReason};
 
     fn buffer() -> EventBuffer {
         let mut buffer = EventBuffer::new();

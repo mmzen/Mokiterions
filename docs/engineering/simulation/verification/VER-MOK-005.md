@@ -128,7 +128,7 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 | `REQ-MOK-025` | automated-test | Early exit yields a prefix | A run ended by the operator yields a prefix identical to the unobserved run up to the stopping tick, reported as ended early |
 | `REQ-MOK-025` | automated-test | Wall clock reaches no authoritative value | No engine input derives from time, frame cadence, input timing or terminal dimensions |
 | `REQ-MOK-025` | automated-test | Observer failure leaves the tick intact | An injected draw, input or export failure leaves no tick partially applied |
-| `REQ-MOK-026` | automated-test | Engine dependency set is empty | `cargo tree -p mokiterions-core` resolves to the engine package alone |
+| `REQ-MOK-026` | automated-test | Engine dependency set is empty | `cargo tree -p Mokiterions` resolves to the engine package alone |
 | `REQ-MOK-026` | automated-test | No engine-to-observer edge | The observer package appears nowhere in the engine package's dependency resolution |
 | `REQ-MOK-026` | automated-test | User-interface dependency is confined | `ratatui` and its transitive crates appear only in the observer package's resolution |
 | `REQ-MOK-026` | automated-test | Engine builds and tests without a terminal | The engine package's build and tests pass with no terminal attached and the observer package excluded |
@@ -136,7 +136,7 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 | `REQ-MOK-026` | automated-test | Snapshots are owned and inert | Snapshot types hold owned values, expose no mutating method, and outlive a subsequent advance unchanged |
 | `REQ-MOK-026` | automated-test | Advance takes no operator data | The advance operation accepts no argument derived from operator input |
 | `REQ-MOK-026` | evidence | Resolved dependency graph and feature set | `serde` absent; features exactly `crossterm`, `layout-cache`, `underline-color`; measured crate count recorded |
-| `REQ-MOK-026` | automated-test | Two packages exactly | The workspace contains exactly `mokiterions-core` and `mokiterions-tui` |
+| `REQ-MOK-026` | automated-test | Two packages exactly | The workspace contains exactly `Mokiterions` and `mokiterions-tui` |
 | `REQ-MOK-027` | automated-test | Footer provenance fields | Seed, tick limit, density as supplied, active source, current tick and retained count are present at every viewport |
 | `REQ-MOK-027` | automated-test | Defaulted and explicit values present identically | A defaulted density and the same density supplied explicitly produce the same footer text |
 | `REQ-MOK-027` | automated-test | Commit field is compile-time or absent | Present when supplied to the build, absent otherwise; no repository read and no version-control invocation occurs |
@@ -201,8 +201,8 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 
 - `cargo fmt --all -- --check` reports no differences across the workspace.
 - `cargo clippy --workspace --all-targets --all-features -- -D warnings` reports no findings.
-- `cargo tree -p mokiterions-core` resolves to the engine package alone, with no external crate.
-- `cargo build -p mokiterions-core` and `cargo test -p mokiterions-core` succeed with the observer package's
+- `cargo tree -p Mokiterions` resolves to the engine package alone, with no external crate.
+- `cargo build -p Mokiterions` and `cargo test -p Mokiterions` succeed with the observer package's
   dependencies unavailable to them and with no terminal attached.
 - The engine package's manifest declares no dependency, and no user-interface, networking, asynchronous-runtime,
   serialization or database crate appears in any engine-package resolution.
@@ -266,7 +266,7 @@ Retain under `docs/engineering/simulation/evidence/WO-MOK-005/`:
 
 - formatter, linter, test and build output for the workspace and for the engine package alone;
 - the requirement-to-test mapping;
-- `cargo tree -p mokiterions-core` output, as the empty-dependency-set proof for `REQ-MOK-026`;
+- `cargo tree -p Mokiterions` output, as the empty-dependency-set proof for `REQ-MOK-026`;
 - the observer package's resolved dependency graph, its measured crate count, and its enabled feature set;
 - per-seed observed-versus-unobserved comparison results, including the comparison method and the interaction
   performed during each observed run;

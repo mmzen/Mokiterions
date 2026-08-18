@@ -35,11 +35,11 @@ requirement-to-evidence matrix is mapped to a named test or a retained file in
 | Gate | Result |
 |---|---|
 | `cargo test --workspace` | 161 passed, 0 failed, 0 ignored (48 + 4 engine, 109 observer) |
-| `cargo test -p mokiterions-core` | 52 passed, 0 failed |
+| `cargo test -p Mokiterions` | 52 passed, 0 failed |
 | `cargo fmt --all -- --check` | no differences |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | 0 findings |
-| `cargo build --workspace` and `-p mokiterions-core` | clean |
-| `cargo tree -p mokiterions-core` | empty on every edge kind |
+| `cargo build --workspace` and `-p Mokiterions` | clean |
+| `cargo tree -p Mokiterions` | empty on every edge kind |
 | Artifact validation | PASS — 44 artifacts, 0 errors, 0 warnings |
 
 Four obligations `VER-MOK-005` singles out, each measured rather than argued:

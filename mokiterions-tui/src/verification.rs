@@ -17,7 +17,7 @@
 
 use std::collections::BTreeMap;
 
-use mokiterions_core::simulation::{
+use mokiterions::simulation::{
     Action, AgentSnapshot, Coordinate, DecisionOutcome, DecisionSnapshot, Direction, EventType,
     FoodClass, Policy, ResourceSnapshot, Simulation, TerminationReason, Territory, WorldSnapshot,
 };

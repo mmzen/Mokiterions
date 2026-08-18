@@ -125,7 +125,7 @@ evaluate them. The cost of adding it does not fall over time, and the cost of no
 
 Adopt option 2.
 
-1. Restructure the repository as a Cargo workspace of exactly **two packages**: `mokiterions-core`, the engine, and
+1. Restructure the repository as a Cargo workspace of exactly **two packages**: `Mokiterions`, the engine, and
    `mokiterions-tui`, the observer. No third package, no service, no separate release artifact.
 2. Keep the engine package at the repository root with its sources in their existing location, so the
    `REQ-MOK-010` text stream does not move and its verified behavior is not disturbed by relocation.
@@ -222,10 +222,25 @@ proc-macro chain. Trimming features does not make this a small dependency, and t
 
 ### Migration
 
-The engine package is renamed from `Mokiterions` to `mokiterions-core` and its binary is named `mokiterions`; the
-binary's filename changes case and form. Nothing depends on it — every artifact, script, CI step and document invokes
-`cargo run`, `cargo build` or `cargo test`. The engine's sources stay where they are, so the diff to verified engine
-behavior is the addition of a library target and a public surface.
+The engine package keeps its name, both of its target names, and the location of its sources. `SPEC-MOK-002` rules 1
+and 2 fix `Mokiterions` as the package name, `mokiterions` as the library target and `Mokiterions` as the binary
+target, and rule 2 ties the binary's name to the first line of `USAGE`, whose content `SPEC-MOK-001`'s *Help output*
+section fixes and `VER-MOK-004` verifies. Renaming any of the three to mark the split would edit a verified
+operator-facing string for a cosmetic reason, so this decision leaves all three alone: the produced binary's filename
+does not change, and no artifact, script, CI step or document has to.
+
+The library target already exists. `ADR-MOK-002` decided it and `WO-MOK-003` implemented it, so the diff to verified
+engine behavior here is narrower than a two-package split would suggest: not a library target and a public surface,
+but the addition of an observation surface to a library target that already carries an enumerated read-only
+interface. `SPEC-MOK-002` rule 5 states that that interface "grows only when an approved requirement needs it to
+grow, and this specification is amended in the same act". `REQ-MOK-019` through `REQ-MOK-027` are those requirements,
+and the amendment is one of the three this decision requires.
+
+What the second package does contradict is `SPEC-MOK-002` rule 1, which admits "no third target, no second package,
+no workspace". That prohibition was written when no approved requirement needed one. `REQ-MOK-026` now does, and it
+is the approved requirement that both rule 1 and `ARCH-MOK-001`'s prohibited-pattern list reserve the exception for.
+`SPEC-MOK-003`'s *Compatibility and migration* section states all three required amendments and `WO-MOK-005` makes
+them approval preconditions.
 
 If out-of-process or recorded observation is ever wanted, preserve the snapshot semantics and serialize the same
 types outside the engine, exactly as `ADR-MOK-001` prescribed for a future model adapter. Replacing engine authority,

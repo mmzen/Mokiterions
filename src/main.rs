@@ -2,8 +2,8 @@ use std::env;
 use std::io::{self, BufWriter, Write};
 use std::process::ExitCode;
 
-use mokiterions_core::cli::{self, Command};
-use mokiterions_core::simulation::Simulation;
+use mokiterions::cli::{self, Command};
+use mokiterions::simulation::Simulation;
 
 fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8
 where

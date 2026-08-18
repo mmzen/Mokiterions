@@ -71,7 +71,7 @@ cannot, because their access is the same surface.
 ## Dependency direction
 
 ```text
-mokiterions-tui  ──depends on──▶  mokiterions-core
+mokiterions-tui  ──depends on──▶  Mokiterions
        │                                 │
        ├── ratatui 0.30.2 (+ 56)         └── (nothing)
 ```

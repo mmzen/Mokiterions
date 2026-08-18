@@ -480,7 +480,7 @@ performs. The invariant `ADR-MOK-001` protects concerns decision sources, which 
 ### Component layout
 
 ```text
-Cargo.toml                 # package mokiterions-core; [workspace] members = ["mokiterions-tui"]
+Cargo.toml                 # package Mokiterions; [workspace] members = ["mokiterions-tui"]
 src/                       # unchanged location: engine, CLI, binary
 mokiterions-tui/
   Cargo.toml               # package mokiterions-tui; the only ratatui dependency
@@ -492,8 +492,10 @@ mokiterions-tui/
 2. The observer package depends on the engine package by path.
 3. The engine's sources are not relocated, so the `REQ-MOK-010` text stream does not move and its verified behavior
    is not disturbed by this change.
-4. The engine binary is named `mokiterions`. The observer binary is named `mokiterions-tui`.
-5. `cargo test` at the workspace root runs both packages' tests. `cargo tree -p mokiterions-core` demonstrates the
+4. The engine package, its library target and its binary target keep the names `SPEC-MOK-002` rules 1 and 2 fix:
+   `Mokiterions`, `mokiterions` and `Mokiterions`. The observer package and its binary are both named
+   `mokiterions-tui`. The observer reaches the engine as `use mokiterions::…`.
+5. `cargo test` at the workspace root runs both packages' tests. `cargo tree -p Mokiterions` demonstrates the
    empty set required by `REQ-MOK-026`.
 
 ## Security and privacy properties
@@ -532,10 +534,30 @@ mokiterions-tui/
 
 - Additive. No `SPEC-MOK-001` behavior changes: the engine binary, its inputs, its text stream, its trace lines, its
   summary and its exit codes are untouched.
-- The engine gains a public read-only surface and a library target. Adding them changes no existing output.
-- The engine package is renamed from `Mokiterions` to `mokiterions-core` and its binary is named `mokiterions`, so
-  the produced binary's filename changes case and form. No artifact, script, CI step or document depends on the
-  binary's filename; all of them invoke `cargo run`, `cargo build` or `cargo test`.
+- The engine's library target already exists: `SPEC-MOK-002` rule 3 declares it and rule 5 enumerates its public
+  interface. This specification adds the read-only observation surface to that enumeration; it does not create the
+  target. Rule 5 provides for exactly this — the interface "grows only when an approved requirement needs it to grow,
+  and this specification is amended in the same act" — so the growth is anticipated rather than a departure. Adding
+  it changes no existing output.
+- The engine package name and both engine target names are unchanged, so the produced binary's filename is unchanged
+  and the first line of `USAGE` is untouched. `SPEC-MOK-002` rule 2 ties that line to the binary's name, and
+  `SPEC-MOK-001`'s *Help output* section fixes its content while `VER-MOK-004` verifies it.
+- Three provisions of `SPEC-MOK-002` cannot be satisfied as written and must be amended before this specification can
+  be conformed to:
+  - **Rule 1** admits "no third target, no second package, no workspace". `REQ-MOK-026` requires a second package,
+    and it is the approved requirement that rule 1 and `ARCH-MOK-001`'s prohibited-pattern list both reserve the
+    exception for. The amendment permits a workspace of exactly two packages and keeps every other clause of rule 1,
+    including the empty dependency table for the engine package.
+  - **Rule 5** closes the library target's public interface to an enumeration of fourteen items. The observation
+    surface of rule 1 above adds to it, and rule 5's own growth clause is the authority for doing so.
+  - **Rule 6** forbids `Coordinate`, `Direction`, `Territory`, `FoodClass` and `Action` from being public. The
+    snapshots carry all five by value, so the prohibition must be narrowed from the named types to the capability it
+    was written to deny: a mutable borrow of, or a reference into, authoritative state. The other nine names in that
+    clause — `Mokiterion`, `Food`, `RelativeDirection`, `ActionResult`, `Observation`, `PerceivedFood`,
+    `PerceivedMokiterion`, `SplitMix64` and `DecisionSource` — stay prohibited and stay private.
+
+  Each amendment is the technical owner's act, and `WO-MOK-005` makes all three an approval precondition, exactly as
+  `SPEC-MOK-002` itself did for the `ARCH-MOK-001` and `SPEC-MOK-001` amendments that it required.
 - `Cargo.toml` and `Cargo.lock` change from an empty dependency set to a workspace with a 57-crate observer surface.
   This is the change `ADR-MOK-003` decides and `ARCH-MOK-001` must be amended to permit.
 - When a later phase adds an attribute the observer reserves space for, this specification is amended to define its
