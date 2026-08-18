@@ -80,5 +80,9 @@ benefit — that a break in what the observer presents now fails a test with no 
 itself with — would require deliberately breaking the contract to demonstrate. What is verified is the
 precondition for it.
 
-The implementation is uncommitted at the time this packet was written. There is no candidate commit and
-`VREC-MOK-006` is not drafted; a verification record binds a commit, and this one has nothing to bind.
+This packet was written before the implementation was committed, and that sentence is corrected rather
+than left standing: the tree every figure here was measured on is commit **83e487f**, open as pull
+request **#13**. `VREC-MOK-006` binds the branch commit that carries this correction and is left at
+`status = "ready"` — a verification record binds a commit and is created after the one it names, so it
+could not exist when the packet was first written. Nothing in the packet's measurements changed;
+`completion-summary.md` section 13 records the same correction with the detail.

@@ -349,10 +349,20 @@ restated here. What this work adds to them:
 
 Branch `feature/package-layout-and-test-tiers`. Predecessor commit **191db01** (`docs: draft the
 artifact pack for the package-layout restructure`), which is the baseline every comparison in this
-packet is bound to. The implementation is **uncommitted in the working tree** at the time this summary
-was written; no commit, push, tag or release has been made for it, and none was authorized.
-`VREC-MOK-006` is not drafted — a verification record binds a commit, and there is no candidate commit
-yet.
+packet is bound to.
+
+**This section was written before the implementation was committed and is updated here rather than
+left stale.** Every measurement above was taken on the working tree that became commit **83e487f**
+(`refactor: one directory per package, and a test tier outside the observer's crate (WO-MOK-006)`,
+112 files changed), so no figure changes; what changes is that the tree now has a name. The branch is
+pushed to `origin` and open as pull request **#13** against `master`, where `harnessctl preflight
+--phase review`, `harnessctl doctor` and both artifact scripts pass in the `governor` and `candidate`
+jobs. No tag, release, publish or deploy has been made and none was authorized.
+
+`VREC-MOK-006` is prepared against the branch commit that carries this correction, at
+`status = "ready"`. A verification record binds a commit and is created after the one it names, which
+is why it could not exist when this summary was first written. Transitioning it to `verified` is the
+accountable assurance owner's decision and has not been taken here.
 
 A scratch worktree used for the baseline captures was removed after use; `git worktree list` shows the
 primary worktree only.
@@ -362,7 +372,7 @@ primary worktree only.
 ## Disclosures
 
 `WO-MOK-006` requires the completion report to disclose what the work found that the artifacts do not
-say. Nine items.
+say. Ten items, **A** and **C** first because they need a decision rather than a read.
 
 ### A. The four amendments rest on a reading of what `ADR-MOK-004`'s approval covered
 
