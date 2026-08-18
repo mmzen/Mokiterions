@@ -45,8 +45,10 @@ not say. Fourteen items, grouped by what a reader should do about them.
    strongly at 182. The number does not.
 
 2. **The 57-crate figure is one of three defensible readings and is stated as if it were the only
-   one.** It appears in `SPEC-MOK-003` (lines 57, 528, 589), `ARCH-MOK-002` (lines 28, 159) and
-   `ADR-MOK-003` (five times). Measured: 57 with `--edges normal`, 59 counting build dependencies, 37
+   one.** It is stated twelve times: `SPEC-MOK-003` lines 57, 528, 589; `ARCH-MOK-002` lines 28, 159;
+   `ADR-MOK-003` lines 80, 96, 144, 176, 177, 186, 202. (`ADR-MOK-003` line 205 also says 57, but of
+   `Cargo.lock` entries, which is item 1 and a different error.) Measured: 57 with `--edges normal`,
+   59 counting build dependencies, 37
    excluding proc-macro crates, 61 counting both workspace members. `dependency-review.txt` records
    all of them and names the two crates — `rustc_version` and `semver` — that the build-edge reading
    adds and neither binary links. The decision `ADR-MOK-003` takes is unaffected — no reading makes
