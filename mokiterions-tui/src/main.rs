@@ -9,18 +9,6 @@
 //! all before the terminal is entered. Nothing is written to the alternate screen until every
 //! refusal has had its chance, and the terminal is restored on every exit path including a panic.
 
-mod authority;
-mod export;
-mod layout;
-mod options;
-mod render;
-mod spatial;
-mod state;
-
-/// `VER-MOK-005`'s cross-cutting cases, which need every module at once and ship no code.
-#[cfg(test)]
-mod verification;
-
 use std::env;
 use std::io::{self, Write};
 use std::process::ExitCode;
@@ -29,8 +17,14 @@ use std::time::{Duration, Instant};
 use ratatui::DefaultTerminal;
 use ratatui::crossterm::event::{self, Event as TerminalEvent};
 
-use crate::options::Startup;
-use crate::state::{Observer, Progression};
+// `SPEC-MOK-004` rules 4 and 5: the presentation layer is the library target beside this file,
+// and this binary reaches it the way anything outside the crate does. The `mod` declarations
+// that used to stand here moved to `src/lib.rs`; declaring them in both targets would compile
+// the modules twice and give the package two copies of every type.
+use mokiterions_tui::{layout, options, render};
+
+use mokiterions_tui::options::Startup;
+use mokiterions_tui::state::{Observer, Progression};
 
 /// Rule 6.1: at most one frame every 33 milliseconds.
 const FRAME_INTERVAL: Duration = Duration::from_millis(33);

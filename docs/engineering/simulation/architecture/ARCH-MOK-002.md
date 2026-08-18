@@ -5,15 +5,16 @@ title = "Terminal observer as a separate package over a read-only engine surface
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-18"
 
 [relations]
 addresses = [
   "REQ-MOK-021",
   "REQ-MOK-025",
   "REQ-MOK-026",
+  "REQ-MOK-028",
 ]
-conforms_to = ["SPEC-MOK-003"]
+conforms_to = ["SPEC-MOK-003", "SPEC-MOK-004"]
 
 [decision_assessment]
 outcome = "adr_required"
@@ -25,11 +26,18 @@ triggers = [
   "difficult-to-reverse",
   "material-alternatives",
 ]
-rationale = "This architecture introduces a second package and therefore a new system boundary where the repository previously had one crate, and it fixes the dependency direction across that boundary so the engine cannot reach the interface. It promotes the engine's read-only observation surface to a maintained public interface consumed by a second component. It selects a specific external framework and version as the first external dependency the project has ever taken, at a measured surface of 57 crates, which introduces a supply-chain and upgrade obligation the foundation did not have. Reversal is difficult in practice: once the observer is the instrument used to assess later phases, removing it removes the means of assessment, and the observation surface becomes a contract other work depends on. Material alternatives exist and were rejected — a single crate with a feature flag, a piped text-stream consumer, a serialized snapshot protocol, and building no interface at all — each with different consequences for determinism and for the engine's empty dependency set."
+rationale = "This architecture introduces a second package and therefore a new system boundary where the repository previously had one crate, and it fixes the dependency direction across that boundary so the engine cannot reach the interface. It promotes the engine's read-only observation surface to a maintained public interface consumed by a second component. It selects a specific external framework and version as the first external dependency the project has ever taken, at a measured surface of 57 crates, which introduces a supply-chain and upgrade obligation the foundation did not have. Reversal is difficult in practice: once the observer is the instrument used to assess later phases, removing it removes the means of assessment, and the observation surface becomes a contract other work depends on. Material alternatives exist and were rejected — a single crate with a feature flag, a piped text-stream consumer, a serialized snapshot protocol, and building no interface at all — each with different consequences for determinism and for the engine's empty dependency set. Amended 2026-08-18: the observer package now builds a library target as well as a binary, which promotes its presentation layer to a stated public interface with a maintained contract, and each package's manifest, sources and tests move under its own directory. Both are boundary and public-interface changes to this architecture rather than to the engine's, and `ADR-MOK-004` decides them; the alternatives it rejected — documenting the asymmetry, a feature-gated test-support seam, and a thin observer binary mirroring the engine's — are material and were weighed. Neither change alters the dependency direction, the framework selection, the trust boundary or the non-perturbation property, so the triggers already recorded are the same triggers."
 assessed_by = "technical owner"
 +++
 
 # Architecture: Terminal observer as a separate package over a read-only engine surface
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-17 | Original approved content for `CAP-MOK-004`. | Approved; implemented under `WO-MOK-005` and verified under `VREC-MOK-005`. |
+| 2026-08-18 | The observer package's target shape and the repository's package-directory layout, for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`. Component 4 no longer calls the observer host "the new binary": it is a library target and a binary target, and component 5's presentation layer is what the library target carries. *Testability without a terminal* extended from "assertable in memory" to "assertable in memory through a stated public interface, from a test tier outside the crate". A required pattern added for the library target and its provenance-closed interface; three prohibited patterns added — widening an item to reach it from a test, ungating a `#[cfg(test)]` item, and any test-support seam. Four conformance checks added. `addresses` grew by `REQ-MOK-028`, `conforms_to` by `SPEC-MOK-004`, and `decision_assessment.rationale` records both changes against the triggers already declared. No dependency edge, no trust boundary, no non-perturbation property and no quality attribute other than testability changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005` binds this architecture's 2026-08-17 content to `WO-MOK-005`'s commit and is not edited. |
 
 ## Context and scope
 
@@ -59,11 +67,20 @@ conforms to.
    advance in. It is a maintained interface, not an internal convenience.
 3. **Command-line host** — the existing binary. Constructs a run, advances it to completion, streams text events.
    Unchanged.
-4. **Observer host** — the new binary. Constructs a run, advances it under operator control, renders snapshots,
-   handles input, retains and exports events. Holds every user-interface dependency.
-5. **Presentation layer** — inside the observer package: layout selection, world-to-canvas mapping, pane rendering,
-   key dispatch, event retention and export. Deliberately factored so that layout and mapping are pure functions of
-   viewport size and snapshot content, and therefore testable without a terminal.
+4. **Observer host** — the observer package's binary target. Constructs a run, advances it under operator control,
+   renders snapshots, handles input, retains and exports events. Holds every user-interface dependency.
+   **Amended 2026-08-18.** This component read "the new binary". The observer package builds two targets: a library
+   target carrying component 5, and this binary, which is the only thing that acquires a terminal, decides whether to
+   launch, schedules and loops. The binary keeps that work rather than becoming thin — `ADR-MOK-004`'s Option 4 is
+   the rejected alternative — because its start-up and its launch decision are covered by tests that reach private
+   items, and promoting them would widen the interface for a test.
+5. **Presentation layer** — the observer package's library target: layout selection, world-to-canvas mapping, pane
+   rendering, key dispatch, event retention and export. Deliberately factored so that layout and mapping are pure
+   functions of viewport size and snapshot content, and therefore testable without a terminal. **Amended
+   2026-08-18.** This layer is now a library target with an enumerated public interface, so it is reachable from a
+   test tier outside the crate. The interface is closed by provenance rather than by enumeration: it is exactly the
+   items that were already public before the target existed, and `SPEC-MOK-004` rule 6 counts them and forbids
+   widening. It is not a trust boundary — component 2 is — and it holds no authority.
 
 Components 3 and 4 are peer hosts of component 2. Neither is privileged, and neither can do anything the other
 cannot, because their access is the same surface.
@@ -130,6 +147,11 @@ The engine's own text-stream path is untouched and continues to exist beside thi
   without a terminal and cannot depend on time or run history.
 - Rendering into an in-memory buffer that tests can assert cell by cell, so presentation claims are verified rather
   than inspected.
+- The presentation layer built as a library target whose public interface is closed by provenance — exactly the items
+  that were already public — so that a tier of tests reaches it from outside the crate and a change to what it
+  presents fails a test that has no private access to repair itself with. Added 2026-08-18 for `REQ-MOK-028`.
+- Each package's manifest, sources and tests under one directory named for that package, with the repository root
+  holding a workspace manifest and no package's implementation. Added 2026-08-18 for `REQ-MOK-030`.
 - Unconditional terminal restoration on every exit path, including panic.
 - Bounded event retention with a declared capacity and a visible truncation marker.
 - Wall-clock time confined to scheduling: when to draw, when to advance. Never an engine input.
@@ -150,6 +172,12 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 - Reading repository files, invoking version control, or performing network access at run time.
 - Serialization, asynchronous runtimes, threads sharing simulation state, or a third package.
 - Presenting a value the engine does not compute, including an inert placeholder that reads as a computed zero.
+- Widening any item's visibility, in either package, in order to reach it from a test. A test that needs internal
+  access belongs beside the code. Added 2026-08-18 for `REQ-MOK-028` and `REQ-MOK-029`.
+- Removing, gating or otherwise relaxing a `#[cfg(test)]` attribute so that an item exists in a non-test build. The
+  four hooks on the observer's state type stay as they are. Added 2026-08-18.
+- Any test-support seam, feature-gated or otherwise, that exposes either package's internals outside its crate.
+  Added 2026-08-18.
 
 ## Quality attributes
 
@@ -159,7 +187,11 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 - **Containment:** the engine's empty dependency set survives the introduction of a 57-crate framework, provably and
   per package.
 - **Testability without a terminal:** layout, mapping and rendering are assertable in memory, so presentation is
-  covered by automated tests rather than by screenshots.
+  covered by automated tests rather than by screenshots. **Amended 2026-08-18:** and assertable *through a stated
+  public interface, from a test tier outside the crate*. In-memory assertion alone left every observer test inside the
+  binary, where it could reach any private item and so could be repaired against a changed contract without the
+  change being visible. The tier outside the crate is what makes a break in what the observer presents fail a test.
+  Tests that assert the layer's internals stay beside the code, which is the same attribute, not an exception to it.
 - **Independent failure:** the observer can fail to build or run without affecting whether the engine builds, tests
   or runs.
 - **Legibility of authority:** the proposal-and-verdict pair crosses the boundary as data, so the boundary
@@ -183,6 +215,21 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 - Confirm rendered output is asserted from an in-memory buffer at each named viewport size in `SPEC-MOK-003`.
 - Confirm the terminal is restored on normal exit, on error exit, and on panic.
 - Confirm no repository read, version-control invocation, or network access occurs at run time.
+
+Added 2026-08-18 for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`:
+
+- Confirm the observer package builds a library target and a binary target, that the library target's public
+  interface is exactly the items that were already public before it existed, and that no item's visibility widened.
+  The check is that each module file the library declares is identical outside its `#[cfg(test)]` blocks to its
+  content at the predecessor commit.
+- Confirm every `#[cfg(test)]` item in the observer retains its attribute, and that no test outside the crate names
+  one.
+- Confirm every observer test is in exactly one tier, that each test outside the crate reaches the code only through
+  the library target's public interface with its assertions unchanged, and that one `cargo test` invocation runs both
+  tiers of both packages with no feature, environment variable, `#[ignore]` or terminal.
+- Confirm each package's manifest, sources and tests are under one directory named for that package, that the
+  repository root's manifest declares no package, and that every package name, target name, target kind and operator
+  command resolves as it did before.
 
 ## Related architecture and ADRs
 

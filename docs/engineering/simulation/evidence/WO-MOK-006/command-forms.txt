@@ -1,0 +1,157 @@
+# Command forms: every way either program is invoked still resolves, and by its old name
+#
+# `VER-MOK-006` conformance check: "Every command form in the repository's documentation resolves
+# after the change: the engine runs as `Mokiterions`, the observer as `mokiterions-tui`, and no
+# invocation needs a `--manifest-path` or a directory change."
+#
+# This is the check an operator would notice failing. The owner's decision was that the directory
+# moves and the names do not, so the test is not that the programs work — `test-run.txt` covers
+# that — but that they work under the names already written down in `README.md`, `USAGE`, the
+# specifications and the retained evidence of four earlier work orders.
+
+## The engine
+
+  $ cargo run --bin Mokiterions
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s
+       Running `target\debug\Mokiterions.exe`
+  tick=0 subject=world event=world_initialized result=width:128,height:128,territories:2
+  tick=0 subject=F0001 event=food_initialized result=class:low,position:47:52,territory:A
+  tick=0 subject=F0002 event=food_initialized result=class:medium,position:79:44,territory:A
+  tick=0 subject=F0003 event=food_initialized result=class:high,position:27:42,territory:A
+  tick=0 subject=F0004 event=food_initialized result=class:low,position:97:60,territory:A
+  tick=0 subject=F0005 event=food_initialized result=class:medium,position:67:38,territory:A
+  ...(truncated; the full stream is in the engine matrix)
+  pipestatus=0
+  
+  $ cargo run --bin Mokiterions -- --help | head -1     # the first line of USAGE
+  Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+  $ git show 191db01:src/main.rs | ... predecessor's own binary, first USAGE line, from the retained WO-MOK-004 evidence:
+  
+  $ cargo run -p Mokiterions --bin Mokiterions -- --help | head -1
+  Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]
+
+  The first line of `USAGE` is the load-bearing comparison. `Usage: Mokiterions [--seed <u64>]
+  [--ticks <u64>] [--policy <baseline|reference>]` is byte-identical to two independent records of
+  the predecessor's: `191db01:src/cli.rs` line 11, and the retained
+  `WO-MOK-003/after/exit-codes.txt`. An operator's own screen says exactly what it said before, and
+  the word `mokiterions-core` appears nowhere in it.
+
+  `cargo run --bin Mokiterions` works without `-p`, because a binary name is unique across the
+  workspace; `cargo run -p Mokiterions --bin Mokiterions` works too. Neither needed
+  `--manifest-path` and neither was run from inside `mokiterions-core/`.
+
+  The stream itself is unchanged: `comparison/engine-matrix.txt` compares 43 cells including two
+  full runs kept as readable text, with 0 differing lines.
+
+## The observer
+
+  $ cargo run -p mokiterions-tui -- --help | head -3
+  Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+                         [--policy <baseline|reference>] [--density <percent>]
+                         [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  exit=0
+  
+  $ cargo run -p mokiterions-tui -- --ticks 0        # a refusal, on standard error, before any terminal
+  configuration error: --ticks must be greater than zero
+  Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  exit=2
+  
+  $ timeout 25 cargo run -p mokiterions-tui < /dev/null   # the bare form: it resolves and enters the observer loop
+  exit=124  (124 = still running when the timeout fired, which is the observer holding its loop)
+  --- first 5 lines of what it wrote ---
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+       Running `target\debug\mokiterions-tui.exe`
+  ^[[?1049h^[[1;1H^[[1m^[[38;5;2;49mRUNNING^[[1;10H^[[22m^[[39;49mx8^[[1;14Hoverview^[[1;24Hfilter^[[1;31Hnone^[[1;37Htier^[[1;42HD^[[1;44Hminimal^[[1;83Hoverlays
+
+  Three forms, three behaviours, each the specified one:
+
+    `--help`     the whole `USAGE` on standard output, exit 0. `comparison/engine-matrix.txt`
+                 compares all 21 lines of it against the predecessor's: 0 differing lines.
+    `--ticks 0`  `configuration error: --ticks must be greater than zero` on standard error,
+                 followed by `USAGE`, exit 2 — the engine's own words, at the observer's start-up,
+                 before the terminal is entered. All 23 rejection cases are compared in the matrix:
+                 651 lines, 0 differing.
+    bare         it entered the alternate screen (`^[[?1049h` is the escape that does it), drew a
+                 frame whose header reads `RUNNING x8 overview filter none tier D minimal overlays`,
+                 and was still holding its loop when the 25-second timeout fired. Exit 124 is the
+                 timeout's, not the observer's: a run that reaches its tick limit exits 0, and this
+                 one was given `--ticks`'s default of 1000 at speed 8, which needs longer than 25
+                 seconds. The frame is the evidence; `comparison/observer-matrix.txt` compares 35
+                 rendered viewports against the predecessor's and the retained `WO-MOK-005` dumps.
+
+  `cargo run -p mokiterions-tui` needs the `-p` because the package name and the binary name are the
+  same and Cargo prefers to be told which. That was true before the change and is unchanged by it.
+
+## A regression this check found, and the fix
+#
+  The conformance check is that *every* command form in the repository's documentation resolves.
+  Sweeping the repository for `cargo run` found two places using the bare form, and the bare form
+  no longer works:
+
+    $ cargo run -- --help
+    error: `cargo run` could not determine which binary to run. Use the `--bin` option to specify
+    a binary, or the `default-run` manifest key.
+    available binaries: Mokiterions, mokiterions-tui
+    exit=101
+
+  This is a real regression introduced by this work order, not a pre-existing defect. Before the
+  change the repository root was the engine package, so `cargo run` at the root had one binary to
+  choose from and ran the engine. The root is now a virtual manifest over two packages, each with a
+  binary, and Cargo refuses to guess.
+
+  `SIMULATION_RULES.md` had seven bare invocations: one in section 12 and six in section 15's
+  "Running it yourself" block. All seven were changed to `cargo run --bin Mokiterions`, and section
+  15 gained two sentences saying why the flag is there and naming the other program, since the
+  guide is written for a reader who should not have to infer it. Nothing else in the guide changed.
+
+  The alternatives were considered and rejected. `default-run` is a `[package]` key and a virtual
+  manifest has no package, so it cannot be set at the root. `[workspace] default-members =
+  ["mokiterions-core"]` would make the bare form resolve, but it would also make bare `cargo test`
+  and bare `cargo clippy` apply to the engine alone — which is precisely the CI defect this work
+  order exists to remove. Naming the binary in the documentation is the only fix that does not
+  reintroduce it.
+
+### The seven corrected forms, each run
+
+  $ cargo run --bin Mokiterions -- --help
+      exit=0   25 lines of output   last line: viability floor.
+  $ cargo run --bin Mokiterions 
+      exit=0   1416 lines of output   last line: summary reason=tick_limit ticks=100 survivors=12 deaths=0 territory_a=7 territory_b=5 food_a_low=15 food_a_medium=20 food_a_high=23 food_b_low=11 food_b_medium=20 food_b_high=24
+  $ cargo run --bin Mokiterions -- --seed 42 --ticks 1000
+      exit=0   11222 lines of output   last line: summary reason=tick_limit ticks=1000 survivors=8 deaths=4 territory_a=3 territory_b=5 food_a_low=6 food_a_medium=17 food_a_high=38 food_b_low=8 food_b_medium=7 food_b_high=26
+  $ cargo run --bin Mokiterions -- --policy baseline
+      exit=0   1362 lines of output   last line: summary reason=tick_limit ticks=100 survivors=12 deaths=0 territory_a=6 territory_b=6 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+  $ cargo run --bin Mokiterions -- --density 1.5
+      exit=0   1549 lines of output   last line: summary reason=tick_limit ticks=100 survivors=12 deaths=0 territory_a=7 territory_b=5 food_a_low=22 food_a_medium=43 food_a_high=44 food_b_low=32 food_b_medium=40 food_b_high=44
+  $ cargo run --bin Mokiterions -- --ticks 40 --trace-actions
+      exit=0   1119 lines of output   last line: summary reason=tick_limit ticks=40 survivors=12 deaths=0 territory_a=6 territory_b=6 food_a_low=20 food_a_medium=19 food_a_high=21 food_b_low=17 food_b_medium=20 food_b_high=24
+  $ cargo run --bin Mokiterions -- --seed 42 --ticks 200 --density 0.02
+      exit=0   1510 lines of output   last line: summary reason=extinction ticks=134 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=1 food_a_medium=0 food_a_high=0 food_b_low=0 food_b_medium=0 food_b_high=0
+  
+  $ cargo run -p mokiterions-tui -- --help
+      exit=0   23 lines
+
+  Every documented form exits 0. The last one is also the guide's own factual claim, measured: it
+  reports `reason=extinction ticks=134 survivors=0 deaths=12`, and section 12 says eleven of the
+  twelve die together on tick 119 and the twelfth lasts until tick 134. The guide is still true.
+
+## An approved contract that would no longer resolve, disclosed and not edited
+#
+  `VER-MOK-001` step 1 reads "Run `cargo run -- --seed 42 --ticks 100`". That step would now fail
+  with exit 101 for the reason above. It is not edited, for two reasons. `VER-MOK-001` is an
+  approved verification contract that was discharged against its own commit, where the bare form
+  did resolve; editing a discharged contract would misrepresent what was verified then. And
+  amending an approved contract is the assurance owner's act under `DECISION_RIGHTS.md`, not this
+  work order's. The observation is carried to the completion report and the verification record.
+  The engine's behaviour under that step is unchanged and re-measured in
+  `comparison/engine-matrix.txt`; only the way it is invoked would need a `--bin`.
+
+## The other launch instructions in the repository
+#
+  `README.md` contains no `cargo` invocation at all. `scripts/` and `.github/workflows/` contain
+  none either — the harness scripts are Python and PowerShell and invoke no Cargo command. Every
+  `cargo` form in `docs/engineering/` outside `VER-MOK-001` already names its target explicitly
+  (`--bin Mokiterions`, `-p Mokiterions`, `-p mokiterions-tui`), which is why those artifacts needed
+  no correction. `docs/engineering/REPOSITORY_CONTEXT.md` was amended, because it describes the
+  layout itself and the layout is what changed; `amendment-approvals.md` records that amendment and
+  its approval.

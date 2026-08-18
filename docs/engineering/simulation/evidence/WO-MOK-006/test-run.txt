@@ -1,0 +1,129 @@
+# Test run: 169 tests, in every form, with each binary's own result line
+#
+# `VER-MOK-006` conformance check: "`cargo test --workspace` reports 169 passed, 0 failed, 0 ignored.
+# `cargo test -p Mokiterions` reports 60 and `cargo test -p mokiterions-tui` reports 109."
+#
+# The run below was made immediately after `cargo clean -p Mokiterions -p mokiterions-tui`, so every
+# test binary was linked from source rather than replayed. `static-checks.txt` records the clean.
+
+## cargo test --workspace
+
+       Running unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+  running 37 tests
+  test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+       Running unittests src\main.rs (target\debug\deps\Mokiterions-c8f7f3eae82c82c7.exe)
+  running 0 tests
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\cli.rs (target\debug\deps\cli-ea1fe31a556a11ea.exe)
+  running 12 tests
+  test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\density.rs (target\debug\deps\density-aa384b05c61f2961.exe)
+  running 2 tests
+  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\process.rs (target\debug\deps\process-44af230791f0b687.exe)
+  running 5 tests
+  test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\termination.rs (target\debug\deps\termination-3962b6ea9d95e5a7.exe)
+  running 3 tests
+  test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+       Running tests\viability.rs (target\debug\deps\viability-6b215a30b755f00d.exe)
+  running 1 test
+  test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+       Running unittests src\lib.rs (target\debug\deps\mokiterions_tui-2fbcc6609753ce76.exe)
+  running 24 tests
+  test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+       Running unittests src\main.rs (target\debug\deps\mokiterions_tui-cacaff985fad9c9e.exe)
+  running 8 tests
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\authority.rs (target\debug\deps\authority-eff95bcdd131dbd9.exe)
+  running 4 tests
+  test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\export.rs (target\debug\deps\export-a7c26a0bd291cfde.exe)
+  running 7 tests
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+       Running tests\layout.rs (target\debug\deps\layout-428970b899246a03.exe)
+  running 7 tests
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\options.rs (target\debug\deps\options-9145103ef3454b8b.exe)
+  running 7 tests
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\render.rs (target\debug\deps\render-672d1ffbd6e3eb65.exe)
+  running 8 tests
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+       Running tests\spatial.rs (target\debug\deps\spatial-6b42680631cd88b2.exe)
+  running 7 tests
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+       Running tests\state.rs (target\debug\deps\state-269098bb3c362ab5.exe)
+  running 21 tests
+  test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+       Running tests\verification.rs (target\debug\deps\verification-eddf947fada740f8.exe)
+  running 16 tests
+  test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.08s
+     Doc-tests mokiterions
+  running 0 tests
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Doc-tests mokiterions_tui
+  running 0 tests
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+  exit=0
+
+  17 test binaries and 2 doc-test targets, 19 result lines, every one `ok`. 0 failed and 0 ignored
+  in all 19 — no test is disabled, filtered out or skipped anywhere.
+
+  The totals add up two ways, which is what makes the count checkable rather than merely reported:
+
+    engine    lib mokiterions 37 + bin Mokiterions 0 + cli 12 + density 2 + process 5
+              + termination 3 + viability 1                                              =  60
+    observer  lib mokiterions_tui 24 + bin mokiterions-tui 8 + authority 4 + export 7
+              + layout 7 + options 7 + render 8 + spatial 7 + state 21 + verification 16  = 109
+    ------------------------------------------------------------------------------------------
+                                                                                            169
+
+  The observer's library binary runs 24, not 32: `render::tests` 12 + `state::tests` 4 +
+  `verification` 8. The other 8 internal-tier tests are in the *binary* target's own test binary,
+  `unittests src\main.rs`, which is why the internal tier is 32 while the library reports 24.
+  `test-placement.md` accounts for all 32.
+
+## The other three forms
+
+  $ cargo test -p Mokiterions
+      60 passed in total, against the expected 60
+      8 result lines, all ok, 0 failed, 0 ignored
+      exit=0
+
+  $ cargo test -p mokiterions-tui
+      109 passed in total, against the expected 109
+      11 result lines, all ok, 0 failed, 0 ignored
+      exit=0
+
+  $ cargo test   (the bare form, at the workspace root)
+      169 passed in total, against the expected 169
+      19 result lines, all ok, 0 failed, 0 ignored
+      exit=0
+
+  An adverse observation, recorded here because this is where it is measurable. `SPEC-MOK-004`'s
+  Performance section predicts that "the observer contributes eleven test binaries where it
+  contributed one". The measured figure is ten: the library, the binary, and eight integration
+  binaries. Eleven is the count of *result lines* for the package, which includes the `Doc-tests
+  mokiterions_tui` target — a target, not a test binary, and one that runs 0 tests. The prediction
+  is off by one on the reading its own words carry. Nothing follows from it: the section states an
+  expected compile-time cost, attaches no threshold and no obligation, and `compile-and-target.txt`
+  measures the actual cost. It is carried to the completion report for the owner to dispose of.
+
+  The bare form matters for the same reason the bare Clippy form does: at the root of a virtual
+  manifest it resolves to the default members, so it runs both packages. Before this change it ran
+  the root package only, and CI's bare invocation silently never ran the observer's tests at all.
+  That the bare form now reports 169 rather than 60 is the change CI needed.
+
+## What a passing run does and does not establish
+#
+  It establishes that the relocated tests compile as external crates and still hold. A test that
+  reached a private item or a `#[cfg(test)]` hook could not have compiled from `tests/`, so 77
+  passing integration tests are themselves the proof that each is writable through the public
+  interface — the compiler decided the tier, not a judgement.
+
+  It does not establish that they assert what they used to. `verbatim-comparison.txt` is that
+  check: 76 of the 77 bodies are byte-identical to the predecessor's and the 77th differs only in
+  one path, twice. And `test-census.txt` establishes that the 169 are the same 169, name by name,
+  rather than 169 of anything.

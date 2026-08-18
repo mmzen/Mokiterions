@@ -45,6 +45,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-17 | Corrected two derived figures in rule 5 before approval. The `100 × 30` row omitted the pane border and claimed a whole-world presentation its 98 × 24 interior cannot deliver, since 24 cells address 96 of 128 world rows; the tier C example stated a 71 × 42 canvas where the arithmetic yields 71 × 36. A `120 × 48` row was added so tier C carries a checkable obligation. No rule changed. | Approved by the technical owner. |
 | 2026-08-18 | Corrected the statement of required `SPEC-MOK-002` amendments in *Compatibility and migration*, which the merge with `master` exposed as understated. Rule 3 is added as a fourth required amendment: it freezes `src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code. Rule 6's required narrowing is extended to the "by … return value" path, since every accessor returns an owned copy. The list of names that stay private is corrected from nine to **ten** — `DecisionEntropy` was omitted. No rule of this specification changed, and no obligation on the observer changed. | Corrected by the implementation agent as a statement of fact about another artifact; the four amendments it states remain the technical owner's act and are outstanding. |
 | 2026-08-18 | *Data and interface contracts* corrected on a claim about the engine's surface that does not hold as written, and which `WO-MOK-005` requires be fixed by amending the specification rather than by relaxing the assertion. Clause 2 said `advance_tick` was the only `&mut self` method on the surface that changes state; `Simulation::run`, the pre-existing `REQ-MOK-010` whole-run entry point, is a second. The clause now states the two, why `run` is there, why it cannot be narrowed away without relocating the engine's sources or duplicating the run loop, and the checks that can actually be met — including that the observer reaches neither `run` nor anything leading to it. The method listing is corrected to the real signatures and completed with `termination_reason` and `initialization_events`, with a note that it is what the observer calls and not the whole public interface. No obligation on the observer changed, and the non-perturbation property is unaffected. | **OUTSTANDING.** Requires the technical owner, as a correction to an approved specification. `boundary-and-security-review.md` under `WO-MOK-005` is the measurement that found it. |
+| 2026-08-18 | Four provisions amended so that `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030` can be conformed to. **Component layout**: the tree restated to one directory per package, matching `SPEC-MOK-004` rule 1, and clause 2 given the concrete path-dependency form. **Clause 3**: "The engine's sources are not relocated" replaced by the reason it existed for — the `REQ-MOK-010` text stream does not move — which a directory move preserves and `VER-MOK-006` measures. **Data and interface contracts clause 2**: its reasoning no longer appeals to the component layout forbidding relocation, since it no longer does; what would narrow `run` away is a target split, not a directory move, and the `grep` check is re-based on `mokiterions-core/src/simulation.rs`. **Explicitly unspecified decisions**: the grant of "test organization" withdrawn to `REQ-MOK-029` and `SPEC-MOK-004` rules 8 to 10, leaving fixtures and helpers with the implementation; and "the package layout", withheld but previously fixed nowhere, now pointed at `SPEC-MOK-004` rules 1 to 4, together with the observer's target shape and test-tier placement. No rule about the observer's behavior, presentation, key bindings, export, snapshot contract or non-perturbation changes, and no figure changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005`, which binds this specification to `WO-MOK-005`'s commit, is not edited: what it verified was correct at its commit, and the two rows above it remain **OUTSTANDING** and untouched. |
 
 ## Actors and external systems
 
@@ -480,9 +481,14 @@ TickOutcome       { events: [Event], finished, reason }
    state, `Simulation::run`, and this clause previously said there was no such method. `run` is the `REQ-MOK-010`
    whole-run entry point; it predates this specification, `SPEC-MOK-002` rule 5's first list already carries it, and
    it is reachable because rule 3 of that specification places the `simulation` module in the library target — not
-   because anything here admits it. Narrowing it away would mean relocating the engine's sources, which the component
-   layout below forbids, or writing a second run loop, which would give the rules two implementations. So the check is
-   stated as it can be met: `grep -n 'pub fn .*&mut self' src/simulation.rs` returns exactly `run` and `advance_tick`;
+   because anything here admits it. Narrowing it away would mean splitting the engine's sources so the whole-run entry
+   point leaves the library target, or writing a second run loop, which would give the rules two implementations.
+   Amended 2026-08-18: this clause said "relocating the engine's sources, which the component layout below forbids".
+   The component layout no longer forbids relocation — the engine's sources are now under `mokiterions-core/` — and the
+   move does not narrow `run` away, because moving a directory changes no module's target membership. What would be
+   needed is a split, which is what the clause is now stated in terms of and which remains out of scope. So the check
+   is stated as it can be met: `grep -n 'pub fn .*&mut self' mokiterions-core/src/simulation.rs` returns exactly `run`
+   and `advance_tick`;
    the observer imports neither the whole-run method nor anything that reaches it; and no `&self` method mutates
    through interior mutability, because no engine type contains a `Cell`, a `RefCell`, an `Rc`, an `Arc`, a lock or an
    atomic. Both methods route through one internal step, which is what makes the two hosts execute the identical tick
@@ -498,19 +504,34 @@ performs. The invariant `ADR-MOK-001` protects concerns decision sources, which 
 
 ### Component layout
 
+**Amended 2026-08-18 for `REQ-MOK-030`.** The tree below and clause 3 stated the layout as it stood when this
+specification was conformed to: the engine package at the repository root, sharing one `Cargo.toml` with the
+workspace. Each package now has its own directory. `SPEC-MOK-004` rule 1 is the authoritative tree; the one below is
+restated to match it so that this specification does not contradict it. Nothing else in this section changes, and
+nothing about the observer changes.
+
 ```text
-Cargo.toml                 # package Mokiterions; [workspace] members = ["mokiterions-tui"]
-src/                       # unchanged location: engine, CLI, binary
+Cargo.toml                 # workspace manifest only; declares no package
+mokiterions-core/
+  Cargo.toml               # package Mokiterions; the engine, its CLI and its binary
+  src/
+  tests/
 mokiterions-tui/
   Cargo.toml               # package mokiterions-tui; the only ratatui dependency
   src/
+  tests/
 ```
 
 1. The engine package's external dependency set is empty and admits no exception, including a dependency shared with
    the observer.
-2. The observer package depends on the engine package by path.
-3. The engine's sources are not relocated, so the `REQ-MOK-010` text stream does not move and its verified behavior
-   is not disturbed by this change.
+2. The observer package depends on the engine package by path, as
+   `Mokiterions = { path = "../mokiterions-core" }`.
+3. The engine's sources move as a directory and are not otherwise touched, so the `REQ-MOK-010` text stream does not
+   move and its verified behavior is not disturbed by this change. **Amended 2026-08-18.** This clause read "The
+   engine's sources are not relocated". What it was protecting is the text stream, not the directory: the reason it
+   gave is the whole of its force, and that reason is preserved by moving the files unchanged. `VER-MOK-006` makes
+   the engine's byte-identical output across the declared matrix the evidence, rather than the file location that
+   used to stand in for it.
 4. The engine package, its library target and its binary target keep the names `SPEC-MOK-002` rules 1 and 2 fix:
    `Mokiterions`, `mokiterions` and `Mokiterions`. The observer package and its binary are both named
    `mokiterions-tui`. The observer reaches the engine as `use mokiterions::…`.
@@ -653,10 +674,23 @@ The implementation may choose:
 - the concrete widget used for each pane, provided the specified content, constraints and announcements hold;
 - exact diagnostic and title wording, and the exact palette, provided every distinction remains available without
   colour;
-- test organization, fixtures and helpers;
+- fixtures and helpers within a tier;
 - whether the reserved fourth bar is reserved by layout arithmetic or by a placeholder that renders nothing.
 
+**Amended 2026-08-18 for `REQ-MOK-029`.** The first of those bullets read "test organization, fixtures and helpers".
+That grant is withdrawn as to organization: `REQ-MOK-029` and `SPEC-MOK-004` rules 8 to 10 now fix the observer's two
+tiers, where each lives, and how a test is assigned to one. The implementation still chooses fixtures and helpers
+inside a tier. The grant was taken in good faith and is why all 109 observer tests were in one tier; withdrawing it
+is what makes the placement rule binding rather than advisory.
+
 The implementation may not choose: the dependency, its version or its feature set; the package layout or dependency
-direction; the coordinate mapping or orientation; the fidelity thresholds, the tier table or the floor; the glyph
-assignments; the key bindings; the buffer capacity; the export format or filter semantics; the authority mapping; the
-snapshot contract; any figure fixed by `SPEC-MOK-001`; or any lifecycle status.
+direction; the observer's target shape or its test-tier placement; the coordinate mapping or orientation; the fidelity
+thresholds, the tier table or the floor; the glyph assignments; the key bindings; the buffer capacity; the export
+format or filter semantics; the authority mapping; the snapshot contract; any figure fixed by `SPEC-MOK-001`; or any
+lifecycle status.
+
+**Amended 2026-08-18 for `REQ-MOK-028` and `REQ-MOK-030`.** "The package layout" in the sentence above was withheld
+from the implementation without being fixed anywhere, because at the time there was one layout and no reason to state
+it. `SPEC-MOK-004` rules 1 to 4 now fix it — one directory per package, and the observer's library and binary targets
+— so the withholding points at an authority instead of at nothing. The observer's target shape and test-tier
+placement are added to the same sentence for the same reason.

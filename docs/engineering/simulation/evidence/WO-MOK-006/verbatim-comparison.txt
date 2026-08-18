@@ -1,0 +1,166 @@
+# Verbatim comparison: is every relocated test's body character for character what it was?
+#
+# `VER-MOK-006` conformance check: "A relocated test's body is unchanged. Only its imports change,
+# and only from a path inside the crate to the same path through the library target's name."
+#
+# This is the check that a census cannot make. 169 names surviving on both sides says nothing about
+# whether the assertions behind them survived; a relocated test could have been quietly weakened to
+# make it compile outside the crate and the count would not move. So each test's text is extracted
+# from the predecessor commit and from the candidate and compared directly.
+#
+# Method. Predecessor: 191db01. A test's text runs from its first documentation or attribute line
+# through its closing brace, found by a brace scanner rather than by indentation. A relocated test's
+# predecessor text sat one level in, inside a `#[cfg(test)] mod tests { ... }` block, so it is
+# dedented by exactly four spaces before the comparison; `verification.rs` is a test module in its
+# entirety on both sides, so its tests sit at indent zero and are compared with no dedent. A
+# retained test is compared with no normalisation at all. Nothing else is normalised — not
+# whitespace, not comments, not blank lines. Any difference is printed in full as a unified diff,
+# which is what makes the check able to fail.
+
+# Population, per module: what the predecessor had, and where it is now
+
+  module          predecessor       tests/         src/
+  authority                 4            4            0
+  export                    7            7            0
+  layout                    7            7            0
+  main                      8            0            8
+  options                   7            7            0
+  render                   20            8           12
+  spatial                   7            7            0
+  state                    25           21            4
+  verification             24           16            8
+  ------------------------------------------------------------
+  total                   109           77           32
+
+# Result
+
+     1  relocated ALTERED
+    76  relocated verbatim
+    32  retained verbatim
+  
+
+  76 of the 77 relocated tests are byte-for-byte identical to their predecessor text. All 32
+  retained tests are byte-for-byte identical. One relocated test differs, in exactly the way the
+  conformance check permits and in no other way:
+
+  ## export::the_closing_line_states_the_count_and_the_truncation
+
+     Two occurrences of one path, and nothing else:
+
+     --- export::the_closing_line_states_the_count_and_the_truncation (relocated) ---
+     --- 191db01
+     +++ candidate
+     @@ -3,7 +3,7 @@
+          let mut events = buffer();
+          assert!(rendered(&events).ends_with("# retained=3 truncated=false\n"));
+      
+     -    for _ in 0..crate::state::EVENT_CAPACITY {
+     +    for _ in 0..mokiterions_tui::state::EVENT_CAPACITY {
+              events.push(Event {
+                  tick: 9,
+                  subject: "world".to_string(),
+     @@ -16,7 +16,7 @@
+          assert!(
+              text.ends_with(&format!(
+                  "# retained={} truncated=true\n",
+     -            crate::state::EVENT_CAPACITY
+     +            mokiterions_tui::state::EVENT_CAPACITY
+              )),
+              "{}",
+              text.lines().next_back().unwrap()
+
+     `crate::state::EVENT_CAPACITY` became `mokiterions_tui::state::EVENT_CAPACITY`. The item is
+     the same item — `EVENT_CAPACITY` is public, `public-item-census.txt` lists it, and it is not
+     redefined anywhere. `crate::` is how a file inside the crate names it; from `tests/export.rs`,
+     which is its own crate, the same item has to be named through the library target. The test's
+     text is otherwise identical: same helpers, same loop bound, same two assertions, same message.
+
+     This is the only import change in all 77 relocations that appears inside a test body. The
+     other 76 needed none, because their imports sit in each file's `use` header, above the tests
+     and outside the text this comparison covers. Those headers are new text — they had to be
+     written, since `use super::*` inside a `mod tests` block imports the parent module's private
+     `use` bindings and a file in `tests/` inherits none of them — and they are not test bodies.
+     What each header imports is visible in the files themselves and bounded by
+     `public-item-census.txt`: nothing in any of them names a private item, or the eight test
+     binaries would not compile.
+
+# Addendum: the 25 helper definitions the tests call
+#
+# The comparison above covers test bodies. A test body can be verbatim and still assert something
+# different if a helper it calls changed, so the helpers are compared the same way. There are 25
+# helper definitions across the eight public-tier files — 22 distinct names, since `press` is defined
+# in three files and `start` in two. That duplication is not new: the predecessor had the same three
+# `press` definitions and the same two `start` definitions, one per module test block, and the
+# relocation carried each file's own helper with it. No shared helper module was introduced; there is
+# no `tests/common/`, no `mod` declaration, no `#[path]` attribute and no `include!` in any of the
+# eight files, so each is a self-contained crate.
+
+  file             helper             old  new  verdict
+  export.rs        buffer              29   29  identical after dedent
+  export.rs        rendered             5    5  identical after dedent
+  layout.rs        viewport             3    3  identical after dedent
+  options.rs       run                  6    6  identical after dedent
+  render.rs        start                6    6  identical after dedent
+  render.rs        frame_of             5    5  identical after dedent
+  render.rs        rows                 9    9  identical after dedent
+  render.rs        text_of              3    3  identical after dedent
+  render.rs        press                6    3  DIFFERS — reformatted, see below
+  state.rs         start                6    6  identical after dedent
+  state.rs         press                8    8  identical after dedent
+  state.rs         send                 3    3  identical after dedent
+  verification.rs  observer_for         8    8  identical after dedent
+  verification.rs  press                8    8  identical after dedent
+  verification.rs  tap                  3    3  identical after dedent
+  verification.rs  unobserved          15   15  identical after dedent
+  verification.rs  observed_lines       7    7  identical after dedent
+  verification.rs  summary_from        25   25  identical after dedent
+  verification.rs  by_tick             12   12  identical after dedent
+  verification.rs  frame                7    7  identical after dedent
+  verification.rs  flatten              3    3  identical after dedent
+  verification.rs  region              10   10  identical after dedent
+  verification.rs  interact            26   26  identical after dedent
+  verification.rs  observed_run        15   15  identical after dedent
+  verification.rs  canvas_of            4    4  identical after dedent
+  ------------------------------------------------------------------------
+  24  identical after dedent
+   1  reformatted by the formatter
+
+  ## render::press — the one helper whose text is not identical
+
+     --- 191db01 (mokiterions-tui/src/render.rs, inside `mod tests`, dedented four spaces) ---
+     fn press(code: ratatui::crossterm::event::KeyCode) -> ratatui::crossterm::event::KeyEvent {
+         ratatui::crossterm::event::KeyEvent::new(
+             code,
+             ratatui::crossterm::event::KeyModifiers::NONE,
+         )
+     }
+
+     --- candidate (mokiterions-tui/tests/render.rs) ---
+     fn press(code: ratatui::crossterm::event::KeyCode) -> ratatui::crossterm::event::KeyEvent {
+         ratatui::crossterm::event::KeyEvent::new(code, ratatui::crossterm::event::KeyModifiers::NONE)
+     }
+
+     Same call, same arguments, same order, joined onto one line. The cause is measurable rather
+     than a matter of judgement: the joined call line is 97 columns at file scope, and was 101 at
+     the predecessor's deeper indent, one column past `rustfmt`'s default `max_width` of 100. There
+     is no `rustfmt.toml` in this repository, so the default applies. Moving the helper out one
+     level brought the line under the limit and `cargo fmt` closed the wrap. `cargo fmt --all
+     --check` passes on the candidate, which is the same formatter reaching the same verdict.
+
+     It is recorded as a difference rather than waved through as cosmetic because the comparison's
+     value comes from printing everything it finds. Nothing in it changes which `KeyEvent` the
+     helper builds: `KeyEvent::new(code, KeyModifiers::NONE)` on both sides. The two other `press`
+     definitions, in `state.rs` and `verification.rs`, are the eight-line struct-literal form and
+     are byte-identical after dedent — so the two forms that existed before still both exist, with
+     the same difference between them they always had.
+
+# What this establishes, and what it does not
+#
+# It establishes that the assertions did not change. Combined with `test-census.txt`, which shows
+# no name added, removed or renamed, and with `test-run.txt`, which shows 169 passing and 0 ignored,
+# the observer's test suite asserts after this change exactly what it asserted before it.
+#
+# It does not establish that the tests still exercise the same code — a test can be unchanged and
+# still be linked against something different. That is what `non-test-content.txt` is for: all seven
+# `pub mod` files are byte-identical outside their test blocks, so the code under test is the same
+# code as well.

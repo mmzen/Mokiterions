@@ -1,0 +1,44 @@
+RUNNING  x8  overview  sel M01  filter none  tier B compact-log                                                                                                 
+A  standing 58/61  low 15  medium 17  high 26                                                                                                                   
+B  standing 50/61  low 10  medium 13  high 27                                                                                                                   
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-127  whole world ───────────────────────┐┌ inspector ───────────────────────────────┐
+│M01  A  55:17         move:east              ││          ⢀   ⠁                        ⠑   ⠈    ⠂                  ││M01                                       │
+│     h ██████ 100  s ████░░  80  e █░░░░░  20││         ⠁              ⠐                   ⠁                      ││position  55:17  territory A              │
+│M02  B  13:90         move:south             ││⠐        ⠁⢀                       ⠐   ⠁      ⠂          ⠈  ⠄       ││sharing   1 in this rendered cell         │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││ ⠂                ⠄                                      ⠄         ││health 100  satiety 80  energy 20         │
+│M03  B  60:83         move:south             ││6       ⠈                  1 ⠄                    ⢀       ⠄    ⠠   ││                                          │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││            ⠐             ⠁                ⡀          ⠄       ⡀    ││decision, tick 200                        │
+│M04  B  5:73          move:east              ││                                           ⠠                       ││proposed  move:east                       │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││       ⢀                  ⠐    ⠈               ⠆              ⠁    ││outcome   + accepted                      │
+│M05  A  59:57         move:east              ││    ⠄                                                     ⡀        ││applied   move:east                       │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40││                               ⠠     ⠐⠂         ⠄                  ││authority REQ-MOK-004                     │
+│M06  A  1:17          move:north             ││           ⠁           ⢀                            ⠂              ││                                          │
+│     h ██████ 100  s ████░░  70  e █░░░░░  20││           ⠂                                                       ││                                          │
+│M07  B  28:113        move:east              ││   ⠐           ⡀   ⠄    ⠂                                          ││                                          │
+│     h ██████ 100  s ████░░  80  e █░░░░░  20││                                                              ⠐    ││                                          │
+│M08  B  116:79        move:west              ││                             5               ⠁   ⠂  ⠠         B    ││                                          │
+│     h ██████ 100  s ███░░░  55  e ██░░░░  35││⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀   ││                                          │
+│M09  B  106:123       move:east              ││   ⠈⠠                                                       ⠐      ││                                          │
+│     h ██████ 100  s ███░░░  50  e █░░░░░  30││     ⠠       ⡀                                                     ││                                          │
+│M10  B  61:91         move:south             ││  4                                          ⠁      ⢀              ││                                          │
+│     h ██████ 100  s ████░░  70  e █░░░░░  20││                                C          ⢀⠈⠁            8        ││                                          │
+│M11  A  125:56        move:east              ││  ⠠   ⠂                       3                  ⠠       ⠠         ││                                          │
+│     h ██████ 100  s ████░░  80  e █░░░░░  20││   ⠠                 ⠂           ⠄                                 ││                                          │
+│M12  B  65:76         move:south             ││      2                       A                                    ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││                              ⢀  ⠈                                 ││                                          │
+│                                             ││      ⠈                       ⠠         ⠁            ⠂             ││                                          │
+│                                             ││         ⠠   ⡀                    ⠂             ⠈                  ││                                          │
+│                                             ││                             ⠐    ⢀                   ⠠        ⠈   ││                                          │
+│                                             ││                  ⡀⠠          ⠈ ⢀     ⠐                            ││                                          │
+│                                             ││    ⠐         7                                                    ││                                          │
+│                                             ││                        ⠄      ⠐⠂        ⠐                         ││                                          │
+│                                             ││              ⡀     ⠠            ⠐                   9             ││                                          │
+│                                             ││      ⠄      ⢀                          ⢀        ⡀                 ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 5105 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=200 subject=A event=food_regenerated result=food:F0192,class:medium,position:22:40                                                                       │
+│tick=200 subject=A event=food_regenerated result=food:F0193,class:high,position:76:37                                                                         │
+│tick=200 subject=B event=food_regenerated result=food:F0194,class:medium,position:90:72                                                                       │
+│tick=200 subject=B event=food_regenerated result=food:F0195,class:low,position:127:104                                                                        │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 777  ticks 400  density 0.75%  source reference  tick 200  events 5105                                                                                     

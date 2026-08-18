@@ -1,0 +1,117 @@
+# Dependencies: the resolved graph and the lock file, before and after
+#
+# `VER-MOK-006` conformance check: "`Cargo.lock` is byte-identical to its predecessor. The engine's
+# resolved dependency set is empty. The observer's is the same set `WO-MOK-005` recorded."
+#
+# The claim being tested is that a layout change resolved to the same graph. It could have failed in
+# three ways: a changed dependency path could have resolved to a different package, a virtual
+# manifest's resolver default could have re-resolved the graph, and a new library target could have
+# pulled in a feature the binary did not need. Each is measured below.
+
+## Cargo.lock
+
+  $ wc -l  (predecessor 191db01 / candidate)
+  1665
+  1665
+  
+  $ grep -c '^\[\[package\]\]'
+  182
+  182
+  
+  $ diff -u  191db01:Cargo.lock  Cargo.lock
+  diff exit=0
+  
+  $ sha256sum
+  fde268d82b3540485373aa14656e09b044d7efe9af624ab1b951a03b877aff0b  *191db01:Cargo.lock
+  fde268d82b3540485373aa14656e09b044d7efe9af624ab1b951a03b877aff0b  *candidate Cargo.lock
+  
+  $ git hash-object --path=Cargo.lock Cargo.lock  vs  git rev-parse 191db01:Cargo.lock
+  824003e1cbd4757f28d09849e2faca0a4546e99f
+  824003e1cbd4757f28d09849e2faca0a4546e99f
+
+  Byte-identical, established five independent ways: equal line counts, equal `[[package]]` counts,
+  an empty `diff`, equal SHA-256 digests, and — the one that is immune to this repository's
+  line-ending normalisation — equal Git blob ids under the same clean filter,
+  `824003e1cbd4757f28d09849e2faca0a4546e99f` on both sides.
+
+  This is the strongest single fact in the evidence packet about the dependency graph. Cargo rewrites
+  the lock file whenever resolution changes at all: a different version, a different source, a
+  changed feature unification, an added or removed package. It did not rewrite it. `resolver = "3"`
+  in the new virtual manifest is what kept it from doing so — the members declare edition 2024, whose
+  default resolver is 3, and a virtual manifest does not inherit that default, so leaving the line
+  out would have re-resolved under resolver 1 and rewritten the file.
+
+  A path dependency's path is not recorded in `Cargo.lock`, which is why `path = ".."` becoming
+  `path = "../mokiterions-core"` leaves it untouched; the package's identity, `Mokiterions 0.1.0`, is
+  what the lock records and that did not change.
+
+## The engine's resolved dependencies
+
+  $ cargo tree -p Mokiterions --edges all
+  Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
+  
+  $ cargo tree -p Mokiterions --all-features --edges all
+  Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
+  
+  One line: the package itself. `--edges all` includes normal, build, dev, proc-macro and feature
+  edges, so this is not the narrow reading — there is nothing of any kind. `--all-features` adds
+  nothing because the package declares no feature.
+
+  `ARCH-MOK-001` as amended requires exactly this and admits no exception, "including a dependency
+  shared with another package in the same workspace". The workspace makes that a live risk rather
+  than a formality: a `[workspace.dependencies]` table would let a shared dependency reach the engine
+  without appearing in its own manifest. The root manifest declares no such table — `manifests.txt`
+  shows the whole file — and this output is the measurement that nothing reached it by any route.
+
+## The observer's resolved dependencies
+
+  # Crate counts, measured with WO-MOK-005's method (distinct name+version, markers stripped, the two workspace packages excluded)
+  cargo tree --edges normal         57
+  cargo tree (default edges)        59
+  cargo tree --edges no-proc-macro  37
+  
+  $ cargo tree -p mokiterions-tui --prefix none --no-dedupe | (strip) | sort -u | grep -c .   # includes both workspace packages
+  61
+  
+  $ cargo tree -p Mokiterions --edges all
+  Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
+  Identical to the figures `WO-MOK-005` recorded and retained, count for count: 57 external crates
+  on normal edges, 59 with build and proc-macro edges, 37 with proc-macro crates excluded, 61 when
+  the workspace's own two packages are counted in. A single added or dropped crate would move one of
+  these, and the byte-identical lock file above says none was.
+
+  The resolved feature set is unchanged as well: 166 enabled features across the graph, with
+  ratatui's three pinned features resolving exactly as before —
+    ├── ratatui feature "crossterm"
+    --
+    │   │   │   ├── ratatui-core feature "default"
+    --
+    │   │   ├── ratatui-core feature "default" (*)
+    │   │   └── ratatui-crossterm feature "default"
+    --
+    │   │       │   ├── ratatui-core feature "default" (*)
+    --
+    │   │       ├── ratatui-crossterm feature "crossterm_0_29"
+    │   │       └── ratatui-crossterm feature "underline-color"
+    │   │           └── ratatui-core feature "underline-color"
+    │   └── ratatui feature "std"
+    │       ├── ratatui-core feature "std"
+    --
+    │       └── ratatui-widgets feature "std"
+    ├── ratatui feature "layout-cache"
+    │   └── ratatui-core feature "layout-cache"
+    └── ratatui feature "underline-color"
+        ├── ratatui-core feature "underline-color" (*)
+
+  The new library target is what made this worth measuring. A library and a binary in one package
+  share one dependency table and one feature resolution, so adding `[lib]` cannot pull in a feature
+  the binary lacked — but that is an argument, and the counts above are the measurement.
+
+## What stays absent
+#
+  `SPEC-MOK-001` and `SPEC-MOK-003` prohibit a network, model, credential, persistence,
+  serialization, async-runtime and database dependency in either package. None appears in the 57.
+  The observer reads no credential and opens no network socket; the only file it ever writes is the
+  operator's `--export` path, validated as a string and never used to read, and the only file the
+  engine writes is its own standard output. Nothing in this work order touched any of that: the
+  dependency graph it produced is the graph `WO-MOK-005` was verified against.

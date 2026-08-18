@@ -1,0 +1,651 @@
+=== help
+argv:        --help
+exit:        0
+stdout_sha:  7b3b5c1534ef61733a9f21d181e9ffc41196f48f81ff538c48b712f3c161efdb
+stdout_len:  1072
+stderr:
+=== ticks zero
+argv:        --ticks 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --ticks must be greater than zero
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== ticks missing value
+argv:        --ticks
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --ticks
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== ticks non-numeric
+argv:        --ticks abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --ticks value: abc
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== seed non-numeric
+argv:        --seed abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --seed value: abc
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== seed missing value
+argv:        --seed
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --seed
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== policy invalid
+argv:        --policy random
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --policy value: random; expected baseline or reference
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== policy missing value
+argv:        --policy
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --policy
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== density zero cells
+argv:        --density 0.01
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0.01; resolves to zero resources per territory; the smallest usable density is 0.02
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== density literal zero
+argv:        --density 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0; resolves to zero resources per territory; the smallest usable density is 0.02
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== density precision
+argv:        --density 0.751
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0.751; at most two decimal places are accepted
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== density negative
+argv:        --density -1
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: -1; expected digits and at most one decimal point
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== density over 100
+argv:        --density 101
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 101; must not exceed 100
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== density non-numeric
+argv:        --density abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: abc; expected digits and at most one decimal point
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== speed invalid
+argv:        --speed 3
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --speed value: 3; expected one of 1, 2, 4, 8, 16, 32, 64
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== speed zero
+argv:        --speed 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --speed value: 0; expected one of 1, 2, 4, 8, 16, 32, 64
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== speed missing value
+argv:        --speed
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --speed
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== speed non-numeric
+argv:        --speed abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --speed value: abc
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== export missing value
+argv:        --export
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --export
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== unknown option
+argv:        --unknown
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: unknown option: --unknown
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== duplicate seed
+argv:        --seed 1 --seed 2
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --seed may appear at most once
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== duplicate speed
+argv:        --speed 4 --speed 8
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --speed may appear at most once
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== duplicate start-paused
+argv:        --start-paused --start-paused
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --start-paused may appear at most once
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+=== duplicate export
+argv:        --export a.txt --export b.txt
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --export may appear at most once
+  | Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]
+  |                        [--policy <baseline|reference>] [--density <percent>]
+  |                        [--speed <1|2|4|8|16|32|64>] [--start-paused]
+  |                        [--export <path>]
+  |        mokiterions-tui --help
+  | 
+  | The observer presents a running simulation in a terminal. It never mutates world
+  | state: the operator's only influence over the simulation is when a tick is advanced.
+  | 
+  | --seed, --ticks, --policy and --density carry exactly the meaning, the defaults and
+  | the validation the Mokiterions binary gives them.
+  | 
+  | --speed is the number of ticks advanced per second while progression runs, and it
+  | defaults to 8. --start-paused begins held before tick 1. --export supplies the path
+  | the export control writes to; it is validated as a string only and is never opened
+  | until the operator asks for an export.
+  | 
+  | Action tracing is always on in the observer, because the event log presents traced
+  | actions and the authority overlay maps them. Tracing does not change a run.
+  | 
+  | Press ? inside the observer for the key bindings.
+usage_sha:  d4836336735b2a10a10c8326bd170311bacc149f2ffb31d575984acdb1aec80e

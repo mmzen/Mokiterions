@@ -3,6 +3,15 @@ name = "mokiterions-tui"
 version = "0.1.0"
 edition = "2024"
 
+# `SPEC-MOK-004` rule 4: two targets. The library target carries the presentation layer so
+# that a tier of tests can reach the observer's contract from outside the crate, which
+# `REQ-MOK-028` requires; the binary keeps the operator-facing name and every terminal
+# concern. The library target is named in snake case because the declared lint gate implies
+# `non_snake_case`, exactly as `SPEC-MOK-002` rule 2 requires of the engine's.
+[lib]
+name = "mokiterions_tui"
+path = "src/lib.rs"
+
 [[bin]]
 name = "mokiterions-tui"
 path = "src/main.rs"
@@ -12,7 +21,7 @@ path = "src/main.rs"
 # not an implementation choice. Every user-interface dependency lives here and nowhere
 # else; `Mokiterions` depends on nothing.
 [dependencies]
-Mokiterions = { path = ".." }
+Mokiterions = { path = "../mokiterions-core" }
 ratatui = { version = "0.30.2", default-features = false, features = [
   "crossterm",
   "layout-cache",
