@@ -1,0 +1,20 @@
+[package]
+name = "mokiterions-tui"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "mokiterions-tui"
+path = "src/main.rs"
+
+# `SPEC-MOK-003` fixes this dependency, its version and its feature set, and
+# `ADR-MOK-003` decides them. Changing any of the three is a specification amendment,
+# not an implementation choice. Every user-interface dependency lives here and nowhere
+# else; `Mokiterions` depends on nothing.
+[dependencies]
+Mokiterions = { path = ".." }
+ratatui = { version = "0.30.2", default-features = false, features = [
+  "crossterm",
+  "layout-cache",
+  "underline-color",
+] }

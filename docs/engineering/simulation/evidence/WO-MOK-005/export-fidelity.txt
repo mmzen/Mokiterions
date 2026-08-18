@@ -1,0 +1,68 @@
+# Export fidelity against the engine binary — WO-MOK-005
+
+`REQ-MOK-025` is a claim about the engine binary's stream, and `verification.rs` compares against
+`Simulation::run` called in-process, one function away from the binary's `main`. This file closes
+that last step: the real binary is executed as a separate process, its standard output is captured,
+and it is compared byte for byte against an export taken from an observed run of the same
+configuration.
+
+## Method
+
+An export is the retained records followed by one closing statement, `# retained=N truncated=B`.
+The engine binary's stream is the same records followed by its `summary` line. Neither trailer is
+part of the other artifact, so each file's last line is dropped and the remainder is compared with
+`cmp`, which reports the first differing byte if there is one.
+
+The observer always enables action tracing, because the event log presents traced actions and the
+authority overlay maps them; the engine binary makes tracing an option. `--trace-actions` is
+therefore passed to the binary so the two streams are the same run rather than two different
+configurations. Tracing is observational and changes no outcome, which the engine's own
+`action_tracing_is_optional_complete_and_observational` test establishes.
+
+$ cargo build --workspace   # both binaries, debug profile
+
+engine binary                                      target/debug/Mokiterions.exe
+observer binary                                    target/debug/mokiterions-tui.exe
+
+Re-verified on the merged tree. An earlier revision of this file recorded the engine binary as
+`target/debug/mokiterions.exe`, from a revision of this work that renamed the target; the name
+`Mokiterions` is `master`'s and is what `SPEC-MOK-002` rule 2 fixes. Every figure below was
+re-derived against the rebuilt `Mokiterions.exe` and is unchanged, which is the expected result
+because `src/cli.rs`, `src/main.rs` and the whole engine test corpus are byte-identical to
+`origin/master` — see `additivity-proof.txt`. The 20-tick comparison was re-run against the
+retained files in `exports/`, so it checks those artifacts and not a fresh pair.
+
+## The retained exports, at 20 ticks
+
+seed 0       623 records    74824 bytes  BYTE-IDENTICAL
+            closing statement # retained=623 truncated=false, and the file holds 623 records: the count is the truth
+            the binary's own trailer: summary reason=tick_limit ticks=20 survivors=12 deaths=0 territory_a=6 territory_b=6 food_a_low=20 food_a_medium=21 food_a_high=20 food_b_low=20 food_b_medium=20 food_b_high=21
+seed 1       622 records    74878 bytes  BYTE-IDENTICAL
+            closing statement # retained=622 truncated=false, and the file holds 622 records: the count is the truth
+            the binary's own trailer: summary reason=tick_limit ticks=20 survivors=12 deaths=0 territory_a=6 territory_b=6 food_a_low=20 food_a_medium=21 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+seed 42      623 records    74780 bytes  BYTE-IDENTICAL
+            closing statement # retained=623 truncated=false, and the file holds 623 records: the count is the truth
+            the binary's own trailer: summary reason=tick_limit ticks=20 survivors=12 deaths=0 territory_a=5 territory_b=7 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+seed 123     621 records    74970 bytes  BYTE-IDENTICAL
+            closing statement # retained=621 truncated=false, and the file holds 621 records: the count is the truth
+            the binary's own trailer: summary reason=tick_limit ticks=20 survivors=12 deaths=0 territory_a=6 territory_b=6 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+seed 777     622 records    74686 bytes  BYTE-IDENTICAL
+            closing statement # retained=622 truncated=false, and the file holds 622 records: the count is the truth
+            the binary's own trailer: summary reason=tick_limit ticks=20 survivors=12 deaths=0 territory_a=6 territory_b=6 food_a_low=20 food_a_medium=20 food_a_high=21 food_b_low=21 food_b_medium=20 food_b_high=20
+
+## The default configuration, at 100 ticks
+
+The same comparison at the default tick limit, where a run is about 1,400 records. These files
+are not retained — five of them would be two thirds of a megabyte of generated log — so the
+digests below are what stands in for them. Both sides are reproducible from the seed.
+
+seed 0      2615 records   329766 bytes  BYTE-IDENTICAL
+            sha256 of the records, both sides  5b46b253341d43fca2ee7bd96e27a8f7281195ce104b9dbd029d5b2d39ec38f9
+seed 1      2621 records   330347 bytes  BYTE-IDENTICAL
+            sha256 of the records, both sides  b76115c38bc68bbda16d4f212998a04c16d9fe88806fc4cd3fddb90755b0b360
+seed 42     2618 records   329716 bytes  BYTE-IDENTICAL
+            sha256 of the records, both sides  7bb65ffad3034787cef9d55f2e5feb5ff63776f393cf4ec7ae2693571e34c0cf
+seed 123    2608 records   329937 bytes  BYTE-IDENTICAL
+            sha256 of the records, both sides  d9c750a53c3dd45f2bdd84e5580cdbb2fde1a4ee880728dae4f86f6d81771ec7
+seed 777    2619 records   329787 bytes  BYTE-IDENTICAL
+            sha256 of the records, both sides  12a85acb4b381cb068501874bace0dad3e8a6d63cbc7867088aeb7fc9b2b395e

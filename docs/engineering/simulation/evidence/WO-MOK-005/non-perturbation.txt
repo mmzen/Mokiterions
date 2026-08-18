@@ -1,0 +1,138 @@
+# Non-perturbation — WO-MOK-005
+
+`REQ-MOK-025`: an observed run and an unobserved run of the same seed and configuration
+produce the same authoritative stream and the same final state, however hard the operator
+works the instrument.
+
+## Method
+
+The unobserved reference is `Simulation::run(&mut Vec<u8>)`, which is the entire body of
+what the engine binary's `execute` does: the binary parses arguments, builds the same
+`Config`, and calls that one function. The engine's own tests cover the step from `main` to
+that call, so the reference here is the binary's stream. `export-fidelity.txt` closes the
+remaining gap by running the real binary and comparing its bytes against an export.
+
+The observed run is driven through the observer's public surface only: `advance` once per
+tick, a frame drawn every tick, and the interaction script below applied every tick. The
+comparison is on the observer's retained records — the same records an export contains —
+and on a summary line reconstructed field by field from the observer's final snapshot, so a
+divergence in either the stream or the observer's picture of the world would show.
+
+## The interaction script
+
+One key from this rotation per tick, by `tick % 12`:
+
+  0 Tab        select the next Mokiterion
+  1 z          toggle zoom between overview and detail
+  2 l          pan east
+  3 j          pan south, or page the log when the log has focus
+  4 e          cycle the log's event-type filter
+  5 f          toggle follow
+  6 BackTab    select the previous Mokiterion
+  7 L          open the log overlay
+  8 PageUp     page the log
+  9 c          clear the filter
+ 10 Esc        close the overlay
+ 11 W          unbound: it must change nothing at all
+
+Plus `+` when `tick % 12` is divisible by three and `-` when it is divisible by five, so
+the speed control — the one control that decides when a tick happens — is walked too.
+
+## Which controls this script does not exercise
+
+Counting each control once and its key aliases with it, `state.rs` binds 25. This script
+drives 13 of them: the eleven bound keys above plus `+` and `-`. Twelve are absent from
+this measurement:
+
+  Space         hold or release progression
+  .             advance exactly one tick
+  h  (Left)     pan west
+  k  (Up)       pan north, or scroll the log
+  PageDown      page down, or page the log
+  u             filter the log to the selected Mokiterion
+  x             export every retained event
+  t r i ?       authority / roster / inspector / help overlay
+  q             quit
+
+Each has its own case elsewhere, but none of those cases compares a whole observed run
+against an unobserved one, which is what this file measures:
+
+  Space, .      state::a_single_step_is_accepted_only_while_held_and_advances_exactly_one_tick
+                verification::holding_consumes_nothing_however_long_it_is_held
+  h, k, PageDown  state::panning_moves_one_world_cell_and_clamps_at_every_edge
+                state::a_whole_world_overview_cannot_be_panned_off_the_world
+  u             state::a_subject_filter_needs_a_selection
+                state::filtering_changes_presentation_only
+  x             verification::a_filter_changes_what_is_presented_and_nothing_else
+                export::* (seven cases)
+  t, r, i, ?    state::every_overlay_has_its_bound_key
+  q             state::quit_is_the_only_key_that_asks_to_exit
+
+One further gap, which no case covers in either place: the arrow-key aliases. `Left`,
+`Right`, `Up` and `Down` appear in `state.rs` only at lines 448-457, the match arms that
+bind them, and in no test in the package. They are implemented and unexercised. Nothing
+suggests they are wrong — each shares its arm with the letter key that is tested — but the
+sharing is the argument, not a measurement.
+
+So the honest statement is that non-perturbation is measured under a 13-control script on
+five seeds, and the remaining twelve controls rest on the structural argument — the only
+call that reaches the engine is `advance_tick`, and it takes no argument — plus the public
+surface review. `VER-MOK-005`'s residual-uncertainty section anticipates that the script
+is not the whole control set; what it does not say, and this does, is which controls are
+outside it.
+
+The viewport rotates through the whole declared set every seven ticks, `33 x 21` included,
+so each run is observed at every layout tier and while drawing is suspended below the
+floor.
+
+Progression is deliberately not toggled with the space bar in the script, because the
+harness owns the advance: holding is verified separately, below.
+
+## Result, per declared seed
+
+seed 0    ticks 60   records 1616  unobserved 1616  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
+seed 1    ticks 60   records 1622  unobserved 1622  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
+seed 42   ticks 60   records 1623  unobserved 1623  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
+seed 123  ticks 60   records 1615  unobserved 1615  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
+seed 777  ticks 60   records 1620  unobserved 1620  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
+
+Test: verification::observed_and_unobserved_runs_are_identical_on_every_declared_seed
+
+## Per-tick entropy comparison
+
+The specified observation surface exposes no entropy-draw counter, and adding one would be
+public surface no artifact specifies. The comparison is therefore made on what the stream
+shows of every entropy-consuming operation: each regenerated resource's placement, each
+regeneration the engine skipped, and each applied action, grouped by tick.
+
+This is the observable form of draw-count identity, not a substitute for it. The engine's
+entropy is one sequential stream shared by resource placement and by the decision source,
+so a single extra draw in one tick would shift every value drawn afterwards for the rest of
+the run. Per-tick record identity across a whole run therefore cannot hold if the draw
+counts differed anywhere in it.
+
+seed 0    ticks 40   ticks compared 41   entropy-bearing records compared 491    ticks differing 0
+seed 1    ticks 40   ticks compared 41   entropy-bearing records compared 492    ticks differing 0
+seed 42   ticks 40   ticks compared 41   entropy-bearing records compared 492    ticks differing 0
+seed 123  ticks 40   ticks compared 41   entropy-bearing records compared 492    ticks differing 0
+seed 777  ticks 40   ticks compared 41   entropy-bearing records compared 492    ticks differing 0
+
+Test: verification::per_tick_records_match_so_the_observer_draws_no_entropy
+
+## Holding
+
+`--start-paused`, seed 42: 200 frames drawn and 317 keys pressed while held.
+
+snapshot after     UNCHANGED
+retained records   136 before, 136 after
+tick               0 before, 0 after
+
+Test: verification::holding_consumes_nothing_however_long_it_is_held
+
+## An operator-ended run
+
+Seed 42, tick limit 60, ended by the operator at tick 25: 744 records retained, and they
+are a byte-identical prefix of the unobserved run's 1623 records. The observer reports the run as ended early
+rather than as completed, so a truncated stream is never presented as a whole one.
+
+Test: verification::an_operator_ended_run_is_a_prefix_of_the_unobserved_run

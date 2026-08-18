@@ -1,12 +1,25 @@
-//! Library target for the Mokiterions simulation foundation.
+//! The Mokiterions simulation engine.
 //!
-//! The public interface of this target is a closed enumeration owned by `SPEC-MOK-002`
-//! rule 5. It carries values only: configuration in, and copies of already-reported
-//! outcome facts out. No public item yields a mutable borrow of, an owned copy of, or a
-//! reference into the world grid, the agent collection, the resource collection, the tick
-//! counter, the entropy state, or the event log, in any build configuration including
-//! test builds. That prohibition is `SPEC-MOK-002` rule 6 and it preserves `REQ-MOK-004`
-//! and `ADR-MOK-001`.
+//! This crate owns every simulation rule fixed by `SPEC-MOK-001`, the closed public
+//! interface fixed by `SPEC-MOK-002` rules 5 and 6, and the read-only observation surface
+//! that `SPEC-MOK-003` adds to that interface. It has no external dependencies, and
+//! `ARCH-MOK-001` as amended admits no exception to that, including a dependency shared
+//! with `mokiterions-tui`.
+//!
+//! The public interface carries values only. No public item yields a mutable borrow of, or
+//! a reference into, the world grid, the agent collection, the resource collection, the
+//! tick counter, the entropy state or the event log, in any build configuration including
+//! test builds, and none returns a handle that permits mutation. That prohibition is
+//! `SPEC-MOK-002` rule 6, and it preserves `REQ-MOK-004` and `ADR-MOK-001`. `SPEC-MOK-003`
+//! narrowed it from a list of type names to the capability it exists to deny, because the
+//! observation snapshots carry five of those names — `Coordinate`, `Direction`, `Territory`,
+//! `FoodClass` and `Action` — by value. The ten others it lists stay private, including
+//! `Observation` and `DecisionSource`, which carry the `ADR-MOK-001` trust boundary.
+//!
+//! Two hosts drive the same interface: the `Mokiterions` binary, which streams the
+//! `REQ-MOK-010` text record to standard output, and the `mokiterions-tui` observer, which
+//! advances one tick at a time and reads snapshots. Neither is privileged; the engine owns
+//! all mutable state and validates every proposed action regardless of its source.
 
 use std::io::Write;
 

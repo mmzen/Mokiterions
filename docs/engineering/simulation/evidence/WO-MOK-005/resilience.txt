@@ -1,0 +1,84 @@
+# Resilience — WO-MOK-005
+
+## A 10,000-tick run through the observer
+
+seed 42, --ticks 10000, --speed 64, reference decision source, default density.
+Frames drawn every 33 ticks at the reference viewport.
+
+completed at tick        10000
+termination reason       tick_limit
+survivors                1
+deaths                   11
+survivors + deaths       12 (twelve is the whole initial population)
+frames drawn             303
+retained records         68948 of a 100000 capacity
+buffer truncated         false
+panics                   none
+wall clock               14.652612s for the whole run, the harness advancing as fast as it can
+
+Test: verification::a_finished_run_stays_inspectable_and_exportable (resilience case)
+
+The wall clock above is measurement only. It never reaches the engine and never reaches a
+frame: rule 6 uses it to decide when to draw and rule 1.2 to decide when to advance, and
+`verification::no_frame_carries_an_environment_value` asserts no frame carries a clock
+value.
+
+## The retained buffer is bounded
+
+The observer retains a window of 100000 records and drops the oldest when full, reporting the
+truncation rather than hiding it. Memory is therefore bounded for an unbounded run, and the
+engine binary's text stream remains the unbounded record.
+
+records after 10,000 ticks   68948
+truncated                    false
+
+Tests: state::tests::the_event_buffer_drops_the_oldest_record_and_says_so,
+       export::tests::the_closing_line_states_the_count_and_the_truncation
+
+## Rapid resizing across the declared set, below the floor and back
+
+seed 123, held at tick 30: 280 draws cycling the whole declared viewport set,
+including 33 x 21 where drawing is suspended.
+
+snapshot        UNCHANGED
+records         870 before, 870 after
+speed           8 before, 8 after
+zoom            overview before, overview after
+camera          (0, 0) before, (0, 0) after
+
+Test: verification::presentation_state_survives_every_resize
+
+## A deliberately delayed run
+
+seed 777, 30 ticks, 5 ms of sleep inserted before every advance so the run falls past
+several advance intervals at every speed the observer offers.
+
+wall clock       322.7508ms
+records          872 observed, 872 unobserved
+streams          IDENTICAL
+
+Falling behind slows a run and never advances two ticks in zero elapsed time, because the
+next advance is measured from the last one rather than from a schedule.
+
+Test: tests::the_idle_wait_never_exceeds_the_nearest_deadline (the cadence),
+       verification::one_advance_is_one_tick_and_a_finished_run_refuses (the count)
+
+## An export failure leaves the tick intact
+
+The export path points into a directory that does not exist, so the write fails.
+
+write result        Err(The system cannot find the path specified. (os error 3))
+file left behind    false
+snapshot            UNCHANGED
+records             379 before and after
+run still live      progression running, finished false
+header after        RUNNING  export failed: The system cannot find the path specified. (os error 3)  x8  overview  filter none  tier A full
+                    A  standing 61/61  low 21  medium 20  high 20
+                    B  standing 61/61  low 21  medium 20  high 20
+
+
+Draw failure and input failure are contained the same way: each sets the header notice and
+the loop continues, because a presentation failure is not a simulation result.
+
+Tests: verification::an_injected_export_failure_leaves_the_tick_intact,
+       export::tests::an_unwritable_path_is_reported_and_leaves_nothing_behind

@@ -1,0 +1,45 @@
+# Layout and viewports — WO-MOK-005
+
+`SPEC-MOK-003` rule 5's tier table and canvas derivation, measured at every viewport
+`VER-MOK-005` declares. Every figure below is read from a resolved layout or from a drawn
+in-memory buffer; none is asserted from the specification's text.
+
+## The declared viewport set
+
+columns x rows   tier            header      roster        view            inspector      log             footer          canvas interior
+160 x 48         A full          160x3@0,0   47x34@0,3     69x34@47,3     44x34@116,3     160x10@0,37     160x1@0,47      67 x 32
+160 x 44         B compact-log   160x3@0,0   47x34@0,3     69x34@47,3     44x34@116,3     160x6@0,37      160x1@0,43      67 x 32
+140 x 44         B compact-log   140x3@0,0   47x34@0,3     49x34@47,3     44x34@96,3      140x6@0,37      140x1@0,43      47 x 32
+120 x 48         C narrow        120x3@0,0   47x38@0,3     73x38@47,3     —               120x6@0,41      120x1@0,47      71 x 36
+100 x 30         D minimal       100x3@0,0   —             100x26@0,3     —               —               100x1@0,29      98 x 24
+ 34 x 22         D minimal       34x3@0,0    —             34x18@0,3      —               —               34x1@0,21       32 x 16
+
+ 33 x 21         —               below the floor: refused at start-up, drawing suspended at run time
+
+The canvas interior is the view pane less the one cell its border occupies on each side.
+In overview zoom one character cell carries a 2 x 4 braille dot grid, so the world region a
+canvas addresses is twice its width by four times its height, clamped to the 128 x 128
+world:
+
+160 x 48    canvas  67 x 32    world region 128 x 128   x0-127 y0-127   whole world yes
+160 x 44    canvas  67 x 32    world region 128 x 128   x0-127 y0-127   whole world yes
+140 x 44    canvas  47 x 32    world region  94 x 128   x0-93 y0-127   whole world no
+120 x 48    canvas  71 x 36    world region 128 x 128   x0-127 y0-127   whole world yes
+100 x 30    canvas  98 x 24    world region 128 x 96    x0-127 y0-95   whole world no
+ 34 x 22    canvas  32 x 16    world region  64 x 64    x0-63 y0-63   whole world no
+
+## The one-below-floor refusal
+
+Produced by the real start-up path, before the terminal is entered, so a terminal too small
+to observe in is never altered.
+
+$ mokiterions-tui            # in a 33 x 21 terminal
+exit code 2
+standard output: 0 bytes
+standard error:
+viewport error: the terminal is 33 x 21; the observer requires at least 34 x 22
+
+At the floor itself, 34 x 22, start-up is accepted: an observer is returned, nothing is written
+
+Tests: tests::a_viewport_below_the_floor_is_refused_with_both_dimensions_and_code_two,
+       verification::every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer
