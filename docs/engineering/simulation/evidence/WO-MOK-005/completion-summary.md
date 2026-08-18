@@ -33,7 +33,7 @@ Mokiterions` both exit 0. Retained in `static-checks.txt` and `test-run.txt`.
 ## Disclosures
 
 `WO-MOK-005` requires the completion report to disclose anything the work found that the artifacts do
-not say. Fourteen items, grouped by what a reader should do about them.
+not say. Fifteen items, grouped by what a reader should do about them.
 
 ### Artifacts that are wrong and should be corrected
 
@@ -158,6 +158,35 @@ recorded in its amendment record marked **OUTSTANDING** — the technical owner 
     test hook in item 9. Disclosed because the first pass's evidence would have read as complete
     while four declared cases were unverified, and because an audit that finds four is not evidence
     that no fifth exists.
+
+### An approved specification and the repository's own convention point opposite ways
+
+15. **All 109 observer tests are in the internal tier, and the two governing documents disagree about
+    whether that is right.** `SPEC-MOK-003`'s *Explicitly unspecified decisions* grants the
+    implementation "test organization, fixtures and helpers", and the observer package builds one
+    target — a binary — so `tests/` cannot reach it at all: a Rust integration test links a library
+    target, and `mokiterions-tui` has none. Every test is therefore a `#[cfg(test)] mod tests` beside
+    its subject, including `verification.rs`, whose 1,255 lines are the whole `VER-MOK-005`
+    cross-cutting suite and which is `#[cfg(test)] mod verification` inside the binary
+    (`main.rs:21-22`) for no reason other than that there is nowhere else to put it.
+
+    `REPOSITORY_CONTEXT.md:29` states the opposite as a repository constraint: "A test that exercises
+    the public contract … belongs in `tests/` and reaches the code through the library target's
+    public API." Its cited authority is `SPEC-MOK-002` rules 7 to 10, and that specification's
+    *Scope*, as amended 2026-08-18, says "Every rule below is a rule about the engine package". So the
+    convention is stated repository-wide, its authority is engine-scoped, and the specification
+    governing the observer explicitly hands the decision to the implementation. The implementation
+    took the specification's grant. That is defensible and it is not what the context file describes,
+    and a reader comparing the two packages will find one with two tiers and one with none.
+
+    Closing it is not an evidence fix. Giving the observer a library target changes what
+    `SPEC-MOK-003`'s component layout fixes, and its *Explicitly unspecified decisions* list says the
+    implementation may **not** choose "the package layout". `INT-MOK-003`'s principle — "widening an
+    item to `pub` in order to move a test is prohibited" — would be satisfied without any widening,
+    because the observer's cross-module items are already `pub` and are merely unreachable outside the
+    crate, which is the same condition `INT-MOK-003` found in the engine. But the target change itself
+    needs an approved requirement and an amendment, so it belongs to a work order that has them, not
+    to this one.
 
 ### Two smaller notes
 
