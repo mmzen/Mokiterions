@@ -5,7 +5,7 @@ title = "Two-package split with a terminal observer over a read-only engine surf
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-18"
 
 [relations]
 decides = ["ARCH-MOK-002", "ARCH-MOK-001"]
@@ -17,7 +17,14 @@ decides = ["ARCH-MOK-002", "ARCH-MOK-001"]
 
 Accepted by the technical owner on 2026-08-17, together with `ARCH-MOK-002` and the `ARCH-MOK-001` amendment.
 
-`ADR-MOK-001` is not superseded by this decision.
+`ADR-MOK-001` is not superseded by this decision. Neither is `ADR-MOK-002`, which this decision refines on the
+workspace point; a dated note in that ADR's *Status* section records exactly which of its statements are narrowed.
+
+**Note dated 2026-08-18.** The decision is unchanged. Its *Migration* section is corrected on two points of fact that
+the merge with `master` exposed. `SPEC-MOK-002` requires **four** amendments rather than three: rule 3 freezes
+`src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code in
+that file. And the two `ADR-MOK-002` statements this decision narrows are now named rather than left implicit. No
+option was re-weighed and no consequence changed.
 
 ## Context
 
@@ -234,13 +241,21 @@ engine behavior here is narrower than a two-package split would suggest: not a l
 but the addition of an observation surface to a library target that already carries an enumerated read-only
 interface. `SPEC-MOK-002` rule 5 states that that interface "grows only when an approved requirement needs it to
 grow, and this specification is amended in the same act". `REQ-MOK-019` through `REQ-MOK-027` are those requirements,
-and the amendment is one of the three this decision requires.
+and the amendment is one of the four this decision requires.
 
 What the second package does contradict is `SPEC-MOK-002` rule 1, which admits "no third target, no second package,
 no workspace". That prohibition was written when no approved requirement needed one. `REQ-MOK-026` now does, and it
 is the approved requirement that both rule 1 and `ARCH-MOK-001`'s prohibited-pattern list reserve the exception for.
-`SPEC-MOK-003`'s *Compatibility and migration* section states all three required amendments and `WO-MOK-005` makes
-them approval preconditions.
+Rule 3 is contradicted in the same way and for the same reason: it freezes `src/simulation.rs`'s contents against
+anything but a visibility change, and the observation surface is new code. `SPEC-MOK-003`'s *Compatibility and
+migration* section states all four required amendments and `WO-MOK-005` makes them approval preconditions.
+
+This decision also narrows two statements in `ADR-MOK-002`, which it refines and does not supersede: its
+decision driver "Add no dependency, no second package, and no workspace", and the first bullet of its *Decision*
+saying the library target "does not introduce a second package, a workspace, or a service". Both were correct when
+written, under no approved requirement for one. `ADR-MOK-002`'s rejection of its own option 4 stands and is not
+reversed here: option 4 would have split the engine across package boundaries, and this decision leaves the engine
+package whole and adds a package that consumes it. A dated note in `ADR-MOK-002`'s *Status* section records this.
 
 If out-of-process or recorded observation is ever wanted, preserve the snapshot semantics and serialize the same
 types outside the engine, exactly as `ADR-MOK-001` prescribed for a future model adapter. Replacing engine authority,

@@ -5,7 +5,7 @@ title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-18"
 
 [relations]
 specifies = [
@@ -43,6 +43,7 @@ This specification adds no simulation behavior and no simulation state.
 |---|---|---|
 | 2026-08-17 | Original content for `CAP-MOK-004`, covering `REQ-MOK-019` through `REQ-MOK-027`. | Approved by the technical owner. |
 | 2026-08-17 | Corrected two derived figures in rule 5 before approval. The `100 × 30` row omitted the pane border and claimed a whole-world presentation its 98 × 24 interior cannot deliver, since 24 cells address 96 of 128 world rows; the tier C example stated a 71 × 42 canvas where the arithmetic yields 71 × 36. A `120 × 48` row was added so tier C carries a checkable obligation. No rule changed. | Approved by the technical owner. |
+| 2026-08-18 | Corrected the statement of required `SPEC-MOK-002` amendments in *Compatibility and migration*, which the merge with `master` exposed as understated. Rule 3 is added as a fourth required amendment: it freezes `src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code. Rule 6's required narrowing is extended to the "by … return value" path, since every accessor returns an owned copy. The list of names that stay private is corrected from nine to **ten** — `DecisionEntropy` was omitted. No rule of this specification changed, and no obligation on the observer changed. | Corrected by the implementation agent as a statement of fact about another artifact; the four amendments it states remain the technical owner's act and are outstanding. |
 
 ## Actors and external systems
 
@@ -542,21 +543,30 @@ mokiterions-tui/
 - The engine package name and both engine target names are unchanged, so the produced binary's filename is unchanged
   and the first line of `USAGE` is untouched. `SPEC-MOK-002` rule 2 ties that line to the binary's name, and
   `SPEC-MOK-001`'s *Help output* section fixes its content while `VER-MOK-004` verifies it.
-- Three provisions of `SPEC-MOK-002` cannot be satisfied as written and must be amended before this specification can
+- Four provisions of `SPEC-MOK-002` cannot be satisfied as written and must be amended before this specification can
   be conformed to:
   - **Rule 1** admits "no third target, no second package, no workspace". `REQ-MOK-026` requires a second package,
     and it is the approved requirement that rule 1 and `ARCH-MOK-001`'s prohibited-pattern list both reserve the
     exception for. The amendment permits a workspace of exactly two packages and keeps every other clause of rule 1,
     including the empty dependency table for the engine package.
+  - **Rule 3** states that `src/cli.rs` and `src/simulation.rs` "keep their current contents apart from the visibility
+    changes rule 5 authorizes and the test relocations rules 7 to 9 require". The observation surface is new code in
+    `src/simulation.rs`, not a visibility change, so as written the clause forbids it — and read as a standing rule it
+    would freeze the engine against every later phase. The amendment scopes it to the `WO-MOK-003` restructuring it
+    was written for. Rule 11's equivalence obligation is untouched and still binds this change.
   - **Rule 5** closes the library target's public interface to an enumeration of fourteen items. The observation
-    surface of rule 1 above adds to it, and rule 5's own growth clause is the authority for doing so.
-  - **Rule 6** forbids `Coordinate`, `Direction`, `Territory`, `FoodClass` and `Action` from being public. The
-    snapshots carry all five by value, so the prohibition must be narrowed from the named types to the capability it
-    was written to deny: a mutable borrow of, or a reference into, authoritative state. The other nine names in that
-    clause — `Mokiterion`, `Food`, `RelativeDirection`, `ActionResult`, `Observation`, `PerceivedFood`,
-    `PerceivedMokiterion`, `SplitMix64` and `DecisionSource` — stay prohibited and stay private.
+    surface this specification's *Data and interface contracts* section defines adds to it, and rule 5's own growth
+    clause is the authority for doing so.
+  - **Rule 6** forbids `Coordinate`, `Direction`, `Territory`, `FoodClass` and `Action` from being public, and forbids
+    reaching any prohibited item "by … return value". The snapshots carry all five by value, and every accessor
+    returns an owned copy, so the prohibition must be narrowed from the named types and from the return-value path to
+    the capability it was written to deny: a mutable borrow of, or a reference into, authoritative state. The other
+    **ten** names in that clause — `Mokiterion`, `Food`, `RelativeDirection`, `ActionResult`, `Observation`,
+    `PerceivedFood`, `PerceivedMokiterion`, `SplitMix64`, `DecisionEntropy` and `DecisionSource` — stay prohibited and
+    stay private. `Observation` and `DecisionSource` are the two that carry the `ADR-MOK-001` trust boundary, and the
+    observer never reaches them: it watches, it does not decide.
 
-  Each amendment is the technical owner's act, and `WO-MOK-005` makes all three an approval precondition, exactly as
+  Each amendment is the technical owner's act, and `WO-MOK-005` makes all four an approval precondition, exactly as
   `SPEC-MOK-002` itself did for the `ARCH-MOK-001` and `SPEC-MOK-001` amendments that it required.
 - `Cargo.toml` and `Cargo.lock` change from an empty dependency set to a workspace with a 57-crate observer surface.
   This is the change `ADR-MOK-003` decides and `ARCH-MOK-001` must be amended to permit.

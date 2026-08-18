@@ -5,7 +5,7 @@ title = "Split the workspace and implement the terminal observer"
 status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-18"
 
 [assurance]
 commit_bound_verification = "required"
@@ -45,14 +45,18 @@ and `REQ-MOK-019` through `REQ-MOK-027` being approved by the product owner; on 
 `VER-MOK-005` being approved by the assurance owner. Every one of them was `draft` at the time this work order was
 written. Preflight must report this exact work order as eligible before implementation begins.
 
-It depends additionally on three amendments to `SPEC-MOK-002`, which is approved, implemented under `WO-MOK-003` and
+It depends additionally on four amendments to `SPEC-MOK-002`, which is approved, implemented under `WO-MOK-003` and
 bound by a `verified` `VREC-MOK-003`. `SPEC-MOK-003`'s *Compatibility and migration* section states them: rule 1's
-"no second package, no workspace" narrowed to permit a workspace of exactly two packages; rule 5's closed public
-enumeration grown by the observation surface; and rule 6's prohibition narrowed from five named value types to the
-capability it was written to deny. **These three were not part of the 2026-08-17 approval recorded below and are
-outstanding.** They could not have been: `SPEC-MOK-002` did not exist on this branch when that approval was given,
-and it reached `master` afterwards. They are the technical owner's act, and this work order is not verifiable until
-they are given or the scope is changed to avoid needing them.
+"no second package, no workspace" narrowed to permit a workspace of exactly two packages; rule 3's clause freezing
+`src/simulation.rs`'s contents scoped to the restructuring it was written for, so that an approved requirement may add
+code to that file; rule 5's closed public enumeration grown by the observation surface; and rule 6's prohibition
+narrowed from five named value types, and from the return-value path, to the capability it was written to deny.
+**These four were not part of the 2026-08-17 approval recorded below and are outstanding.** They could not have been:
+`SPEC-MOK-002` did not exist on this branch when that approval was given, and it reached `master` afterwards. They are
+the technical owner's act, and this work order is not verifiable until they are given or the scope is changed to avoid
+needing them. A fifth amendment, to `ARCH-MOK-001`, is outstanding for the same reason and is recorded in that
+artifact's amendment record: the wording it narrows — "mutable **or owned** authoritative state" — also reached
+`master` under `WO-MOK-003`, after the approval.
 
 **Approval record.** On 2026-08-17 the repository owner, acting in all four accountable roles, approved the complete
 governing chain — `INT-MOK-004`, `CAP-MOK-004`, `REQ-MOK-019` through `REQ-MOK-027`, `SPEC-MOK-003`, `ARCH-MOK-002`,
@@ -64,8 +68,9 @@ Two of those approvals are load-bearing rather than procedural. `REQ-MOK-026` is
 `ARCH-MOK-001`'s prohibition on separate crates has always required as its unlock, and without it a second package is
 prohibited outright. The `ARCH-MOK-001` amendment is what scopes its prohibition on user-interface frameworks to the
 engine package, and without it the dependency this work order adds is prohibited outright. Neither can be assumed and
-neither may be self-approved by the implementation agent. The same is true of the three `SPEC-MOK-002` amendments
-above, with one difference that matters: those two approvals were given, and these three have not been.
+neither may be self-approved by the implementation agent. The same is true of the four `SPEC-MOK-002` amendments
+above and of the `ARCH-MOK-001` amendment dated 2026-08-18, with one difference that matters: those two approvals were
+given, and these five have not been.
 
 `ARCH-MOK-001` is deliberately **not** selected in `architecture` above, and its exclusion is not an oversight. The
 applicability rule is that architecture is selected when active architecture directly `addresses` a requirement the
@@ -182,6 +187,14 @@ make a test easier to write.
 - Automated tests in both packages.
 - Work-order-keyed evidence under `docs/engineering/simulation/evidence/WO-MOK-005/`.
 - `docs/mokiterions/ROADMAP.md`, to record the observer phase.
+- The amendments this work order's approval is conditioned on, applied in the artifacts they belong to and recorded in
+  their amendment records with their approval status stated: `SPEC-MOK-002` rules 1, 3, 5 and 6; `ARCH-MOK-001`'s
+  2026-08-18 row; and a dated note in `ADR-MOK-002`'s *Status* section, which refined-not-superseded is what
+  `ADR-MOK-003` does to it. Writing the amended text is implementation; approving it is not, and each record says
+  which of the two happened.
+- `docs/engineering/REPOSITORY_CONTEXT.md`, whose *Architecture* and *Repository constraints* sections describe a
+  single-package repository with no user interface. It is repository-owned guidance, not a governed artifact, and it is
+  brought into line rather than amended.
 - No other product domain and no harness-managed policy file.
 
 ## Required verification
@@ -213,10 +226,12 @@ admissible for any rendering obligation; retain buffer dumps accompanying their 
 ## Stop and escalate conditions
 
 Stop before implementation if preflight does not report this exact work order as eligible, or if any governing
-artifact remains `draft` or unapproved — in particular `REQ-MOK-026` and the `ARCH-MOK-001` amendment, without which
-a second package and a user-interface dependency are both prohibited, and the three `SPEC-MOK-002` amendments, without
-which a workspace, the grown public enumeration and the five public value types are each prohibited by a specification
-whose verification record is already `verified`.
+artifact remains `draft` or unapproved — in particular `REQ-MOK-026` and the 2026-08-17 `ARCH-MOK-001` amendment,
+without which a second package and a user-interface dependency are both prohibited; the four `SPEC-MOK-002`
+amendments, without which a workspace, new code in `src/simulation.rs`, the grown public enumeration and the five
+public value types are each prohibited by a specification whose verification record is already `verified`; and the
+2026-08-18 `ARCH-MOK-001` amendment, without which returning an owned snapshot is prohibited by an approved
+architecture.
 
 During implementation, stop and escalate if:
 

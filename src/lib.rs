@@ -13,7 +13,8 @@
 //! `SPEC-MOK-002` rule 6, and it preserves `REQ-MOK-004` and `ADR-MOK-001`. `SPEC-MOK-003`
 //! narrowed it from a list of type names to the capability it exists to deny, because the
 //! observation snapshots carry five of those names — `Coordinate`, `Direction`, `Territory`,
-//! `FoodClass` and `Action` — by value. The nine others it lists stay private.
+//! `FoodClass` and `Action` — by value. The ten others it lists stay private, including
+//! `Observation` and `DecisionSource`, which carry the `ADR-MOK-001` trust boundary.
 //!
 //! Two hosts drive the same interface: the `Mokiterions` binary, which streams the
 //! `REQ-MOK-010` text record to standard output, and the `mokiterions-tui` observer, which

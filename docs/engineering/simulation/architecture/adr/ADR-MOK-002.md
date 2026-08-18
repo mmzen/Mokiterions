@@ -5,7 +5,7 @@ title = "Library target with an enumerated read-only public interface"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-18"
 
 [relations]
 decides = ["ARCH-MOK-001"]
@@ -22,6 +22,29 @@ The amendments this ADR requires were applied on approval: `ARCH-MOK-001` in its
 place with a dated note on its *Decision* bullet, and `SPEC-MOK-001` as a row in its amendment record. On the choice
 this ADR left to the technical owner, in-place amendment of `ADR-MOK-001` was selected over supersession, for the
 reason stated under *Required amendments*.
+
+**Note dated 2026-08-18.** `ADR-MOK-003` refines this decision on one point and supersedes neither it nor
+`ADR-MOK-001`. Two statements below are narrowed by it and are left in place as the record of what was decided on
+2026-08-17:
+
+- *Decision drivers*, "Add no dependency, no second package, and no workspace", and the first *Decision* bullet's "it
+  does not introduce a second package, a workspace, or a service". Both were correct when written, because no approved
+  requirement needed one. `REQ-MOK-026` now does, and it is the approved requirement that `ARCH-MOK-001`'s prohibition
+  on separate crates always reserved the exception for. The repository is a workspace of exactly two packages; the
+  engine package still takes no dependency, and the observer's dependency is confined to the observer's own manifest.
+- *Considered options*, option 4, "A separate Cargo package for the engine, consumed by a thin CLI package". Its
+  rejection stands as written and is not what `ADR-MOK-003` adopts. Option 4 would have split the **engine** across
+  package boundaries and made its interface a versioned artifact; `ADR-MOK-003` leaves the engine package whole,
+  unrenamed and unmoved, and adds a package that consumes it. The reason option 4 was rejected — that it buys nothing
+  a library target within one package does not — is still the reason the engine is not split.
+- *Required amendments*, the `ARCH-MOK-001` conformance-check row reading "no public item yields mutable or owned
+  authoritative state". That amendment was applied as stated; `ARCH-MOK-001`'s 2026-08-18 amendment then narrowed
+  "or owned" out of it, because rule 5's observation surface returns owned copies and grants no mutation. The row
+  records what this ADR required, not what `ARCH-MOK-001` now says.
+
+This ADR's *Migration* section is the standing authority for the growth of the public enumeration, and it is followed
+rather than amended: `SPEC-MOK-002` rule 5's third list is added under `REQ-MOK-019` through `REQ-MOK-027`, and each
+item records why it is read-only.
 
 ## Context
 
