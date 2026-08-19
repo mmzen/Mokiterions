@@ -2,7 +2,7 @@
 id = "REL-MOK-001"
 type = "release_contract"
 title = "Promote Mokiterions 0.1.0"
-status = "draft"
+status = "approved"
 owners = ["release owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -18,8 +18,10 @@ gates = ["WO-MOK-001", "WO-MOK-002", "WO-MOK-003",
 
 # Release Contract: Promote Mokiterions 0.1.0
 
-This is a `draft`. Every judgement below is **proposed** for the release owner's decision, not
-decided. The transition to `approved` is that decision, and nothing here anticipates it.
+This contract is `approved`. The accountable release owner made that decision on 2026-08-19, and the
+final section records it. Every judgement below was drafted as a proposal and is now decided; the
+wording is unchanged from what was put to the owner, so that what was approved and what was proposed
+are the same text.
 
 The version is `0.1.0`, which is what `mokiterions-core`'s manifest already declares — this release
 publishes the version the repository holds rather than bumping to a new one, so no manifest change is
@@ -184,4 +186,29 @@ is recorded. Deleting them would falsify history rather than repair it.
 The window closing is not itself a decision and grants nothing. If it passes with nothing observed,
 the release simply stands. If something is observed, the rollback criteria above apply, and anything
 learned about the release process belongs in `docs/RELEASE_RUNBOOK.md` and in a work order rather
-than in this contract, which is closed once approved.
+than in this contract, which is closed by this approval.
+
+## The approval, recorded
+
+`status` is `approved`. The accountable release owner decided on 2026-08-19, and this section records
+that decision rather than constituting it — the implementation agent transcribed the transition and
+exercised no decision right in doing so.
+
+The approval was given against this text as drafted, including two things it does not soften:
+
+- **The first-run limitation.** `.github/workflows/release.yml` has never executed. Approving this
+  contract accepts that the first real run of the release process is this release, and that its logs
+  are therefore evidence to retain rather than a routine build record.
+- **What the release unit is not.** No signature, no attestation, no SBOM, no reproducible build, no
+  crates.io publication, and an `aarch64-apple-darwin` archive cross-built with no test run on that
+  architecture.
+
+Two conditions in "Required evidence" were satisfied before the approval rather than after it:
+`VREC-MOK-009` is `verified`, bound to `755db7297aa993f00d42f9c9794584b5d061f03d`, and the nine
+evidence files it names are committed. The eight per-work-order records are `verified`.
+
+The approval is not the release. It permits `prepare-release` to produce `RLS-MOK-001` as `ready`;
+promotion step 2 above still requires the release owner to transition that record to `released`, and
+`docs/engineering/DECISION_RIGHTS.md` reserves it to them. Steps 3 through 6 — the merge, the
+maintenance branch, the tag, and publishing the draft — are also unperformed and remain the release
+owner's acts.
