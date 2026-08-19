@@ -2,7 +2,7 @@
 id = "WO-MOK-007"
 type = "work_order"
 title = "Colour the roster survival bars by value band"
-status = "approved"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -27,6 +27,75 @@ below. Transition to `in_progress` records that implementation has begun. Transi
 completed change and retained evidence. Verification and release require separate commit-bound records.
 
 Commit-bound verification is classified `required` above.
+
+**Moved to `implemented` on 2026-08-19**, on the repository owner's explicit instruction after pull request **#18** was
+merged. The implementation agent recorded the transition; it did not make the decision. The status had stood at
+`approved` through implementation, because this work order's *Out of scope* reserves "any lifecycle status of any
+artifact, including this one" and the owner's earlier instruction covered the approval and the implementation but not
+this transition.
+
+The change is complete and the evidence `VER-MOK-007` requires is retained under
+`docs/engineering/simulation/evidence/WO-MOK-007/` — 15 files, indexed by its `README.md` against each of
+`VER-MOK-007`'s twelve retention bullets, and reported in `completion-summary.md` with eight numbered disclosures.
+**One of those twelve bullets is discharged by a file that records nothing performed.** `manual-assessment.md` states
+that all three manual assessments are **OUTSTANDING** and that it has no author for any of them, the environment
+having neither a terminal nor a display. Every automated case in the packet is a claim about an in-memory character
+buffer and a style table, so nothing in it establishes that a colour reached a screen — which is the whole purpose of
+this change. This transition records that the change is complete, not that the bands were seen.
+
+What was implemented is rule 4 clause 7, measured in `mokiterions-tui/src/render.rs`: one private `fn band(u8) ->
+Color`, three colour constants and two floor constants; `gauge` returning a styled `Span` and `entry_lines` a
+`Vec<Line>`; and rule 4.6's reversed video applied to the line so that each gauge keeps its band inside it. The
+palette is the implementation's under `SPEC-MOK-003`'s grant — green, `Color::Indexed(208)` and red, the middle band
+taken as xterm dark orange rather than `Color::Yellow`, which `MEDIUM_COLOUR` already spends on a medium-class
+resource. Seven tests were added, five internal-tier and two public-tier, and exactly the two pre-existing tests named
+in scope item 4 changed, each keeping every string it asserted.
+
+Gates on the merged tree at `dfab77b`, whose tree `6310f61` is byte-identical to the implementation commit `75e3598`:
+`cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings` exit `0`;
+`cargo test --workspace` reports **179 passed, 0 failed, 0 ignored** across 19 targets, against 172 on pre-merge
+`master` at `54c21ab`, so seven were added and none lost; `harnessctl validate` PASS at 70 / 0 / 0 before
+`VREC-MOK-007` existed and 71 / 0 / 0 after; `doctor` PASS at 81 lines; `preflight --work-order WO-MOK-007 --phase
+review` PASS. The additivity claim holds at package level: `git diff --stat 54c21ab dfab77b -- mokiterions-core/` and
+the same for both `Cargo.toml` files and `Cargo.lock` are empty, so no simulation rule, no engine test and no
+dependency changed under this work.
+
+Committed on 2026-08-19 to `feature/wo-mok-007-roster-bands`, branched from `master` at `54c21ab`. `93330f9` carries
+the draft artifact pack; `0b0fe5d` records the owner's approval and applies the two approved provisions to
+`SPEC-MOK-003`; `75e3598` carries the implementation and the evidence. Merged to `master` as `dfab77b`, a merge commit
+rather than a squash, so `75e3598` is an ancestor of `master` and `VREC-MOK-007`'s provenance resolves. Both CI jobs
+passed on the candidate and on the merge; the pull-request body was normalized to LF before upload, pre-empting the
+selector defect that failed `WO-MOK-005`'s run, since `scripts/select_harness_work_order.py` matches
+`Harness-Work-Order:` with a trailing `[ \t]*$` that a `\r` defeats.
+
+`VREC-MOK-007` binds `dfab77b` and was transitioned `ready` → `verified` by the repository owner as accountable
+assurance owner on 2026-08-19, on the instruction that authorized this transition in the same act, and again recorded
+by the agent rather than decided by it. **This transition was written first, so that the record's prose describes an
+`implemented` work order rather than going stale on arrival.** That restores the order of the first four chains, in
+which the work order was `implemented` before its record was verified; `WO-MOK-005` and `WO-MOK-006` verified first,
+and four sentences in their records went stale as a result and were correctly left alone.
+
+**What is outstanding.** One amendment provision to an approved artifact, drafted in full and not applied:
+`SPEC-MOK-004` rules 9, 10 and 11 carry eight figures that seven added tests and six added private items make wrong —
+`tests/render.rs` 8 → 10, the public tier 80 → 82, `src/render.rs` 12 → 17, the internal tier 32 → 37, the module's
+private items 39 → 45, its functions 27 → 28, its constants 12 → 17, and the observer's and workspace's executed
+totals 112 → 119 and 172 → 179. Rules 9 and 11 authorize their own corrections; rule 10's private-item figure is a
+rationale count with no correction clause and needs the technical owner. Rule 6 is unaffected, every added item being
+private. The text is in `outstanding-amendment.md`, marked **OUTSTANDING**, and `harnessctl validate` is green with
+those figures stale because they are prose rather than a machine-checked constraint. The three manual assessments are
+the other outstanding item.
+
+After the transition, on the tree that carries it: `harnessctl validate` PASS at 71 / 0 / 0 with all four planes
+clean, and `preflight --work-order WO-MOK-007 --phase review` PASS. Two derived figures move, both mechanical
+consequences of the status. The default `start` phase turns `FAIL` with `[W005] status 'implemented' is not eligible
+for start; expected one of approved, in_progress`, which is preflight refusing to begin work that is already done and
+is the correct answer. And the dashboard goes from 9 warnings to **10**: the tenth is `W-HEX-001`, *"has no evidence
+document keyed to its ID"*, which fires only on an `implemented` work order and which the other six already carry
+despite this one retaining fifteen files — the catalog has no `evidence` artifact type for them to be declared as.
+`harnessctl inspect` now reports **Active work (0)**, so its standing recommendation to "begin only the approved
+scope" for work that had already merged is gone. With `VREC-MOK-007` transitioned in the same act, it also reports
+**Decision required (0)** and **Assurance pending (0)**: the queue this work order opened is empty, and what remains
+open is recorded above as outstanding rather than tracked by the harness.
 
 No `architecture` relation is declared. `ARCH-MOK-001` addresses `REQ-MOK-004`, `REQ-MOK-008`, `REQ-MOK-009`,
 `REQ-MOK-010` and `REQ-MOK-016`; `ARCH-MOK-002` addresses `REQ-MOK-021`, `REQ-MOK-025`, `REQ-MOK-026` and
