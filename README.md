@@ -4,6 +4,8 @@
 
 The project is implemented in **Rust** and serves as a proof of concept for [SE Harness](https://github.com/mmzen/se_harness), a repository-native software-engineering harness used to govern the project from intent and requirements through implementation, verification evidence, and exact Git commits.
 
+![mokiterions.gif](docs/images/mokiterions.gif)
+
 ## Why this project exists
 
 Mokiterions has two objectives.
