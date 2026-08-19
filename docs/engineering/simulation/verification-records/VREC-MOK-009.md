@@ -2,7 +2,7 @@
 id = "VREC-MOK-009"
 type = "verification_record"
 title = "Verification candidate for 8 work orders"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -18,16 +18,16 @@ verifies_work_order = ["WO-MOK-001", "WO-MOK-002", "WO-MOK-003", "WO-MOK-004", "
 conforms_to = ["VER-MOK-001", "VER-MOK-002", "VER-MOK-003", "VER-MOK-004", "VER-MOK-005", "VER-MOK-006", "VER-MOK-007", "VER-MOK-008"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-001`, `WO-MOK-002`, `WO-MOK-003`, `WO-MOK-004`, `WO-MOK-005`, `WO-MOK-006`, `WO-MOK-007`, `WO-MOK-009` to candidate commit `755db7297aa993f00d42f9c9794584b5d061f03d`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+This record binds retained evidence for `WO-MOK-001`, `WO-MOK-002`, `WO-MOK-003`, `WO-MOK-004`, `WO-MOK-005`, `WO-MOK-006`, `WO-MOK-007`, `WO-MOK-009` to candidate commit `755db7297aa993f00d42f9c9794584b5d061f03d`, and an accountable assurance owner has transitioned it to `verified`. That decision is recorded at the end of this file. The command that prepared the record approved nothing and did not commit, tag, release or publish.
 
 The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## What this record claims, and what it does not
 
 This is the first aggregate record in this repository, and the shape of it is stated before the results
-because it is what the assurance owner is being asked to weigh.
+because it is what the assurance owner was asked to weigh.
 
 **It is not a re-verification of eight work orders.** Each of `VER-MOK-001` through `VER-MOK-008` was
 performed once, against its own commit, and `VREC-MOK-001` through `VREC-MOK-008` are the records of
@@ -135,9 +135,19 @@ Two further limitations, unchanged and not closed here: the `release` environmen
 `SPEC-MOK-005` rule 12.6 names is still unconfigured in repository settings, and
 `docs/engineering/REPOSITORY_CONTEXT.md`'s lint command omits `--locked` where the workflow uses it.
 
-## The decision being asked for
+## The decision, recorded
 
-`status` is `ready`, which is a proposal. The accountable assurance owner is asked to decide whether the
-two claims in the first section are supported by the nine evidence files this record binds — not whether
-the eight work orders are correct, which their own records already decided. Only that owner may edit
-`status` to `verified`; no command does it, and preparing this record exercised no decision right.
+`status` is `verified`. The accountable assurance owner made that decision on 2026-08-19, and this
+section records it rather than constituting it — the implementation agent transcribed the transition
+and exercised no decision right in doing so.
+
+What the decision was taken against is stated so a later reader can judge the decision and not only
+the record: the nine evidence files this record binds, the two claims in the first section, and the
+explicit statement that the eight underlying verifications were **not** re-run at this commit. The
+owner was shown, before deciding, that this record does not close three post-verification edits inside
+`WO-MOK-009`'s declared change surface, and that the release process has never been executed. Both are
+stated above in the terms the decision accepted them in.
+
+The decision does not extend to the release. `docs/engineering/DECISION_RIGHTS.md` keeps assurance and
+release apart: `RLS-MOK-001` reaching `released` is a separate act by the release owner, and nothing in
+this record anticipates or supplies it.
