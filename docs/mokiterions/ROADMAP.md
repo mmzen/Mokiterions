@@ -322,8 +322,10 @@ it did: **no per-Mokiterion trait display** in the observer, and **no trait in t
 already narrowed to 2, and adding trait fields to further event types would have widened the record format for
 values that never change.
 
-**Status.** Implemented under `WO-MOK-007`, which is left at `in_progress`. **Not verified: no verification record
-exists for this phase**, and three things stand in the way of one:
+**Status.** Implemented under `WO-MOK-007`, which is left at `in_progress`. **Not verified.**
+`VREC-MOK-007` is a `ready` candidate bound to commit `4f32a9f`; it takes no decision, states that
+`VER-MOK-007` is *not* satisfied at that commit, and should not be transitioned as it stands. Three things
+stand in the way of a verified record:
 
 1. Five of `VER-MOK-007`'s seven manual assessments are outstanding and a sixth is unsigned.
 2. Two amendments written during implementation are unratified — a `SPEC-MOK-001` *Help output* correction and three
