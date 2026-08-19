@@ -2,7 +2,7 @@
 id = "RLS-MOK-001"
 type = "release_record"
 title = "Release candidate 0.1.0"
-status = "ready"
+status = "released"
 owners = ["release owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -19,9 +19,11 @@ includes_verification = ["VREC-MOK-009"]
 releases_work = ["WO-MOK-001", "WO-MOK-002", "WO-MOK-003", "WO-MOK-004", "WO-MOK-005", "WO-MOK-006", "WO-MOK-007", "WO-MOK-009"]
 +++
 
-# Release Record Candidate
+# Released Release Record
 
-This ready record proposes release `0.1.0` for `WO-MOK-001`, `WO-MOK-002`, `WO-MOK-003`, `WO-MOK-004`, `WO-MOK-005`, `WO-MOK-006`, `WO-MOK-007`, `WO-MOK-009` from candidate commit `755db7297aa993f00d42f9c9794584b5d061f03d`. An accountable release owner must review and transition it to `released`; this command did not approve, commit, tag, release, or publish anything.
+This record authorizes release `0.1.0` of `WO-MOK-001`, `WO-MOK-002`, `WO-MOK-003`, `WO-MOK-004`, `WO-MOK-005`, `WO-MOK-006`, `WO-MOK-007`, `WO-MOK-009` from authorized commit `755db7297aa993f00d42f9c9794584b5d061f03d`. An accountable release owner transitioned it from `ready` to `released`; the final section records that decision. The command that prepared the record approved nothing and did not commit, tag, release, or publish.
+
+This is the artifact the authorization gate reads. It is the whole of the authority to publish `v0.1.0`, and it is the first one this repository has ever held.
 
 The release candidate commit may precede the governance commit retaining this record. Any release tag must be created and checked by the authorized release process.
 
@@ -57,9 +59,14 @@ unless all of the following hold:
 4. That commit is reachable from a release-bearing branch: the default branch, or any `release/*`
    branch. Local branches are not consulted.
 
-Condition 2 is the one this record cannot satisfy by itself. It is `ready`.
+Condition 2 is satisfied by this record, as of the decision recorded at the end of this file.
+Conditions 1 and 3 depend on a tag that does not exist yet, so the gate refuses on condition 1 until
+the release owner creates it. That refusal is the designed order of operations, not an obstacle in it.
 
-Condition 4 is satisfied by the merge to `master` alone. The maintenance branch `release/0.1` is
+Condition 4 is satisfied, and no longer as a projection: after the governance revision was merged,
+`check_release_reachability.py --commit 755db72… --default-branch master --remote origin` exits `0`
+and reports the commit `contained by refs/remotes/origin/master`, measured against the real remote
+rather than a clone. The maintenance branch `release/0.1` is
 required by `REL-MOK-001`'s promotion policy and by Phase C of the runbook, not by this check —
 cutting it is a stabilization decision, not a way to pass the gate.
 
@@ -79,11 +86,38 @@ produced on any runner, and no draft release has ever been created. Transitionin
 
 ## What this record does not do
 
-It creates no tag, moves no tag, cuts no branch, builds nothing and publishes nothing. It is `ready`,
-which means prepared and not decided. `docs/engineering/DECISION_RIGHTS.md` reserves the transition to
-`released` to an accountable release owner; the command that wrote this file exercised no decision
-right, and the approval of `REL-MOK-001` does not extend to it.
+It creates no tag, moves no tag, cuts no branch, builds nothing and publishes nothing. Being `released`
+authorizes those acts; it does not perform them, and no command in this repository performs them
+either. `docs/engineering/DECISION_RIGHTS.md` reserves them to an accountable release owner, and the
+command that prepared this file exercised no decision right.
 
-After that transition, in this order: merge the governance revision to `master`; cut and push
-`release/0.1` from `755db72`; push the annotated `v0.1.0` at `755db72`; then a person publishes the
-draft the workflow uploads.
+What remains, in this order, and all of it by hand: cut and push `release/0.1` from `755db72`; push the
+annotated `v0.1.0` at `755db72`; then a person publishes the draft the workflow uploads. The governance
+revision was merged to `master` before this record was transitioned, so that step is already behind us.
+
+## The decision, recorded
+
+`status` is `released`. The accountable release owner decided on 2026-08-19, and this section records
+that decision rather than constituting it — the implementation agent transcribed the transition and
+exercised no decision right in doing so.
+
+This is the decision the entire release is downstream of. Everything else is either a check that
+reports it or an act that carries it out, so what it was taken against is stated plainly:
+
+- **The candidate.** `755db7297aa993f00d42f9c9794584b5d061f03d`, verified by `VREC-MOK-009`, reachable
+  from `origin/master`, and carrying the eight work orders whose own records are each an ancestor of
+  it.
+- **The contract.** `REL-MOK-001`, `approved`, including the two things it does not soften: the
+  first-run limitation, and the absence of signatures, attestation, SBOM and reproducible builds.
+- **The first execution.** `.github/workflows/release.yml` has never run. The gate's authorizing path
+  was rehearsed in a throwaway clone and nothing more than the gate was rehearsed. This decision
+  starts the first real execution of the release process, and the run's own logs are therefore
+  evidence to retain rather than a routine build record.
+- **What is still open.** The `release` environment named by `SPEC-MOK-005` rule 12.6 is unconfigured
+  in repository settings. `WO-MOK-008` remains `draft` and is not in this release.
+
+`released_at` above reads `2026-08-19T17:53:05Z`, which is when `prepare-release` wrote the record and
+not when this decision was taken. The field is generated, the decision is dated in this section, and
+the two are hours apart on the same day. Nothing shipped carries the timestamp:
+`PROVENANCE.txt` records the record, contract, work orders, verification records, tag, commit, target,
+toolchain and build URL, and no time from this file.
