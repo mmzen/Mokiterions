@@ -11,9 +11,10 @@ reads as one that was never raised.
 ## Final affected components
 
 **`Mokiterions`** — the engine, in `mokiterions-core/` since `WO-MOK-006` moved it there, with its
-package name and both target names unchanged. `src/simulation.rs` gained the observation surface and
-the snapshot types, and its record-emitting code was refactored to build `Event` values that both
-hosts consume. `Cargo.toml` at the repository root became the workspace root, and the package's own
+package name and both target names unchanged. `mokiterions-core/src/simulation.rs` gained the
+observation surface and the snapshot types, and its record-emitting code was refactored to build
+`Event` values that both hosts consume — under earlier revisions of this work order, before that
+surface reached `master`. `Cargo.toml` at the repository root became the workspace root, and the package's own
 `[dependencies]` table is still empty. **No file in the engine package differs from `origin/master`
 at 05dc6ac** — not one byte, tracked or untracked — so no simulation rule and no engine test changed
 under the 2026-08-19 work either. `additivity-proof.txt` measures it with one command.
@@ -37,7 +38,7 @@ The split into a library target and a binary target, and the eight-file public t
 **Gate results on the final tree:** `cargo fmt --all -- --check` exit 0; `cargo clippy --workspace
 --all-targets --all-features -- -D warnings` exit 0, and again exit 0 for `-p Mokiterions` alone;
 `cargo test --workspace` 172 passed, 0 failed (60 engine + 112 observer). `cargo test -p
-Mokiterions` alone: 60 passed — 37 inline in `src/simulation.rs` and 23 across the five files in
+Mokiterions` alone: 60 passed — 37 inline in `mokiterions-core/src/simulation.rs` and 23 across the five files in
 `mokiterions-core/tests/`, the same 60 `WO-MOK-004` recorded. `cargo build --workspace` and
 `cargo build -p Mokiterions` both exit 0. Retained in `static-checks.txt` and `test-run.txt`.
 
@@ -113,9 +114,12 @@ recorded in its amendment record marked **OUTSTANDING** — the technical owner 
 
 6. **The public surface exposes two `&mut self` methods that change simulation state, not one.**
    Rule 2 said `advance_tick` was the only one. `run`, the `REQ-MOK-010` whole-run entry point, is
-   the second, and it was already publicly reachable at `origin/master`: `903c9943` has
-   `pub mod simulation` in `src/lib.rs` and `pub fn run<W: Write>(&mut self, …)` at
-   `src/simulation.rs:821`, both created by `WO-MOK-003` and bound by a `verified` `VREC-MOK-003`.
+   the second, and it was already publicly reachable at `origin/master`: 05dc6ac has
+   `pub mod simulation` at `mokiterions-core/src/lib.rs:27` and
+   `pub fn run<W: Write>(&mut self, …)` at `mokiterions-core/src/simulation.rs:1205` — the same
+   declaration this file previously cited as `src/simulation.rs:821` against the earlier baseline
+   903c9943, re-read at the current one — both created by `WO-MOK-003` and bound by a `verified`
+   `VREC-MOK-003`.
    This work did not expose it, and the rule was already inaccurate about the surface before this
    work began. Narrowing it would require relocating the engine's sources or duplicating the run
    loop, neither of which is in this work order's envelope. The observer never calls it. Rule 2 now
@@ -208,9 +212,13 @@ recorded in its amendment record marked **OUTSTANDING** — the technical owner 
     cross-cutting suite and which is `#[cfg(test)] mod verification` inside the binary
     (`main.rs:21-22`) for no reason other than that there is nowhere else to put it.
 
-    `REPOSITORY_CONTEXT.md:29` states the opposite as a repository constraint: "A test that exercises
-    the public contract … belongs in `tests/` and reaches the code through the library target's
-    public API." Its cited authority is `SPEC-MOK-002` rules 7 to 10, and that specification's
+    `docs/engineering/REPOSITORY_CONTEXT.md:29` stated the opposite as a repository constraint, in
+    its 2026-08-18 text: "A test that exercises the public contract … belongs in `tests/` and reaches
+    the code through the library target's public API." That file has since been rewritten by
+    `WO-MOK-006` and now describes two tiers in **both** packages, with `mokiterions-core/tests/` and
+    `mokiterions-tui/tests/` named separately and an authority for each, so the conflict this item
+    reports no longer appears in it — which is the resolution recorded at the end of this item, read
+    from the other side. Its cited authority is `SPEC-MOK-002` rules 7 to 10, and that specification's
     *Scope*, as amended 2026-08-18, says "Every rule below is a rule about the engine package". So the
     convention is stated repository-wide, its authority is engine-scoped, and the specification
     governing the observer explicitly hands the decision to the implementation. The implementation
@@ -254,11 +262,13 @@ recorded in its amendment record marked **OUTSTANDING** — the technical owner 
   So the directory and the package name now differ deliberately: the directory is
   `mokiterions-core/`, the package and binary are still `Mokiterions`, and the library is still
   `mokiterions`. Renaming the binary target
-  makes `USAGE`'s synopsis wrong until `src/cli.rs` is edited too, and `src/cli.rs` is one of the
+  makes `USAGE`'s synopsis wrong until `mokiterions-core/src/cli.rs` is edited too, and that file is
+  one of the
   files this work keeps byte-identical to `origin/master` — it is the subject of `VER-MOK-001`'s and
   `VER-MOK-004`'s help-output cases, and `WO-MOK-005` scopes out changing an operator-facing string
   for a cosmetic reason. To be exact about the strength of that: no test asserts the synopsis line
-  literally. `tests/process.rs:48,83` assert only `errors.contains("Usage:")`, and `tests/cli.rs:128`
+  literally. `mokiterions-core/tests/process.rs:48,83` assert only `errors.contains("Usage:")`, and
+  `mokiterions-core/tests/cli.rs:128`
   asserts the `Options:` block against the parser's real defaults. So the reason to keep the name is
   the scope rule and the unchanged-file property, not a literal assertion that would have failed.
   The observer has its own `options::USAGE` naming `mokiterions-tui`.
@@ -359,8 +369,9 @@ seventeen, 58 artifacts where validation now counts 68, six declared canvas inte
 `496-499`, and its own item 11 — every observer test sitting in the internal tier — which
 `WO-MOK-006` resolved. It is not
 hand-corrected because the harness generates it: `harnessctl capture-verification` derives `commit`,
-`worktree_state` and `artifact_snapshot_sha256` from the tree, and `require_clean_worktree` in
-`se_harness/provenance.py` refuses with *"revision provenance requires a clean Git worktree"* while
+`worktree_state` and `artifact_snapshot_sha256` from the tree, and `require_clean_worktree` in the
+installed harness package's `se_harness/provenance.py` — outside the repository, under the
+virtual environment — refuses with *"revision provenance requires a clean Git worktree"* while
 anything is uncommitted. So the re-capture cannot precede a commit, and the commit is the owner's
 act. The order is: owner authorizes the commit, then
 

@@ -470,7 +470,7 @@ exit=0
 
 Zero failed, zero ignored, zero filtered out in every binary, under both invocations. Every
 doc-test run reports zero tests, and so does the engine's binary target, which is what
-`SPEC-MOK-002` rules 3 and 9 require of the engine's `src/main.rs`. The observer's binary
+`SPEC-MOK-002` rules 3 and 9 require of `mokiterions-core/src/main.rs`. The observer's binary
 target reports 8: `SPEC-MOK-004` rule 10 keeps those eight inline because each one requires a
 private item of the binary.
 

@@ -3,18 +3,28 @@
 Re-derived against the merged tree. The engine package keeps the name `SPEC-MOK-002` rule 1
 fixes, `Mokiterions`, so every command below names that package rather than a renamed one.
 
+Re-captured on 2026-08-19. Nothing this work order does touches a dependency, and no figure
+below changed: 61, 59, 57 and 37 crates by the four readings, 182 `Cargo.lock` entries, three
+`serde` names in the lockfile and none in the resolution, and the same two build-only crates.
+What changed is where the engine package lives — `WO-MOK-006` moved it into
+`mokiterions-core/` — so every path cargo prints is different, the engine manifest is read at
+`mokiterions-core/Cargo.toml`, and the observer's path dependency now reads
+`{ path = "../mokiterions-core" }`. The observer's manifest also gained the `[lib]` target that
+work order added. A path that no longer resolves makes a check unrepeatable even when its
+answer is still right, which is why the commands were re-run rather than annotated.
+
 ## REQ-MOK-026: the engine package's external dependency set is empty
 
 $ cargo tree -p Mokiterions
-Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
 
 $ cargo tree -p Mokiterions --edges all   # normal, build, dev and proc-macro edges
-Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
 
 $ cargo tree -p Mokiterions --all-features --edges all
-Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
 
-$ tail -n 6 Cargo.toml   # the engine package manifest's dependency table
+$ tail -n 6 mokiterions-core/Cargo.toml   # the engine package manifest's dependency table
 path = "src/main.rs"
 
 # `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
@@ -30,6 +40,15 @@ name = "mokiterions-tui"
 version = "0.1.0"
 edition = "2024"
 
+# `SPEC-MOK-004` rule 4: two targets. The library target carries the presentation layer so
+# that a tier of tests can reach the observer's contract from outside the crate, which
+# `REQ-MOK-028` requires; the binary keeps the operator-facing name and every terminal
+# concern. The library target is named in snake case because the declared lint gate implies
+# `non_snake_case`, exactly as `SPEC-MOK-002` rule 2 requires of the engine's.
+[lib]
+name = "mokiterions_tui"
+path = "src/lib.rs"
+
 [[bin]]
 name = "mokiterions-tui"
 path = "src/main.rs"
@@ -39,7 +58,7 @@ path = "src/main.rs"
 # not an implementation choice. Every user-interface dependency lives here and nowhere
 # else; `Mokiterions` depends on nothing.
 [dependencies]
-Mokiterions = { path = ".." }
+Mokiterions = { path = "../mokiterions-core" }
 ratatui = { version = "0.30.2", default-features = false, features = [
   "crossterm",
   "layout-cache",
@@ -50,7 +69,7 @@ ratatui = { version = "0.30.2", default-features = false, features = [
 
 $ cargo tree -p mokiterions-tui
 mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
-├── Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+├── Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
 └── ratatui v0.30.2
     ├── instability v0.3.13 (proc-macro)
     │   ├── darling v0.24.0

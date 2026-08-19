@@ -100,3 +100,25 @@ Both follow mechanically from the amendments moving `SPEC-MOK-003` and `SPEC-MOK
 2026-08-19 while `ARCH-MOK-002` stays at 2026-08-18. `ARCH-MOK-002` is deliberately not touched:
 the last paragraph of disclosure 16 in `completion-summary.md` states why, and why the expected
 outcome of the reassessment is a re-affirmation rather than a change.
+
+## Re-run after the evidence corrections, same day
+
+The four harness gates above were first captured at the candidate commit 360a5e4. A second commit
+on this branch then corrected citations inside seven evidence files, this one included — no file
+outside `evidence/WO-MOK-005/` is in it, so no cargo gate can be affected and none was re-run.
+All four harness gates were re-run on the corrected tree and every figure is identical:
+
+    harnessctl validate                              PASS   68 artifacts, 0 errors, 0 warnings
+    scripts/validate_engineering_artifacts.py --root .  PASS   68 artifacts, 0 errors, 0 warnings
+    harnessctl doctor                                PASS   81 lines, every managed file unchanged
+    preflight --work-order WO-MOK-005 --phase review PASS   in_progress, review phase
+    scripts/generate_harness_dashboard.py --root .   PASS   68 artifacts, 211 relations, 0 errors, 8 warnings
+
+The dashboard's snapshot digest is also unchanged, byte for byte:
+
+    e921e8dbe8ca2424bf8785de49e4f23c0a775c8506126ff2a800d72198657e21
+
+That is the expected result and it is worth stating, because it is what makes the digest usable as
+provenance for a verification record written after these corrections: the generator reads the typed
+artifacts under `docs/engineering/`, and an evidence file carries no frontmatter and is not one. So
+editing evidence prose cannot move the digest, while amending a specification does.
