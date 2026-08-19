@@ -2,7 +2,7 @@
 id = "VREC-MOK-005"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-005"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -18,15 +18,16 @@ verifies_work_order = ["WO-MOK-005"]
 conforms_to = ["VER-MOK-005"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-005` to candidate commit
-`f3613701f3c55d3f3d849747c8cf0790a5729c14`. An accountable assurance owner must review the evidence
-and transition the record to `verified`; producing this record approved nothing, and nothing on this
-branch is tagged, released, published or deployed.
+Following review of the retained evidence by the accountable assurance owner, this record was
+transitioned from `ready` to `verified` on 2026-08-19. It binds `WO-MOK-005` to candidate commit
+`f3613701f3c55d3f3d849747c8cf0790a5729c14` without changing its captured provenance.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential
-commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit,
+merge, release, tag, publish, or deploy anything.
+
+The record was prepared after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## How this record was produced, and why not by `harnessctl capture-verification`
 
@@ -70,12 +71,13 @@ correct, after three further commits that corrected the packet's own prose. Both
 and `git merge-base --is-ancestor` confirms `360a5e4` is an ancestor of the commit named above, so the
 record binds a tree that contains the change it is about.
 
-The frontmatter's shape, field order and the two paragraphs under the heading follow the generator's
-output, so this file can be diffed against `VREC-MOK-001` through `VREC-MOK-004` without noise. One
-sentence deviates from the template and is not verbatim: where the generator writes "this command did
-not approve, commit, tag, release, or publish anything", no command ran here, and commits *were* made
-on this branch under the repository owner's explicit authorization. The paragraph above says what is
-true instead.
+The frontmatter's shape and field order follow the generator's output, so this file can be diffed
+against `VREC-MOK-001` through `VREC-MOK-004` without noise. As captured, the paragraphs under the
+heading followed the generator's template too, with one sentence deviating and not verbatim: where the
+generator writes "this command did not approve, commit, tag, release, or publish anything", no command
+ran here, and commits *were* made on this branch under the repository owner's explicit authorization.
+The heading and those paragraphs now carry the verified form instead, matching `VREC-MOK-006`, since the
+record is no longer a candidate awaiting review. What replaced them is stated in *Authority* below.
 
 ## Why this record was recaptured, for the third time
 
@@ -111,9 +113,12 @@ A related question a reader will reasonably ask: `VREC-MOK-006` is `verified` an
 items and 169 workspace tests, both of which this work changes to 94 and 172, and it is **not**
 re-captured. That is the rule rather than an inconsistency. A `verified` record is a statement an
 accountable owner made about a named tree, and it was correct at that tree; re-writing it would rewrite
-the owner's judgement. This record is `ready` — a candidate no owner has accepted — so replacing it
-retires nothing but my own draft. `VREC-MOK-001` through `VREC-MOK-004` are likewise left untouched.
-`SPEC-MOK-004`'s amendment record states the same principle in its own words.
+the owner's judgement. This record was still `ready` at each of the three re-captures — a candidate no
+owner had accepted — so replacing it retired nothing but my own draft. Now that the owner has accepted
+it, the same rule applies to this record too: it is not re-captured again, and a later disagreement with
+it is a new observation against `f361370` rather than a licence to rewrite it. `VREC-MOK-001` through
+`VREC-MOK-004` are likewise left untouched. `SPEC-MOK-004`'s amendment record states the same principle
+in its own words.
 
 ## What this record claims
 
@@ -203,9 +208,9 @@ Every automated result bound here is an assertion about an in-memory character b
 
 **Eleven provisions across four approved artifacts are amended in the tree and every one is recorded
 as OUTSTANDING, because each is the technical owner's act and the owner has not taken it.** The
-amended text is written; the approval is not given. This record cannot supply it, and transitioning
-this record to `verified` would not supply it either — an assurance owner's verification is a
-statement about evidence, not about another role's approvals.
+amended text is written; the approval is not given. This record cannot supply it, and the transition to
+`verified` did not supply it either — an assurance owner's verification is a statement about evidence,
+not about another role's approvals.
 
 - **`SPEC-MOK-002`, four provisions** (amendment record, 2026-08-18): rule 1's "no second package, no
   workspace" narrowed to a workspace of exactly two packages, on the approved `REQ-MOK-026` the
@@ -259,7 +264,7 @@ approved row in an approved artifact is the technical owner's act, so this is di
 touched. The substance is unaffected: `ARCH-MOK-002`'s package split, read-only observation surface
 and dependency boundary are what this evidence measures, and none of them changed.
 
-## What the accountable assurance owner must weigh before verifying
+## What the accountable assurance owner weighed before verifying
 
 The outstanding manual assessments and the eleven outstanding amendment provisions above are the first
 two items. `completion-summary.md` discloses seventeen numbered findings and two further notes. None
@@ -370,15 +375,76 @@ in it and the package split, the read-only surface and the dependency boundary a
   operator can see. Those clauses were true at the commits they bind and are not re-opened here. What
   they now lack is a definition of the term, since the artifact that defined it no longer does.
 
-## Scope of the transition being requested
+## Scope of the transition that was taken
 
-Transitioning this record to `verified` would record that the assurance owner accepts the automated
-evidence at this candidate commit **with all seven manual assessments outstanding and eleven
-provisions across four approved artifacts awaiting the technical owner**. It would not perform those
-assessments, would not supply those approvals, and would not release, tag, publish or deploy anything.
-If either set is to gate verification instead, this record should stay `ready` until the assessments
-are performed and their author recorded in `manual-assessment.md`, and until the amendments are
-approved by the role that owns them.
+This record's transition to `verified` records that the assurance owner accepts the automated evidence
+at this candidate commit **with all seven manual assessments outstanding and unauthored, and eleven
+provisions across four approved artifacts awaiting the technical owner**. Accepting the automated
+evidence is what was decided. The decision did not perform those assessments, did not supply or ratify
+any approval, and did not merge, release, tag, publish or deploy anything.
 
-The record is `ready`. Transitioning it is the accountable assurance owner's act, and no agent may
-take it.
+Three consequences follow from the shape of that acceptance, and are stated here rather than left to be
+rediscovered:
+
+- **The instrument is not verified; its parts are.** `VER-MOK-005` says that a pass on every automated
+  case combined with a negative answer to the two-hundred-tick instrument assessment "is an adverse
+  observation requiring product review". The automated half is satisfied and accepted. The other half is
+  still unknown, so this transition does not certify that the observer answers the questions
+  `INT-MOK-004` names, and does not certify that anything is legible on a real terminal. If the
+  assessment is later performed and answers negatively, that is the adverse observation `VER-MOK-005`
+  describes — a new observation against this commit, not a defect in this record.
+- **The reported defect is accepted as fixed against a measurement, not against a screen.** What was
+  verified is that no viewport in the 167 × 39 grid loses a pane when it grows, in an in-memory buffer,
+  and that the superseded rule fails the same sweep 12 times. The owner reported the symptom on a real
+  terminal; manual assessment 1 is what would close that loop, and it is outstanding.
+- **Verification does not advance the amendments.** The eleven provisions stay OUTSTANDING and still
+  require the technical owner. `WO-MOK-005` states it "is not verifiable until they are given or the
+  scope is changed to avoid needing them"; the owner verified the evidence with them outstanding, which
+  is a decision about the evidence and leaves that precondition exactly where it was.
+
+## Authority
+
+This record is `verified`. **The verification decision was taken by the repository owner acting as
+accountable assurance owner on 2026-08-19, on the explicit instruction "ok, I validate the verification
+record, you can transition it, commit and push"; the implementation agent recorded the transition and did
+not make the decision.** `DECISION_RIGHTS.md` places the decision outside what such an agent may inherit,
+and `ENGINEERING_HARNESS.md` states that harness commands may prepare records but never exercise
+accountable decision rights. Recording the decision changed the record's status and this prose only.
+
+Every captured provenance field is preserved exactly as it was derived at the candidate commit: the
+commit `f3613701f3c55d3f3d849747c8cf0790a5729c14`, the git object format, the clean worktree state, the
+capture timestamp `2026-08-19T07:50:45Z`, the artifact snapshot hash, the 21 evidence paths, the verified
+work order and the verification contract. The snapshot was taken before this record was written, so it
+records the 68-artifact graph the record binds rather than the graph containing the record. No provenance
+field was recomputed for this transition, and the candidate commit is unchanged. The derivation of each
+field, and the reason `harnessctl capture-verification` could not perform it, are disclosed above and are
+part of what the owner accepted.
+
+**`WO-MOK-005` remains `in_progress`, as `WO-MOK-006` does.** `VREC-MOK-001` through `VREC-MOK-004` each
+verify a work order that had been transitioned to `implemented` first. Verification is carried by this
+record rather than by a change to the work order, so the transition is coherent as it stands and
+`harnessctl validate` reports no error or warning against it. Whether `WO-MOK-005` should also move to
+`implemented` is a separate lifecycle decision belonging to the owner; it was not instructed and was not
+taken.
+
+**The transition changes the truth value of statements in five other artifacts, and none of them is
+edited.** The status was `ready` at every revision of this file up to and including `3696fae`, so:
+
+- Four statements go stale, and each was accurate when written. `WO-MOK-005` at line 131 and
+  `SPEC-MOK-003`'s 2026-08-19 amendment row both say this record "is `ready`, not `verified`" and will be
+  re-captured, which has now happened. `SPEC-MOK-003`'s 2026-08-18 row and `ARCH-MOK-002`'s say it "is not
+  edited" and binds `ARCH-MOK-002`'s 2026-08-17 content — superseded by the re-capture, as the disclosure
+  above already records. All four sit in approved artifacts, and amending an approved artifact is the
+  technical owner's act.
+- `VREC-MOK-006` at line 265 says "`VREC-MOK-005` is still `ready` and this transition does not touch
+  it." That was correct at `dd0c2c0f`, the commit it binds, and it is a `verified` commit-bound record.
+  It is not edited, for exactly the reason it gives about itself.
+- Three statements become accurate that were not. `WO-MOK-006` at line 61 and
+  `WO-MOK-006/amendment-approvals.md` at lines 85 and 123 describe `SPEC-MOK-003` and `ARCH-MOK-002` as
+  "bound by a `verified` `VREC-MOK-005`". They were written on 2026-08-18, when this record was `ready`,
+  so they anticipated a status that did not exist. They are correct as of this transition. Recording that
+  is not a claim that anticipating it was right.
+
+Verification is not release, and it is not merge. Nothing here releases, tags, publishes or deploys, no
+release record exists, and pull request **#15** is left open for the owner to merge. Release remains a
+separate record and a separate accountable decision.
