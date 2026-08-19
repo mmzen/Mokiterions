@@ -138,3 +138,65 @@ candidate and the work order `in_progress`, which was true when written and true
 against. None of their measurements, digests, captures or judgements is touched; what changed is the sentence about
 lifecycle state, and in each case the earlier sentence is still readable. `requirement-to-test-mapping.md` needed no
 edit: it states the matrix row by row and the row it reports unsatisfied is unsatisfied still.
+
+## What happened after this decision, and what it changed on `master`
+
+This section is the canonical account of the facts that arrived after the two transitions. It is here rather than in
+the bound records because those say what was true of the commits they name, and because this file is already outside
+the verification record's `evidence_paths` for the same reason. Times are UTC.
+
+**Out of draft, then merged as a merge commit.** The repository owner took pull request #17 out of draft and merged it
+at **`5eed5a97235ab73d9964ff3ccde059b0ef74ddb3`**, 19:45:55Z. It is a merge commit and not a squash, which is what
+keeps this chain's records meaningful on the default branch: `1a937a1` — the commit `VREC-MOK-010` binds — is an
+ancestor of `master`, so the binding still resolves there rather than naming a commit that only a closed pull request
+remembers. The chain arrived unaltered: `git diff 8c29830 5eed5a9` over `WO-MOK-010.md`, `VER-MOK-010.md`,
+`VREC-MOK-010.md` and every file of this packet is **empty**, and the merge brought in only `master`'s own side
+(`SPEC-MOK-005`, `WO-MOK-008`, `WO-MOK-009`, `VER-MOK-008` and the release chain). `Engineering Harness` passed on
+`master` at the merge commit.
+
+**`master` at `5eed5a9`:** validator PASS, 95 artifacts, 0 errors and 0 warnings across all four planes · harness 95
+artifacts, 319 relations, 0 errors, **6** warnings · inspector error 0 / warning 6 / info 11, with *Decision
+required*, *Active work* and *Assurance pending* all empty and one *Definitions pending* entry that is `master`'s own
+(`WO-MOK-008` at `draft`). The 80-artifact figures in the table above are this branch's and are deliberately not
+re-measured: they are the graph the decision was taken over.
+
+**Release 0.1.0 was released while this pull request sat, and it does not include `WO-MOK-010`.** `d52fb4f`
+(18:49:22Z) brought in `REL-MOK-001`, `VREC-MOK-009` and `RLS-MOK-001`; `7da7e73` (19:41:28Z) transitioned
+`RLS-MOK-001` from `ready` to `released` — four minutes before this chain merged. The record authorizes version
+`0.1.0`, tag `v0.1.0`, from authorized commit `755db7297aa993f00d42f9c9794584b5d061f03d`, and its `releases_work`
+names `WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`. Checked rather than read off the front matter:
+`scripts/check_release_authorization.py --tag v0.1.0` reports **AUTHORIZED** and
+`scripts/check_release_reachability.py --commit 755db729…` reports **REACHABLE**, contained by `origin/master`.
+**`WO-MOK-010` is in no release record.** Its work is on `master` and unreleased, and a release record is the only
+thing that would release it, so *Verification is not release* above is now a statement with a released 0.1.0 beside it
+rather than an abstraction.
+
+**One warning changed meaning rather than changing count.** The paragraph above says `W-HEX-001` is "the warning every
+implemented work order in this repository already carries", and on this branch it was: eight of eight. On `master` it
+fires for **`WO-MOK-010` alone**, and the dashboard's warning total is 6 rather than 13. The cause is `master`'s
+release evidence: it retains one containment statement per released work order, each in a **file named for that work
+order** — `evidence/release-0.1.0/WO-MOK-005-containment.md` and seven more — and evidence discovery keys on file
+names beginning with the work-order identifier. Those files cleared the warning for every work order 0.1.0 released.
+This packet retains its evidence in a **directory** named for the work order instead, and `WO-MOK-010` is not in
+0.1.0, so it has no keyed file and is now the sole observation. **Nothing was added here to match the pattern**: a
+file created to satisfy a regex is not evidence, and the repository owner's decision of 2026-08-19 was to leave the
+warning standing. It clears when `WO-MOK-010` enters a release record and gets a containment statement on the same
+footing as the other eight.
+
+**Decision 12's obligation still stands, and 0.1.0 shipped the debt it names.** Two facts, and they do not cancel.
+
+The obligation — a work order of its own resolving the `VREC-MOK-005` layer, completing **before the next release
+record** — was recorded in `1a937a1` at 17:50:30Z. 0.1.0's authorized commit `755db729` was made at **17:33:29Z**,
+seventeen minutes earlier; `RLS-MOK-001` stamps `released_at` **17:53:05Z** and the commit preparing it, `9108566`, is
+17:54:24Z. **The repository owner's decision of 2026-08-19 is that the obligation binds the next release record
+prepared after it, not one whose candidate commit was already fixed when it was written**: 0.1.0 was in flight, so it
+is not the record the obligation reaches. On that reading the obligation is **not breached and not discharged** — it
+stands, and the release record that includes `WO-MOK-010` is the one it binds. The timestamps are given rather than
+summarised so that the other reading remains available: by date alone, `RLS-MOK-001` is the next release record and a
+reader may conclude the obligation was overtaken two and a half minutes after it was written.
+
+What the reading does not soften: **0.1.0 releases `WO-MOK-005`**, the chain whose six amendment rows and seven manual
+assessments are the eleven provisions this work order's gate overrode, and **the release chain does not disclose
+them** — `VREC-MOK-009` lists `WO-MOK-005` as `verified` against `f361370` with no mention of the outstanding items,
+and neither `RLS-MOK-001` nor `REL-MOK-001` mentions them. The status moved, the substance did not, and the substance
+is now shipped under tag `v0.1.0`. No work order resolving it exists, on `master` or on any branch.

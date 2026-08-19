@@ -88,3 +88,25 @@ its own act taken on this review rather than contained in it. In particular, dec
 verification unchanged: the eleven provisions and seven assessments of the `VREC-MOK-005` layer are still to be resolved
 by a work order of their own, completing before the next release record. No such work order exists, and release remains
 a separate record and a separate decision.
+
+## Which release record decision 12's obligation binds
+
+The wording — "before the next release record" — met a release record within the hour, so what it reaches was decided
+rather than assumed. Times are UTC. This review was committed at **17:50:30Z**. Release 0.1.0's authorized commit
+`755db729` was made at **17:33:29Z**, seventeen minutes earlier; `RLS-MOK-001` stamps `released_at` **17:53:05Z**, and
+the owner transitioned it to `released` on `master` at 19:41:28Z, four minutes before this chain merged.
+
+**The repository owner's decision of 2026-08-19: the obligation binds the next release record prepared after it, not
+one whose candidate commit was already fixed when it was written.** 0.1.0 was in flight, so it is not the record the
+obligation reaches; the obligation is therefore **neither breached nor discharged**, and the release record that
+includes `WO-MOK-010` is the one it binds. The timestamps are recorded rather than summarised because the other reading
+is available from them: by date alone, `RLS-MOK-001` is the next release record, and a reader may conclude the
+obligation was overtaken two and a half minutes after it was written. Decision 12 itself is unchanged — the override
+stands and the debt is named.
+
+**What the reading does not soften, and this review will not let stand unsaid.** Release 0.1.0 releases `WO-MOK-005`:
+the eleven provisions and seven manual assessments are now shipped under tag `v0.1.0`, and the release chain does not
+disclose them — `VREC-MOK-009` lists `WO-MOK-005` as `verified` with no mention of the outstanding items, and neither
+`RLS-MOK-001` nor `REL-MOK-001` mentions them. The status moved and the substance did not, which is what this work
+order's evidence has said about that layer from the start; what is new is that the substance has been released. Still
+no work order resolving it exists, on `master` or on any branch. `assurance-decision.md` records the full account.

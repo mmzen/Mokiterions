@@ -657,3 +657,37 @@ re-capture corrected, and release remains a separate record and a separate accou
 measured harness state before and after the two transitions, and why it is deliberately not among this
 record's `evidence_paths`: it postdates the commit this record binds, and a record's evidence set is the
 capture's, not the decision's.
+
+## What is true after this record, on `master`
+
+**Nothing above is withdrawn or re-measured.** Each statement is what was true of the commit it names, which is
+what a record binds. What follows is the later fact set beside it, on the `VREC-MOK-007` precedent
+(`e1d6f6e`), because two of those statements would otherwise read as claims about the present. Times are UTC;
+`evidence/WO-MOK-010/assurance-decision.md` holds the full account and the checks behind each figure.
+
+- **Merged, and merged in a way that keeps this record's binding resolvable.** The repository owner took pull
+  request #17 out of draft and merged it at **`5eed5a97235ab73d9964ff3ccde059b0ef74ddb3`**, 19:45:55Z, as a
+  merge commit rather than a squash — so `1a937a1`, the commit this record binds, is an ancestor of `master`
+  rather than a commit only a closed pull request remembers. The chain arrived unaltered: the diff from
+  `8c29830` to the merge over this record, `WO-MOK-010`, `VER-MOK-010` and every file of the packet is
+  **empty**. So *Merge: PR #17 remains a draft* above is what was true of this commit, and merge has since
+  been taken by the owner as their own act. `Engineering Harness` passes on `master` at the merge.
+- **A release record now exists, and it does not include this work order.** *Release: no release record
+  exists* was true here and is not true on `master`: `RLS-MOK-001` was transitioned to `released` at
+  `7da7e73`, 19:41:28Z, four minutes before this chain merged, authorizing version `0.1.0` and tag `v0.1.0`
+  from commit `755db729…` and releasing `WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`. **`WO-MOK-010` is
+  in no release record**, so the sentence that mattered is the one that still holds: verification is not
+  release, and this record remains an input to a release decision that has not been taken for this work order.
+- **The `VREC-MOK-005` obligation still stands, on the owner's reading, and the debt it names is now
+  shipped.** 0.1.0's authorized commit predates the obligation by seventeen minutes, and the owner's decision
+  of 2026-08-19 is that the obligation binds the next release record *prepared after* it — so it is neither
+  breached nor discharged, and the release that includes `WO-MOK-010` is the one it binds. What that does not
+  change: 0.1.0 releases `WO-MOK-005`, whose eleven provisions and seven assessments are the layer this
+  record's one unsatisfied matrix row is about, and the release chain does not disclose them. No work order
+  resolving them exists.
+- **`W-HEX-001` now fires for `WO-MOK-010` alone.** The gate section calls it the warning every implemented
+  work order already carries, which was true of this branch and is not true of `master`: the release evidence
+  retains a containment statement per released work order in a **file named for it**, which is what evidence
+  discovery keys on, so eight observations became one. Nothing was renamed or added to match the pattern; the
+  observation clears when this work order enters a release record and gets a containment statement of its own.
+  On `master` the dashboard reports 6 warnings and 11 informational against the 13 and 8 recorded above.
