@@ -16,7 +16,7 @@ directory: `approval-and-transition.md` records what was transitioned and on who
 | Governance revision | `54c21abcfb9caa4474c9ca5f194289e055c86a23` (tip of `master`, 2026-08-19 10:49:44 +0200) |
 | Implementation branch | `feature/release-ci`, in a linked worktree of the primary clone |
 | Candidate commit | **None at capture time.** The records below observed a working tree with no commit of its own. The owner directed the commit afterwards: `17be4bad444a4199da53e72ae8be491ba5f46ee1`, recorded in `commit-binding.md` |
-| Tags in the repository | none |
+| Tags in the repository | none at capture time, and none on `origin` at any point. A concurrent session later left a local lightweight tag, `snapshot/renumber-008`, in the shared object store; `suite-output.md` records it, because one test reads it |
 | Harness build used for every measurement | `se-harness==0.4.0`, installed as a wheel into a throwaway environment |
 | Harness build present on the machine | an editable install of a live clone, reporting `0.4.1`. **Not used for any measurement here** |
 | Toolchain | rustc 1.97.1, cargo 1.97.1 (`8bab26f4f 2026-07-14`), clippy and rustfmt from the same channel |
@@ -47,7 +47,7 @@ in `compliance-rehearsal.md` C1.
 
 - `completion-summary.md` — the final affected components; the suite growth from 22 to 70 scenarios and
   what accounts for it; every one of the 18 `VER-MOK-008` rows that is not plainly *observed*, with what
-  each needs; seven findings a reader should not have to discover; the four questions the owners settled on
+  each needs; nine findings a reader should not have to discover; the five questions the owners settled on
   2026-08-19; and the seven remaining acts with whose they are.
 - `candidate-conformance.md` — the rule-by-rule statement `WO-MOK-009`'s Lifecycle section requires: for
   each of rules 1 through 14 and every sub-rule, what the pre-existing candidate satisfied and what had to
@@ -60,7 +60,9 @@ in `compliance-rehearsal.md` C1.
   rehearsed, 15 not performed, 0 unexercisable. Defines *observed*, *rehearsed* and *not performed* before
   using them, cites all 70 tests by name and line, and reconciles the 30 tests the contract does not
   enumerate against the rule each exists for.
-- `suite-output.md` — the run: 70 passed, 0 failed. Includes why every refusal test asserts the refusal
+- `suite-output.md` — the run: 70 passed, 0 failed, plus the one failure a stray local tag produced when the
+  suite was re-run at the renumbering commit and the measurement that separates it from a real refusal.
+  Includes why every refusal test asserts the refusal
   *message* and not only the exit status.
 
 ### Authorization behavior
@@ -117,7 +119,7 @@ in `compliance-rehearsal.md` C1.
 
 ## What is not here, and why
 
-- **No run of the process.** There is no tag and no release record, and the candidate commit is on an
+- **No run of the process.** There is no release tag and no release record, and the candidate commit is on an
   unmerged branch, so the workflow has never executed. This is why V1–V6, P1–P3 and C4 are *not performed*
   rather than failing: they are observations of a run, and committing is not a run.
   `completion-summary.md` lists them individually with what each needs.

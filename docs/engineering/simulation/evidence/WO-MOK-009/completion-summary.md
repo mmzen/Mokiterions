@@ -32,7 +32,7 @@ because a status transition edits a field.
 | `scripts/test_check_release_authorization.py` | 721 | 48 scenarios |
 | `scripts/test_check_release_reachability.py` | 265 | 22 scenarios |
 | `rust-toolchain.toml` | 37 | the rule 9 compiler declaration, `channel = "1.97.1"` with `rustfmt` and `clippy` |
-| `docs/RELEASE_RUNBOOK.md` | 425 | the rule 14 human sequence, outside the governed artifact root |
+| `docs/RELEASE_RUNBOOK.md` | 438 | the rule 14 human sequence, outside the governed artifact root |
 
 ### Governed artifacts — new
 
@@ -112,7 +112,9 @@ converse, A4's machine channel, two further A5 rungs, R23's local branch), plus 
 needed an anchor of their own. The other 5 property cases are credited in that file's *Property and
 invariant tests* table instead, which is why the extras tables are not simply "the tests naming no row".
 Between all of its tables it cites every one of the 70 by name and line, with no test uncited and no citation
-resolving to nothing. `suite-output.md` holds the run: 70 passed, 0 failed.
+resolving to nothing. `suite-output.md` holds the run: 70 passed, 0 failed — and, re-run at the
+renumbering commit, one failure caused by an unrelated tag another session left in this machine's object
+store, which finding 9 states and that file measures.
 
 ## Every scenario that remains rehearsed or not performed
 
@@ -175,7 +177,7 @@ Under the amended wording C5 is **observed**, and the witness is the transcript 
 `compliance-rehearsal.md` C5. The scenario totals above move accordingly: 47 observed, 3 rehearsed, 15 not
 performed, 0 unexercisable.
 
-## Eight findings a reader should not have to discover
+## Nine findings a reader should not have to discover
 
 1. **`WO-MOK-001.md` was modified, outside this work order's declared change surface.** It gained the
    `[assurance]` table the harness's review-phase preflight now requires. Without it,
@@ -244,6 +246,23 @@ performed, 0 unexercisable.
    *"the next free one in the sequence"* is corrected there rather than deleted. No measurement moved; three
    illustrative references to the old ID remain, two of them inside now-approved artifacts and therefore left
    for their owners to amend.
+
+9. **One scenario test reads the ambient repository, and the runbook's own order guaranteed it would fail.**
+   `scripts/test_check_release_authorization.py:621` guards A5 by asserting `git tag --list` is empty in a
+   throwaway clone of this repository. That is a claim about ambient developer state: it failed at the
+   renumbering commit on a tag another session had left in this machine's shared object store,
+   `snapshot/renumber-008`, which is on no branch of this changeset and on no remote. The suite is **70/70**
+   in the same clone once that tag is deleted, and the gate refused identically either way — what failed is a
+   guard, not the assertion under test. The scheduled version of the same failure is worse than the incident:
+   `docs/RELEASE_RUNBOOK.md` Phase G told the operator to create the annotated `v0.1.0` and *then* run both
+   suites, so **following the runbook as written would have failed this test every time**, at the moment it
+   would most likely be mistaken for a release blocker. Phase G now runs the suites before the tag, which is
+   a repository-owned document in this changeset. **The one-line fix to the test is not taken here**: it would
+   change a declared file after `WO-MOK-009` was declared `implemented`, so the recommendation is recorded
+   instead — narrow the guard from *the repository has no tags* to *`v0.1.0` is not among them*, which is what
+   A5 actually needs. Neither workflow invokes these suites, so no CI job is affected today.
+   `suite-output.md` holds the failure verbatim, the two-run comparison, and the measurement that the tag
+   reaches the fixture even under `--single-branch`.
 
 ## Harness state at the end of the work
 

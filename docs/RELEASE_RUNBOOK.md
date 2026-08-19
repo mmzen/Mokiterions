@@ -290,7 +290,25 @@ Commit and merge to `master` through a pull request. **That merge is the governa
 
 ## Phase G — rehearse the gate before pushing anything
 
-The gate runs locally. Create the tag but do not push it:
+**Run the scenario suites first, while no tag exists.** They are named after the scenarios
+`docs/engineering/simulation/verification/VER-MOK-008.md` enumerates and they cover both
+refusal sets:
+
+```bash
+python scripts/test_check_release_authorization.py    # A1-A5, R1-R22, P4, properties
+python scripts/test_check_release_reachability.py     # R23-R24, properties
+```
+
+That order is a defect rather than a preference. A5's real-repository test guards on
+`git tag --list` being empty in a throwaway clone of this repository, so it fails as soon as
+**any** tag exists locally — including the `v0.1.0` you are about to create, and including an
+unrelated tag someone else left in the object store.
+`docs/engineering/simulation/evidence/WO-MOK-009/suite-output.md` records an occurrence, the
+measurement separating it from a real refusal, and the one-line narrowing that would fix it. If
+it fails on a tag you did not expect, read `git tag --list` before reading it as a release
+blocker.
+
+Then the gate itself, which also runs locally. Create the tag but do not push it:
 
 ```bash
 git switch master && git pull --ff-only
@@ -323,13 +341,8 @@ Rehearse both before pushing, because a pushed tag is awkward to withdraw and mu
 moved (see below). `workflow_dispatch` also exists, but it needs a tag that is already on the
 remote, so it re-runs a release rather than previewing one.
 
-Both refusal sets are covered by scenario suites, named after the scenarios
-`docs/engineering/simulation/verification/VER-MOK-008.md` enumerates:
-
-```bash
-python scripts/test_check_release_authorization.py    # A1-A5, R1-R22, P4, properties
-python scripts/test_check_release_reachability.py     # R23-R24, properties
-```
+The scenario suites at the top of this phase are what cover both refusal sets. Run them there,
+before the tag exists, for the reason stated there.
 
 ---
 

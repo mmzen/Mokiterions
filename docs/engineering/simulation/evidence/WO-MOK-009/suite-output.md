@@ -141,3 +141,68 @@ Every scenario additionally asserts that the run left the repository untouched. 
 `assert_authorized` and `assert_refused` both snapshot `git status --porcelain --untracked-files=all`,
 `git tag --list` and `git branch --list` before and after, and compare. A gate that refused correctly
 but created a tag on the way would fail all 48 tests, not one.
+
+## One test reads the ambient repository, and it failed once
+
+Re-run 2026-08-19 at candidate commit `2bcb9f3`, in a clean clone, as part of renumbering the verification
+record. The suite reported **69 passed, 1 failed**, and the failure was caused by nothing in this changeset:
+
+```text
+FAIL: test_a5_the_real_repository_refuses_every_tag_today
+      (test_check_release_authorization.A5RealRepositoryTest)
+No tag exists, so the first fact the gate cannot establish is the tag itself.
+----------------------------------------------------------------------
+  File ".../scripts/test_check_release_authorization.py", line 621, in
+      test_a5_the_real_repository_refuses_every_tag_today
+    self.assertEqual(git(self.clone, "tag", "--list"), "", "the repository has no tags")
+AssertionError: 'snapshot/renumber-008' != ''
+- snapshot/renumber-008
+ : the repository has no tags
+```
+
+`snapshot/renumber-008` is a **lightweight tag on a stash commit**, `1b1ca55`, subject *"On
+feature/phase-2-5-naming: renumbering WO-MOK-007 -> WO-MOK-008 (snapshot, tree untouched)"*. A concurrent
+session created it in this machine's shared object store while this work was in progress. It belongs to
+nothing in this changeset, `git ls-remote --tags origin` lists nothing, and `1b1ca55` is not an ancestor of
+`feature/release-ci` — measured, not assumed. It still reaches the fixture, because the test's
+`git clone --no-hardlinks --single-branch` of a local path copies `refs/tags/*` wholesale:
+
+```text
+$ git clone --quiet --no-hardlinks --single-branch --branch feature/release-ci <local path> clone
+$ git -C clone tag --list
+snapshot/renumber-008
+$ git merge-base --is-ancestor 1b1ca55 feature/release-ci ; echo $?
+1
+```
+
+Two runs of the whole suite in one clone at one commit, differing only in whether that tag is present:
+
+| Clone state | Result |
+| --- | --- |
+| cloned from the local repository, tag inherited | Ran 70 tests in 47.560s — **FAILED (failures=1)** |
+| the same clone after `git tag -d snapshot/renumber-008` | Ran 70 tests in 48.772s — **OK** |
+
+**So the suite is 70/70 at this commit, and the failure is a property of the machine rather than of the
+gate.** The gate was not run differently and refused identically either way; what failed is a *guard*, not
+the assertion under test. Line 622 — `assertIn("is not a tag in this repository", self.refusal())` — is what
+discharges A5, and it holds whether or not an unrelated tag exists.
+
+**It is nonetheless a real coupling defect, and it is not fixed here.** The guard asserts that the whole
+repository has no tags, which is a claim about ambient developer state; A5 needs only that `v0.1.0` is
+absent. The sharper consequence is not this incident but a scheduled one: `docs/RELEASE_RUNBOOK.md` Phase G
+tells the operator to create the annotated `v0.1.0` and *then* run both suites, so **following the runbook as
+written would fail this test every time**, at the one moment it is most likely to be read as a release
+blocker. Two things follow, and they are different acts:
+
+- The runbook is repository-owned and part of this changeset, so its Phase G now runs the suites **before**
+  the tag is created, with the reason stated in place.
+- Narrowing the guard to the tag the test names is a one-line change to
+  `scripts/test_check_release_authorization.py`, a file `WO-MOK-009` declares — and `WO-MOK-009` is
+  `implemented`. Changing the candidate after it was declared implemented is the owners' call, not this
+  record's, so the line is left as it stands and recorded instead. `completion-summary.md` finding 9 carries
+  it with the recommended change.
+
+Neither `.github/workflows/release.yml` nor the managed `.github/workflows/engineering-harness.yml` invokes
+these suites — checked, both files hold no `unittest` and no `scripts/test_` reference — so no CI job is
+affected today. That is also why the defect surfaces only by hand: the suites are run by an operator, and
+Phase G is where the runbook says to run them.
