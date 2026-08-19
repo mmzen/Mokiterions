@@ -13,8 +13,16 @@ combined output, and its exit status as a final `exit=<n>` line:
     test.txt          cargo test --workspace
     tree.txt          cargo tree -p Mokiterions                 (the candidate tree)
     tree-tui.txt      cargo tree -p mokiterions-tui             (the candidate tree)
-    tree-pre.txt      cargo tree -p Mokiterions                 (60fda9f, a clean git worktree)
-    tree-tui-pre.txt  cargo tree -p mokiterions-tui             (60fda9f, a clean git worktree)
+    tree-pre.txt      cargo tree -p Mokiterions                 (7a2b502, a clean git worktree)
+    tree-tui-pre.txt  cargo tree -p mokiterions-tui             (7a2b502, a clean git worktree)
+
+The two `-pre` files are redirections of a command run in another checkout rather than captures
+taken by `capture-static.sh`, so they carry neither the `### ` heading nor the `exit=` line, and
+`read` below treats the heading as optional for that reason. It did not, at first: it dropped the
+first line of every file unconditionally, which silently discarded the root of each `-pre` tree and
+made the comparison a comparison of two trees minus their roots. That defect passed, because
+dropping the root from both sides leaves them equal, and it is corrected here rather than left to
+pass.
 
 This artifact does not restate the outputs -- it reads them and checks the claims a reader would
 otherwise have to take on trust:
@@ -50,9 +58,11 @@ def read(directory, name):
     path = os.path.join(directory, name)
     text = io.open(path, encoding='utf-8').read()
     lines = text.split('\n')
-    command = lines[0][4:].strip() if lines[0].startswith('### ') else '(unlabelled)'
+    labelled = lines[0].startswith('### ')
+    command = lines[0][4:].strip() if labelled else '(unlabelled)'
     status = next((int(line[5:]) for line in reversed(lines) if line.startswith('exit=')), None)
-    body = [line for line in lines[1:] if not line.startswith('exit=')]
+    body = [line for line in (lines[1:] if labelled else lines)
+            if not line.startswith('exit=')]
     return command, status, body
 
 

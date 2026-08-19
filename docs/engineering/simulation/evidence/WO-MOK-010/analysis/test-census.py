@@ -2,14 +2,26 @@
 
 Usage, from the repository root:
 
+    git worktree add target/census-pre <before-commit> --detach
+    (cd target/census-pre && cargo test --workspace -- --list) > target/static/list-pre-labelled.txt 2>&1
+    cargo test --workspace -- --list > target/static/list-post-labelled.txt 2>&1
+    git worktree remove target/census-pre
     python docs/engineering/simulation/evidence/WO-MOK-010/analysis/test-census.py \
-        <list-before.txt> <list-after.txt>
+        target/static/list-pre-labelled.txt target/static/list-post-labelled.txt <before-commit>
 
-Each input is `cargo test --workspace -- --list` with standard error included, captured at the
-pre-change commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff -- from a clean git worktree at that
-commit -- and at the candidate tree. Standard error is what carries the `Running ...` lines, and those
-lines are what make this a tier census rather than a name census: every test below such a line belongs
-to that test binary, and the binary is what fixes the tier.
+Each input is `cargo test --workspace -- --list` with standard error included, captured from a clean
+git worktree at the commit named as the third argument and from the candidate tree. Standard error is
+what carries the `Running ...` lines, and those lines are what make this a tier census rather than a
+name census: every test below such a line belongs to that test binary, and the binary is what fixes
+the tier.
+
+Which commit belongs on the before side is not a detail. It has to be the commit this work order's
+diff is read against, because the difference between the two sides is what the census attributes to
+this work order. The first capture used the branch point, 60fda9faffbd452752a34efa356f16cc6ad1d3ff.
+After `master` advanced and was merged in, the branch point is no longer that commit for any
+purpose: a census against it would have counted `master`'s own arrivals among this work order's
+additions. The commit is therefore passed in rather than written here, and the recapture names
+`master`'s tip.
 
 What this is for. `SPEC-MOK-004` fixes which tier a test belongs to: a test may sit in the public tier
 only if it can be written through the public API with its assertions unchanged and no item widened to
@@ -88,7 +100,7 @@ def load(path):
 
 
 def main():
-    before_path, after_path = sys.argv[1:3]
+    before_path, after_path, before_commit = sys.argv[1:4]
     out = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                        'test-census.txt')
 
@@ -106,11 +118,12 @@ def main():
         'WO-MOK-010 - the test suite before and after, reconciled name by name and tier by tier',
         '',
         f'before: {before_path}',
-        '        commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff, a clean git worktree at that commit',
+        f'        commit {before_commit}, a clean git worktree at that commit',
         f'after:  {after_path}',
         '        the candidate tree',
         '',
-        'Method, and what it does and does not show: see the header of analysis/test-census.py.',
+        'Method, and what it does and does not show, and why the before side is the commit it is:',
+        'see the header of analysis/test-census.py.',
         '',
         f'  tests listed before: {len(before):4}   over {len(before_runners):2} runners   '
         f'(their own totals sum to {declared_before})',

@@ -47,7 +47,7 @@ rather than collected into a footnote.
 | No consumer | `interface-and-purity.txt` | Twenty-four occurrences of the identifier, one mutation at `simulation.rs:1962`, and zero code occurrences inside `trait DecisionSource`, all three `fn decide` and `struct Observation` |
 | Snapshot field (oracle 4) | `render::the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it`, `verification::every_presented_value_is_the_snapshots` | The four presented gauge values are compared against the snapshot's own `health`, `satiety`, `energy` and `fear` as multisets, at every roster-drawing viewport, after thirty ticks so the values are computed ones — see caveat 6 |
 | Roster renders four bars (oracle 4) | `render::the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it`, `render::tests::the_bar_row_reproduces_the_specified_form`, `render::tests::a_zero_value_is_a_zero_and_an_absent_value_is_a_dash`, `observer/roster-frames.txt` | Four gauges of equal width, each at least one cell, at absolute columns `gauges[0].column + index * (bar + 8)`. The zero case is the exact rendered line |
-| The reserved slot is no longer empty (oracle 4) | `render::the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it`, `observer/roster-frames.txt` | `VREC-MOK-005` finding 3 is closed by cell position: the `f` gauge is found at columns 36, 38–39 and 41–43 at all four roster-drawing viewports, never blank, never a dash, never zero-width — see caveat 7 |
+| The reserved slot is no longer empty (oracle 4) | `render::the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it`, `observer/roster-frames.txt` | `VREC-MOK-005` finding 3 is closed by cell position: the `f` gauge is found at columns 36, 38–39 and 41–43 at all eight roster-drawing viewports, never blank, never a dash, never zero-width — see caveat 7 |
 
 ## `REQ-MOK-033` — A trait-aware decision source, selectable
 
@@ -82,7 +82,7 @@ rather than collected into a footnote.
 
 | Case | Evidence | Note |
 |---|---|---|
-| Prior coverage preserved | `test-census.txt`, `static-checks.txt` | 169 → 190 tests over 19 → 20 runners, reconciled name by name; 21 additions, zero removals, zero ignored, zero filtered out. One runner is new and the one test that changed tier is named there |
+| Prior coverage preserved | `test-census.txt`, `static-checks.txt` | 179 → 200 tests over 19 → 20 runners, reconciled name by name against `master`'s tip; 21 additions, zero removals, zero ignored, zero filtered out. One runner is new and the one test that changed tier is named there |
 | **Required amendments present and approved** (oracle 5) | `amendment-approvals.md` | **This row is not satisfied.** Every provision the owner approved on 2026-08-19 is present in both the amendment record and the specification text, checked over disjoint text. But three amendments were written during implementation beyond the owner's stated list — one taken as a decision under a stop condition, two **OUTSTANDING** — and the six amendments `VREC-MOK-005` left outstanding are still outstanding. The contract says absence fails it regardless of code state, and it does |
 | The `VREC-MOK-005` gate | `README.md`, `WO-MOK-010` *Decision record*, `amendment-approvals.md` | **This row is not satisfied either.** `WO-MOK-005`'s six amendments and seven manual assessments were not resolved before implementation began; the repository owner overrode the gate on 2026-08-19. The mitigation is checked rather than asserted: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f** |
 
@@ -128,7 +128,7 @@ rather than collected into a footnote.
 7. **Only one bar width is reachable through `render::draw`.** The roster pane is 47 columns wide and
    rule 4's collapse threshold is also 47, so the drawn roster is always two-line at a 45-column
    interior and `bar_width(45) = min(20, (45 - 35) / 4) = 2` is the only width any declared viewport
-   produces. `observer/roster-frames.txt` swept 134 viewport renders and found bar widths observed
+   produces. `observer/roster-frames.txt` swept 157 frames and found bar widths observed
    = `{2}` and forms = two-line only. The `min(20, …)` cap and the collapsed one-line form are
    carried by three named internal render tests that call the layout arithmetic directly. This is a
    reachability finding about `SPEC-MOK-003` rule 4, not a defect in the fourth gauge.

@@ -1,14 +1,15 @@
-WO-MOK-007 - the test suite before and after, reconciled name by name and tier by tier
+WO-MOK-010 - the test suite before and after, reconciled name by name and tier by tier
 
 before: target/static/list-pre-labelled.txt
-        commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff, a clean git worktree at that commit
+        commit 7a2b502b908be03ad8e2de7c23ee3eaaf4ece048, a clean git worktree at that commit
 after:  target/static/list-post-labelled.txt
         the candidate tree
 
-Method, and what it does and does not show: see the header of analysis/test-census.py.
+Method, and what it does and does not show, and why the before side is the commit it is:
+see the header of analysis/test-census.py.
 
-  tests listed before:  169   over 19 runners   (their own totals sum to 169)
-  tests listed after:   190   over 20 runners   (their own totals sum to 190)
+  tests listed before:  179   over 19 runners   (their own totals sum to 179)
+  tests listed after:   200   over 20 runners   (their own totals sum to 200)
   added:                 21
   removed:                0
 
@@ -28,13 +29,13 @@ been emptied could not hide.
   process  (tests/process.rs)            public (integration, links from outside)       5      6      +1
   termination  (tests/termination.rs)    public (integration, links from outside)       3      4      +1
   viability  (tests/viability.rs)        public (integration, links from outside)       1      2      +1
-  mokiterions_tui  (src/lib.rs)          internal (crate's own #[cfg(test)])           24     24      +0
+  mokiterions_tui  (src/lib.rs)          internal (crate's own #[cfg(test)])           29     29      +0
   mokiterions_tui  (src/main.rs)         internal (crate's own #[cfg(test)])            8      8      +0
   authority  (tests/authority.rs)        public (integration, links from outside)       4      4      +0
   export  (tests/export.rs)              public (integration, links from outside)       7      7      +0
-  layout  (tests/layout.rs)              public (integration, links from outside)       7      7      +0
+  layout  (tests/layout.rs)              public (integration, links from outside)      10     10      +0
   options  (tests/options.rs)            public (integration, links from outside)       7      8      +1
-  render  (tests/render.rs)              public (integration, links from outside)       8     10      +2
+  render  (tests/render.rs)              public (integration, links from outside)      10     12      +2
   spatial  (tests/spatial.rs)            public (integration, links from outside)       7      7      +0
   state  (tests/state.rs)                public (integration, links from outside)      21     21      +0
   verification  (tests/verification.rs)  public (integration, links from outside)      16     16      +0

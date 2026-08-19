@@ -17,12 +17,17 @@
 # than two crates were re-checked.
 #
 # The two `-pre` dependency graphs are not captured here. They come from a clean git worktree at the
-# pre-change commit, which is created and removed by hand:
+# pre-change commit, which is created and removed by hand. That commit is `master`'s tip, not the
+# branch point: the graph these two files exist to compare against is the graph of the tree this
+# work order is merged into.
 #
-#     git worktree add target/pre 60fda9faffbd452752a34efa356f16cc6ad1d3ff
+#     git worktree add target/pre 7a2b502b908be03ad8e2de7c23ee3eaaf4ece048 --detach
 #     (cd target/pre && cargo tree -p Mokiterions)      > target/static/tree-pre.txt
 #     (cd target/pre && cargo tree -p mokiterions-tui)  > target/static/tree-tui-pre.txt
 #     git worktree remove target/pre
+#
+# Those two redirections carry no `### ` heading and no `exit=` line, unlike everything below;
+# `static-checks.py` reads the heading as optional for exactly these two files.
 
 set -u
 

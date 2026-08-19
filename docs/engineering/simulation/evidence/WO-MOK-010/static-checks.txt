@@ -1,4 +1,4 @@
-WO-MOK-007 - the tooling runs
+WO-MOK-010 - the tooling runs
 
 Method, and what is checked rather than restated: see the header of
 analysis/static-checks.py. Every figure below is read from the command's own captured
@@ -34,8 +34,8 @@ The toolchain that produced every result in this file
   $ cargo clippy --workspace --all-targets --all-features -- -D warnings
     exit=0, 0 warning or error lines, 2 crates re-linted in this run:
 
-      Checking Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-core)
-      Checking mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-tui)
+      Checking Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-phase2\mokiterions-core)
+      Checking mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-phase2\mokiterions-tui)
 
   The sources were touched before this run so that the result is a fresh lint of the
   candidate tree and not a cached one -- a cached clippy run prints no warning because it
@@ -51,14 +51,14 @@ The toolchain that produced every result in this file
 
   runners reporting a result: 20
   runners reporting ok:       20
-  passed:                     190
+  passed:                     200
   failed:                     0
   ignored:                    0
   filtered out:               0
 
   Zero ignored and zero filtered out is the part worth stating: a suite can be made to
   pass by not running, and these two counts are what would show it. The whole suite ran.
-  `test-census.txt` reconciles those 190 names against the pre-change commit's,
+  `test-census.txt` reconciles those 200 names against the pre-change commit's,
   name by name and tier by tier.
 
 4. Dependencies
@@ -69,7 +69,7 @@ The toolchain that produced every result in this file
 
   One line: the engine crate depends on nothing. `SPEC-MOK-001` puts determinism, integer
   arithmetic and the single entropy stream inside this crate, and no external crate can
-  move any of them because there is no external crate. WO-MOK-007 added no dependency,
+  move any of them because there is no external crate. WO-MOK-010 added no dependency,
   and it did not need one -- SplitMix64 is thirty lines of shifts and multiplications.
 
   $ cargo tree -p mokiterions-tui   ->   111 lines, unchanged

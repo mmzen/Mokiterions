@@ -334,11 +334,13 @@ outstanding.
 
 ## 9. The observer
 
-**Oracle 4** rebuilt **864 bar rows** across **134 viewport renders** from rule 4's named parts — label, space, bar,
-space, three value columns, two columns between gauges — rather than from the product, and compared them character for
-character. **0 discrepancies** (`observer/roster-frames.txt`).
+**Oracle 4** rebuilt **996 bar rows** across the **85 of 157 probed frames** that draw a roster, from rule 4's named
+parts — label, space, bar, space, three value columns, two columns between gauges — rather than from the product, and
+compared them character for character. **0 discrepancies** (`observer/roster-frames.txt`). The figures are the
+re-derivation of 2026-08-19 against the merged tree, not the ones this section first carried; the note at the end of
+`renumbering.md` says what changed and why the earlier capture could not stand.
 
-**The four gauges' cell positions.** Identical at all four roster-drawing viewports, because the interior is the same
+**The four gauges' cell positions.** Identical at all eight roster-drawing viewports, because the interior is the same
 45 columns at each:
 
 | gauge | label column | bar columns | value columns |
@@ -406,15 +408,17 @@ describes the census; read together they describe it exactly.** Both hold jointl
 ## 11. Static gates
 
 From `static-checks.txt`, regenerated from a fresh capture at the committed source
-(`analysis/capture-static.sh`, `analysis/static-checks.py`):
+(`analysis/capture-static.sh`, `analysis/static-checks.py`). **Re-captured on 2026-08-19 against the merged tree**, so
+the test count is the merged suite's and the two dependency graphs are compared against `master`'s tip rather than
+against the branch point; `renumbering.md` records what moved and why:
 
 | Gate | Command | Result |
 |---|---|---|
 | Formatting | `cargo fmt --all -- --check` | **exit 0, 0 diff lines** |
 | Lints | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | **exit 0, 0 warning or error lines**, 2 crates re-linted in this run so the result is this tree's and not a cache's. **No `allow` attribute was added and no lint suppressed** |
-| Tests | `cargo test --workspace` | **exit 0. 20 runners, 20 ok, 190 passed, 0 failed, 0 ignored, 0 filtered out** |
+| Tests | `cargo test --workspace` | **exit 0. 20 runners, 20 ok, 200 passed, 0 failed, 0 ignored, 0 filtered out** |
 | Engine dependencies | `cargo tree -p Mokiterions` | **one line** — the package alone. Dependency and dev-dependency tables empty, no exception |
-| Observer dependencies | `cargo tree -p mokiterions-tui` | 111 lines, **identical to the pre-change commit's line for line** with the checkout path normalised |
+| Observer dependencies | `cargo tree -p mokiterions-tui` | 111 lines, **identical to `master`'s tip line for line** with the checkout path normalised |
 
 Zero ignored and zero filtered out is the part worth stating: a suite can be made to pass by not running, and those two
 counts are what would show it.
@@ -423,30 +427,40 @@ counts are what would show it.
 
 | Gate | Result |
 |---|---|
-| `python scripts/validate_engineering_artifacts.py` | **PASS. 76 artifacts, 0 errors, 0 warnings**, across all four planes |
-| `bash scripts/check_engineering_harness.sh` | **PASS.** 76 artifacts, 240 relations, 0 errors |
-| `python scripts/inspect_engineering_artifacts.py` | 0 errors, **10 warnings, 6 informational** — and **three of those warnings are new, caused by this change** |
+| `python scripts/validate_engineering_artifacts.py` | **PASS. 80 artifacts, 0 errors, 0 warnings**, across all four planes |
+| `bash scripts/check_engineering_harness.sh` | **PASS.** 80 artifacts, 248 relations, 0 errors |
+| `python scripts/inspect_engineering_artifacts.py` | 0 errors, **12 warnings, 8 informational** — and **two of those warnings and one of the informational findings are new, caused by this change** |
 
-The three new ones are all the same `W-HEX-003` shape, and they are honest signals rather than noise:
+Which findings this change is answerable for is measured rather than asserted: the inspector was run with `--json` in a
+clean git worktree at `master`'s tip, `7a2b502`, and again on the candidate, and the two finding sets were compared by
+`(rule, severity, message)`. `master`'s tip carries **10 warnings and 7 informational** over 71 artifacts and 217
+relations; the candidate carries 12 and 8 over 80 and 248. Nothing present at `master`'s tip disappeared. The three
+findings that appear are:
 
-- `ARCH-MOK-001` (2026-08-18) now predates `SPEC-MOK-001` and `SPEC-MOK-002` (2026-08-19), which it declares
-  `conforms_to`;
-- `ARCH-MOK-002` now predates `SPEC-MOK-003` for the same reason.
+- `W-HEX-003`: `ARCH-MOK-001` (2026-08-18) now predates `SPEC-MOK-001` and `SPEC-MOK-002` (2026-08-19), which it
+  declares `conforms_to` — two warnings;
+- `I-REV-001`: the observed checkout differs from the candidate commit `VREC-MOK-010` declares, which is expected of a
+  record still bound to `4f32a9f` and is discharged by re-capturing it against the commit this packet is committed at.
 
-Amending three specifications made all three newer than the architecture artifacts that declare conformance to them,
-so the inspector asks for a reassessment of each. **The reassessment was in fact made** — the technical owner
+**One warning this packet previously claimed is no longer this change's.** The earlier capture, taken against the branch
+point, counted a third `W-HEX-003` — `ARCH-MOK-002` predating `SPEC-MOK-003`. `master` has since amended
+`SPEC-MOK-003` itself, in `WO-MOK-005` and its own `WO-MOK-007`, so that warning is present at `7a2b502` without this
+branch and is `master`'s to close. The figure is corrected here rather than left to overstate what this change caused.
+
+Amending the specifications made them newer than the architecture artifacts that declare conformance to them, so the
+inspector asks for a reassessment of each. **The reassessment was in fact made** — the technical owner
 confirmed on 2026-08-19 that `ARCH-MOK-001`'s boundaries, prohibited patterns and dependency prohibition are
 satisfied unchanged and no amendment is required, recorded in `WO-MOK-010`'s *Decision record* — but it was recorded
 in the work order rather than in `ARCH-MOK-001` itself, so the date comparison still fires. **Neither architecture
 artifact was edited to silence it.** Bumping an approved artifact's `updated` field would be a governance act on an
-artifact this work order was authorized to confirm and not to amend, and it would have added a third unratified
+artifact this work order was authorized to confirm and not to amend, and it would have added a further unratified
 amendment to fix a warning. The warning is left standing and disclosed instead; closing it is the artifact owner's
-act, in `ARCH-MOK-001` and `ARCH-MOK-002`, not this one's.
+act, in `ARCH-MOK-001`, not this one's.
 
 **The census, reconciled name by name** — `test-census.txt`, against `cargo test --workspace -- --list` captured from a
-clean worktree at **60fda9f**:
+clean worktree at **`master`'s tip, 7a2b502**, which is the commit this work order's diff is read against:
 
-- 169 tests over 19 runners → **190 tests over 20 runners**; on both sides the number of names listed equals the sum of
+- 179 tests over 19 runners → **200 tests over 20 runners**; on both sides the number of names listed equals the sum of
   the runners' own declared totals, so nothing is missing from the reconciliation;
 - **21 additions, named in full with the runner each runs in; 0 removals**; no runner lost a test and none was emptied;
 - **one runner is new** — `decisions (tests/decisions.rs)` — and the census names what moved into it and why, because a
@@ -635,10 +649,10 @@ accountable for.
 | `measurements/fear.txt` | The range, step and correspondence invariants over 111,604 agent-ticks, and the perception boundary at 16 and 17 |
 | `measurements/proposals.txt` | What each source proposed: zero `wait` and zero rejections under the new source on all ten runs |
 | `negative-control/controls.py`, `oracle-2.txt`, `oracle-3.txt` | Oracles 2 and 3 each made to fail on purpose, with the failure's magnitude checked against the defect's prediction, and the source verified byte-identical after revert |
-| `observer/frame-probe.rs`, `roster-frames.txt` | Oracle 4: 864 bar rows rebuilt from rule 4's parts, the four gauges' cell positions, and the bar-width reachability finding |
+| `observer/frame-probe.rs`, `roster-frames.txt` | Oracle 4: 996 bar rows rebuilt from rule 4's parts, the four gauges' cell positions, and the bar-width reachability finding |
 | `interface-and-purity.txt` | The public-interface census both sides, zero floats in code, and `fear`'s one writer and no reader |
-| `test-census.txt` | The suite reconciled name by name and tier by tier against **60fda9f** |
-| `static-checks.txt` | `fmt`, `clippy`, `test` and both dependency trees, captured rather than transcribed |
+| `test-census.txt` | The suite reconciled name by name and tier by tier against **`master`'s tip, 7a2b502** |
+| `static-checks.txt` | `fmt`, `clippy`, `test` and both dependency trees, captured rather than transcribed; the trees compared against **7a2b502** |
 | `analysis/*.py`, `*.sh` | The tooling that produced each `.txt`, retained so every figure is reproducible from the recorded command |
 
 `observer/frame-probe.rs` was written into `mokiterions-tui/tests/`, run once, retained here and deleted from the

@@ -1,4 +1,4 @@
-VER-MOK-007 oracle 4 - the drawn roster, cell by cell
+VER-MOK-010 oracle 4 - the drawn roster, cell by cell
 =====================================================
 
 Why the probe and the expectation are separate programs, and what is rebuilt rather than
@@ -23,45 +23,55 @@ The geometry, composed from the parts rule 4 names
   the sum above is this script's, and a disagreement between it and the product appears
   below as a failed reconstruction rather than as agreement by construction.
 
-The declared viewports
+The nine viewports rule 5 draws consequences for, and one below the floor
 
-  capture                              viewport   tier           pane       int  bar  form      entries  rows
-  -----------------------------------  ---------  -------------  ---------  ---  ---  --------  -------  ----
-  seed 42 policy individual tick 0     160x48     A full         47x34       45    2  two-line       12    24
-  seed 42 policy individual tick 0     160x44     B compact-log  47x34       45    2  two-line       12    24
-  seed 42 policy individual tick 0     140x44     B compact-log  47x34       45    2  two-line       12    24
-  seed 42 policy individual tick 0     120x48     C narrow       47x38       45    2  two-line       12    24
-  seed 42 policy individual tick 0     100x30     D minimal      none
-  seed 42 policy individual tick 0     34x22      D minimal      none
-  seed 42 policy individual tick 0     33x21      D minimal      none
-  seed 42 policy individual tick 200   160x48     A full         47x34       45    2  two-line       12    24
-  seed 42 policy individual tick 200   160x44     B compact-log  47x34       45    2  two-line       12    24
-  seed 42 policy individual tick 200   140x44     B compact-log  47x34       45    2  two-line       12    24
-  seed 42 policy individual tick 200   120x48     C narrow       47x38       45    2  two-line       12    24
-  seed 42 policy individual tick 200   100x30     D minimal      none
-  seed 42 policy individual tick 200   34x22      D minimal      none
-  seed 42 policy individual tick 200   33x21      D minimal      none
-  seed 42 policy individual tick 1000  160x48     A full         47x34       45    2  two-line        9    18
-  seed 42 policy individual tick 1000  160x44     B compact-log  47x34       45    2  two-line        9    18
-  seed 42 policy individual tick 1000  140x44     B compact-log  47x34       45    2  two-line        9    18
-  seed 42 policy individual tick 1000  120x48     C narrow       47x38       45    2  two-line        9    18
-  seed 42 policy individual tick 1000  100x30     D minimal      none
-  seed 42 policy individual tick 1000  34x22      D minimal      none
-  seed 42 policy individual tick 1000  33x21      D minimal      none
+  capture                              viewport   pane       int  bar  form      entries  rows
+  -----------------------------------  ---------  ---------  ---  ---  --------  -------  ----
+  seed 42 policy individual tick 0     160x48     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 0     160x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 0     160x40     47x30       45    2  two-line       12    24
+  seed 42 policy individual tick 0     140x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 0     140x43     47x33       45    2  two-line       12    24
+  seed 42 policy individual tick 0     120x48     47x38       45    2  two-line       12    24
+  seed 42 policy individual tick 0     120x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 0     100x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 0     34x22      no roster
+  seed 42 policy individual tick 0     33x21      below floor
+  seed 42 policy individual tick 200   160x48     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 200   160x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 200   160x40     47x30       45    2  two-line       12    24
+  seed 42 policy individual tick 200   140x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 200   140x43     47x33       45    2  two-line       12    24
+  seed 42 policy individual tick 200   120x48     47x38       45    2  two-line       12    24
+  seed 42 policy individual tick 200   120x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 200   100x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 200   34x22      no roster
+  seed 42 policy individual tick 200   33x21      below floor
+  seed 42 policy individual tick 1000  160x48     47x34       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  160x44     47x34       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  160x40     47x30       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  140x44     47x34       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  140x43     47x33       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  120x48     47x38       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  120x30     47x26       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  100x30     47x26       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  34x22      no roster
+  seed 42 policy individual tick 1000  33x21      below floor
 
-  Bar rows rebuilt character for character and compared: 864
+  Frames probed: 157, of which 85 drew a roster
+  Bar rows rebuilt character for character and compared: 996
   Discrepancies: 0
 
-  3 of the 7 declared viewports carry no roster -- 100x30, 34x22, 33x21 -- and those rows are
-  not evidence about one. 100x30 and 34x22 are tier D, where rule 5 drops the roster and the
-  inspector to keep the world view; 100x30 reaches tier D on its height, not its width, since
-  rule 5's tier C row asks for 38 rows. 33x21 is below the floor, where rule 6 replaces the
-  whole frame with the size notice. `WO-MOK-005` and `WO-MOK-006` verify all three, and this
-  work order changes none of them.
+  2 of the 10 viewports probed carry no roster -- 34x22, 33x21 -- and those rows are
+  not evidence about one. 34x22 is above the floor and below rule 5's 100-column roster
+  threshold, so the roster is reachable only as an overlay there and the header announces it.
+  33x21 is below the floor, where rule 5 suspends drawing: 0 of that frame's cells
+  carry a character, measured rather than assumed. `WO-MOK-005` and `WO-MOK-006` verify both,
+  and this work order changes neither.
 
 Where the four gauges sit, observed and predicted
 
-  Absolute frame columns of the first entry's bar row, 0-based, at each declared viewport
+  Absolute frame columns of the first entry's bar row, 0-based, at each probed viewport
   that draws a roster. The prediction is the pane's own x, its border, the indent and the
   stride of one gauge; it is not read back from the frame.
 
@@ -75,21 +85,37 @@ Where the four gauges sit, observed and predicted
   160x44     s         16    18-19    21-23
   160x44     e         26    28-29    31-33
   160x44     f         36    38-39    41-43
+  160x40     h          6      8-9    11-13
+  160x40     s         16    18-19    21-23
+  160x40     e         26    28-29    31-33
+  160x40     f         36    38-39    41-43
   140x44     h          6      8-9    11-13
   140x44     s         16    18-19    21-23
   140x44     e         26    28-29    31-33
   140x44     f         36    38-39    41-43
+  140x43     h          6      8-9    11-13
+  140x43     s         16    18-19    21-23
+  140x43     e         26    28-29    31-33
+  140x43     f         36    38-39    41-43
   120x48     h          6      8-9    11-13
   120x48     s         16    18-19    21-23
   120x48     e         26    28-29    31-33
   120x48     f         36    38-39    41-43
+  120x30     h          6      8-9    11-13
+  120x30     s         16    18-19    21-23
+  120x30     e         26    28-29    31-33
+  120x30     f         36    38-39    41-43
+  100x30     h          6      8-9    11-13
+  100x30     s         16    18-19    21-23
+  100x30     e         26    28-29    31-33
+  100x30     f         36    38-39    41-43
 
 Two frames verbatim
 
-  The cells the backend received, at the widest declared viewport. Row indices are the
+  The cells the backend received, at the widest viewport rule 5 tables. Row indices are the
   frame's own; the pipes are this record's and fix the pane's first and last column.
 
-  seed 42 policy individual tick 0, viewport 160x48, tier A full
+  seed 42 policy individual tick 0, viewport 160x48
 
     3 |┌ roster  living 12  deaths 0 ────────────────┐|
     4 |│M01  A  11:1          —                      │|
@@ -126,7 +152,7 @@ Two frames verbatim
    35 |│                                             │|
    36 |└─────────────────────────────────────────────┘|
 
-  seed 42 policy individual tick 200, viewport 160x48, tier A full
+  seed 42 policy individual tick 200, viewport 160x48
 
     3 |┌ roster  living 12  deaths 0 ────────────────┐|
     4 |│M01  A  0:31          move:west              │|
@@ -187,7 +213,7 @@ What no drawn frame can reach, and who carries it instead
 
     bar widths observed across the whole sweep:   2
     entry forms observed:                         two-line
-    widths that draw no roster at all:            66 (34..99 columns, tier D)
+    widths that draw no roster at all:            66 (34..99 columns, below rule 5's threshold)
 
   The pane's fixed width is 47 and rule 4's collapse threshold is 47. They are equal, so
   the drawn roster takes the two-line form at every viewport, exactly at the boundary, and
@@ -201,19 +227,19 @@ What no drawn frame can reach, and who carries it instead
   `test-census.txt` accounts for them:
 
   $ cargo test -p mokiterions-tui --lib the_bar_row_reproduces_the_specified_form -- --exact
-    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
 
   $ cargo test -p mokiterions-tui --lib a_bar_row_shrinks_to_its_pane_and_never_overflows_it -- --exact
-    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
 
   $ cargo test -p mokiterions-tui --lib a_zero_value_is_a_zero_and_an_absent_value_is_a_dash -- --exact
-    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
 
   The first pins rule 4's mockup line byte for byte at the twenty-cell width, including that
   the row ends at the fourth gauge with no fifth group and no trailing padding. The second
   checks the bar width at every interior from 1 to 199, including that a pane too narrow for
   a bar asks for none rather than for a negative width. The third is rule 4.4 at zero.
 
-RESULT: PASS - 864 bar rows rebuilt from rule 4 and the snapshot values match the
+RESULT: PASS - 996 bar rows rebuilt from rule 4 and the snapshot values match the
         cells the backend received, character for character, and every gauge sits in the
         column the rule puts it in

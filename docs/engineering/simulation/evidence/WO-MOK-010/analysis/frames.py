@@ -23,6 +23,11 @@ Each entry's bar row is rebuilt in full, character for character, from the snaps
 pane's width, and compared against the cells the backend received. The four gauges' cell columns are
 then reported and independently predicted, because a row that is right and mispositioned is still
 wrong.
+
+Re-derived on 2026-08-19 against `master` at `7a2b502`, with the probe. `WO-MOK-005` withdrew rule 5's
+table of named tiers, so there is no tier to report per frame, and the viewport set rule 5 draws
+consequences for grew from six to nine. The expectation rebuilt here is rule 4's and is unchanged;
+what changed is how many frames it is checked against.
 """
 
 import io
@@ -90,10 +95,10 @@ def frames(path):
         lines = block.split('\n')
         viewport = lines[0].strip()
         record = {'viewport': viewport, 'caption': head.split('\n')[0].strip(), 'agents': [],
-                  'rows': [], 'roster': None}
+                  'rows': [], 'roster': None, 'floor': None}
         for line in lines[1:]:
-            if line.startswith('tier '):
-                record['tier'] = line[5:].strip()
+            if line.startswith('below floor'):
+                record['floor'] = line.strip()
             elif line.startswith('agent '):
                 fields = line.split()
                 values = dict(field.split('=') for field in fields[2:])
@@ -181,7 +186,7 @@ def check(record, problems, coverage):
                 positions.append((label, column, column + 2, column + 1 + bar,
                                   column + 3 + bar, column + 5 + bar))
 
-    return {'viewport': record['viewport'], 'tier': record['tier'], 'pane': rect,
+    return {'viewport': record['viewport'], 'pane': rect,
             'interior': interior, 'bar': bar, 'two_line': two_line, 'entries': len(entries),
             'rows': len(entries) * per_entry, 'positions': positions}
 
@@ -246,28 +251,26 @@ def main():
         '  the sum above is this script\'s, and a disagreement between it and the product appears',
         '  below as a failed reconstruction rather than as agreement by construction.',
         '',
-        'The declared viewports',
+        'The nine viewports rule 5 draws consequences for, and one below the floor',
         '',
     ]
-    # The column widths are taken from the data, so a longer tier label cannot silently push a row
-    # out of its column and make the table read as something other than what was measured.
+    # The column widths are taken from the data, so a long field cannot silently push a row out of
+    # its column and make the table read as something other than what was measured.
     caption_width = max(len(record['caption']) for record, _ in declared)
-    tier_width = max(len(record['tier']) for record, _ in declared)
     lines += [
-        f'  {"capture":{caption_width}}  {"viewport":9}  {"tier":{tier_width}}  {"pane":9}  {"int":>3}  '
+        f'  {"capture":{caption_width}}  {"viewport":9}  {"pane":9}  {"int":>3}  '
         f'{"bar":>3}  {"form":8}  {"entries":>7}  {"rows":>4}',
-        f'  {"-" * caption_width}  {"-" * 9}  {"-" * tier_width}  {"-" * 9}  ---  ---  {"-" * 8}  '
+        f'  {"-" * caption_width}  {"-" * 9}  {"-" * 9}  ---  ---  {"-" * 8}  '
         f'-------  ----',
     ]
     for record, summary in declared:
         caption = record['caption']
         if summary is None:
-            lines.append(f'  {caption:{caption_width}}  {record["viewport"]:9}  '
-                         f'{record["tier"]:{tier_width}}  {"none":9}')
+            reason = 'below floor' if record['floor'] else 'no roster'
+            lines.append(f'  {caption:{caption_width}}  {record["viewport"]:9}  {reason:9}')
             continue
         pane = f'{summary["pane"]["width"]}x{summary["pane"]["height"]}'
-        lines.append(f'  {caption:{caption_width}}  {summary["viewport"]:9}  '
-                     f'{summary["tier"]:{tier_width}}  {pane:9}  '
+        lines.append(f'  {caption:{caption_width}}  {summary["viewport"]:9}  {pane:9}  '
                      f'{summary["interior"]:3}  {summary["bar"]:3}  '
                      f'{"two-line" if summary["two_line"] else "one-line":8}  '
                      f'{summary["entries"]:7}  {summary["rows"]:4}')
@@ -277,22 +280,29 @@ def main():
                if record['caption'] == first and not summary]
     reconstructed = sum(summary['entries'] for _, summary in declared if summary)
     reconstructed += sum(summary['entries'] for _, summary in sweep if summary)
+    drawing = sum(1 for _, summary in declared + sweep if summary)
+    # What the probe wrote down about the below-floor frame, quoted rather than restated. Every
+    # capture reports the same figure for it, and a disagreement between them would show here.
+    floor_counts = sorted({int(record['floor'].rsplit(' ', 1)[1])
+                           for record, _ in declared if record['floor']})
+    floor_note = ', '.join(str(count) for count in floor_counts)
     lines += [
         '',
+        f'  Frames probed: {len(declared) + len(sweep)}, of which {drawing} drew a roster',
         f'  Bar rows rebuilt character for character and compared: {reconstructed}',
         f'  Discrepancies: {len(problems)}',
         '',
         f'  {len(without)} of the {len(without) + len(set(summary["viewport"] for _, summary in declared if summary))} '
-        f'declared viewports carry no roster -- {", ".join(without)} -- and those rows are',
-        '  not evidence about one. 100x30 and 34x22 are tier D, where rule 5 drops the roster and the',
-        '  inspector to keep the world view; 100x30 reaches tier D on its height, not its width, since',
-        '  rule 5\'s tier C row asks for 38 rows. 33x21 is below the floor, where rule 6 replaces the',
-        '  whole frame with the size notice. `WO-MOK-005` and `WO-MOK-006` verify all three, and this',
-        '  work order changes none of them.',
+        f'viewports probed carry no roster -- {", ".join(without)} -- and those rows are',
+        '  not evidence about one. 34x22 is above the floor and below rule 5\'s 100-column roster',
+        '  threshold, so the roster is reachable only as an overlay there and the header announces it.',
+        f'  33x21 is below the floor, where rule 5 suspends drawing: {floor_note} of that frame\'s cells',
+        '  carry a character, measured rather than assumed. `WO-MOK-005` and `WO-MOK-006` verify both,',
+        '  and this work order changes neither.',
         '',
         'Where the four gauges sit, observed and predicted',
         '',
-        '  Absolute frame columns of the first entry\'s bar row, 0-based, at each declared viewport',
+        '  Absolute frame columns of the first entry\'s bar row, 0-based, at each probed viewport',
         '  that draws a roster. The prediction is the pane\'s own x, its border, the indent and the',
         '  stride of one gauge; it is not read back from the frame.',
         '',
@@ -312,12 +322,12 @@ def main():
         '',
         'Two frames verbatim',
         '',
-        '  The cells the backend received, at the widest declared viewport. Row indices are the',
+        '  The cells the backend received, at the widest viewport rule 5 tables. Row indices are the',
         '  frame\'s own; the pipes are this record\'s and fix the pane\'s first and last column.',
         '',
     ]
     for record in verbatim_frames[:2]:
-        lines += [f'  {record["caption"]}, viewport {record["viewport"]}, tier {record["tier"]}', '']
+        lines += [f'  {record["caption"]}, viewport {record["viewport"]}', '']
         lines += verbatim(record)
         lines += ['']
     lines += [
@@ -353,7 +363,7 @@ def main():
         f'    bar widths observed across the whole sweep:   {", ".join(str(bar) for bar in bars)}',
         f'    entry forms observed:                         {", ".join(forms)}',
         f'    widths that draw no roster at all:            {len(absent)} '
-        f'({absent[0].split("x")[0]}..{absent[-1].split("x")[0]} columns, tier D)',
+        f'({absent[0].split("x")[0]}..{absent[-1].split("x")[0]} columns, below rule 5\'s threshold)',
         '',
         f'  The pane\'s fixed width is {pane_widths[0]} and rule 4\'s collapse threshold is {TWO_LINE_WIDTH}. They are equal, so',
         '  the drawn roster takes the two-line form at every viewport, exactly at the boundary, and',

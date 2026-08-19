@@ -13,7 +13,16 @@
 //! product.
 //!
 //! Everything it reaches is already public: `options::parse`, `Observer::new`, `Observer::advance`,
-//! `Observer::snapshot`, `layout::resolve` and `render::draw`. No item was widened for it.
+//! `Observer::snapshot`, `layout::below_floor`, `layout::resolve` and `render::draw`. No item was
+//! widened for it.
+//!
+//! Re-derived on 2026-08-19 against `master` at `7a2b502`. The first capture was taken while
+//! `SPEC-MOK-003` rule 5 still carried a table of named tiers, and this probe wrote each frame's
+//! tier down. `WO-MOK-005` withdrew that table: presence is now one threshold on one axis per pane,
+//! `layout::Panes` has no tier to report, and the viewport set rule 5 draws consequences for is
+//! larger. Nothing about what is measured changed -- the cells of the drawn roster, and the values
+//! the frame was drawn from -- so this is the same oracle against the merged tree, and its capture
+//! is re-taken rather than edited.
 
 use std::fmt::Write as _;
 use std::fs;
@@ -27,13 +36,19 @@ use mokiterions_tui::options::{self, Startup};
 use mokiterions_tui::state::Observer;
 use mokiterions_tui::{layout, render};
 
-/// `VER-MOK-005`'s declared viewport set, in its declared order, including the three -- the last two
-/// and 100x30, which reaches tier D on its height -- where no roster is drawn at all.
-const VIEWPORTS: [(u16, u16); 7] = [
+/// The nine viewports `SPEC-MOK-003` rule 5 draws derived consequences for, in the order the rule
+/// tables them, followed by 33x21. Eight of the nine are at or above the roster's 100-column
+/// threshold and draw one; 34x22 is above the floor and below that threshold, so it draws none, and
+/// 33x21 is below the floor, where nothing is presented at all. Both are kept: an oracle for rule 4
+/// has to record where rule 4 has nothing to say as well as where it does.
+const VIEWPORTS: [(u16, u16); 10] = [
     (160, 48),
     (160, 44),
+    (160, 40),
     (140, 44),
+    (140, 43),
     (120, 48),
+    (120, 30),
     (100, 30),
     (34, 22),
     (33, 21),
@@ -77,11 +92,9 @@ fn probe(observer: &mut Observer, width: u16, height: u16) -> String {
         .draw(|frame| render::draw(frame, observer))
         .expect("drawing into a buffer");
     let buffer = terminal.backend().buffer().clone();
-    let panes = layout::resolve(Rect::new(0, 0, width, height));
 
     let mut text = String::new();
     writeln!(text, "-- viewport {width}x{height}").expect("a string");
-    writeln!(text, "tier {}", panes.tier.label()).expect("a string");
     for agent in &observer.snapshot().agents {
         writeln!(
             text,
@@ -90,6 +103,19 @@ fn probe(observer: &mut Observer, width: u16, height: u16) -> String {
         )
         .expect("a string");
     }
+    // `layout::resolve` is defined for viewports above the floor. Below it, rule 5 suspends
+    // drawing, so the frame is asked for the one thing worth writing down instead: how many of its
+    // cells carry a character.
+    if layout::below_floor(width, height) {
+        let drawn = buffer
+            .content()
+            .iter()
+            .filter(|cell| cell.symbol() != " ")
+            .count();
+        writeln!(text, "below floor, cells carrying a character {drawn}").expect("a string");
+        return text;
+    }
+    let panes = layout::resolve(Rect::new(0, 0, width, height));
     match panes.roster {
         None => writeln!(text, "roster none").expect("a string"),
         Some(rect) => {

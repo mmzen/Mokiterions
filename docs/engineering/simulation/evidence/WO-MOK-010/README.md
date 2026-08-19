@@ -35,8 +35,9 @@ rejections on all ten runs. `renumbering.md` records a governance act rather tha
 approved and implemented as `WO-MOK-007`, `master` then created a different `WO-MOK-007` and verified it,
 `feature/release-ci` had taken `008` and `009`, and the owner renumbered this one to `010`. **Read it before
 hashing anything, and before reading any `.txt` here that says `WO-MOK-007`** — the retained captures were not
-edited, so nineteen of them still carry the former name, and one recorded digest no longer reproduces for that
-reason. This `README.md` is the map itself.
+edited, so sixteen of them still carry the former name, and one recorded digest no longer reproduces for that
+reason. It also records the three captures re-taken against the merged tree, which name it `WO-MOK-010`. This
+`README.md` is the map itself.
 
 **Before hashing anything here, note that a `.gitattributes` was added for this directory.** Every manifest below
 records the SHA-256 of a captured file so that a reviewer can hash the retained file and get the recorded number, and
@@ -86,9 +87,10 @@ specifies. That claim is not carried by one measurement:
    the shared stream's draw sequence is unmoved and every pre-existing run is bit-identical.
 3. **Arithmetic equivalence at the trait's lower bound** — all 2,808 situations enumerated, not sampled: rule 19 at
    `T = 0` is proposal-identical to rule 5.
-4. **The in-memory character buffer, cell by cell** — 864 bar rows across 134 viewport renders, rebuilt from rule 4's
-   named parts rather than from the product, matching character for character with every gauge at its predicted
-   absolute column.
+4. **The in-memory character buffer, cell by cell** — 996 bar rows across the 85 of 157 probed frames that draw a
+   roster, rebuilt from rule 4's named parts rather than from the product, matching character for character with every
+   gauge at its predicted absolute column. Re-derived on 2026-08-19 against the merged tree; see the note at the end of
+   `renumbering.md`.
 5. **The governance state of the amended artifacts** — an amendment nobody approved is not a specification.
 
 Each can fail without the others failing, which is why all five are here. Oracles 2 and 3 additionally have negative
