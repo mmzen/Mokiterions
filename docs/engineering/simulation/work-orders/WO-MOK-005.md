@@ -2,10 +2,10 @@
 id = "WO-MOK-005"
 type = "work_order"
 title = "Split the workspace and implement the terminal observer"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-19"
 
 [assurance]
 commit_bound_verification = "required"
@@ -78,6 +78,145 @@ work order implements. `ARCH-MOK-001` addresses `REQ-MOK-004`, `REQ-MOK-008`, `R
 of which are in this scope. Its amendment is a prerequisite of this work order's approval rather than work performed
 under it, and its amended conformance checks appear below as constraints on this work. Nominal coverage is therefore
 omitted rather than fabricated. The technical owner confirms this omission at approval.
+
+**Layout defect reported 2026-08-18; amendments approved and implementation directed 2026-08-19.** The repository owner reported that the observer's adaptive layout
+does not present the left panel at some terminal sizes, and classified it as blocking for this work order while
+accepting the rest of the observer as a first version. The owner's initial proposal was to remove adaptive layout
+altogether and truncate the view when the terminal is too small. After being shown the measurement below, the owner
+chose instead to replace `SPEC-MOK-003` rule 5's tier table with one pane threshold per axis. The implementation agent
+measured the defect, drafted the amendments and recorded this paragraph; it decided nothing, and rule 5's thresholds
+remain withheld from it by the *Authorized decision envelope* below, which is neither amended nor read down.
+
+The measurement. Rule 5's tier table is an ordered ladder of four rows over a two-dimensional space, and it leaves a
+gap: `W ≥ 140` with `38 ≤ H < 44` satisfies no row and falls to `otherwise`, which excludes the roster, the inspector
+and the log together. A 160 × 40 terminal therefore presents no left panel, while 120 × 40 — the same height, one
+third narrower — presents one, so making the window smaller adds panes back. `mokiterions-tui/src/layout.rs` lines 102
+to 112 implement the table faithfully, and `mokiterions-tui/tests/layout.rs` line 37 asserts
+`tier_for(140, 43) == Tier::D`. The behavior was specified, implemented and pinned by a passing test, so this is a
+specification defect and not an implementation defect: correcting it was outside this work order's envelope until the
+owner amended the specification, and the amendment is what admits the code change recorded below.
+
+Why removal was not taken. `REQ-MOK-024` is approved and requires that "no content is clipped in a way that could be
+read as a different value", that "a number that does not fit is not shown truncated", and that "degradation never
+hides the run's provenance, since a screen capture that does not identify its own run cannot serve as evidence".
+Truncating a fixed frame clips the footer, which rule 5 retains at every size for that exact reason and which
+`VER-MOK-005` requires at every viewport. Removal would therefore have needed a product-owner amendment to an approved
+requirement on top of the specification and contract changes. The threshold change needs no requirement amendment,
+because `REQ-MOK-024` fixes no threshold itself and delegates every one of them to `SPEC-MOK-003`.
+
+What this adds to the scope above. `mokiterions-tui/src/layout.rs` and its tests; the header's `tier` label in
+`mokiterions-tui/src/render.rs` line 158, which loses its referent and is removed — that string is the
+implementation's to choose under *exact diagnostic and pane-title wording*, no artifact requires it, and the overlay
+announcement already names every absent pane with the key that opens it; and a monotonicity sweep in the observer's
+test tier. Nothing else in the observer changes, and no engine file changes.
+
+What landed. On 2026-08-19 the owner reviewed both drafted amendments, approved them and directed the implementation in
+the same act: `SPEC-MOK-003` rule 5 as technical owner, `VER-MOK-005` as assurance owner, each recorded in its own
+amendment record with the note that the implementation agent drafted the text and recorded the approval on the owner's
+explicit instruction. The implementation is the per-pane thresholds in `mokiterions-tui/src/layout.rs`, the removal of
+the header's `tier` label, and three added tests in `mokiterions-tui/tests/layout.rs` — the per-pane threshold case,
+the ten-row log case and the monotonicity sweep, which compares 13,026 adjacent viewport pairs over `34..=200` by
+`22..=60` and finds no pane that a larger viewport removes. The observer's test total rises from 109 to 112 and the
+workspace's from 169 to 172. `layout-and-viewports.txt` under this work order's evidence is re-captured for the nine
+declared viewports and carries the sweep and a negative control that shows the superseded table failing the same
+cases.
+
+What is outstanding. **`SPEC-MOK-004` rule 6 requires the technical owner.** Removing `Tier`, its `label`, `tier_for`
+and the `Panes::tier` field changes an interface that rule 6 closes by provenance and whose growth clause had no
+counterpart for removal, so the recorded extent falls from 97 items to 94 and the rule gains a **Reduction** clause;
+rules 9, 11 and 13 follow it for the test counts and one stale term. The owner was not shown this consequence when
+approving rule 5 — the implementation agent found it afterwards by measuring the interface — so it is recorded
+**OUTSTANDING** in that specification's amendment record and reported rather than treated as covered. The three
+2026-08-18 rows that were already **OUTSTANDING** in `SPEC-MOK-002` and `SPEC-MOK-003` are untouched and remain so.
+`VREC-MOK-005` is `ready` rather than `verified`; it is not edited in place, and it is re-captured against the commit
+that carries this implementation rather than carried forward. No lifecycle status is moved by the implementation
+agent, and nothing here is committed, pushed or merged without the owner's instruction.
+
+Terminology left alone. `REQ-MOK-028`, `CAP-MOK-005`, `INT-MOK-005`, `WO-MOK-006` and `VER-MOK-006` each use "layout
+tier" as a name for what a viewport yields, in clauses whose subject is that the restructuring changed nothing an
+operator can see. Those clauses were true at `VREC-MOK-006`'s commit and are not re-opened here; what they now lack is
+a definition of the term, which `SPEC-MOK-003` rule 5 no longer supplies. This is terminology drift, not a defect, and
+it is reported to the owner rather than amended under a work order that has no requirement to touch them.
+
+**Moved to `implemented` on 2026-08-19**, on the repository owner's explicit instruction after pull request **#15** was
+merged. The implementation agent recorded the transition; it did not make the decision.
+
+The change is complete and the evidence `VER-MOK-005` requires is retained under
+`docs/engineering/simulation/evidence/WO-MOK-005/` — 21 files, indexed by its `README.md` against each of
+`VER-MOK-005`'s thirteen retention bullets, and reported in `completion-summary.md` with seventeen numbered
+disclosures. **One of those thirteen bullets is discharged by a file that records nothing performed.**
+`manual-assessment.md` states that all seven manual assessments are **OUTSTANDING** and that it has no author for any
+of them; three are unperformable from the implementation environment because `crossterm` on Windows reads the console
+input buffer rather than standard input, which that file measures rather than asserts. Every automated case in the
+packet is a claim about an in-memory character buffer, so nothing in it establishes that a person can read the result
+on a terminal. This transition records that the change is complete, not that the instrument was assessed by eye.
+
+What the 2026-08-19 work implemented is rule 5 as amended: one pane threshold per axis, measured in
+`mokiterions-tui/src/layout.rs` as the roster at `W ≥ 100`, the inspector at `W ≥ 140`, the log at `H ≥ 38`, ten log
+rows at `W ≥ 140` and `H ≥ 48` against six otherwise, and the floor refusing below `34 × 22`. It replaces the
+four-row tier ladder whose gap left a 160 × 40 terminal with no left panel while 120 × 40 had one. `Tier`,
+`Tier::label`, `tier_for` and the `Panes::tier` field are deleted, the header's `tier` label with them, and
+`mokiterions-tui/tests/layout.rs` gains three cases including the monotonicity sweep: **13,026 adjacent viewport pairs
+over `34..=200` by `22..=60`, 0 of them removing a pane as the viewport grows**, against **12** for the superseded
+table transcribed from `master` as a negative control.
+
+Gates on the merged tree at `0ffe79c`, whose tree is byte-identical to the final candidate `a53712c`: `cargo fmt --all
+-- --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings` exit `0`, and clippy again for
+`-p Mokiterions` alone; `cargo test --workspace` reports **172 passed, 0 failed, 0 ignored** across 19 suites, 60 in
+the engine and 112 in the observer; `harnessctl validate` PASS at 68 / 0 / 0 with all four planes clean; `doctor` PASS
+at 81 lines with every managed file unchanged; `preflight --work-order WO-MOK-005 --phase review` PASS; the dashboard
+PASS at 68 artifacts, 211 relations, 0 errors and 8 warnings, two more than a clean `origin/master` extraction at
+05dc6ac reports and both of them one finding stated twice. The additivity claim holds at package level rather than at
+test level: **no file in the engine package differs from `origin/master` at 05dc6ac**, so no simulation rule and no
+engine test changed under this work.
+
+Committed on 2026-08-19 to `feature/wo-mok-005-layout-axes`, branched from `master` at 05dc6ac. `360a5e4` carries the
+implementation; `7fa037b` re-bases the evidence citations onto the engine `WO-MOK-006` moved; `6ef5d95` corrects a
+dashboard-digest claim; `f361370` corrects three evidence figures; `3696fae` re-captures `VREC-MOK-005`; `a53712c`
+transitions that record to `verified`. Merged to `master` as `0ffe79c`, a merge commit rather than a squash, so
+`f361370` — the commit the record binds — is an ancestor of `master` and the record's provenance still resolves. The
+pull-request-event check on `a53712c` failed, and its cause was outside the candidate: the managed selector
+`scripts/select_harness_work_order.py` matches `Harness-Work-Order:` with a trailing `[ \t]*$`, and the pull-request
+body had been uploaded from a Windows file with CRLF endings, so the `\r` defeated the match and no work order was
+selected. The body was normalized to LF, the push-event run on the same commit passed every candidate check, and the
+run on the merge commit is green.
+
+`VREC-MOK-005` binds `f361370` and was transitioned `ready` → `verified` by the repository owner as accountable
+assurance owner on 2026-08-19, again recorded by the agent rather than decided by it. **That transition preceded this
+one**, as `WO-MOK-006`'s did, and for the same reason it changes nothing: `harnessctl validate` reports no error and no
+warning against a `verified` record on an `in_progress` work order, and verification is carried by the record rather
+than by this status. Two of the six chains now verify before they implement.
+
+Four sentences in two commit-bound `verified` records go stale on this transition and none is edited. `VREC-MOK-005`
+opens *What this record claims* with "`WO-MOK-005` is `in_progress`", records `in_progress` in its preflight row, and
+states that "`WO-MOK-005` remains `in_progress`, as `WO-MOK-006` does"; `VREC-MOK-006` states that "`WO-MOK-005` and
+`WO-MOK-006` are both still `in_progress`". Each was true at the commit its record binds and at its verification, and
+the convention established at `WO-MOK-006`'s transition is that bound records stay as they are rather than track later
+state. The *What is outstanding* paragraph above is left standing for a weaker version of the same reason: it says
+`VREC-MOK-005` is `ready`, which was true when it was written and until the owner verified the record on 2026-08-19,
+and it is a record of what was outstanding at implementation rather than a present-tense claim. Correcting it in place
+is available on the owner's word; it is not taken here, because this transition was authorized and a rewrite of the
+implementation narrative was not.
+
+After the transition, on the tree that carries it: `harnessctl validate` and
+`scripts/validate_engineering_artifacts.py` both PASS at 68 / 0 / 0 with all four planes clean, `doctor` PASS at 81
+lines with no line of any other severity, and `preflight --work-order WO-MOK-005 --phase review` PASS, now reporting
+`implemented`. Two derived figures move, and both are mechanical consequences of the status rather than new defects.
+The default `start` phase turns `FAIL` with `[W005] status 'implemented' is not eligible for start; expected one of
+approved, in_progress`, which is preflight refusing to begin work that is already done and is the correct answer. And
+the dashboard goes from 8 warnings to **9**: the ninth is `W-HEX-001`, *"WO-MOK-005 is implemented but has no evidence
+document keyed to its ID"*, which fires only on an `implemented` work order and which each of the other five already
+carries — `WO-MOK-006` included, with its 67 retained files. The catalog holds nine artifact types and `evidence` is
+not among them, so that finding is about a typed document this repository's convention never creates rather than about
+the 21 files retained under this ID. `harnessctl inspect` now reports `Active work (0): none` beside
+`Assurance pending (0): none`.
+
+What is outstanding is unchanged by this transition and is not made smaller by it. **Eleven amendment provisions across
+four approved artifacts await the technical owner** — `SPEC-MOK-002` rules 1, 3, 5 and 6; `ARCH-MOK-001`'s 2026-08-18
+row; `SPEC-MOK-003`'s *Data and interface contracts* rule 2; and `SPEC-MOK-004` rules 6, 9, 11, 12 and 13, where rule
+6's recorded extent falls from 97 items to 94 and the rule needs a **Reduction** clause it does not have. The seven
+manual assessments remain unauthored. The terminology drift recorded above is unamended. This work order stays
+`implemented`. Nothing here tags, releases, publishes or deploys anything, and no release record exists.
 
 ## Objective
 

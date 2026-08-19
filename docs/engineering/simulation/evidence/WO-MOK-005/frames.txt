@@ -8,11 +8,14 @@ exactly the cells the observer would have written to a terminal, with styling om
 assertions that read these frames are named under each dump.
 
 Run: seed 42, tick limit 400, reference decision source, default density, advanced to tick
-200 with no interaction, then the frame drawn at each viewport.
+200 with no interaction, then Tab pressed once so that the inspector has a subject, then the
+frame drawn at each viewport. Re-captured after
+`SPEC-MOK-003` rule 5's 2026-08-19 amendment: the viewport set gains 160 x 40, 140 x 43 and
+120 x 30, the panes at 100 x 30 change, and the header no longer names a tier.
 
-## 160 x 48 — tier A full (every pane is placed)
+## 160 x 48 — roster, inspector, log 10 rows
 
-RUNNING  x8  overview  sel M01  filter none  tier A full                                                                                                        
+RUNNING  x8  overview  sel M01  filter none                                                                                                                     
 A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
 B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
 ┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-127  whole world ───────────────────────┐┌ inspector ───────────────────────────────┐
@@ -61,9 +64,13 @@ B  standing 44/61  low 8  medium 13  high 23
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                                      
 
-## 160 x 44 — tier B compact-log (every pane is placed)
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
 
-RUNNING  x8  overview  sel M01  filter none  tier B compact-log                                                                                                 
+## 160 x 44 — roster, inspector, log 6 rows
+
+RUNNING  x8  overview  sel M01  filter none                                                                                                                     
 A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
 B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
 ┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-127  whole world ───────────────────────┐┌ inspector ───────────────────────────────┐
@@ -108,9 +115,60 @@ B  standing 44/61  low 8  medium 13  high 23
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                                      
 
-## 140 x 44 — tier B compact-log (every pane is placed)
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
 
-RUNNING  x8  overview  sel M01  filter none  tier B compact-log                                                                             
+## 160 x 40 — roster, inspector, log 6 rows
+
+RUNNING  x8  overview  sel M01  filter none                                                                                                                     
+A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
+B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-111  region ────────────────────────────┐┌ inspector ───────────────────────────────┐
+│M01  A  4:3           move:north             ││  1                                       ⢀                        ││M01                                       │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20││                             ⠂  ⠁              ⠠ ⠈       ⠄         ││position  4:3  territory A                │
+│M02  B  8:119         move:west              ││                         ⠠⣀     ⠈              ⢀                   ││sharing   1 in this rendered cell         │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                       ⠠                                           ││health 100  satiety 60  energy 20         │
+│M03  A  0:26          move:south             ││         ⡀                    ⡀           ⠐                        ││                                          │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35││                     ⡀      ⡀    ⠈       ⠁                         ││decision, tick 200                        │
+│M04  A  60:63         move:east              ││3                 ⡀      ⠂  ⢀ ⡀      ⡈              ⠂              ││proposed  move:north                      │
+│     h ██████ 100  s █████░  85  e ██░░░░  45││               ⠂          ⢀                  ⡀            ⠐   ⠐    ││outcome   + accepted                      │
+│M05  A  118:40        move:east              ││                                ⠂       ⠄⡀                  ⢀      ││applied   move:north                      │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                              ⠠        ⠁      ⠈            ⠂       ││authority REQ-MOK-004                     │
+│M06  B  12:71         eat:F0174              ││                             ⠐     ⠄                       5       ││                                          │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40││⠠                               ⠄         ⠠   ⠂        ⡀ ⠁         ││                                          │
+│M07  B  26:124        move:north             ││                               ⡀              ⠄                    ││                                          │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                     ⡀                       ⠁     ⡀⠠              ││                                          │
+│M08  B  118:120       move:east              ││⠠                ⠂      ⠄                 ⢀      ⠁                 ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀4⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀   ││                                          │
+│M09  B  36:92         move:west              ││            ⡀                                        ⠈         ⠠   ││                                          │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40││      6                       ⡀    ⠁                   ⡀           ││                                          │
+│M10  B  112:81        move:east              ││        ⢀     ⠂                                       ⠂⢀           ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││      ⠠                           ⠠                    B⠠          ││                                          │
+│M11  B  111:78        eat:F0172              ││                 ⠐                                      A    ⠄⠠    ││                                          │
+│     h ██████ 100  s ███░░░  55  e ██░░░░  35││⠐⠈  ⠄    ⠐                    ⠂                                    ││                                          │
+│M12  B  118:124       move:east              ││        ⠠       ⠈                                                  ││                                          │
+│     h ███░░░  65  s ███░░░  61  e ██░░░░  35││    ⠄             9 ⢀⢀   ⠁                                  ⠠      ││                                          │
+│                                             ││                                                     ⢀             ││                                          │
+│                                             ││              ⠁                                             ⢀      ││                                          │
+│                                             ││      ⢀     ⠔        ⠄                                             ││                                          │
+│                                             ││                         ⠂                                         ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=200 subject=M12 event=survival_changed result=health:65->65,satiety:62->61,energy:36->35                                                                 │
+│tick=200 subject=A event=food_regeneration_skipped result=reason:capacity,count:61                                                                            │
+│tick=200 subject=B event=food_regenerated result=food:F0187,class:low,position:3:84                                                                           │
+│tick=200 subject=B event=food_regenerated result=food:F0188,class:medium,position:33:88                                                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                                      
+
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
+
+## 140 x 44 — roster, inspector, log 6 rows
+
+RUNNING  x8  overview  sel M01  filter none                                                                                                 
 A  standing 61/61  low 14  medium 23  high 24                                                                                               
 B  standing 44/61  low 8  medium 13  high 23                                                                                                
 ┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-93 y0-127  region ─────────┐┌ inspector ───────────────────────────────┐
@@ -155,9 +213,63 @@ B  standing 44/61  low 8  medium 13  high 23
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                  
 
-## 120 x 48 — tier C narrow (overlay only: inspector)
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
 
-RUNNING  x8  overview  sel M01  filter none  tier C narrow                                         overlays: inspector i
+## 140 x 43 — roster, inspector, log 6 rows
+
+RUNNING  x8  overview  sel M01  filter none                                                                                                 
+A  standing 61/61  low 14  medium 23  high 24                                                                                               
+B  standing 44/61  low 8  medium 13  high 23                                                                                                
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-93 y0-123  region ─────────┐┌ inspector ───────────────────────────────┐
+│M01  A  4:3           move:north             ││  1                                       ⢀    ││M01                                       │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20││                             ⠂  ⠁              ││position  4:3  territory A                │
+│M02  B  8:119         move:west              ││                         ⠠⣀     ⠈              ││sharing   1 in this rendered cell         │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                       ⠠                       ││health 100  satiety 60  energy 20         │
+│M03  A  0:26          move:south             ││         ⡀                    ⡀           ⠐    ││                                          │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35││                     ⡀      ⡀    ⠈       ⠁     ││decision, tick 200                        │
+│M04  A  60:63         move:east              ││3                 ⡀      ⠂  ⢀ ⡀      ⡈         ││proposed  move:north                      │
+│     h ██████ 100  s █████░  85  e ██░░░░  45││               ⠂          ⢀                  ⡀ ││outcome   + accepted                      │
+│M05  A  118:40        move:east              ││                                ⠂       ⠄⡀     ││applied   move:north                      │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                              ⠠        ⠁      ⠈││authority REQ-MOK-004                     │
+│M06  B  12:71         eat:F0174              ││                             ⠐     ⠄           ││                                          │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40││⠠                               ⠄         ⠠   ⠂││                                          │
+│M07  B  26:124        move:north             ││                               ⡀              ⠄││                                          │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                     ⡀                       ⠁ ││                                          │
+│M08  B  118:120       move:east              ││⠠                ⠂      ⠄                 ⢀    ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀4⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││                                          │
+│M09  B  36:92         move:west              ││            ⡀                                  ││                                          │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40││      6                       ⡀    ⠁           ││                                          │
+│M10  B  112:81        move:east              ││        ⢀     ⠂                                ││                                          │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││      ⠠                           ⠠            ││                                          │
+│M11  B  111:78        eat:F0172              ││                 ⠐                             ││                                          │
+│     h ██████ 100  s ███░░░  55  e ██░░░░  35││⠐⠈  ⠄    ⠐                    ⠂                ││                                          │
+│M12  B  118:124       move:east              ││        ⠠       ⠈                              ││                                          │
+│     h ███░░░  65  s ███░░░  61  e ██░░░░  35││    ⠄             9 ⢀⢀   ⠁                     ││                                          │
+│                                             ││                                               ││                                          │
+│                                             ││              ⠁                                ││                                          │
+│                                             ││      ⢀     ⠔        ⠄                         ││                                          │
+│                                             ││                         ⠂                     ││                                          │
+│                                             ││⠈           ⠐                                  ││                                          │
+│                                             ││    2        ⠂                                 ││                                          │
+│                                             ││ ⢀                  ⠁                          ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=200 subject=M12 event=survival_changed result=health:65->65,satiety:62->61,energy:36->35                                             │
+│tick=200 subject=A event=food_regeneration_skipped result=reason:capacity,count:61                                                        │
+│tick=200 subject=B event=food_regenerated result=food:F0187,class:low,position:3:84                                                       │
+│tick=200 subject=B event=food_regenerated result=food:F0188,class:medium,position:33:88                                                   │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                  
+
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
+
+## 120 x 48 — roster, log 6 rows (overlay only: inspector)
+
+RUNNING  x8  overview  sel M01  filter none                                                        overlays: inspector i
 A  standing 61/61  low 14  medium 23  high 24                                                                           
 B  standing 44/61  low 8  medium 13  high 23                                                                            
 ┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-127  whole world ───────────────────────────┐
@@ -206,40 +318,85 @@ B  standing 44/61  low 8  medium 13  high 23
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                              
 
-## 100 x 30 — tier D minimal (overlay only: roster, log, inspector)
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
 
-RUNNING  x8  overview  sel M01  filter none  tier D minimal   overlays: roster r  log L  inspector i
+## 120 x 30 — roster (overlay only: log, inspector)
+
+RUNNING  x8  overview  sel M01  filter none                                                 overlays: log L  inspector i
+A  standing 61/61  low 14  medium 23  high 24                                                                           
+B  standing 44/61  low 8  medium 13  high 23                                                                            
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-95  region ─────────────────────────────────┐
+│M01  A  4:3           move:north             ││  1                                       ⢀                            │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20││                             ⠂  ⠁              ⠠ ⠈       ⠄             │
+│M02  B  8:119         move:west              ││                         ⠠⣀     ⠈              ⢀                       │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                       ⠠                                               │
+│M03  A  0:26          move:south             ││         ⡀                    ⡀           ⠐                            │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35││                     ⡀      ⡀    ⠈       ⠁                             │
+│M04  A  60:63         move:east              ││3                 ⡀      ⠂  ⢀ ⡀      ⡈              ⠂                  │
+│     h ██████ 100  s █████░  85  e ██░░░░  45││               ⠂          ⢀                  ⡀            ⠐   ⠐        │
+│M05  A  118:40        move:east              ││                                ⠂       ⠄⡀                  ⢀          │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                              ⠠        ⠁      ⠈            ⠂           │
+│M06  B  12:71         eat:F0174              ││                             ⠐     ⠄                       5           │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40││⠠                               ⠄         ⠠   ⠂        ⡀ ⠁             │
+│M07  B  26:124        move:north             ││                               ⡀              ⠄                        │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                     ⡀                       ⠁     ⡀⠠                  │
+│M08  B  118:120       move:east              ││⠠                ⠂      ⠄                 ⢀      ⠁                     │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀4⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀       │
+│M09  B  36:92         move:west              ││            ⡀                                        ⠈         ⠠       │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40││      6                       ⡀    ⠁                   ⡀               │
+│M10  B  112:81        move:east              ││        ⢀     ⠂                                       ⠂⢀               │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││      ⠠                           ⠠                    B⠠              │
+│M11  B  111:78        eat:F0172              ││                 ⠐                                      A    ⠄⠠        │
+│     h ██████ 100  s ███░░░  55  e ██░░░░  35││⠐⠈  ⠄    ⠐                    ⠂                                        │
+│M12  B  118:124       move:east              ││        ⠠       ⠈                                                      │
+│     h ███░░░  65  s ███░░░  61  e ██░░░░  35││    ⠄             9 ⢀⢀   ⠁                                  ⠠          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                              
+
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
+
+## 100 x 30 — roster (overlay only: log, inspector)
+
+RUNNING  x8  overview  sel M01  filter none                             overlays: log L  inspector i
 A  standing 61/61  low 14  medium 23  high 24                                                       
 B  standing 44/61  low 8  medium 13  high 23                                                        
-┌ view  overview  x0-127 y0-95  region ────────────────────────────────────────────────────────────┐
-│  1                                       ⢀                                                       │
-│                             ⠂  ⠁              ⠠ ⠈       ⠄                                        │
-│                         ⠠⣀     ⠈              ⢀                                                  │
-│                       ⠠                                                                          │
-│         ⡀                    ⡀           ⠐                                                       │
-│                     ⡀      ⡀    ⠈       ⠁                                                        │
-│3                 ⡀      ⠂  ⢀ ⡀      ⡈              ⠂                                             │
-│               ⠂          ⢀                  ⡀            ⠐   ⠐                                   │
-│                                ⠂       ⠄⡀                  ⢀                                     │
-│                              ⠠        ⠁      ⠈            ⠂                                      │
-│                             ⠐     ⠄                       5                                      │
-│⠠                               ⠄         ⠠   ⠂        ⡀ ⠁                                        │
-│                               ⡀              ⠄                                                   │
-│                     ⡀                       ⠁     ⡀⠠                                             │
-│⠠                ⠂      ⠄                 ⢀      ⠁                                                │
-│⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀4⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀                                  │
-│            ⡀                                        ⠈         ⠠                                  │
-│      6                       ⡀    ⠁                   ⡀                                          │
-│        ⢀     ⠂                                       ⠂⢀                                          │
-│      ⠠                           ⠠                    B⠠                                         │
-│                 ⠐                                      A    ⠄⠠                                   │
-│⠐⠈  ⠄    ⠐                    ⠂                                                                   │
-│        ⠠       ⠈                                                                                 │
-│    ⠄             9 ⢀⢀   ⠁                                  ⠠                                     │
-└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-101 y0-95  region ─────────────┐
+│M01  A  4:3           move:north             ││  1                                       ⢀        │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20││                             ⠂  ⠁              ⠠ ⠈ │
+│M02  B  8:119         move:west              ││                         ⠠⣀     ⠈              ⢀   │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                       ⠠                           │
+│M03  A  0:26          move:south             ││         ⡀                    ⡀           ⠐        │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35││                     ⡀      ⡀    ⠈       ⠁         │
+│M04  A  60:63         move:east              ││3                 ⡀      ⠂  ⢀ ⡀      ⡈             │
+│     h ██████ 100  s █████░  85  e ██░░░░  45││               ⠂          ⢀                  ⡀     │
+│M05  A  118:40        move:east              ││                                ⠂       ⠄⡀         │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                              ⠠        ⠁      ⠈    │
+│M06  B  12:71         eat:F0174              ││                             ⠐     ⠄               │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40││⠠                               ⠄         ⠠   ⠂    │
+│M07  B  26:124        move:north             ││                               ⡀              ⠄    │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35││                     ⡀                       ⠁     │
+│M08  B  118:120       move:east              ││⠠                ⠂      ⠄                 ⢀      ⠁ │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀4⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀│
+│M09  B  36:92         move:west              ││            ⡀                                      │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40││      6                       ⡀    ⠁               │
+│M10  B  112:81        move:east              ││        ⢀     ⠂                                    │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30││      ⠠                           ⠠                │
+│M11  B  111:78        eat:F0172              ││                 ⠐                                 │
+│     h ██████ 100  s ███░░░  55  e ██░░░░  35││⠐⠈  ⠄    ⠐                    ⠂                    │
+│M12  B  118:124       move:east              ││        ⠠       ⠈                                  │
+│     h ███░░░  65  s ███░░░  61  e ██░░░░  35││    ⠄             9 ⢀⢀   ⠁                         │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                          
 
-## 34 x 22 — tier D minimal (overlay only: roster, log, inspector)
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
+
+## 34 x 22 — header, view and footer only (overlay only: roster, log, inspector)
 
 RUNNING  x8  overview    ovl r L i
 A 61/61 14/23/24                  
@@ -264,11 +421,15 @@ B 44/61 8/13/23
 └────────────────────────────────┘
 s42 t400 d0.75% r @200 e5095      
 
+Tests: render::every_declared_viewport_renders_and_annotates_what_it_presents,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       layout::the_declared_viewports_yield_the_declared_canvases
+
 ## 33 x 21 — below the floor
 
 Nothing is presented and the run is left alone. Drawing is suspended, not degraded.
 
-Test: render::tests::below_the_floor_nothing_is_drawn_and_the_run_is_untouched
+Test: render::below_the_floor_nothing_is_presented
 
 ## The roster pane at the reference viewport
 
@@ -277,8 +438,8 @@ It renders as nothing at all — no label, no dash and no zero — because an in
 would be a claim the engine cannot support.
 
 The reserved slot is whatever width remains to the right of the third bar. The roster pane
-is 47 columns wide at every tier that places it, so its interior is 45 and the bar width
-rule 4 derives, `min(20, (45 - 27) / 3) = 6`, makes three bars fill the row exactly: the
+is 47 columns wide at every viewport that places it, so its interior is 45 and the bar
+width rule 4 derives, `min(20, (45 - 27) / 3) = 6`, makes three bars fill the row exactly: the
 reserved slot is zero columns wide here and is visible only as the absence of a fourth bar.
 The roster overlay below shows the same slot at a width where it has room.
 
@@ -289,35 +450,10 @@ The roster overlay below shows the same slot at a width where it has room.
 │     h ██████ 100  s ███░░░  65  e ██░░░░  35│
 │M03  A  0:26          move:south             │
 │     h ██████ 100  s ██░░░░  45  e ██░░░░  35│
-│M04  A  60:63         move:east              │
-│     h ██████ 100  s █████░  85  e ██░░░░  45│
-│M05  A  118:40        move:east              │
-│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
-│M06  B  12:71         eat:F0174              │
-│     h ██████ 100  s ████░░  80  e ██░░░░  40│
-│M07  B  26:124        move:north             │
-│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
-│M08  B  118:120       move:east              │
-│     h ██████ 100  s ██░░░░  40  e █░░░░░  30│
-│M09  B  36:92         move:west              │
-│     h ██████ 100  s ████░░  70  e ██░░░░  40│
-│M10  B  112:81        move:east              │
-│     h ██████ 100  s ██░░░░  40  e █░░░░░  30│
-│M11  B  111:78        eat:F0172              │
-│     h ██████ 100  s ███░░░  55  e ██░░░░  35│
-│M12  B  118:124       move:east              │
-│     h ███░░░  65  s ███░░░  61  e ██░░░░  35│
-│                                             │
-│                                             │
-│                                             │
-│                                             │
-│                                             │
-│                                             │
-│                                             │
-│                                             │
-└─────────────────────────────────────────────┘
 
-Tests: render::tests::the_roster_reserves_the_fourth_bar_and_presents_nothing_in_it
+Tests: render::tests::the_bar_row_reproduces_the_specified_form,
+       render::tests::a_bar_row_shrinks_to_its_pane_and_never_overflows_it,
+       render::tests::a_zero_value_is_a_zero_and_an_absent_value_is_a_dash
 
 ## The roster overlay, where the reserved slot has room
 
@@ -329,48 +465,10 @@ reserved slot, and it carries nothing.
 │M01  A  4:3           move:north                                                                                                                              │
 │     h ████████████████████ 100  s ████████████░░░░░░░░  60  e ████░░░░░░░░░░░░░░░░  20                                                                       │
 │M02  B  8:119         move:west                                                                                                                               │
-│     h ████████████████████ 100  s █████████████░░░░░░░  65  e ███████░░░░░░░░░░░░░  35                                                                       │
-│M03  A  0:26          move:south                                                                                                                              │
-│     h ████████████████████ 100  s █████████░░░░░░░░░░░  45  e ███████░░░░░░░░░░░░░  35                                                                       │
-│M04  A  60:63         move:east                                                                                                                               │
-│     h ████████████████████ 100  s █████████████████░░░  85  e █████████░░░░░░░░░░░  45                                                                       │
-│M05  A  118:40        move:east                                                                                                                               │
-│     h ████████████████████ 100  s █████████████░░░░░░░  65  e ███████░░░░░░░░░░░░░  35                                                                       │
-│M06  B  12:71         eat:F0174                                                                                                                               │
-│     h ████████████████████ 100  s ████████████████░░░░  80  e ████████░░░░░░░░░░░░  40                                                                       │
-│M07  B  26:124        move:north                                                                                                                              │
-│     h ████████████████████ 100  s █████████████░░░░░░░  65  e ███████░░░░░░░░░░░░░  35                                                                       │
-│M08  B  118:120       move:east                                                                                                                               │
-│     h ████████████████████ 100  s ████████░░░░░░░░░░░░  40  e ██████░░░░░░░░░░░░░░  30                                                                       │
-│M09  B  36:92         move:west                                                                                                                               │
-│     h ████████████████████ 100  s ██████████████░░░░░░  70  e ████████░░░░░░░░░░░░  40                                                                       │
-│M10  B  112:81        move:east                                                                                                                               │
-│     h ████████████████████ 100  s ████████░░░░░░░░░░░░  40  e ██████░░░░░░░░░░░░░░  30                                                                       │
-│M11  B  111:78        eat:F0172                                                                                                                               │
-│     h ████████████████████ 100  s ███████████░░░░░░░░░  55  e ███████░░░░░░░░░░░░░  35                                                                       │
-│M12  B  118:124       move:east                                                                                                                               │
-│     h █████████████░░░░░░░  65  s ████████████░░░░░░░░  61  e ███████░░░░░░░░░░░░░  35                                                                       │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-│                                                                                                                                                              │
-└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-Tests: render::tests::the_roster_reserves_the_fourth_bar_and_presents_nothing_in_it
+Tests: render::tests::the_bar_row_reproduces_the_specified_form,
+       render::tests::a_bar_row_shrinks_to_its_pane_and_never_overflows_it,
+       render::tests::a_zero_value_is_a_zero_and_an_absent_value_is_a_dash
 
 ## The inspector pane, subject M01
 
@@ -381,33 +479,6 @@ Tests: render::tests::the_roster_reserves_the_fourth_bar_and_presents_nothing_in
 │health 100  satiety 60  energy 20         │
 │                                          │
 │decision, tick 200                        │
-│proposed  move:north                      │
-│outcome   + accepted                      │
-│applied   move:north                      │
-│authority REQ-MOK-004                     │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-│                                          │
-└──────────────────────────────────────────┘
 
 Tests: verification::every_presented_value_is_the_snapshots,
        verification::the_applied_action_presented_is_always_the_engines
@@ -432,7 +503,7 @@ Tests: verification::a_filter_changes_what_is_presented_and_nothing_else
 Rule 11: every event type the observer presents is mapped to the requirement that
 authorizes it, and the mapping is the observer's only interpretation of engine output.
 
-RUNNING  x8  overview  sel M01  filter none  tier A full                                                                                                        
+RUNNING  x8  overview  sel M01  filter none                                                                                                                     
 A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
 B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
 ┌ authority mapping ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -481,11 +552,13 @@ B  standing 44/61  low 8  medium 13  high 23
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                                      
 
-Tests: authority::tests, render::tests::the_authority_overlay_maps_every_presented_event_type
+Tests: authority::every_event_type_the_observer_can_present_has_an_entry,
+       authority::the_mapping_is_the_specified_one,
+       render::tests::the_authority_overlay_names_identifiers_for_every_event_type
 
 ## The key-binding overlay
 
-RUNNING  x8  overview  sel M01  filter none  tier A full                                                                                                        
+RUNNING  x8  overview  sel M01  filter none                                                                                                                     
 A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
 B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
 ┌ key bindings ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -534,4 +607,4 @@ B  standing 44/61  low 8  medium 13  high 23
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 seed 42  ticks 400  density 0.75%  source reference  tick 200  events 5095                                                                                      
 
-Tests: render::tests::the_help_overlay_lists_every_binding
+Tests: render::tests::the_help_overlay_lists_every_bound_key

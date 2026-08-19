@@ -62,7 +62,7 @@ death and living counts stay consistent, which `resilience.txt` records.
 Asks whether, at 160 × 48, resource dots and Mokiterion letters are distinguishable and the
 territory boundary reads as a boundary.
 
-Material: `frames.txt` section "160 x 48 — tier A full" carries the buffer dump. The dump is the
+Material: `frames.txt` section "160 x 48 — roster, inspector, log 10 rows" carries the buffer dump. The dump is the
 character content, which is what an automated assertion can check; the question is about the
 rendered glyphs, so the dump cannot answer it. The specific risk worth attention is that the overview
 plots Mokiterions and resources into the same braille canvas at 2 × 4 world cells per character

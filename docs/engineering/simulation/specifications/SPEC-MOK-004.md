@@ -5,13 +5,21 @@ title = "Package directories, observer targets, and observer test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-18"
-updated = "2026-08-18"
+updated = "2026-08-19"
 
 [relations]
 specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
 +++
 
 # Specification: Package directories, observer targets, and observer test placement
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-18 | Original content for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`. | Approved by the technical owner; implemented under `WO-MOK-006` and verified under `VREC-MOK-006`. |
+| 2026-08-19 | Recorded figures and two subject lines corrected, because `SPEC-MOK-003` rule 5 as amended the same day replaced the observer's four-row layout-tier table with one threshold per pane, and the implementation that conforms to it removes the `layout` module's `Tier` enum, that enum's `label` method, the `tier_for` function and the `Panes::tier` field. **Rule 6**: the recorded extent falls from 13 `layout` items to **10** and from **97** items to **94**; the same interface counted the other way falls from 122 to **118**, and its public fields from 25 to **24**. What the field figure counts is now stated, because 25 is reproducible only as 122 − 97 — it counts public fields, and the variants of a public enum are not written `pub` and were never in it. The `layout` row's subject, "viewport tiers and the pane geometry of each", is corrected: there are no tiers to name. A **Reduction** clause is added, symmetric with the existing **Growth** clause, so that removal is governed the way addition already was. The byte-identity check is scoped to the `WO-MOK-006` restructuring it was written for, exactly as `SPEC-MOK-002` rule 3's freeze was scoped to `WO-MOK-003`; unscoped it forbids the observer's code from ever changing again, which was never its subject and is not what rule 6 is for. **Rule 9**: `tests/layout.rs` rises from 7 tests to **10** and the public tier from 77 to **80**. The +3 is a net figure and the rule now carries the measured composition: three tests go, because they assert the tier table and the per-tier minimums that rule 5 no longer defines, and six arrive — the rename of the third departure, the per-pane threshold case, the ten-row log case and the monotonicity sweep that `VER-MOK-005` as amended requires, and two one-to-one threshold cases that its **Mapping injectivity** property needs once rule 5 creates a second placement regime. **Rule 11**: the observer's executed total rises from 109 to **112** and the workspace's from 169 to **172**, with the "same before and after" clause scoped to the restructuring. **Rule 12**: its second paragraph is scoped to the `WO-MOK-006` restructuring, exactly as rule 13's clause is and for the same reason — unscoped it forbids any later work order from renaming a test in either package, which is a freeze on test maintenance the rule was not written to impose, and it would make `excluded_panes_are_the_ones_the_tier_omits` unrenamable after the term "tier" was deleted from the specification it cites. The assertion itself is unchanged; only the name and the rule it names change. **Rule 13** and the second worked example no longer say "layout tier". No rule changes what it requires. No target, target name, path, package name, tier boundary, hook or prohibition changes, and no item's visibility widens: the interface only loses items, so rule 7 is satisfied by construction. | **OUTSTANDING.** Requires the technical owner. The repository owner approved the `SPEC-MOK-003` rule 5 amendment that authorizes the removal and directed the implementation in the same act on 2026-08-19, but was not shown this consequence: the implementation agent found it after the fact, by measuring the interface against this rule, and has reported it rather than treating the rule 5 approval as covering it. Records bound to commits are not re-opened — `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit. |
+| 2026-08-19 | **Recorded test-count figures corrected for `WO-MOK-007`, which added tests without correcting them.** Rule 11 states the obligation this row discharges: "a work order that adds a test corrects these figures here, and one that loses a test has a defect". **Rule 9**: `tests/options.rs` rises from 7 to **8** and `tests/render.rs` from 8 to **10**, so the public tier rises from 80 to **83**; the three arrivals are named with the obligation each carries, and none departs. **Rule 11**: the observer's executed total rises from 112 to **115**, the engine's from 60 to **78**, and the workspace's from 172 to **193**. The engine's 18 are 13 internal and 5 public under `SPEC-MOK-002` rules 5 and 7, which state no figure of their own, and the split is recorded here only because the workspace total is stated here and is otherwise not reproducible. **Rule 10 is unchanged at 32**, measured rather than assumed: `WO-MOK-007` adds no observer test requiring a private item or a hook. Nothing else changes — no target, target name, path, package name, tier boundary, hook or prohibition, and no item's visibility. The interface of rule 6 is untouched at 94, because the work order added no public item to the observer. | **OUTSTANDING.** Requires the technical owner. This is a defect in `WO-MOK-007`'s conformance rather than in this specification: the figures were stale at that work order's implementation commit `4f32a9f`, where the workspace ran 190 against the 169 recorded at the time, and the merge with `master` moves both numbers without creating the gap. The implementation agent found it by measuring the merged tree against this rule, wrote this text, and decides none of it. Records bound to commits are not re-opened: `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit. `VREC-MOK-007` measured 190 and is bound to a commit that predates this correction; it is re-captured, not edited. |
 
 ## Scope
 
@@ -189,6 +197,13 @@ public item and relocate no test; see `ADR-MOK-004`'s Option 4.
 **The library target's public interface is exactly the set of items that were public in the observer's non-test code
 at the predecessor commit.** No item is added to it, no item is removed from it, and no item's visibility changes.
 
+**Scope of the byte-identity check, as amended 2026-08-19.** The clause above and the diff check below are the
+`WO-MOK-006` restructuring's obligation: they say that turning already-public items into a maintained contract added
+nothing, removed nothing and widened nothing. They are not a freeze on the observer's code for all later work, in the
+same way that `SPEC-MOK-002` rule 3's freeze on `src/simulation.rs` is scoped to the `WO-MOK-003` restructuring it
+was written for. Afterwards the interface is governed by the **Growth** and **Reduction** clauses below and by rule 7,
+whose no-widening prohibition stands unscoped and at every commit.
+
 The set is closed by provenance rather than by enumeration, and the check is a property of the diff: for each of the
 seven `pub mod` files, the content outside every `#[cfg(test)]` block is byte-identical to the predecessor commit's.
 Byte-identity implies that no `pub`, `pub(crate)`, `pub(super)` or private item changed, so the no-widening
@@ -196,36 +211,54 @@ prohibition of rule 7 is enforced directly rather than as a consequence of a lis
 is not part of this check and cannot be: it is `#[cfg(test)]` in its entirety and declares no item at all, so it can
 neither hold nor widen a member of the interface.
 
-Its measured extent at the predecessor commit, recorded so that a later reader can tell whether the interface has
-grown and so that verification has a figure to compare against.
+Its measured extent, recorded so that a later reader can tell whether the interface has grown and so that
+verification has a figure to compare against. The figures are the `WO-MOK-006` predecessor commit's, amended
+2026-08-19 for the one reduction there has been since.
 
 **What is counted.** One **item** is one declaration written `pub` outside every `#[cfg(test)]` block — a `pub fn`,
 `pub struct`, `pub enum`, `pub const`, `pub static`, `pub type`, `pub trait` or `pub use`. A public field of a public
 struct and a variant of a public enum are parts of the item that declares them and are not counted again; there are
-**25** of them, and a count of 122 is the same interface counted the other way. The four `#[cfg(test)]` hooks are
-excluded, because rule 7 keeps them out of the library target. Verification states which rule it counted by, and a
-figure derived under the other rule is not a shortfall.
+**24** public fields, and a count of **118** is the same interface counted the other way — every line that writes
+`pub`, which is one per item plus one per public field. A variant of a public enum is written without `pub` and is in
+neither figure, so a count that includes variants is larger than 118 and is not this figure; that is what the
+2026-08-19 amendment settled, since the superseded pair 25 and 122 was reproducible only as 122 − 97. The four
+`#[cfg(test)]` hooks are excluded, because rule 7 keeps them out of the library target. Verification states which
+rule it counted by, and a figure derived under the other rule is not a shortfall.
 
 | Module | Public items | Subject |
 |---|---|---|
 | `authority` | 5 | the engine's verdict and its presentation |
 | `export` | 3 | the export writer and its rendered form |
-| `layout` | 13 | viewport tiers and the pane geometry of each |
+| `layout` | 10 | the viewport floor, the pane thresholds and the geometry each one yields |
 | `options` | 8 | the observer's own argument handling |
 | `render` | 2 | the frame entry points |
 | `spatial` | 19 | world-to-canvas mapping |
 | `state` | 47 | the observer's state, its accessors, its filters and its event buffer |
-| **Total** | **97** | |
+| **Total** | **94** | |
+
+The `layout` row read 13 items and "viewport tiers and the pane geometry of each" until the 2026-08-19 amendment. The
+three items it lost are the `Tier` enum, that enum's `label` method and the `tier_for` function, together with the
+`Panes::tier` field, which is the one of the 25 recorded public fields that goes. `SPEC-MOK-003` rule 5 as amended is
+the authority: it decides each pane on one threshold in one axis, so there is no configuration left to name, to label,
+or to return.
 
 `SPEC-MOK-002` rule 5 closes the engine's interface as a list of items and justifies each one, because every engine
 item is a potential path to authoritative state. That is not the situation here, and rule 6 of *this* specification
 is deliberately weaker in form and stronger in effect: weaker, because it names no item; stronger, because it admits
 nothing at all. The observer holds no authority over world state, so there is no admission to justify — and a
-97-row table would have to be re-derived on every refactor that renames a private helper, which is a maintenance
+94-row table would have to be re-derived on every refactor that renames a private helper, which is a maintenance
 burden that buys nothing.
 
 **Growth.** The interface grows only when an approved requirement needs it to grow, and this rule is amended in the
 same act, recording the added items and the requirement that authorizes them. A test is never that requirement.
+
+**Reduction, added 2026-08-19.** The interface shrinks only when an approved requirement, or an approved amendment to
+the specification that states it, removes the need for an item, and this rule is amended in the same act, recording
+the removed items, the figures they change and the authority that removes them. Neither convenience nor a refactor is
+that authority: an item that no longer has a caller is still part of the contract until the amendment says otherwise,
+and the module's own tests are never the reason. A reduction cannot widen anything, so it is never in tension with
+rule 7; what it can do is silently break a reader who relies on this rule's figures, which is why the figures are
+amended and not merely re-measured.
 
 ### 7. Prohibited
 
@@ -269,19 +302,58 @@ reaching the code as `use mokiterions_tui::…`. The arrangement, with the count
 |---|---|---|
 | `tests/authority.rs` | the engine's verdict and its presentation | 4 |
 | `tests/export.rs` | export content and its rendered form | 7 |
-| `tests/layout.rs` | viewport tiers and pane geometry | 7 |
-| `tests/options.rs` | the observer's argument handling | 7 |
-| `tests/render.rs` | frame content asserted through the frame entry points | 8 |
+| `tests/layout.rs` | the pane thresholds, the floor and pane geometry | 10 |
+| `tests/options.rs` | the observer's argument handling | 8 |
+| `tests/render.rs` | frame content asserted through the frame entry points | 10 |
 | `tests/spatial.rs` | world-to-canvas mapping | 7 |
 | `tests/state.rs` | observer state, accessors, filters and the event buffer | 21 |
 | `tests/verification.rs` | the cross-cutting properties: non-perturbation, export fidelity, presented-value fidelity, the authority verdict, colour independence | 16 |
-| **Total** | | **77** |
+| **Total** | | **83** |
 
-The counts are the measured outcome of applying rule 8 to the 109 tests at the predecessor commit, and they are
-stated so that a relocation that loses or invents a test is detectable. They are not a quota: if applying rule 8
-during implementation assigns a test differently than measured, rule 8 governs, the count is corrected here, and the
-discrepancy is recorded as work-order evidence. A further file may be added when a further public subject appears.
-One file per test is not the arrangement.
+The counts began as the measured outcome of applying rule 8 to the 109 tests at the `WO-MOK-006` predecessor commit —
+77 in this table — and they are stated so that a relocation that loses or invents a test is detectable. They are not a
+quota: if applying rule 8 during implementation assigns a test differently than measured, rule 8 governs, the count is
+corrected here, and the discrepancy is recorded as work-order evidence. A further file may be added when a further
+public subject appears. One file per test is not the arrangement.
+
+`tests/layout.rs` reads 10 rather than 7 as amended 2026-08-19, and the 10 is a net figure rather than three
+additions to an unchanged seven. `SPEC-MOK-003` rule 5 as amended adds a monotonicity obligation over the whole plane
+and a threshold per pane, and `VER-MOK-005` as amended requires a case for each; the same amendment deletes the tier
+table those thresholds replace. The measured composition is three tests gone and six added:
+
+| Gone | Why |
+|---|---|
+| `tiers_match_the_specified_table_including_its_boundaries` | asserts `tier_for` and the four-row table, neither of which rule 5 still defines |
+| `tier_minimums_hold_wherever_the_tier_declares_one` | asserts the per-tier minimum columns and rows the table carried |
+| `excluded_panes_are_the_ones_the_tier_omits` | renamed rather than deleted; see the first addition below |
+
+| Added | Obligation it carries |
+|---|---|
+| `excluded_panes_are_the_ones_the_viewport_omits` | the rename of the third test above, same assertion against the amended rule |
+| `each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it` | `VER-MOK-005`'s pane-presence case, checked on both sides of each of the three thresholds |
+| `the_log_is_ten_rows_only_where_both_thresholds_are_met` | `VER-MOK-005`'s log-height case |
+| `enlarging_the_viewport_never_removes_a_pane` | `VER-MOK-005`'s layout-monotonicity case and property |
+| `the_one_to_one_threshold_with_the_roster_alone_is_113_columns` | `VER-MOK-005`'s mapping-injectivity property, in the roster-only band the amendment creates |
+| `the_vertical_one_to_one_threshold_is_44_rows` | the same property on the other axis, which the amendment moves |
+
+The last two are not named by `VER-MOK-005`'s case table. They belong to its **Mapping injectivity** property, which
+the pre-existing `the_one_to_one_threshold_with_the_inspector_shown_is_157_columns` covered when the inspector was the
+only regime; rule 5 as amended creates a second regime, so the property needs a threshold case in it and one on the
+row axis. Every item all nine name is already in rule 6's interface, so rule 8 places them in the public tier and
+nothing widens.
+
+`tests/options.rs` reads 8 rather than 7 and `tests/render.rs` reads 10 rather than 8 as corrected for `WO-MOK-007`,
+which `VER-MOK-007` obliges to assert `REQ-MOK-032` at the frame. Three tests arrive and none departs:
+
+| Added | Obligation it carries |
+|---|---|
+| `the_usage_text_advertises_every_policy_the_engine_accepts` | `SPEC-MOK-001`'s *Help output* against the third decision source `REQ-MOK-033` adds |
+| `the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it` | `VER-MOK-007` oracle 4's cell-position case, at every viewport rule 5 presents the roster at |
+| `the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it` | `VREC-MOK-005` finding 3, read against `SPEC-MOK-003` rule 4.4 at zero and away from it |
+
+All three reach the code as `use mokiterions_tui::…` and name only items already in rule 6's interface, so rule 8
+places them in the public tier and nothing widens. The internal tier of rule 10 is unchanged at 32: `WO-MOK-007`
+adds no observer test that requires a private item or a hook.
 
 ### 10. Internal tier
 
@@ -312,8 +384,17 @@ still declares no test.
 nothing else. `cargo test -p Mokiterions` runs the engine's two tiers and nothing else, with the observer excluded
 from the build — `SPEC-MOK-002` rule 10 as amended is the authority for that form and it is unaffected here.
 
-The number of executed tests is the same before and after: 109 for the observer, 60 for the engine, 169 for the
-workspace, with the per-tier split of rules 9 and 10.
+The number of executed tests is the same before and after the restructuring: 109 for the observer, 60 for the engine,
+169 for the workspace, with the per-tier split of rules 9 and 10. As amended 2026-08-19 the observer's total is **112**
+and the workspace's **172**, the engine's 60 unchanged, the three added by `WO-MOK-005`'s conformance to
+`SPEC-MOK-003` rule 5 as amended. The clause this paragraph exists for is conservation across a move, not a ceiling on
+the corpus: a work order that adds a test corrects these figures here, and one that loses a test has a defect.
+
+As corrected for `WO-MOK-007`, the observer's total is **115** — the three of rule 9 above — the engine's is **78**,
+and the workspace's is **193**. The engine's 18 are 13 in its internal tier and 5 in its public tier, under
+`SPEC-MOK-002` rules 5 and 7 rather than this rule, which states no figure of its own for them; the split is recorded
+here because this paragraph is the only place the workspace total is stated and 193 is otherwise not reproducible.
+No test was lost: the 21 additions and 0 removals are reconciled name by name in `WO-MOK-007`'s `test-census.txt`.
 
 An observer test asserts a rendering claim against an in-memory character buffer. A test requiring a terminal, a
 pseudo-terminal, a screenshot, or a recording is not admissible in either tier; `SPEC-MOK-003` is the authority and
@@ -326,8 +407,16 @@ library target in place of `use super::*` or `use crate::…`. A relocated test 
 move is a rule 8 misclassification and stays in the internal tier.
 
 No assertion is weakened, generalized, replaced by a looser observation, split, merged or renamed, in either tier,
-in either package. A helper used only by relocated tests moves with them; a helper used by tests in both tiers is
-duplicated or shared under the delegation in *Explicitly unspecified decisions*, and its behavior does not change.
+in either package, **by the `WO-MOK-006` restructuring**. A helper used only by relocated tests moves with them; a
+helper used by tests in both tiers is duplicated or shared under the delegation in *Explicitly unspecified
+decisions*, and its behavior does not change.
+
+The scoping in bold is the 2026-08-19 amendment, and it is the same scoping rule 13 receives for the same reason.
+This rule is about a move: its first paragraph says so in every sentence. Read without the scope, its second
+paragraph forbids any later work order from ever renaming a test in either package, which is a freeze on test
+maintenance that no requirement asks for and that this rule was not written to impose. A later work order that
+changes an assertion is governed by the specification and contract it works under; if it weakens one, that is a
+defect there, and this rule is not what detects it.
 
 ### 13. Behavior preservation
 
@@ -340,8 +429,11 @@ byte of `USAGE` changes. Every case, invariant and check in `VER-MOK-001`, `VER-
 covered.
 
 For identical arguments, identical seed and identical viewport, the observer presents identical frames, writes
-byte-identical exports, responds to identical key bindings, selects identical layout tiers, draws identical glyphs
-and returns identical exit codes. Every case, invariant and check in `VER-MOK-005` remains covered.
+byte-identical exports, responds to identical key bindings, resolves identical panes, draws identical glyphs and
+returns identical exit codes. Every case, invariant and check in `VER-MOK-005` remains covered. The clause read
+"selects identical layout tiers" until the 2026-08-19 amendment; it is the same obligation, named the way
+`SPEC-MOK-003` rule 5 as amended names it, and it binds this restructuring rather than later work that amends what a
+viewport yields.
 
 Relocated content is compared, not reviewed. Each moved file's content is byte-identical to its content at the
 predecessor commit apart from path references the move itself requires, and the comparison is performed against the
@@ -466,9 +558,10 @@ that a second engine run from the same seed produces a byte-identical text strea
 engine's public interface and the observer through already-public items, and names no hook. Rule 8 places it in the
 public tier, rule 9 places it in `tests/verification.rs`, and rule 12 keeps its assertion verbatim.
 
-**Example.** The layout-tier tests assert which panes a given viewport yields. Every item they name is among the
-`layout` module's 13 public items, so all seven move to `tests/layout.rs` and `layout.rs` is left with no
-`#[cfg(test)]` module at all.
+**Example.** The layout tests assert which panes a given viewport yields. Every item they named was among the
+`layout` module's 13 public items at the predecessor commit, so all seven moved to `tests/layout.rs` and `layout.rs`
+is left with no `#[cfg(test)]` module at all. The same holds of the three tests added there since, against the 10
+items rule 6 records now.
 
 **Counterexample.** A rendering test asserts the exact form of a bar row by calling a private drawing helper and
 reading two private constants. Making the helper and the constants `pub` so the test can move to `tests/render.rs`

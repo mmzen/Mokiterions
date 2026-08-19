@@ -155,9 +155,6 @@ fn status_line(observer: &Observer, panes: &Panes, width: u16) -> Line<'static> 
         optional.push("follow".to_string());
     }
     optional.push(format!("filter {}", observer.filter().label()));
-    // Naming the tier explains why a pane is missing, which is otherwise inferable only from
-    // the viewport size.
-    optional.push(format!("tier {}", panes.tier.label()));
 
     for segment in optional {
         let cost = count(&segment) + 2;
@@ -171,7 +168,11 @@ fn status_line(observer: &Observer, panes: &Panes, width: u16) -> Line<'static> 
     justified(left, right, width)
 }
 
-/// The panes this tier offers only as overlays, named with the keys that open them.
+/// The panes this viewport offers only as overlays, named with the keys that open them.
+///
+/// This is the whole account of a missing pane. Rule 5 excludes a pane on one threshold in one
+/// axis, so naming the panes is more use to an operator than naming the configuration would be:
+/// it says which key restores what, and it does not require knowing a table to read.
 fn announcement_text(panes: &Panes, width: usize) -> Option<String> {
     let excluded = panes.overlay_only();
     if excluded.is_empty() {
@@ -748,7 +749,7 @@ fn draw_overlay(frame: &mut Frame, area: Rect, observer: &Observer) {
     let interior_width = usize::from(area.width.saturating_sub(2));
     match observer.overlay() {
         Overlay::None => {}
-        // Every pane a tier excludes is reachable here, over the whole body (rule 5).
+        // Every pane the viewport excludes is reachable here, over the whole body (rule 5).
         Overlay::Roster => {
             frame.render_widget(Clear, area);
             draw_roster(frame, area, observer);

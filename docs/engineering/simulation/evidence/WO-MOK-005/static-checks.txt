@@ -1,10 +1,17 @@
 # Static and architecture checks — WO-MOK-005
 
-Captured against the final merged working tree the completion summary names, after
-`origin/master` at 903c9943 was merged in and the engine package's own names were adopted.
+Re-captured on 2026-08-19 against the working tree that carries the amended rule 5, on
+`feature/wo-mok-005-layout-axes` with `origin/master` at 05dc6ac merged in. The previous
+capture is superseded twice over: `WO-MOK-006` moved the engine package into
+`mokiterions-core/`, so the `cargo tree` path below changed without anything in this work
+order changing, and this work order's own edits touch `layout.rs`, `render.rs`,
+`verification.rs` and three test files.
+
 Nothing is patched for these runs, and no scratch measurement harness is present in the tree
-they were taken from. Both packages are cleaned before each invocation below, so no line is a
-cache hit standing in for a check that did not run.
+they were taken from: the oracle that produced `layout-and-viewports.txt` and `frames.txt` was
+deleted before the first command below ran, so `mokiterions-tui/tests/` holds the eight files
+`SPEC-MOK-004` rule 9 names and nothing else. Both packages are cleaned before each
+invocation, so no line is a cache hit standing in for a check that did not run.
 
 ## Toolchain
 
@@ -16,7 +23,7 @@ rustc 1.97.1 (8bab26f4f 2026-07-14)
 ## The workspace contains exactly two packages
 
 $ cargo tree --workspace --depth 0
-Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
 
 mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
 
@@ -30,13 +37,119 @@ exit=0
 The engine package alone and first, so a finding in it cannot be masked by the observer's
 build or served from its cache.
 
-    Checking Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.75s
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.72s
 exit=0
 
 ## cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-    Checking Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions)
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-core)
     Checking mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.59s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.32s
 exit=0
+
+## harnessctl validate
+
+$ harnessctl validate
+Engineering artifact validation: PASS
+Artifacts: 68 | Errors: 0 | Warnings: 0
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+exit=0
+
+`scripts/validate_engineering_artifacts.py` prints the same four lines and also exits 0. The two
+are the same validator reached two ways, so agreement here is a consistency check rather than a
+second opinion.
+
+## harnessctl doctor
+
+81 lines, every one of them PASS, no line of any other severity. Every managed file reports
+`unchanged`, which is the check that matters for the two artifacts this work order amends: the
+amendments are to repository-owned specifications, and no file the harness manages was edited to
+accommodate them.
+exit=0
+
+## harnessctl preflight --work-order WO-MOK-005 --phase review
+
+Harness preflight: PASS
+Phase: review
+Work order: WO-MOK-005 (in_progress)
+Assurance classification: commit-bound verification required, decided by the engineering owner.
+exit=0
+
+The work order is still `in_progress` and the preflight is the review-phase form, which is the
+state this evidence is captured for. Preflight is derived, read-only evidence; it approves
+nothing.
+
+## scripts/generate_harness_dashboard.py --root .
+
+Harness Explorer generation: PASS | Artifacts: 68 | Relations: 211 | Errors: 0 | Warnings: 8
+
+Warnings are not errors here, and the honest way to read 8 is against a baseline. The same
+generator, run against a clean extraction of `origin/master` at 05dc6ac into a scratch directory:
+
+Harness Explorer generation: PASS | Artifacts: 68 | Relations: 211 | Errors: 0 | Warnings: 6
+
+Six pre-exist. Five are `WO-MOK-001` through `WO-MOK-004` and `WO-MOK-006` reporting no evidence
+document keyed to their own ID, and the sixth is `ADR-MOK-001` predating `ARCH-MOK-001`. The two
+this work adds are one finding stated twice:
+
+    ARCH-MOK-002 predates newer declared conforms_to target SPEC-MOK-003 and may require reassessment.
+    ARCH-MOK-002 predates newer declared conforms_to target SPEC-MOK-004 and may require reassessment.
+
+Both follow mechanically from the amendments moving `SPEC-MOK-003` and `SPEC-MOK-004` to
+2026-08-19 while `ARCH-MOK-002` stays at 2026-08-18. `ARCH-MOK-002` is deliberately not touched:
+the last paragraph of disclosure 16 in `completion-summary.md` states why, and why the expected
+outcome of the reassessment is a re-affirmation rather than a change.
+
+## Re-run after the evidence corrections, same day
+
+The four harness gates above were first captured at the candidate commit 360a5e4. A second commit
+on this branch then corrected citations inside seven evidence files, this one included — no file
+outside `evidence/WO-MOK-005/` is in it, so no cargo gate can be affected and none was re-run.
+All four harness gates were re-run on the corrected tree and every figure is identical:
+
+    harnessctl validate                              PASS   68 artifacts, 0 errors, 0 warnings
+    scripts/validate_engineering_artifacts.py --root .  PASS   68 artifacts, 0 errors, 0 warnings
+    harnessctl doctor                                PASS   81 lines, every managed file unchanged
+    preflight --work-order WO-MOK-005 --phase review PASS   in_progress, review phase
+    scripts/generate_harness_dashboard.py --root .   PASS   68 artifacts, 211 relations, 0 errors, 8 warnings
+
+The dashboard's snapshot digest behaves as follows, and this paragraph corrects an earlier draft of
+it that claimed the digest was simply unchanged. Three measurements:
+
+    at 360a5e4, clean worktree                       e921e8dbe8ca2424bf8785de49e4f23c0a775c8506126ff2a800d72198657e21
+    at 360a5e4, evidence corrections uncommitted     e921e8dbe8ca2424bf8785de49e4f23c0a775c8506126ff2a800d72198657e21
+    at 7fa037b, clean worktree                       ff6c1b54f6f465d0e2f6b0d54e681663a87258b4eb07aeb075faed61afc88680
+
+Editing evidence prose does not move it: the generator reads the typed artifacts under
+`docs/engineering/`, and an evidence file carries no frontmatter and is not one, which the first two
+lines measure. Committing does move it, because the snapshot embeds the revision it was generated
+at — `repository.revision` in `target/harness-dashboard/dashboard-data.json` is `HEAD`, and each
+entry of its `revision_provenance` array carries an `observed_revision` field that is also `HEAD`.
+
+So the digest is commit-bound by construction, and that is what makes it provenance rather than a
+checksum of the artifact set: a record naming a digest names the tree the digest was taken at. The
+consequence for this packet is that a verification record must name the digest measured at the
+commit it binds itself to, not one measured earlier. `VREC-MOK-005` carries its own commit and
+digest in its frontmatter, and this file deliberately does not restate them: a value written here
+would have to be measured before this file's own commit, and so could not be the value the record
+needs.
+
+A third correction commit follows the digest paragraph above and precedes the record. It touches three
+evidence files and nothing else: `completion-summary.md`, where disclosure 2's heading said "three
+defensible readings" while its own body enumerated four, and where the closing paragraph about
+`VREC-MOK-005` described the record as deliberately not edited; `boundary-and-security-review.md`,
+whose dependency-surface row repeated the same stale "three" and cited `SPEC-MOK-003` lines 57, 528
+and 589, which the 2026-08-19 amendment shifted to 59, 584 and 645; and this file. No source file and
+no governed artifact is in it, so no cargo gate can be affected and none was re-run. The four harness
+gates were re-run on it and every figure is again identical — validate PASS 68/0/0, doctor PASS 81
+lines, preflight PASS `in_progress`, dashboard PASS 68 artifacts / 211 relations / 0 errors / 8
+warnings.
+
+One thing follows from that and is worth stating plainly, because it looks like an error and is not:
+the commit that *adds* the record to the tree is necessarily a child of the commit the record
+*names*. `harnessctl capture-verification` reads `HEAD`, writes the record file, and then that file
+has to be committed, so no record can name its own commit. A reviewer who regenerates the dashboard
+at this branch's head will therefore read a third digest and see this record reported with
+`match_state: different`, exactly as `VREC-MOK-001` through `VREC-MOK-004` are already reported. The
+record binds the tree that was verified, not the commit that files the record about it.

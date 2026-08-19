@@ -50,8 +50,11 @@ fn every_declared_viewport_renders_and_annotates_what_it_presents() {
     let cases = [
         (160u16, 48u16, "whole world"),
         (160, 44, "whole world"),
+        (160, 40, "region"),
         (140, 44, "region"),
+        (140, 43, "region"),
         (120, 48, "whole world"),
+        (120, 30, "region"),
         (100, 30, "region"),
         (34, 22, "region"),
     ];
@@ -73,14 +76,24 @@ fn every_declared_viewport_renders_and_annotates_what_it_presents() {
 }
 
 /// The region annotation must state the range, since absence from the view is not death.
+///
+/// A region can be short in either axis or in both, so one case of each is asserted: `140 x 44`
+/// addresses every world row and not every column, `120 x 30` every column and not every row, and
+/// `140 x 43` neither.
 #[test]
 fn a_region_states_the_world_range_it_presents() {
     let mut observer = start(&[]);
     let text = text_of(&frame_of(&mut observer, 140, 44));
     assert!(text.contains("x0-93 y0-127"), "{text}");
 
-    let text = text_of(&frame_of(&mut observer, 100, 30));
+    let text = text_of(&frame_of(&mut observer, 120, 30));
     assert!(text.contains("x0-127 y0-95"), "{text}");
+
+    let text = text_of(&frame_of(&mut observer, 140, 43));
+    assert!(text.contains("x0-93 y0-123"), "{text}");
+
+    let text = text_of(&frame_of(&mut observer, 100, 30));
+    assert!(text.contains("x0-101 y0-95"), "{text}");
 }
 
 #[test]
@@ -159,11 +172,13 @@ fn the_header_names_the_panes_that_are_only_overlays() {
     assert!(narrow.contains("ovl"), "{narrow}");
     assert!(narrow.contains('r') && narrow.contains('L') && narrow.contains('i'));
 
-    let tier_c = rows(&frame_of(&mut observer, 120, 48))[0].clone();
-    assert!(tier_c.contains("inspector i"), "{tier_c}");
-    assert!(!tier_c.contains("roster r"), "{tier_c}");
+    // 120 columns is above the roster's threshold and below the inspector's, so exactly one pane
+    // is announced.
+    let no_inspector = rows(&frame_of(&mut observer, 120, 48))[0].clone();
+    assert!(no_inspector.contains("inspector i"), "{no_inspector}");
+    assert!(!no_inspector.contains("roster r"), "{no_inspector}");
 
-    // Tier A excludes nothing, so it announces nothing.
+    // The reference viewport excludes nothing, so it announces nothing.
     let full = rows(&frame_of(&mut observer, 160, 48))[0].clone();
     assert!(!full.contains("overlays"), "{full}");
 }
@@ -316,18 +331,26 @@ fn gauge_rows(buffer: &Buffer) -> Vec<Vec<Gauge>> {
 /// roster at all.
 ///
 /// Which viewports those are is recorded rather than derived, so that a layout change dropping the
-/// roster from a viewport that used to carry it fails here. The four that carry it are the ones
-/// whose roster pane is presented and wide enough for rule 4's two-line entry; at `100x30` and
-/// below the pane is an overlay and the frame carries no gauge row, which is pre-existing behaviour
-/// this change does not touch.
+/// roster from a viewport that used to carry it fails here. The list is rule 5's own derived table
+/// as amended on 2026-08-19, which admits the roster on width alone at `W >= 100`: eight of its nine
+/// declared viewports carry it, and only `34x22` — above the floor but below the roster's width —
+/// does not. `33x21` is below the floor and presents no frame at all.
+///
+/// The list was four viewports when this test was written, against rule 5's withdrawn tier table,
+/// under which `100x30` fell to `otherwise` and excluded the roster. That is the merge with
+/// `WO-MOK-005`, not a change in rule 4: every viewport presenting the pane presents it 47 columns
+/// wide, so the two-line form and its two-cell bars are the same ones the four already asserted.
 #[test]
 fn the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it() {
     let declared = [
         (160u16, 48u16, true),
         (160, 44, true),
+        (160, 40, true),
         (140, 44, true),
+        (140, 43, true),
         (120, 48, true),
-        (100, 30, false),
+        (120, 30, true),
+        (100, 30, true),
         (34, 22, false),
         (33, 21, false),
     ];
@@ -423,8 +446,8 @@ fn the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it()
     }
 
     assert_eq!(
-        presenting, 4,
-        "four declared viewports are expected to present the roster's gauge rows"
+        presenting, 8,
+        "eight declared viewports are expected to present the roster's gauge rows"
     );
 }
 

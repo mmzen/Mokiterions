@@ -28,9 +28,11 @@ Re-verified on the merged tree. An earlier revision of this file recorded the en
 `target/debug/mokiterions.exe`, from a revision of this work that renamed the target; the name
 `Mokiterions` is `master`'s and is what `SPEC-MOK-002` rule 2 fixes. Every figure below was
 re-derived against the rebuilt `Mokiterions.exe` and is unchanged, which is the expected result
-because `src/cli.rs`, `src/main.rs` and the whole engine test corpus are byte-identical to
-`origin/master` — see `additivity-proof.txt`. The 20-tick comparison was re-run against the
-retained files in `exports/`, so it checks those artifacts and not a fresh pair.
+because the engine package — now at `mokiterions-core/`, moved there by `WO-MOK-006` — is
+byte-identical to `origin/master` at 05dc6ac in every tracked file, sources, manifest and test
+corpus alike; `additivity-proof.txt` shows the two commands. Neither binary's name or path is
+changed by this work order. The 20-tick comparison was re-run against the retained files in
+`exports/`, so it checks those artifacts and not a fresh pair.
 
 ## The retained exports, at 20 ticks
 

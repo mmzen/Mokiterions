@@ -331,10 +331,24 @@ stand in the way of a verified record:
 2. Two amendments written during implementation are unratified — a `SPEC-MOK-001` *Help output* correction and three
    `SPEC-MOK-003` provisions outside rule 4.
 3. `WO-MOK-007`'s own gate required `VREC-MOK-005` to be `verified` with its six amendments approved and its seven
-   assessments recorded. **It was none of those.** The product, technical and assurance owner overrode the gate on
-   2026-08-19 and authorized implementation over it, on the recorded mitigation that the two layers stay separable
-   by inspection. Phase 1.5's obligations are therefore still open and are now a prerequisite of *two* verification
-   records rather than one.
+   assessments recorded. It was none of those when implementation began, and the product, technical and assurance
+   owner overrode the gate on 2026-08-19 and authorized implementation over it, on the recorded mitigation that the
+   two layers stay separable by inspection. **One half of that has since resolved and the other has not.**
+   `VREC-MOK-005` is now `verified` on `master` and `WO-MOK-005` is `implemented`, so the gate's status condition is
+   met. Its substance is not: the record was verified with all seven of its manual assessments outstanding and
+   unauthored and eleven amendment provisions still `OUTSTANDING`, which the record states about itself. Phase 1.5's
+   obligations are therefore still open and still a prerequisite of *two* verification records rather than one — what
+   changed is that they are no longer also a blocked governance transition.
+
+**The record predates the merge with `master` and has not been re-captured against it.** `VREC-MOK-007` binds
+`4f32a9f`, which is not this branch's tip. Everything it says was true of the tree it names, and item 3 above is the
+part a reader would otherwise carry forward wrongly. Two of its figures are now measurements of code `master` has
+replaced: `WO-MOK-005`'s rule 5 amendment withdrew the layout tier table the oracle-4 frame capture enumerated its
+viewports from, so the roster is now presented at eight of nine declared viewports rather than four, and the workspace
+test census reconciles 169 → 190 where the merged tree runs 193. The bar arithmetic itself is unaffected, because the
+roster pane is 47 columns wide under both versions of rule 5. Re-capturing the record and re-deriving oracle 4 against
+the merged commit is outstanding work under `WO-MOK-007`, on the precedent `VREC-MOK-005` set when `master` moved
+under its own first candidate.
 
 Everything measured, and everything it does not establish, is in
 `docs/engineering/simulation/evidence/WO-MOK-007/` — start with its `README.md`, then `completion-summary.md`.

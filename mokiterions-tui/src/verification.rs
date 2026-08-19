@@ -34,23 +34,33 @@ use crate::state::{Filter, Observer, Progression};
 use crate::{export, layout, options, render, spatial};
 
 /// The declared viewport set. `33 x 21` is the one-below-floor case and is refused, not rendered.
-const VIEWPORTS: [(u16, u16); 7] = [
+///
+/// `160 x 40`, `140 x 43` and `120 x 30` joined the set with `VER-MOK-005`'s 2026-08-19 amendment:
+/// they are the shapes at which the superseded tier table excluded the roster, the inspector and
+/// the log at once, and no viewport in the previous set reached that region.
+const VIEWPORTS: [(u16, u16); 10] = [
     (160, 48),
     (160, 44),
+    (160, 40),
     (140, 44),
+    (140, 43),
     (120, 48),
+    (120, 30),
     (100, 30),
     (34, 22),
     (33, 21),
 ];
 
 /// The declared viewports above the floor, each with the canvas interior rule 5 derives for it.
-const RENDERABLE: [(u16, u16, u16, u16); 6] = [
+const RENDERABLE: [(u16, u16, u16, u16); 9] = [
     (160, 48, 67, 32),
     (160, 44, 67, 32),
+    (160, 40, 67, 28),
     (140, 44, 47, 32),
+    (140, 43, 47, 31),
     (120, 48, 71, 36),
-    (100, 30, 98, 24),
+    (120, 30, 71, 24),
+    (100, 30, 51, 24),
     (34, 22, 32, 16),
 ];
 
