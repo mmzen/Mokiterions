@@ -5,12 +5,26 @@
 //! already public, so the move changes the path and nothing else: the assertions are verbatim and
 //! no item was widened to bring them out. `SPEC-MOK-004` rule 12 is the obligation and the
 //! per-test comparison under `WO-MOK-006` is the evidence.
+//!
+//! `SPEC-MOK-003` rule 5's 2026-08-19 amendment replaced the ordered tier table with one
+//! threshold per pane on the axis that constrains it. The cases that named a tier are restated
+//! against those thresholds, and the sweep below is new: the defect the amendment corrects sat
+//! between the declared viewports, so a set of named sizes could not have caught it.
 
 use mokiterions_tui::layout::*;
 use ratatui::layout::Rect;
 
 fn viewport(width: u16, height: u16) -> Rect {
     Rect::new(0, 0, width, height)
+}
+
+fn present(width: u16, height: u16) -> (bool, bool, bool) {
+    let panes = resolve(viewport(width, height));
+    (
+        panes.roster.is_some(),
+        panes.inspector.is_some(),
+        panes.log.is_some(),
+    )
 }
 
 #[test]
@@ -22,37 +36,72 @@ fn the_floor_is_the_specified_one() {
     assert!(!below_floor(200, 60));
 }
 
+/// Rule 5's thresholds, at their boundaries and one cell either side of each. Each pane reads one
+/// axis, so each threshold is asserted to be indifferent to the other axis.
 #[test]
-fn tiers_match_the_specified_table_including_its_boundaries() {
-    assert_eq!(tier_for(140, 48), Tier::A);
-    assert_eq!(tier_for(160, 48), Tier::A);
-    assert_eq!(tier_for(140, 47), Tier::B);
-    assert_eq!(tier_for(140, 44), Tier::B);
-    assert_eq!(tier_for(160, 44), Tier::B);
-    assert_eq!(tier_for(139, 48), Tier::C);
-    assert_eq!(tier_for(100, 38), Tier::C);
-    assert_eq!(tier_for(120, 48), Tier::C);
-    assert_eq!(tier_for(99, 48), Tier::D);
-    assert_eq!(tier_for(100, 37), Tier::D);
-    assert_eq!(tier_for(140, 43), Tier::D);
-    assert_eq!(tier_for(34, 22), Tier::D);
+fn each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it() {
+    for height in [22u16, 30, 37, 38, 43, 44, 48, 60] {
+        assert!(!present(99, height).0, "roster at 99x{height}");
+        assert!(present(100, height).0, "roster at 100x{height}");
+        assert!(!present(139, height).1, "inspector at 139x{height}");
+        assert!(present(140, height).1, "inspector at 140x{height}");
+    }
+    for width in [34u16, 99, 100, 139, 140, 200] {
+        assert!(!present(width, 37).2, "log at {width}x37");
+        assert!(present(width, 38).2, "log at {width}x38");
+    }
+}
+
+/// The log is ten rows only where rule 5 says it is: `W >= 140` and `H >= 48` together.
+#[test]
+fn the_log_is_ten_rows_only_where_both_thresholds_are_met() {
+    let rows = |width, height| {
+        resolve(viewport(width, height))
+            .log
+            .map_or(0, |log| log.height)
+    };
+
+    assert_eq!(rows(140, 48), 10);
+    assert_eq!(rows(200, 60), 10);
+    assert_eq!(rows(139, 48), 6);
+    assert_eq!(rows(140, 47), 6);
+    assert_eq!(rows(140, 38), 6);
+    assert_eq!(rows(34, 60), 6);
+    assert_eq!(rows(200, 37), 0);
 }
 
 /// Rule 5's derived-consequences table, which is an obligation because it is checkable.
+///
+/// `160 x 40`, `140 x 43` and `120 x 30` are the shapes at which the superseded tier table
+/// matched no row and excluded the roster, the inspector and the log at once.
 #[test]
 fn the_declared_viewports_yield_the_declared_canvases() {
+    // width, height, roster, inspector, log rows, canvas width, canvas height
     let cases = [
-        (160, 48, Tier::A, 67, 32),
-        (160, 44, Tier::B, 67, 32),
-        (140, 44, Tier::B, 47, 32),
-        (120, 48, Tier::C, 71, 36),
-        (100, 30, Tier::D, 98, 24),
-        (34, 22, Tier::D, 32, 16),
+        (160u16, 48u16, true, true, 10u16, 67u16, 32u16),
+        (160, 44, true, true, 6, 67, 32),
+        (160, 40, true, true, 6, 67, 28),
+        (140, 44, true, true, 6, 47, 32),
+        (140, 43, true, true, 6, 47, 31),
+        (120, 48, true, false, 6, 71, 36),
+        (120, 30, true, false, 0, 71, 24),
+        (100, 30, true, false, 0, 51, 24),
+        (34, 22, false, false, 0, 32, 16),
     ];
 
-    for (width, height, tier, canvas_width, canvas_height) in cases {
+    for (width, height, roster, inspector, log_rows, canvas_width, canvas_height) in cases {
         let panes = resolve(viewport(width, height));
-        assert_eq!(panes.tier, tier, "{width}x{height} tier");
+        assert_eq!(panes.roster.is_some(), roster, "{width}x{height} roster");
+        assert_eq!(
+            panes.inspector.is_some(),
+            inspector,
+            "{width}x{height} inspector"
+        );
+        assert_eq!(
+            panes.log.map_or(0, |log| log.height),
+            log_rows,
+            "{width}x{height} log"
+        );
         assert_eq!(
             canvas_cells(panes.view),
             (canvas_width, canvas_height),
@@ -64,7 +113,7 @@ fn the_declared_viewports_yield_the_declared_canvases() {
 #[test]
 fn every_region_stays_inside_the_viewport_and_the_body_rows_are_contiguous() {
     for width in [34u16, 60, 99, 100, 120, 139, 140, 157, 160, 200] {
-        for height in [22u16, 30, 37, 38, 43, 44, 47, 48, 60] {
+        for height in [22u16, 30, 37, 38, 40, 43, 44, 47, 48, 60] {
             let area = viewport(width, height);
             let panes = resolve(area);
 
@@ -103,26 +152,53 @@ fn every_region_stays_inside_the_viewport_and_the_body_rows_are_contiguous() {
     }
 }
 
+/// Rule 5's monotonicity obligation and `VER-MOK-005`'s case for it: no pane present at one
+/// viewport is absent at a wider or a taller one.
+///
+/// Adjacent steps are asserted, which gives the general `W' >= W` and `H' >= H` form by
+/// induction over the two axes. This sweeps the plane rather than the declared viewports because
+/// the defect it exists to exclude was invisible to every named size: the superseded tier table
+/// dropped three panes at `W >= 140` with `38 <= H < 44`, and no declared viewport was in that
+/// region.
 #[test]
-fn tier_minimums_hold_wherever_the_tier_declares_one() {
-    // Tiers A and B declare `Min(34)` for the body, so the body must never be smaller.
-    for (width, height) in [(140, 48), (160, 48), (140, 44), (160, 47), (200, 100)] {
-        let panes = resolve(viewport(width, height));
-        assert!(
-            panes.view.height >= 34,
-            "{width}x{height} body {}",
-            panes.view.height
-        );
+fn enlarging_the_viewport_never_removes_a_pane() {
+    let mut pairs = 0usize;
+    for width in 34..=200u16 {
+        for height in 22..=60u16 {
+            let (roster, inspector, log) = present(width, height);
+            for (next_width, next_height) in [(width + 1, height), (width, height + 1)] {
+                let (next_roster, next_inspector, next_log) = present(next_width, next_height);
+                for (pane, before, after) in [
+                    ("roster", roster, next_roster),
+                    ("inspector", inspector, next_inspector),
+                    ("log", log, next_log),
+                ] {
+                    assert!(
+                        after || !before,
+                        "the {pane} left the body between {width}x{height} and \
+                         {next_width}x{next_height}"
+                    );
+                }
+                pairs += 1;
+            }
+        }
     }
+    // 167 widths by 39 heights, each compared with its wider and its taller neighbour.
+    assert_eq!(pairs, 13_026);
 }
 
 #[test]
-fn excluded_panes_are_the_ones_the_tier_omits() {
+fn excluded_panes_are_the_ones_the_viewport_omits() {
     assert!(resolve(viewport(160, 48)).overlay_only().is_empty());
     assert!(resolve(viewport(160, 44)).overlay_only().is_empty());
+    assert!(resolve(viewport(160, 40)).overlay_only().is_empty());
     assert_eq!(
         resolve(viewport(120, 48)).overlay_only(),
         vec![Pane::Inspector]
+    );
+    assert_eq!(
+        resolve(viewport(120, 30)).overlay_only(),
+        vec![Pane::Log, Pane::Inspector]
     );
     assert_eq!(
         resolve(viewport(34, 22)).overlay_only(),
@@ -142,5 +218,43 @@ fn the_one_to_one_threshold_with_the_inspector_shown_is_157_columns() {
         let panes = resolve(viewport(width, 48));
         assert!(panes.inspector.is_some(), "{width}");
         assert!(canvas_cells(panes.view).0 >= 64, "{width}");
+    }
+}
+
+/// And with the roster but no inspector as `47 + 66 = 113`.
+#[test]
+fn the_one_to_one_threshold_with_the_roster_alone_is_113_columns() {
+    for width in 100..113u16 {
+        let panes = resolve(viewport(width, 48));
+        assert!(
+            panes.roster.is_some() && panes.inspector.is_none(),
+            "{width}"
+        );
+        assert!(canvas_cells(panes.view).0 < 64, "{width}");
+    }
+    for width in 113..140u16 {
+        let panes = resolve(viewport(width, 48));
+        assert!(
+            panes.roster.is_some() && panes.inspector.is_none(),
+            "{width}"
+        );
+        assert!(canvas_cells(panes.view).0 >= 64, "{width}");
+    }
+}
+
+/// Rule 5 states the vertical 1:1 threshold as `H >= 44`: a canvas of 32 rows needs a body of 34,
+/// and the header, the footer and a six-row log take ten more. It holds at every width, which is
+/// why height alone decides it.
+#[test]
+fn the_vertical_one_to_one_threshold_is_44_rows() {
+    for width in [34u16, 99, 100, 139, 140, 160, 200] {
+        for height in 22..44u16 {
+            let panes = resolve(viewport(width, height));
+            assert!(canvas_cells(panes.view).1 < 32, "{width}x{height}");
+        }
+        for height in 44..=60u16 {
+            let panes = resolve(viewport(width, height));
+            assert!(canvas_cells(panes.view).1 >= 32, "{width}x{height}");
+        }
     }
 }

@@ -50,8 +50,11 @@ fn every_declared_viewport_renders_and_annotates_what_it_presents() {
     let cases = [
         (160u16, 48u16, "whole world"),
         (160, 44, "whole world"),
+        (160, 40, "region"),
         (140, 44, "region"),
+        (140, 43, "region"),
         (120, 48, "whole world"),
+        (120, 30, "region"),
         (100, 30, "region"),
         (34, 22, "region"),
     ];
@@ -73,14 +76,24 @@ fn every_declared_viewport_renders_and_annotates_what_it_presents() {
 }
 
 /// The region annotation must state the range, since absence from the view is not death.
+///
+/// A region can be short in either axis or in both, so one case of each is asserted: `140 x 44`
+/// addresses every world row and not every column, `120 x 30` every column and not every row, and
+/// `140 x 43` neither.
 #[test]
 fn a_region_states_the_world_range_it_presents() {
     let mut observer = start(&[]);
     let text = text_of(&frame_of(&mut observer, 140, 44));
     assert!(text.contains("x0-93 y0-127"), "{text}");
 
-    let text = text_of(&frame_of(&mut observer, 100, 30));
+    let text = text_of(&frame_of(&mut observer, 120, 30));
     assert!(text.contains("x0-127 y0-95"), "{text}");
+
+    let text = text_of(&frame_of(&mut observer, 140, 43));
+    assert!(text.contains("x0-93 y0-123"), "{text}");
+
+    let text = text_of(&frame_of(&mut observer, 100, 30));
+    assert!(text.contains("x0-101 y0-95"), "{text}");
 }
 
 #[test]
@@ -159,11 +172,13 @@ fn the_header_names_the_panes_that_are_only_overlays() {
     assert!(narrow.contains("ovl"), "{narrow}");
     assert!(narrow.contains('r') && narrow.contains('L') && narrow.contains('i'));
 
-    let tier_c = rows(&frame_of(&mut observer, 120, 48))[0].clone();
-    assert!(tier_c.contains("inspector i"), "{tier_c}");
-    assert!(!tier_c.contains("roster r"), "{tier_c}");
+    // 120 columns is above the roster's threshold and below the inspector's, so exactly one pane
+    // is announced.
+    let no_inspector = rows(&frame_of(&mut observer, 120, 48))[0].clone();
+    assert!(no_inspector.contains("inspector i"), "{no_inspector}");
+    assert!(!no_inspector.contains("roster r"), "{no_inspector}");
 
-    // Tier A excludes nothing, so it announces nothing.
+    // The reference viewport excludes nothing, so it announces nothing.
     let full = rows(&frame_of(&mut observer, 160, 48))[0].clone();
     assert!(!full.contains("overlays"), "{full}");
 }

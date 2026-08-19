@@ -5,7 +5,7 @@ title = "Split the workspace and implement the terminal observer"
 status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-19"
 
 [assurance]
 commit_bound_verification = "required"
@@ -78,6 +78,65 @@ work order implements. `ARCH-MOK-001` addresses `REQ-MOK-004`, `REQ-MOK-008`, `R
 of which are in this scope. Its amendment is a prerequisite of this work order's approval rather than work performed
 under it, and its amended conformance checks appear below as constraints on this work. Nominal coverage is therefore
 omitted rather than fabricated. The technical owner confirms this omission at approval.
+
+**Layout defect reported 2026-08-18; amendments approved and implementation directed 2026-08-19.** The repository owner reported that the observer's adaptive layout
+does not present the left panel at some terminal sizes, and classified it as blocking for this work order while
+accepting the rest of the observer as a first version. The owner's initial proposal was to remove adaptive layout
+altogether and truncate the view when the terminal is too small. After being shown the measurement below, the owner
+chose instead to replace `SPEC-MOK-003` rule 5's tier table with one pane threshold per axis. The implementation agent
+measured the defect, drafted the amendments and recorded this paragraph; it decided nothing, and rule 5's thresholds
+remain withheld from it by the *Authorized decision envelope* below, which is neither amended nor read down.
+
+The measurement. Rule 5's tier table is an ordered ladder of four rows over a two-dimensional space, and it leaves a
+gap: `W ≥ 140` with `38 ≤ H < 44` satisfies no row and falls to `otherwise`, which excludes the roster, the inspector
+and the log together. A 160 × 40 terminal therefore presents no left panel, while 120 × 40 — the same height, one
+third narrower — presents one, so making the window smaller adds panes back. `mokiterions-tui/src/layout.rs` lines 102
+to 112 implement the table faithfully, and `mokiterions-tui/tests/layout.rs` line 37 asserts
+`tier_for(140, 43) == Tier::D`. The behavior was specified, implemented and pinned by a passing test, so this is a
+specification defect and not an implementation defect: correcting it was outside this work order's envelope until the
+owner amended the specification, and the amendment is what admits the code change recorded below.
+
+Why removal was not taken. `REQ-MOK-024` is approved and requires that "no content is clipped in a way that could be
+read as a different value", that "a number that does not fit is not shown truncated", and that "degradation never
+hides the run's provenance, since a screen capture that does not identify its own run cannot serve as evidence".
+Truncating a fixed frame clips the footer, which rule 5 retains at every size for that exact reason and which
+`VER-MOK-005` requires at every viewport. Removal would therefore have needed a product-owner amendment to an approved
+requirement on top of the specification and contract changes. The threshold change needs no requirement amendment,
+because `REQ-MOK-024` fixes no threshold itself and delegates every one of them to `SPEC-MOK-003`.
+
+What this adds to the scope above. `mokiterions-tui/src/layout.rs` and its tests; the header's `tier` label in
+`mokiterions-tui/src/render.rs` line 158, which loses its referent and is removed — that string is the
+implementation's to choose under *exact diagnostic and pane-title wording*, no artifact requires it, and the overlay
+announcement already names every absent pane with the key that opens it; and a monotonicity sweep in the observer's
+test tier. Nothing else in the observer changes, and no engine file changes.
+
+What landed. On 2026-08-19 the owner reviewed both drafted amendments, approved them and directed the implementation in
+the same act: `SPEC-MOK-003` rule 5 as technical owner, `VER-MOK-005` as assurance owner, each recorded in its own
+amendment record with the note that the implementation agent drafted the text and recorded the approval on the owner's
+explicit instruction. The implementation is the per-pane thresholds in `mokiterions-tui/src/layout.rs`, the removal of
+the header's `tier` label, and three added tests in `mokiterions-tui/tests/layout.rs` — the per-pane threshold case,
+the ten-row log case and the monotonicity sweep, which compares 13,026 adjacent viewport pairs over `34..=200` by
+`22..=60` and finds no pane that a larger viewport removes. The observer's test total rises from 109 to 112 and the
+workspace's from 169 to 172. `layout-and-viewports.txt` under this work order's evidence is re-captured for the nine
+declared viewports and carries the sweep and a negative control that shows the superseded table failing the same
+cases.
+
+What is outstanding. **`SPEC-MOK-004` rule 6 requires the technical owner.** Removing `Tier`, its `label`, `tier_for`
+and the `Panes::tier` field changes an interface that rule 6 closes by provenance and whose growth clause had no
+counterpart for removal, so the recorded extent falls from 97 items to 94 and the rule gains a **Reduction** clause;
+rules 9, 11 and 13 follow it for the test counts and one stale term. The owner was not shown this consequence when
+approving rule 5 — the implementation agent found it afterwards by measuring the interface — so it is recorded
+**OUTSTANDING** in that specification's amendment record and reported rather than treated as covered. The three
+2026-08-18 rows that were already **OUTSTANDING** in `SPEC-MOK-002` and `SPEC-MOK-003` are untouched and remain so.
+`VREC-MOK-005` is `ready` rather than `verified`; it is not edited in place, and it is re-captured against the commit
+that carries this implementation rather than carried forward. No lifecycle status is moved by the implementation
+agent, and nothing here is committed, pushed or merged without the owner's instruction.
+
+Terminology left alone. `REQ-MOK-028`, `CAP-MOK-005`, `INT-MOK-005`, `WO-MOK-006` and `VER-MOK-006` each use "layout
+tier" as a name for what a viewport yields, in clauses whose subject is that the restructuring changed nothing an
+operator can see. Those clauses were true at `VREC-MOK-006`'s commit and are not re-opened here; what they now lack is
+a definition of the term, which `SPEC-MOK-003` rule 5 no longer supplies. This is terminology drift, not a defect, and
+it is reported to the owner rather than amended under a work order that has no requirement to touch them.
 
 ## Objective
 

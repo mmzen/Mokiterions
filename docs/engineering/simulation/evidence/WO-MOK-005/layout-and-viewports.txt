@@ -1,37 +1,264 @@
 # Layout and viewports — WO-MOK-005
 
-`SPEC-MOK-003` rule 5's tier table and canvas derivation, measured at every viewport
-`VER-MOK-005` declares. Every figure below is read from a resolved layout or from a drawn
-in-memory buffer; none is asserted from the specification's text.
+`SPEC-MOK-003` rule 5 as amended 2026-08-19 places each optional pane on one threshold in
+the one axis that constrains it. Every figure below is read from a resolved layout or from
+a drawn in-memory buffer; none is asserted from the specification's text. That holds of the
+fixed figures the tables below derive from as well — they are read from the layout resolved
+at the 160 x 48 reference viewport:
+
+  header           3 rows
+  footer           1 row
+  roster           47 columns
+  inspector        44 columns
+  log              10 rows where both of its thresholds are met, otherwise 6
+
+## Each pane's threshold, measured on both sides
+
+Each row is `layout::resolve` at the two adjacent sizes the threshold separates, taken at
+every value of the other axis in the sweep's range rather than at one chosen size. A row
+holds when the pane is absent at every size on the low side and present at every size on
+the high side.
+
+pane        threshold             absent below it        present at and above it   across
+roster      W >= 100              99 x H     39/39       100 x H     39/39         H = 22..=60
+inspector   W >= 140              139 x H    39/39       140 x H     39/39         H = 22..=60
+log         H >= 38               W x 37     167/167     W x 38      167/167       W = 34..=200
+
+The taller log answers to both axes at once, so it is measured as a triple rather than as a
+row:
+
+log rows    W >= 140 and H >= 48  140 x 48 -> 10 rows   140 x 47 -> 6 rows   139 x 48 -> 6 rows
+                                  either threshold alone leaves the log at 6 rows
 
 ## The declared viewport set
 
-columns x rows   tier            header      roster        view            inspector      log             footer          canvas interior
-160 x 48         A full          160x3@0,0   47x34@0,3     69x34@47,3     44x34@116,3     160x10@0,37     160x1@0,47      67 x 32
-160 x 44         B compact-log   160x3@0,0   47x34@0,3     69x34@47,3     44x34@116,3     160x6@0,37      160x1@0,43      67 x 32
-140 x 44         B compact-log   140x3@0,0   47x34@0,3     49x34@47,3     44x34@96,3      140x6@0,37      140x1@0,43      47 x 32
-120 x 48         C narrow        120x3@0,0   47x38@0,3     73x38@47,3     —               120x6@0,41      120x1@0,47      71 x 36
-100 x 30         D minimal       100x3@0,0   —             100x26@0,3     —               —               100x1@0,29      98 x 24
- 34 x 22         D minimal       34x3@0,0    —             34x18@0,3      —               —               34x1@0,21       32 x 16
+Each region is written as `columns x rows @ x , y`, and the canvas interior is the view pane
+less its border.
 
- 33 x 21         —               below the floor: refused at start-up, drawing suspended at run time
+columns x rows   header       roster       view         inspector    log          footer       canvas
+160 x 48        160x3@0,0    47x34@0,3    69x34@47,3   44x34@116,3  160x10@0,37  160x1@0,47   67 x 32
+160 x 44        160x3@0,0    47x34@0,3    69x34@47,3   44x34@116,3  160x6@0,37   160x1@0,43   67 x 32
+160 x 40        160x3@0,0    47x30@0,3    69x30@47,3   44x30@116,3  160x6@0,33   160x1@0,39   67 x 28
+140 x 44        140x3@0,0    47x34@0,3    49x34@47,3   44x34@96,3   140x6@0,37   140x1@0,43   47 x 32
+140 x 43        140x3@0,0    47x33@0,3    49x33@47,3   44x33@96,3   140x6@0,36   140x1@0,42   47 x 31
+120 x 48        120x3@0,0    47x38@0,3    73x38@47,3   —            120x6@0,41   120x1@0,47   71 x 36
+120 x 30        120x3@0,0    47x26@0,3    73x26@47,3   —            —            120x1@0,29   71 x 24
+100 x 30        100x3@0,0    47x26@0,3    53x26@47,3   —            —            100x1@0,29   51 x 24
+ 34 x 22        34x3@0,0     —            34x18@0,3    —            —            34x1@0,21    32 x 16
+
+ 33 x 21        below the floor: refused at start-up, drawing suspended at run time
+
+Every optional pane a row leaves out is reachable as a full-body overlay, and the header
+names it with its key:
+
+160 x 48    overlay only: nothing; every pane is placed
+160 x 44    overlay only: nothing; every pane is placed
+160 x 40    overlay only: nothing; every pane is placed
+140 x 44    overlay only: nothing; every pane is placed
+140 x 43    overlay only: nothing; every pane is placed
+120 x 48    overlay only: inspector
+120 x 30    overlay only: log, inspector
+100 x 30    overlay only: log, inspector
+ 34 x 22    overlay only: roster, log, inspector
+
+## What each canvas addresses
 
 The canvas interior is the view pane less the one cell its border occupies on each side.
 In overview zoom one character cell carries a 2 x 4 braille dot grid, so the world region a
 canvas addresses is twice its width by four times its height, clamped to the 128 x 128
-world:
+world. Each row is `spatial::Viewport::resolve` over the resolved canvas, camera at the
+origin:
 
 160 x 48    canvas  67 x 32    world region 128 x 128   x0-127 y0-127   whole world yes
 160 x 44    canvas  67 x 32    world region 128 x 128   x0-127 y0-127   whole world yes
-140 x 44    canvas  47 x 32    world region  94 x 128   x0-93 y0-127   whole world no
+160 x 40    canvas  67 x 28    world region 128 x 112   x0-127 y0-111   whole world no
+140 x 44    canvas  47 x 32    world region  94 x 128   x0-93  y0-127   whole world no
+140 x 43    canvas  47 x 31    world region  94 x 124   x0-93  y0-123   whole world no
 120 x 48    canvas  71 x 36    world region 128 x 128   x0-127 y0-127   whole world yes
-100 x 30    canvas  98 x 24    world region 128 x 96    x0-127 y0-95   whole world no
- 34 x 22    canvas  32 x 16    world region  64 x 64    x0-63 y0-63   whole world no
+120 x 30    canvas  71 x 24    world region 128 x 96    x0-127 y0-95    whole world no
+100 x 30    canvas  51 x 24    world region 102 x 96    x0-101 y0-95    whole world no
+ 34 x 22    canvas  32 x 16    world region  64 x 64    x0-63  y0-63    whole world no
+
+The world appears whole where the canvas reaches 64 columns and 32 rows. The smallest
+viewports that reach them, found by resolving every width and every height rather than by
+arithmetic — the horizontal answer depends on which panes stand beside the view:
+
+horizontal, roster and inspector placed     W >= 157
+horizontal, roster placed, inspector not    W >= 113
+vertical, at 160 columns                    H >= 44
+
+## Monotonicity over the plane
+
+Rule 5's monotonicity obligation: for two viewports above the floor with W' >= W and
+H' >= H, every pane present at W x H is present at W' x H'. Checked by resolving every
+size in the range below and comparing it with its wider and its taller neighbour, which is
+sufficient because the relation is transitive over single steps.
+
+range            W = 34..=200, H = 22..=60
+adjacent pairs   13026
+panes checked    roster, inspector, log
+violations       0
+
+Canvas area is deliberately not monotone, and rule 5 declares each place it is not. The
+three crossings, measured as the canvas rows or columns they cost:
+
+inspector arrives    139 x 47  -> 140 x 47    canvas 90 x 35 -> 47 x 35
+log grows to ten     140 x 47  -> 140 x 48    canvas 47 x 35 -> 47 x 32
+log arrives          160 x 37  -> 160 x 38    canvas 67 x 31 -> 67 x 26
+
+## Negative control: the superseded tier table
+
+A case that cannot fail proves nothing, so the same three checks are run against the rule
+that shipped: `tier_for` and the per-tier pane match transcribed from
+`mokiterions-tui/src/layout.rs` at commit 05dc6ac, the predecessor of the amendment. The
+transcription borrows the fixed rows and the pane widths from the resolved layout above,
+because the amendment changed neither.
+
+The three threshold rows, run again against the superseded table. A pane whose presence the
+table made conditional on the other axis holds at only some sizes on the high side, and the
+count says at how many:
+
+pane        threshold   present above it, as amended    the same, superseded
+roster      W >= 100    100 x H  39/39                  100 x H  23/39
+inspector   W >= 140    140 x H  39/39                  140 x H  17/39
+log         H >= 38     W x 38   167/167                W x 38   40/167
+
+On the low side the two rules agree, so nothing here is an argument that the superseded
+table placed panes too eagerly. What it did was withhold panes the viewport had room for:
+
+roster      W < 100     99 x H   absent 39/39
+inspector   W < 140     139 x H  absent 39/39
+log         H < 38      W x 37   absent 167/167
+
+                                    rule as amended        superseded tier table
+monotonicity violations             0                      12   of 13026 pairs
+declared viewports disagreeing      0                      4   of 9
+
+The superseded table's monotonicity violations, first six of 12:
+  roster 139x38 -> 140x38
+  log 139x38 -> 140x38
+  roster 139x39 -> 140x39
+  log 139x39 -> 140x39
+  roster 139x40 -> 140x40
+  log 139x40 -> 140x40
+
+The declared viewports it would have resolved differently:
+  160 x 40    superseded: no roster, no inspector, no log   canvas 158 x 34    as amended  67 x 28
+  140 x 43    superseded: no roster, no inspector, no log   canvas 138 x 37    as amended  47 x 31
+  120 x 30    superseded: no roster, no inspector, no log   canvas 118 x 24    as amended  71 x 24
+  100 x 30    superseded: no roster, no inspector, no log   canvas  98 x 24    as amended  51 x 24
+
+Those rows are two different things. The reported defect, where the viewport had room for
+every pane and the tier table matched no row at all:
+
+  160 x 40
+  140 x 43
+
+A viewport 140 columns or wider and short of 44 rows fell to the table's `otherwise` and
+lost the roster, the inspector and the log at once. The monotonicity pairs above are that
+same fault as the operator met it: growing a terminal by one column took a pane away.
+
+And the rows where no defect is involved and the amendment's substance is what changed the
+answer:
+
+  120 x 30
+  100 x 30
+
+The superseded table withheld the roster from a viewport with the columns for it because the
+same row also demanded rows for the log. Placing each pane on the axis that constrains it
+leaves a wide short terminal its roster and costs it only the log.
+
+## The roster's capacity, and where entries must now be hidden
+
+The superseded table placed a roster only where the viewport also had the rows for a log, so
+the roster always had room for all twelve two-line entries. Placing it on width alone brings
+short viewports into range, and rule 4's hidden-entry count — a branch no viewport in the
+declared set reaches — becomes reachable. It is measured here, at the declared viewports and
+at the short ones the amendment admits:
+
+viewport     roster pane   interior rows   two-line entries that fit   of twelve
+160 x 48     34 rows       32              16                          all
+160 x 44     34 rows       32              16                          all
+160 x 40     30 rows       28              14                          all
+140 x 44     34 rows       32              16                          all
+140 x 43     33 rows       31              15                          all
+120 x 48     38 rows       36              18                          all
+120 x 30     26 rows       24              12                          all
+100 x 30     26 rows       24              12                          all
+100 x 22     18 rows       16               8                          some hidden
+100 x 24     20 rows       18               9                          some hidden
+100 x 26     22 rows       20              10                          some hidden
+100 x 28     24 rows       22              11                          some hidden
+
+The declared set's tightest roster, at 120 x 30 and 100 x 30, holds exactly twelve entries in
+its 24 interior rows, so nothing is hidden anywhere in the declared set. Below 30 rows the
+count appears in the pane's title, which is rule 4's requirement that a hidden entry is
+counted rather than dropped in silence:
+
+the roster pane at 100 x 22
+┌ roster  living 12  deaths 0  hidden 4 ──────┐
+│M01  A  4:3           move:north             │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20│
+│M02  B  8:119         move:west              │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
+│M03  A  0:26          move:south             │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35│
+│M04  A  60:63         move:east              │
+│     h ██████ 100  s █████░  85  e ██░░░░  45│
+│M05  A  118:40        move:east              │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
+│M06  B  12:71         eat:F0174              │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40│
+│M07  B  26:124        move:north             │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
+│M08  B  118:120       move:east              │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30│
+└─────────────────────────────────────────────┘
+
+the roster pane at 100 x 26
+┌ roster  living 12  deaths 0  hidden 2 ──────┐
+│M01  A  4:3           move:north             │
+│     h ██████ 100  s ███░░░  60  e █░░░░░  20│
+│M02  B  8:119         move:west              │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
+│M03  A  0:26          move:south             │
+│     h ██████ 100  s ██░░░░  45  e ██░░░░  35│
+│M04  A  60:63         move:east              │
+│     h ██████ 100  s █████░  85  e ██░░░░  45│
+│M05  A  118:40        move:east              │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
+│M06  B  12:71         eat:F0174              │
+│     h ██████ 100  s ████░░  80  e ██░░░░  40│
+│M07  B  26:124        move:north             │
+│     h ██████ 100  s ███░░░  65  e ██░░░░  35│
+│M08  B  118:120       move:east              │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30│
+│M09  B  36:92         move:west              │
+│     h ██████ 100  s ████░░  70  e ██░░░░  40│
+│M10  B  112:81        move:east              │
+│     h ██████ 100  s ██░░░░  40  e █░░░░░  30│
+└─────────────────────────────────────────────┘
+
+No assertion reads that count: `render.rs` states it at lines 449-456 and no test in the
+package reaches it, because `VER-MOK-005`'s declared viewports do not. The dumps above are
+the whole of the evidence for it, and `requirement-to-test-mapping.md` records it as
+unasserted rather than as covered.
 
 ## The one-below-floor refusal
 
-Produced by the real start-up path, before the terminal is entered, so a terminal too small
-to observe in is never altered.
+The floor is the one part of rule 5 the 2026-08-19 amendment does not touch, and it is
+measured again here to show that: `layout::below_floor` refuses 33 x 21 and admits 34 x 22
+exactly as it did before.
+
+below_floor(33, 21)   true
+below_floor(34, 22)   false
+
+The refusal itself is carried forward unchanged from the 2026-08-18 capture, where it was
+produced by the real start-up path, before the terminal is entered, so a terminal too small
+to observe in is never altered. Reproducing it needs a real terminal of that size: the
+start-up path reads the size from the operating system and treats a size it cannot read as
+no refusal at all, so a captured run under this oracle would prove nothing. The message and
+the exit code are asserted by the internal test named below.
 
 $ mokiterions-tui            # in a 33 x 21 terminal
 exit code 2
@@ -41,5 +268,16 @@ viewport error: the terminal is 33 x 21; the observer requires at least 34 x 22
 
 At the floor itself, 34 x 22, start-up is accepted: an observer is returned, nothing is written
 
-Tests: tests::a_viewport_below_the_floor_is_refused_with_both_dimensions_and_code_two,
-       verification::every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer
+Tests: layout::the_floor_is_the_specified_one,
+       layout::each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it,
+       layout::the_log_is_ten_rows_only_where_both_thresholds_are_met,
+       layout::the_declared_viewports_yield_the_declared_canvases,
+       layout::every_region_stays_inside_the_viewport_and_the_body_rows_are_contiguous,
+       layout::enlarging_the_viewport_never_removes_a_pane,
+       layout::excluded_panes_are_the_ones_the_viewport_omits,
+       layout::the_one_to_one_threshold_with_the_inspector_shown_is_157_columns,
+       layout::the_one_to_one_threshold_with_the_roster_alone_is_113_columns,
+       layout::the_vertical_one_to_one_threshold_is_44_rows,
+       verification::every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer,
+       render::the_header_names_the_panes_that_are_only_overlays,
+       tests::a_viewport_below_the_floor_is_refused_with_both_dimensions_and_code_two

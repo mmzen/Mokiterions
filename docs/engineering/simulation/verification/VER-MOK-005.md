@@ -5,7 +5,7 @@ title = "Terminal observer and component separation verification"
 status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-19"
 
 [relations]
 verifies = [
@@ -22,6 +22,16 @@ verifies = [
 +++
 
 # Verification Contract: Terminal observer and component separation verification
+
+## Amendment record
+
+This section is added by the amendment below. No verification contract in this repository carried one before, because
+none had been amended after approval. The format follows `SPEC-MOK-003`'s, so that a change to an approved assurance
+artifact is recorded where a reader looks for it rather than inferred from a diff.
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-19 | Amended to follow `SPEC-MOK-003` rule 5's replacement of the tier table by one pane threshold per axis. The declared viewport set gains `160 × 40`, `140 × 43` and `120 × 30` — the sizes at which the previous tier table dropped the roster, the inspector and the log at once, and which the old set did not reach. The tier-selection case becomes a pane-presence case; the canvas-interior and whole-world cases are restated for the nine viewports, one figure having changed (`100 × 30`, 98 × 24 → 51 × 24). A **layout monotonicity** case and property are added, checked by sweeping every dimension pair in `34 ≤ W ≤ 200` and `22 ≤ H ≤ 60` rather than at named sizes. The third residual-uncertainty bullet is rewritten: the risk it disclosed — a defect just inside a tier boundary, invisible to a set of named viewports — is the risk that materialized, and saying so is worth more than leaving the bullet as a general caution. Evidence retention gains the sweep result. No case about non-perturbation, entropy attribution, the engine boundary, the dependency set, export, authority mapping or terminal restoration changes, and no seed changes. | Approved 2026-08-19 by the repository owner as assurance owner, in the same act as the `SPEC-MOK-003` rule 5 amendment this contract depends on and as the direction to implement both. The implementation agent drafted this text and recorded this approval on the owner's explicit instruction; it holds no authority over either. |
 
 ## Independence
 
@@ -47,9 +57,15 @@ corroborating check, not the primary one.
 The declared verification seed set is `0`, `1`, `42`, `123`, and `777`, the same set `VER-MOK-002` declared, so
 observed and unobserved runs are compared on runs whose unobserved behavior is already recorded evidence.
 
-The declared viewport set is `160 × 48`, `160 × 44`, `140 × 44`, `120 × 48`, `100 × 30`, `34 × 22`, and `33 × 21`. It
-is fixed here so that layout cannot be demonstrated at a viewport chosen after the fact. `33 × 21` is the
-one-below-floor case and is expected to be refused, not rendered.
+The declared viewport set is `160 × 48`, `160 × 44`, `160 × 40`, `140 × 44`, `140 × 43`, `120 × 48`, `120 × 30`,
+`100 × 30`, `34 × 22`, and `33 × 21`. It is fixed here so that layout cannot be demonstrated at a viewport chosen
+after the fact. `33 × 21` is the one-below-floor case and is expected to be refused, not rendered.
+
+`160 × 40`, `140 × 43` and `120 × 30` are in the set because the layout that preceded `SPEC-MOK-003` rule 5's
+2026-08-19 amendment failed at exactly those shapes — wide enough for every pane, short enough that the superseded
+tier table matched no row and excluded all three optional panes at once — and because the set that did not include
+them reported PASS while the defect was present. A named set is coverage of the sizes named. That is why the
+monotonicity case below sweeps the plane instead.
 
 This contract verifies that the observer reports the simulation faithfully and changes nothing about it. It does not
 verify any simulation rule. Every world rule remains verified by `VER-MOK-001` and `VER-MOK-002`, and a failure in
@@ -87,7 +103,7 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 | `REQ-MOK-021` | automated-test | Before tick 1 | The inspector states that no proposal has been made |
 | `REQ-MOK-021` | automated-test | Selected Mokiterion dies | Selection is retained; death, tick of death and final attributes are presented; the next selection control moves to the nearest living entry |
 | `REQ-MOK-021` | automated-test | Absent attributes are absent | No field for fear, traits, name, age, kills, combats, remembered locations, latency or per-agent entropy appears |
-| `REQ-MOK-022` | automated-test | Newest events visible without operator action | The most recent records occupy the log pane at every tier that includes it |
+| `REQ-MOK-022` | automated-test | Newest events visible without operator action | The most recent records occupy the log pane at every declared viewport where the log is present |
 | `REQ-MOK-022` | automated-test | Line format is `SPEC-MOK-001`'s | Presented and exported records match `tick=<n> subject=<id> event=<type> result=<details>` |
 | `REQ-MOK-022` | automated-test | Type and subject filters restrict presentation only | Filtering changes visible records; the retained buffer and its order are unchanged |
 | `REQ-MOK-022` | automated-test | Empty filter result is stated | A filter matching nothing states that it matched no retained event |
@@ -109,9 +125,11 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 | `REQ-MOK-023` | automated-test | A key press is applied exactly once | A single press advances at most one step of its control |
 | `REQ-MOK-023` | automated-test | Stepping is never invisible | A frame is drawn immediately after a single-step |
 | `REQ-MOK-023` | automated-test | Finished run refuses to advance | After the run reports finished, progression and single-step change nothing, and the final state remains inspectable and exportable |
-| `REQ-MOK-024` | automated-test | Tier selection at every declared viewport | The first matching tier in rule 5 applies; pane presence and constraints match the table |
-| `REQ-MOK-024` | automated-test | Canvas interior at every declared viewport | Interiors are 67 × 32, 67 × 32, 47 × 32, 71 × 36, 98 × 24, and 32 × 16 respectively |
-| `REQ-MOK-024` | automated-test | Whole-world claim per viewport | Whole world at `160 × 48`, `160 × 44` and `120 × 48`; a region at `140 × 44`, `100 × 30` and `34 × 22`, each annotated |
+| `REQ-MOK-024` | automated-test | Pane presence at every declared viewport | Each pane is present exactly when rule 5's threshold for it is met — roster `W ≥ 100`, inspector `W ≥ 140`, log `H ≥ 38` — and its width, height and position match the table |
+| `REQ-MOK-024` | automated-test | Log height at every declared viewport | The log occupies 10 rows when `W ≥ 140` and `H ≥ 48`, and 6 rows wherever else it is present |
+| `REQ-MOK-024` | automated-test | Layout monotonicity over the plane | For every `34 ≤ W ≤ 200` and `22 ≤ H ≤ 60`, no pane present at `W × H` is absent at `W+1 × H` or at `W × H+1`; enlarging the viewport never removes a pane |
+| `REQ-MOK-024` | automated-test | Canvas interior at every declared viewport | Interiors are 67 × 32, 67 × 32, 67 × 28, 47 × 32, 47 × 31, 71 × 36, 71 × 24, 51 × 24, and 32 × 16 respectively |
+| `REQ-MOK-024` | automated-test | Whole-world claim per viewport | Whole world at `160 × 48`, `160 × 44` and `120 × 48`; a region at `160 × 40`, `140 × 44`, `140 × 43`, `120 × 30`, `100 × 30` and `34 × 22`, each annotated |
 | `REQ-MOK-024` | automated-test | Header and footer are never excluded | Both are present at every viewport above the floor, including the floor itself |
 | `REQ-MOK-024` | automated-test | Excluded panes are announced and reachable | The header lists panes available only as overlays, and each is opened by its bound key at that viewport |
 | `REQ-MOK-024` | automated-test | Hidden roster entries are counted | When entries do not fit, the roster title states how many are hidden |
@@ -160,10 +178,14 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 4. The operator narrows the terminal from `160 × 48` to `120 × 48`; the inspector leaves the body and the header says
    it is available as an overlay; the log shrinks to six rows; the canvas becomes 71 × 36 and still presents the whole
    world; selection, filter and zoom are unchanged; the run does not pause.
-5. Starting at `33 × 21` prints the required and actual dimensions to standard error, exits `2`, and draws nothing.
-6. A territory reaching one standing resource is presented as one from sterile, and on reaching zero as permanently
+5. The operator reduces the terminal from `160 × 48` to `160 × 40`, crossing no pane threshold. The roster, the
+   inspector and the log are all still present; the log holds six rows rather than ten; the canvas becomes 67 × 28 and
+   the view title states world rows 0–111 of 128; selection, filter and zoom are unchanged; the run does not pause.
+   This is the shape the superseded tier table presented with no roster, no inspector and no log.
+6. Starting at `33 × 21` prints the required and actual dimensions to standard error, exits `2`, and draws nothing.
+7. A territory reaching one standing resource is presented as one from sterile, and on reaching zero as permanently
    depleted rather than as a count of zero, while the other territory continues to render normally.
-7. Quitting normally, exiting on an injected terminal failure, and panicking each leave the terminal out of raw mode
+8. Quitting normally, exiting on an injected terminal failure, and panicking each leave the terminal out of raw mode
    and off the alternate screen.
 
 ## Property and invariant tests
@@ -178,6 +200,11 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 - **Layout purity.** Layout and the world-to-canvas mapping are functions of viewport size and snapshot content
   alone. Varying tick, speed, progression, selection, elapsed time and event count with dimensions fixed produces
   identical pane geometry.
+- **Layout monotonicity.** For every viewport above the floor, every pane present at `W × H` is present at every
+  `W' × H'` with `W' ≥ W` and `H' ≥ H`. Enlarging a terminal never removes a pane. This is asserted by sweeping the
+  plane, not at the declared viewports, because the defect it exists to exclude was invisible to a set of named
+  sizes. Canvas area is deliberately not monotone and is not asserted to be: rule 5 declares the inspector at
+  `W = 140`, the log at `H = 38` and the taller log at `H = 48` as trades of area for a pane.
 - **Mapping injectivity.** Wherever the view claims one dot per world cell, distinct world cells map to distinct
   dots. Where it does not, the view is annotated as a region.
 - **Orientation.** For every pair of world rows `y1 < y2` in the visible region, `y1` renders on a screen row at or
@@ -273,6 +300,8 @@ Retain under `docs/engineering/simulation/evidence/WO-MOK-005/`:
 - per-tick entropy draw-count comparisons;
 - per-viewport layout and canvas-interior assertions for every declared viewport, and the refusal output for
   `33 × 21`;
+- the layout monotonicity sweep result, stating the bounds swept, the number of dimension pairs checked, and the
+  count of pairs at which a pane present at a smaller viewport was absent, which is required to be zero;
 - one exported event file per declared seed, and the byte-comparison against the engine binary's stream;
 - the `10,000`-tick resilience result and the terminal-restoration results for normal exit, error exit and panic;
 - the manual assessment record, including the legibility and colour-independence assessments and their author;
@@ -291,10 +320,15 @@ evidence for any obligation in this contract.
 - **Terminal behavior varies and is not exhaustively covered.** Emulators differ in braille coverage, underline
   support, colour depth and resize semantics. Verification covers the declared viewport set on the development
   environment's terminal. A defect appearing only in another emulator would not be caught here.
-- **Layout is verified at seven viewports, not over the whole plane.** Tier boundaries are checked at the declared
-  sizes and one below the floor. A defect existing only at some other dimension pair — particularly just inside a
-  tier boundary — would not be caught. The declared set includes each tier and both sides of the floor, which is
-  coverage of the boundaries, not of the space.
+- **This contract's viewport coverage failed once, in exactly the way this bullet used to warn about.** Before the
+  2026-08-19 amendment it read that layout was verified at seven viewports rather than over the plane, and that a
+  defect "particularly just inside a tier boundary" would not be caught. That is what happened: `SPEC-MOK-003` rule
+  5's tier table matched no row for `W ≥ 140` with `38 ≤ H < 44`, excluded the roster, the inspector and the log
+  together at those sizes, and every declared viewport reported PASS. The disclosure was accurate and it was not
+  sufficient, because a disclosed risk with no test behind it is still an untested risk. The monotonicity sweep now
+  covers `34 ≤ W ≤ 200` and `22 ≤ H ≤ 60` for pane presence, which is what would have caught it. Two gaps remain and
+  are narrower: canvas figures and pane geometry are still asserted only at the nine declared viewports, and the
+  sweep bounds are finite, so a defect above 200 columns or 60 rows is outside it.
 - **Non-perturbation is verified on five seeds under a scripted interaction sequence.** The property is structural —
   the observer's only mutating call is the advance, and it carries no data — but the evidence is five seeds and one
   interaction script. An operator sequence outside that script is covered by the structural argument and the public

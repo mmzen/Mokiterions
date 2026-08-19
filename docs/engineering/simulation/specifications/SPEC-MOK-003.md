@@ -5,7 +5,7 @@ title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-19"
 
 [relations]
 specifies = [
@@ -46,6 +46,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-18 | Corrected the statement of required `SPEC-MOK-002` amendments in *Compatibility and migration*, which the merge with `master` exposed as understated. Rule 3 is added as a fourth required amendment: it freezes `src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code. Rule 6's required narrowing is extended to the "by … return value" path, since every accessor returns an owned copy. The list of names that stay private is corrected from nine to **ten** — `DecisionEntropy` was omitted. No rule of this specification changed, and no obligation on the observer changed. | Corrected by the implementation agent as a statement of fact about another artifact; the four amendments it states remain the technical owner's act and are outstanding. |
 | 2026-08-18 | *Data and interface contracts* corrected on a claim about the engine's surface that does not hold as written, and which `WO-MOK-005` requires be fixed by amending the specification rather than by relaxing the assertion. Clause 2 said `advance_tick` was the only `&mut self` method on the surface that changes state; `Simulation::run`, the pre-existing `REQ-MOK-010` whole-run entry point, is a second. The clause now states the two, why `run` is there, why it cannot be narrowed away without relocating the engine's sources or duplicating the run loop, and the checks that can actually be met — including that the observer reaches neither `run` nor anything leading to it. The method listing is corrected to the real signatures and completed with `termination_reason` and `initialization_events`, with a note that it is what the observer calls and not the whole public interface. No obligation on the observer changed, and the non-perturbation property is unaffected. | **OUTSTANDING.** Requires the technical owner, as a correction to an approved specification. `boundary-and-security-review.md` under `WO-MOK-005` is the measurement that found it. |
 | 2026-08-18 | Four provisions amended so that `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030` can be conformed to. **Component layout**: the tree restated to one directory per package, matching `SPEC-MOK-004` rule 1, and clause 2 given the concrete path-dependency form. **Clause 3**: "The engine's sources are not relocated" replaced by the reason it existed for — the `REQ-MOK-010` text stream does not move — which a directory move preserves and `VER-MOK-006` measures. **Data and interface contracts clause 2**: its reasoning no longer appeals to the component layout forbidding relocation, since it no longer does; what would narrow `run` away is a target split, not a directory move, and the `grep` check is re-based on `mokiterions-core/src/simulation.rs`. **Explicitly unspecified decisions**: the grant of "test organization" withdrawn to `REQ-MOK-029` and `SPEC-MOK-004` rules 8 to 10, leaving fixtures and helpers with the implementation; and "the package layout", withheld but previously fixed nowhere, now pointed at `SPEC-MOK-004` rules 1 to 4, together with the observer's target shape and test-tier placement. No rule about the observer's behavior, presentation, key bindings, export, snapshot contract or non-perturbation changes, and no figure changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005`, which binds this specification to `WO-MOK-005`'s commit, is not edited: what it verified was correct at its commit, and the two rows above it remain **OUTSTANDING** and untouched. |
+| 2026-08-19 | **Rule 5's four-row tier table replaced by one threshold per pane on the axis that constrains it**: roster `W ≥ 100`, inspector `W ≥ 140`, log `H ≥ 38` at 6 rows and 10 when `W ≥ 140` and `H ≥ 48`. The tier table was an ordered ladder over a two-dimensional space and left a gap: `W ≥ 140` with `38 ≤ H < 44` matched no row and fell to `otherwise`, which excludes the roster, the inspector and the log at once. A 160 × 40 terminal therefore presented no roster while 120 × 40 — the same height, narrower — presented one, so enlarging a terminal could remove panes. The repository owner reported the missing roster as a blocking defect. A **monotonicity** obligation is added — no pane present at a viewport is absent at any larger one — which holds by construction and is checkable over the whole plane rather than at named sizes, and which is the obligation whose absence let the gap through. The derived table gains `160 × 40`, `140 × 43` and `120 × 30`, the three sizes the previous table handled worst; one existing figure changes, `100 × 30` from 98 × 24 to 51 × 24, because the roster is now present at that width — it remains a region and remains annotated, and the row carrying the width-versus-height asymmetry becomes `120 × 30`. Two trades are stated where canvas area is not monotone: the inspector at `W = 140`, already declared, and the log at `H = 38`, which costs whole-world rows between 38 and 43. The alternative of admitting the log only at `H ≥ 44` is stated and rejected, and is reversible by changing one threshold. Consequentially: rule 8's "present in every tier" becomes "at every viewport above the floor", two examples no longer name a tier, and the withheld-decisions sentence points at rule 5's pane thresholds instead of its tier table. The floor and its exit `2` refusal, the announcement obligation, the resize behavior, rule 2's fidelity minimum and mapping, the key bindings, the glyphs, the export, the authority mapping and the snapshot contract are untouched, and no requirement changes — `REQ-MOK-024` fixes no threshold itself and delegates every one of them to this specification. | Approved 2026-08-19 by the repository owner as technical owner, who directed the implementation in the same act. The owner had chosen this direction over removing adaptive layout altogether on 2026-08-18, after being shown both, and reviewed this text before approving it. The implementation agent measured the defect, drafted this text and recorded this approval on the owner's explicit instruction; it holds no authority over either, since `WO-MOK-005`'s decision envelope withholds rule 5's thresholds from the implementation. `VREC-MOK-005` is not edited here: it is `ready`, not `verified`, and it is re-captured against the commit that carries the implementation. |
 
 ## Actors and external systems
 
@@ -257,39 +258,73 @@ state, not entropy, not wall-clock time — so the same dimensions always produc
 dimensions to standard error and exits `2`. The floor is derived: a canvas of 32 × 16 cells is the minimum fidelity
 of rule 2, its pane border adds two cells in each axis, and the header and footer occupy four rows.
 
-**Tiers.** The first matching row applies.
+**Panes.** Each pane is present or absent on a threshold in the one axis that constrains it. The combination that
+applies at a viewport is whatever those thresholds independently decide; there is no ordered table of named
+configurations and no viewport that matches none of them.
 
-| Tier | Condition | Vertical constraints, top to bottom | Body, left to right |
-|---|---|---|---|
-| A — full | `W ≥ 140` and `H ≥ 48` | header `3`, body `Min(34)`, log `10`, footer `1` | roster `47`, view `Min(0)`, inspector `44` |
-| B — compact log | `W ≥ 140` and `44 ≤ H < 48` | header `3`, body `Min(34)`, log `6`, footer `1` | roster `47`, view `Min(0)`, inspector `44` |
-| C — narrow | `100 ≤ W < 140` and `H ≥ 38` | header `3`, body `Min(0)`, log `6`, footer `1` | roster `47`, view `Min(0)` |
-| D — minimal | otherwise, above the floor | header `3`, body `Min(0)`, footer `1` | view `Min(0)` |
+| Pane | Present when | Size and position |
+|---|---|---|
+| header | always | `3` rows, topmost |
+| footer | always | `1` row, bottommost |
+| roster | `W ≥ 100` | `47` columns, leftmost in the body |
+| inspector | `W ≥ 140` | `44` columns, rightmost in the body |
+| log | `H ≥ 38` | `10` rows when `W ≥ 140` and `H ≥ 48`, otherwise `6`; below the body |
+| view | always | every column and every row the body has left |
 
-Every pane a tier excludes is reachable as a full-body overlay by its bound key. The header and the footer are never
-excluded, because the footer carries the provenance of rule 8 and a frame without provenance cannot serve as
-evidence.
+The axis each threshold reads is the axis that constrains the pane. The roster is a vertical list in a fixed-width
+column, so it is decided by width; a short roster shows fewer entries and says how many are hidden, which rule 4 and
+the announcement below already provide for. The log is a fixed-width band of rows, so it is decided by height. The
+inspector needs width for the roster and a usable view beside it, so it is decided by width.
+
+The view absorbs the remainder in both axes, so the body is always covered exactly and no pane is drawn outside the
+viewport. A pane the current size excludes is reachable as a full-body overlay by its bound key. The header and the
+footer are never excluded, because the footer carries the provenance of rule 8 and a frame without provenance cannot
+serve as evidence.
+
+**Monotonicity.** For any two viewports above the floor with `W' ≥ W` and `H' ≥ H`, every pane present at `W × H` is
+also present at `W' × H'`. Enlarging a terminal never removes a pane, and shrinking one never adds a pane. This holds
+by construction, because each pane's presence is one threshold on one axis, and unlike the derived figures below it is
+checkable over the whole plane rather than at named sizes.
+
+Canvas *area* is deliberately not monotone, and each place it is not is a declared trade rather than a defect.
+Crossing `W = 140` introduces the inspector, which takes 44 columns from the view. Crossing `H = 48` at `W ≥ 140`
+grows the log from 6 rows to 10. Crossing `H = 38` introduces the log, which takes 6 rows from the view. In each, a
+pane the operator would otherwise have to open as an overlay is worth more than the columns or rows it costs, and the
+view states the region it can then present.
 
 **Derived consequences**, which are obligations because they are checkable at named sizes:
 
-| Viewport | Tier | Canvas cells | Overview presents |
+| Viewport | Panes besides header, view and footer | Canvas cells | Overview presents |
 |---|---|---|---|
-| 160 × 48 | A | 67 × 32 | the whole world at one dot per world cell |
-| 160 × 44 | B | 67 × 32 | the whole world at one dot per world cell |
-| 140 × 44 | B | 47 × 32 | world columns 0–93 of 128; a region, so annotated |
-| 120 × 48 | C | 71 × 36 | the whole world at one dot per world cell |
-| 100 × 30 | D | 98 × 24 | all 128 columns but only world rows 0–95 of 128; a region, so annotated |
-| 34 × 22 | D | 32 × 16 | world 64 × 64 of 128 × 128; a region, so annotated |
+| 160 × 48 | roster, inspector, log `10` | 67 × 32 | the whole world at one dot per world cell |
+| 160 × 44 | roster, inspector, log `6` | 67 × 32 | the whole world at one dot per world cell |
+| 160 × 40 | roster, inspector, log `6` | 67 × 28 | all 128 columns, world rows 0–111 of 128; a region, so annotated |
+| 140 × 44 | roster, inspector, log `6` | 47 × 32 | world columns 0–93 of 128; a region, so annotated |
+| 140 × 43 | roster, inspector, log `6` | 47 × 31 | world columns 0–93 and rows 0–123 of 128; a region, so annotated |
+| 120 × 48 | roster, log `6` | 71 × 36 | the whole world at one dot per world cell |
+| 120 × 30 | roster | 71 × 24 | all 128 columns, world rows 0–95 of 128; a region, so annotated |
+| 100 × 30 | roster | 51 × 24 | world columns 0–101 and rows 0–95 of 128; a region, so annotated |
+| 34 × 22 | none | 32 × 16 | world 64 × 64 of 128 × 128; a region, so annotated |
 
-Each canvas figure is the pane's interior: the tier's width and height constraints less the two cells its border occupies in
-each axis. Width alone never suffices. A viewport can be wide enough to address every world column and still be too short
-to address every world row, which is what the `100 × 30` row shows: 98 cells address 196 world columns, more than the 128
-that exist, while 24 cells address 96 world rows of 128. Presenting the whole world requires `Cw ≥ 64` **and** `Ch ≥ 32`,
-and a canvas that satisfies one and not the other presents a region and is annotated as one.
+Each canvas figure is the view pane's interior: the columns and rows the pane occupies less the two cells its border
+occupies in each axis. Width alone never suffices. A viewport can be wide enough to address every world column and
+still be too short to address every world row, which is what the `120 × 30` row shows: 71 cells address 142 world
+columns, more than the 128 that exist, while 24 cells address 96 world rows of 128. Presenting the whole world
+requires `Cw ≥ 64` **and** `Ch ≥ 32`, and a canvas that satisfies one and not the other presents a region and is
+annotated as one.
 
-The 1:1 threshold with the inspector shown is `W ≥ 157`, since `47 + 44 + 66 = 157`. Between 140 and 156 columns the
-inspector is retained and the overview presents a region, which is the declared trade at widths already below the
-reference size.
+The horizontal 1:1 threshold is `W ≥ 157` with the inspector shown, since `47 + 44 + 66 = 157`, and `W ≥ 113` with the
+roster but not the inspector, since `47 + 66 = 113`. Between 140 and 156 columns the inspector is retained and the
+overview presents a region, which is the declared trade at widths already below the reference size. The vertical 1:1
+threshold is `H ≥ 44`: `Ch ≥ 32` needs a body of 34 rows, and the header, footer and a 6-row log take 10 more. Where
+the log is 10 rows it is `H ≥ 48`, which is the reference height.
+
+Between 38 and 43 rows the log is present and the overview therefore presents a region in rows, where the same
+heights without a log would have addressed every world row. Admitting the log only at `H ≥ 44`, where it costs no
+vertical fidelity, was considered and rejected: at those heights the inspector is often already absent, the log
+carries the authoritative event stream, and a whole-world view whose events are only reachable as an overlay serves
+an operator worse than an annotated region beside a visible log. The technical owner may reverse this trade by
+changing one threshold, and nothing else in this rule depends on it.
 
 **Announcement.** Whenever any pane is excluded, any roster entry is not visible, or the view presents a region, the
 observer states it: the header lists the panes currently available only as overlays, the roster title states how
@@ -336,9 +371,9 @@ it.
 
 ### Rule 8 — Provenance footer
 
-One row, present in every tier, containing the entropy seed, the configured tick limit, the resource density as
-supplied, the active decision source, the current tick, and the retained-event count with a truncation marker when
-`truncated` is set.
+One row, present at every viewport above the floor, containing the entropy seed, the configured tick limit, the
+resource density as supplied, the active decision source, the current tick, and the retained-event count with a
+truncation marker when `truncated` is set.
 
 1. Values are read from the engine's configuration, so a defaulted value and an explicitly supplied value present
    identically.
@@ -616,8 +651,9 @@ mokiterions-tui/
 
 ### Example: the reference viewport
 
-At 160 × 48, tier A applies. The canvas is 67 × 32 cells, so the whole 128 × 128 world appears at one dot per world
-cell with territory A above territory B. Twelve roster entries are visible in the two-line form without scrolling.
+At 160 × 48, every pane is present and the log has its full 10 rows. The canvas is 67 × 32 cells, so the whole
+128 × 128 world appears at one dot per world cell with territory A above territory B. Twelve roster entries are
+visible in the two-line form without scrolling.
 The inspector occupies 44 columns. The log shows 8 records. The footer reads the seed, tick limit, density, source,
 tick and retained count.
 
@@ -630,8 +666,9 @@ movement. The log gains tick 41's records. Pressing `t` on the highlighted `acti
 
 ### Example: a shrinking terminal
 
-At 160 × 48 the operator narrows the terminal to 120 columns. Tier C applies: the inspector leaves the body and the
-header states that it is available as an overlay; the log shrinks to 6 rows; the roster keeps 47 columns; the canvas
+At 160 × 48 the operator narrows the terminal to 120 columns, crossing the inspector's `W ≥ 140` threshold: the
+inspector leaves the body and the header states that it is available as an overlay; the log shrinks to 6 rows, since
+the taller log needs both thresholds; the roster keeps 47 columns, since 120 is above its own threshold; the canvas
 becomes 71 × 36 and still presents the whole world, since 71 ≥ 64 and 36 ≥ 32. Selection, filter, zoom and retained
 events are unchanged, and the run does not pause.
 
@@ -685,9 +722,9 @@ is what makes the placement rule binding rather than advisory.
 
 The implementation may not choose: the dependency, its version or its feature set; the package layout or dependency
 direction; the observer's target shape or its test-tier placement; the coordinate mapping or orientation; the fidelity
-thresholds, the tier table or the floor; the glyph assignments; the key bindings; the buffer capacity; the export
-format or filter semantics; the authority mapping; the snapshot contract; any figure fixed by `SPEC-MOK-001`; or any
-lifecycle status.
+thresholds, rule 5's pane thresholds or the floor; the glyph assignments; the key bindings; the buffer capacity; the
+export format or filter semantics; the authority mapping; the snapshot contract; any figure fixed by `SPEC-MOK-001`;
+or any lifecycle status.
 
 **Amended 2026-08-18 for `REQ-MOK-028` and `REQ-MOK-030`.** "The package layout" in the sentence above was withheld
 from the implementation without being fixed anywhere, because at the time there was one layout and no reason to state

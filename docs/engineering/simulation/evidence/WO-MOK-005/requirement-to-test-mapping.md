@@ -92,11 +92,11 @@ should not have to find that out by reading the table.
 
 | Case | Test |
 |---|---|
-| Tier selection at every declared viewport | `layout::tests::tiers_match_the_specified_table_including_its_boundaries`, `layout::tests::tier_minimums_hold_wherever_the_tier_declares_one` |
+| Pane placement at every declared viewport | `layout::tests::each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it`, `layout::tests::the_log_is_ten_rows_only_where_both_thresholds_are_met`, `layout::tests::enlarging_the_viewport_never_removes_a_pane` |
 | Canvas interior at every declared viewport | `layout::tests::the_declared_viewports_yield_the_declared_canvases`, `verification::every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer` |
-| Whole-world claim per viewport | `render::tests::every_declared_viewport_renders_and_annotates_what_it_presents`, `spatial::tests::the_whole_world_needs_both_axes_and_never_width_alone` |
+| Whole-world claim per viewport | `render::tests::every_declared_viewport_renders_and_annotates_what_it_presents`, `spatial::tests::the_whole_world_needs_both_axes_and_never_width_alone`, `layout::tests::the_one_to_one_threshold_with_the_inspector_shown_is_157_columns`, `layout::tests::the_one_to_one_threshold_with_the_roster_alone_is_113_columns`, `layout::tests::the_vertical_one_to_one_threshold_is_44_rows` |
 | Header and footer are never excluded | `verification::every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer`, `render::tests::the_footer_survives_the_narrowest_viewport`, `verification::a_degenerate_world_still_draws_a_frame` |
-| Excluded panes are announced and reachable | `layout::tests::excluded_panes_are_the_ones_the_tier_omits`, `render::tests::the_header_names_the_panes_that_are_only_overlays`, `state::tests::every_overlay_has_its_bound_key` |
+| Excluded panes are announced and reachable | `layout::tests::excluded_panes_are_the_ones_the_viewport_omits`, `render::tests::the_header_names_the_panes_that_are_only_overlays`, `state::tests::every_overlay_has_its_bound_key` |
 | Hidden roster entries are counted | — unreachable at every declared viewport; see the caveats |
 | Floor is refused at start-up | `tests::a_viewport_below_the_floor_is_refused_with_both_dimensions_and_code_two`, `layout::tests::the_floor_is_the_specified_one`, `layout-and-viewports.txt` |
 | Floor mid-run suspends drawing only | `render::tests::below_the_floor_nothing_is_presented`, `verification::presentation_state_survives_every_resize` |
@@ -147,14 +147,23 @@ should not have to find that out by reading the table.
 
 ## Caveats a reviewer should read before trusting the table
 
-1. **`REQ-MOK-024`'s hidden-roster-entry case is unreachable at every declared viewport.** The
-   roster pane is 34 rows at tiers A and B and 38 at tier C, so its interior holds 32 or 36 rows
-   against twelve two-line entries, and the tier-D roster overlay holds sixteen one-line rows
-   against twelve entries. Nothing is ever hidden in the declared set, so the branch that states
-   the hidden count is reached by no test. It is verified by reading the code. Twelve is the fixed
-   population `SPEC-MOK-001` sets, so this is a branch that exists for a population the engine
-   cannot currently produce, and the honest statement is that it is unverified rather than that it
-   is covered.
+1. **`REQ-MOK-024`'s hidden-roster-entry case is unreachable at every declared viewport, and
+   reachable off it.** The roster pane is 26 rows at the tightest declared viewport that places
+   one, 120 × 30 and 100 × 30, so its interior holds exactly 24 rows against twelve two-line
+   entries, and every other declared viewport gives it more; the roster overlay at 34 × 22 holds
+   sixteen one-line rows against twelve entries. Nothing is hidden anywhere in the declared set,
+   so the branch that states the hidden count is reached by no test.
+
+   `SPEC-MOK-003` rule 5's 2026-08-19 amendment changed what that means. The superseded table
+   placed a roster only where the viewport also had the rows for a log, so a roster was always at
+   least 34 rows; the amended rule places it on width alone, so a 100 × 22 terminal — legal, above
+   the floor, and outside the declared set — now shows eight entries and reports four hidden.
+   `layout-and-viewports.txt` measures the capacity at every declared viewport and at the short
+   ones the amendment admits, and carries the pane dumps at 100 × 22 and 100 × 26 that show the
+   count in the pane's title. That is evidence the branch behaves, not an assertion that it does:
+   no test reads the count, because no declared viewport reaches it. Twelve is the fixed population
+   `SPEC-MOK-001` sets, so the branch also exists for a population the engine cannot currently
+   produce, and the honest statement remains that it is unasserted rather than covered.
 2. **`REQ-MOK-021`'s rejection cases are reached through a test-only hook.** Neither shipped
    decision source can have a proposal rejected — `verification::no_shipped_decision_source_has_a_proposal_rejected`
    asserts that as a fact over 400 ticks of both policies — so acceptance scenario 2 describes an
