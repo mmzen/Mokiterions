@@ -12,8 +12,10 @@ The last section lists every such case in one place, because a case covered by a
 aggregate test or by a structural argument is weaker evidence than a case with its own assertion,
 and a reviewer should not have to find that out by reading the table.
 
-**Two rows in the matrix are not satisfied.** They are the last two rows of the last table, and they
-are the reason no verification record can be written against this commit. They are stated in place
+**One row in the matrix is not satisfied.** It is the last row of the last table: the `VREC-MOK-005`
+gate, which the repository owner overrode on 2026-08-19 and which the closing review of that date
+left standing with an obligation named rather than resolved. The row above it — the amendments
+oracle 5 checks — was unsatisfied until that review and is satisfied now. Both are stated in place
 rather than collected into a footnote.
 
 ## `REQ-MOK-031` — A fixed behavioral trait per Mokiterion
@@ -76,15 +78,15 @@ rather than collected into a footnote.
 | 1,000 ticks at `0.75%` on each declared seed | `viability::the_trait_aware_source_sustains_the_population_at_every_declared_density`, `measurements/viability.txt` | 11, 9, 9, 10 and 12 survivors against a floor of 8 — after the trait range was narrowed to `0..=40`; see `escalation.md` |
 | The same runs report consumption | `viability::the_trait_aware_source_sustains_the_population_at_every_declared_density`, `measurements/viability.txt` | 400, 368, 378, 379 and 417 consumption events |
 | Traits actually spanned in the verified runs | `measurements/traits.txt`, `viability::the_trait_aware_source_sustains_the_population_at_every_declared_density` | Nine to eleven distinct values per seed, reaching `40`, so the floor was not met by a population that reproduces the reference source. The public test reads the traits out of the run's own `agent_initialized` lines rather than re-deriving them |
-| Scarcity assessment | `manual-assessment.md` | **Manual, and outstanding.** The adverse condition the contract names — twelve survivors on every seed — did not occur: one seed of five retains twelve. The judgement is still the product owner's |
+| Scarcity assessment | `manual-assessment.md` §1, `closing-review.md` | **Manual, and recorded 2026-08-19.** The adverse condition the contract names — twelve survivors on every seed — did not occur: one seed of five retains twelve. The repository owner, acting as product owner, recorded the assessment as satisfied with no reservation |
 
 ## All four requirements
 
 | Case | Evidence | Note |
 |---|---|---|
 | Prior coverage preserved | `test-census.txt`, `static-checks.txt` | 179 → 200 tests over 19 → 20 runners, reconciled name by name against `master`'s tip; 21 additions, zero removals, zero ignored, zero filtered out. One runner is new and the one test that changed tier is named there |
-| **Required amendments present and approved** (oracle 5) | `amendment-approvals.md` | **This row is not satisfied.** Every provision the owner approved on 2026-08-19 is present in both the amendment record and the specification text, checked over disjoint text. But seven amendments were written during implementation beyond the owner's stated list — one taken as a decision under a stop condition, **four OUTSTANDING**, two changing no provision — and the amendments `VREC-MOK-005` left outstanding are still outstanding, now eleven provisions across four artifacts by that record's own count. The contract says absence fails it regardless of code state, and it does |
-| The `VREC-MOK-005` gate | `README.md`, `WO-MOK-010` *Decision record*, `amendment-approvals.md` | **This row is not satisfied either.** `WO-MOK-005`'s amendments and seven manual assessments were not resolved before implementation began; the repository owner overrode the gate on 2026-08-19. `master` has since transitioned `VREC-MOK-005` to `verified` with all seven assessments outstanding and eleven provisions awaiting the technical owner, by that record's own words, so the status moved and the substance did not. The mitigation is checked rather than asserted: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f**, and every row `master` carried at **7a2b502** survived the merge byte for byte |
+| **Required amendments present and approved** (oracle 5) | `amendment-approvals.md`, `closing-review.md` | **Satisfied, having been unsatisfied until 2026-08-19.** Every provision the owner approved on 2026-08-19 is present in both the amendment record and the specification text, checked over disjoint text. Seven amendments were written during implementation beyond the owner's stated list: one arrived approved as a decision under a stop condition, two change no provision and needed no approval, and the **four that were OUTSTANDING were ratified by the repository owner acting as technical owner** in the closing review of that date, each in its own act. All four carry the ratification, its date and its role in the Approval column of the specification's own amendment record, where a reader of the specification meets them, and oracle 5 fails any of the four that does not. Oracle 5's second condition is the row below and is not counted as a pass here |
+| The `VREC-MOK-005` gate | `README.md`, `WO-MOK-010` *Decision record*, `amendment-approvals.md` §4, `closing-review.md` | **This row is not satisfied.** `WO-MOK-005`'s amendments and seven manual assessments were not resolved before implementation began; the repository owner overrode the gate on 2026-08-19. `master` has since transitioned `VREC-MOK-005` to `verified` with all seven assessments outstanding and eleven provisions awaiting the technical owner, by that record's own words, so the status moved and the substance did not. **The closing review of 2026-08-19 let the override stand and named the debt rather than carrying it silently: the eleven provisions and the seven assessments are to be resolved by a work order of their own, and that work order is to complete before the next release record.** `WO-MOK-010` does not resolve them and does not transition `WO-MOK-005`. The mitigation is checked rather than asserted: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f**, and every row `master` carried at **7a2b502** survived the merge byte for byte |
 
 ## Caveats a reviewer should read before trusting the table
 
@@ -111,7 +113,9 @@ rather than collected into a footnote.
    nothing in the matrix fails; the observation is that the `+10`/`-5` pair saturates quickly in a
    world where perception is usually populated. Nothing reads `fear`, so no outcome can falsify the
    pair — which is why this is recorded as an observation and named in `manual-assessment.md`
-   assessment 4 rather than passed over.
+   assessment 4 rather than passed over. On 2026-08-19 the technical owner kept `+10`/`-5` as
+   approved and recorded the 39% as an observation for whoever specifies a consumer of `fear`, so it
+   stays in this list rather than becoming a defect or disappearing.
 5. **The `fear`-update entropy case is argued from oracle 1, not asserted directly.** No test counts
    draws around the update. The argument is that the update runs under every source, so a draw or a
    rebuilt observation would move the frozen sources' streams, and forty-two frozen-source cells are
@@ -146,7 +150,9 @@ rather than collected into a footnote.
    the naive reading of the trait ordering at seed 0: a Mokiterion at tolerance `10` never accepted a
    resource that one at tolerance `6` did, because the situations they met were not the same. The 54
    to 97 waste-accepting eats per run are the same behavior counted without requiring a coincidence,
-   but substituting that measure for the one the contract names is the product owner's call.
+   and substituting that measure for the one the contract names was the product owner's call: on
+   2026-08-19 the owner recorded the assessment **satisfied on the measure the contract names** and
+   did **not** substitute the eats for it, so this row stays as weak as it reads.
 10. **The oscillation comparison reproduces `WO-MOK-002`'s rates and not its denominators.**
     `measurements/oscillation.txt` reproduces the recorded 1,097/10,339 and 174/1,427 counts exactly,
     but its own pooled denominators are larger by exactly 96 in both rows — one per Mokiterion-run
@@ -164,5 +170,6 @@ rather than collected into a footnote.
 12. **Every automated case here is a claim about text or about a character buffer.** No case was
     verified by looking at a terminal, and the judgements that need a person — including whether the
     fourth gauge is legible beside the other three, and whether `fear` at its ceiling on 39% of
-    agent-ticks is the intended behavior — are in `manual-assessment.md`, where five of seven are
-    outstanding.
+    agent-ticks is the intended behavior — are in `manual-assessment.md`, where all seven are now
+    recorded, the last five in the closing review of 2026-08-19. Recording them does not turn any
+    case in this table into an observed one.

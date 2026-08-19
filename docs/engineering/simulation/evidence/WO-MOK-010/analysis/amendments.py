@@ -31,7 +31,11 @@ artifacts and the git history and checks five things a reader would otherwise ta
      byte for byte. A merge that silently dropped one of them would otherwise read as a clean result.
   5. **What this work order added beyond what was approved.** Seven amendments were written during implementation that
      were not in the owner's stated list, four of them after the merge. They are named here with what each needs, rather
-     than left for a reviewer to find by diffing.
+     than left for a reviewer to find by diffing. Four of the seven needed the technical owner's ratification and were
+     ratified in the closing review of 2026-08-19. That is read off the specification rather than declared here, in the
+     same way the **OUTSTANDING** markings were before it: a row this script calls ratified must carry the ratification,
+     its date and the accountable role in the row's own Approval column, where a reader of the specification meets it,
+     and a run in which one did not would fail.
 
 Two provisions amend by deletion, and a search for a phrase cannot show that a phrase is gone. Those two are checked
 negatively instead: the sentence that used to name `fear` and traits is located and its contents asserted. A negative
@@ -74,6 +78,11 @@ BASE = '60fda9faffbd452752a34efa356f16cc6ad1d3ff'
 MASTER = '7a2b502b908be03ad8e2de7c23ee3eaaf4ece048'
 TODAY = '2026-08-19'
 DOCS = 'docs/engineering/simulation'
+
+# What a ratified row must carry in the specification's own Approval column: the act, its date, and the role that took
+# it. The phrase is the closing review's name, so a row cannot satisfy the check by saying `ratified` and no more.
+RATIFIED = 'the closing review of `WO-MOK-010`'
+ROLE = 'technical owner'
 
 
 def spec_path(name):
@@ -193,7 +202,11 @@ DELETIONS = [
      'Fields for values the engine does not compute', ' are absent', 'per-agent entropy', ['fear', 'trait']),
 ]
 
-# Written during implementation, beyond the owner's stated list. Each is named with what it needs.
+# Written during implementation, beyond the owner's stated list. Each is named with what it needs, in `needs`:
+#
+#   `approved`  the owner took it as a decision under a stop condition, so it arrived approved
+#   `ratified`  it needed the technical owner's ratification, and the closing review of 2026-08-19 gave it
+#   `none`      it changes no provision, so there is nothing for an owner to approve
 #
 # The last four were written after `master` was merged in, and three of them exist only because two owners' approvals of
 # the same date met in one tree. They are here rather than in `AMENDED` because `WO-MOK-010` states none of them: a work
@@ -204,7 +217,7 @@ BEYOND = [
         'what': 'The trait range narrowed from `0..=100` to `0..=40`, and with it rule 19\'s upper-bound note and the '
                 'two acceptance examples that cited unreachable tolerances.',
         'marker': 'Narrowed the `waste_tolerance` range from `0..=100` to `0..=40`',
-        'outstanding': False,
+        'needs': 'approved',
         'body': ['an integer in `0..=40`',
                  'The range is `0..=40`, narrowed on measured evidence'],
         'state': '**Approved.** The repository owner, acting as technical owner, chose narrowing over amending '
@@ -220,16 +233,17 @@ BEYOND = [
                 'section\'s approved *stated once* paragraph. The default clause is withdrawn; the three-source '
                 'description stays.',
         'marker': "Corrected the *Help output* sentence this work order's first amendment added",
-        'outstanding': True,
+        'needs': 'ratified',
         'body': ['It states no default and no value constraint',
                  'the prose is where an earlier copy of them lived'],
-        'state': '**Recorded, not approved — OUTSTANDING.** The contradiction was between two provisions of one '
+        'state': '**Ratified 2026-08-19 by the repository owner acting as technical owner**, and **OUTSTANDING** until '
+                 'that act. The contradiction was between two provisions of one '
                  'section, one approved 2026-08-17 and one 2026-08-19, and the inherited test '
                  '`cli::each_declared_default_is_stated_once` — bound by a `verified` `VREC-MOK-004` — asserts the '
                  'side the implementation is already on. Satisfying the withdrawn clause would have meant relaxing '
-                 'that assertion, which `WO-MOK-010` forbids, so the specification is corrected instead. **It is a '
-                 'correction to text the technical owner approved on 2026-08-19 and needs that owner\'s '
-                 'ratification.**',
+                 'that assertion, which `WO-MOK-010` forbids, so the specification was corrected instead, and the '
+                 'ratification resolves the contradiction in favour of the older provision and the test that already '
+                 'enforces it. The act is recorded in `closing-review.md`.',
     },
     {
         'artifact': 'SPEC-MOK-003',
@@ -237,17 +251,18 @@ BEYOND = [
                 'loses `fear` and traits from its list of values the engine does not compute; rule 11\'s '
                 '`decision_source_selected` row gains `REQ-MOK-033` for `individual`.',
         'marker': 'Three further provisions were found during implementation',
-        'outstanding': True,
+        'needs': 'ratified',
         'body': ['energy, fear, applied_action',
                  'Amended 2026-08-19: this list named `fear` and traits',
                  '`REQ-MOK-033` when `individual`'],
-        'state': '**Recorded, not separately approved.** These were found while implementing and are not in the list '
-                 '`WO-MOK-010` states, so the owner has not approved them as such. Each is forced by the change '
+        'state': '**Ratified 2026-08-19 by the repository owner acting as technical owner, all three**, and recorded '
+                 'but unapproved until that act: they were found while implementing and are not in the list '
+                 '`WO-MOK-010` states. Each is forced by the change '
                  'rather than chosen with it — a field list omitting `fear` would contradict `SPEC-MOK-002` rule 5, '
                  'an item claiming the engine computes neither `fear` nor traits would be false, and an exhaustive '
-                 'mapping missing a row is a gap the compiler reaches before an operator does — and each is written '
-                 'into the 2026-08-19 amendment row rather than made quietly. **They require the technical owner\'s '
-                 'ratification, and this artifact is where that obligation is recorded.**',
+                 'mapping missing a row is a gap the compiler reaches before an operator does — and each was written '
+                 'into the 2026-08-19 amendment row rather than made quietly, which is what left them ratifiable at '
+                 'all. The act is recorded in `closing-review.md`.',
     },
     {
         'artifact': 'SPEC-MOK-003',
@@ -257,13 +272,16 @@ BEYOND = [
                 '47 columns — the merged text is consistent. The consequence is a re-derivation of oracle 4, not a '
                 'change of text.',
         'marker': '**No rule changed. This row records the reconciliation of the rule 5 and rule 4 rows above',
-        'outstanding': False,
+        'needs': 'none',
         'body': ['| roster | `W ≥ 100` |',
                  'bar_width(interior) = min(20, (interior - 35) / 4)'],
         'state': '**Recorded, and it ratifies nothing.** The row states a fact about two amendments it holds no '
                  'authority over, and adds, removes and rewords no provision — which is checkable, and is what the two '
                  'phrases above check: both amendments are present in the body, in the words their own rows use. It '
-                 'needs no ratification of its own, and it supplies none for the two rows it reconciles.',
+                 'needs no ratification of its own, and it supplies none for the two rows it reconciles. The one '
+                 'obligation it named — the **OUTSTANDING** re-derivation of oracle 4 — was discharged on 2026-08-19 '
+                 'at 996 bar rows over the 85 of 157 probed frames that draw a roster with zero discrepancies, and the '
+                 'row now says so.',
     },
     {
         'artifact': 'SPEC-MOK-003',
@@ -272,15 +290,16 @@ BEYOND = [
                 'as a numeric value with no colour at all. Clause 7 as `master` approved it said "the roster\'s three '
                 'bars" when clause 5 as this work order approved it draws four.',
         'marker': '**Rule 4 clause 7 amended in two provisions',
-        'outstanding': True,
+        'needs': 'ratified',
         'body': ['7. **Survival bands.**',
                  'Each of the three survival bars — health, satiety and energy —',
                  'numeric value with no colour at all'],
-        'state': '**Decided by the owner; the wording is the agent\'s and is OUTSTANDING.** The repository owner, '
-                 'acting as technical owner, was shown the collision and chose bands on health, satiety and energy '
-                 'only, with `fear` unbanded, on 2026-08-19. The substance is the owner\'s. The text that records it '
-                 'was written by the implementation agent and **requires that owner\'s ratification**; the decision it '
-                 'records does not.',
+        'state': '**Decided by the owner, and the agent\'s wording of the decision ratified 2026-08-19 by that same '
+                 'owner acting as technical owner.** The repository owner '
+                 'was shown the collision and chose bands on health, satiety and energy '
+                 'only, with `fear` unbanded, on 2026-08-19. The substance was the owner\'s from the start; the text '
+                 'that records it was written by the implementation agent and was **OUTSTANDING** until the closing '
+                 'review of that date ratified it. The act is recorded in `closing-review.md`.',
     },
     {
         'artifact': 'SPEC-MOK-004',
@@ -290,15 +309,17 @@ BEYOND = [
                 'test to correct these figures, so the correction is the rule\'s own requirement rather than a '
                 'discretionary edit.',
         'marker': '**Recorded test-count figures corrected for `WO-MOK-010` and for `master`\'s `WO-MOK-007`',
-        'outstanding': True,
+        'needs': 'ratified',
         'body': ['| **Total** | | **85** |',
                  'the module declares 47 private items — 30 functions and 17 constants',
                  "the workspace's is **200**"],
-        'state': '**Recorded, not approved — OUTSTANDING.** This artifact is not in `WO-MOK-010`\'s amendment list at '
+        'state': '**Ratified in full 2026-08-19 by the repository owner acting as technical owner**, on the reading '
+                 'that neither half of the correction is statable without the other; **OUTSTANDING** until that act. '
+                 'This artifact is not in `WO-MOK-010`\'s amendment list at '
                  'all: the obligation was found by measuring the merged tree against rule 11. Half of it is not this '
                  'branch\'s to answer for — `WO-MOK-007` reached `master` with seven tests added and rules 9, 10 and 11 '
-                 'left as they were — and neither half can be stated without the other, because only the merged tree '
-                 'runs both sets. **It requires the technical owner\'s ratification.**',
+                 'left as they were — and only the merged tree runs both sets, which is why the ratification covers '
+                 'both halves or neither. The act is recorded in `closing-review.md`.',
     },
     {
         'artifact': 'SPEC-MOK-004',
@@ -306,14 +327,15 @@ BEYOND = [
                 'now reads 179 before and 200 after against `master`\'s tip, where the sentence still described the '
                 'earlier capture at `4f32a9f` reaching 190 and the recapture as something still to be taken.',
         'marker': "**Rule 11's pointer to `WO-MOK-010`'s census corrected",
-        'outstanding': False,
+        'needs': 'none',
         'body': ["was re-taken on 2026-08-19 against `master`'s tip and reads **179 before, 200 after**",
                  'capture, taken at `4f32a9f` against the branch point, reached 190'],
         'state': '**Recorded, and it ratifies nothing.** No provision is added, removed or reworded and no figure '
                  'moves: the 122, 78 and 200 are the row above\'s. The superseded 190 is kept in the text rather than '
                  'deleted, because a capture is re-run rather than corrected and a reader should be able to see which '
-                 'tree each figure was taken on. The ratification this points at is the row above\'s, which is '
-                 '**OUTSTANDING**.',
+                 'tree each figure was taken on. The ratification this points at is the row above\'s, which was '
+                 '**OUTSTANDING** when this row was written and was ratified on 2026-08-19; the row says so rather '
+                 'than leaving a reader to find it.',
     },
 ]
 
@@ -448,6 +470,35 @@ def deletion(name, body, label, opening, terminator, anchor, forbidden):
         ([] if not present else [f'{name}: "{opening}..." still names {present}'])
 
 
+def approval_state(name, row, needs):
+    """(bullet, problems) for the approval state of one beyond-the-list row, read off the specification's own row.
+
+    Before the closing review this was one directional check: a row this script called unratified had to carry the
+    **OUTSTANDING** marking where a reader of the specification meets it. Ratification does not retire that discipline,
+    it inverts it. The word alone no longer separates a pending row from a ratified one that records what it used to be,
+    so a row called ratified must carry three things in the same place -- the act, named as this review, its date, and
+    the accountable role -- and must still record the state it was in until then, because a ratified row that forgets it
+    was outstanding is a row that has been improved rather than completed.
+
+    Nothing is required of an `approved` or a `none` row. Two of the rows that need no ratification of their own quote
+    the marking of a row that does, and a check that forbade the word would report those as defects.
+    """
+    marked = 'OUTSTANDING' in row
+    if needs != 'ratified':
+        return ('- **OUTSTANDING** appears in its row: ' + ('yes' if marked else 'no')
+                + ('' if not marked else ", but not as this row's own state — it names the marking of another row"
+                   if needs == 'none' else '')
+                + ('' if marked else ', and this row needs none')), []
+    problems = [f'{name}: the row of a ratified amendment {complaint}'
+                for phrase, complaint in ((RATIFIED, 'does not name the review that ratified it'),
+                                          (TODAY, f'does not carry the date {TODAY}'),
+                                          (ROLE, f'does not name the {ROLE} as the ratifying role'),
+                                          ('OUTSTANDING', 'no longer records that it was outstanding until then'))
+                if phrase not in row]
+    return ('- ratification in its row: ' + ('yes' if not problems else '**NO**')
+            + f', with the date and the {ROLE}, and the **OUTSTANDING** state it was in until then retained'), problems
+
+
 def self_test():
     """Controls on the two checks above, run before they are used, so that a passing artifact is not a vacuous one.
 
@@ -486,6 +537,9 @@ def self_test():
     # satisfied the searches, so that is checked on the record where they exist rather than assumed.
     spec3 = split(now(f'{DOCS}/specifications/SPEC-MOK-003.md'))[1]
     foreign = [row for row in rows(spec3).get(TODAY, []) if 'WO-MOK-010' not in row]
+    spec1 = split(now(f'{DOCS}/specifications/SPEC-MOK-001.md'))[1]
+    ratified_row = next((line for values in rows(spec1).values() for line in values
+                         if 'Corrected the *Help output* sentence' in line), '')
     controls += [
         (f'a row of {TODAY} that the narrowing drops carries an approval marking too, so narrowing the search to this '
          'work order\'s rows is not a formality',
@@ -496,6 +550,18 @@ def self_test():
         ('a row the later record does not carry is reported lost', len(preserved(earlier, dropped)) >= 1),
         ('a row altered by one character is reported lost rather than matched loosely',
          len(preserved(earlier, altered)) == total),
+        # Controls on the approval-state check of section 3, which changed direction when the four rows were ratified.
+        # They run on a real ratified row, located rather than composed, so a run in which that row moved or lost its
+        # ratification cannot report these as vacuous passes.
+        ('the ratified row the four controls below use was located in `SPEC-MOK-001`', bool(ratified_row)),
+        ('a ratified row naming the review, the date and the role is reported clean',
+         not approval_state('X', ratified_row, 'ratified')[1]),
+        ('a ratified row that does not name the review that ratified it is reported',
+         len(approval_state('X', ratified_row.replace(RATIFIED, 'somewhere'), 'ratified')[1]) == 1),
+        ('a ratified row that no longer records the state it was in until then is reported',
+         len(approval_state('X', ratified_row.replace('OUTSTANDING', 'settled'), 'ratified')[1]) == 1),
+        ('a row that changes no provision is required to carry neither marking',
+         not approval_state('X', '', 'none')[1]),
     ]
     return controls
 
@@ -624,30 +690,38 @@ def main():
             problems.append(f'control failed: {label}')
         lines.append(f'- {"ok" if held else "**FAILED**"} — {label}')
 
+    ratified_rows = sum(1 for extra in BEYOND if extra['needs'] == 'ratified')
+    approved_rows = sum(1 for extra in BEYOND if extra['needs'] == 'approved')
+    no_provision = sum(1 for extra in BEYOND if extra['needs'] == 'none')
     lines += [
         '',
         '## 3. What was amended beyond the approved list',
         '',
         f'{len(BEYOND)} amendments were written during implementation and are not in the list `WO-MOK-010` states. None',
         'is left to be found in a diff: each is written into the specification\'s own amendment record, and each is',
-        'named here with what it still needs.',
+        'named here with the approval it carries.',
         '',
-        'Three were written before the merge. One of those is **approved**, because the owner took it as a decision',
-        'under a stop condition; the other two are not, and say so. The remaining four were written after `master` was',
+        'Three were written before the merge. One of those arrived **approved**, because the owner took it as a decision',
+        'under a stop condition. The remaining four were written after `master` was',
         'merged in, and three of them exist only because two owners\' approvals of the same date met in one tree: an',
-        'approved work order drafted before the merge could not have listed them. **Two of the four require the',
-        'technical owner\'s ratification and two record facts that change no provision** — which is a claim about the',
-        'text, so each of those two is checked against the body rather than asserted.',
+        'approved work order drafted before the merge could not have listed them.',
         '',
-        'Whether a row is outstanding is read off the specification, not declared here: a row this file calls unratified',
-        'must carry the **OUTSTANDING** marking where a reader of the specification meets it, and a run in which one did',
-        'not would fail. Only that direction is checked, because two of the rows that need no ratification of their own',
-        'quote the marking of a row that does, and a check that forbade the word would report those as defects.',
+        f'**Four of the seven required the technical owner\'s ratification, and all four were ratified on {TODAY}** in',
+        'the closing review recorded in `closing-review.md`, where each was put and answered as its own question rather',
+        'than covered by one answer. Until that review they were **OUTSTANDING** in the specifications\' own records,',
+        'which is where a reader met them and where the ratification now sits.',
         '',
-        f'**{sum(1 for extra in BEYOND if extra["outstanding"])} of the {len(BEYOND)} require the technical owner\'s',
-        'ratification and are marked OUTSTANDING in the specification\'s own record. The other',
-        f'{sum(1 for extra in BEYOND if not extra["outstanding"])} are one approved decision and two rows that change',
-        'no provision.**',
+        'Which approval a row carries is read off the specification, not declared here. Before the review the check ran',
+        'one way — a row this file called unratified had to carry the **OUTSTANDING** marking where a reader meets it —',
+        'and ratification inverts it rather than retiring it: a row this file calls ratified must carry the act, named as',
+        'that review, its date and the accountable role, and must still record the state it was in until then, because a',
+        'ratified row that forgets it was outstanding has been improved rather than completed. Nothing is required of the',
+        'row that arrived approved or of the two that change no provision, because both of those quote the marking of a',
+        'row that does need one and a check forbidding the word would report them as defects.',
+        '',
+        f'**{ratified_rows} of the {len(BEYOND)} were ratified by the technical owner on {TODAY}. Of the other',
+        f'{approved_rows + no_provision}, {approved_rows} arrived approved as a decision under a stop condition and',
+        f'{no_provision} change no provision and needed no ratification at all.**',
         '',
     ]
     for extra in BEYOND:
@@ -658,21 +732,16 @@ def main():
             problems.append(f'{extra["artifact"]}: the record does not state the amendment beyond the list')
         if missing:
             problems.append(f'{extra["artifact"]}: the body lacks {missing} for the amendment beyond the list')
-        # The OUTSTANDING flag is checked against the specification's own row rather than taken from this script: a
-        # row this file calls unratified must say so where a reader of the specification will meet it. Only that
-        # direction is checked. A row that changes no provision may still mention the marking of another row, and one
-        # of them does.
+        # The approval a row carries is checked against the specification's own row rather than taken from this script:
+        # a row this file calls ratified must carry the ratification where a reader of the specification will meet it,
+        # and a row it calls unratified had to carry the OUTSTANDING marking in the same place. `approval_state` holds
+        # both directions and the controls above exercise it on a real row.
         row = next((line for lines_ in rows(record).values() for line in lines_ if extra['marker'] in line), '')
-        marked = 'OUTSTANDING' in row
-        if extra['outstanding'] and not marked:
-            problems.append(f'{extra["artifact"]}: the row for "{extra["marker"][:40]}..." is named here as '
-                            f'awaiting ratification but is not marked OUTSTANDING in the specification')
+        bullet, found_state = approval_state(extra['artifact'], row, extra['needs'])
+        problems += found_state
         lines += [f'**`{extra["artifact"]}`.** {extra["what"]}', '',
                   f'- in the amendment record: {"yes" if in_record else "**NO**"}',
-                  f'- **OUTSTANDING** appears in its row: {"yes" if marked else "no"}'
-                  + ('' if extra['outstanding']
-                     else ", but not as this row's own state — it names the marking of another row"
-                     if marked else ', and this row needs none'),
+                  bullet,
                   f'- in the specification\'s body: {len(extra["body"]) - len(missing)}/{len(extra["body"])} phrases'
                   + ('' if not missing else f', **missing {missing}**'),
                   f'- {extra["state"]}', '']
@@ -766,9 +835,12 @@ def main():
         'not a debt paid.** So the honest statement of this',
         'oracle is that its second condition — that the amendments already outstanding under `VREC-MOK-005` be',
         'resolved before this change is verified — is **not met**, by the repository owner\'s explicit decision of',
-        f'{TODAY}, recorded in `WO-MOK-010` under *The gate was overridden*. What this artifact establishes is the',
-        'first condition: the amendments this change itself requires are present, approved, carried by the text, and',
-        'separable from the earlier layer.',
+        f'{TODAY}, recorded in `WO-MOK-010` under *The gate was overridden* and reaffirmed in the closing review of that',
+        'date. That review let the override stand and named the debt rather than carrying it silently: the eleven',
+        'provisions and the seven assessments are to be resolved by a work order of their own, and that work order is to',
+        'complete before the next release record (`closing-review.md`). What this artifact establishes is the',
+        'first condition: the amendments this change itself requires are present, approved or ratified, carried by the',
+        'text, and separable from the earlier layer.',
         '',
         '## Result',
         '',
@@ -779,9 +851,10 @@ def main():
     lines += ['**RESULT: ' + (
         'PASS** — every artifact in the chain is approved, every provision the owner approved is in both the record '
         'and the text, the two provisions that amend by deletion are shown to have deleted, the '
-        f'{len(BEYOND)} amendments beyond the approved list are named with what each needs and '
-        f'{sum(1 for extra in BEYOND if extra["outstanding"])} of them are marked OUTSTANDING where a reader of the '
-        f'specification will meet them, the earlier layer is byte-identical to `{BASE[:7]}`, and every amendment row '
+        f'{len(BEYOND)} amendments beyond the approved list are named with the approval each carries and the '
+        f'{ratified_rows} that needed the technical owner\'s ratification carry it, with its date and its role, where a '
+        f'reader of the specification will meet them, the earlier layer is byte-identical to `{BASE[:7]}`, and every '
+        f'amendment row '
         f'`master` carried at `{MASTER[:7]}` survived the merge byte for byte. All {len(controls)} controls on the '
         'checks themselves held, so no result above is a check that looked for nothing. Oracle 5\'s second condition '
         'is unmet by the owner\'s recorded override, which is stated above rather than counted as a pass, and '

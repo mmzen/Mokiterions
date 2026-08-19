@@ -86,7 +86,7 @@ text instead.
 
 ### `SPEC-MOK-003` — three provisions amended in rule 4
 
-- rows dated 2026-08-19: **5**, of which naming this work order: **2** — the searches below read those alone
+- rows dated 2026-08-19: **5**, of which naming this work order: **3** — the searches below read those alone
 - approval recorded in the row: yes
 - names this work order: yes
 - records that the implementation agent wrote the text and did not decide the substance: yes
@@ -111,7 +111,7 @@ rather than reporting an absence it never looked for.
 Both of those checks, and the provision check above them, were exercised on deliberately broken inputs before
 being used, because a check that finds nothing reads the same as a check that looks for nothing — and this one
 was wrong in that direction once already. `self_test` in the script injects each failure and asserts that it is
-reported. 12 of 12 controls held:
+reported. 17 of 17 controls held:
 
 - ok — a provision the record states and the body carries is reported clean
 - ok — a provision the record does not state is reported
@@ -125,29 +125,39 @@ reported. 12 of 12 controls held:
 - ok — a record compared against itself reports no row lost
 - ok — a row the later record does not carry is reported lost
 - ok — a row altered by one character is reported lost rather than matched loosely
+- ok — the ratified row the four controls below use was located in `SPEC-MOK-001`
+- ok — a ratified row naming the review, the date and the role is reported clean
+- ok — a ratified row that does not name the review that ratified it is reported
+- ok — a ratified row that no longer records the state it was in until then is reported
+- ok — a row that changes no provision is required to carry neither marking
 
 ## 3. What was amended beyond the approved list
 
 7 amendments were written during implementation and are not in the list `WO-MOK-010` states. None
 is left to be found in a diff: each is written into the specification's own amendment record, and each is
-named here with what it still needs.
+named here with the approval it carries.
 
-Three were written before the merge. One of those is **approved**, because the owner took it as a decision
-under a stop condition; the other two are not, and say so. The remaining four were written after `master` was
+Three were written before the merge. One of those arrived **approved**, because the owner took it as a decision
+under a stop condition. The remaining four were written after `master` was
 merged in, and three of them exist only because two owners' approvals of the same date met in one tree: an
-approved work order drafted before the merge could not have listed them. **Two of the four require the
-technical owner's ratification and two record facts that change no provision** — which is a claim about the
-text, so each of those two is checked against the body rather than asserted.
+approved work order drafted before the merge could not have listed them.
 
-Whether a row is outstanding is read off the specification, not declared here: a row this file calls unratified
-must carry the **OUTSTANDING** marking where a reader of the specification meets it, and a run in which one did
-not would fail. Only that direction is checked, because two of the rows that need no ratification of their own
-quote the marking of a row that does, and a check that forbade the word would report those as defects.
+**Four of the seven required the technical owner's ratification, and all four were ratified on 2026-08-19** in
+the closing review recorded in `closing-review.md`, where each was put and answered as its own question rather
+than covered by one answer. Until that review they were **OUTSTANDING** in the specifications' own records,
+which is where a reader met them and where the ratification now sits.
 
-**4 of the 7 require the technical owner's
-ratification and are marked OUTSTANDING in the specification's own record. The other
-3 are one approved decision and two rows that change
-no provision.**
+Which approval a row carries is read off the specification, not declared here. Before the review the check ran
+one way — a row this file called unratified had to carry the **OUTSTANDING** marking where a reader meets it —
+and ratification inverts it rather than retiring it: a row this file calls ratified must carry the act, named as
+that review, its date and the accountable role, and must still record the state it was in until then, because a
+ratified row that forgets it was outstanding has been improved rather than completed. Nothing is required of the
+row that arrived approved or of the two that change no provision, because both of those quote the marking of a
+row that does need one and a check forbidding the word would report them as defects.
+
+**4 of the 7 were ratified by the technical owner on 2026-08-19. Of the other
+3, 1 arrived approved as a decision under a stop condition and
+2 change no provision and needed no ratification at all.**
 
 **`SPEC-MOK-001`.** The trait range narrowed from `0..=100` to `0..=40`, and with it rule 19's upper-bound note and the two acceptance examples that cited unreachable tolerances.
 
@@ -159,44 +169,44 @@ no provision.**
 **`SPEC-MOK-001`.** A correction to this work order's own first amendment: the *Help output* sentence it added required the explanatory prose to state which decision source is the default, contradicting the same section's approved *stated once* paragraph. The default clause is withdrawn; the three-source description stays.
 
 - in the amendment record: yes
-- **OUTSTANDING** appears in its row: yes
+- ratification in its row: yes, with the date and the technical owner, and the **OUTSTANDING** state it was in until then retained
 - in the specification's body: 2/2 phrases
-- **Recorded, not approved — OUTSTANDING.** The contradiction was between two provisions of one section, one approved 2026-08-17 and one 2026-08-19, and the inherited test `cli::each_declared_default_is_stated_once` — bound by a `verified` `VREC-MOK-004` — asserts the side the implementation is already on. Satisfying the withdrawn clause would have meant relaxing that assertion, which `WO-MOK-010` forbids, so the specification is corrected instead. **It is a correction to text the technical owner approved on 2026-08-19 and needs that owner's ratification.**
+- **Ratified 2026-08-19 by the repository owner acting as technical owner**, and **OUTSTANDING** until that act. The contradiction was between two provisions of one section, one approved 2026-08-17 and one 2026-08-19, and the inherited test `cli::each_declared_default_is_stated_once` — bound by a `verified` `VREC-MOK-004` — asserts the side the implementation is already on. Satisfying the withdrawn clause would have meant relaxing that assertion, which `WO-MOK-010` forbids, so the specification was corrected instead, and the ratification resolves the contradiction in favour of the older provision and the test that already enforces it. The act is recorded in `closing-review.md`.
 
 **`SPEC-MOK-003`.** Three further provisions outside rule 4: the `AgentSnapshot` field list gains `fear`; rule 10 item 7 loses `fear` and traits from its list of values the engine does not compute; rule 11's `decision_source_selected` row gains `REQ-MOK-033` for `individual`.
 
 - in the amendment record: yes
-- **OUTSTANDING** appears in its row: yes
+- ratification in its row: yes, with the date and the technical owner, and the **OUTSTANDING** state it was in until then retained
 - in the specification's body: 3/3 phrases
-- **Recorded, not separately approved.** These were found while implementing and are not in the list `WO-MOK-010` states, so the owner has not approved them as such. Each is forced by the change rather than chosen with it — a field list omitting `fear` would contradict `SPEC-MOK-002` rule 5, an item claiming the engine computes neither `fear` nor traits would be false, and an exhaustive mapping missing a row is a gap the compiler reaches before an operator does — and each is written into the 2026-08-19 amendment row rather than made quietly. **They require the technical owner's ratification, and this artifact is where that obligation is recorded.**
+- **Ratified 2026-08-19 by the repository owner acting as technical owner, all three**, and recorded but unapproved until that act: they were found while implementing and are not in the list `WO-MOK-010` states. Each is forced by the change rather than chosen with it — a field list omitting `fear` would contradict `SPEC-MOK-002` rule 5, an item claiming the engine computes neither `fear` nor traits would be false, and an exhaustive mapping missing a row is a gap the compiler reaches before an operator does — and each was written into the 2026-08-19 amendment row rather than made quietly, which is what left them ratifiable at all. The act is recorded in `closing-review.md`.
 
 **`SPEC-MOK-003`.** A row that changes no provision, recording that rule 5 as `WO-MOK-005` amended it and rule 4 as this work order amended it were approved on the same date by the same owner against different trees, and that where they meet — rule 4's collapse threshold of 47 columns against rule 5's roster pane of 47 columns — the merged text is consistent. The consequence is a re-derivation of oracle 4, not a change of text.
 
 - in the amendment record: yes
 - **OUTSTANDING** appears in its row: yes, but not as this row's own state — it names the marking of another row
 - in the specification's body: 2/2 phrases
-- **Recorded, and it ratifies nothing.** The row states a fact about two amendments it holds no authority over, and adds, removes and rewords no provision — which is checkable, and is what the two phrases above check: both amendments are present in the body, in the words their own rows use. It needs no ratification of its own, and it supplies none for the two rows it reconciles.
+- **Recorded, and it ratifies nothing.** The row states a fact about two amendments it holds no authority over, and adds, removes and rewords no provision — which is checkable, and is what the two phrases above check: both amendments are present in the body, in the words their own rows use. It needs no ratification of its own, and it supplies none for the two rows it reconciles. The one obligation it named — the **OUTSTANDING** re-derivation of oracle 4 — was discharged on 2026-08-19 at 996 bar rows over the 85 of 157 probed frames that draw a roster with zero discrepancies, and the row now says so.
 
 **`SPEC-MOK-003`.** Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with `master`'s bands: the bands apply to health, satiety and energy and not to `fear`, and `fear` renders as a numeric value with no colour at all. Clause 7 as `master` approved it said "the roster's three bars" when clause 5 as this work order approved it draws four.
 
 - in the amendment record: yes
-- **OUTSTANDING** appears in its row: yes
+- ratification in its row: yes, with the date and the technical owner, and the **OUTSTANDING** state it was in until then retained
 - in the specification's body: 3/3 phrases
-- **Decided by the owner; the wording is the agent's and is OUTSTANDING.** The repository owner, acting as technical owner, was shown the collision and chose bands on health, satiety and energy only, with `fear` unbanded, on 2026-08-19. The substance is the owner's. The text that records it was written by the implementation agent and **requires that owner's ratification**; the decision it records does not.
+- **Decided by the owner, and the agent's wording of the decision ratified 2026-08-19 by that same owner acting as technical owner.** The repository owner was shown the collision and chose bands on health, satiety and energy only, with `fear` unbanded, on 2026-08-19. The substance was the owner's from the start; the text that records it was written by the implementation agent and was **OUTSTANDING** until the closing review of that date ratified it. The act is recorded in `closing-review.md`.
 
 **`SPEC-MOK-004`.** Recorded test-count figures corrected in rules 9, 10 and 11 for this work order and for `master`'s `WO-MOK-007`, neither of which corrected them: the public tier reaches 85, `render.rs` 17 internal tests and 47 private items, and the workspace 200 tests. Rule 11 instructs a work order that adds a test to correct these figures, so the correction is the rule's own requirement rather than a discretionary edit.
 
 - in the amendment record: yes
-- **OUTSTANDING** appears in its row: yes
+- ratification in its row: yes, with the date and the technical owner, and the **OUTSTANDING** state it was in until then retained
 - in the specification's body: 3/3 phrases
-- **Recorded, not approved — OUTSTANDING.** This artifact is not in `WO-MOK-010`'s amendment list at all: the obligation was found by measuring the merged tree against rule 11. Half of it is not this branch's to answer for — `WO-MOK-007` reached `master` with seven tests added and rules 9, 10 and 11 left as they were — and neither half can be stated without the other, because only the merged tree runs both sets. **It requires the technical owner's ratification.**
+- **Ratified in full 2026-08-19 by the repository owner acting as technical owner**, on the reading that neither half of the correction is statable without the other; **OUTSTANDING** until that act. This artifact is not in `WO-MOK-010`'s amendment list at all: the obligation was found by measuring the merged tree against rule 11. Half of it is not this branch's to answer for — `WO-MOK-007` reached `master` with seven tests added and rules 9, 10 and 11 left as they were — and only the merged tree runs both sets, which is why the ratification covers both halves or neither. The act is recorded in `closing-review.md`.
 
 **`SPEC-MOK-004`.** Rule 11's pointer to this work order's `test-census.txt` brought up to the recapture: the census now reads 179 before and 200 after against `master`'s tip, where the sentence still described the earlier capture at `4f32a9f` reaching 190 and the recapture as something still to be taken.
 
 - in the amendment record: yes
 - **OUTSTANDING** appears in its row: yes, but not as this row's own state — it names the marking of another row
 - in the specification's body: 2/2 phrases
-- **Recorded, and it ratifies nothing.** No provision is added, removed or reworded and no figure moves: the 122, 78 and 200 are the row above's. The superseded 190 is kept in the text rather than deleted, because a capture is re-run rather than corrected and a reader should be able to see which tree each figure was taken on. The ratification this points at is the row above's, which is **OUTSTANDING**.
+- **Recorded, and it ratifies nothing.** No provision is added, removed or reworded and no figure moves: the 122, 78 and 200 are the row above's. The superseded 190 is kept in the text rather than deleted, because a capture is re-run rather than corrected and a reader should be able to see which tree each figure was taken on. The ratification this points at is the row above's, which was **OUTSTANDING** when this row was written and was ratified on 2026-08-19; the row says so rather than leaving a reader to find it.
 
 ## 4. The earlier layer, left where it was
 
@@ -244,10 +254,13 @@ assessments, verifies nothing and does not transition `WO-MOK-005`. **The overri
 not a debt paid.** So the honest statement of this
 oracle is that its second condition — that the amendments already outstanding under `VREC-MOK-005` be
 resolved before this change is verified — is **not met**, by the repository owner's explicit decision of
-2026-08-19, recorded in `WO-MOK-010` under *The gate was overridden*. What this artifact establishes is the
-first condition: the amendments this change itself requires are present, approved, carried by the text, and
-separable from the earlier layer.
+2026-08-19, recorded in `WO-MOK-010` under *The gate was overridden* and reaffirmed in the closing review of that
+date. That review let the override stand and named the debt rather than carrying it silently: the eleven
+provisions and the seven assessments are to be resolved by a work order of their own, and that work order is to
+complete before the next release record (`closing-review.md`). What this artifact establishes is the
+first condition: the amendments this change itself requires are present, approved or ratified, carried by the
+text, and separable from the earlier layer.
 
 ## Result
 
-**RESULT: PASS** — every artifact in the chain is approved, every provision the owner approved is in both the record and the text, the two provisions that amend by deletion are shown to have deleted, the 7 amendments beyond the approved list are named with what each needs and 4 of them are marked OUTSTANDING where a reader of the specification will meet them, the earlier layer is byte-identical to `60fda9f`, and every amendment row `master` carried at `7a2b502` survived the merge byte for byte. All 12 controls on the checks themselves held, so no result above is a check that looked for nothing. Oracle 5's second condition is unmet by the owner's recorded override, which is stated above rather than counted as a pass, and `master`'s transition of `VREC-MOK-005` to `verified` does not meet it either: that record's own text says the substance stayed where it was.
+**RESULT: PASS** — every artifact in the chain is approved, every provision the owner approved is in both the record and the text, the two provisions that amend by deletion are shown to have deleted, the 7 amendments beyond the approved list are named with the approval each carries and the 4 that needed the technical owner's ratification carry it, with its date and its role, where a reader of the specification will meet them, the earlier layer is byte-identical to `60fda9f`, and every amendment row `master` carried at `7a2b502` survived the merge byte for byte. All 17 controls on the checks themselves held, so no result above is a check that looked for nothing. Oracle 5's second condition is unmet by the owner's recorded override, which is stated above rather than counted as a pass, and `master`'s transition of `VREC-MOK-005` to `verified` does not meet it either: that record's own text says the substance stayed where it was.
