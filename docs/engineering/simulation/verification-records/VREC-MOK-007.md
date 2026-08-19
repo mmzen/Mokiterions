@@ -2,7 +2,7 @@
 id = "VREC-MOK-007"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-007"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -18,17 +18,41 @@ verifies_work_order = ["WO-MOK-007"]
 conforms_to = ["VER-MOK-007"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds retained evidence for `WO-MOK-007` to candidate commit `dfab77b72d2d4db1700fc1ddb4ad7ab96be998e2`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+Following review of the retained evidence by the accountable assurance owner, this record was transitioned from
+`ready` to `verified` on 2026-08-19. It binds `WO-MOK-007` to candidate commit
+`dfab77b72d2d4db1700fc1ddb4ad7ab96be998e2` **without changing its captured provenance**. Every provenance field in the
+frontmatter — `commit`, `git_object_format`, `worktree_state`, `verified_at`, `artifact_snapshot_sha256` and the
+fifteen `evidence_paths` — is the value `harnessctl capture-verification` derived at capture time, and none was
+recomputed, refreshed or edited for this transition. `status` is the only field that changed. In particular
+`verified_at` names the moment of **capture**, `2026-08-19T12:23:14Z`, and not the moment of this decision, which is
+what the field means as the command writes it; and `artifact_snapshot_sha256` still names the 70-artifact graph as
+described below.
 
-The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+The verification transition is a later governance decision. It does not alter the candidate commit, merge, release,
+tag, publish, or deploy anything.
+
+The record was prepared after the candidate commit it names, avoiding self-referential commit metadata.
 
 ## How this record was produced
 
-`harnessctl capture-verification` wrote the frontmatter and the two paragraphs above. Unlike `VREC-MOK-005`, which had
-to be hand-authored because the command refuses an ID that already exists in the catalog, this is a first capture
-under a new ID and the command performed it:
+`harnessctl capture-verification` wrote the frontmatter and, above the heading it generated, two paragraphs. The
+transition replaced that heading and those paragraphs with the verified form; they are preserved here verbatim so that
+nothing the command asserted is lost by the edit:
+
+> # Verification Record Candidate
+>
+> This ready record binds retained evidence for `WO-MOK-007` to candidate commit
+> `dfab77b72d2d4db1700fc1ddb4ad7ab96be998e2`. An accountable assurance owner must review the evidence and transition
+> the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
+>
+> The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+
+Both sentences were accurate when written and remain accurate as statements about the capture: the command approved
+nothing, and the owner has since done what the first paragraph says an accountable assurance owner must do. Unlike
+`VREC-MOK-005`, which had to be hand-authored because the command refuses an ID that already exists in the catalog,
+this is a first capture under a new ID and the command performed it:
 
 ```
 harnessctl capture-verification --id VREC-MOK-007 --work-order WO-MOK-007 \
@@ -71,8 +95,13 @@ This record names the merge, for three reasons that are checkable rather than st
 
 ## What this record claims
 
-`WO-MOK-007` is `approved` and `VER-MOK-007` is `approved`. At candidate commit `dfab77b`, **every automated case,
-property, invariant, static check, security check and performance check in `VER-MOK-007` was executed and passed.**
+**At candidate commit `dfab77b`, `WO-MOK-007` was `approved` and `VER-MOK-007` was `approved`.** The work order
+moved to `implemented` after the capture and before this transition, on the same instruction that authorized it;
+that is recorded in its own `## Lifecycle` section and in the section below, and it changes no measurement here. Every
+figure in this record is a measurement at `dfab77b` and is left as measured.
+
+At that commit, **every automated case, property, invariant, static check, security check and performance check in
+`VER-MOK-007` was executed and passed.**
 Each of the nine rows of its requirement-to-evidence matrix is mapped to a named test or a retained file in
 `requirement-to-test-mapping.md`, which also states where coverage is partial rather than leaving it to be inferred.
 
@@ -92,6 +121,12 @@ Each of the nine rows of its requirement-to-evidence matrix is mapped to a named
 | CI on pull request #18 | `governor` and `candidate` both SUCCESS against `75e3598` |
 
 `54c21ab` is an ancestor of `dfab77b`, so the additivity comparison is a before-and-after of one lineage.
+
+One row of that table has since moved and is deliberately left as measured. The dashboard now reports **10** warnings
+rather than 9, the tenth being the `W-HEX-001` that fires on every `implemented` work order with no evidence artifact
+keyed to its ID, which `WO-MOK-007` acquired when its status moved. Nine of the ten remain the pre-existing
+observations named in the row. `validate` stays at 0 errors and 0 warnings, `doctor` stays PASS and the review
+preflight stays PASS on the tree carrying the transition.
 
 Five obligations `VER-MOK-007` singles out, each measured rather than argued:
 
@@ -147,7 +182,7 @@ Two coverage limits narrower than that, both stated in `requirement-to-test-mapp
   unmodified viewport cases. A pre-change snapshot would have been the more direct evidence and was deliberately not
   used, because a snapshot is only as good as the moment it was taken and the property holds at every width.
 
-**This candidate is testimony about the agent's own work.** The same implementation agent wrote the source, wrote both
+**This record is testimony about the agent's own work.** The same implementation agent wrote the source, wrote both
 tiers of tests, assembled the fifteen evidence files, and prepared this record. That is structural rather than a
 defect in any one artifact, and it is the reason the `verified` transition is reserved: the accountable assurance
 owner's review is the only independent step in the chain. Three specific mitigations are on the record above — the
@@ -181,38 +216,76 @@ required the technical owner for a reason of substance rather than of arithmetic
 machine-checked constraint. A green validate is therefore not evidence that they are right, and this record does not
 offer it as such.
 
-## Lifecycle status, which this record does not change
+## Lifecycle status at capture, and what moved before this transition
 
-**`WO-MOK-007` is still `approved`.** Its own out-of-scope list reserves "any lifecycle status of any artifact,
-including this one", and the owner's instruction covered implementing the approved scope and, separately, preparing
-this candidate. Neither covered a transition, so none was taken.
+**At capture `WO-MOK-007` was `approved`**, which is to say the harness believed work the owner had already merged had
+not started. That was the most unusual of the shapes in the repository: `VREC-MOK-001` through `VREC-MOK-004` each
+verify a work order transitioned to `implemented` first, `VREC-MOK-005` and `VREC-MOK-006` verify work orders left
+`in_progress`, and this one named a work order at `approved`. `harnessctl validate` reported no error or warning
+against that, so the graph was coherent as it stood, but `harnessctl inspect` also listed `WO-MOK-007` as the single
+active work and recommended *"Run start preflight and begin only the approved scope"* for work that had merged.
 
-This is the most unusual of the three shapes in the repository. `VREC-MOK-001` through `VREC-MOK-004` each verify a
-work order transitioned to `implemented` first; `VREC-MOK-005` and `VREC-MOK-006` verify work orders left
-`in_progress`; this candidate names one still at `approved`, which is to say one the harness believes has not started.
-`harnessctl validate` reports no error or warning against that, so the graph is coherent as it stands, and
-`harnessctl inspect` now raises the right queue entry — *review-assurance-decision (assurance-owner): Review retained
-evidence and record or withhold the accountable verification decision* — against this record.
+**`WO-MOK-007` is now `implemented`.** The owner's instruction of 2026-08-19 — *"you can set the work order as
+implemented, and I validated the verification record, that can be transitioned"* — authorized that transition and this
+one in one act. Both were recorded by the implementation agent and decided by neither it nor this record. The work
+order's own `## Lifecycle` section carries the transition, the evidence recap behind it, the gates on the merged tree
+and the two derived figures that moved.
 
-The visible cost is that `inspect` also still lists `WO-MOK-007` as the single active work with the recommendation
-*"Run start preflight and begin only the approved scope"*, for work that has merged. That recommendation will stay
-stale until the status moves, and moving it is the owner's decision.
+**The order was deliberate.** The work order's transition was written first, so that this record describes an
+`implemented` work order rather than going stale the moment it was verified. That was the correction available here and
+not there: `VREC-MOK-005` opens "`WO-MOK-005` is `in_progress`" and `VREC-MOK-006` opens "`WO-MOK-006` is
+`in_progress`", and both work orders are now `implemented`, so four sentences across those two records are stale. They
+were correctly left alone, because a bound `verified` record is not re-edited to track state that moved after it was
+bound. The window in which such a sentence can be fixed closes at the transition, and this record was fixed inside it.
+
+Two figures moved with the status, both mechanical and neither a new defect. `harnessctl preflight --phase start
+--work-order WO-MOK-007` now FAILs with `[W005] status 'implemented' is not eligible for start; expected one of
+approved, in_progress`, which is preflight refusing to begin work that is done. And the dashboard's warning count went
+from 9 to 10 as recorded above. In exchange, `harnessctl inspect` now reports **Active work (0)**, so the stale
+recommendation quoted above is gone, and with this transition it reports **Decision required (0)** and **Assurance
+pending (0)** as well: the entry it raised against this record — *review-assurance-decision (assurance-owner): Review
+retained evidence and record or withhold the accountable verification decision* — is the one the owner has now taken,
+and no other is open.
+
+An empty queue is not a claim that nothing is outstanding. The three manual assessments and the `SPEC-MOK-004`
+amendment are outstanding and the harness does not track either, which is why they are written down here.
+
+One incidental measurement, because it sharpens the bound recorded above on what the snapshot digest proves. This
+transition moved the dashboard digest — `99ce921d…` with the work order `implemented` and this record `ready`,
+`3adb7852…` with this record `verified` — while writing every paragraph of this record moved it not at all. A `status`
+field is frontmatter and therefore part of the graph the digest covers; a paragraph is not. The frontmatter value
+`dd9a1e12…` is none of these three: it is the graph before this record existed, exactly as captured.
+
+**No other lifecycle status moved and nothing else in this record changed.** `SPEC-MOK-003`, `SPEC-MOK-004`,
+`REQ-MOK-020` and `VER-MOK-007` are untouched, the outstanding `SPEC-MOK-004` amendment is still outstanding, and the
+three manual assessments are still outstanding and unauthored.
 
 ## Authority
 
-**This record is `ready`, not `verified`. No verification decision has been taken.**
+**This record is `verified`. The decision was the repository owner's, taken as accountable assurance owner.**
 
-It was prepared by `harnessctl capture-verification` on the repository owner's explicit instruction, *"retry the
+The candidate was prepared by `harnessctl capture-verification` on the owner's explicit instruction, *"retry the
 command, creating a verification record as ready is authorized"*, given after the agent stopped and disclosed that a
 candidate record is the agent's own testimony about its own implementation. The owner authorized the candidate and
-withheld the transition, and this file records that as given.
+withheld the transition at that point. The transition was then taken on the instruction *"you can set the work order as
+implemented, and I validated the verification record, that can be transitioned"*, given on 2026-08-19 after the
+candidate had been pushed and read. Both instructions are quoted as given; the agent recorded this transition and did
+not make it, and this paragraph is the whole of the authority behind the `verified` status.
 
 `DECISION_RIGHTS.md` places the accountable verification decision outside what an AI agent inherits, and
 `ENGINEERING_HARNESS.md` states that harness commands may prepare records but never exercise accountable decision
-rights. The transition to `verified` is the accountable assurance owner's act. Whoever takes it should know it is
-taken with **three manual assessments outstanding and unauthored, one amendment provision to `SPEC-MOK-004`
-outstanding, and acceptance scenarios 2 and 3 carried indirectly in the ways stated above.**
+rights. Neither is waived here: the command prepared a `ready` record and a person moved it.
+
+**What the decision was taken with, unchanged by the taking of it:** three manual assessments outstanding and
+unauthored — including the one `VER-MOK-007` itself calls "the one assessment that matters for the feature's purpose",
+that the three bands are distinguishable on the owner's terminal; one amendment provision to `SPEC-MOK-004`
+outstanding, drafted and not applied; acceptance scenarios 2 and 3 carried indirectly in the ways stated above; and the
+whole packet, including this record, written by the same agent that wrote the implementation. Every one of those is
+disclosed in the sections above and was disclosed in the body of the pull request that carried the candidate. A
+`verified` status does not retire any of them, and this record does not read the owner's instruction as an assessment
+that any of them has been discharged.
 
 Verification is not release and it is not merge. Nothing here releases, tags, publishes or deploys, and no release
 record exists. Pull request #18, which carries the implementation, was merged by the repository owner on 2026-08-19
-before this record was prepared; the pull request carrying this record is left for the owner to merge.
+before this record was prepared; the pull request carrying this record and the work order's transition is left for the
+owner to merge.
