@@ -20,6 +20,13 @@ left `draft`, and the one reading of the approval — which was put back to the 
 on 2026-08-19 rather than left standing as a construal. Nothing in this record's measurements changed,
 because a status transition edits a field.
 
+**`VREC-MOK-008` is now `verified`, by the accountable assurance owner's decision of 2026-08-19**, taken with
+the five limitations that record states in front of them — the process unrun, fifteen scenario rows not
+performed, M2 unclosable by this author, the "before" column a reconstruction, and one declared file carrying
+a recorded but unfixed defect. `assurance-decision.md` holds what the decision changed, what it did not, and
+the measured before-and-after. **`WO-MOK-009` itself stays `implemented`**: `docs/engineering/WORKFLOW.md`
+line 20 states that the VREC moves separately and that work-order status never substitutes for it.
+
 ## Final affected components
 
 ### Process definition and the checks it invokes — new
@@ -49,13 +56,18 @@ owner's 2026-08-19 approval, and `WO-MOK-008` alone is still `draft`.
 
 ### Evidence — this work order
 
-Seventeen records and a directory index, listed in `README.md`. Five were written after the captures:
+Eighteen records and a directory index, listed in `README.md`. Six were written after the captures:
 `commit-binding.md`, which names the commit; `release-artifact-types.md`, which discharges half of this work
 order's fourth approval precondition; `approval-and-transition.md`, which records the approvals and the ten
 status transitions; `snapshot-reproducibility.md`, which records what `VREC-MOK-008`'s snapshot field is
-reproducible from, because the first attempt to recompute it from the same commit did not match; and
-`id-collision.md`, which records why that record is `VREC-MOK-008` and not `VREC-MOK-007`. The owner directed
-the first four; the fifth records a correction to this work order's own output.
+reproducible from, because the first attempt to recompute it from the same commit did not match;
+`id-collision.md`, which records why that record is `VREC-MOK-008` and not `VREC-MOK-007`; and
+`assurance-decision.md`, which records the eleventh status transition, the assurance owner's. The owner
+directed all but one; `id-collision.md` records a correction to this work order's own output.
+
+`VREC-MOK-008` binds eighteen of those nineteen paths. `assurance-decision.md` is the exception and cannot be
+otherwise: it postdates the candidate commit the record names, for the same reason `WORKFLOW.md` line 22 gives
+for commit hashes.
 
 ### Not this work order
 
@@ -284,6 +296,12 @@ silence is worth: `E007` and `E008` exempt draft requirements and now check `REQ
 `SPEC-MOK-005`'s `specifies` and `VER-MOK-008`'s `verifies`. Transcripts in `verification-output.md` and
 `approval-and-transition.md`.
 
+**The count is 80 at the branch tip, and the reason is one artifact rather than any of this.** `VREC-MOK-008`
+was committed after the captures above, so a reader running the validator today sees 80 with the same 0 errors
+and 0 warnings, and `assurance-decision.md` records the same figure either side of the assurance transition.
+The nineteenth evidence file is not counted, which is the same measured claim as before: `evidence` is an
+excluded directory name, so nothing in this directory is ever an artifact.
+
 ## Settled on 2026-08-19
 
 Five questions this work order raised were put to the owners and answered the same day. Each is recorded at
@@ -307,22 +325,30 @@ the artifact it changed, or at the note it settles, as well as here.
 | 4 | approve `VER-MOK-008`, with the amended C5 | assurance owner | **done** |
 | 5 | approve `WO-MOK-009` and transition it | engineering owner | **done** — `implemented` |
 | 5b | approve `WO-MOK-008` | engineering owner | outstanding — deliberately not part of this approval |
+| 5c | review the retained evidence and transition `VREC-MOK-008` `ready` → `verified`, or withhold it | assurance owner | **done — 2026-08-19**, taken with the record's five stated limitations in front of them; `assurance-decision.md` |
 | 6 | run the process once and read V1–V6 and P1–P3 | release owner, plus a reader who is not this work order's author | outstanding |
 | 7 | configure the `release` environment if rule 12.6's second human gate is wanted | release owner | outstanding |
 
 Steps 6 and 7 are reserved acts. Nothing in this changeset performs them, and nothing here should be read
 as authorizing them.
 
-**Six acts have been performed on the owner's instruction since the captures, and none is step 6 or 7.**
+**Seven acts have been performed on the owner's instruction since the captures, and none is step 6 or 7.**
 The changeset was committed as `17be4ba` and opened as pull request #20, both recorded in
 `commit-binding.md`. The owner then approved the chain and authorized the work order's transition, recorded
 in `approval-and-transition.md` and in `WO-MOK-009`'s own *Approval record*, which lets the fourth act
-happen: `capture-verification` had refused while the work order was `draft`, and `VREC-MOK-008` is now
-prepared and **`ready`**. Fifth, the technical owner confirmed the architecture reading that the fourth
+happen: `capture-verification` had refused while the work order was `draft`, and `VREC-MOK-008` was prepared
+as **`ready`**. Fifth, the technical owner confirmed the architecture reading that the fourth
 act's records had flagged, which closes row 1 above by decision rather than by construal. Sixth, the owner
 authorized carrying the unpushed governance commits to `origin`, which updates pull request #20 and turns
-the review-preflight failure recorded in `approval-and-transition.md` into a pass.
+the review-preflight failure recorded in `approval-and-transition.md` into a pass — and surfaced the ID
+collision `id-collision.md` records, since a conflicting pull request produces no `pull_request` run at all.
+Seventh, the accountable assurance owner reviewed the retained evidence and made `VREC-MOK-008` `verified`,
+which closes row 5c and is the one act in this list that the harness had been explicitly asking for:
+`inspect` listed it under *Decision required*, addressed to the `assurance-owner`, and lists nothing there
+now.
 
-Making `VREC-MOK-008` `verified` is the accountable assurance owner's act and was not taken. Merging pull
-request #20 was not instructed and was not done — a push is not a merge, and it authorizes nothing that
-rule 13 reserves.
+**What is still not taken.** Merging pull request #20 was not instructed and was not done — a push is not a
+merge, and it authorizes nothing rule 13 reserves. `WO-MOK-009` was not moved past `implemented`, and no
+release contract, release record or tag exists, so `check_release_authorization.py` still refuses at rule 4's
+first rung: **a verified verification record is an input to a release decision, not a release decision.**
+Steps 5b, 6 and 7 remain outstanding and are other owners' acts.

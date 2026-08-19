@@ -42,10 +42,13 @@ release.
   work order with no implementation, and the owner approved the pack related to `WO-MOK-009`. Nothing here approves
   it. Its review preflight consequently still fails, which is correct: `REQ-MOK-036` requires review preflight to
   pass for every **released** work order, and a draft defect report is not in any release payload.
-- **No verification record was transitioned to `verified`.** `capture-verification` emits `ready`, and
-  `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners. `VREC-MOK-008` is prepared from a
-  later revision of this branch and carries `status = "ready"`. It was first prepared as `VREC-MOK-007` and
-  renumbered; `id-collision.md` records why.
+- **No verification record was transitioned to `verified` by any of the ten transitions this file records.**
+  `capture-verification` emits `ready`, and `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable
+  owners. `VREC-MOK-008` is prepared from a later revision of this branch and carried `status = "ready"`. It was first
+  prepared as `VREC-MOK-007` and renumbered; `id-collision.md` records why. **An eleventh transition was directed
+  afterwards**, on 2026-08-19, by the accountable assurance owner, and made that record `verified`; it is not one of
+  the ten below and is recorded in `assurance-decision.md` instead, because it is a different role's act on a
+  different question. `WO-MOK-009` did not move with it.
 - **No tag, no release record, no release contract, no merge, no publication.** The four remain what
   `a5-refusal-ladder.md` shows them to be: reserved acts that no amount of approved governance substitutes for.
 
@@ -146,9 +149,10 @@ the pull-request runs.
 
 It is not the verification record, and it does not stand in for one. `docs/engineering/WORKFLOW.md` line 22 states
 that *"A record cannot contain the hash of its own commit"*, so the record is captured from a commit that contains
-this file and committed separately afterwards. It is `ready`: prepared provenance awaiting the accountable assurance
-owner, who is the only party that may make it `verified`. It carries the ID `VREC-MOK-008` rather than the
-`VREC-MOK-007` this record originally named — see the corrected item 2 above.
+this file and committed separately afterwards. It was `ready` when this file was written: prepared provenance awaiting
+the accountable assurance owner, who is the only party that may make it `verified`, and who did so on 2026-08-19 —
+`assurance-decision.md`. It carries the ID `VREC-MOK-008` rather than the `VREC-MOK-007` this record originally
+named — see the corrected item 2 above.
 
 This record takes the directory to sixteen files — fifteen records and the index. `commit-binding.md`'s closing count
 of fifteen was correct when it was written.

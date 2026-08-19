@@ -5,9 +5,19 @@ process against SPEC-MOK-005*, captured on 2026-08-19.
 
 The records are observations of the working tree. They do not independently approve verification, create a
 candidate commit, or authorize release. `VER-MOK-008` is the verification contract these records serve; the
-accountable assurance decision remains the owner's act. **`WO-MOK-009` was `draft` throughout every capture
-below and is now `implemented`**, by the owner's decision of 2026-08-19 rather than by anything in this
-directory: `approval-and-transition.md` records what was transitioned and on whose word.
+accountable assurance decision was the owner's act, taken on 2026-08-19 and recorded in
+`assurance-decision.md`. **`WO-MOK-009` was `draft` throughout every capture below and is now
+`implemented`**, by the owner's decision of the same day rather than by anything in this directory:
+`approval-and-transition.md` records what was transitioned and on whose word.
+
+**Read this directory at the commit the record binds, not at the branch tip.** `VREC-MOK-008` binds eighteen
+paths at candidate commit `d35f817`, and paths are not hashes: the assurance transition added
+`assurance-decision.md` — which is deliberately *not* among those eighteen, because it postdates the commit —
+and edited three files that are: this one, `completion-summary.md` and `approval-and-transition.md`. Each was
+edited only to stop asserting that the record is still `ready`, and each keeps what it said with the later fact
+beside it rather than in place of it. Still, the current text of those three is later than the text the record
+verified: `git show d35f817:<path>` is what a reader wanting the verified bytes should use, and
+`assurance-decision.md` states what changed and what did not.
 
 ## Commit binding
 
@@ -48,7 +58,8 @@ in `compliance-rehearsal.md` C1.
 - `completion-summary.md` — the final affected components; the suite growth from 22 to 70 scenarios and
   what accounts for it; every one of the 18 `VER-MOK-008` rows that is not plainly *observed*, with what
   each needs; nine findings a reader should not have to discover; the five questions the owners settled on
-  2026-08-19; and the seven remaining acts with whose they are.
+  2026-08-19; and the nine-row next-steps table, of which three rows are still outstanding and are other
+  owners' acts.
 - `candidate-conformance.md` — the rule-by-rule statement `WO-MOK-009`'s Lifecycle section requires: for
   each of rules 1 through 14 and every sub-rule, what the pre-existing candidate satisfied and what had to
   change. Twelve changes, ordered by how badly the unchanged form would have failed; two divergences
@@ -96,6 +107,11 @@ in `compliance-rehearsal.md` C1.
   deliberately left `draft`, the gates and the rule 7.4 preflight loop on the transitioned tree, the one
   reading of the approval that was put back to the technical owner and confirmed the same day, and the two
   claims elsewhere in this directory that the transition makes stale.
+- `assurance-decision.md` — the accountable assurance owner's decision of 2026-08-19 to make `VREC-MOK-008`
+  `verified`: the one field it changed, every provenance field it did not, why `WO-MOK-009` stays
+  `implemented`, and the measured `inspect` before and after — which is the only harness output that moves,
+  because what changed is a judgement rather than a measurement. The one file here that is not among the
+  record's evidence paths, and it states why.
 - `snapshot-reproducibility.md` — what `VREC-MOK-008`'s `artifact_snapshot_sha256` is reproducible from,
   measured across five checkouts of one commit: not the line endings, but the name of the directory the
   repository is checked out into. Records why the committed record was re-prepared in a clone named
@@ -106,8 +122,8 @@ in `compliance-rehearsal.md` C1.
   `approval-and-transition.md` it corrects, and the three references that are now misleading.
 - `release-artifact-types.md` — `WO-MOK-009`'s approval precondition 4, half discharged: both the release
   record and the release contract are creatable, with the prefixes and the two nearly identical directory
-  names the harness enforces. `prepare-release` needs a verified record as input and so cannot be exercised
-  yet.
+  names the harness enforces. `prepare-release` is still unexercised. The verified-record input it lacked now
+  exists; what it lacks now is an `approved` `REL-MOK-001`, which is the release owner's act.
 
 ### The process definition, read statically
 
@@ -127,18 +143,22 @@ in `compliance-rehearsal.md` C1.
   archive to be read by someone who did not build the packaging step. That is this work order's author. So
   V1 through V6 do not close by further work in this directory; they close on the first run, read by
   someone else.
-- **No status transition taken by anything in this directory, and no decision made here.** Every capture
-  below observed a chain in which all ten new artifacts were `draft`, and the harness enforced the
+- **No decision made in this directory. Eleven status transitions recorded here, all of them owners'.** Every
+  capture below observed a chain in which all ten new artifacts were `draft`, and the harness enforced the
   consequence rather than leaving it to good intentions: `capture-verification` refused while `WO-MOK-009`
   was `draft`, with the transcript in `commit-binding.md`. **The owner then approved the chain and
   authorized the transition**, which the implementation agent recorded; nine artifacts are now `approved`
-  and `WO-MOK-009` is `implemented`. `approval-and-transition.md` holds the detail, including the one
+  and `WO-MOK-009` is `implemented`. `approval-and-transition.md` holds those ten, including the one
   reading in it, which was put back to the technical owner and confirmed on 2026-08-19 rather than left as
-  a footnote. `VREC-MOK-008` is prepared and `ready` — first prepared as `VREC-MOK-007` and renumbered
-  because `master` already held that ID, which `id-collision.md` records;
-  `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners, so it stays `ready`
-  here. `WO-MOK-008` is untouched and still `draft`. `a5-refusal-ladder.md` records that the real graph
-  holds no release record, which is a fact about the repository rather than something to fix here.
+  a footnote. **The eleventh is `VREC-MOK-008` `ready` → `verified`**, directed by the accountable assurance
+  owner on 2026-08-19 and recorded in `assurance-decision.md`; `DECISION_RIGHTS.md:14` reserves that
+  transition to them, no harness command performs it, and the implementation agent wrote the status the owner
+  directed and decided nothing. The record was first prepared as `VREC-MOK-007` and renumbered because
+  `master` already held that ID, which `id-collision.md` records. `WO-MOK-009` did **not** move with it and is
+  still `implemented`, which `WORKFLOW.md` line 20 requires and `WO-MOK-001` through `WO-MOK-007` all
+  illustrate. `WO-MOK-008` is untouched and still `draft`. `a5-refusal-ladder.md` records that the real graph
+  holds no release record, which is a fact about the repository rather than something to fix here — and is
+  still true, because a verified verification record is an input to a release decision and not one.
 - **No copy of the process definition or the gate.** They are tracked files at
   `.github/workflows/release.yml`, `scripts/check_release_authorization.py` and
   `scripts/check_release_reachability.py`. `static-checks.md` cites them by line against a definition

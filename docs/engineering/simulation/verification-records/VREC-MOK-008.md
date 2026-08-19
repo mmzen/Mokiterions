@@ -2,7 +2,7 @@
 id = "VREC-MOK-008"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-009"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -138,9 +138,11 @@ Four further limits, stated because they bound what the green gates above mean:
 - **`REPOSITORY_CONTEXT.md`'s declared lint command lacks `--locked`** while rule 8.2 requires resolution
   against the committed lockfile. Finding 5.
 - **`prepare-release` was never exercised**, because it takes a verified verification record as input and none
-  existed. `release-artifact-types.md` establishes that both the release record and the release contract are
-  creatable and names the two nearly identical directory names the harness enforces; the command itself remains
-  untried.
+  existed at this candidate commit. `release-artifact-types.md` establishes that both the release record and
+  the release contract are creatable and names the two nearly identical directory names the harness enforces;
+  the command itself remains untried. **Verifying this record removes that blocker without discharging the
+  row**: what now stands in the way is the absence of an `approved` `REL-MOK-001`, and creating and approving
+  a release contract is the release owner's act rather than something this record authorizes.
 - **The machine's own harness install is a moving target**, an editable clone that moved from `0.4.0` to
   `0.4.1` during the work while this repository declares `0.4.0`. Every measurement in this packet comes from a
   pinned `0.4.0` wheel instead. The mismatch is not only a hazard — it is rule 7.1's one piece of *observed*
@@ -191,26 +193,63 @@ not a defect against `SPEC-MOK-005`, because no rule and no `VER-MOK-008` scenar
 The snapshot was taken before this record existed, so it records the 79-artifact graph the record binds rather
 than the 80-artifact graph containing it.
 
-## What the accountable assurance owner is being asked to decide
+## What the accountable assurance owner was asked to decide, and decided
 
 Whether the evidence at this candidate commit is sufficient to call `WO-MOK-009` verified **with the process
 unrun, fifteen scenario rows not performed, M2 unclosable by this author, the "before" column a
-reconstruction, and one declared file carrying a recorded but unfixed defect**. That is the whole of the
+reconstruction, and one declared file carrying a recorded but unfixed defect**. That was the whole of the
 decision. The limitations are listed above and as nine findings in `completion-summary.md` rather than
 summarized away, because a disclosure that survives only until it is accepted is not a disclosure.
 
-Verifying this record would not merge pull request #20, approve `WO-MOK-008`, tag anything, create a release
-record, configure the `release` environment, or perform the first run. Each is a separate act with its own
-accountable owner, and `completion-summary.md`'s next-steps table names them with whose they are.
+**The accountable assurance owner answered yes on 2026-08-19**, with all five of those limitations stated in
+front of them, and directed the transition of this record to `verified`. The question is kept above rather
+than deleted, because what was disclosed is part of what was decided: this record is verified *with* the
+process unrun, not despite it, and a later reader deciding whether to rely on it needs the terms and not only
+the verdict.
+
+The decision is bounded to this record. Verifying it did not merge pull request #20, approve `WO-MOK-008`,
+tag anything, create a release record, configure the `release` environment, or perform the first run — and it
+did not move `WO-MOK-009`, which stays `implemented`. `docs/engineering/WORKFLOW.md` line 20 states that the
+VREC moves separately and that work-order status never substitutes for it, and the repository's own precedent
+agrees: `WO-MOK-001` through `WO-MOK-007` are all `implemented` beside `verified` records. Each remaining act
+is separate, with its own accountable owner, and `completion-summary.md`'s next-steps table names them with
+whose they are.
 
 ## Authority
 
-**This record is `ready`, and only the accountable assurance owner may make it `verified`.**
-`docs/engineering/DECISION_RIGHTS.md` states that automation may prepare `ready` verification and release
-records from bounded Git observations and that only accountable assurance and release owners may transition
-them, and `ENGINEERING_HARNESS.md` states that harness commands may prepare records but never exercise
-accountable decision rights. The managed `capture-verification` command produced every provenance field above;
-none was hand-edited, and this prose was appended below the generated body without altering it.
+**This record was prepared `ready` and is `verified` by the accountable assurance owner's decision of
+2026-08-19.** `docs/engineering/DECISION_RIGHTS.md` states that automation may prepare `ready` verification
+and release records from bounded Git observations and that only accountable assurance and release owners may
+transition them, and `ENGINEERING_HARNESS.md` states that harness commands may prepare records but never
+exercise accountable decision rights. So the implementation agent prepared this record and wrote the `verified`
+status the owner directed; it decided nothing. No command performs that transition, and none was asked to.
+
+**The transition changed one field and nothing else.** `commit`, `git_object_format`, `worktree_state`,
+`verified_at`, `artifact_snapshot_sha256`, `evidence_paths` and both relations are exactly as
+`capture-verification` produced them, and a reader can confirm that against the diff of the transition commit.
+A verified record whose provenance was recomputed at transition time would bind the wrong tree; the managed
+`capture-verification` command produced every provenance field above, none was hand-edited, and this prose was
+appended below the generated body without altering it.
+
+**That is why the two paragraphs under *Verification Record Candidate* above still call this a `ready` record
+and still say an assurance owner must transition it.** They are the managed command's own output, left exactly
+as it wrote them: the transition edited the `status` field and the prose below it, not the command's text. That
+keeps the prefix recomputable, and it was recomputed — `capture-verification` re-run at the candidate commit in
+a fresh clone named `Mokiterions`, with the same arguments, emits 25 lines of which **23 are identical to this
+file's first 25**, including `commit`, `worktree_state`, `git_object_format`, all eighteen `evidence_paths`,
+both relations and `artifact_snapshot_sha256` — the last of which is the field
+`snapshot-reproducibility.md` predicted would reproduce, measured again here. Two lines differ, and both differ
+for a stated reason:
+
+| Line | The fresh run | This record |
+|---|---|---|
+| `status` | `"ready"`, which is all the command may write | `"verified"` — the transition itself |
+| `verified_at` | the moment of the re-run | `"2026-08-19T14:11:54Z"`, the moment of capture |
+
+`verified_at` is a wall-clock stamp, so no re-run reproduces it by construction, and a record that refreshed it
+on transition would bind the tree it was approved in rather than the tree that was verified. A preamble kept in
+agreement by hand would be worth less than a prefix that can still be checked this way.
+`assurance-decision.md` records the decision the preamble asks for.
 
 That command refused to run while `WO-MOK-009` was `draft`, and the transcript of the refusal is retained in
 `commit-binding.md`. It succeeded only after the owner approved the governing chain, which
