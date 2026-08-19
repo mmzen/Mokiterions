@@ -840,7 +840,7 @@ fn a_death_removes_the_subject_from_the_presentation_and_is_corroborated() {
     }
 }
 
-// ---- WO-MOK-010: the name in the presentation -----------------------------------------------
+// ---- WO-MOK-011: the name in the presentation -----------------------------------------------
 
 /// `REQ-MOK-041`: wherever a pane identifies a Mokiterion, the name it presents is the one the
 /// engine reported for *that* Mokiterion, and the identifier is still there beside it.

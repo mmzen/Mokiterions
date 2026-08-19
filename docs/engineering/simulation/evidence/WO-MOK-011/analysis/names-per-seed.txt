@@ -1,0 +1,94 @@
+VER-MOK-011 — the twelve names as reported by the engine, per declared seed
+==========================================================================
+
+Work order   WO-MOK-011 (Phase 2.5, naming)
+Date         2026-08-19
+Binary       target/release/Mokiterions.exe, built from the candidate tree
+
+Purpose: the record that the assignment reads neither the seed nor the configuration. Each
+block below is the identifier-to-name pairing the engine reported at tick 0 for one declared
+seed; the five blocks are compared at the end.
+
+--- seed 0, ticks 1, reference, density 0.75 ---
+  M01  Zug
+  M02  Krul
+  M03  Quib
+  M04  Sput
+  M05  Trok
+  M06  Womp
+  M07  Hozz
+  M08  Nurb
+  M09  Vonk
+  M10  Gorm
+  M11  Xob
+  M12  Drix
+
+--- seed 1, ticks 1, reference, density 0.75 ---
+  M01  Zug
+  M02  Krul
+  M03  Quib
+  M04  Sput
+  M05  Trok
+  M06  Womp
+  M07  Hozz
+  M08  Nurb
+  M09  Vonk
+  M10  Gorm
+  M11  Xob
+  M12  Drix
+
+--- seed 42, ticks 1, reference, density 0.75 ---
+  M01  Zug
+  M02  Krul
+  M03  Quib
+  M04  Sput
+  M05  Trok
+  M06  Womp
+  M07  Hozz
+  M08  Nurb
+  M09  Vonk
+  M10  Gorm
+  M11  Xob
+  M12  Drix
+
+--- seed 123, ticks 1, reference, density 0.75 ---
+  M01  Zug
+  M02  Krul
+  M03  Quib
+  M04  Sput
+  M05  Trok
+  M06  Womp
+  M07  Hozz
+  M08  Nurb
+  M09  Vonk
+  M10  Gorm
+  M11  Xob
+  M12  Drix
+
+--- seed 777, ticks 1, reference, density 0.75 ---
+  M01  Zug
+  M02  Krul
+  M03  Quib
+  M04  Sput
+  M05  Trok
+  M06  Womp
+  M07  Hozz
+  M08  Nurb
+  M09  Vonk
+  M10  Gorm
+  M11  Xob
+  M12  Drix
+
+--- the five pairings compared ---
+  seeds 0, 1, 42, 123 and 777 report the same twelve pairings in the same order: yes
+
+--- the same seed at three densities and three policies, seed 42 ---
+  policy baseline    density 0.02   identical to the reference pairing
+  policy baseline    density 0.75   identical to the reference pairing
+  policy baseline    density 1.50   identical to the reference pairing
+  policy reference   density 0.02   identical to the reference pairing
+  policy reference   density 0.75   identical to the reference pairing
+  policy reference   density 1.50   identical to the reference pairing
+  policy individual  density 0.02   identical to the reference pairing
+  policy individual  density 0.75   identical to the reference pairing
+  policy individual  density 1.50   identical to the reference pairing

@@ -409,7 +409,7 @@ struct Mokiterion {
 
 /// The twelve names of `SPEC-MOK-001`'s *Name*, in identifier order: index `n - 1` is `Mn`'s.
 ///
-/// The table is the product owner's decision, recorded in `WO-MOK-010`, and this array is the
+/// The table is the product owner's decision, recorded in `WO-MOK-011`, and this array is the
 /// whole of it. The specification fixes three properties this literal satisfies by inspection and
 /// [`the_names_are_the_specified_twelve`](tests::the_names_are_the_specified_twelve) asserts: the
 /// names are pairwise distinct, their first characters are pairwise distinct, and every name is
@@ -4005,7 +4005,7 @@ mod tests {
         }
     }
 
-    // ---- WO-MOK-010: the name ------------------------------------------------------------
+    // ---- WO-MOK-011: the name ------------------------------------------------------------
 
     /// `REQ-MOK-040`: the table's domain and its two distinctness properties.
     ///

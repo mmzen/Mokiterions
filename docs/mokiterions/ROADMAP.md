@@ -46,7 +46,7 @@ Added under `WO-MOK-007` (implemented, **not verified** — see Phase 2's status
   proposal-identical to rule 5 at tolerance zero
 - A fourth roster gauge in the observer
 
-Added under `WO-MOK-010` (implemented, **not verified** — see Phase 2.5's status below):
+Added under `WO-MOK-011` (implemented, **not verified** — see Phase 2.5's status below):
 
 - A name per Mokiterion, one of twelve the specification fixes, assigned by identifier number and reported once on
   `agent_initialized` ahead of every other field
@@ -407,16 +407,19 @@ all — not even a side-generator draw, which is what the trait costs — so eve
 decisions in the same order and the only difference in its output is the name at the front of twelve lines. That is
 checked across 90 recorded runs with the names projected back out, against the pre-change capture of the same 90.
 
-**Status.** Implemented under `WO-MOK-010` at commit `52b41c8`. **Not verified.** `VREC-MOK-010` now exists as a
-`ready` candidate bound to that commit; it takes no decision, and the implementation agent can neither make nor
-approve one. One of `VER-MOK-010`'s seven manual assessments — the fifth, on the projection — has no author, and the
-contract is not satisfied while it is outstanding. **A second blocker is not about this work's substance at all**: this
-chain's `WO-MOK-010`, `VER-MOK-010` and `VREC-MOK-010` collide with `feature/phase-2-individuality`, which renumbered
-its own chain from 007 to 010 on the owner's decision while this branch was unpushed. `VREC-MOK-010` opens with the
-measurement of that collision and what is free. Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
+**Status.** Implemented under `WO-MOK-011`. **Not verified.** `VREC-MOK-011` exists as a `ready` candidate bound to the
+commit that carries the implementation; it takes no decision, and the implementation agent can neither make nor
+approve one. One of `VER-MOK-011`'s seven manual assessments — the fifth, on the projection — has no author, and the
+contract is not satisfied while it is outstanding. **This chain was renumbered from `010` to `011`** on the owner's
+decision, because `feature/phase-2-individuality` renumbered its own chain from 007 to 010 while this branch was
+unpushed and the two claims met as eighteen merge conflicts. `011` is free on every remote ref, no measurement
+changed, and `evidence/WO-MOK-011/renumbering.md` records what the rewrite touched and the one recorded digest it
+could not preserve. **A second thing is still owed, and it is not about this work's substance either**: the packet
+predates `master`'s release-ci work, so oracle 3's census, oracle 4's frames and `SPEC-MOK-004`'s counted rules are
+re-derived when this branch merges `master`. Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
 `SPEC-MOK-004` — are approved by the repository owner's act of 2026-08-19; the rows marked `OUTSTANDING` in those
 specifications from earlier work are untouched and still outstanding. Everything measured is in
-`docs/engineering/simulation/evidence/WO-MOK-010/`.
+`docs/engineering/simulation/evidence/WO-MOK-011/`.
 
 **It does not close anything Phase 2 left open.** `fear` is still read by nothing, the trait vector is still one
 trait, entropy substreams are still unimplemented, and high-class resource accumulation is still carried. Phase 2's

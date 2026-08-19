@@ -14,7 +14,7 @@
 
 use mokiterions::simulation::{Config, Density, Policy, Simulation};
 
-/// The verification seed set `VER-MOK-002` declares, reused by `VER-MOK-010`.
+/// The verification seed set `VER-MOK-002` declares, reused by `VER-MOK-011`.
 const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
 
 /// `SPEC-MOK-001`'s *Name*: the name of `M01` through `M12`, in identifier order.

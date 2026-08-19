@@ -1,0 +1,214 @@
+VER-MOK-011 — oracle 4: rendered buffers, cell by cell
+======================================================
+
+Work order   WO-MOK-011 (Phase 2.5, naming)
+Baseline     524a6758d74b5240079959e9827ea40a7af22a30
+Date         2026-08-19
+
+Every claim below is asserted against an in-memory character buffer produced by ratatui's
+`TestBackend`. No screenshot, recording, terminal or pseudo-terminal is involved, which is what
+REQ-MOK-029 and SPEC-MOK-004 require of an observer rendering claim.
+
+
+Method
+------
+
+`observer/frame-dump.rs` is a throwaway harness that reaches the observer only through its public
+interface — `options::parse`, `Observer::new`, `Observer::advance`, `Observer::handle_key`,
+`render::draw`, `layout::resolve`, `spatial::Viewport` — and prints, for each renderable viewport:
+
+  * the pane rectangles rule 5 resolves;
+  * the roster pane's rows as text, border included, each labelled with its absolute `y`;
+  * for every roster row carrying an identifier, the absolute cell of that identifier and the six
+    columns immediately before it, printed verbatim, beside the name the engine reported for that
+    identifier — read from the records, never from a literal;
+  * every canvas cell holding a letter or a digit, with its absolute coordinates, which is every
+    Mokiterion glyph (food is `○◎●` and the territory rule is `─`);
+  * where each living subject maps, by the observer's own `Viewport::cell_of`, so the glyph scan and
+    the mapping can be joined by the reader;
+  * the inspector pane's rows as text.
+
+It then prints the detail-zoom canvas with a living selection, and the inspector for a **dead**
+selection.
+
+The harness is written to compile against the pre-change revision as well: it parses `name:` out of
+a record only if the record has one, and prints `<no name on this revision>` otherwise. It was run
+twice — once in this tree, and once in a scratch tree extracted with
+`git archive 524a675 | tar -x` and built offline — so the two sides of the bar-row comparison come
+from one harness rather than from two.
+
+    cargo test --test zz_frame_dump -- --nocapture      (both trees)
+
+Retained here:
+
+    observer/frame-dump.rs     the harness source, since the file is deleted from the tree
+    observer/frames-post.txt   the candidate capture, 916 lines
+    observer/frames-pre.txt    the baseline capture, 916 lines
+    observer/bar-rows.txt      the 96 bar rows the harness printed, at all nine viewports
+    observer/bar-rows.diff     empty: the two sides are identical
+
+The declared viewports are VER-MOK-005's, reused: `160x48`, `160x44`, `160x40`, `140x44`, `140x43`,
+`120x48`, `120x30`, `100x30`, `34x22`. `33x21` is below the floor and renders nothing, so it is not
+in the harness's set. The configuration is seed 42, `--start-paused`, one `advance`, the reference
+policy at density 0.75.
+
+
+The roster at 160x48: the name on line one, the bar row untouched
+----------------------------------------------------------------
+
+Pane `x=0 y=3 w=47 h=34`, so a 45-column interior. Candidate:
+
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    ...
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+
+Baseline, the same pane, the same run:
+
+    y=4   |│M01  A  12:1          move:east              │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│M02  A  17:62         move:north             │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+
+Line one gained six columns at its head and the fields after it moved six columns right, into
+padding that was already there. Line two is unchanged, cell for cell.
+
+Cell positions, candidate, all twelve entries (the harness prints these verbatim):
+
+    M01: identifier at (x=7, y=4);  columns x=1..6 hold |Zug   |   engine reported "Zug"
+    M02: identifier at (x=7, y=6);  columns x=1..6 hold |Krul  |   engine reported "Krul"
+    M03: identifier at (x=7, y=8);  columns x=1..6 hold |Quib  |   engine reported "Quib"
+    M04: identifier at (x=7, y=10); columns x=1..6 hold |Sput  |   engine reported "Sput"
+    M05: identifier at (x=7, y=12); columns x=1..6 hold |Trok  |   engine reported "Trok"
+    M06: identifier at (x=7, y=14); columns x=1..6 hold |Womp  |   engine reported "Womp"
+    M07: identifier at (x=7, y=16); columns x=1..6 hold |Hozz  |   engine reported "Hozz"
+    M08: identifier at (x=7, y=18); columns x=1..6 hold |Nurb  |   engine reported "Nurb"
+    M09: identifier at (x=7, y=20); columns x=1..6 hold |Vonk  |   engine reported "Vonk"
+    M10: identifier at (x=7, y=22); columns x=1..6 hold |Gorm  |   engine reported "Gorm"
+    M11: identifier at (x=7, y=24); columns x=1..6 hold |Xob   |   engine reported "Xob"
+    M12: identifier at (x=7, y=26); columns x=1..6 hold |Drix  |   engine reported "Drix"
+
+Baseline, the same twelve rows:
+
+    M01: identifier at (x=1, y=4);  no six columns precede it on this revision
+    ...
+    M12: identifier at (x=1, y=26); no six columns precede it on this revision
+
+The identifier moved from `x=1` to `x=7` on every row, at every viewport that shows a roster, and
+the six columns it vacated hold that subject's own name, left-aligned, padded to six. `Xob` at
+three characters is padded with three spaces; `Krul` at four with two. No name is truncated, because
+the longest is five.
+
+
+The bar row: 96 rows, at nine viewports, identical
+--------------------------------------------------
+
+    grep ' h .*  s .*  e .*  f ' frames-pre.txt  | sort > bars-pre
+    grep ' h .*  s .*  e .*  f ' frames-post.txt | sort > bars-post
+    diff bars-pre bars-post
+    (no output)                     96 rows on each side
+
+This is REQ-MOK-041's arithmetic claim measured rather than argued: `BAR_ROW_OVERHEAD` is 35 and
+`bar_width(45)` is 2 before and after, because the name is on line one and line two never sees it.
+At the 47-column roster the bars are two cells wide (`h ██ 100`), which SPEC-MOK-003 rule 4 as
+amended accepts; the amendment did not change that width, `WO-MOK-007`'s fourth gauge did, and this
+capture confirms naming did not change it again.
+
+
+The map: the same twelve cells, a different glyph in each
+--------------------------------------------------------
+
+At `160x48`, canvas `x=48 y=4 w=67 h=32`, overview zoom, the twelve occupied cells and their glyphs:
+
+    cell            candidate   baseline    subject, by `Viewport::cell_of`
+    (x=54,  y=4)      'Z'         '1'       M01 at world 12:1
+    (x=90,  y=8)      'T'         '5'       M05 at world 84:16
+    (x=53,  y=15)     'W'         '6'       M06 at world 11:46
+    (x=90,  y=15)     'S'         '4'       M04 at world 84:44
+    (x=61,  y=17)     'Q'         '3'       M03 at world 27:52
+    (x=56,  y=19)     'K'         '2'       M02 at world 17:62
+    (x=80,  y=24)     'V'         '9'       M09 at world 65:82
+    (x=81,  y=27)     'H'         '7'       M07 at world 67:94
+    (x=82,  y=28)     'D'         'C'       M12 at world 68:98
+    (x=79,  y=29)     'N'         '8'       M08 at world 62:103
+    (x=109, y=32)     'X'         'B'       M11 at world 123:115
+    (x=108, y=34)     'G'         'A'       M10 at world 121:120
+
+Twelve cells before, the same twelve cells after: naming moved nothing on the map. What changed is
+what each cell draws. The baseline glyph was the identifier's number rendered as a base-13 digit —
+`1`–`9` then `A`, `B`, `C` — and the candidate glyph is the name's first character uppercased. Both
+are twelve distinct glyphs, which is what SPEC-MOK-003 rule 2.5 requires; the candidate's are
+legible as the subject rather than as its index, which is why REQ-MOK-041 asked for the change.
+
+At `34x22` the roster, inspector and log are all excluded and only four subjects fall inside the
+canvas; the harness prints those four, `Z`, `W`, `Q` and `K`, at `(7,4)`, `(6,15)`, `(14,17)` and
+`(9,19)`, each matching `cell_of` for M01, M06, M03 and M02. The detail-zoom capture follows the
+selected subject and is retained in `frames-post.txt` in full.
+
+
+The inspector: name, two spaces, identifier
+-------------------------------------------
+
+Living selection, `160x48`, pane `x=116 y=3 w=44 h=34`, detail zoom, M01 selected with `Tab`.
+Candidate, every row the pane fills:
+
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│Zug  M01                                  │|
+    y=5   |│position  12:1  territory A               │|
+    y=6   |│sharing   1 in this rendered cell         │|
+    y=7   |│health 100  satiety 99  energy 99         │|
+    y=9   |│decision, tick 1                          │|
+    y=10  |│proposed  move:east                       │|
+    y=11  |│outcome   + accepted                      │|
+    y=12  |│applied   move:east                       │|
+    y=13  |│authority REQ-MOK-004                     │|
+    y=36  |└──────────────────────────────────────────┘|
+
+Baseline, the same run, the same selection, the same pane:
+
+    y=4   |│M01                                       │|
+
+and rows `y=3`, `y=5` through `y=13` and `y=36` are byte-identical to the candidate's above. Only
+the heading row differs, and it differs by gaining `Zug` and two spaces before the identifier.
+
+Where no subject is selected, both revisions print `nothing selected` and `Tab selects a Mokiterion
+in roster order`, identically — the per-viewport sweep in `frames-*.txt` captures the pane in that
+state at all nine viewports.
+
+A dead selection, the same viewport. Under the baseline policy the first death is M01 at tick 119,
+the selection survives it (rule 10.6), and the pane reads:
+
+    y=4   |│Zug  M01                                  │|
+    y=5   |│died on tick 119                          │|
+    y=6   |│final health 0  satiety 0  energy 81      │|
+
+Baseline, the same run, the same tick:
+
+    y=4   |│M01                                       │|
+    y=5   |│died on tick 119                          │|
+    y=6   |│final health 0  satiety 0  energy 81      │|
+
+The name is presented for a subject the snapshot no longer carries, because the observer's record of
+the name comes from the initialization record and not from the snapshot, and because rule 10.6 keeps
+the selection. That is the case
+`mokiterions-tui/tests/verification.rs::the_inspector_identifies_a_dead_subject_by_name_and_identifier`
+asserts; this is the buffer it asserts against.
+
+
+What the whole diff contains
+----------------------------
+
+    diff frames-pre.txt frames-post.txt      570 differing lines
+
+Every one of them is one of four things: a roster or inspector row whose head gained six columns or
+a name; a printed cell position that moved from `x=1` to `x=7`; a canvas cell whose glyph changed
+from a base-13 digit to an initial; or the harness's own report of what the records said. No pane
+rectangle changes, no bar row changes, no pane appears or disappears at any viewport, and no cell
+outside a roster head, an inspector heading and the twelve glyph cells differs at all.

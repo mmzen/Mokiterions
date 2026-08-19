@@ -19,7 +19,7 @@
 //! `#[cfg(test)]` hook, which does not exist in the build an integration test links, so no
 //! test outside the crate could name one. The other nineteen are in `tests/verification.rs`.
 //!
-//! The ninth arrived with `WO-MOK-010`. It is `REQ-MOK-041`'s provenance claim in its negative
+//! The ninth arrived with `WO-MOK-011`. It is `REQ-MOK-041`'s provenance claim in its negative
 //! form, and it is here for the reason the rest are: a subject the observer holds and was never
 //! told the name of is reachable only through the snapshot hook.
 
