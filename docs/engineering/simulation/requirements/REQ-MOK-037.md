@@ -15,6 +15,13 @@ derives_from = ["CAP-MOK-007"]
 
 # Requirement: Carry provenance inside every published asset
 
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-19 | Original approved content, as part of the `INT-MOK-007` → `CAP-MOK-007` → `REQ-MOK-035`..`039` → `SPEC-MOK-005` chain. | Approved 2026-08-19 by the repository owner acting as product owner. |
+| 2026-08-19 | The first acceptance example corrected to the release that actually happened: eight work orders rather than six, and `VREC-MOK-009` rather than `VREC-MOK-007`. The example was written before the release and guessed both; `VREC-MOK-007` is a real record covering `WO-MOK-007` at a different commit, so the example cited a record with nothing to do with a release. **No normative text changes** — the correction is confined to `## Acceptance examples`, and every requirement in `## Required response` is untouched. | Approved 2026-08-19 by the repository owner acting as product owner, who directed the correction while closing out the `0.1.0` release. |
+
 ## Rationale
 
 An archive separated from the release page it was downloaded from is, today, unidentifiable. The two binaries it
@@ -124,11 +131,11 @@ the build-run identifier.
 
 **A published archive states its provenance.**
 Given an authorized release with commit `C`, version `0.1.0`, tag `v0.1.0`, record `RLS-MOK-001`, contract
-`REL-MOK-001`, work orders `WO-MOK-001`..`006` and verification record `VREC-MOK-007`,
+`REL-MOK-001`, work orders `WO-MOK-001`..`007` and `009`, and verification record `VREC-MOK-009`,
 when the archive for a supported target is produced,
 then it contains a plain-text provenance statement naming all forty characters of `C`, `v0.1.0`, `0.1.0`,
-`RLS-MOK-001`, `REL-MOK-001`, the six work orders, `VREC-MOK-007`, the target, the compiler version and the build
-run.
+`RLS-MOK-001`, `REL-MOK-001`, the eight work orders, `VREC-MOK-009`, the target, the compiler version and the
+build run.
 
 **A recipient verifies the bytes.**
 Given a published archive and the checksum published beside it,
