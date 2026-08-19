@@ -1,0 +1,188 @@
+VER-MOK-011 — static checks
+===========================
+
+Work order   WO-MOK-011 (Phase 2.5, naming)
+Baseline     524a6758d74b5240079959e9827ea40a7af22a30
+Branch       feature/phase-2-5-naming
+Date         2026-08-19
+Purpose      The searches VER-MOK-011 retains as evidence: no name literal in the observer, no
+             name reader in the engine beyond the two the design allows, no name in any ordering,
+             no floating point in the naming path, the acting order unchanged, and both dependency
+             tables and resolutions unchanged.
+
+Every command below was run from the repository root. Where a search returns nothing that is the
+finding, and the command is recorded so it can be re-run.
+
+
+1. No engine name appears anywhere in `mokiterions-tui`, tests included
+-----------------------------------------------------------------------
+
+    grep -rnE '\b(Zug|Krul|Quib|Sput|Trok|Womp|Hozz|Nurb|Vonk|Gorm|Xob|Drix)\b' mokiterions-tui/
+
+    (no match)
+
+This is VER-MOK-011's static row in full, including its clause about "its tests' fixtures where
+they stand in for engine records". Two fixtures held engine names when the implementation was
+first written and no longer do:
+
+  * `mokiterions-tui/tests/spatial.rs::glyphs_are_the_assigned_ones` listed the twelve names
+    against their twelve glyphs. That table is exactly what REQ-MOK-041 forbids the observer to
+    hold, and its own doc comment claimed it was not there. It now asserts the derivation over
+    every initial a name can carry -- for each of the twenty-six ASCII letters, in either case and
+    at one, four and five characters, the glyph is that character uppercased -- and that the
+    twenty-six initials give twenty-six distinct glyphs. That subsumes the twelve without holding
+    them: twelve names with twelve distinct initials draw twelve distinct glyphs. The boundary case
+    `agent_glyph("") == '?'` is asserted as before.
+
+  * `mokiterions-tui/src/render.rs`'s inline tests passed names to `entry_lines`. Three call it:
+    the two pre-existing cases `the_bar_row_reproduces_the_specified_form` and
+    `a_zero_value_is_a_zero_and_an_absent_value_is_a_dash`, which gained an argument because the
+    function gained a parameter, and this work order's new
+    `an_entry_carries_the_name_before_the_identifier_and_takes_six_columns`. All three now pass
+    fabricated stand-ins -- `"O"`, `"Ort"`, `"Blip"`, `"Weeee"`, one per admissible length -- and
+    the assertion against SPEC-MOK-003 rule 4's mockup columns reads
+    `"Blip  M05  A  81:14         "` where the specification's mockup prints a name beside `M05`.
+    What the six-column field has to hold is a length, not a particular name, so the substitution
+    weakens no assertion; the comment at that assertion says so and says why. No assertion of
+    either pre-existing case changed: each gained an argument and nothing else.
+
+Where an observer test needs the name a subject actually has, it reads it from the records rather
+than from a fixture:
+
+  * `mokiterions-tui/tests/verification.rs` reads names through the already-public
+    `Observer::events`, via its `reported_names` helper;
+  * `mokiterions-tui/src/verification.rs:701` reads `observer.name_of("M01")` to form the expected
+    glyph for the shared-cell case, so the expectation comes from the engine's report and not from
+    the identifier.
+
+There is therefore no revision of `SPEC-MOK-001`'s name table that could make an observer test
+pass while a frame drew the wrong name.
+
+
+2. The observer holds no identifier-to-name mapping and derives no name
+-----------------------------------------------------------------------
+
+    grep -rn "NAMES\|name_of\|names\b" mokiterions-tui/src/*.rs
+
+    render.rs:394        observer.name_of(&agent.id).unwrap_or_default(),      <- map glyph
+    render.rs:445        observer.name_of(&agent.id).unwrap_or_default(),      <- roster entry
+    render.rs:558   let heading = match observer.name_of(selection) {          <- inspector heading
+    state.rs:165    names: BTreeMap<String, String>,                          <- the record
+    state.rs:198            names: BTreeMap::new(),
+    state.rs:231                self.names.insert(event.subject.clone(), name.clone());
+    state.rs:351    pub(crate) fn name_of(&self, id: &str) -> Option<&str> {
+    state.rs:352        self.names.get(id).map(String::as_str)
+    (the three `verification.rs` hits are tests, and are item 1's)
+
+The map has exactly one writer, `state.rs:231`, and it writes only what
+`EventDetail::AgentInitialized` carried. Nothing else inserts, and no branch computes a name from
+an identifier, a position, an index or a hash: a subject the records never mentioned has no name,
+which is what `mokiterions-tui/src/verification.rs`'s ninth internal test asserts against a
+fabricated `M13`. `name_of` is `pub(crate)`, so the observer's governed public interface is
+unchanged at SPEC-MOK-004 rule 6's 94 items / 118 `pub` lines / 24 public fields (see
+`interface.txt`).
+
+
+3. The engine has one name writer and one name reader
+-----------------------------------------------------
+
+    grep -rnE '\bname\b|NAMES|name_of' mokiterions-core/src/*.rs      (non-test lines)
+
+    simulation.rs:396    name: &'static str,                  field of `Mokiterion`
+    simulation.rs:418    const NAMES: [&str; 12] = [          the table SPEC-MOK-001 fixes
+    simulation.rs:429    fn name_of(number: u8) -> &'static str
+    simulation.rs:430        NAMES[usize::from(number) - 1]
+    simulation.rs:1043       name: String,                    field of `EventDetail::AgentInitialized`
+    simulation.rs:1141,1151                                   its rendering, `name:` first
+    simulation.rs:1396       name: name_of(number),           THE WRITER, at construction
+    simulation.rs:1656       name: agent.name.to_string(),    THE READER, at record emission
+    simulation.rs:708,719,741,799,1459,1616..1618              `DecisionSource::name`, pre-existing
+                                                              and unrelated: a policy's own name
+
+`DecisionSource::name` predates this work order and names a decision source, not a Mokiterion; it
+is listed so the two senses of the word are not confused when this search is re-run.
+
+The writer is inside the construction loop that also places the agent, and it is a table lookup on
+the identifier's number. The reader is the tick-0 initialization record. No third site reads
+`agent.name`: it is not in a decision input, not in a snapshot, not in any other record, and not
+in any termination or census path.
+
+
+4. Naming performs no draw
+--------------------------
+
+    git diff <baseline> -- mokiterions-core/src/simulation.rs \
+      | grep '^[+-]' | grep -iE 'entropy|next_u64|splitmix|SALT|seed'
+
+Every line the filter returns is a doc comment or a test line (the naming test's own seed loop and
+its failure messages). No added or removed line in the production draw path mentions the stream,
+the salt or the seed, which is the static half of the additivity argument; the measured half is
+`additivity.txt` (90 cells, byte-equal after projection, RESULT: PASS).
+
+
+5. No name participates in any ordering
+---------------------------------------
+
+    grep -rnE 'sort[a-z_]*\(|\.cmp\(|Ord|BinaryHeap' mokiterions-core/src/*.rs mokiterions-tui/src/*.rs \
+      | grep -i name
+
+    (no ordering keyed on a name)
+
+The four ordering sites in the workspace are unchanged and all keyed on distance then identifier,
+or on the identifier alone:
+
+    simulation.rs:1766   co_located_food.sort()                       identifier
+    simulation.rs:1779   perceived_food.sort_by(distance, then id)
+    simulation.rs:1802   perceived_mokiterions.sort_by(distance, then id)
+    simulation.rs:543,548 is_sorted_by_distance_then_id(...)          the assertion of the above
+
+The acting order is `simulation.rs:1716`, `for agent_index in 0..self.agents.len()`, which is
+construction order and so ascending identifier. Names are assigned in that same loop and are never
+consulted by it. The roster's order is the snapshot's order, which is the same.
+
+
+6. No floating point in the naming path
+---------------------------------------
+
+    grep -rnE '\bf32\b|\bf64\b' mokiterions-core/src/*.rs mokiterions-tui/src/*.rs
+
+    spatial.rs:123,128,129,134,136,137     `Viewport::dot_of` and `Viewport::bounds`
+
+Those six lines are the pre-existing canvas geometry that ratatui's canvas requires, unchanged by
+this work order. `agent_glyph`, `name_of`, `entry_lines` and the inspector heading are integer and
+string operations only, and the engine's naming path is a constant-index array lookup. The decimal
+strings the search also turns up (`"0.75"`, `"0.02"`, `"1.50"`) are the density argument's text
+form, parsed to an integer percentage, and predate naming.
+
+
+7. Dependencies unchanged
+-------------------------
+
+    cargo tree -p Mokiterions
+
+    Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-core)
+
+One crate and nothing else, which is REQ-MOK-026's check and SPEC-MOK-002 rule 1's empty
+dependency table measured rather than read. `mokiterions-core/Cargo.toml`'s `[dependencies]` is
+still empty and `mokiterions-tui/Cargo.toml` still declares exactly the path dependency and
+`ratatui 0.30.2` with `default-features = false` and the three features SPEC-MOK-003 fixes
+(`crossterm`, `layout-cache`, `underline-color`). `cargo tree -p mokiterions-tui` resolves to
+`Mokiterions` plus that one external crate and its own tree. Naming added no dependency to either
+package, which is what a hard-coded table costs: nothing.
+
+
+Summary
+-------
+
+  1. no engine name anywhere in `mokiterions-tui`, tests included          PASS
+  2. no identifier-to-name mapping or derivation in the observer           PASS
+  3. one engine writer at construction, one reader at record emission      PASS
+  4. no added production line touches the stream                          PASS
+  5. no ordering keyed on a name; acting order unchanged                   PASS
+  6. no floating point in the naming path                                  PASS
+  7. both dependency tables and both resolutions unchanged                 PASS
+
+No deviation from VER-MOK-011's static row remains. The two fixtures that would have been one were
+corrected in the sources rather than disclosed, because the corrected forms assert more than the
+tables did: a derivation over the whole alphabet, and a column arithmetic that holds for every
+admissible name length.

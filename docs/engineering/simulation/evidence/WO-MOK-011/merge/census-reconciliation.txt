@@ -1,0 +1,57 @@
+VER-MOK-011 — oracle 3, re-derived across the merge
+===================================================
+
+Merge         master 2157f77 into feature/phase-2-5-naming 4606145
+Instrument    analysis/census.py, unchanged, over one `cargo test` invocation at the workspace root
+Date          2026-08-19
+
+The packet's reconciliation runs 193 -> 205 across the branch base. That pair describes a tree
+`master` has moved past: `master` at 2157f77 runs **200** tests, having merged its survival bands,
+its release work and four observer test files since this branch started. The reconciliation the
+merge owes is therefore this one.
+
+  before   master 2157f77                 200 test names; 200 passed, 0 failed, 0 ignored
+  after    the merge                      212 test names; 212 passed, 0 failed, 0 ignored
+  delta    +12                            12 additions, 0 removals, 0 renames
+
+Both censuses are target-qualified, sorted and taken from a whole-workspace log by the same script:
+`test-census.txt` here is the merge's, and the before side is reproduced by running
+
+    cargo test --workspace > <log>
+    python docs/engineering/simulation/evidence/WO-MOK-011/analysis/census.py <log> <out>
+
+at 2157f77. The twelve additions are this work order's twelve and no other line moves:
+
+  tests/naming.rs       :: a_name_is_reported_once_and_on_no_other_record
+  tests/naming.rs       :: every_run_reports_the_specified_twelve_names_in_identifier_order
+  tests/naming.rs       :: the_initialization_record_keeps_the_name_first_and_the_trait_last
+  tests/verification.rs :: every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms
+  tests/verification.rs :: every_pane_identifying_a_mokiterion_presents_its_own_reported_name
+  tests/verification.rs :: the_inspector_identifies_a_dead_subject_by_name_and_identifier
+  unittests             :: render::tests::an_entry_carries_the_name_before_the_identifier_and_takes_six_columns
+  unittests             :: simulation::tests::a_name_is_the_same_value_at_both_ends_of_a_run
+  unittests             :: simulation::tests::naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration
+  unittests             :: simulation::tests::the_names_are_the_specified_twelve
+  unittests             :: simulation::tests::the_reported_record_carries_the_name_the_agent_holds
+  unittests             :: verification::a_subject_whose_record_was_never_ingested_is_presented_without_a_name
+
+Zero removals is the figure that matters most here, because the merge edited inherited tests. It
+edited them without deleting or renaming one: the six `entry_lines` call sites `master` owns in
+`src/render.rs` gained the name argument, one expected string in
+`the_collapsed_form_takes_no_band` gained the six-column field, and `tests/render.rs`'s row locator
+was made name-aware, so every inherited test name is still in the census and still passing. What an
+edited assertion cannot prove is that it still asserts what it asserted; that reading is
+`merge/README.md`'s stop-condition-1 item and the technical owner's call.
+
+The census collapses both packages' `src/lib.rs` targets under the qualifier `unittests`, which is
+what `cargo test` prints for them. That is the packet's convention, kept here so the two censuses
+diff cleanly. The per-target totals, which do separate them, are in `gates.txt`:
+
+  engine    54 lib + 31 public (cli 13, decisions 1, density 2, naming 3, process 6,
+                                termination 4, viability 2)                              =  85
+  observer  31 lib + 8 main + 88 public (authority 4, export 7, layout 10, options 8,
+                                render 12, spatial 7, state 21, verification 19)         = 127
+  workspace                                                                              = 212
+
+Those are the figures `SPEC-MOK-004` rules 9, 10 and 11 record as amended, all three re-measured
+here rather than carried from the branch.

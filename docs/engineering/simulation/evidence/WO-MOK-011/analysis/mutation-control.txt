@@ -1,0 +1,134 @@
+VER-MOK-011 acceptance scenario 2: the mutation control
+=======================================================
+
+The contract, verbatim:
+
+  "A reviewer deliberately perturbs the naming step to draw one value from the shared stream,
+   confirms oracle 2 fails and oracle 1 fails, and reverts. A check that cannot be made to fail has
+   not been demonstrated to work."
+
+Work order   WO-MOK-011
+Baseline     524a6758d74b5240079959e9827ea40a7af22a30
+Date         2026-08-19
+Subject      mokiterions-core/src/simulation.rs, the agent construction site (~line 1396)
+
+
+1. The perturbation
+-------------------
+
+Applied to the working tree, and to nothing else. Before:
+
+    name: name_of(number),
+
+After:
+
+    name: {
+        // MUTATION CONTROL, VER-MOK-011 acceptance scenario 2. Reverted immediately
+        // after measurement; see evidence/WO-MOK-011/analysis/mutation-control.txt.
+        let _ = entropy.next_u64();
+        name_of(number)
+    },
+
+One draw from the shared stream, at the point the name is assigned, and the drawn value discarded.
+This is the smallest perturbation that makes naming entropy-consuming while leaving the assigned
+name itself correct, so what the oracles catch is the stream position and not a wrong name. No test,
+no manifest, no projection and no evidence file was touched for this measurement.
+
+The pre-perturbation file was copied to C:\Users\mathi\simulation.rs.orig, sha256
+
+    cca972343a13d4b04cd643052baaee55a97127847bc67a719a1105f8b7f8ef30
+
+
+2. Oracle 2 fails — the recorded stream position
+------------------------------------------------
+
+cargo test -p Mokiterions --lib, perturbed build:
+
+    test result: FAILED. 52 passed; 2 failed; 0 ignored
+
+The two failures are exactly the two instruments oracle 2 rests on, and no others:
+
+  simulation::tests::naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration
+    panicked at mokiterions-core/src/simulation.rs:4135:
+    assertion `left == right` failed: naming moved the shared stream at seed 0, density 0.15%
+      left: 84
+     right: 72
+
+  simulation::tests::trait_derivation_leaves_the_shared_stream_where_it_found_it
+    panicked at mokiterions-core/src/simulation.rs:3425:
+    assertion `left == right` failed: the shared stream is not where initialization at seed 0,
+    density 0.15% left it before this change
+      left: 84
+     right: 72
+
+72 is INITIALIZATION_DRAWS for that cell, recorded before this work order; 84 is 72 + 12, one extra
+draw per Mokiterion. The inherited instrument and the new one both fail, and they fail with the
+arithmetic the perturbation predicts rather than with a vague inequality.
+
+Note which tests did *not* fail, because it is the point of the control: the name tests all passed.
+the_names_are_the_specified_twelve, the_reported_record_keeps_the_name_the_agent_holds and the three
+public cases in tests/naming.rs are blind to the stream position by construction, and a suite of only
+those would have accepted this defect. Oracle 2 is what catches it.
+
+
+3. Oracle 1 fails — the projected byte comparison
+-------------------------------------------------
+
+The perturbed release binary was built and two of the ninety declared cells were captured and
+projected with baseline/projection.py, unmodified. Both were compared against baseline/pre-manifest.txt,
+which is the pre-change capture at the baseline commit.
+
+  seed0-baseline-d0.15-traceoff
+    pre   projected  562c210bd079ffde3e558cce3b107eab5e0ae1ac7f604335d09ea533ca147ab8
+    post  projected  562c210bd079ffde3e558cce3b107eab5e0ae1ac7f604335d09ea533ca147ab8   equal to pre
+    mut   projected  ef8004ba57176e979f0eaffd65afb9c43f0136571076786fadf1447eda9b7702   DIFFERS
+    lines  pre 1518   post 1518   mut 1507
+    bytes  pre 158747  post 158865  mut 158346
+
+  seed42-individual-d0.75-traceon
+    pre   projected  04008184eeb9533c5ef4ef8e0aa762d8d1c8aecabed5a104b19868e359ae49c4
+    post  projected  04008184eeb9533c5ef4ef8e0aa762d8d1c8aecabed5a104b19868e359ae49c4   equal to pre
+    mut   projected  24304140f6cc08cfd35b190aaa954094f7ab0a9c59a4831fde62e89a9f91da21   DIFFERS
+    lines  pre 23059  post 23059  mut 22557
+    bytes  pre 3177845 post 3177963 mut 3104222
+
+The same projection that makes the delivered change a no-op on all ninety cells does not absorb this
+one. It cannot: the projection deletes a name field, and what the perturbation changes is every
+placement drawn after the first name.
+
+Where the divergence starts, from baseline/init/seed0-baseline-d0.15-traceoff.txt against the
+perturbed capture projected, both being the tick-0 initialization block:
+
+  first divergent line: line 27 of the 38-line block
+    pre-change  tick=0 subject=M02 event=agent_initialized result=position:49:22,territory:A,...
+    perturbed   tick=0 subject=M02 event=agent_initialized result=position:86:55,territory:A,...
+  divergent lines within the block: 11 of 38
+
+M01 is unaffected and M02 through M12 all move, which is the signature of a single draw inserted
+after the first agent's placement. The whole run then diverges: the line count falls by 11 in the
+short cell and by 502 in the traced one, so deaths, regenerations and actions differ too.
+
+
+4. Reverted
+-----------
+
+The working tree was restored from C:\Users\mathi\simulation.rs.orig and the restored file's sha256
+re-measured:
+
+    cca972343a13d4b04cd643052baaee55a97127847bc67a719a1105f8b7f8ef30   restored, equal
+
+The perturbed release binary was discarded by rebuilding from the restored source, and the two
+perturbed captures were written outside the repository and deleted. Nothing from this measurement
+survives except this record. The post-change evidence in the packet was captured before the
+perturbation and its digests are unchanged by it; post/post-manifest.txt is reproducible from the
+restored source, which is the state section 5 records.
+
+
+5. Verdict
+----------
+
+Oracle 1 fails under the perturbation. Oracle 2 fails under the perturbation, in both of its
+instruments, with the predicted arithmetic. The naming step is therefore not merely asserted to be
+entropy-neutral: the checks that assert it have been shown to reject a naming step that is not.
+
+RESULT: PASS — the acceptance scenario is satisfied.

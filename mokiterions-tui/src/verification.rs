@@ -15,9 +15,13 @@
 //! calls, which is why every case below drives two runs and diffs them rather than asserting
 //! something about the observer's structure.
 //!
-//! `SPEC-MOK-004` rule 10 keeps these eight cases inside the crate: each reaches a
+//! `SPEC-MOK-004` rule 10 keeps these nine cases inside the crate: each reaches a
 //! `#[cfg(test)]` hook, which does not exist in the build an integration test links, so no
-//! test outside the crate could name one. The other sixteen are in `tests/verification.rs`.
+//! test outside the crate could name one. The other nineteen are in `tests/verification.rs`.
+//!
+//! The ninth arrived with `WO-MOK-011`. It is `REQ-MOK-041`'s provenance claim in its negative
+//! form, and it is here for the reason the rest are: a subject the observer holds and was never
+//! told the name of is reachable only through the snapshot hook.
 
 use mokiterions::simulation::{
     Action, AgentSnapshot, Coordinate, DecisionOutcome, DecisionSnapshot, Direction, EventType,
@@ -457,6 +461,114 @@ fn a_degenerate_world_still_draws_a_frame() {
     }
 }
 
+/// `REQ-MOK-041`: the observer presents only a name it received. A subject it holds but was never
+/// told the name of is presented without a name and without a stand-in for one.
+///
+/// This is the provenance claim in its negative form. It needs a subject present in the snapshot and
+/// absent from the ingested records, which a run never produces — `Observer::new` ingests the
+/// engine's initialization records before the first frame — so the hook is the only way to reach it,
+/// exactly as it is for a world with no standing resources above. What the frame must then show is a
+/// blank where the name would be: not a dash, not a label, not the identifier moved left into the
+/// name's columns. On the canvas the absence is stated by the one character `SPEC-MOK-003` rule 2 as
+/// amended assigns to it, which is the single place a stand-in is specified rather than forbidden.
+///
+/// Every name here is read from the observer's own ingested records through
+/// [`Observer::name_of`](crate::state::Observer::name_of) and none is written as a literal. A name
+/// literal anywhere in this crate is what `REQ-MOK-041` forbids, and a fixture is not an exception.
+#[test]
+fn a_subject_whose_record_was_never_ingested_is_presented_without_a_name() {
+    let mut observer = observer_for(&["--seed", "42", "--start-paused"]);
+    observer.advance().expect("the engine advances");
+
+    let named: Vec<(String, String)> = observer
+        .snapshot()
+        .agents
+        .iter()
+        .map(|agent| {
+            (
+                agent.id.clone(),
+                observer
+                    .name_of(&agent.id)
+                    .expect("the ingested records named every subject")
+                    .to_string(),
+            )
+        })
+        .collect();
+    assert_eq!(named.len(), 12);
+
+    // A thirteenth subject, in the snapshot and in no record. `M13` is an identifier the engine
+    // never issues, which is what makes it a subject the observer cannot have been told about.
+    let stranger = "M13";
+    let mut snapshot = observer.snapshot().clone();
+    snapshot.agents.push(AgentSnapshot {
+        id: stranger.to_string(),
+        position: Coordinate { x: 127, y: 0 },
+        territory: Territory::A,
+        health: 70,
+        satiety: 60,
+        energy: 50,
+        fear: 40,
+        applied_action: Some(Action::Wait),
+    });
+    snapshot.living_count += 1;
+    observer.replace_snapshot_for_test(snapshot);
+    assert_eq!(observer.name_of(stranger), None);
+
+    let buffer = frame(&mut observer, 160, 48).expect("above the floor");
+    let panes = layout::resolve(*buffer.area());
+    let roster = region(
+        &buffer,
+        panes
+            .roster
+            .expect("the reference viewport shows the roster"),
+    );
+
+    // The entry is present, and the name's six columns are blank rather than filled.
+    assert!(
+        roster.contains(&format!("      {stranger}")),
+        "{stranger}'s entry does not leave the name's columns blank:\n{roster}"
+    );
+    assert!(
+        !roster.contains(&format!("{stranger}   {stranger}")),
+        "{stranger} stands in for its own name:\n{roster}"
+    );
+    for placeholder in ["--", "n/a", "unknown", "(none)", "???"] {
+        assert!(
+            !roster.contains(placeholder),
+            "the roster presents {placeholder} where a name would be:\n{roster}"
+        );
+    }
+    // No name it *did* receive is lent to the subject it did not.
+    for (id, name) in &named {
+        let lent = format!("{name:<6}{stranger}");
+        assert!(
+            !roster.contains(&lent),
+            "{id}'s name {name} is presented against {stranger}:\n{roster}"
+        );
+    }
+
+    // The canvas states the absence with rule 2's character for it, at the stranger's own cell.
+    let area = canvas_of(160, 48);
+    let viewport = spatial::Viewport::resolve(
+        observer.zoom(),
+        (area.width, area.height),
+        observer.camera(),
+    );
+    let cell = viewport
+        .cell_of(observer.zoom(), 127, 0)
+        .expect("the whole world is in view at the reference viewport");
+    assert_eq!(
+        buffer
+            .cell((area.x + cell.0, area.y + cell.1))
+            .expect("inside the canvas")
+            .symbol()
+            .chars()
+            .next(),
+        Some(spatial::agent_glyph("")),
+        "the canvas does not state {stranger}'s missing name at its own cell"
+    );
+}
+
 /// A snapshot carrying one resource of each class and two Mokiterions in one overview cell.
 ///
 /// Both facts are needed to assert what overview zoom does and does not encode, and neither is
@@ -582,7 +694,13 @@ fn every_distinction_survives_the_loss_of_colour() {
         .filter(|(_, modifier)| modifier.contains(Modifier::UNDERLINED))
         .collect();
     assert_eq!(underlined.len(), 1, "the shared cell is not marked once");
-    assert_eq!(underlined[0].0, spatial::agent_glyph("M01").to_string());
+    // Rule 2 as amended on 2026-08-19: the glyph drawn is derived from the name the engine
+    // reported for the lowest identifier in the cell, so the expectation is read from the
+    // observer's own record of that report rather than from the identifier.
+    let drawn = observer
+        .name_of("M01")
+        .expect("the engine reported M01's name before tick 1");
+    assert_eq!(underlined[0].0, spatial::agent_glyph(drawn).to_string());
 
     // Rule 4.6's selection: reversed video, not a colour.
     let roster = layout::resolve(*buffer.area())

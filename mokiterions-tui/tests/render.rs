@@ -278,7 +278,15 @@ fn roster_cells(buffer: &Buffer, y: u16) -> Option<Vec<&Cell>> {
     }
 }
 
+/// Rule 4's name field: the entry's first six columns, the identifier beginning after them.
+const NAME_COLUMNS: usize = 6;
+
 /// The row on which `id`'s entry opens, found by the identity line rule 4 puts first.
+///
+/// Rule 4 as amended for `REQ-MOK-041` puts the name in that line's first six columns and the
+/// identifier immediately after them, so the row is found by where the identifier sits rather than
+/// by what the line opens with. A bar row cannot match: its columns six to eight are the health
+/// gauge's label and the opening cells of its bar.
 fn entry_row(buffer: &Buffer, id: &str) -> u16 {
     (buffer.area.top()..buffer.area.bottom())
         .find(|&y| {
@@ -287,7 +295,8 @@ fn entry_row(buffer: &Buffer, id: &str) -> u16 {
                     .iter()
                     .map(|cell| cell.symbol())
                     .collect::<String>()
-                    .starts_with(id)
+                    .get(NAME_COLUMNS..NAME_COLUMNS + id.len())
+                    == Some(id)
             })
         })
         .unwrap_or_else(|| panic!("{id} has no roster entry"))

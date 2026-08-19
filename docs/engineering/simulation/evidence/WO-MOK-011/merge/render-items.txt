@@ -1,0 +1,41 @@
+SPEC-MOK-004 rule 10 — src/render.rs's item counts across the merge
+===================================================================
+
+Merge         master 2157f77 into feature/phase-2-5-naming 4606145
+Date          2026-08-19
+
+Rule 10's row for `mokiterions-tui/src/render.rs` justifies keeping its tests in the internal tier by
+the module's item counts, so the merge has to show that giving `entry_lines` a parameter changes none
+of them. Counted outside every `#[cfg(test)]` block, by brace balance, the way analysis/interface.py
+counts:
+
+                                    master 2157f77      the merge
+  fn declarations                   31                  31
+    of them private                 30                  30
+  const declarations                17                  17
+    of them private                 16                  16
+  pub / pub(crate) items             2                   2
+  total item declarations           48                  48
+
+The name sets are identical too, not merely the sizes: no function, constant or public item is added,
+removed or renamed. The single difference between the two versions of the module's declarations is
+that `entry_lines` takes a fourth parameter and its signature therefore wraps across five lines
+instead of one.
+
+An arithmetic note on the row itself, reported and not corrected
+---------------------------------------------------------------
+
+Rule 10's row reads "the module declares 47 private items -- 30 functions and 17 constants -- against
+2 public ones". Measured, the module declares 48 items: 31 functions and 17 constants, of which one
+function and one constant are `pub(crate)`, leaving 46 private. The row's private figure counts the
+`pub(crate)` constant a second time in its public figure, so 47 + 2 exceeds the 48 that exist.
+
+That row is `master`'s, written under its `WO-MOK-010`, and this branch inherits it. The merge does
+not touch it beyond the test count in the adjacent column, 17 -> 18, and correcting a figure in an
+approved amendment row of a specification this work order does not otherwise amend is the artifact
+owner's act rather than a merge resolution. It is recorded here because the merge measured the module
+and would otherwise be passing over a figure it knows to be one out.
+
+Nothing in the naming work depends on which reading is right: rule 10's placement rule turns on the
+five band tests and this work order's one test needing private access, which they do under either
+count.

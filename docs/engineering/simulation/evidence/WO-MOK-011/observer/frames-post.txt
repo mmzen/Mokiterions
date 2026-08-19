@@ -1,0 +1,916 @@
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-tui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.65s
+     Running tests\zz_frame_dump.rs (target\debug\deps\zz_frame_dump-0e130c6369d88f93.exe)
+
+running 1 test
+### seed 42, --start-paused, one advance, reference policy, density 0.75
+### reported names: {"M01": "Zug", "M02": "Krul", "M03": "Quib", "M04": "Sput", "M05": "Trok", "M06": "Womp", "M07": "Hozz", "M08": "Nurb", "M09": "Vonk", "M10": "Gorm", "M11": "Xob", "M12": "Drix"}
+
+=== VIEWPORT 160x48 ===
+  panes: header Rect { x: 0, y: 0, width: 160, height: 3 } view Rect { x: 47, y: 3, width: 69, height: 34 } roster Some(Rect { x: 0, y: 3, width: 47, height: 34 }) inspector Some(Rect { x: 116, y: 3, width: 44, height: 34 }) log Some(Rect { x: 0, y: 37, width: 160, height: 10 })
+  roster pane (border included): x=0 y=3 w=47 h=34
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |│                                             │|
+    y=33  |│                                             │|
+    y=34  |│                                             │|
+    y=35  |│                                             │|
+    y=36  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+    (x=82, y=28) glyph 'D'
+    (x=79, y=29) glyph 'N'
+    (x=109, y=32) glyph 'X'
+    (x=108, y=34) glyph 'G'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M08 at world 62:103 -> canvas cell (x=31, y=25), absolute (x=79, y=29)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+    M10 at world 121:120 -> canvas cell (x=60, y=30), absolute (x=108, y=34)
+    M11 at world 123:115 -> canvas cell (x=61, y=28), absolute (x=109, y=32)
+    M12 at world 68:98 -> canvas cell (x=34, y=24), absolute (x=82, y=28)
+  inspector pane: x=116 y=3 w=44 h=34
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│nothing selected                          │|
+    y=5   |│Tab selects a Mokiterion in roster order  │|
+    y=6   |│                                          │|
+    y=7   |│                                          │|
+    y=8   |│                                          │|
+    y=9   |│                                          │|
+    y=10  |│                                          │|
+    y=11  |│                                          │|
+    y=12  |│                                          │|
+    y=13  |│                                          │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |│                                          │|
+    y=33  |│                                          │|
+    y=34  |│                                          │|
+    y=35  |│                                          │|
+    y=36  |└──────────────────────────────────────────┘|
+
+=== VIEWPORT 160x44 ===
+  panes: header Rect { x: 0, y: 0, width: 160, height: 3 } view Rect { x: 47, y: 3, width: 69, height: 34 } roster Some(Rect { x: 0, y: 3, width: 47, height: 34 }) inspector Some(Rect { x: 116, y: 3, width: 44, height: 34 }) log Some(Rect { x: 0, y: 37, width: 160, height: 6 })
+  roster pane (border included): x=0 y=3 w=47 h=34
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |│                                             │|
+    y=33  |│                                             │|
+    y=34  |│                                             │|
+    y=35  |│                                             │|
+    y=36  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+    (x=82, y=28) glyph 'D'
+    (x=79, y=29) glyph 'N'
+    (x=109, y=32) glyph 'X'
+    (x=108, y=34) glyph 'G'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M08 at world 62:103 -> canvas cell (x=31, y=25), absolute (x=79, y=29)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+    M10 at world 121:120 -> canvas cell (x=60, y=30), absolute (x=108, y=34)
+    M11 at world 123:115 -> canvas cell (x=61, y=28), absolute (x=109, y=32)
+    M12 at world 68:98 -> canvas cell (x=34, y=24), absolute (x=82, y=28)
+  inspector pane: x=116 y=3 w=44 h=34
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│nothing selected                          │|
+    y=5   |│Tab selects a Mokiterion in roster order  │|
+    y=6   |│                                          │|
+    y=7   |│                                          │|
+    y=8   |│                                          │|
+    y=9   |│                                          │|
+    y=10  |│                                          │|
+    y=11  |│                                          │|
+    y=12  |│                                          │|
+    y=13  |│                                          │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |│                                          │|
+    y=33  |│                                          │|
+    y=34  |│                                          │|
+    y=35  |│                                          │|
+    y=36  |└──────────────────────────────────────────┘|
+
+=== VIEWPORT 160x40 ===
+  panes: header Rect { x: 0, y: 0, width: 160, height: 3 } view Rect { x: 47, y: 3, width: 69, height: 30 } roster Some(Rect { x: 0, y: 3, width: 47, height: 30 }) inspector Some(Rect { x: 116, y: 3, width: 44, height: 30 }) log Some(Rect { x: 0, y: 33, width: 160, height: 6 })
+  roster pane (border included): x=0 y=3 w=47 h=30
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+    (x=82, y=28) glyph 'D'
+    (x=79, y=29) glyph 'N'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M08 at world 62:103 -> canvas cell (x=31, y=25), absolute (x=79, y=29)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+    M12 at world 68:98 -> canvas cell (x=34, y=24), absolute (x=82, y=28)
+  inspector pane: x=116 y=3 w=44 h=30
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│nothing selected                          │|
+    y=5   |│Tab selects a Mokiterion in roster order  │|
+    y=6   |│                                          │|
+    y=7   |│                                          │|
+    y=8   |│                                          │|
+    y=9   |│                                          │|
+    y=10  |│                                          │|
+    y=11  |│                                          │|
+    y=12  |│                                          │|
+    y=13  |│                                          │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |└──────────────────────────────────────────┘|
+
+=== VIEWPORT 140x44 ===
+  panes: header Rect { x: 0, y: 0, width: 140, height: 3 } view Rect { x: 47, y: 3, width: 49, height: 34 } roster Some(Rect { x: 0, y: 3, width: 47, height: 34 }) inspector Some(Rect { x: 96, y: 3, width: 44, height: 34 }) log Some(Rect { x: 0, y: 37, width: 140, height: 6 })
+  roster pane (border included): x=0 y=3 w=47 h=34
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |│                                             │|
+    y=33  |│                                             │|
+    y=34  |│                                             │|
+    y=35  |│                                             │|
+    y=36  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+    (x=82, y=28) glyph 'D'
+    (x=79, y=29) glyph 'N'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M08 at world 62:103 -> canvas cell (x=31, y=25), absolute (x=79, y=29)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+    M12 at world 68:98 -> canvas cell (x=34, y=24), absolute (x=82, y=28)
+  inspector pane: x=96 y=3 w=44 h=34
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│nothing selected                          │|
+    y=5   |│Tab selects a Mokiterion in roster order  │|
+    y=6   |│                                          │|
+    y=7   |│                                          │|
+    y=8   |│                                          │|
+    y=9   |│                                          │|
+    y=10  |│                                          │|
+    y=11  |│                                          │|
+    y=12  |│                                          │|
+    y=13  |│                                          │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |│                                          │|
+    y=33  |│                                          │|
+    y=34  |│                                          │|
+    y=35  |│                                          │|
+    y=36  |└──────────────────────────────────────────┘|
+
+=== VIEWPORT 140x43 ===
+  panes: header Rect { x: 0, y: 0, width: 140, height: 3 } view Rect { x: 47, y: 3, width: 49, height: 33 } roster Some(Rect { x: 0, y: 3, width: 47, height: 33 }) inspector Some(Rect { x: 96, y: 3, width: 44, height: 33 }) log Some(Rect { x: 0, y: 36, width: 140, height: 6 })
+  roster pane (border included): x=0 y=3 w=47 h=33
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |│                                             │|
+    y=33  |│                                             │|
+    y=34  |│                                             │|
+    y=35  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+    (x=82, y=28) glyph 'D'
+    (x=79, y=29) glyph 'N'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M08 at world 62:103 -> canvas cell (x=31, y=25), absolute (x=79, y=29)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+    M12 at world 68:98 -> canvas cell (x=34, y=24), absolute (x=82, y=28)
+  inspector pane: x=96 y=3 w=44 h=33
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│nothing selected                          │|
+    y=5   |│Tab selects a Mokiterion in roster order  │|
+    y=6   |│                                          │|
+    y=7   |│                                          │|
+    y=8   |│                                          │|
+    y=9   |│                                          │|
+    y=10  |│                                          │|
+    y=11  |│                                          │|
+    y=12  |│                                          │|
+    y=13  |│                                          │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |│                                          │|
+    y=33  |│                                          │|
+    y=34  |│                                          │|
+    y=35  |└──────────────────────────────────────────┘|
+
+=== VIEWPORT 120x48 ===
+  panes: header Rect { x: 0, y: 0, width: 120, height: 3 } view Rect { x: 47, y: 3, width: 73, height: 38 } roster Some(Rect { x: 0, y: 3, width: 47, height: 38 }) inspector None log Some(Rect { x: 0, y: 41, width: 120, height: 6 })
+  roster pane (border included): x=0 y=3 w=47 h=38
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |│                                             │|
+    y=33  |│                                             │|
+    y=34  |│                                             │|
+    y=35  |│                                             │|
+    y=36  |│                                             │|
+    y=37  |│                                             │|
+    y=38  |│                                             │|
+    y=39  |│                                             │|
+    y=40  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+    (x=82, y=28) glyph 'D'
+    (x=79, y=29) glyph 'N'
+    (x=109, y=32) glyph 'X'
+    (x=108, y=34) glyph 'G'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M08 at world 62:103 -> canvas cell (x=31, y=25), absolute (x=79, y=29)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+    M10 at world 121:120 -> canvas cell (x=60, y=30), absolute (x=108, y=34)
+    M11 at world 123:115 -> canvas cell (x=61, y=28), absolute (x=109, y=32)
+    M12 at world 68:98 -> canvas cell (x=34, y=24), absolute (x=82, y=28)
+  inspector pane: excluded at this viewport
+
+=== VIEWPORT 120x30 ===
+  panes: header Rect { x: 0, y: 0, width: 120, height: 3 } view Rect { x: 47, y: 3, width: 73, height: 26 } roster Some(Rect { x: 0, y: 3, width: 47, height: 26 }) inspector None log None
+  roster pane (border included): x=0 y=3 w=47 h=26
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+  inspector pane: excluded at this viewport
+
+=== VIEWPORT 100x30 ===
+  panes: header Rect { x: 0, y: 0, width: 100, height: 3 } view Rect { x: 47, y: 3, width: 53, height: 26 } roster Some(Rect { x: 0, y: 3, width: 47, height: 26 }) inspector None log None
+  roster pane (border included): x=0 y=3 w=47 h=26
+    y=3   |┌ roster  living 12  deaths 0 ────────────────┐|
+    y=4   |│Zug   M01  A  12:1          move:east        │|
+    y=5   |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=6   |│Krul  M02  A  17:62         move:north       │|
+    y=7   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=8   |│Quib  M03  A  27:52         move:east        │|
+    y=9   |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=10  |│Sput  M04  A  84:44         move:east        │|
+    y=11  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=12  |│Trok  M05  A  84:16         move:south       │|
+    y=13  |│     h ██ 100  s █░  99  e █░  99  f ░░   0  │|
+    y=14  |│Womp  M06  A  11:46         move:west        │|
+    y=15  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=16  |│Hozz  M07  B  67:94         move:north       │|
+    y=17  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=18  |│Nurb  M08  B  62:103        move:north       │|
+    y=19  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=20  |│Vonk  M09  B  65:82         move:east        │|
+    y=21  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=22  |│Gorm  M10  B  121:120       move:east        │|
+    y=23  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=24  |│Xob   M11  B  123:115       move:north       │|
+    y=25  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=26  |│Drix  M12  B  68:98         move:east        │|
+    y=27  |│     h ██ 100  s █░  99  e █░  99  f ░░  10  │|
+    y=28  |└─────────────────────────────────────────────┘|
+  name and identifier cell positions:
+    M01: identifier at (x=7, y=4); the six columns before it, x=1..6, hold |Zug   |; the engine reported "Zug"
+    M02: identifier at (x=7, y=6); the six columns before it, x=1..6, hold |Krul  |; the engine reported "Krul"
+    M03: identifier at (x=7, y=8); the six columns before it, x=1..6, hold |Quib  |; the engine reported "Quib"
+    M04: identifier at (x=7, y=10); the six columns before it, x=1..6, hold |Sput  |; the engine reported "Sput"
+    M05: identifier at (x=7, y=12); the six columns before it, x=1..6, hold |Trok  |; the engine reported "Trok"
+    M06: identifier at (x=7, y=14); the six columns before it, x=1..6, hold |Womp  |; the engine reported "Womp"
+    M07: identifier at (x=7, y=16); the six columns before it, x=1..6, hold |Hozz  |; the engine reported "Hozz"
+    M08: identifier at (x=7, y=18); the six columns before it, x=1..6, hold |Nurb  |; the engine reported "Nurb"
+    M09: identifier at (x=7, y=20); the six columns before it, x=1..6, hold |Vonk  |; the engine reported "Vonk"
+    M10: identifier at (x=7, y=22); the six columns before it, x=1..6, hold |Gorm  |; the engine reported "Gorm"
+    M11: identifier at (x=7, y=24); the six columns before it, x=1..6, hold |Xob   |; the engine reported "Xob"
+    M12: identifier at (x=7, y=26); the six columns before it, x=1..6, hold |Drix  |; the engine reported "Drix"
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=54, y=4) glyph 'Z'
+    (x=90, y=8) glyph 'T'
+    (x=53, y=15) glyph 'W'
+    (x=90, y=15) glyph 'S'
+    (x=61, y=17) glyph 'Q'
+    (x=56, y=19) glyph 'K'
+    (x=80, y=24) glyph 'V'
+    (x=81, y=27) glyph 'H'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=54, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=56, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=61, y=17)
+    M04 at world 84:44 -> canvas cell (x=42, y=11), absolute (x=90, y=15)
+    M05 at world 84:16 -> canvas cell (x=42, y=4), absolute (x=90, y=8)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=53, y=15)
+    M07 at world 67:94 -> canvas cell (x=33, y=23), absolute (x=81, y=27)
+    M09 at world 65:82 -> canvas cell (x=32, y=20), absolute (x=80, y=24)
+  inspector pane: excluded at this viewport
+
+=== VIEWPORT 34x22 ===
+  panes: header Rect { x: 0, y: 0, width: 34, height: 3 } view Rect { x: 0, y: 3, width: 34, height: 18 } roster None inspector None log None
+  roster pane: excluded at this viewport, reachable as an overlay
+  map canvas glyph cells (letters and digits only; food is ○◎● and the boundary ─):
+    (x=7, y=4) glyph 'Z'
+    (x=6, y=15) glyph 'W'
+    (x=14, y=17) glyph 'Q'
+    (x=9, y=19) glyph 'K'
+  where each living subject maps, by the observer's own mapping:
+    M01 at world 12:1 -> canvas cell (x=6, y=0), absolute (x=7, y=4)
+    M02 at world 17:62 -> canvas cell (x=8, y=15), absolute (x=9, y=19)
+    M03 at world 27:52 -> canvas cell (x=13, y=13), absolute (x=14, y=17)
+    M06 at world 11:46 -> canvas cell (x=5, y=11), absolute (x=6, y=15)
+  inspector pane: excluded at this viewport
+
+=== DETAIL ZOOM, 160x48, first living subject selected ===
+  zoom is now Detail
+  map canvas: x=48 y=4 w=67 h=32
+    y=4   |                                                                   |
+    y=5   |            Z    ○                                                 |
+    y=6   |                                                                   |
+    y=7   |    ●  ●             ○                                             |
+    y=8   |                                                                ◎  |
+    y=9   |                                                                   |
+    y=10  |                      ○                                            |
+    y=11  |                       ○                                           |
+    y=12  |                                                                 ◎ |
+    y=13  |                                                                   |
+    y=14  |                                                   ◎               |
+    y=15  |                                                     ○             |
+    y=16  |                                                                   |
+    y=17  |                                                                   |
+    y=18  |                                               ●                   |
+    y=19  |                                                                   |
+    y=20  |                                                                   |
+    y=21  |            ○                                                      |
+    y=22  |                                                                   |
+    y=23  |                                                                   |
+    y=24  |                                                                   |
+    y=25  |                                                                   |
+    y=26  |                                                                   |
+    y=27  |                                          ●                        |
+    y=28  |                                                                   |
+    y=29  |                                                                   |
+    y=30  |  ●                                                                |
+    y=31  |                                    ●                       ○      |
+    y=32  |                                                                   |
+    y=33  |  ◎                           ●                                    |
+    y=34  |                             ◎                                     |
+    y=35  |                                                     ◎             |
+    M01 at world 12:1 -> absolute (x=60, y=5)
+  inspector pane, living selection: x=116 y=3 w=44 h=34
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│Zug  M01                                  │|
+    y=5   |│position  12:1  territory A               │|
+    y=6   |│sharing   1 in this rendered cell         │|
+    y=7   |│health 100  satiety 99  energy 99         │|
+    y=8   |│                                          │|
+    y=9   |│decision, tick 1                          │|
+    y=10  |│proposed  move:east                       │|
+    y=11  |│outcome   + accepted                      │|
+    y=12  |│applied   move:east                       │|
+    y=13  |│authority REQ-MOK-004                     │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |│                                          │|
+    y=33  |│                                          │|
+    y=34  |│                                          │|
+    y=35  |│                                          │|
+    y=36  |└──────────────────────────────────────────┘|
+
+=== A DEAD SELECTION, 160x48 ===
+  the first death under the baseline policy is M01 at tick 119; the engine reported its name as "Zug"
+  selection after the death: Some("M01")
+  inspector pane, dead selection: x=116 y=3 w=44 h=34
+    y=3   |┌ inspector ───────────────────────────────┐|
+    y=4   |│Zug  M01                                  │|
+    y=5   |│died on tick 119                          │|
+    y=6   |│final health 0  satiety 0  energy 81      │|
+    y=7   |│                                          │|
+    y=8   |│                                          │|
+    y=9   |│                                          │|
+    y=10  |│                                          │|
+    y=11  |│                                          │|
+    y=12  |│                                          │|
+    y=13  |│                                          │|
+    y=14  |│                                          │|
+    y=15  |│                                          │|
+    y=16  |│                                          │|
+    y=17  |│                                          │|
+    y=18  |│                                          │|
+    y=19  |│                                          │|
+    y=20  |│                                          │|
+    y=21  |│                                          │|
+    y=22  |│                                          │|
+    y=23  |│                                          │|
+    y=24  |│                                          │|
+    y=25  |│                                          │|
+    y=26  |│                                          │|
+    y=27  |│                                          │|
+    y=28  |│                                          │|
+    y=29  |│                                          │|
+    y=30  |│                                          │|
+    y=31  |│                                          │|
+    y=32  |│                                          │|
+    y=33  |│                                          │|
+    y=34  |│                                          │|
+    y=35  |│                                          │|
+    y=36  |└──────────────────────────────────────────┘|
+  roster pane, after the death: x=0 y=3 w=47 h=34
+    y=3   |┌ roster  living 0  deaths 12 ────────────────┐|
+    y=4   |│                                             │|
+    y=5   |│                                             │|
+    y=6   |│                                             │|
+    y=7   |│                                             │|
+    y=8   |│                                             │|
+    y=9   |│                                             │|
+    y=10  |│                                             │|
+    y=11  |│                                             │|
+    y=12  |│                                             │|
+    y=13  |│                                             │|
+    y=14  |│                                             │|
+    y=15  |│                                             │|
+    y=16  |│                                             │|
+    y=17  |│                                             │|
+    y=18  |│                                             │|
+    y=19  |│                                             │|
+    y=20  |│                                             │|
+    y=21  |│                                             │|
+    y=22  |│                                             │|
+    y=23  |│                                             │|
+    y=24  |│                                             │|
+    y=25  |│                                             │|
+    y=26  |│                                             │|
+    y=27  |│                                             │|
+    y=28  |│                                             │|
+    y=29  |│                                             │|
+    y=30  |│                                             │|
+    y=31  |│                                             │|
+    y=32  |│                                             │|
+    y=33  |│                                             │|
+    y=34  |│                                             │|
+    y=35  |│                                             │|
+    y=36  |└─────────────────────────────────────────────┘|
+test dump ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+

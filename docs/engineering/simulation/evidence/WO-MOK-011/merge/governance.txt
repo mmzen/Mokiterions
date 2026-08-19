@@ -1,0 +1,71 @@
+VER-MOK-011 — the harness state, at master and at the merge
+===========================================================
+
+Merge         master 2157f77 into feature/phase-2-5-naming 4606145
+Date          2026-08-19
+
+Three commands, run at 2157f77 in a detached worktree and at the merged tree, so that what the merge
+does to the harness is a difference and not a reading. The whole point of the pair is that a warning
+this branch inherits should not be read as one it caused.
+
+                                      master 2157f77      the merge      delta
+  validate_engineering_artifacts.py   PASS                PASS           --
+    artifacts                         95                  102            +7
+    errors / warnings                 0 / 0               0 / 0          --
+    planes                            all E0/W0           all E0/W0      --
+  generate_harness_dashboard.py       PASS                PASS           --
+    artifacts / relations             95 / 319            102 / 335      +7 / +16
+    errors / warnings                 0 / 6               0 / 6          -- / --
+  inspect_engineering_artifacts.py    17 findings         18 findings    +1
+
+The seven artifacts are this chain's seven and nothing else: INT-MOK-008, CAP-MOK-008, REQ-MOK-040,
+REQ-MOK-041, VER-MOK-011, WO-MOK-011 and VREC-MOK-011.
+
+What the inspector says, and what changes
+-----------------------------------------
+
+At 2157f77:
+
+  Decision required (0)
+  Definitions pending (1)   WO-MOK-008 [draft] complete-definition
+  Active work (0)
+  Assurance pending (0)
+  Findings (17)
+    [WARNING] W-HEX-001  WO-MOK-010 is implemented but has no evidence document keyed to its ID.
+    [WARNING] W-HEX-003  5 observations [ADR-MOK-001, ARCH-MOK-001, ARCH-MOK-002, SPEC-MOK-001,
+                         SPEC-MOK-002, SPEC-MOK-003, SPEC-MOK-004]
+    [INFO]    I-REV-001  11 observations [RLS-MOK-001, VREC-MOK-001, VREC-MOK-002, VREC-MOK-003,
+                         VREC-MOK-004, VREC-MOK-005, VREC-MOK-006, VREC-MOK-007, +3 more --
+                         the inspector truncates its own list at eight]
+
+At the merge:
+
+  Decision required (1)     VREC-MOK-011 [ready] assurance-review
+  Definitions pending (1)   WO-MOK-008 [draft] complete-definition -- unchanged, not this chain's
+  Active work (1)           WO-MOK-011 [in_progress] continue-authorized-work
+  Assurance pending (0)
+  Findings (18)
+    [WARNING] W-HEX-001  unchanged, and `master`'s: WO-MOK-010 is implemented but has no evidence
+                         document keyed to its ID
+    [WARNING] W-HEX-003  unchanged at 5 observations, the same seven artifacts
+    [INFO]    I-REV-001  11 -> 12 observations, the arrival being VREC-MOK-011
+
+So the merge adds exactly three inspector readings, all three of them this chain's own and all three
+expected: a record awaiting an assurance decision, a work order still `in_progress`, and that record
+in the review-age list. **It adds no warning and clears none.**
+
+W-HEX-001 is `master`'s and is left alone deliberately. `master` renumbered its individuality chain
+from `007` to `010` and its evidence packet is still keyed `WO-MOK-007`, which is what the inspector
+is reporting; retaining evidence keyed to `WO-MOK-010` is the engineering owner's act on that work
+order, not a merge resolution, and this branch does not touch either packet. That the merged tree's
+`evidence/WO-MOK-007/` and `evidence/WO-MOK-010/` trees are byte-identical to `master`'s is recorded
+in README.md.
+
+The dashboard's 6 warnings are the same 6 at both trees. The validator reports 0 warnings at both;
+the two counts differ because the two tools warn about different things, which is also true at
+`master` and is not something the merge introduces.
+
+The snapshot digests are 70cd0f56da397f15fbcc671519b6ed882f86d7c89529cc5b529e264d82c6c4ba at
+2157f77 and 872bf9dbac8fc30f1eb469216e1b1f8794517314a8fb06d8524c9d1dc2215204 at the merged tree.
+Neither is bound to a commit by any record: the second is a working tree with MERGE_HEAD present.
+`VREC-MOK-011` remains bound to 9ddcf83, where the digest was 6be4233a.

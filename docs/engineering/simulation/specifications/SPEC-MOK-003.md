@@ -19,6 +19,7 @@ specifies = [
   "REQ-MOK-026",
   "REQ-MOK-027",
   "REQ-MOK-032",
+  "REQ-MOK-041",
 ]
 +++
 
@@ -52,6 +53,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-19 | **Rule 4 gains clause 7, survival bands.** The roster's three bars take a colour read from the value they present — green `80..=100`, orange `40..=79`, red `0..=39` — applied to each gauge's label, bar cells and numeric value together. The bands are a presentation of a number the bar already carries, so no quantity the engine does not compute enters the roster and `REQ-MOK-020`'s constraint against derived survival estimates is untouched; nor is any threshold borrowed from `SPEC-MOK-001` rule 5's reference-source sleep threshold of `20`, which is a decision source's policy rather than a survival state. Zero is red and clause 4's rendering of `0` as `0` with an empty bar is unchanged, as is what distinguishes zero from an absent value. Rule 2.5 needs no amendment, because the numeric value and the proportional fill already carry level without colour, which is what makes a band redundant reinforcement rather than the sole carrier of a distinction. No character of the entry moves and clause 4's mockup is unchanged. Clause 6's reversed-video selection composes with the band. The collapsed one-line form takes no band, stated in the clause and reversible by one sentence. No other rule, figure, glyph, key binding, export, authority mapping or snapshot contract changes. | Approved 2026-08-19 by the repository owner as technical owner, who fixed the three bands in the same act and reviewed this text before approving it. The owner's request had been green when the attribute is fine, orange when it is decreasing, red when it is low; the trend half was withdrawn after being shown that it inverts. `SPEC-MOK-001` decays satiety and energy by one each tick for every living Mokiterion, so "decreasing" is true of nearly every bar on nearly every tick and would become false only at zero, and `EventDetail::SurvivalChanged` carries the decay leg alone so reading the engine's own trend reproduces that inversion. Zero was unstated in the owner's bands and was confirmed as red on the same occasion. The implementation agent measured the inversion, drafted this text and recorded this approval on the owner's explicit instruction; it holds authority over neither, since this specification withholds thresholds of this kind from the implementation. The concrete colour values are the implementation's under the grant of "the exact palette, provided every distinction remains available without colour", and are recorded in `WO-MOK-007`. |
 | 2026-08-19 | **No rule changed. This row records the reconciliation of the rule 5 and rule 4 rows above, which were written independently and met in a merge.** `WO-MOK-005`'s rule 5 amendment and `WO-MOK-010`'s rule 4 amendment were approved on the same date by the same owner against different trees, and both are retained above verbatim: neither owner act is edited, summarised, or folded into the other. They occupy disjoint text and do not contradict each other in substance — rule 4 fixes the form of a roster entry, rule 5 fixes which viewports present the roster pane and how wide it is. **The one figure spanning them holds unchanged**: rule 5 gives the roster `47` columns wherever it is present, before and after its amendment, so rule 4's 45-column interior, its `bar_width(interior) = min(20, (interior - 35) / 4)` and the two-cell bars that follow are untouched, and rule 4's 47-column two-line threshold is met at every viewport presenting the pane at all. **What the merge changes is not a rule but a set**: rule 5's derived table now presents the roster at eight of its nine declared viewports rather than four, `100 × 30` among them, so any measurement of *which viewports present the roster* taken against the withdrawn tier table describes a table this document no longer contains. `WO-MOK-010`'s oracle 4 frame capture and its `the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it` test were both taken that way. The test is corrected in the merge commit against rule 5 as amended; the capture is **OUTSTANDING** re-derivation under `WO-MOK-010`. | Recorded by the implementation agent as a statement of fact about two approved amendments it holds no authority over. No provision of this specification is added, removed, or reworded by this row. The re-derivation it names belongs to `WO-MOK-010` and is the assurance owner's to accept once taken. **It was taken on 2026-08-19**: the frame capture was re-derived against rule 5 as amended and reads 996 bar rows over the 85 of 157 probed frames that draw a roster, with zero discrepancies, in `evidence/WO-MOK-010/observer/roster-frames.txt` with the method recorded in `evidence/WO-MOK-010/renumbering.md`. The **OUTSTANDING** re-derivation this row names is therefore discharged, and `VREC-MOK-010` binds it. This row still changes no provision and still ratifies nothing. |
 | 2026-08-19 | **Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with the bands of clause 7.** The two clauses were approved on the same date by the same owner against different trees, and each is retained above verbatim. They meet at exactly one point: clause 5 makes the bar row four gauges and clause 7 bands "each of the three bars", which leaves the fourth gauge unstated. **The banded set is now named rather than counted**: the band applies to health, satiety and energy, and `fear` renders as a bar and a numeric value with no colour at all. The reason is stated in the clause rather than left to be inferred — the three bands are a survival scale on which a high value is a good one, and `fear` inverts that, so a banded `fear 100` would read green while naming the worst state that attribute has. **The collapsed one-line form's count is corrected from three numeric values to four**, which clause 5 had already changed; it remains unstyled and takes no band, so that provision's substance is untouched. Nothing else in either clause changes: no boundary, no colour, no glyph, no character of the entry, no bar width, and no band for health, satiety or energy either gains or loses. Rule 2.5 still holds for the same reason it held before, and holds a fortiori for `fear`, which now carries no colour to be the sole carrier of anything. | **Decided 2026-08-19 by the repository owner acting as technical owner**, on the choice put to them once the collision was found: band `fear` on the same three-band scale, give it a second and opposite scale of its own, or leave it unbanded. The owner chose unbanded, on the reasoning that the scale is a survival scale and `fear`, whose direction inverts, does not borrow it; a second opposite scale was declined because it would put two contradictory colour meanings on one row. The implementation agent found the collision, put the choice, wrote this text and the amended clause, and decided none of the substance. **The wording is the agent's and was OUTSTANDING for the owner's ratification until 2026-08-19, when the repository owner, acting as technical owner, ratified it in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`; the decision it records never needed one.** `VREC-MOK-010` is a `ready` candidate bound to a commit that predates this row and is re-captured against the merge, not edited. |
+| 2026-08-19 | Four provisions amended under `REQ-MOK-041`, so the observer presents the name `REQ-MOK-040` makes the engine report. **Rule 2's glyph tables**: the detail table's `M01`–`M09 → 1`–`9` and `M10`–`M12 → A, B, C` rows are replaced by the name's first character uppercased, with `?` for a subject whose name was not received, and the overview layer table's "the identifier's last character" becomes "the name's first character" — the two zooms derive one glyph and had drifted, since the withdrawn overview rule gave `M10` a `0` where the detail table gave it an `A`. The twelve resulting glyphs `Z K Q S T W H N V G X D` are stated, resting on `SPEC-MOK-001`'s twelve pairwise-distinct first characters, which is what rule 2.5 needs and what the identifier-derived assignment had by construction. **The anticipation is retained rather than deleted**: the withdrawn table and the sentence promising that "when agent naming is introduced by a later phase, the glyph becomes the name's first character and this table is amended" are quoted in place, because they are why the old assignment was correct while no name existed. **Rule 4**: the entry mockup and prose carry the name first, then the identifier, in the two-line form and in the collapsed one-line form, and the addition to the identifier rather than replacement of it is stated with its reason — the identifier is the join key into the log, the export and every retained stream. **Line two is measured to be untouched**: the name occupies six columns of line one only, so the bar row's five leading columns, its 35-column overhead and `bar_width(interior) = min(20, (interior - 35) / 4)` are unchanged and the reference roster's two-cell bars stand; line one's fixed fields total 28 columns of a 45-column interior, so nothing truncates. **Rule 10**: the presented-value list gains the name, before the identifier and for a dead subject as well as a living one, under rule 10.6's retained selection; item 7 loses `name`, because the engine now reports one, and the item's principle is restated as the reason the presented name must be the engine's own — a name derived from an identifier or filled in as a placeholder would be a value the engine did not compute. **Nothing else changes**: no pane threshold, no floor, no layout figure, no key binding, no export form, no authority mapping row, no snapshot field, no interface item, and no obligation that layout be a pure function of viewport size. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011` and `WO-MOK-011`. The twelve names are the product owner's decision of the same date; the decision that the name is presented in addition to the identifier and precedes it, and that the observer sources it from the retained event stream rather than from a new engine interface item, are the technical owner's, recorded in `WO-MOK-011`. The implementation agent wrote the text and did not decide the substance; rule 2's glyph assignments are withheld from it by `WO-MOK-005`'s decision envelope. **The 2026-08-18 row marked OUTSTANDING above is untouched**, as are the four rows above it that `WO-MOK-010` and its merges left: rule 4's clause 5, its clause 7, the row reconciling clause 5 with `WO-MOK-005`'s rule 5, and the row reconciling clause 7 with clause 5. **Clause 7 and this row do not meet**: the bands colour cells on line two and this row adds the name to line one, so the banded set, its three boundaries, the unbanded `fear`, the 35-column bar overhead and `bar_width` are neither read nor written here, and the frame re-derivation the reconciliation row records as discharged is not reopened by a name. This sentence is the one part of this row the merge rewrote, and it changes no provision. |
 
 ## Actors and external systems
 
@@ -175,7 +177,7 @@ In both zooms:
 |---|---|
 | Resources | one braille dot per standing resource |
 | Territory boundary | a rule as in 2.2 |
-| Mokiterions | the identifier's last character as an uppercase glyph filling the whole character cell containing it |
+| Mokiterions | the name's first character as an uppercase glyph filling the whole character cell containing it |
 
 An overview Mokiterion glyph therefore locates its subject to within the 2 × 4 block of world cells that character
 cell covers, and it replaces the braille content of that cell. This is a consequence of a character cell being
@@ -188,15 +190,29 @@ resource glyph.
 
 | Entity | Glyph | Colour |
 |---|---|---|
-| Mokiterion, `M01`–`M09` | `1`–`9` | by current territory |
-| Mokiterion, `M10`–`M12` | `A`, `B`, `C` | by current territory |
+| Mokiterion, named | the name's first character, uppercased | by current territory |
+| Mokiterion, name not received | `?` | by current territory |
 | Resource, low | `○` | class colour |
 | Resource, medium | `◎` | class colour |
 | Resource, high | `●` | class colour |
 
-Mokiterion glyphs are derived mechanically from the engine's identifiers, which are `M01`–`M12` and carry no names.
-When agent naming is introduced by a later phase, the glyph becomes the name's first character and this table is
-amended; nothing here anticipates that value.
+Mokiterion glyphs are derived mechanically from the name the engine reported for the subject, which `SPEC-MOK-001`
+fixes for `M01` through `M12` as `Zug`, `Krul`, `Quib`, `Sput`, `Trok`, `Womp`, `Hozz`, `Nurb`, `Vonk`, `Gorm`, `Xob`
+and `Drix`, so the twelve glyphs are `Z`, `K`, `Q`, `S`, `T`, `W`, `H`, `N`, `V`, `G`, `X` and `D`. That
+specification fixes the twelve first characters as pairwise distinct, which is what rule 2.5 relies on and what the
+previous assignment obtained by construction instead.
+
+Before this amendment the table read `Mokiterion, M01–M09 → 1–9` and `Mokiterion, M10–M12 → A, B, C`, and the
+paragraph here stated that glyphs "are derived mechanically from the engine's identifiers, which are `M01`–`M12` and
+carry no names", and that "when agent naming is introduced by a later phase, the glyph becomes the name's first
+character and this table is amended; nothing here anticipates that value". That is the phase, and this is that
+amendment. The anticipation is retained here rather than deleted: it is why the identifier-derived assignment was
+correct while no name existed, and it is the condition this amendment satisfies rather than waives.
+
+The glyph is derived from the name and from nothing else. The observer holds no name table and no identifier-to-name
+derivation; the name reaches it in the engine's own `agent_initialized` record. A Mokiterion for which no name was
+received is drawn as `?` — a stated character, not the identifier, not a digit and not a guess — which is
+unreachable in a run the engine initialized, because `SPEC-MOK-001` rule 1 names every Mokiterion before tick 1.
 
 4. **Shared cells.** When two or more Mokiterions fall in the same rendered cell, the one with the lowest identifier
    is drawn and the cell is underlined to mark the cell as shared. The count of Mokiterions in the selected cell is
@@ -231,14 +247,27 @@ The roster lists every living Mokiterion in ascending identifier order, which is
 Each entry occupies two lines at widths of 47 columns or more:
 
 ```text
-M05  A  81:14         eat F0058
+Trok  M05  A  81:14         eat F0058
      h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20
 ```
 
-Line one carries the identifier, current territory, position, and the action the engine applied on the most recently
-completed tick. Line two carries health, satiety, energy and fear, each as a proportional bar of at most twenty cells
-and a numeric value. Below 47 columns each entry collapses to one line carrying identifier, territory and the four
-numeric values without bars.
+Line one carries the name, the identifier, current territory, position, and the action the engine applied on the most
+recently completed tick, in that order. Line two carries health, satiety, energy and fear, each as a proportional bar
+of at most twenty cells and a numeric value. Below 47 columns each entry collapses to one line carrying the name, the
+identifier, territory and the four numeric values without bars.
+
+**The name is presented in addition to the identifier, not instead of it, and it precedes it.** The identifier is the
+join key into the log pane, the export and every retained stream, so an operator cross-referencing a roster row
+against an engine record must not have to translate. The name is first because it is what the operator reads to tell
+one Mokiterion from another; the identifier follows as the reference.
+
+**Line two and its arithmetic are untouched by the name.** The name occupies six columns of line one, which carries
+name, identifier, territory and position in fixed fields and the applied action last, and it is the only line the
+name appears on. So the bar row's five leading columns, its `5 + 4 * 6 + 3 * 2 = 35` columns of overhead and
+`bar_width(interior) = min(20, (interior - 35) / 4)` are all unchanged, and the reference roster's 45-column interior
+still yields two-cell bars. Line one's fixed fields total `6 + 5 + 3 + 14 = 28` columns before the applied action,
+which leaves 17 at that interior, so the name costs no other field a column and truncates nothing. `SPEC-MOK-001`
+bounds a name at five characters, which the six-column field holds with its separating space.
 
 1. Twelve living entries in the two-line form require 24 lines plus the pane border, which the reference viewport
    provides; the no-scroll obligation of `REQ-MOK-020` is an obligation at the reference size and rule 5 states what
@@ -449,10 +478,11 @@ The observer presents the events the engine emits, in authoritative order, with 
 
 ### Rule 10 — Inspector
 
-For the selected Mokiterion the inspector presents its identifier, exact position, territory, health, satiety,
-energy, the count of Mokiterions sharing its rendered cell, and the decision record of the most recently completed
-tick: the proposed action with its target where it has one, the engine outcome as accepted or rejected, the engine's
-stated ground on rejection, and the action applied.
+For the selected Mokiterion the inspector presents its name, its identifier, exact position, territory, health,
+satiety, energy, the count of Mokiterions sharing its rendered cell, and the decision record of the most recently
+completed tick: the proposed action with its target where it has one, the engine outcome as accepted or rejected, the
+engine's stated ground on rejection, and the action applied. The name is presented with the identifier, before it, and
+for a dead subject as well as a living one, so rule 10.6's retained selection is identified the same way throughout.
 
 1. Accepted and rejected are distinguished by an explicit word and by symbol, not by colour alone.
 2. A rejection is presented as an expected outcome of the authority boundary, never as a program fault or warning.
@@ -463,8 +493,13 @@ stated ground on rejection, and the action applied.
 6. When the selected Mokiterion dies, the selection is retained and the pane presents the death, the tick of death,
    and the final attribute values. The next selection control moves to the nearest living Mokiterion in roster
    order.
-7. Fields for values the engine does not compute — name, age, kills, combats, remembered locations, model latency
+7. Fields for values the engine does not compute — age, kills, combats, remembered locations, model latency
    and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+
+   Amended 2026-08-19 under `REQ-MOK-041`: this list named `name`, and the engine now reports one, so this rule's
+   presented-value list above carries it and this list must not. The principle is unchanged and is the reason the
+   presented name is the engine's own: an observer that derived a name from an identifier, or filled a placeholder in,
+   would be presenting a value the engine did not compute, which this item forbids for every value it still names.
 
    Amended 2026-08-19: this list named `fear` and traits, and the engine now computes both, so naming them here
    asserted something untrue of the engine. Each is nonetheless still absent from this pane, for a different reason

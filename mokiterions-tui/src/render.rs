@@ -400,7 +400,10 @@ fn draw_mokiterions(
         let Some(cell) = buffer.cell_mut((inner.x + x, inner.y + y)) else {
             continue;
         };
-        cell.set_char(spatial::agent_glyph(&agent.id));
+        // Rule 2 as amended on 2026-08-19: the glyph is the engine's reported name's initial.
+        cell.set_char(spatial::agent_glyph(
+            observer.name_of(&agent.id).unwrap_or_default(),
+        ));
         let mut style = Style::new()
             .fg(territory_colour(agent.territory))
             .add_modifier(Modifier::BOLD);
@@ -451,7 +454,12 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
         // Rule 4.7: the entry's style is the line's, which every span patches rather than
         // replaces, so reversed video covers the whole entry and each gauge keeps its band
         // inside it. Selection stays marked by reversal and never by colour.
-        for line in entry_lines(agent, bar, two_line) {
+        for line in entry_lines(
+            agent,
+            observer.name_of(&agent.id).unwrap_or_default(),
+            bar,
+            two_line,
+        ) {
             lines.push(line.style(style));
         }
     }
@@ -480,7 +488,16 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
 }
 
 /// Rule 4's entry form. Two lines at 47 columns or more, one line below.
-fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<Line<'static>> {
+///
+/// `name` is what the engine reported for this Mokiterion, or empty where it reported none, in
+/// which case the field is blank rather than filled with the identifier (`REQ-MOK-041`). It takes
+/// six columns of line one only, so the bar row's 35-column overhead and `bar_width` are untouched.
+fn entry_lines(
+    agent: &AgentSnapshot,
+    name: &str,
+    bar: usize,
+    two_line: bool,
+) -> Vec<Line<'static>> {
     let applied = agent
         .applied_action
         .as_ref()
@@ -494,13 +511,13 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<Line<'s
         // numbers legible where the bar cells will not fit, and the numbers carry the level.
         // Rule 4.5 as amended makes that four numbers rather than three.
         return vec![Line::from(format!(
-            "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3} f{:>3}",
+            "{name:<6}{:<5}{territory:<3}h{:>3} s{:>3} e{:>3} f{:>3}",
             agent.id, agent.health, agent.satiety, agent.energy, agent.fear
         ))];
     }
     vec![
         Line::from(format!(
-            "{:<5}{territory:<3}{position:<14}{applied}",
+            "{name:<6}{:<5}{territory:<3}{position:<14}{applied}",
             agent.id
         )),
         // Rule 4.5 reserved the fourth slot for Phase 2's `fear`, to render empty with no label,
@@ -601,8 +618,16 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
         ];
     };
 
+    // Rule 10 as amended on 2026-08-19: the name precedes the identifier, and this line is above
+    // the living-or-dead branch below, so rule 10.6's retained selection is identified the same
+    // way after death as before it. Where the engine reported no name the identifier stands alone
+    // rather than being presented as one.
+    let heading = match observer.name_of(selection) {
+        Some(name) => format!("{name}  {selection}"),
+        None => selection.to_string(),
+    };
     let mut lines = vec![Line::from(Span::styled(
-        selection.to_string(),
+        heading,
         Style::new().add_modifier(Modifier::BOLD),
     ))];
 
@@ -1091,7 +1116,7 @@ mod tests {
         };
         // Rule 4.7 made an entry line a sequence of styled spans. `Line`'s `Display` writes span
         // content and nothing else, so the text asserted here is the text that reaches a cell.
-        let lines: Vec<String> = entry_lines(&agent, FULL_BAR, true)
+        let lines: Vec<String> = entry_lines(&agent, "Blip", FULL_BAR, true)
             .iter()
             .map(ToString::to_string)
             .collect();
@@ -1100,10 +1125,16 @@ mod tests {
             lines[1],
             "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20"
         );
-        // Line one carries identifier, territory, position and the applied action, in the
-        // mockup's columns. The action uses the engine's own rendering, `eat:F0058`.
+        // Line one carries the name, identifier, territory, position and the applied action, in
+        // the mockup's columns. The action uses the engine's own rendering, `eat:F0058`. The bar
+        // row asserted above is the mockup's unchanged, which is the measurement that rule 4 as
+        // amended on 2026-08-19 for `REQ-MOK-041` leaves line two and its arithmetic alone.
+        //
+        // The name here is a fabricated four-character stand-in, not the name rule 4's mockup
+        // prints beside `M05`: `REQ-MOK-041` lets no engine name be written down in this package,
+        // and what the columns hold is a length, not a particular name.
         assert!(
-            lines[0].starts_with("M05  A  81:14         "),
+            lines[0].starts_with("Blip  M05  A  81:14         "),
             "{}",
             lines[0]
         );
@@ -1121,7 +1152,7 @@ mod tests {
         // The fourth gauge takes no band, so its span carries no foreground -- the same `None` a
         // separator carries. Its content is asserted alongside the vector, because the vector
         // alone cannot tell an unbanded gauge from the space in front of it.
-        let spans = entry_lines(&agent, FULL_BAR, true).remove(1).spans;
+        let spans = entry_lines(&agent, "Blip", FULL_BAR, true).remove(1).spans;
         let bands: Vec<Option<Color>> = spans.iter().map(|span| span.style.fg).collect();
         assert_eq!(
             bands,
@@ -1263,7 +1294,7 @@ mod tests {
             applied_action: Some(Action::Sleep),
         };
         assert_eq!(
-            entry_lines(&agent, FULL_BAR, true)[1].to_string(),
+            entry_lines(&agent, "Ort", FULL_BAR, true)[1].to_string(),
             format!(
                 "     {}  {}  {}  {}",
                 unbanded('h', 12, FULL_BAR),
@@ -1291,7 +1322,7 @@ mod tests {
             fear: 7,
             applied_action: Some(Action::Sleep),
         };
-        let row = entry_lines(&agent, FULL_BAR, true).remove(1);
+        let row = entry_lines(&agent, "Ort", FULL_BAR, true).remove(1);
 
         // Indent, gauge, separator, gauge, separator, gauge, separator, gauge.
         assert_eq!(row.spans.len(), 8);
@@ -1339,7 +1370,7 @@ mod tests {
                 fear: value,
                 applied_action: None,
             };
-            entry_lines(&agent, FULL_BAR, true)
+            entry_lines(&agent, "Ort", FULL_BAR, true)
                 .remove(1)
                 .spans
                 .iter()
@@ -1372,9 +1403,12 @@ mod tests {
             fear: 7,
             applied_action: None,
         };
-        let lines = entry_lines(&agent, 0, false);
+        let lines = entry_lines(&agent, "Ort", 0, false);
         assert_eq!(lines.len(), 1);
-        assert_eq!(lines[0].to_string(), "M01  A  h 12 s 55 e 88 f  7");
+        // Rule 4 as amended for `REQ-MOK-041` gives line one a six-column name field, which
+        // the collapsed form carries too. What clause 7 asserts here is unchanged: the form
+        // has no bars and no span in it takes a band, the name field included.
+        assert_eq!(lines[0].to_string(), "Ort   M01  A  h 12 s 55 e 88 f  7");
         for span in &lines[0].spans {
             assert_eq!(span.style.fg, None, "the collapsed form carries a band");
         }
@@ -1392,7 +1426,7 @@ mod tests {
             fear: 0,
             applied_action: None,
         };
-        let lines: Vec<String> = entry_lines(&agent, 4, true)
+        let lines: Vec<String> = entry_lines(&agent, "Ort", 4, true)
             .iter()
             .map(ToString::to_string)
             .collect();
@@ -1405,22 +1439,63 @@ mod tests {
         // distinguishes it from an absent value is still the character and not the colour. The
         // fourth gauge is outside that scale entirely: `fear 0` is the best state `fear` has
         // rather than the worst, and it takes no band at all.
-        let spans = entry_lines(&agent, 4, true).remove(1).spans;
+        let spans = entry_lines(&agent, "Ort", 4, true).remove(1).spans;
         assert_eq!(spans[1].style.fg, Some(Color::Red));
         assert_eq!(spans[7].style.fg, None);
         assert!(spans[7].content.starts_with('f'), "{}", spans[7].content);
 
         agent.applied_action = Some(Action::Wait);
         assert!(
-            entry_lines(&agent, 4, true)[0]
+            entry_lines(&agent, "Ort", 4, true)[0]
                 .to_string()
                 .ends_with("wait")
         );
 
-        // The one-line form keeps the numbers and drops the bars.
-        let compact = entry_lines(&agent, 0, false);
+        // The one-line form keeps the numbers and drops the bars, and carries the name.
+        let compact = entry_lines(&agent, "Ort", 0, false);
         assert_eq!(compact.len(), 1);
-        assert_eq!(compact[0].to_string(), "M01  A  h  0 s  0 e  0 f  0");
+        assert_eq!(compact[0].to_string(), "Ort   M01  A  h  0 s  0 e  0 f  0");
+    }
+
+    /// `REQ-MOK-041`: the name is presented in addition to the identifier and before it, in both
+    /// entry forms, and it costs the fields beside it nothing.
+    #[test]
+    fn an_entry_carries_the_name_before_the_identifier_and_takes_six_columns() {
+        let agent = AgentSnapshot {
+            id: "M12".to_string(),
+            position: Coordinate { x: 127, y: 127 },
+            territory: Territory::B,
+            health: 100,
+            satiety: 100,
+            energy: 100,
+            fear: 0,
+            applied_action: Some(Action::Sleep),
+        };
+
+        // The longest name the engine can report is five characters, so the six-column field
+        // holds it with its separating space and the identifier still starts at column six. The
+        // four fixtures are fabricated, one per admissible length: what the field has to hold is
+        // a length, and an engine name written down here would be the table `REQ-MOK-041` forbids.
+        for name in ["O", "Ort", "Blip", "Weeee"] {
+            let two_line = entry_lines(&agent, name, 2, true);
+            let one_line = entry_lines(&agent, name, 0, false);
+            for line in [&two_line[0], &one_line[0]] {
+                let text = line.to_string();
+                assert!(text.starts_with(name), "{text}");
+                assert_eq!(&text[6..9], "M12", "{text}");
+            }
+            // Line two is the same row whatever the name is: the name is on line one only. The
+            // `Line`s are compared rather than their text, so rule 4.7's bands are held to it too.
+            assert_eq!(two_line[1], entry_lines(&agent, "Ort", 2, true)[1]);
+        }
+
+        // Where the engine reported no name the field is blank. The identifier is not moved into
+        // it, which `REQ-MOK-041` forbids as a derivation, and it is not filled with a
+        // placeholder, which `SPEC-MOK-003` rule 10.7 forbids as an uncomputed value.
+        let unnamed = entry_lines(&agent, "", 2, true);
+        let first = unnamed[0].to_string();
+        assert!(first.starts_with("      M12"), "{first}");
+        assert_eq!(unnamed[1], entry_lines(&agent, "Ort", 2, true)[1]);
     }
 
     /// Rule 3.1 and 3.2, which are states rather than counts.
