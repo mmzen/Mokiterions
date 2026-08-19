@@ -135,6 +135,17 @@ digest in its frontmatter, and this file deliberately does not restate them: a v
 would have to be measured before this file's own commit, and so could not be the value the record
 needs.
 
+A third correction commit follows the digest paragraph above and precedes the record. It touches three
+evidence files and nothing else: `completion-summary.md`, where disclosure 2's heading said "three
+defensible readings" while its own body enumerated four, and where the closing paragraph about
+`VREC-MOK-005` described the record as deliberately not edited; `boundary-and-security-review.md`,
+whose dependency-surface row repeated the same stale "three" and cited `SPEC-MOK-003` lines 57, 528
+and 589, which the 2026-08-19 amendment shifted to 59, 584 and 645; and this file. No source file and
+no governed artifact is in it, so no cargo gate can be affected and none was re-run. The four harness
+gates were re-run on it and every figure is again identical — validate PASS 68/0/0, doctor PASS 81
+lines, preflight PASS `in_progress`, dashboard PASS 68 artifacts / 211 relations / 0 errors / 8
+warnings.
+
 One thing follows from that and is worth stating plainly, because it looks like an error and is not:
 the commit that *adds* the record to the tree is necessarily a child of the commit the record
 *names*. `harnessctl capture-verification` reads `HEAD`, writes the record file, and then that file

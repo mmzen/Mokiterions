@@ -72,7 +72,7 @@ on 2026-08-19, because amending `SPEC-MOK-003` shifted every line number below i
    lock file must now be reviewed on change rather than confirmed empty — holds, and holds more
    strongly at 182. The number does not.
 
-2. **The 57-crate figure is one of three defensible readings and is stated as if it were the only
+2. **The 57-crate figure is one of four defensible readings and is stated as if it were the only
    one.** It is stated twelve times: `SPEC-MOK-003` lines 59, 584, 645; `ARCH-MOK-002` lines 28, 159;
    `ADR-MOK-003` lines 80, 96, 144, 176, 177, 186, 202. (`ADR-MOK-003` line 205 also says 57, but of
    `Cargo.lock` entries, which is item 1 and a different error.) Measured: 57 with `--edges normal`,
@@ -360,23 +360,35 @@ explicitly declines to accept alone ("rather than only by an automated assertion
 Every automated case in this packet is a claim about an in-memory character buffer. Nothing here
 establishes that a person can read the result on a terminal.
 
-**`VREC-MOK-005` in the tree is stale, and deliberately not edited.** It is `ready`, it binds
-candidate commit `9d9641fe` — still an ancestor of this branch, so the commit exists, but its tree
-predates both `WO-MOK-006` and this work order — and its figures are the superseded ones: 169 tests
-where the workspace now runs 172, fifteen numbered disclosures where this file now carries
-seventeen, 58 artifacts where validation now counts 68, six declared canvas interiors where
-`VER-MOK-005` as amended declares nine renderable, `render.rs:495-498` where the citation is now
-`496-499`, and its own item 11 — every observer test sitting in the internal tier — which
-`WO-MOK-006` resolved. It is not
-hand-corrected because the harness generates it: `harnessctl capture-verification` derives `commit`,
-`worktree_state` and `artifact_snapshot_sha256` from the tree, and `require_clean_worktree` in the
-installed harness package's `se_harness/provenance.py` — outside the repository, under the
-virtual environment — refuses with *"revision provenance requires a clean Git worktree"* while
-anything is uncommitted. So the re-capture cannot precede a commit, and the commit is the owner's
-act. The order is: owner authorizes the commit, then
+**`VREC-MOK-005` is stale in the tree this file is committed into, and is re-captured by a later
+commit on this branch.** At this commit it is still `ready` and still binds candidate commit
+`9d9641fe` — an ancestor of this branch, so the commit exists, but its tree predates both
+`WO-MOK-006` and this work order — and its figures are the superseded ones: 169 tests where the
+workspace now runs 172, fifteen numbered disclosures where this file now carries seventeen, 58
+artifacts where validation now counts 68, six declared canvas interiors where `VER-MOK-005` as
+amended declares nine renderable, `render.rs:495-498` where the citation is now `496-499`, and its
+own item 11 — every observer test sitting in the internal tier — which `WO-MOK-006` resolved.
 
-    harnessctl capture-verification --id VREC-MOK-005 --work-order WO-MOK-005 \
-      --verification VER-MOK-005 --evidence <each retained path> --owner "assurance owner"
+It could not be re-captured earlier and it cannot be re-captured by the harness at all. Two
+constraints, both in the installed harness package's `se_harness/provenance.py`, which lives outside
+the repository under the virtual environment:
 
-against that commit, and only then does an accountable assurance owner move it to `verified`.
-Nothing in this packet moves a lifecycle status.
+- `require_clean_worktree` refuses with *"revision provenance requires a clean Git worktree"* while
+  anything is uncommitted, and `commit`, `worktree_state` and `artifact_snapshot_sha256` are all
+  derived from the tree. So a re-capture cannot precede the commit it describes, and authorizing that
+  commit is the owner's act.
+- `capture_verification` refuses when the record ID already exists in the validated catalog —
+  `harnessctl: artifact ID already exists: VREC-MOK-005` — and refuses again if the output path
+  exists. The command creates records; it does not replace them. Deleting the existing governed
+  artifact to make room was declined as an irreversible local deletion and was not worked around.
+
+So the re-capture is hand-authored, with each provenance field derived by the same operation the
+command would have used — `git rev-parse HEAD`, `git rev-parse --show-object-format`,
+`git status --porcelain`, and the `sha256` of `target/harness-dashboard/dashboard-data.json` after a
+PASS generation — on a clean worktree at the commit it names. The record states this in full and names
+the one sentence of the generator's template it does not reproduce verbatim, because no command ran.
+Its frontmatter shape and field order follow the generator's output so it diffs cleanly against
+`VREC-MOK-001` through `VREC-MOK-004`.
+
+Only after that does an accountable assurance owner move it to `verified`. Nothing in this packet
+moves a lifecycle status, and the re-capture leaves it `ready`.
