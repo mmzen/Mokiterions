@@ -515,9 +515,9 @@ class GateTest(unittest.TestCase):
 
 
 class A5RealRepositoryTest(unittest.TestCase):
-    """VER-MOK-008 A5: this repository, today, is an oracle nobody constructed.
+    """VER-MOK-008 A5: this repository's own graph is an oracle nobody constructed.
 
-    As long as no `released` release record exists, the correct answer for every tag is a
+    With no `released` release record in the graph, the correct answer for every tag is a
     refusal, and that answer is independent of both the gate and the fixtures above. The
     refusal ladder then adds the governance artifacts one at a time and records which refusal
     remains, which is the one measurement that shows the gate discriminating between adjacent
@@ -525,7 +525,9 @@ class A5RealRepositoryTest(unittest.TestCase):
 
     Everything runs in a throwaway clone. Creating a tag is an act `DECISION_RIGHTS.md`
     reserves to the release owner, so it happens in a copy that is deleted afterwards and
-    never in the repository itself.
+    never in the repository itself. `_establish_the_pre_release_starting_state` explains which
+    parts of that copy are real and which the fixture states for itself — the oracle is the
+    graph's shape, which does not stop being informative once this repository has released.
     """
 
     @classmethod
@@ -553,6 +555,34 @@ class A5RealRepositoryTest(unittest.TestCase):
         self.commit = git(self.clone, "rev-parse", "HEAD")
         self.simulation = self.clone / "docs" / "engineering" / "simulation"
         self.work_orders = tuple(f"WO-MOK-{index:03d}" for index in range(1, 7))
+        self._establish_the_pre_release_starting_state()
+
+    def _establish_the_pre_release_starting_state(self) -> None:
+        """Put the throwaway clone into the state these scenarios are written against.
+
+        Every scenario below starts from a real graph that has not released anything: it
+        creates `v0.1.0` itself and then adds release artifacts one rung at a time, measuring
+        which refusal remains. That starting state used to be inherited from the repository,
+        which made these tests assertions about *when* they ran rather than about the gate:
+
+        * a clone copies every tag reachable from the branch it copied, so a real release tag —
+          or an unrelated one left in a shared object store — turns each `git tag -a v0.1.0`
+          below into a `git` failure instead of a result;
+        * once this repository releases, its own `released` release record makes the ladder's
+          first rung, *no release record exists at all*, false of the real graph.
+
+        Both are properties of the calendar, not of the gate. So the fixture states its
+        precondition instead of hoping for it, and does so in a copy that is deleted afterwards
+        and never in the repository itself. What is still real here is everything the scenarios
+        actually exercise: the work orders, the verification records and their commits, and the
+        history the reachability of a candidate is judged against.
+        """
+        inherited = git(self.clone, "tag", "--list")
+        if inherited:
+            git(self.clone, "tag", "--delete", *inherited.splitlines())
+        for directory in ("release", "releases"):
+            for artifact in sorted((self.simulation / directory).glob("*.md")):
+                artifact.unlink()
 
     def refusal(self, tag: str = "v0.1.0") -> str:
         result = run_gate(self.clone, tag)
@@ -617,8 +647,14 @@ class A5RealRepositoryTest(unittest.TestCase):
         )
 
     def test_a5_the_real_repository_refuses_every_tag_today(self) -> None:
-        """No tag exists, so the first fact the gate cannot establish is the tag itself."""
-        self.assertEqual(git(self.clone, "tag", "--list"), "", "the repository has no tags")
+        """With no tag, the first fact the gate cannot establish is the tag itself.
+
+        The assertion is the fixture's precondition, guaranteed by
+        `_establish_the_pre_release_starting_state` rather than by what this repository happens
+        to hold. It is kept because it is the premise of the refusal being read below: if the
+        clone had a `v0.1.0`, the gate would be answering a different question.
+        """
+        self.assertEqual(git(self.clone, "tag", "--list"), "", "the fixture starts untagged")
         self.assertIn("is not a tag in this repository", self.refusal())
 
     def test_a5_the_real_graph_holds_no_release_record(self) -> None:
