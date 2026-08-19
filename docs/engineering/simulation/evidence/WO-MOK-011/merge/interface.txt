@@ -1,0 +1,485 @@
+VER-MOK-011 — oracle 5's interface half, re-derived at the merge
+================================================================
+
+Merge         master 2157f77 into feature/phase-2-5-naming 4606145
+Enumerator    analysis/interface.py, unchanged
+Date          2026-08-19
+
+`SPEC-MOK-004` rule 6 records the observer's interface as **94 items, 118 `pub` lines and 24 public
+fields**, and `WO-MOK-011` claims the naming work leaves all three untouched. The packet measured
+that against the branch base. This file measures it against `master` at 2157f77 and against the
+merge, because the merge is the first tree in which both this work order's names and `master`'s
+survival bands exist, and rule 6 is a figure about that tree.
+
+The enumeration is mechanical and rule 6's figure is the enumeration minus `lib.rs`'s seven
+`pub mod` declarations, which rule 6 excludes as module plumbing rather than interface:
+
+  observer, merge         101 items  125 pub lines  24 public fields   ->  94 / 118 / 24
+  observer, master        101 items  125 pub lines  24 public fields   ->  94 / 118 / 24
+  engine, merge            49 items   92 pub lines  43 public fields
+  engine, master           49 items   92 pub lines  43 public fields
+
+Master to merge, the observer's enumeration differs on exactly one line and the engine's not at all:
+
+    < spatial.rs       item  pub fn agent_glyph(id: &str) -> char {
+    > spatial.rs       item  pub fn agent_glyph(name: &str) -> char {
+
+That is a parameter name in a signature whose arity, types and return are unchanged. It is not an
+item, not a `pub` line added or removed and not a public field, so **every figure rule 6 records is
+unchanged by measurement rather than by assumption**, and `SPEC-MOK-002`'s engine interface is
+byte-identical.
+
+`Observer::name_of`, which the observer reads the name through, is `pub(crate)` and therefore in
+neither figure. That is the whole reason rule 6 does not move under this work order.
+
+The four enumerations follow in full so the figures above can be re-counted rather than trusted.
+
+# tui: mokiterions-tui/src/*.rs at the merge
+authority.rs     item  pub const DECISION_AUTHORITY: &str = "REQ-MOK-004";
+authority.rs     item  pub const PERCEPTION_AUTHORITY: &str = "REQ-MOK-013";
+authority.rs     item  pub fn for_event(event: &Event) -> Option<&'static str> {
+authority.rs     item  pub fn for_type(event_type: EventType, source: Option<Policy>) -> Option<&'static str> {
+authority.rs     item  pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
+export.rs        item  pub fn default_path(seed: u64, tick: u64) -> String {
+export.rs        item  pub fn write_file(path: &str, events: &EventBuffer) -> Result<(), String> {
+export.rs        item  pub fn write_records<W: Write>(writer: &mut W, events: &EventBuffer) -> io::Result<()> {
+layout.rs        field pub footer: Rect,
+layout.rs        field pub header: Rect,
+layout.rs        field pub inspector: Option<Rect>,
+layout.rs        field pub log: Option<Rect>,
+layout.rs        field pub overlay: Rect,
+layout.rs        field pub roster: Option<Rect>,
+layout.rs        field pub view: Rect,
+layout.rs        item  pub const MIN_HEIGHT: u16 = 22;
+layout.rs        item  pub const MIN_WIDTH: u16 = 34;
+layout.rs        item  pub const ROSTER_TWO_LINE_WIDTH: u16 = 47;
+layout.rs        item  pub enum Pane {
+layout.rs        item  pub fn below_floor(width: u16, height: u16) -> bool {
+layout.rs        item  pub fn canvas_cells(pane: Rect) -> (u16, u16) {
+layout.rs        item  pub fn label(self) -> &'static str {
+layout.rs        item  pub fn overlay_only(&self) -> Vec<Pane> {
+layout.rs        item  pub fn resolve(area: Rect) -> Panes {
+layout.rs        item  pub struct Panes {
+lib.rs           item  pub mod authority;
+lib.rs           item  pub mod export;
+lib.rs           item  pub mod layout;
+lib.rs           item  pub mod options;
+lib.rs           item  pub mod render;
+lib.rs           item  pub mod spatial;
+lib.rs           item  pub mod state;
+options.rs       field pub config: Config,
+options.rs       field pub export_path: Option<String>,
+options.rs       field pub speed: u32,
+options.rs       field pub start_paused: bool,
+options.rs       item  pub const DEFAULT_SPEED: u32 = 8;
+options.rs       item  pub const SPEED_STEPS: [u32; 7] = [1, 2, 4, 8, 16, 32, 64];
+options.rs       item  pub const USAGE: &str = "Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]\n                       [--policy <baseline|reference|individual>]\n                       [--density <percent>]\n                       [--speed <1|2|4|8|16|32|64>] [--start-paused]\n                       [--export <path>]\n       mokiterions-tui --help\n\nThe observer presents a running simulation in a terminal. It never mutates world\nstate: the operator's only influence over the simulation is when a tick is advanced.\n\n--seed, --ticks, --policy and --density carry exactly the meaning, the defaults and\nthe validation the Mokiterions binary gives them.\n\n--speed is the number of ticks advanced per second while progression runs, and it\ndefaults to 8. --start-paused begins held before tick 1. --export supplies the path\nthe export control writes to; it is validated as a string only and is never opened\nuntil the operator asks for an export.\n\nAction tracing is always on in the observer, because the event log presents traced\nactions and the authority overlay maps them. Tracing does not change a run.\n\nPress ? inside the observer for the key bindings.\n";
+options.rs       item  pub enum Startup {
+options.rs       item  pub fn faster(speed: u32) -> u32 {
+options.rs       item  pub fn parse<I, S>(args: I) -> Result<Startup, String>
+options.rs       item  pub fn slower(speed: u32) -> u32 {
+options.rs       item  pub struct Options {
+render.rs        item  pub const COMMIT: Option<&str> = option_env!("MOKITERIONS_COMMIT");
+render.rs        item  pub fn draw(frame: &mut Frame, observer: &mut Observer) {
+spatial.rs       field pub height: u16,
+spatial.rs       field pub origin_x: u16,
+spatial.rs       field pub origin_y: u16,
+spatial.rs       field pub span_x: u16,
+spatial.rs       field pub span_y: u16,
+spatial.rs       field pub width: u16,
+spatial.rs       item  pub const DOTS_PER_CELL_X: u16 = 2;
+spatial.rs       item  pub const TERRITORY_A_LAST_ROW: u16 = 63;
+spatial.rs       item  pub const WORLD_SIZE: u16 = 128;
+spatial.rs       item  pub enum Zoom {
+spatial.rs       item  pub fn agent_glyph(name: &str) -> char {
+spatial.rs       item  pub fn bounds(self) -> ([f64; 2], [f64; 2]) {
+spatial.rs       item  pub fn camera_limit(self) -> (u16, u16) {
+spatial.rs       item  pub fn cell_of(self, zoom: Zoom, x: u16, y: u16) -> Option<(u16, u16)> {
+spatial.rs       item  pub fn contains(self, x: u16, y: u16) -> bool {
+spatial.rs       item  pub fn dot_of(self, x: u16, y: u16) -> Option<(f64, f64)> {
+spatial.rs       item  pub fn is_whole_world(self) -> bool {
+spatial.rs       item  pub fn label(self) -> &'static str {
+spatial.rs       item  pub fn last_x(self) -> u16 {
+spatial.rs       item  pub fn last_y(self) -> u16 {
+spatial.rs       item  pub fn resolve(zoom: Zoom, canvas: (u16, u16), camera: (u16, u16)) -> Self {
+spatial.rs       item  pub fn resource_glyph(class: FoodClass) -> char {
+spatial.rs       item  pub fn shows_territory_boundary(self) -> bool {
+spatial.rs       item  pub fn toggled(self) -> Self {
+spatial.rs       item  pub struct Viewport {
+state.rs         field pub energy: Option<u8>,
+state.rs         field pub force_draw: bool,
+state.rs         field pub health: u8,
+state.rs         field pub id: String,
+state.rs         field pub quit: bool,
+state.rs         field pub satiety: Option<u8>,
+state.rs         field pub tick: u64,
+state.rs         item  pub const EVENT_CAPACITY: usize = 100_000;
+state.rs         item  pub enum Filter {
+state.rs         item  pub enum Overlay {
+state.rs         item  pub enum Progression {
+state.rs         item  pub fn advance(&mut self) -> Result<(), String> {
+state.rs         item  pub fn apply_follow(&mut self, canvas: (u16, u16)) {
+state.rs         item  pub fn camera(&self) -> (u16, u16) {
+state.rs         item  pub fn config(&self) -> Config {
+state.rs         item  pub fn death_of(&self, id: &str) -> Option<&Death> {
+state.rs         item  pub fn deaths(&self) -> &[Death] {
+state.rs         item  pub fn ended_early(&self) -> bool {
+state.rs         item  pub fn events(&self) -> &EventBuffer {
+state.rs         item  pub fn filter(&self) -> &Filter {
+state.rs         item  pub fn follow(&self) -> bool {
+state.rs         item  pub fn handle_key(&mut self, key: KeyEvent) -> Result<KeyResponse, String> {
+state.rs         item  pub fn highlighted(&self) -> Option<&Event> {
+state.rs         item  pub fn is_empty(&self) -> bool {
+state.rs         item  pub fn is_finished(&self) -> bool {
+state.rs         item  pub fn iter(&self) -> impl DoubleEndedIterator<Item = &Event> {
+state.rs         item  pub fn label(&self) -> String {
+state.rs         item  pub fn label(self) -> &'static str {
+state.rs         item  pub fn len(&self) -> usize {
+state.rs         item  pub fn log_cursor(&self) -> usize {
+state.rs         item  pub fn mark_ended_early(&mut self) {
+state.rs         item  pub fn matches(&self, event: &Event) -> bool {
+state.rs         item  pub fn new() -> Self {
+state.rs         item  pub fn new(options: Options) -> Result<Self, String> {
+state.rs         item  pub fn notice(&self) -> Option<&str> {
+state.rs         item  pub fn overlay(&self) -> Overlay {
+state.rs         item  pub fn presented(&self) -> Vec<&Event> {
+state.rs         item  pub fn progression(&self) -> Progression {
+state.rs         item  pub fn push(&mut self, event: Event) {
+state.rs         item  pub fn record_geometry(&mut self, canvas: (u16, u16), log_rows: usize) {
+state.rs         item  pub fn selected_agent(&self) -> Option<&AgentSnapshot> {
+state.rs         item  pub fn selection(&self) -> Option<&str> {
+state.rs         item  pub fn set_notice(&mut self, notice: impl Into<String>) {
+state.rs         item  pub fn shared_cell_count(&self) -> usize {
+state.rs         item  pub fn snapshot(&self) -> &WorldSnapshot {
+state.rs         item  pub fn speed(&self) -> u32 {
+state.rs         item  pub fn termination_reason(&self) -> Option<TerminationReason> {
+state.rs         item  pub fn truncated(&self) -> bool {
+state.rs         item  pub fn viewport(&self) -> Viewport {
+state.rs         item  pub fn zoom(&self) -> Zoom {
+state.rs         item  pub struct Death {
+state.rs         item  pub struct EventBuffer {
+state.rs         item  pub struct KeyResponse {
+state.rs         item  pub struct Observer {
+
+items 101  public fields 24  pub lines 125
+
+# tui: mokiterions-tui/src/*.rs at master 2157f77
+authority.rs     item  pub const DECISION_AUTHORITY: &str = "REQ-MOK-004";
+authority.rs     item  pub const PERCEPTION_AUTHORITY: &str = "REQ-MOK-013";
+authority.rs     item  pub fn for_event(event: &Event) -> Option<&'static str> {
+authority.rs     item  pub fn for_type(event_type: EventType, source: Option<Policy>) -> Option<&'static str> {
+authority.rs     item  pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
+export.rs        item  pub fn default_path(seed: u64, tick: u64) -> String {
+export.rs        item  pub fn write_file(path: &str, events: &EventBuffer) -> Result<(), String> {
+export.rs        item  pub fn write_records<W: Write>(writer: &mut W, events: &EventBuffer) -> io::Result<()> {
+layout.rs        field pub footer: Rect,
+layout.rs        field pub header: Rect,
+layout.rs        field pub inspector: Option<Rect>,
+layout.rs        field pub log: Option<Rect>,
+layout.rs        field pub overlay: Rect,
+layout.rs        field pub roster: Option<Rect>,
+layout.rs        field pub view: Rect,
+layout.rs        item  pub const MIN_HEIGHT: u16 = 22;
+layout.rs        item  pub const MIN_WIDTH: u16 = 34;
+layout.rs        item  pub const ROSTER_TWO_LINE_WIDTH: u16 = 47;
+layout.rs        item  pub enum Pane {
+layout.rs        item  pub fn below_floor(width: u16, height: u16) -> bool {
+layout.rs        item  pub fn canvas_cells(pane: Rect) -> (u16, u16) {
+layout.rs        item  pub fn label(self) -> &'static str {
+layout.rs        item  pub fn overlay_only(&self) -> Vec<Pane> {
+layout.rs        item  pub fn resolve(area: Rect) -> Panes {
+layout.rs        item  pub struct Panes {
+lib.rs           item  pub mod authority;
+lib.rs           item  pub mod export;
+lib.rs           item  pub mod layout;
+lib.rs           item  pub mod options;
+lib.rs           item  pub mod render;
+lib.rs           item  pub mod spatial;
+lib.rs           item  pub mod state;
+options.rs       field pub config: Config,
+options.rs       field pub export_path: Option<String>,
+options.rs       field pub speed: u32,
+options.rs       field pub start_paused: bool,
+options.rs       item  pub const DEFAULT_SPEED: u32 = 8;
+options.rs       item  pub const SPEED_STEPS: [u32; 7] = [1, 2, 4, 8, 16, 32, 64];
+options.rs       item  pub const USAGE: &str = "Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]\n                       [--policy <baseline|reference|individual>]\n                       [--density <percent>]\n                       [--speed <1|2|4|8|16|32|64>] [--start-paused]\n                       [--export <path>]\n       mokiterions-tui --help\n\nThe observer presents a running simulation in a terminal. It never mutates world\nstate: the operator's only influence over the simulation is when a tick is advanced.\n\n--seed, --ticks, --policy and --density carry exactly the meaning, the defaults and\nthe validation the Mokiterions binary gives them.\n\n--speed is the number of ticks advanced per second while progression runs, and it\ndefaults to 8. --start-paused begins held before tick 1. --export supplies the path\nthe export control writes to; it is validated as a string only and is never opened\nuntil the operator asks for an export.\n\nAction tracing is always on in the observer, because the event log presents traced\nactions and the authority overlay maps them. Tracing does not change a run.\n\nPress ? inside the observer for the key bindings.\n";
+options.rs       item  pub enum Startup {
+options.rs       item  pub fn faster(speed: u32) -> u32 {
+options.rs       item  pub fn parse<I, S>(args: I) -> Result<Startup, String>
+options.rs       item  pub fn slower(speed: u32) -> u32 {
+options.rs       item  pub struct Options {
+render.rs        item  pub const COMMIT: Option<&str> = option_env!("MOKITERIONS_COMMIT");
+render.rs        item  pub fn draw(frame: &mut Frame, observer: &mut Observer) {
+spatial.rs       field pub height: u16,
+spatial.rs       field pub origin_x: u16,
+spatial.rs       field pub origin_y: u16,
+spatial.rs       field pub span_x: u16,
+spatial.rs       field pub span_y: u16,
+spatial.rs       field pub width: u16,
+spatial.rs       item  pub const DOTS_PER_CELL_X: u16 = 2;
+spatial.rs       item  pub const TERRITORY_A_LAST_ROW: u16 = 63;
+spatial.rs       item  pub const WORLD_SIZE: u16 = 128;
+spatial.rs       item  pub enum Zoom {
+spatial.rs       item  pub fn agent_glyph(id: &str) -> char {
+spatial.rs       item  pub fn bounds(self) -> ([f64; 2], [f64; 2]) {
+spatial.rs       item  pub fn camera_limit(self) -> (u16, u16) {
+spatial.rs       item  pub fn cell_of(self, zoom: Zoom, x: u16, y: u16) -> Option<(u16, u16)> {
+spatial.rs       item  pub fn contains(self, x: u16, y: u16) -> bool {
+spatial.rs       item  pub fn dot_of(self, x: u16, y: u16) -> Option<(f64, f64)> {
+spatial.rs       item  pub fn is_whole_world(self) -> bool {
+spatial.rs       item  pub fn label(self) -> &'static str {
+spatial.rs       item  pub fn last_x(self) -> u16 {
+spatial.rs       item  pub fn last_y(self) -> u16 {
+spatial.rs       item  pub fn resolve(zoom: Zoom, canvas: (u16, u16), camera: (u16, u16)) -> Self {
+spatial.rs       item  pub fn resource_glyph(class: FoodClass) -> char {
+spatial.rs       item  pub fn shows_territory_boundary(self) -> bool {
+spatial.rs       item  pub fn toggled(self) -> Self {
+spatial.rs       item  pub struct Viewport {
+state.rs         field pub energy: Option<u8>,
+state.rs         field pub force_draw: bool,
+state.rs         field pub health: u8,
+state.rs         field pub id: String,
+state.rs         field pub quit: bool,
+state.rs         field pub satiety: Option<u8>,
+state.rs         field pub tick: u64,
+state.rs         item  pub const EVENT_CAPACITY: usize = 100_000;
+state.rs         item  pub enum Filter {
+state.rs         item  pub enum Overlay {
+state.rs         item  pub enum Progression {
+state.rs         item  pub fn advance(&mut self) -> Result<(), String> {
+state.rs         item  pub fn apply_follow(&mut self, canvas: (u16, u16)) {
+state.rs         item  pub fn camera(&self) -> (u16, u16) {
+state.rs         item  pub fn config(&self) -> Config {
+state.rs         item  pub fn death_of(&self, id: &str) -> Option<&Death> {
+state.rs         item  pub fn deaths(&self) -> &[Death] {
+state.rs         item  pub fn ended_early(&self) -> bool {
+state.rs         item  pub fn events(&self) -> &EventBuffer {
+state.rs         item  pub fn filter(&self) -> &Filter {
+state.rs         item  pub fn follow(&self) -> bool {
+state.rs         item  pub fn handle_key(&mut self, key: KeyEvent) -> Result<KeyResponse, String> {
+state.rs         item  pub fn highlighted(&self) -> Option<&Event> {
+state.rs         item  pub fn is_empty(&self) -> bool {
+state.rs         item  pub fn is_finished(&self) -> bool {
+state.rs         item  pub fn iter(&self) -> impl DoubleEndedIterator<Item = &Event> {
+state.rs         item  pub fn label(&self) -> String {
+state.rs         item  pub fn label(self) -> &'static str {
+state.rs         item  pub fn len(&self) -> usize {
+state.rs         item  pub fn log_cursor(&self) -> usize {
+state.rs         item  pub fn mark_ended_early(&mut self) {
+state.rs         item  pub fn matches(&self, event: &Event) -> bool {
+state.rs         item  pub fn new() -> Self {
+state.rs         item  pub fn new(options: Options) -> Result<Self, String> {
+state.rs         item  pub fn notice(&self) -> Option<&str> {
+state.rs         item  pub fn overlay(&self) -> Overlay {
+state.rs         item  pub fn presented(&self) -> Vec<&Event> {
+state.rs         item  pub fn progression(&self) -> Progression {
+state.rs         item  pub fn push(&mut self, event: Event) {
+state.rs         item  pub fn record_geometry(&mut self, canvas: (u16, u16), log_rows: usize) {
+state.rs         item  pub fn selected_agent(&self) -> Option<&AgentSnapshot> {
+state.rs         item  pub fn selection(&self) -> Option<&str> {
+state.rs         item  pub fn set_notice(&mut self, notice: impl Into<String>) {
+state.rs         item  pub fn shared_cell_count(&self) -> usize {
+state.rs         item  pub fn snapshot(&self) -> &WorldSnapshot {
+state.rs         item  pub fn speed(&self) -> u32 {
+state.rs         item  pub fn termination_reason(&self) -> Option<TerminationReason> {
+state.rs         item  pub fn truncated(&self) -> bool {
+state.rs         item  pub fn viewport(&self) -> Viewport {
+state.rs         item  pub fn zoom(&self) -> Zoom {
+state.rs         item  pub struct Death {
+state.rs         item  pub struct EventBuffer {
+state.rs         item  pub struct KeyResponse {
+state.rs         item  pub struct Observer {
+
+items 101  public fields 24  pub lines 125
+
+# core: mokiterions-core/src/*.rs at the merge
+cli.rs           item  pub const USAGE: &str = concat!(
+cli.rs           item  pub enum Command {
+cli.rs           item  pub fn parse<I, S>(args: I) -> Result<Command, String>
+lib.rs           item  pub fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8
+lib.rs           item  pub mod cli;
+lib.rs           item  pub mod simulation;
+simulation.rs    field pub agent_id: String,
+simulation.rs    field pub agents: Vec<AgentSnapshot>,
+simulation.rs    field pub applied: Option<Action>,
+simulation.rs    field pub applied_action: Option<Action>,
+simulation.rs    field pub capacity: usize,
+simulation.rs    field pub class: FoodClass,
+simulation.rs    field pub deaths: usize,
+simulation.rs    field pub decisions: Vec<DecisionSnapshot>,
+simulation.rs    field pub density: Density,
+simulation.rs    field pub detail: EventDetail,
+simulation.rs    field pub energy: u8,
+simulation.rs    field pub events: Vec<Event>,
+simulation.rs    field pub fear: u8,
+simulation.rs    field pub finished: bool,
+simulation.rs    field pub health: u8,
+simulation.rs    field pub high: usize,
+simulation.rs    field pub id: String,
+simulation.rs    field pub id: String,
+simulation.rs    field pub id: Territory,
+simulation.rs    field pub living_count: usize,
+simulation.rs    field pub low: usize,
+simulation.rs    field pub medium: usize,
+simulation.rs    field pub outcome: DecisionOutcome,
+simulation.rs    field pub permanently_depleted: bool,
+simulation.rs    field pub policy: Policy,
+simulation.rs    field pub position: Coordinate,
+simulation.rs    field pub position: Coordinate,
+simulation.rs    field pub proposed: Action,
+simulation.rs    field pub reason: Option<TerminationReason>,
+simulation.rs    field pub resources: Vec<ResourceSnapshot>,
+simulation.rs    field pub satiety: u8,
+simulation.rs    field pub seed: u64,
+simulation.rs    field pub standing: usize,
+simulation.rs    field pub subject: String,
+simulation.rs    field pub territories: [TerritorySnapshot; 2],
+simulation.rs    field pub territory: Territory,
+simulation.rs    field pub territory: Territory,
+simulation.rs    field pub tick: u64,
+simulation.rs    field pub tick: u64,
+simulation.rs    field pub tick_limit: u64,
+simulation.rs    field pub trace_actions: bool,
+simulation.rs    field pub x: u8,
+simulation.rs    field pub y: u8,
+simulation.rs    item  pub const ALL: [Self; 12] = [
+simulation.rs    item  pub const CELLS_PER_TERRITORY: usize = WORLD_SIZE as usize * TERRITORY_HEIGHT as usize;
+simulation.rs    item  pub const DEFAULT: Self = Self {
+simulation.rs    item  pub enum Action {
+simulation.rs    item  pub enum DecisionOutcome {
+simulation.rs    item  pub enum Direction {
+simulation.rs    item  pub enum EventDetail {
+simulation.rs    item  pub enum EventType {
+simulation.rs    item  pub enum FoodClass {
+simulation.rs    item  pub enum Policy {
+simulation.rs    item  pub enum RegenerationSkipReason {
+simulation.rs    item  pub enum TerminationReason {
+simulation.rs    item  pub enum Territory {
+simulation.rs    item  pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+simulation.rs    item  pub fn as_str(self) -> &'static str {
+simulation.rs    item  pub fn configuration(&self) -> Config {
+simulation.rs    item  pub fn deaths(&self) -> usize {
+simulation.rs    item  pub fn event_type(&self) -> EventType {
+simulation.rs    item  pub fn event_type(&self) -> EventType {
+simulation.rs    item  pub fn initialization_events(&self) -> Vec<Event> {
+simulation.rs    item  pub fn is_finished(&self) -> bool {
+simulation.rs    item  pub fn new(config: Config) -> Result<Self, String> {
+simulation.rs    item  pub fn parse(value: &str) -> Option<Self> {
+simulation.rs    item  pub fn parse(value: &str) -> Result<Self, String> {
+simulation.rs    item  pub fn reason(&self) -> TerminationReason {
+simulation.rs    item  pub fn resources_per_territory(self) -> usize {
+simulation.rs    item  pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+simulation.rs    item  pub fn snapshot(&self) -> WorldSnapshot {
+simulation.rs    item  pub fn survivors(&self) -> usize {
+simulation.rs    item  pub fn termination_reason(&self) -> Option<TerminationReason> {
+simulation.rs    item  pub fn ticks(&self) -> u64 {
+simulation.rs    item  pub struct AgentSnapshot {
+simulation.rs    item  pub struct Config {
+simulation.rs    item  pub struct Coordinate {
+simulation.rs    item  pub struct DecisionSnapshot {
+simulation.rs    item  pub struct Density {
+simulation.rs    item  pub struct Event {
+simulation.rs    item  pub struct ResourceSnapshot {
+simulation.rs    item  pub struct RunSummary {
+simulation.rs    item  pub struct Simulation {
+simulation.rs    item  pub struct TerritorySnapshot {
+simulation.rs    item  pub struct TickOutcome {
+simulation.rs    item  pub struct WorldSnapshot {
+
+items 49  public fields 43  pub lines 92
+
+# core: mokiterions-core/src/*.rs at master 2157f77
+cli.rs           item  pub const USAGE: &str = concat!(
+cli.rs           item  pub enum Command {
+cli.rs           item  pub fn parse<I, S>(args: I) -> Result<Command, String>
+lib.rs           item  pub fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8
+lib.rs           item  pub mod cli;
+lib.rs           item  pub mod simulation;
+simulation.rs    field pub agent_id: String,
+simulation.rs    field pub agents: Vec<AgentSnapshot>,
+simulation.rs    field pub applied: Option<Action>,
+simulation.rs    field pub applied_action: Option<Action>,
+simulation.rs    field pub capacity: usize,
+simulation.rs    field pub class: FoodClass,
+simulation.rs    field pub deaths: usize,
+simulation.rs    field pub decisions: Vec<DecisionSnapshot>,
+simulation.rs    field pub density: Density,
+simulation.rs    field pub detail: EventDetail,
+simulation.rs    field pub energy: u8,
+simulation.rs    field pub events: Vec<Event>,
+simulation.rs    field pub fear: u8,
+simulation.rs    field pub finished: bool,
+simulation.rs    field pub health: u8,
+simulation.rs    field pub high: usize,
+simulation.rs    field pub id: String,
+simulation.rs    field pub id: String,
+simulation.rs    field pub id: Territory,
+simulation.rs    field pub living_count: usize,
+simulation.rs    field pub low: usize,
+simulation.rs    field pub medium: usize,
+simulation.rs    field pub outcome: DecisionOutcome,
+simulation.rs    field pub permanently_depleted: bool,
+simulation.rs    field pub policy: Policy,
+simulation.rs    field pub position: Coordinate,
+simulation.rs    field pub position: Coordinate,
+simulation.rs    field pub proposed: Action,
+simulation.rs    field pub reason: Option<TerminationReason>,
+simulation.rs    field pub resources: Vec<ResourceSnapshot>,
+simulation.rs    field pub satiety: u8,
+simulation.rs    field pub seed: u64,
+simulation.rs    field pub standing: usize,
+simulation.rs    field pub subject: String,
+simulation.rs    field pub territories: [TerritorySnapshot; 2],
+simulation.rs    field pub territory: Territory,
+simulation.rs    field pub territory: Territory,
+simulation.rs    field pub tick: u64,
+simulation.rs    field pub tick: u64,
+simulation.rs    field pub tick_limit: u64,
+simulation.rs    field pub trace_actions: bool,
+simulation.rs    field pub x: u8,
+simulation.rs    field pub y: u8,
+simulation.rs    item  pub const ALL: [Self; 12] = [
+simulation.rs    item  pub const CELLS_PER_TERRITORY: usize = WORLD_SIZE as usize * TERRITORY_HEIGHT as usize;
+simulation.rs    item  pub const DEFAULT: Self = Self {
+simulation.rs    item  pub enum Action {
+simulation.rs    item  pub enum DecisionOutcome {
+simulation.rs    item  pub enum Direction {
+simulation.rs    item  pub enum EventDetail {
+simulation.rs    item  pub enum EventType {
+simulation.rs    item  pub enum FoodClass {
+simulation.rs    item  pub enum Policy {
+simulation.rs    item  pub enum RegenerationSkipReason {
+simulation.rs    item  pub enum TerminationReason {
+simulation.rs    item  pub enum Territory {
+simulation.rs    item  pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+simulation.rs    item  pub fn as_str(self) -> &'static str {
+simulation.rs    item  pub fn configuration(&self) -> Config {
+simulation.rs    item  pub fn deaths(&self) -> usize {
+simulation.rs    item  pub fn event_type(&self) -> EventType {
+simulation.rs    item  pub fn event_type(&self) -> EventType {
+simulation.rs    item  pub fn initialization_events(&self) -> Vec<Event> {
+simulation.rs    item  pub fn is_finished(&self) -> bool {
+simulation.rs    item  pub fn new(config: Config) -> Result<Self, String> {
+simulation.rs    item  pub fn parse(value: &str) -> Option<Self> {
+simulation.rs    item  pub fn parse(value: &str) -> Result<Self, String> {
+simulation.rs    item  pub fn reason(&self) -> TerminationReason {
+simulation.rs    item  pub fn resources_per_territory(self) -> usize {
+simulation.rs    item  pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+simulation.rs    item  pub fn snapshot(&self) -> WorldSnapshot {
+simulation.rs    item  pub fn survivors(&self) -> usize {
+simulation.rs    item  pub fn termination_reason(&self) -> Option<TerminationReason> {
+simulation.rs    item  pub fn ticks(&self) -> u64 {
+simulation.rs    item  pub struct AgentSnapshot {
+simulation.rs    item  pub struct Config {
+simulation.rs    item  pub struct Coordinate {
+simulation.rs    item  pub struct DecisionSnapshot {
+simulation.rs    item  pub struct Density {
+simulation.rs    item  pub struct Event {
+simulation.rs    item  pub struct ResourceSnapshot {
+simulation.rs    item  pub struct RunSummary {
+simulation.rs    item  pub struct Simulation {
+simulation.rs    item  pub struct TerritorySnapshot {
+simulation.rs    item  pub struct TickOutcome {
+simulation.rs    item  pub struct WorldSnapshot {
+
+items 49  public fields 43  pub lines 92

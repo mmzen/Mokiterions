@@ -1,0 +1,245 @@
+VER-MOK-010 oracle 4 - the drawn roster, cell by cell
+=====================================================
+
+Why the probe and the expectation are separate programs, and what is rebuilt rather than
+read back: see the header of analysis/frames.py. The probe is retained beside this file as
+observer/frame-probe.rs; it renders through `render::draw` into ratatui's in-memory backend
+and records the cells, the pane the layout gave the roster, and the attribute values the
+frame was drawn from. Every expectation below is composed here from rule 4 as amended.
+
+The geometry, composed from the parts rule 4 names
+
+  indent, to the width of the identifier column            5
+  per gauge: label, space, space, three-column value        6  x 4 =  24
+  separators between the four gauges                        2  x 3 =   6
+  -------------------------------------------------------
+  cells a bar row needs that are not bar                        35
+
+  bar(interior)        = min(20, (interior - 35) / 4), and 0 below 35
+  filled(value, bar)   = value * bar / 100, truncating, capped at bar
+  entry form           = two lines at a pane width of 47 or more, one line below
+
+  The product spends the same 35 cells, as `BAR_ROW_OVERHEAD`. It is not read from there:
+  the sum above is this script's, and a disagreement between it and the product appears
+  below as a failed reconstruction rather than as agreement by construction.
+
+The nine viewports rule 5 draws consequences for, and one below the floor
+
+  capture                              viewport   pane       int  bar  form      entries  rows
+  -----------------------------------  ---------  ---------  ---  ---  --------  -------  ----
+  seed 42 policy individual tick 0     160x48     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 0     160x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 0     160x40     47x30       45    2  two-line       12    24
+  seed 42 policy individual tick 0     140x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 0     140x43     47x33       45    2  two-line       12    24
+  seed 42 policy individual tick 0     120x48     47x38       45    2  two-line       12    24
+  seed 42 policy individual tick 0     120x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 0     100x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 0     34x22      no roster
+  seed 42 policy individual tick 0     33x21      below floor
+  seed 42 policy individual tick 200   160x48     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 200   160x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 200   160x40     47x30       45    2  two-line       12    24
+  seed 42 policy individual tick 200   140x44     47x34       45    2  two-line       12    24
+  seed 42 policy individual tick 200   140x43     47x33       45    2  two-line       12    24
+  seed 42 policy individual tick 200   120x48     47x38       45    2  two-line       12    24
+  seed 42 policy individual tick 200   120x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 200   100x30     47x26       45    2  two-line       12    24
+  seed 42 policy individual tick 200   34x22      no roster
+  seed 42 policy individual tick 200   33x21      below floor
+  seed 42 policy individual tick 1000  160x48     47x34       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  160x44     47x34       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  160x40     47x30       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  140x44     47x34       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  140x43     47x33       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  120x48     47x38       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  120x30     47x26       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  100x30     47x26       45    2  two-line        9    18
+  seed 42 policy individual tick 1000  34x22      no roster
+  seed 42 policy individual tick 1000  33x21      below floor
+
+  Frames probed: 157, of which 85 drew a roster
+  Bar rows rebuilt character for character and compared: 996
+  Discrepancies: 0
+
+  2 of the 10 viewports probed carry no roster -- 34x22, 33x21 -- and those rows are
+  not evidence about one. 34x22 is above the floor and below rule 5's 100-column roster
+  threshold, so the roster is reachable only as an overlay there and the header announces it.
+  33x21 is below the floor, where rule 5 suspends drawing: 0 of that frame's cells
+  carry a character, measured rather than assumed. `WO-MOK-005` and `WO-MOK-006` verify both,
+  and this work order changes neither.
+
+Where the four gauges sit, observed and predicted
+
+  Absolute frame columns of the first entry's bar row, 0-based, at each probed viewport
+  that draws a roster. The prediction is the pane's own x, its border, the indent and the
+  stride of one gauge; it is not read back from the frame.
+
+  viewport   gauge  label      bar    value
+  ---------  -----  -----  -------  -------
+  160x48     h          6      8-9    11-13
+  160x48     s         16    18-19    21-23
+  160x48     e         26    28-29    31-33
+  160x48     f         36    38-39    41-43
+  160x44     h          6      8-9    11-13
+  160x44     s         16    18-19    21-23
+  160x44     e         26    28-29    31-33
+  160x44     f         36    38-39    41-43
+  160x40     h          6      8-9    11-13
+  160x40     s         16    18-19    21-23
+  160x40     e         26    28-29    31-33
+  160x40     f         36    38-39    41-43
+  140x44     h          6      8-9    11-13
+  140x44     s         16    18-19    21-23
+  140x44     e         26    28-29    31-33
+  140x44     f         36    38-39    41-43
+  140x43     h          6      8-9    11-13
+  140x43     s         16    18-19    21-23
+  140x43     e         26    28-29    31-33
+  140x43     f         36    38-39    41-43
+  120x48     h          6      8-9    11-13
+  120x48     s         16    18-19    21-23
+  120x48     e         26    28-29    31-33
+  120x48     f         36    38-39    41-43
+  120x30     h          6      8-9    11-13
+  120x30     s         16    18-19    21-23
+  120x30     e         26    28-29    31-33
+  120x30     f         36    38-39    41-43
+  100x30     h          6      8-9    11-13
+  100x30     s         16    18-19    21-23
+  100x30     e         26    28-29    31-33
+  100x30     f         36    38-39    41-43
+
+Two frames verbatim
+
+  The cells the backend received, at the widest viewport rule 5 tables. Row indices are the
+  frame's own; the pipes are this record's and fix the pane's first and last column.
+
+  seed 42 policy individual tick 0, viewport 160x48
+
+    3 |┌ roster  living 12  deaths 0 ────────────────┐|
+    4 |│M01  A  11:1          —                      │|
+    5 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+    6 |│M02  A  17:63         —                      │|
+    7 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+    8 |│M03  A  26:52         —                      │|
+    9 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   10 |│M04  A  83:44         —                      │|
+   11 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   12 |│M05  A  84:15         —                      │|
+   13 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   14 |│M06  A  12:46         —                      │|
+   15 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   16 |│M07  B  67:95         —                      │|
+   17 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   18 |│M08  B  62:104        —                      │|
+   19 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   20 |│M09  B  64:82         —                      │|
+   21 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   22 |│M10  B  120:120       —                      │|
+   23 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   24 |│M11  B  123:116       —                      │|
+   25 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   26 |│M12  B  67:98         —                      │|
+   27 |│     h ██ 100  s ██ 100  e ██ 100  f ░░   0  │|
+   28 |│                                             │|
+   29 |│                                             │|
+   30 |│                                             │|
+   31 |│                                             │|
+   32 |│                                             │|
+   33 |│                                             │|
+   34 |│                                             │|
+   35 |│                                             │|
+   36 |└─────────────────────────────────────────────┘|
+
+  seed 42 policy individual tick 200, viewport 160x48
+
+    3 |┌ roster  living 12  deaths 0 ────────────────┐|
+    4 |│M01  A  0:31          move:west              │|
+    5 |│     h ██ 100  s █░  53  e ░░  35  f █░  95  │|
+    6 |│M02  A  31:50         move:west              │|
+    7 |│     h ██ 100  s █░  80  e ░░  30  f ██ 100  │|
+    8 |│M03  A  20:45         move:east              │|
+    9 |│     h ██ 100  s ░░  25  e ░░  25  f ██ 100  │|
+   10 |│M04  A  116:20        move:west              │|
+   11 |│     h ██ 100  s █░  73  e ░░  25  f ██ 100  │|
+   12 |│M05  A  120:20        move:north             │|
+   13 |│     h ██ 100  s █░  76  e ░░  20  f ██ 100  │|
+   14 |│M06  B  21:71         move:east              │|
+   15 |│     h ██ 100  s █░  65  e ░░  35  f ░░  15  │|
+   16 |│M07  B  45:84         move:north             │|
+   17 |│     h ██ 100  s █░  70  e ░░  20  f ░░   0  │|
+   18 |│M08  B  87:123        move:north             │|
+   19 |│     h ██ 100  s ░░  43  e ░░  35  f ░░  10  │|
+   20 |│M09  A  48:49         move:south             │|
+   21 |│     h ██ 100  s ░░  44  e ░░  35  f █░  95  │|
+   22 |│M10  B  110:114       move:east              │|
+   23 |│     h ██ 100  s █░  80  e ░░  20  f ░░  10  │|
+   24 |│M11  A  124:61        move:north             │|
+   25 |│     h ██ 100  s █░  65  e ░░  35  f ░░   0  │|
+   26 |│M12  B  72:73         move:south             │|
+   27 |│     h ██ 100  s █░  80  e ░░  30  f ░░   0  │|
+   28 |│                                             │|
+   29 |│                                             │|
+   30 |│                                             │|
+   31 |│                                             │|
+   32 |│                                             │|
+   33 |│                                             │|
+   34 |│                                             │|
+   35 |│                                             │|
+   36 |└─────────────────────────────────────────────┘|
+
+  Read the two together for rule 4.4: at tick 0 every `f` gauge is `░░   0`, an empty
+  bar and a printed zero, and at tick 200 the same column carries `██ 100` for the
+  Mokiterions at the ceiling. The gauge is not a placeholder in either frame.
+
+Value coverage
+
+  attribute   distinct      0    100  values
+  ----------  --------  -----  -----  ------
+  health             3  False   True  60, 80, 100
+  satiety           17  False   True  25 .. 100
+  energy             6  False   True  20, 25, 30, 35, 40, 100
+  fear               5   True   True  0, 10, 15, 95, 100
+
+  Both bounds of `fear` are drawn: the empty bar and the full one. The intermediate values
+  are whatever the run produced, not a chosen set -- these are frames of a real run, and the
+  arithmetic is checked at every value that appeared rather than at values picked to suit it.
+
+What no drawn frame can reach, and who carries it instead
+
+  Every width from the floor to 160 was swept at height 48. Where a roster is drawn its pane
+  is 47 columns wide, always, because rule 5 gives the pane a fixed width. So:
+
+    bar widths observed across the whole sweep:   2
+    entry forms observed:                         two-line
+    widths that draw no roster at all:            66 (34..99 columns, below rule 5's threshold)
+
+  The pane's fixed width is 47 and rule 4's collapse threshold is 47. They are equal, so
+  the drawn roster takes the two-line form at every viewport, exactly at the boundary, and
+  the one-line form is unreachable through `render::draw`. The interior is 45, so
+  bar = (45 - 35) / 4 = 2 and the 20-cell cap is unreachable too. This is a fact
+  about the layout, not a gap in the sweep, and it is worth stating plainly: the amendment's
+  bar-width arithmetic is exercised in a drawn frame at exactly one width.
+
+  The provisions the frames cannot reach are carried by the render module's own tests, which
+  reach `entry_lines` and `bar_width` directly -- they are internal-tier for that reason, and
+  `test-census.txt` accounts for them:
+
+  $ cargo test -p mokiterions-tui --lib the_bar_row_reproduces_the_specified_form -- --exact
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  $ cargo test -p mokiterions-tui --lib a_bar_row_shrinks_to_its_pane_and_never_overflows_it -- --exact
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  $ cargo test -p mokiterions-tui --lib a_zero_value_is_a_zero_and_an_absent_value_is_a_dash -- --exact
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  The first pins rule 4's mockup line byte for byte at the twenty-cell width, including that
+  the row ends at the fourth gauge with no fifth group and no trailing padding. The second
+  checks the bar width at every interior from 1 to 199, including that a pane too narrow for
+  a bar asks for none rather than for a negative width. The third is rule 4.4 at zero.
+
+RESULT: PASS - 996 bar rows rebuilt from rule 4 and the snapshot values match the
+        cells the backend received, character for character, and every gauge sits in the
+        column the rule puts it in

@@ -1,133 +1,42 @@
-# WO-MOK-007 evidence packet
+# Evidence — WO-MOK-007
 
-`VER-MOK-007`'s evidence-retention list has 15 bullets. Each is below with the file that discharges it, so retention
-completeness is checkable without reading the packet.
+`SPEC-MOK-003` rule 4 clause 7: the roster's three survival bars carry a colour band read from the value each
+presents. Green `80..=100`, orange `40..=79`, red `0..=39`.
 
-| Retention bullet | File |
+This index maps every file here to `VER-MOK-007`'s twelve evidence-retention bullets. Two files carry no bullet and
+say so.
+
+The gate captures were taken from the working tree with `HEAD` at `0b0fe5d` — the commit recording the owner's
+approval and the two approved `SPEC-MOK-003` provisions — and the implementation uncommitted. They therefore evidence
+the change, not the commit. `VER-MOK-007` requires commit-bound verification; that is `VREC-MOK-007`'s job and it is
+**not authored here**. See `completion-summary.md` disclosure 8.3.
+
+## The twelve bullets
+
+| # | Bullet | File | Contents |
+|---|---|---|---|
+| 1 | workspace test output, before and after | `test-run-before.txt`, `test-run.txt` | `master` @ `54c21ab` in a throwaway worktree: **172 passed, 0 failed**. After: **179 passed, 0 failed** across 19 targets. Both are the full `cargo test --workspace` output, not a summary line. |
+| 2 | band domain sweep and its case count | `band-sweeps.txt` | The domain assertion quoted from source, with the band table the test states independently of the implementation's constants. **101 values** in `0..=100`, plus **100 monotone adjacent pairs**. |
+| 3 | the two boundary cases, each by literal value | `band-sweeps.txt` | `band(39)`, `band(40)`, `band(79)`, `band(80)` each asserted by its own literal, and `band(0)` and `band(100)` likewise — **6 literal assertions**. |
+| 4 | text-identity sweep and its case count | `band-sweeps.txt` | The sweep quoted from source: 21 bar widths × 101 values = **2121 cases**, asserted in the test as `21 * 101`, against the unbanded form re-derived inside the test rather than captured from the implementation. |
+| 5 | the reference-viewport roster as text, spanning three bands | `frames.txt` | The roster pane at 160×48, unselected and with `M05` selected, each bar row followed by a per-cell band map (`......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR`). `M05` at h100 s59 e39 spans all three bands. Includes the throwaway harness's source, so the capture is reproducible. |
+| 6 | `cargo fmt --check` and `cargo clippy` output | `static-checks.txt` | `cargo fmt --all -- --check` exit 0, no output. `cargo clippy --workspace --all-targets --all-features -- -D warnings` exit 0, no finding. |
+| 7 | the empty diff of `mokiterions-core/` against `master` | `core-and-manifests-untouched.txt` | `git diff --stat master -- mokiterions-core/` empty; `git diff --stat master -- '*Cargo.toml' Cargo.lock` empty; whole-tree diff against `master` lists **5 files**, all accounted for. |
+| 8 | `grep` results for retained-tick and delta patterns | `no-retained-tick.txt` | One `band(` call site in shipped code (`render.rs:540`, inside `gauge`); `gauge` and `band` quoted whole; grep for `previous\|prev\|delta\|trend\|last_tick\|_ago\|history` across the observer, every hit a comment or a key label. Discloses the pre-existing `latest_survival` at `state.rs:161,193,224,228` and shows it unreachable from the roster path. |
+| 9 | `harnessctl validate`, `preflight`, `inspect`, `dashboard` | `harness-gates.txt`, `harness-inspect-and-dashboard.txt` | `validate` PASS, 70 artifacts, 0 errors, 0 warnings. `preflight --phase review --work-order WO-MOK-007` **PASS**. `inspect` PASS, 215 relations. `dashboard` PASS, 0 errors, 9 pre-existing `W-HEX-001`/`W-HEX-003` warnings. `doctor` PASS on every managed file, included because it is what shows no harness-managed file was edited. |
+| 10 | verbatim before and after of each changed test assertion | `changed-assertions.md` | Both permitted tests, before and after in full. Every asserted string byte-identical; one band assertion **added** to each. Records that no third pre-existing test changed, which is `WO-MOK-007` constraint 6's stop condition. |
+| 11 | `manual-assessment.md` with an author or an outstanding marker | `manual-assessment.md` | All **three assessments OUTSTANDING, no author**, with the environment stated (no terminal, no display) rather than left implicit. |
+| 12 | `completion-summary.md`, numbering every disclosure | `completion-summary.md` | The work order's eight required disclosures, numbered, with clause 7 read back out of the source. Item 8 numbers eight things not done, including the outstanding amendment and the untouched lifecycle status. |
+
+## Files carrying no bullet
+
+| File | Why it is here |
 |---|---|
-| The pre-change baseline capture of the declared matrix, captured before any code change, with the commit it was taken at recorded | `baseline/` — `capture.sh`, `pre-manifest.txt` (all 42 cells by digest), `full/` (the 11 streams retained whole), `exit-codes.txt`; the commit is in `baseline/COMMIT.txt` and is **60fda9f**. **11 of the declared 40 cells were captured before the first line of code changed; the other 31 were captured afterwards from a clean worktree at the same commit — see the disclosure below and `baseline/recapture-check.txt`** |
-| The post-change capture of the same matrix, and the projected comparison result for every combination | `post/additivity.txt` — 42 frozen-source cells all projected-equal to the pre-change stream with the projection a no-op on it, 20 new-source cells byte-identical across two processes, and all 20 differing from the reference source; `post/post-manifest.txt`, `post/full/`, `post/exit-codes.txt` |
-| The full text of the projection, and the result of applying it to the pre-change stream alone | `baseline/projection.py` (three anchored patterns, quoted in full in `manual-assessment.md` §6); the no-op result on the pre-change stream is in `baseline/recapture-check.txt` |
-| The twelve derived trait values per declared seed, as the record of which populations the floor was measured on | `measurements/traits.txt` |
-| Per-seed 1,000-tick survivor counts and consumption totals under the new source | `measurements/viability.txt` |
-| Per-seed final resource count and class distribution per territory under the new source at tick 1,000, and whether either territory reached zero | `measurements/viability.txt` — the two territory columns and their high-class shares; neither territory reached zero on any seed under either source |
-| The tick-10,000 result under the new source at the default density, alongside the reference source's recorded extinction at tick 9,154 | `measurements/long-horizon.txt` — the recorded control reproduces to the tick at seed 123 |
-| The measured oscillation rate under the new source per declared seed, against rule 5's 10.6% and the 12.2% unbiased-walk rate | `measurements/oscillation.txt` |
-| The recorded divergence instances behind the real-run divergence check, each naming the tick, the two Mokiterions, their traits and their differing proposals | `measurements/divergence.txt` |
-| Rendered roster buffers at each declared viewport, as text, with the four gauges' cell positions stated | `observer/roster-frames.txt` (the analysis and the gauge columns), `observer/frame-probe.rs` (the probe that produced the captures) |
-| The enumerated situation set used by oracle 3, and its size | `measurements/equivalence.txt` — 2,808 situations, enumerated rather than sampled |
-| The workspace test census before and after, reconciled name by name | `test-census.txt` |
-| `cargo fmt`, `cargo clippy`, `cargo test` and `cargo tree -p Mokiterions` output | `static-checks.txt`; the capture is reproducible with `analysis/capture-static.sh` |
-| The seven manual assessments above, each with its accountable role and date | `manual-assessment.md` — **five are outstanding and a sixth is unsigned; see below** |
-| The amendment-approval check of oracle 5 | `amendment-approvals.md` |
+| `requirement-to-test-mapping.md` | `VER-MOK-007`'s nine matrix rows, five properties and four acceptance scenarios against the tests that carry them. Scenario 2 is marked "No, and stated" and scenario 3 "Partly", so partial coverage is on the record rather than inferable only by reading the tests. |
+| `outstanding-amendment.md` | A **third** amendment provision the owner has not seen: `SPEC-MOK-004` rules 9, 10 and 11 record test and private-item counts that seven new tests and six new private items make wrong. Drafted in full, marked **OUTSTANDING**, and **not applied** — `WO-MOK-007`'s change surface ends "no other artifact". |
 
-**Seven files are not on the retention list.** `requirement-to-test-mapping.md` maps every one of `VER-MOK-007`'s 45
-matrix rows to the test or file that discharges it, in the contract's own order, and names the two rows that are *not*
-satisfied in place rather than in a footnote; both prior work orders retained the same mapping and
-`measurements/traits.txt` cites it. `completion-summary.md` is the work order's own required closing report.
-`escalation.md` records `WO-MOK-007` stop condition 6 firing and the owner's decision on it, because a stop condition
-that fired and was resolved is not something a reader should have to reconstruct from an amendment row.
-`negative-control/` holds the controls on oracles 2 and 3 — each designed failure injected and confirmed to fail.
-`interface-and-purity.txt` is the public-interface census and the `fear` writer/reader count.
-`measurements/proposals.txt` counts what each source actually proposed, and is the check that the trait-aware source
-never proposes `wait` and that the engine's own validation rejected none of its proposals — zero `wait` and zero
-rejections on all ten runs. This `README.md` is the map itself.
+## What a reviewer should check first
 
-**Before hashing anything here, note that a `.gitattributes` was added for this directory.** Every manifest below
-records the SHA-256 of a captured file so that a reviewer can hash the retained file and get the recorded number, and
-with `core.autocrlf = true` and no `.gitattributes` a Windows checkout rewrote every retained stream to CRLF, so every
-recorded digest failed against a file whose content was correct. That is not hypothetical: `WO-MOK-006`'s retained
-`baseline/engine/full/short_seed42_baseline_trace_on.txt` hashes to `08eadb21…` as checked out, against the
-`3424133a…` its own manifest records. One line — `docs/engineering/simulation/evidence/** -text` — disables the
-conversion. Checked in a clean worktree at this commit rather than argued from the attribute: both that file and this
-packet's own streams hash to their recorded values there. `completion-summary.md` §15 has it in full.
-
-Every `.py`, `.sh` and `.rs` file in the packet is the tooling that produced the `.txt` beside it, retained so that
-each figure is reproducible from the recorded command rather than trusted. The one exception is
-`observer/frame-probe.rs`, which was written into `mokiterions-tui/tests/`, run once, retained here and then deleted
-from the crate — the `WO-MOK-006` precedent for a probe that must not become a permanent test.
-
-## Read these four first
-
-- **`manual-assessment.md`** — the seven judgements no script can make. **One is recorded, one is recorded in
-  substance, and five are outstanding**, so `VER-MOK-007`'s manual-assessment contract is *not satisfied* and no
-  verification record can be written against this commit yet. Two carry facts that point adversely and are named at
-  the top of that file rather than the bottom: assessment 2, where the divergence count is within a factor of three
-  of the figure the contract itself names as failure, and assessment 4, where `fear` sits at its ceiling on 39% of
-  agent-ticks.
-- **`escalation.md`** — stop condition 6 fired: `REQ-MOK-034`'s survivor floor was missed on three of five declared
-  seeds at the `0..=100` trait range first specified. The owner, as technical owner, chose to narrow the range to
-  `0..=40` rather than amend the floor. Every survivor figure in this packet is downstream of that decision, which is
-  why it is read early rather than found late.
-- **`amendment-approvals.md`** — oracle 5. Every provision the owner approved is in both the amendment record and the
-  specification text, checked over disjoint text so a record cannot vouch for itself. It also names **three amendments
-  written during implementation beyond the owner's stated list**, one approved and two awaiting the technical owner's
-  ratification.
-- **`observer/roster-frames.txt`** — oracle 4, and the packet's one reachability finding: because the roster pane's
-  width and rule 4's collapse threshold are both 47, the drawn roster is *always* two-line at a 45-column interior,
-  so `bar = 2` is the only bar width reachable through `render::draw`. The `min(20, …)` cap and the collapsed
-  one-line form are carried by three named internal render tests instead.
-
-## The five independent oracles
-
-`VER-MOK-007`'s central claim is that the two frozen decision sources are untouched and the new one behaves as rule 19
-specifies. That claim is not carried by one measurement:
-
-1. **The recorded pre-change baseline under a stated projection** — 42 frozen-source cells at **60fda9f**, compared
-   against the post-change capture with only the three added fields deleted, and every one byte-identical. "The
-   baseline is captured once. A discrepancy is never resolved by recapturing it." The projection is also applied to
-   the pre-change stream alone, where it must be a no-op, which is the one way this oracle could be subverted.
-2. **The shared entropy stream's position across trait derivation** — trait derivation uses a generator of its own, so
-   the shared stream's draw sequence is unmoved and every pre-existing run is bit-identical.
-3. **Arithmetic equivalence at the trait's lower bound** — all 2,808 situations enumerated, not sampled: rule 19 at
-   `T = 0` is proposal-identical to rule 5.
-4. **The in-memory character buffer, cell by cell** — 864 bar rows across 134 viewport renders, rebuilt from rule 4's
-   named parts rather than from the product, matching character for character with every gauge at its predicted
-   absolute column.
-5. **The governance state of the amended artifacts** — an amendment nobody approved is not a specification.
-
-Each can fail without the others failing, which is why all five are here. Oracles 2 and 3 additionally have negative
-controls in `negative-control/`: each was made to fail on purpose before being trusted to pass.
-
-## What none of this establishes
-
-**`fear` has no consumer.** Nothing reads it — no rule, no decision source, one writer and no reader by census. So no
-outcome can falsify its constants, and the 39% ceiling residency is an observation rather than a defect. What is
-verified is that the attribute is maintained, bounded, perception-driven and reported; whether `+10`/`-5` is the right
-pair will only be answerable once something consumes it.
-
-**Individuality is demonstrated at the scale it was measured, not at the scale a reader might assume.** There are 3 to
-10 divergent situations per thousand-tick run and **zero** cases of two Mokiterions facing the same situation on the
-same tick, so no divergence is ever visible side by side in a single frame. The 54 to 97 waste-accepting eats per run
-are the same behavior counted without requiring a coincidence, but substituting that measure for the one
-`VER-MOK-007` names is the product owner's call, not the implementation agent's.
-
-**Equivalence is demonstrated across the declared matrix and the enumerated situation set, not across the input
-space.** Oracle 3 is exhaustive over its 2,808 situations because that set is finite; oracle 1 covers 40 cells of a
-much larger space.
-
-**The `VREC-MOK-005` gate was overridden, not met.** Six amendments from the previous work order remain
-**OUTSTANDING** and its seven manual assessments remain unrecorded, by the repository owner's explicit decision of
-2026-08-19. The mitigation is that the two layers stay separable by inspection, and `amendment-approvals.md` checks
-that claim rather than asserting it: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f**.
-It is a cost carried forward, not a debt paid.
-
-**The pre-change baseline is incomplete relative to the declared 40 cells, and the shortfall is disclosed rather than
-repaired.** Eleven cells — the ten 1,000-tick default-density frozen-source runs and one 20-tick traced run — were
-captured before the first line of code changed and are retained in full. The other 31, the 1.50%-density and
-`--trace-actions` variants, were not: they were captured afterwards from a clean git worktree at the same commit. That
-is a recapture, and oracle 1 forbids recapturing the baseline *to resolve a discrepancy*. It was not used to resolve
-one — no discrepancy existed, and those 31 cells are ones the original capture never covered — but the distinction
-rests on the recapture being from the same world, so `baseline/recapture-check.txt` compares the eleven cells the two
-captures have in common byte for byte rather than asserting it. All eleven match. **A reader who does not accept that
-argument should treat oracle 1 as covering eleven cells, not forty.**
-
-Separately, `baseline/rebuild-check.txt` records that the post-change capture every figure here derives from came from
-a binary that then fell behind the engine source three times: `cargo fmt` reformatted it, one test was moved out of the
-crate's `#[cfg(test)]` block into the public tier, and one `debug_assert!` invariant was tightened to the bound the
-amended trait range states. Each has a reason it cannot matter and none of those reasons is relied on: the tree was
-rebuilt from the committed source and the whole matrix captured again, and all 83 shared cells came out byte-identical.
-
-This packet was written before the implementation was committed. `WO-MOK-007` is left at `status = "in_progress"` and
-no verification record exists — a verification record binds a commit and is created after the one it names, and five
-manual assessments are outstanding besides.
+1. `changed-assertions.md` — whether any rendered character moved. It is the constraint the whole clause turns on, and the two tests that could have caught a move are quoted whole.
+2. `frames.txt` — whether the bands are where they should be, on a real frame, including under selection.
+3. `completion-summary.md` item 8 — what is outstanding. Two items need the owner: the `SPEC-MOK-004` amendment and the three manual assessments.

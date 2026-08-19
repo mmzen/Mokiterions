@@ -4,7 +4,7 @@
 # that: with `core.autocrlf = true` a Windows clone rewrites every retained stream to CRLF, and every
 # recorded digest then fails to match a file whose content is in fact correct.
 #
-# This was found while committing `WO-MOK-007`: `WO-MOK-006`'s retained
+# This was found while committing `WO-MOK-010`: `WO-MOK-006`'s retained
 # `baseline/engine/full/short_seed42_baseline_trace_on.txt` hashes to `08eadb21...` as checked out on
 # Windows, while its own manifest records `3424133a...`, which is the same bytes with LF endings.
 #

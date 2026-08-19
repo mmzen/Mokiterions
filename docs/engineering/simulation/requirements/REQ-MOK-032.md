@@ -168,7 +168,7 @@ the tick it died on, and it is absent from the observation snapshot exactly as i
 
 ## Open decisions
 
-None. The two step sizes are the technical owner's to fix in `SPEC-MOK-001`; `WO-MOK-007` records the values proposed
+None. The two step sizes are the technical owner's to fix in `SPEC-MOK-001`; `WO-MOK-010` records the values proposed
 for them and the owner's decision of 2026-08-19. The product decisions — that the fourth attribute is `fear`, that
 perceiving another living Mokiterion drives it, that it starts at rest, and that nothing reads it yet — are settled
 here and in `CAP-MOK-006`.

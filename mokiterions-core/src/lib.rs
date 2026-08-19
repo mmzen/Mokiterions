@@ -16,7 +16,7 @@
 //! `FoodClass` and `Action` — by value. The ten others it lists stay private, including
 //! `Observation` and `DecisionSource`, which carry the `ADR-MOK-001` trust boundary.
 //!
-//! `WO-MOK-007` grew that interface by exactly two things, both of them values: a third
+//! `WO-MOK-010` grew that interface by exactly two things, both of them values: a third
 //! `Policy` variant and a fourth attribute on the observation snapshot's Mokiterion entry.
 //! The trait-aware source, the `Observation` it reads and the `waste_tolerance` that
 //! observation carries all stay on the private side of the same boundary, so a Mokiterion's

@@ -8,7 +8,8 @@
 
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
-use ratatui::buffer::Buffer;
+use ratatui::buffer::{Buffer, Cell};
+use ratatui::style::{Color, Modifier};
 
 // `use super::*` used to supply these. A test tier outside the crate gets none of the module's
 // private imports, so every name a moved test uses is named here through the public interface.
@@ -215,6 +216,314 @@ fn a_reported_failure_reaches_the_header() {
     let header = rows(&frame_of(&mut observer, 160, 48))[0].clone();
     assert!(header.contains("export failed"), "{header}");
     assert!(header.contains("RUNNING"), "{header}");
+}
+
+/// Rule 4 clause 7's three bands, stated here rather than imported.
+///
+/// `VER-MOK-007` requires it: a case that read the implementation's constants would pass whatever
+/// those constants said. The cases below name a band by its index in this table and never name a
+/// colour, because the palette is the implementation's to choose. What they assert is that two
+/// gauges agree in colour exactly when they agree in band.
+fn specified_band(value: u8) -> usize {
+    match value {
+        80..=100 => 0,
+        40..=79 => 1,
+        0..=39 => 2,
+        outside => panic!("{outside} is outside the attribute domain rule 4 presents"),
+    }
+}
+
+/// One roster entry's bar row, split into the pieces clause 7 bands and the pieces it leaves alone.
+struct BarRow {
+    /// The row's text inside the pane's borders.
+    text: String,
+    /// Each banded gauge's foreground, in health, satiety, energy order.
+    ///
+    /// Clause 5 as amended puts a fourth gauge after them and clause 7 as amended gives it no
+    /// band, so it is not read as a band here; the four-gauge form is asserted by the `Gauge`
+    /// tier below, and this row reads only what clause 7 governs.
+    gauges: Vec<Color>,
+    /// Each banded gauge's numeric value as rendered, in the same order.
+    values: Vec<String>,
+    /// The foreground of every cell clause 7 leaves unstyled: the indent, the separators, and
+    /// the fourth gauge, which clause 7 as amended leaves unstyled in full.
+    unstyled: Vec<Color>,
+    /// Whether every cell the row's characters occupy carries reversed video.
+    ///
+    /// Not every cell inside the borders: clause 5 as amended leaves the bar row two columns
+    /// short of the reference roster's 45-column interior — `5 + 4 * 6 + 3 * 2 = 43` — and a
+    /// cell no character occupies carries no reversal, which has always been true of the
+    /// identity line above this one. The three-gauge form filled the interior exactly, so the
+    /// distinction did not arise there.
+    reversed: bool,
+}
+
+/// The roster pane's cells on row `y`, or `None` where the row is outside the pane's body.
+///
+/// The roster is the leftmost pane, so its two borders are the first two vertical rules on the row.
+/// Reading between them keeps the view pane's glyphs out of the bar-width count below.
+fn roster_cells(buffer: &Buffer, y: u16) -> Option<Vec<&Cell>> {
+    let row: Vec<&Cell> = (buffer.area.left()..buffer.area.right())
+        .map(|x| buffer.cell((x, y)).unwrap())
+        .collect();
+    let borders: Vec<usize> = row
+        .iter()
+        .enumerate()
+        .filter(|(_, cell)| cell.symbol() == "│")
+        .map(|(x, _)| x)
+        .collect();
+    match borders.as_slice() {
+        [left, right, ..] => Some(row[left + 1..*right].to_vec()),
+        _ => None,
+    }
+}
+
+/// Rule 4's name field: the entry's first six columns, the identifier beginning after them.
+const NAME_COLUMNS: usize = 6;
+
+/// The row on which `id`'s entry opens, found by the identity line rule 4 puts first.
+///
+/// Rule 4 as amended for `REQ-MOK-041` puts the name in that line's first six columns and the
+/// identifier immediately after them, so the row is found by where the identifier sits rather than
+/// by what the line opens with. A bar row cannot match: its columns six to eight are the health
+/// gauge's label and the opening cells of its bar.
+fn entry_row(buffer: &Buffer, id: &str) -> u16 {
+    (buffer.area.top()..buffer.area.bottom())
+        .find(|&y| {
+            roster_cells(buffer, y).is_some_and(|cells| {
+                cells
+                    .iter()
+                    .map(|cell| cell.symbol())
+                    .collect::<String>()
+                    .get(NAME_COLUMNS..NAME_COLUMNS + id.len())
+                    == Some(id)
+            })
+        })
+        .unwrap_or_else(|| panic!("{id} has no roster entry"))
+}
+
+/// Reads the bar row at `y` out of the roster pane.
+///
+/// Rule 4 fixes the form — a five-column indent, then four gauges of a label character, a space,
+/// the bar, a space and a three-column value, with two spaces between gauges — so the pieces are
+/// located from that form. The bar width is whatever the layout produced at this viewport, counted
+/// off the row rather than assumed. A gauge whose cells do not share one foreground fails here
+/// rather than downstream, since a gauge reading as two states at once is what clause 7 forbids
+/// when it applies the band to the gauge as a whole.
+fn bar_row(buffer: &Buffer, y: u16) -> BarRow {
+    let cells = roster_cells(buffer, y).expect("the bar row lies inside the roster pane");
+    let indent = cells
+        .iter()
+        .position(|cell| cell.symbol() == "h")
+        .expect("rule 4's bar row opens with the health gauge");
+    assert_eq!(indent, 5, "rule 4 fixes a five-column indent");
+    // Four gauges since clause 5 was amended, so four bars' worth of cells on the row.
+    let bar = cells
+        .iter()
+        .filter(|cell| matches!(cell.symbol(), "█" | "░"))
+        .count()
+        / 4;
+    let width = "h ".len() + bar + " ".len() + "100".len();
+    // Where the row's characters end: four gauges and the three separators between them. Cells
+    // past this carry no character, and therefore no band and no reversal.
+    let occupied = indent + 4 * width + 3 * 2;
+    for (offset, cell) in cells[occupied..].iter().enumerate() {
+        assert_eq!(
+            cell.symbol(),
+            " ",
+            "the row's four gauges end at column {}, but column {} carries a character",
+            occupied,
+            occupied + offset
+        );
+    }
+
+    let mut gauges = Vec::new();
+    let mut values = Vec::new();
+    let mut banded = vec![false; cells.len()];
+    for (index, label) in ['h', 's', 'e'].into_iter().enumerate() {
+        let start = indent + index * (width + 2);
+        let gauge = &cells[start..start + width];
+        assert_eq!(
+            gauge[0].symbol(),
+            label.to_string(),
+            "rule 4 fixes the gauge order as health, satiety, energy"
+        );
+        for (offset, cell) in gauge.iter().enumerate() {
+            assert_eq!(
+                cell.fg,
+                gauge[0].fg,
+                "the {label} gauge reads as more than one state at column {}",
+                start + offset
+            );
+            banded[start + offset] = true;
+        }
+        gauges.push(gauge[0].fg);
+        values.push(
+            gauge[width - 3..]
+                .iter()
+                .map(|cell| cell.symbol())
+                .collect::<String>()
+                .trim()
+                .to_string(),
+        );
+    }
+
+    BarRow {
+        text: cells.iter().map(|cell| cell.symbol()).collect(),
+        gauges,
+        values,
+        unstyled: cells
+            .iter()
+            .zip(&banded)
+            .filter(|(_, banded)| !**banded)
+            .map(|(cell, _)| cell.fg)
+            .collect(),
+        reversed: cells[..occupied]
+            .iter()
+            .all(|cell| cell.modifier.contains(Modifier::REVERSED)),
+    }
+}
+
+/// A run advanced until one Mokiterion's three attributes fall in three different bands.
+///
+/// Every Mokiterion starts at full satiety and energy, so a spread takes ticks to appear. The run
+/// is seeded, so where this search stops is fixed; it is searched for rather than written down so
+/// that the case survives a change in how fast the world moves.
+fn a_roster_spanning_three_bands() -> (Observer, String) {
+    let mut observer = start(&[]);
+    loop {
+        let spread = observer
+            .snapshot()
+            .agents
+            .iter()
+            .find(|agent| {
+                let bands = [
+                    specified_band(agent.health),
+                    specified_band(agent.satiety),
+                    specified_band(agent.energy),
+                ];
+                bands[0] != bands[1] && bands[1] != bands[2] && bands[0] != bands[2]
+            })
+            .map(|agent| agent.id.clone());
+        if let Some(id) = spread {
+            return (observer, id);
+        }
+        assert!(
+            observer.snapshot().tick < 500,
+            "no entry spanned three bands within 500 ticks"
+        );
+        observer.advance().unwrap();
+    }
+}
+
+/// `SPEC-MOK-003` rule 4 clause 7, read out of a drawn frame rather than out of a line.
+///
+/// The internal tier asserts the band function and the spans it builds. This tier asserts the one
+/// thing that tier cannot: that a band survives the draw into the terminal's own cells, on a roster
+/// produced by a run rather than by a fixture. One style shared by all three gauges is the obvious
+/// defect and would pass any single-gauge case, so the entry looked for is one whose three
+/// attributes fall in three different bands, and every gauge in the pane is then checked for
+/// agreement between colour and band.
+#[test]
+fn the_survival_bands_reach_the_frame_and_three_differ_in_one_entry() {
+    let (mut observer, spread) = a_roster_spanning_three_bands();
+    let buffer = frame_of(&mut observer, 160, 48);
+    let snapshot = observer.snapshot();
+
+    // Colour agrees with band across the whole pane, and disagrees wherever the band does.
+    let mut seen: Vec<(usize, Color)> = Vec::new();
+    for agent in &snapshot.agents {
+        let row = bar_row(&buffer, entry_row(&buffer, &agent.id) + 1);
+        assert_eq!(
+            row.values,
+            [agent.health, agent.satiety, agent.energy].map(|value| value.to_string()),
+            "{} presents the snapshot's own values: {}",
+            agent.id,
+            row.text
+        );
+        for (value, fg) in [agent.health, agent.satiety, agent.energy]
+            .into_iter()
+            .zip(&row.gauges)
+        {
+            let band = specified_band(value);
+            for (other_band, other_fg) in &seen {
+                if *other_band == band {
+                    assert_eq!(fg, other_fg, "two gauges at band {band} differ in colour");
+                } else {
+                    assert_ne!(
+                        fg, other_fg,
+                        "bands {band} and {other_band} share one colour"
+                    );
+                }
+            }
+            seen.push((band, *fg));
+        }
+        for fg in row.unstyled {
+            assert_eq!(
+                fg,
+                Color::Reset,
+                "clause 7 leaves the indent, the separators and the fourth gauge unstyled: {}",
+                row.text
+            );
+        }
+    }
+
+    let agent = snapshot
+        .agents
+        .iter()
+        .find(|agent| agent.id == spread)
+        .unwrap();
+    let row = bar_row(&buffer, entry_row(&buffer, &spread) + 1);
+    println!(
+        "three bands in one entry at tick {}: {} h{} s{} e{} -> {:?}",
+        snapshot.tick, agent.id, agent.health, agent.satiety, agent.energy, row.gauges
+    );
+    assert_ne!(row.gauges[0], row.gauges[1], "{}", row.text);
+    assert_ne!(row.gauges[1], row.gauges[2], "{}", row.text);
+    assert_ne!(row.gauges[0], row.gauges[2], "{}", row.text);
+}
+
+/// Rule 4 clause 6's reversed video and clause 7's band on one entry, neither replacing the other.
+///
+/// The bands are captured before the entry is selected and compared after, so what is asserted is
+/// not that some colour is present but that selection changed no band at all. Selection is reached
+/// through the bound key rather than through a hook, which is also how an operator reaches it.
+#[test]
+fn a_selected_entry_keeps_its_bands_under_reversed_video() {
+    let (mut observer, spread) = a_roster_spanning_three_bands();
+    let buffer = frame_of(&mut observer, 160, 48);
+    let before = bar_row(&buffer, entry_row(&buffer, &spread) + 1);
+    assert!(!before.reversed, "an unselected entry is not reversed");
+
+    // Tab walks the roster in order, from no selection through to this entry.
+    let living = observer.snapshot().agents.len();
+    for _ in 0..=living {
+        if observer.selection() == Some(spread.as_str()) {
+            break;
+        }
+        observer
+            .handle_key(press(ratatui::crossterm::event::KeyCode::Tab))
+            .unwrap();
+    }
+    assert_eq!(observer.selection(), Some(spread.as_str()));
+
+    let buffer = frame_of(&mut observer, 160, 48);
+    let after = bar_row(&buffer, entry_row(&buffer, &spread) + 1);
+    assert!(
+        after.reversed,
+        "clause 6 marks the selected entry by reversing it: {}",
+        after.text
+    );
+    assert_eq!(
+        after.gauges, before.gauges,
+        "clause 7's bands survive clause 6's reversal: {}",
+        after.text
+    );
+    assert_eq!(
+        after.unstyled, before.unstyled,
+        "selection colours nothing clause 7 left unstyled"
+    );
+    assert_eq!(after.text, before.text, "selection moves no character");
 }
 
 /// Rule 12.2, read at the frame boundary: drawing draws no entropy and changes no state.
@@ -485,7 +794,7 @@ fn the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it() {
             "a gauge reading zero renders an empty bar, not an absent one"
         );
     }
-    // `WO-MOK-007` stop condition 9's arithmetic, read off the frame rather than off the constant:
+    // `WO-MOK-010` stop condition 9's arithmetic, read off the frame rather than off the constant:
     // the pane's interior is 45 columns, `(45 - 35) / 4` is 2, and two cells is at least one, so
     // the narrowing the fourth gauge causes needs no escalation.
     assert_eq!(found[0][0].bar(), 2, "the roster's bar width moved");

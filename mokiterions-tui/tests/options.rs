@@ -7,7 +7,7 @@
 //! per-test comparison under `WO-MOK-006` is the evidence.
 //!
 //! One test below is not from that move. `the_usage_text_advertises_every_policy_the_engine_accepts`
-//! was added under `WO-MOK-007`, when the third policy the engine accepts was found missing from the
+//! was added under `WO-MOK-010`, when the third policy the engine accepts was found missing from the
 //! observer's usage text. It reaches `USAGE`, `parse` and `Policy::parse`, all of which were already
 //! public, so rule 9's condition holds for it as well.
 

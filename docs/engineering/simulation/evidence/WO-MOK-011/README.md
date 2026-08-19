@@ -17,6 +17,14 @@ outstanding.
 This chain was renumbered from `010` to `011` after the packet was captured; `renumbering.md`
 records what that rewrite touched, what it could not preserve, and why no measurement here moves.
 
+This branch has since merged `master` at `2157f77`, which carried the survival bands, the 0.1.0
+release and three further changes. `merge/` records what conflicted, how each conflict was resolved,
+which oracles were re-derived on the merged tree — 3 and both halves of 5, with all four gates and
+`SPEC-MOK-004`'s counted rules — and which are still owed: **1, 2, 4 and the mutation control.**
+Everything outside `merge/` in this packet describes the unmerged candidate tree at `9ddcf83`, which
+is the tree `VREC-MOK-011` binds. `merge/` was added after that record was written, so the record's
+221-path evidence list does not name it and no digest in the record covers it.
+
 ---
 
 ## Read in this order
@@ -103,6 +111,21 @@ names. The pair is what oracle 3 reconciles.
 | `bar-rows.txt` | the 96 bar rows the harness printed |
 | `bar-rows.diff` | **empty** — the 96 rows are identical on both sides |
 | `frame-dump.rs` | the throwaway harness's source; it is deleted from the tree, and it compiles against both revisions |
+
+### `merge/` — the merge of `master` at `2157f77`, added after the record was written
+
+| File | Contents |
+|---|---|
+| `README.md` | the merge note: the thirteen conflict regions in four files, each resolution, what was re-derived, what is owed, and three things reported rather than fixed |
+| `gates.txt` | the declared gates at the merged tree: 212 passed, clippy clean with both crates re-linted, validator PASS over 102 artifacts |
+| `test-run.txt` | the whole `cargo test` log those figures come from |
+| `test-census.txt` | 212 test names, target-qualified |
+| `census-reconciliation.txt` | oracle 3 re-derived across the merge: `master` 200 → 212, the twelve additions named, **0 removals, 0 renames** |
+| `interface.txt` | oracle 5's interface half at both trees: rule 6 unchanged at 94 / 118 / 24, one parameter renamed in one signature |
+| `render-items.txt` | rule 10's `render.rs` item counts at both trees, and an arithmetic note on the inherited row |
+| `governance.txt` | validator, dashboard and inspector at `2157f77` and at the merge, side by side |
+| `amendment-approvals.md` | oracle 5's governance half re-generated with the merge base — `RESULT: PASS` |
+| `amendments-vs-master.py` | the wrapper that re-runs `analysis/amendments.py` with the base revision changed and nothing else |
 
 ---
 

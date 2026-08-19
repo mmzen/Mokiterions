@@ -1,0 +1,133 @@
+VER-MOK-011 — the declared gates, at the merge tree
+==================================================
+
+Merge         master 2157f77 into feature/phase-2-5-naming 4606145
+Branch        feature/phase-2-5-naming
+Date          2026-08-19
+Toolchain     cargo 1.97.1 (c980f4866 2026-06-30); rustc 1.97.1 (8bab26f4f 2026-07-14)
+
+Every command was run from the repository root, against the merged tree, before the merge commit
+existed. That is the one way this capture is weaker than the packet's: `git status --porcelain` is
+not empty here and cannot be, because the tree being measured is a resolved merge with MERGE_HEAD
+still present. A verification record binding the merge commit re-runs all of it at that commit; this
+capture exists so the merge is not committed on the strength of an unmeasured tree, and it is not a
+record.
+
+The sources of both crates were touched before clippy and before the test run so that neither
+reports a cached result.
+
+--------------------------------------------------------------------------
+$ cargo fmt --all -- --check
+(no output: every file is formatted)
+exit=0
+
+--------------------------------------------------------------------------
+$ cargo clippy --workspace --all-targets --all-features -- -D warnings
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-core)
+    Checking mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-tui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.48s
+exit=0
+
+Both crates were re-linted rather than reported from cache, which is what the two Checking lines
+show; with a warm cache and untouched roots clippy prints Finished alone and would report a clean
+lint it never performed.
+
+--------------------------------------------------------------------------
+$ cargo tree -p Mokiterions
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-core)
+exit=0, 1 line
+
+$ cargo tree -p mokiterions-tui --depth 1
+mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-tui)
+|-- Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions\mokiterions-core)
+`-- ratatui v0.30.2
+exit=0; the full tree is 111 lines, all of them ratatui's transitive set
+
+The engine still depends on nothing. `WO-MOK-011` adds no dependency and the merge adds none: both
+figures, 1 line and 111 lines, are the packet's.
+
+--------------------------------------------------------------------------
+$ cargo test        (one invocation at the workspace root)
+exit=0
+
+The full log is test-run.txt and the census taken from it is test-census.txt. The per-target
+results:
+
+       Running unittests src\lib.rs (mokiterions)
+  test result: ok. 54 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running unittests src\main.rs (Mokiterions)
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\cli.rs
+  test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\decisions.rs
+  test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\density.rs
+  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\naming.rs
+  test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\process.rs
+  test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\termination.rs
+  test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\viability.rs
+  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running unittests src\lib.rs (mokiterions_tui)
+  test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running unittests src\main.rs (mokiterions_tui)
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\authority.rs
+  test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\export.rs
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\layout.rs
+  test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\options.rs
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\render.rs
+  test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\spatial.rs
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\state.rs
+  test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+       Running tests\verification.rs
+  test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+     Doc-tests mokiterions
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+     Doc-tests mokiterions_tui
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+
+Totals, from the census:
+  212 test names; reported totals: 212 passed, 0 failed, 0 ignored
+  21 runners, the same 21 the packet ran
+
+Against the packet's tree the observer's library target rises 26 -> 31 and tests\render.rs rises
+10 -> 12, which are `master`'s five inline band tests and its two public band tests arriving. Against
+`master` the twelve arrivals are this work order's, named one by one in census-reconciliation.txt.
+
+--------------------------------------------------------------------------
+$ python scripts/validate_engineering_artifacts.py
+Engineering artifact validation: PASS
+Artifacts: 102 | Errors: 0 | Warnings: 0
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+exit=0
+
+$ python scripts/generate_harness_dashboard.py --root .
+Harness Explorer generation: PASS | Artifacts: 102 | Relations: 335 | Errors: 0 | Warnings: 6
+Snapshot: 872bf9dbac8fc30f1eb469216e1b1f8794517314a8fb06d8524c9d1dc2215204
+exit=0
+
+$ python scripts/inspect_engineering_artifacts.py
+18 findings; 1 decision_required (VREC-MOK-011), 1 definition_pending (WO-MOK-008),
+1 active_work (WO-MOK-011)
+exit=0
+
+The same three commands at 2157f77, and what the merge does to each, are in governance.txt. The
+snapshot digest above is this tree's; it is not the digest of any commit and no record binds it.
+
+--------------------------------------------------------------------------
+$ grep -rnE '\b(Zug|Krul|Quib|Sput|Trok|Womp|Hozz|Nurb|Vonk|Gorm|Xob|Drix)\b' mokiterions-tui/
+(no match)
+
+`VER-MOK-011`'s static row, re-run at the merge: no engine name appears anywhere in the observer,
+tests and fixtures included. The merge gives six inherited `entry_lines` call sites a name argument
+and all six take the fabricated stand-ins `"Blip"` and `"Ort"`, so this search still returns nothing.

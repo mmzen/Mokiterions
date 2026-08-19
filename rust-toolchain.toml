@@ -1,0 +1,37 @@
+# Pins the toolchain that builds and verifies this repository.
+#
+# Repository-owned. Not a harness artifact and not an approved architectural decision: it
+# records the toolchain that the retained evidence under
+# `docs/engineering/simulation/evidence/` was actually produced with, so a later build can
+# reproduce it. `docs/engineering/REPOSITORY_CONTEXT.md` states the setup command; this file
+# is what makes that command land on one version.
+#
+# Why an exact version rather than `stable`:
+#
+#   - `VREC-MOK-001` through `VREC-MOK-006` bind verification to a commit. A commit does not
+#     pin a compiler, so "verified at this commit" means "verified with whatever stable was
+#     installed that day" unless something records the version. This file records it.
+#   - `cargo clippy --workspace --all-targets --all-features -- -D warnings` is a required
+#     gate in every work order. A new stable adds lints, so on a floating channel that gate
+#     can fail on an unchanged commit — the release candidate would stop verifying without
+#     anyone changing it.
+#   - The engine package's dependency table is required to stay empty and the observer has
+#     exactly one dependency, so a toolchain bump is the only thing that can change what is
+#     compiled without a source change.
+#
+# Both packages declare `edition = "2024"` and the workspace declares `resolver = "3"`, so
+# the floor is well above what any currently supported toolchain provides; this pin is about
+# reproducibility, not about a minimum.
+#
+# Raising it is an ordinary repository change, not a governed one, but it invalidates the
+# "same toolchain as the evidence" claim above: re-run the required verification for the
+# affected work orders and say in the commit message which version was left behind.
+
+[toolchain]
+channel = "1.97.1"
+
+# `minimal` plus the two components the quality gates require. The release workflow's build
+# matrix compiles for the host only, so no `targets` list is needed here; a cross build would
+# add its target on the command line.
+profile = "minimal"
+components = ["rustfmt", "clippy"]
