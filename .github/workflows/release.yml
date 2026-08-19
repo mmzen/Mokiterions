@@ -1,0 +1,616 @@
+# Publish the assets for a release an accountable owner has already decided to make.
+#
+# This workflow is repository-owned and implements `SPEC-MOK-005`. It neither modifies nor
+# invokes `engineering-harness.yml`, which is managed by the harness and integrity-checked by
+# `python -m se_harness doctor`; the compliance job below re-runs the same candidate checks at
+# the released commit rather than trying to reuse the managed workflow, which declares no
+# `workflow_call` trigger.
+#
+# What this workflow will NOT do, because `ENGINEERING_HARNESS.md` and
+# `docs/engineering/DECISION_RIGHTS.md` reserve these acts to accountable humans:
+#
+#   * create or move a tag                 -- the release owner tags the candidate commit
+#   * transition an artifact to `released` -- the release owner does that in a normal PR
+#   * bump a version in a manifest         -- that is authorized work, not a CI side effect
+#   * create the maintenance branch        -- see the note at the end of this file
+#   * publish the release                  -- the workflow uploads a DRAFT; a person clicks
+#
+# Everything it does do is downstream of a decision already recorded in `docs/engineering`.
+# Every gate fails closed.
+#
+# Two revisions are in play and they are not the same commit:
+#
+#   * the GOVERNANCE revision -- the tip of the integration branch, where the release record
+#     and its verification record live. A record that names a commit has to be written after
+#     that commit exists, because it quotes its hash; `VREC-MOK-001` postdates the commit it
+#     binds for the same reason. So the tagged tree does not contain its own release record,
+#     and reading the graph from the tag would refuse every genuine release.
+#   * the AUTHORIZED revision -- the commit the release record names, which the tag points at.
+#     This is what gets verified, built, packaged and published.
+#
+# The authorization job resolves both, pins the governance revision to an exact commit, and
+# hands both to the jobs downstream so that a push landing mid-run cannot shift the ground.
+
+name: Release
+
+on:
+  # The release owner pushes an annotated tag they created. That push is the trigger; the
+  # workflow never creates the tag it publishes against.
+  push:
+    tags:
+      - "v*"
+  # An explicit request naming a tag that already exists. `SPEC-MOK-005` rule 2 is precise
+  # about what this form is: it re-runs a release, it does not preview one. So it runs the
+  # same five jobs to the same end, and a tag that is not on the remote refuses in the gate
+  # under rule 4.1 rather than being reported as a dry run that found nothing.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "An existing annotated tag to re-run the release for"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+  # Must equal `[harness].tool_version` in `.engineering-harness.toml`. The compliance job
+  # asserts that rather than trusting this line.
+  SE_HARNESS_VERSION: "0.4.0"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ---------------------------------------------------------------------------------------
+  # 1. Is this release authorized? Nothing else runs until the graph says yes.
+  # ---------------------------------------------------------------------------------------
+  authorize:
+    name: Authorization
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.gate.outputs.commit }}
+      governance_commit: ${{ steps.governance.outputs.commit }}
+      version: ${{ steps.gate.outputs.version }}
+      record: ${{ steps.gate.outputs.record }}
+      contract: ${{ steps.gate.outputs.contract }}
+      work_orders: ${{ steps.gate.outputs.work_orders }}
+      verification_records: ${{ steps.gate.outputs.verification_records }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The integration branch, not the tag: see the note at the top of this file. The
+          # gate reads the formal graph from this tree and resolves `refs/tags/<tag>` against
+          # the same clone, so the full history and every tag are required.
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Pin the governance revision every later job will read
+        id: governance
+        shell: bash
+        run: |
+          default="${{ github.event.repository.default_branch }}"
+          if [[ -z "$default" ]]; then
+            echo "REFUSED: the event payload carries no default branch name." >&2
+            exit 1
+          fi
+          # A tag push checks out the tag by default. Assert that the override above took
+          # effect rather than assuming it, because every graph read below depends on it.
+          if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$default")" ]]; then
+            echo "REFUSED: expected to be on origin/$default, but HEAD is elsewhere." >&2
+            exit 1
+          fi
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git log -1 --format="governance revision %H (%ci) %s" HEAD
+
+      # The gate also refuses a lightweight tag. That check used to live here as well, and
+      # having it in two places meant the fixture suite could not exercise it; now it has one
+      # home, in `check_release_authorization.py`, and `VER-MOK-008` R3 covers it.
+      - name: Refuse to publish without a released release record for this tag
+        id: gate
+        shell: bash
+        run: python scripts/check_release_authorization.py --root . --tag "$RELEASE_TAG"
+
+      - name: Record who created the tag
+        shell: bash
+        run: |
+          # Not a check -- the gate already refused an unannotated tag. This puts the tagger
+          # identity in the run log, which is where `VER-MOK-008` M5 reads it from.
+          git for-each-ref "refs/tags/$RELEASE_TAG" \
+            --format='tagged by %(taggername) %(taggeremail) on %(taggerdate:iso-strict)'
+
+      - name: The authorized commit must be reachable from a release-bearing branch
+        shell: bash
+        env:
+          AUTHORIZED_COMMIT: ${{ steps.gate.outputs.commit }}
+        run: |
+          # `SPEC-MOK-005` rule 5 keeps this out of the gate: it is a property of the history
+          # rather than of the graph, and the gate stays runnable in a clone with no remote.
+          # `REPOSITORY_CONTEXT.md` admits exactly two sources for released code -- the
+          # integration branch, and a `release/<major>.<minor>` branch cut from it -- so a tag
+          # placed on a `feature/*` or `release-fix/*` tip is refused even when the graph
+          # authorizes it. The branch list is read from the remote's own references, so cutting
+          # a new maintenance line needs no edit to this file.
+          python scripts/check_release_reachability.py \
+            --root . \
+            --commit "$AUTHORIZED_COMMIT" \
+            --default-branch "${{ github.event.repository.default_branch }}" \
+            --remote origin
+
+  # ---------------------------------------------------------------------------------------
+  # 2. Does the harness still agree, at the governance revision the gate read?
+  #
+  #    Not the released commit. The release record and the verification record that authorize
+  #    this release do not exist in that tree -- they postdate it by construction -- so the
+  #    graph is only complete at the governance revision. The released commit's own graph was
+  #    validated by the managed `engineering-harness.yml` workflow when it was merged; what is
+  #    unproven until now is that the records added since are themselves valid.
+  # ---------------------------------------------------------------------------------------
+  harness:
+    name: Harness compliance
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.authorize.outputs.governance_commit }}
+
+      - name: This job must be standing on the pinned governance revision
+        shell: bash
+        env:
+          GOVERNANCE_COMMIT: ${{ needs.authorize.outputs.governance_commit }}
+        run: |
+          # `VER-MOK-008`'s fixed-revision property, asserted rather than read out of a log.
+          # Conflating the two revisions is the easiest defect to introduce here and it is
+          # invisible whenever they happen to coincide.
+          head="$(git rev-parse HEAD)"
+          echo "governance revision $head"
+          if [[ "$head" != "$GOVERNANCE_COMMIT" ]]; then
+            echo "REFUSED: expected the governance revision $GOVERNANCE_COMMIT, but HEAD is $head." >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the declared candidate runtime
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check --no-deps \
+            --only-binary=:all: "se-harness==$SE_HARNESS_VERSION"
+
+      - name: The installed harness must be the version the repository declares
+        shell: bash
+        run: |
+          declared="$(python -c "import pathlib, tomllib; print(tomllib.loads(pathlib.Path('.engineering-harness.toml').read_text(encoding='utf-8-sig'))['harness']['tool_version'])")"
+          installed="$(python -c "import se_harness; print(se_harness.__version__)")"
+          echo "repository declares $declared; runner has $installed"
+          # Rule 7.1 asks the refusal itself to name both versions, in either direction of the
+          # mismatch. The line above names them too, but a reader who greps for REFUSED should
+          # not have to find the preceding line to learn which two values disagreed.
+          if [[ "$declared" != "$installed" ]]; then
+            echo "REFUSED: this repository declares harness $declared, but the runner has $installed." >&2
+            exit 1
+          fi
+
+      - name: Managed-file integrity and formal graph validity
+        run: |
+          python -m se_harness doctor .
+          python scripts/validate_engineering_artifacts.py --root .
+
+      - name: Review preflight for every released work order
+        shell: bash
+        env:
+          WORK_ORDERS: ${{ needs.authorize.outputs.work_orders }}
+        run: |
+          # Rule 7.4 requires the refusal to name the work order, so the failures are
+          # collected rather than reduced to a flag. Every work order is run even after the
+          # first failure: a reader fixing this wants the whole list, not the first name.
+          failed=()
+          for work_order in $WORK_ORDERS; do
+            echo "::group::preflight $work_order"
+            python -m se_harness preflight . --work-order "$work_order" --phase review \
+              || failed+=("$work_order")
+            echo "::endgroup::"
+          done
+          if [[ ${#failed[@]} -ne 0 ]]; then
+            echo "REFUSED: review preflight does not pass for ${failed[*]}." >&2
+            exit 1
+          fi
+          echo "review preflight passes for ${WORK_ORDERS:-no work orders}"
+
+      - name: Harness Explorer for the released commit
+        run: python scripts/generate_harness_dashboard.py --root .
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: harness-dashboard-${{ needs.authorize.outputs.version }}
+          path: target/harness-dashboard
+
+  # ---------------------------------------------------------------------------------------
+  # 3. Do the repository's own declared checks pass, at the released commit?
+  #    Commands come from `docs/engineering/REPOSITORY_CONTEXT.md`; the last two discharge
+  #    named architectural claims rather than general hygiene.
+  # ---------------------------------------------------------------------------------------
+  verify:
+    name: Repository checks
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.authorize.outputs.commit }}
+
+      - name: This job must be standing on the authorized commit
+        shell: bash
+        env:
+          AUTHORIZED_COMMIT: ${{ needs.authorize.outputs.commit }}
+        run: |
+          # The checks below are evidence about one revision. If HEAD is not that revision,
+          # every result they produce describes something the release record does not name.
+          head="$(git rev-parse HEAD)"
+          echo "authorized commit $head"
+          if [[ "$head" != "$AUTHORIZED_COMMIT" ]]; then
+            echo "REFUSED: expected the authorized commit $AUTHORIZED_COMMIT, but HEAD is $head." >&2
+            exit 1
+          fi
+
+      - name: Toolchain, from the repository's pin
+        shell: bash
+        run: |
+          # `rust-toolchain.toml` selects the version and declares rustfmt and clippy, so
+          # rustup installs the toolchain and both components on the first cargo invocation.
+          # The assertion is not ceremony: a runner whose preinstalled stable quietly won
+          # would make every result below describe a compiler this repository never declared,
+          # and `-D warnings` in particular is version-sensitive.
+          pinned="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"
+          if [[ -z "$pinned" ]]; then
+            echo "REFUSED: rust-toolchain.toml declares no channel." >&2
+            exit 1
+          fi
+          rustup show active-toolchain
+          rustc --version --verbose
+          cargo --version
+          if [[ "$(rustc --version)" != "rustc $pinned "* ]]; then
+            echo "REFUSED: rust-toolchain.toml pins $pinned, but rustc is $(rustc --version)." >&2
+            exit 1
+          fi
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked
+
+      - name: The engine's dependency table must stay empty
+        shell: bash
+        run: |
+          # `ARCH-MOK-001` as amended admits no engine dependency, with no exception,
+          # including one shared with `mokiterions-tui`. `mokiterions-core/Cargo.toml`
+          # names this command as the check.
+          tree="$(cargo tree -p Mokiterions --locked)"
+          echo "$tree"
+          lines="$(printf '%s\n' "$tree" | grep -c .)"
+          if [[ "$lines" -ne 1 ]]; then
+            echo "REFUSED: cargo tree resolved $lines crates for the engine; exactly 1 is admitted." >&2
+            exit 1
+          fi
+
+      - name: A seed determines the run, byte for byte
+        shell: bash
+        run: |
+          # `--policy <baseline|reference>` is the whole declared set, and both are
+          # deterministic given a seed. Only proves determinism within one build of one
+          # binary: cross-build and cross-platform determinism would need a committed golden
+          # record, which is a specification question and not something CI may decide.
+          #
+          # Three things are compared per policy, because `SPEC-MOK-005` rule 8.5 asks for
+          # three: the byte stream, the final state, and the exit code. The final state is the
+          # trailing `summary` line, so it is inside the byte comparison; the exit code is
+          # captured explicitly rather than left to `set -e` to notice.
+          #
+          # The transcripts are written outside the checkout so that this check leaves the
+          # working tree exactly as it found it -- the same property the gate is required to
+          # have, and one worth not breaking here for the sake of four temporary files.
+          out="${RUNNER_TEMP:-$(mktemp -d)}"
+          for policy in baseline reference; do
+            for attempt in first second; do
+              status=0
+              cargo run --quiet --release --locked -p Mokiterions -- \
+                --seed 20260819 --ticks 300 --policy "$policy" \
+                --density 0.75 --trace-actions > "$out/$attempt-$policy.txt" || status=$?
+              printf '%s\n' "$status" > "$out/$attempt-$policy.status"
+            done
+            if ! cmp "$out/first-$policy.txt" "$out/second-$policy.txt"; then
+              echo "REFUSED: the $policy policy is not deterministic on a fixed seed." >&2
+              exit 1
+            fi
+            if ! cmp "$out/first-$policy.status" "$out/second-$policy.status"; then
+              echo "REFUSED: the $policy policy exited differently on a fixed seed." >&2
+              exit 1
+            fi
+            echo "$policy: identical over $(wc -l < "$out/first-$policy.txt") lines," \
+                 "exit $(cat "$out/first-$policy.status"), final state:"
+            tail -1 "$out/first-$policy.txt"
+          done
+          # A log, not a check: it should print nothing, and if this job ever does leave
+          # something behind, the transcript says so instead of the next reader guessing.
+          git status --porcelain --untracked-files=all
+
+  # ---------------------------------------------------------------------------------------
+  # 4. Build the assets from the authorized commit, and from nothing else.
+  # ---------------------------------------------------------------------------------------
+  build:
+    name: Build ${{ matrix.target }}
+    needs: [authorize, harness, verify]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - runner: macos-latest
+            target: aarch64-apple-darwin
+          - runner: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.authorize.outputs.commit }}
+
+      - name: The assets must be built from the authorized commit, stated in full
+        shell: bash
+        env:
+          AUTHORIZED_COMMIT: ${{ needs.authorize.outputs.commit }}
+        run: |
+          # `PROVENANCE.txt` below states this hash as a fact about the bytes in the archive.
+          # Both halves of that claim are checked here rather than assumed: that HEAD is the
+          # commit, and that the value is a complete hash and not an abbreviation.
+          head="$(git rev-parse HEAD)"
+          echo "authorized commit $head"
+          if [[ "$head" != "$AUTHORIZED_COMMIT" ]]; then
+            echo "REFUSED: expected the authorized commit $AUTHORIZED_COMMIT, but HEAD is $head." >&2
+            exit 1
+          fi
+          if [[ ! "$AUTHORIZED_COMMIT" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]; then
+            echo "REFUSED: $AUTHORIZED_COMMIT is not a complete commit hash; it must not be recorded as one." >&2
+            exit 1
+          fi
+
+      # Deliberately no build cache: a release is built cold, from the checked-out commit
+      # and nothing carried over from a previous run.
+      - name: Toolchain and target
+        shell: bash
+        run: |
+          pinned="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"
+          rustup target add "${{ matrix.target }}"
+          rustc --version --verbose
+          # The shipped assets must come from the pinned compiler, not merely be checked by
+          # it. PROVENANCE.txt records the version; this refuses to record a wrong one.
+          if [[ "$(rustc --version)" != "rustc $pinned "* ]]; then
+            echo "REFUSED: rust-toolchain.toml pins $pinned, but rustc is $(rustc --version)." >&2
+            exit 1
+          fi
+
+      # `MOKITERIONS_COMMIT` is deliberately NOT set, even though `render.rs` reads it via
+      # `option_env!` and the footer is built to show it. Measured on this commit: at the
+      # narrowest declared viewport (34x22) the `short` footer tier is 33 columns wide, so
+      # it has one column of slack; the stamp costs at least three (` #x`). Any stamp,
+      # including a single character, therefore forces the drop to the `tiny` tier, which
+      # abbreviates the decision source to one letter -- and
+      # `every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer`
+      # (mokiterions-tui/tests/verification.rs:486) requires the footer to contain the word
+      # `reference`. Stamping would ship a binary that fails a test the repository declares.
+      #
+      # The suite cannot catch this on its own, because it compiles with the variable unset,
+      # and neither package has a build script, so Cargo does not even treat the variable as
+      # a rebuild input. Until the observer's footer contract makes room, the full commit
+      # travels in PROVENANCE.txt, the release notes, the annotated tag and the release
+      # record -- all of which carry all 40 characters, not an abbreviation.
+      #
+      # Not setting it is not the same as knowing it is unset. A repository or organization
+      # variable, or a runner image, can put `MOKITERIONS_COMMIT` in the environment without
+      # this file mentioning it, and by the argument above nothing downstream would notice:
+      # no rebuild input changes, no test compiles with it set, and the damage appears only in
+      # a shipped binary's footer. One line makes rule 10.7 a check rather than an intention.
+      - name: Build
+        shell: bash
+        run: |
+          if [[ -n "${MOKITERIONS_COMMIT:-}" ]]; then
+            echo "REFUSED: MOKITERIONS_COMMIT is set in this environment; rule 10.7 forbids a commit stamp in a released binary." >&2
+            exit 1
+          fi
+          cargo build --release --locked --target "${{ matrix.target }}" \
+            -p Mokiterions -p mokiterions-tui
+
+      - name: Package
+        id: package
+        shell: bash
+        env:
+          AUTHORIZED_COMMIT: ${{ needs.authorize.outputs.commit }}
+          VERSION: ${{ needs.authorize.outputs.version }}
+          RECORD: ${{ needs.authorize.outputs.record }}
+          CONTRACT: ${{ needs.authorize.outputs.contract }}
+          WORK_ORDERS: ${{ needs.authorize.outputs.work_orders }}
+          VERIFICATION_RECORDS: ${{ needs.authorize.outputs.verification_records }}
+        run: |
+          set -euo pipefail
+          suffix=""
+          if [[ "$RUNNER_OS" == "Windows" ]]; then suffix=".exe"; fi
+          stage="Mokiterions-$VERSION-${{ matrix.target }}"
+          mkdir -p "dist/$stage"
+          for binary in Mokiterions mokiterions-tui; do
+            cp "target/${{ matrix.target }}/release/$binary$suffix" "dist/$stage/"
+          done
+          cp LICENSE README.md SIMULATION_RULES.md "dist/$stage/"
+
+          # The archive states its own provenance, so an asset separated from this run can
+          # still be traced back to the decision that authorized it.
+          {
+            echo "Mokiterions $VERSION"
+            echo
+            echo "release record       $RECORD"
+            echo "release contract     $CONTRACT"
+            echo "released work        $WORK_ORDERS"
+            echo "verification records $VERIFICATION_RECORDS"
+            echo "tag                  $RELEASE_TAG"
+            echo "commit               $AUTHORIZED_COMMIT"
+            echo "target               ${{ matrix.target }}"
+            echo "toolchain            $(rustc --version)"
+            echo "built by             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > "dist/$stage/PROVENANCE.txt"
+          cat "dist/$stage/PROVENANCE.txt"
+
+          tar -C dist -czf "dist/$stage.tar.gz" "$stage"
+          rm -rf "dist/$stage"
+
+          # Computed after archiving, over the published bytes, and from inside `dist` so the
+          # file records a bare name rather than a path from this machine (rule 11.3). The two
+          # tools emit the identical `<hash>  <name>` format and each accepts the other's
+          # output unedited; macOS runners carry `shasum` rather than `sha256sum`.
+          ( cd dist \
+            && if command -v sha256sum >/dev/null 2>&1; then
+                 sha256sum "$stage.tar.gz" | tee "$stage.tar.gz.sha256"
+               else
+                 shasum -a 256 "$stage.tar.gz" | tee "$stage.tar.gz.sha256"
+               fi )
+          printf 'stage=%s\n' "$stage" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-asset-${{ matrix.target }}
+          path: |
+            dist/${{ steps.package.outputs.stage }}.tar.gz
+            dist/${{ steps.package.outputs.stage }}.tar.gz.sha256
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------------------
+  # 5. Attach the assets to the tag the release owner created, as a draft.
+  #    This is the only job with write access, and the only one that talks to the outside.
+  # ---------------------------------------------------------------------------------------
+  publish:
+    name: Publish draft assets
+    needs: [authorize, harness, verify, build]
+    # No trigger condition. Rule 2 makes the explicit form a re-run rather than a preview, so
+    # it reaches this job too; the attaching step below is written to meet a release that
+    # already exists.
+    runs-on: ubuntu-latest
+    # `SPEC-MOK-005` rule 12.5 confines write access to the smallest job holding the attaching
+    # step, with the credential reaching that step alone. The platform scopes permissions per
+    # job, not per step, which is why the rule is worded that way: this is the narrowest grant
+    # it can express. The download and notes steps below receive no token.
+    permissions:
+      contents: write
+    # Configure this environment in repository settings with a required reviewer if the
+    # release owner wants a second human gate before any asset is uploaded. Referenced
+    # unconditionally so that protection can be added later without editing this file.
+    environment: release
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: incoming
+          pattern: release-asset-*
+          merge-multiple: true
+
+      - name: Notes, stated from the authorized facts only
+        shell: bash
+        env:
+          VERSION: ${{ needs.authorize.outputs.version }}
+          RECORD: ${{ needs.authorize.outputs.record }}
+          CONTRACT: ${{ needs.authorize.outputs.contract }}
+          COMMIT: ${{ needs.authorize.outputs.commit }}
+          WORK_ORDERS: ${{ needs.authorize.outputs.work_orders }}
+          VERIFICATION_RECORDS: ${{ needs.authorize.outputs.verification_records }}
+        run: |
+          # Not generated from `git log`: the release notes state what the release record
+          # authorizes, not whatever happened to land in the range.
+          {
+            echo "Authorized by \`$RECORD\` against \`$CONTRACT\`, at commit \`$COMMIT\`."
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Released work | $WORK_ORDERS |"
+            echo "| Verification records | $VERIFICATION_RECORDS |"
+            echo
+            echo "Each archive carries a \`PROVENANCE.txt\` repeating these facts, and a"
+            echo "\`.sha256\` sits beside it."
+          } > notes.md
+          cat notes.md
+
+      - name: Attach assets to the existing tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.authorize.outputs.version }}
+        run: |
+          # Assets are attached in one call, all targets together, because rule 12.3 admits no
+          # state in which some are attached and some are not.
+          #
+          # Two forms, because rule 2 makes the explicit trigger a re-run rather than a
+          # preview, and a re-run meets a release that is already there:
+          #
+          #   first run -- `gh release create`. `--verify-tag` makes gh abort if the tag does
+          #     not already exist, rather than creating one (rule 12.1). `--draft` leaves the
+          #     act of publishing to the release owner (rule 12.2):
+          #     `docs/engineering/TRACEABILITY.md` treats publication as an authorized act,
+          #     and no artifact in the graph authorizes this workflow to perform it.
+          #
+          #   re-run -- `gh release upload --clobber`, which replaces the assets of the
+          #     release already there. It does not delete the release (rule 13.9) and does not
+          #     name `--draft` in either direction, so a release the owner has already made
+          #     visible stays visible and one still in draft stays in draft. This workflow
+          #     never sets visibility itself (rule 13.6).
+          #
+          # The notes are restated first on the re-run path so that the release page and the
+          # archives still agree (rule 11.4) if the authorized facts moved between the two
+          # runs. `--notes-file` is the only field named, so the draft state is untouched.
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json id >/dev/null 2>&1
+          then
+            echo "A release already exists for $RELEASE_TAG. Restating its notes and replacing its assets."
+            gh release edit "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --notes-file notes.md
+            gh release upload "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber \
+              incoming/*
+          else
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --draft \
+              --title "Mokiterions $VERSION" \
+              --notes-file notes.md \
+              incoming/*
+          fi
+          # Reported rather than asserted: a release the owner has already published is a
+          # legitimate re-run target, so `isDraft: false` here is not a failure. It is the
+          # fact `VER-MOK-008` P2 reads.
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft,url \
+            --jq '"draft=\(.isDraft) url=\(.url)"'
+
+# ---------------------------------------------------------------------------------------
+# The maintenance branch is not created here.
+#
+# `docs/engineering/REPOSITORY_CONTEXT.md` has `release/<major>.<minor>` cut from the
+# default branch "when a release enters stabilization" -- which is before a release is
+# published, not after. A branch created by this workflow would therefore be created at the
+# wrong moment in the lifecycle, and `ENGINEERING_HARNESS.md` forbids automation from
+# pushing in any case. The release owner runs, once, at the candidate commit:
+#
+#     git switch --create release/0.1 <authorized commit>
+#     git push --set-upstream origin release/0.1
+# ---------------------------------------------------------------------------------------

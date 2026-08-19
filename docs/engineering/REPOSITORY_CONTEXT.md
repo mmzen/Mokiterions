@@ -10,10 +10,11 @@
 
 ## Commands
 
-- Setup: Install the stable Rust toolchain. No additional project setup is currently required.
+- Setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
 - Build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
 - Test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
 - Lint or format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+- Release: `docs/RELEASE_RUNBOOK.md` is the ordered procedure. It is operator documentation, not authority: the accountable decisions it names are the release owner's, and `.github/workflows/release.yml` publishes nothing that is not already recorded under `docs/engineering/`.
 - Additional required verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. `cargo tree -p Mokiterions` must resolve to one crate — the engine's dependency table is required to stay empty. Behavior-specific verification must be added as simulation requirements are approved.
 
 ## Architecture
