@@ -16,8 +16,9 @@ prepared work measured against `SPEC-MOK-005` as the contract, captured before a
 `approved` and `WO-MOK-009` is `implemented`; review preflight now passes. The implementation agent recorded
 the transitions and made none of the decisions — `docs/engineering/DECISION_RIGHTS.md:14` reserves them to
 accountable owners — and `approval-and-transition.md` states what was transitioned, what was deliberately
-left `draft`, and the one reading of the approval that a reader should check rather than accept. Nothing in
-this record's measurements changed, because a status transition edits a field.
+left `draft`, and the one reading of the approval — which was put back to the technical owner and confirmed
+on 2026-08-19 rather than left standing as a construal. Nothing in this record's measurements changed,
+because a status transition edits a field.
 
 ## Final affected components
 
@@ -233,7 +234,7 @@ performed, 0 unexercisable.
 
 ## Harness state at the end of the work
 
-Re-run with the pinned `0.4.0` wheel after the last evidence file was written, again after the four
+Re-run with the pinned `0.4.0` wheel after the last evidence file was written, again after the first four
 decisions below were written into `SPEC-MOK-005`, `VER-MOK-008` and `WO-MOK-001`, and again after the ten
 status transitions, so that the numbers below describe the tree as it stands rather than as it stood
 mid-work. Every capture agrees.
@@ -253,8 +254,8 @@ silence is worth: `E007` and `E008` exempt draft requirements and now check `REQ
 
 ## Settled on 2026-08-19
 
-Four questions this work order raised were put to the owners and answered the same day. Each is recorded at
-the artifact it changed as well as here.
+Five questions this work order raised were put to the owners and answered the same day. Each is recorded at
+the artifact it changed, or at the note it settles, as well as here.
 
 | Question | Decision | What changed |
 | --- | --- | --- |
@@ -262,12 +263,13 @@ the artifact it changed as well as here.
 | `VER-MOK-008` C5's unexercisable method | drop the non-zero clause | `VER-MOK-008` C5 amended; the row is now **observed** |
 | Rule 12.5's step-level grant, which the platform cannot express | amend the rule to say *job*, and record why | `SPEC-MOK-005` rule 12.5 amended, with an amendment-record entry; the workflow comment at the grant reworded |
 | Rule 14's ordering versus the runbook's Phase C | accept the runbook's order | nothing changed; the reading is recorded |
+| Approval precondition 2's architecture question, first discharged by reading the approval rather than by a worded decision | confirm it — no architecture artifact is required | no artifact changed; `WO-MOK-009`'s *How each precondition was discharged* and `approval-and-transition.md` now record a decision where they recorded a construal, and both keep the reading it answers |
 
 ## What has to happen next, and by whom
 
 | # | Act | Whose | State on 2026-08-19 |
 | --- | --- | --- | --- |
-| 1 | decide the architecture question `WO-MOK-009` names as an approval precondition | technical owner | **taken by approving the pack with no architecture artifact in it** — a reading, flagged in `approval-and-transition.md` |
+| 1 | decide the architecture question `WO-MOK-009` names as an approval precondition | technical owner | **done** — first taken by approving the pack with no architecture artifact in it, then **confirmed on 2026-08-19** when that reading was put back to them; no architecture artifact is required |
 | 2 | approve `INT-MOK-007`, `CAP-MOK-007`, `REQ-MOK-035`–`039` | as `DECISION_RIGHTS.md` assigns | **done** |
 | 3 | approve `SPEC-MOK-005`, including the amended rule 12.5 | technical owner | **done** |
 | 4 | approve `VER-MOK-008`, with the amended C5 | assurance owner | **done** |
@@ -279,10 +281,16 @@ the artifact it changed as well as here.
 Steps 6 and 7 are reserved acts. Nothing in this changeset performs them, and nothing here should be read
 as authorizing them.
 
-**Four acts have been performed on the owner's instruction since the captures, and none is step 6 or 7.**
+**Six acts have been performed on the owner's instruction since the captures, and none is step 6 or 7.**
 The changeset was committed as `17be4ba` and opened as pull request #20, both recorded in
 `commit-binding.md`. The owner then approved the chain and authorized the work order's transition, recorded
 in `approval-and-transition.md` and in `WO-MOK-009`'s own *Approval record*, which lets the fourth act
 happen: `capture-verification` had refused while the work order was `draft`, and `VREC-MOK-007` is now
-prepared and **`ready`**. Making it `verified` is the accountable assurance owner's act and was not taken.
-Merging pull request #20 was not instructed and was not done.
+prepared and **`ready`**. Fifth, the technical owner confirmed the architecture reading that the fourth
+act's records had flagged, which closes row 1 above by decision rather than by construal. Sixth, the owner
+authorized carrying the unpushed governance commits to `origin`, which updates pull request #20 and turns
+the review-preflight failure recorded in `approval-and-transition.md` into a pass.
+
+Making `VREC-MOK-007` `verified` is the accountable assurance owner's act and was not taken. Merging pull
+request #20 was not instructed and was not done — a push is not a merge, and it authorizes nothing that
+rule 13 reserves.

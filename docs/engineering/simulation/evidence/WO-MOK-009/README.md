@@ -92,8 +92,8 @@ in `compliance-rehearsal.md` C1.
   commit. Also records why no verification record accompanied it.
 - `approval-and-transition.md` — the ten status transitions the owner authorized on 2026-08-19, what was
   deliberately left `draft`, the gates and the rule 7.4 preflight loop on the transitioned tree, the one
-  reading of the approval that a reader should check, and the two claims elsewhere in this directory that
-  the transition makes stale.
+  reading of the approval that was put back to the technical owner and confirmed the same day, and the two
+  claims elsewhere in this directory that the transition makes stale.
 - `snapshot-reproducibility.md` — what `VREC-MOK-007`'s `artifact_snapshot_sha256` is reproducible from,
   measured across five checkouts of one commit: not the line endings, but the name of the directory the
   repository is checked out into. Records why the committed record was re-prepared in a clone named
@@ -127,7 +127,8 @@ in `compliance-rehearsal.md` C1.
   was `draft`, with the transcript in `commit-binding.md`. **The owner then approved the chain and
   authorized the transition**, which the implementation agent recorded; nine artifacts are now `approved`
   and `WO-MOK-009` is `implemented`. `approval-and-transition.md` holds the detail, including the one
-  reading in it that a reader should check rather than accept. `VREC-MOK-007` is prepared and `ready`;
+  reading in it, which was put back to the technical owner and confirmed on 2026-08-19 rather than left as
+  a footnote. `VREC-MOK-007` is prepared and `ready`;
   `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners, so it stays `ready`
   here. `WO-MOK-008` is untouched and still `draft`. `a5-refusal-ladder.md` records that the real graph
   holds no release record, which is a fact about the repository rather than something to fix here.

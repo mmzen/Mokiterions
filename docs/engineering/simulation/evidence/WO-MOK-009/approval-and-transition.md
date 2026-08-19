@@ -48,7 +48,7 @@ release.
 - **No tag, no release record, no release contract, no merge, no publication.** The four remain what
   `a5-refusal-ladder.md` shows them to be: reserved acts that no amount of approved governance substitutes for.
 
-## The one item to check rather than accept
+## The one item that was checked rather than accepted
 
 `WO-MOK-009`'s approval precondition 2 asks the technical owner to decide whether the release process needs an
 architecture artifact, and says that if one is required, *"an architecture and a deciding record must exist and this
@@ -56,14 +56,19 @@ work order must gain the relation before approval"*. The owner approved the pack
 relation, no `ARCH`, no `ADR` — so the decision recorded is that none is required and `SPEC-MOK-005` governs the
 release process alone.
 
-**That is a reading of an approval, not a separately worded decision, and it is the weakest link in this record.**
-It is stated here and in the work order's *How each precondition was discharged* section so that a reader meets it
-rather than discovers it. The precedent cuts both ways: `WO-MOK-002` and `WO-MOK-004` carry no architecture relation,
-while `WO-MOK-001`, `WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006` do — and the trigger the precondition names,
-deployment-and-operating-model, is one of the twelve the validator's own
-`DECISION_TRIGGERS` vocabulary lists. If the technical owner intends an architecture artifact, the correction is an
-`ARCH`, an `ADR`, the relation, and an amendment to both notes; the approval would then have been premature rather
-than merely under-documented. No measurement in this directory changes under either reading.
+**That was a reading of an approval rather than a separately worded decision, and it was the weakest link in this
+record, so it was put to the technical owner instead of being left as a footnote. They confirmed it on 2026-08-19**,
+in the same instruction that authorized the push: *"architecture: I confirm"*. The precondition is discharged by a
+decision rather than by construal, and the work order's *How each precondition was discharged* section says the same.
+
+The reading is left stated above because the confirmation is an answer to it, and a reader who wants to weigh that
+answer rather than take it needs what it rested on. The precedent cuts both ways: `WO-MOK-002` and `WO-MOK-004` carry
+no architecture relation, while `WO-MOK-001`, `WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006` do — and the trigger the
+precondition names, deployment-and-operating-model, is one of the twelve the validator's own `DECISION_TRIGGERS`
+vocabulary lists. Had the answer gone the other way, the correction would have been an `ARCH`, an `ADR`, the relation
+and an amendment to both notes, and the approval would have been premature rather than merely under-documented; that
+path is closed. No measurement in this directory changes under either reading, which is why the confirmation adds
+authority without adding evidence.
 
 ## Gates on the transitioned tree
 

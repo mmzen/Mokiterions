@@ -93,6 +93,14 @@ separately worded decision; it is named as the weakest link in `approval-and-tra
 order's own *How each precondition was discharged* section, and it is the one item in this packet a reader
 should check rather than accept. No measurement moves under either reading.
 
+**That item was checked, on 2026-08-19 and after this record was prepared.** The reading was put back to the
+technical owner and they confirmed it — *"architecture: I confirm"* — so the precondition is now discharged by
+a decision rather than by construal, and the work order and `approval-and-transition.md` record it that way.
+The paragraph above is left as written because it states what was true at this candidate commit, and because
+the confirmation is an answer to it rather than a replacement for it. No provenance field was recomputed and
+no measurement moved; what changed is the authority behind one discharge, which is why it is recorded here as
+a note rather than as a correction.
+
 Four further limits, stated because they bound what the green gates above mean:
 
 - **Rule 12.6's `environment: release` is a reference, not a protection.** Nothing in the repository configures
@@ -142,10 +150,12 @@ than the 80-artifact graph containing it.
 ## What the accountable assurance owner is being asked to decide
 
 Whether the evidence at this candidate commit is sufficient to call `WO-MOK-009` verified **with the process
-unrun, fifteen scenario rows not performed, M2 unclosable by this author, the "before" column a
-reconstruction, and the architecture decision resting on a reading**. That is the whole of the decision. The
-limitations are listed above and as seven findings in `completion-summary.md` rather than summarized away,
-because a disclosure that survives only until it is accepted is not a disclosure.
+unrun, fifteen scenario rows not performed, M2 unclosable by this author, and the "before" column a
+reconstruction**. That is the whole of the decision. The limitations are listed above and as seven findings in
+`completion-summary.md` rather than summarized away, because a disclosure that survives only until it is
+accepted is not a disclosure. The fifth limitation this record was prepared with — the architecture
+precondition discharged by a reading — was answered by the technical owner's confirmation of 2026-08-19 and is
+no longer one of them, and the note above says so without deleting what it answered.
 
 Verifying this record would not merge pull request #20, approve `WO-MOK-008`, tag anything, create a release
 record, configure the `release` environment, or perform the first run. Each is a separate act with its own

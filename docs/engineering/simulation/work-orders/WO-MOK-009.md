@@ -103,16 +103,20 @@ this repository holds `REQ-MOK-035`..`039` active without `SPEC-MOK-005` and `VE
 was re-run on the transitioned tree: 79 artifacts, 0 errors, 0 warnings, with `E007` and `E008` now live against the
 five requirements rather than exempt.
 
-**2 — decided by the technical owner, as an approval of this chain with no architecture artifact in it.** The
-`architecture` relation is still absent and no architecture or deciding record was created, so the recorded decision
-is that none is required and that `SPEC-MOK-005` governs the release process alone. `WO-MOK-002` and `WO-MOK-004` are
-the precedent for a work order without the relation; `WO-MOK-001`, `WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006` carry
-one. **This is a reading of the approval rather than a separately worded decision**, and it is the one item in this
-record that a reader should check rather than accept: precondition 2 says that if one *is* required, an architecture
-and a deciding record must exist and this work order must gain the relation *before* approval. If the technical owner
-intends that, the correction is an `ARCH`, an `ADR`, an `architecture` relation here, and an amendment to this note —
-and the approval above would then have been premature rather than merely under-documented. Nothing in the evidence
-changes under either reading.
+**2 — decided by the technical owner, and confirmed on the same date once the reading behind it was put to them.** The
+`architecture` relation is absent and no architecture or deciding record was created, so the decision is that none is
+required and that `SPEC-MOK-005` governs the release process alone. `WO-MOK-002` and `WO-MOK-004` are the precedent for
+a work order without the relation; `WO-MOK-001`, `WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006` carry one.
+
+This was **first recorded as a reading of the approval rather than a separately worded decision**, and flagged as the
+one item in this record a reader should check rather than accept, because precondition 2 says that if an architecture
+*is* required then it, a deciding record and the relation must exist *before* approval — so construing an approval that
+omitted all three would have made the approval premature rather than merely under-documented. It was put to the
+technical owner on that basis, and **they confirmed it on 2026-08-19**: the instruction was *"architecture: I
+confirm"*. The precondition is therefore discharged by a decision rather than by construal, and the correction path —
+an `ARCH`, an `ADR`, an `architecture` relation here, and an amendment to this note — is closed rather than open. The
+original reading is left standing above because the confirmation is an answer to it, and removing the question would
+leave the discharge looking as though it had never needed asking. Nothing in the evidence changed either way.
 
 **3 — discharged.** `SPEC-MOK-005` is `approved` by the technical owner and `VER-MOK-008` by the assurance owner,
 both 2026-08-19. `SPEC-MOK-005`'s amendment record now carries the technical owner against its original row as well
