@@ -14,7 +14,7 @@ and nothing in this directory transitions it.
 | --- | --- |
 | Governance revision | `54c21abcfb9caa4474c9ca5f194289e055c86a23` (tip of `master`, 2026-08-19 10:49:44 +0200) |
 | Implementation branch | `feature/release-ci`, in a linked worktree of the primary clone |
-| Candidate commit | **None.** The branch holds no commit beyond `origin/master`; the whole changeset is uncommitted working-tree state |
+| Candidate commit | **None at capture time.** The records below observed a working tree with no commit of its own. The owner directed the commit afterwards: `17be4bad444a4199da53e72ae8be491ba5f46ee1`, recorded in `commit-binding.md` |
 | Tags in the repository | none |
 | Harness build used for every measurement | `se-harness==0.4.0`, installed as a wheel into a throwaway environment |
 | Harness build present on the machine | an editable install of a live clone, reporting `0.4.1`. **Not used for any measurement here** |
@@ -23,11 +23,13 @@ and nothing in this directory transitions it.
 
 Two of these rows are load-bearing and are the reason this table is longer than usual.
 
-**There is no candidate commit.** Every claim in this directory about the *current* state is checkable
-against the files as they stand. Every claim about what the pre-existing candidate did — the whole "before"
-column of `candidate-conformance.md` — rests on the change record kept while the work was done, because
-there is no earlier revision to diff against. That file says so in its second section, and a reader should
-weigh it accordingly.
+**The candidate's earlier state was never committed, and the commit does not change that.** Every claim in
+this directory about the *current* state is checkable against the files as they stand, and now against a
+fixed revision. Every claim about what the pre-existing candidate did — the whole "before" column of
+`candidate-conformance.md` — rests on the change record kept while the work was done, because there is no
+revision in which the candidate exists in its pre-conformance form: `17be4ba` adds all 34 files at once. That
+file says so in its second section, `commit-binding.md` reconciles it against the commit, and a reader should
+weigh it the same way either side of the commit.
 
 **The harness build was pinned deliberately.** The machine's harness moved from `0.4.0` to `0.4.1` partway
 through the work while this repository declares `0.4.0`. On the `0.4.1` build, `doctor` emits eight
@@ -43,9 +45,9 @@ in `compliance-rehearsal.md` C1.
 ### Read these two first
 
 - `completion-summary.md` — the final affected components; the suite growth from 22 to 70 scenarios and
-  what accounts for it; every one of the 19 `VER-MOK-008` rows that is not plainly *observed*, with what
-  each needs; seven findings a reader should not have to discover; and the eight remaining acts with whose
-  they are.
+  what accounts for it; every one of the 18 `VER-MOK-008` rows that is not plainly *observed*, with what
+  each needs; seven findings a reader should not have to discover; the four questions the owners settled on
+  2026-08-19; and the seven remaining acts with whose they are.
 - `candidate-conformance.md` — the rule-by-rule statement `WO-MOK-009`'s Lifecycle section requires: for
   each of rules 1 through 14 and every sub-rule, what the pre-existing candidate satisfied and what had to
   change. Twelve changes, ordered by how badly the unchanged form would have failed; two divergences
@@ -53,10 +55,10 @@ in `compliance-rehearsal.md` C1.
 
 ### The scenario contract, reconciled
 
-- `scenario-map.md` — `VER-MOK-008`'s scenarios against what was actually done. 65 rows: 46 observed, 3
-  rehearsed, 15 not performed, 1 unexercisable. Defines *observed*, *rehearsed* and *not performed* before
-  using them, cites all 70 tests by name and line, and reconciles the 40 tests beyond the enumeration
-  against the rule each exists for.
+- `scenario-map.md` — `VER-MOK-008`'s scenarios against what was actually done. 65 rows: 47 observed, 3
+  rehearsed, 15 not performed, 0 unexercisable. Defines *observed*, *rehearsed* and *not performed* before
+  using them, cites all 70 tests by name and line, and reconciles the 30 tests the contract does not
+  enumerate against the rule each exists for.
 - `suite-output.md` — the run: 70 passed, 0 failed. Includes why every refusal test asserts the refusal
   *message* and not only the exit status.
 
@@ -82,6 +84,12 @@ in `compliance-rehearsal.md` C1.
 - `determinism-rehearsal.md` — the two-run comparison for rule 8.5: byte-identical output, identical final
   state, identical exit code, and `git status` unchanged across both.
 
+### The commit these records describe
+
+- `commit-binding.md` — the commit the owner directed after the captures were taken, the gates re-run on the
+  committed tree, and the reconciliation of the three statements above that said there was no candidate
+  commit. Also records why no verification record accompanies it.
+
 ### The process definition, read statically
 
 - `static-checks.md` — S1 through S11, the eleven static claims, each derived from the frozen 616-line
@@ -92,17 +100,20 @@ in `compliance-rehearsal.md` C1.
 
 ## What is not here, and why
 
-- **No run of the process.** There is no candidate commit, no tag, and no release record, so the workflow
-  has never executed. This is why V1–V6, P1–P3 and C4 are *not performed* rather than failing: they are
-  observations of a run. `completion-summary.md` lists them individually with what each needs.
+- **No run of the process.** There is no tag and no release record, and the candidate commit is on an
+  unmerged branch, so the workflow has never executed. This is why V1–V6, P1–P3 and C4 are *not performed*
+  rather than failing: they are observations of a run, and committing is not a run.
+  `completion-summary.md` lists them individually with what each needs.
 - **No read of a produced archive, and by design it could not be here.** `VER-MOK-008` M2 requires the
   archive to be read by someone who did not build the packaging step. That is this work order's author. So
   V1 through V6 do not close by further work in this directory; they close on the first run, read by
   someone else.
 - **No status transition, and no prepared verification record.** `DECISION_RIGHTS.md:14` reserves
   transitions to `verified` and `released` to accountable owners. Ten new artifacts are `draft` and stay
-  that way. `a5-refusal-ladder.md` records that the real graph holds no release record, which is a fact
-  about the repository rather than something to fix here.
+  that way. The harness enforces the consequence rather than leaving it to good intentions:
+  `capture-verification` refuses while `WO-MOK-009` is `draft`, with the transcript in
+  `commit-binding.md`. `a5-refusal-ladder.md` records that the real graph holds no release record, which is
+  a fact about the repository rather than something to fix here.
 - **No copy of the process definition or the gate.** They are tracked files at
   `.github/workflows/release.yml`, `scripts/check_release_authorization.py` and
   `scripts/check_release_reachability.py`. `static-checks.md` cites them by line against a definition

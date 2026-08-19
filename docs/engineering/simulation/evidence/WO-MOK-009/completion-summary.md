@@ -44,7 +44,8 @@ listed at the end. It is not a claim that the work order is complete in the gove
 
 ### Evidence — this work order
 
-Twelve records and a directory index, listed in `README.md`.
+Thirteen records and a directory index, listed in `README.md`. The thirteenth, `commit-binding.md`, was
+written after the owner directed the commit and names it.
 
 ### Not this work order
 
@@ -77,7 +78,7 @@ Counted from the test names themselves, so a reader can re-derive it:
 | **total** | **70** |
 
 The seven that share an enumerated row's name are A3's converse (a record stating a *different* tag is not
-silently matched), A4's machine-readable channel as distinct from its human summary, three further rungs of
+silently matched), A4's machine-readable channel as distinct from its human summary, four further rungs of
 A5's ladder, and R23's local-`release/*` variant — because rule 5 requires the branch to be *present on the
 remote*, and a local one in the runner's clone must not satisfy it.
 
@@ -94,11 +95,14 @@ closed the hard-coded root; and two are tolerances rather than refusals, which k
 this repository for having a README in an evidence directory. `candidate-conformance.md` records what each
 one found.
 
-`scenario-map.md` groups the same 70 differently — extras *beyond one per enumerated row*, which puts the
-A3, A4, A5 and R23 additions among them — so its "twelve extra gate cases" and this table's "23 naming no
-enumerated row" are two cuts of one set, not a disagreement. It cites every one of the 70 by name and line,
-with no test uncited and no citation resolving to nothing. `suite-output.md` holds the run: 70 passed, 0
-failed.
+`scenario-map.md` cuts the same 70 differently, and the two cuts reconcile exactly rather than disagreeing.
+Its two *Extra cases* tables hold 30 tests: the 23 in the row above that name no enumerated row and are not
+property cases, plus 5 that go beyond one test per enumerated row and are anchored individually anyway (A3's
+converse, A4's machine channel, two further A5 rungs, R23's local branch), plus the 2 property cases that
+needed an anchor of their own. The other 5 property cases are credited in that file's *Property and
+invariant tests* table instead, which is why the extras tables are not simply "the tests naming no row".
+Between all of its tables it cites every one of the 70 by name and line, with no test uncited and no citation
+resolving to nothing. `suite-output.md` holds the run: 70 passed, 0 failed.
 
 ## Every scenario that remains rehearsed or not performed
 
@@ -176,10 +180,12 @@ performed, 0 unexercisable.
    `candidate-conformance.md`'s closing section holds the full evidence and the paths not taken; and
    `compliance-rehearsal.md` C2 records that its half-three capture depends on this edit.
 
-2. **The candidate was never committed, so `candidate-conformance.md` is a reconstruction rather than a
-   diff.** `feature/release-ci` holds no commit beyond `origin/master`. Every *current* claim is checkable
-   against the files; only the "before" column rests on the change record kept during the work. Said
-   plainly there and repeated here because it bounds what that file can be relied on for.
+2. **The candidate's pre-conformance state was never committed, so `candidate-conformance.md` is a
+   reconstruction rather than a diff.** The owner directed a commit after these records were captured —
+   `17be4ba`, named in `commit-binding.md` — and it does not change this: all 34 files land at once, so no
+   revision holds the candidate in its earlier form. Every *current* claim is checkable against the files;
+   only the "before" column rests on the change record kept during the work. Said plainly there and repeated
+   here because it bounds what that file can be relied on for.
 
 3. **Rule 12.5 was unsatisfiable as written, and the rule changed rather than the implementation.** GitHub
    Actions scopes `permissions` per job, not per step, so the original *"the attaching step is the only step
@@ -254,9 +260,15 @@ the artifact it changed as well as here.
 | 3 | approve `SPEC-MOK-005`, including the amended rule 12.5 | technical owner |
 | 4 | approve `VER-MOK-008`, with the amended C5 | assurance owner |
 | 5 | approve `WO-MOK-008` and `WO-MOK-009` | engineering owner |
-| 6 | commit, then run the process once and read V1–V6 and P1–P3 | release owner, plus a reader who is not this work order's author |
+| 6 | run the process once and read V1–V6 and P1–P3 | release owner, plus a reader who is not this work order's author |
 | 7 | configure the `release` environment if rule 12.6's second human gate is wanted | release owner |
 
 Steps 6 and 7 are reserved acts. Nothing in this changeset performs them, and nothing here should be read
 as authorizing them. Steps 1 through 5 remain outstanding: the four decisions above resolved specification
 and classification questions, not approvals.
+
+**Two acts have since been performed on the owner's instruction, and neither is one of the seven.** The
+changeset was committed as `17be4ba` and opened as pull request #20; `commit-binding.md` records both. The
+commit-bound verification record that `WO-MOK-009`'s `[assurance]` table requires could not be prepared:
+`capture-verification` refuses while the work order is `draft`, so step 5 gates it. Merging is not among the
+seven either, and it was not done.

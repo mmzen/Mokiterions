@@ -313,8 +313,17 @@ The two suites hold 70 tests: 48 in `scripts/test_check_release_authorization.py
 `scripts/test_check_release_reachability.py`. `suite-output.md` holds the full output; both suites report
 `OK`.
 
-The enumeration accounts for 24 refusal rows, 5 authorizing rows, 4 P4 cases and 8 properties. The
-remainder are tests the contract does not enumerate, and `VER-MOK-008` is explicit that this does not
+Partitioned by test rather than by row, because that is what the two tables below do: **40 of the 70 carry
+an enumerated row's name** — 29 that are the only test for their row, 7 further tests for a row already
+covered (A3 and A4 gain one each, A5 four, R23 one), and 4 P4 cases — and **30 carry none**.
+
+The two tables below hold 30 tests, but not the same 30. They add the five row-named cases that go beyond
+one test per row and are worth an anchor of their own, and they omit the five `test_property_*` cases
+already credited in *Property and invariant tests* above. The eight properties are not a disjoint bucket:
+each is carried by tests counted elsewhere, which is what that table shows. Between the tables in this file
+every one of the 70 is accounted for.
+
+The 30 are tests the contract does not enumerate, and `VER-MOK-008` is explicit that this does not
 make them conforming behavior on its own: *"one that refuses more is not thereby conforming, because an
 unlisted refusal is an unspecified behavior."* Each one below is therefore anchored to a rule or to the
 Error and recovery behavior section of `SPEC-MOK-005`, so that none of them is a refusal the

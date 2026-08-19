@@ -10,12 +10,17 @@ Captured 2026-08-19 in a linked worktree of the primary clone, branch `feature/r
 
 ## What "the candidate" means here, and why this is not a diff
 
-The candidate was never committed. `feature/release-ci` holds no commit beyond `origin/master`
-(`git log origin/master..HEAD` is empty) and the whole changeset — candidate and corrections alike — is
-uncommitted working-tree state. So this file cannot be, and is not, a mechanical diff between a candidate
-revision and a conformant one. **It is a reconstruction from the change record kept while the work was
-done**, and a reader should weigh it as that: a statement of what was changed and why, not a
-machine-checkable comparison.
+The candidate was never committed in its pre-conformance state. At capture, `feature/release-ci` held no
+commit beyond `origin/master` (`git log origin/master..HEAD` was empty) and the whole changeset — candidate
+and corrections alike — was uncommitted working-tree state. So this file cannot be, and is not, a mechanical
+diff between a candidate revision and a conformant one. **It is a reconstruction from the change record kept
+while the work was done**, and a reader should weigh it as that: a statement of what was changed and why,
+not a machine-checkable comparison.
+
+**The commit the owner directed afterwards does not change this**, and it is worth saying so where a reader
+will look for it. `17be4bad444a4199da53e72ae8be491ba5f46ee1` adds all 34 files at once, so `git show`
+renders it as an addition rather than a before-and-after; no revision in this repository holds the candidate
+in its earlier form. `commit-binding.md` records the commit and this consequence.
 
 That is a real weakness in this evidence and it is worth being plain about. The mitigation is that every
 *current* claim below is checkable against the files as they stand — `static-checks.md` re-derives the
