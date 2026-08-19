@@ -94,6 +94,10 @@ in `compliance-rehearsal.md` C1.
   deliberately left `draft`, the gates and the rule 7.4 preflight loop on the transitioned tree, the one
   reading of the approval that a reader should check, and the two claims elsewhere in this directory that
   the transition makes stale.
+- `snapshot-reproducibility.md` — what `VREC-MOK-007`'s `artifact_snapshot_sha256` is reproducible from,
+  measured across five checkouts of one commit: not the line endings, but the name of the directory the
+  repository is checked out into. Records why the committed record was re-prepared in a clone named
+  `Mokiterions`.
 - `release-artifact-types.md` — `WO-MOK-009`'s approval precondition 4, half discharged: both the release
   record and the release contract are creatable, with the prefixes and the two nearly identical directory
   names the harness enforces. `prepare-release` needs a verified record as input and so cannot be exercised

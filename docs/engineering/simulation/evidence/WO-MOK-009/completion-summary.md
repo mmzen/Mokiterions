@@ -48,10 +48,12 @@ owner's 2026-08-19 approval, and `WO-MOK-008` alone is still `draft`.
 
 ### Evidence — this work order
 
-Fifteen records and a directory index, listed in `README.md`. Three were written after the captures, as the
+Sixteen records and a directory index, listed in `README.md`. Four were written after the captures, as the
 owner directed each act: `commit-binding.md`, which names the commit; `release-artifact-types.md`, which
-discharges half of this work order's fourth approval precondition; and `approval-and-transition.md`, which
-records the approvals and the ten status transitions.
+discharges half of this work order's fourth approval precondition; `approval-and-transition.md`, which
+records the approvals and the ten status transitions; and `snapshot-reproducibility.md`, which records what
+`VREC-MOK-007`'s snapshot field is reproducible from, because the first attempt to recompute it from the same
+commit did not match.
 
 ### Not this work order
 
