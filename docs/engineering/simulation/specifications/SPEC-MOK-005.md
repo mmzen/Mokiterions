@@ -19,6 +19,7 @@ specifies = ["REQ-MOK-035", "REQ-MOK-036", "REQ-MOK-037", "REQ-MOK-038", "REQ-MO
 |---|---|---|
 | 2026-08-19 | Original content for `REQ-MOK-035` through `REQ-MOK-039`. | Technical owner, 2026-08-19. |
 | 2026-08-19 | Rule 12.5 restated in platform-aware terms: write access is confined to the smallest job containing the attaching step, with the credential reaching that step alone. The original wording ("the attaching step is the only step granted write access") was unsatisfiable as written, because GitHub Actions scopes `permissions` per job and offers no step-level grant. Raised by `WO-MOK-009`'s implementation. | Technical owner, 2026-08-19. |
+| 2026-08-19 | The first conforming example corrected to the release that actually happened: eight work orders rather than six, and `VREC-MOK-009` rather than `VREC-MOK-007`. Written before the release, it guessed the identifiers and guessed wrong — and `VREC-MOK-007` exists, so the example named a real record that has nothing to do with the release. No normative rule changes; the correction is confined to `## Examples and counterexamples`. Raised while executing the release. | Technical owner, 2026-08-19. |
 
 ## Scope
 
@@ -482,11 +483,16 @@ mistaken for an artifact carrying authority.
 ## Examples and counterexamples
 
 **Conforming: the ordinary first release.** `RLS-MOK-001` is `released`, states version `0.1.0`, tag `v0.1.0` and
-commit `C`; it satisfies `REL-MOK-001`, which is `approved` and gates `WO-MOK-001`..`006` and `VER-MOK-001`..`006`;
-it releases those six work orders and includes `VREC-MOK-007`, which is `verified`, names `C`, and covers exactly
-those six. `C` is an ancestor of the default branch. The annotated tag `v0.1.0` resolves to `C`. The release record
-was committed after `C`, so the tree at `v0.1.0` does not contain it. The process authorizes, re-establishes
-compliance at the governance revision and at `C`, builds three archives, and attaches them invisibly.
+commit `C`; it satisfies `REL-MOK-001`, which is `approved` and gates `WO-MOK-001`..`007` and `009` together with
+`VER-MOK-001`..`008`; it releases those eight work orders and includes `VREC-MOK-009`, which is `verified`, names
+`C`, and covers exactly those eight. `C` is an ancestor of the default branch. The annotated tag `v0.1.0` resolves
+to `C`. The release record was committed after `C`, so the tree at `v0.1.0` does not contain it. The process
+authorizes, re-establishes compliance at the governance revision and at `C`, builds three archives, and attaches
+them invisibly.
+
+This example is no longer hypothetical: it describes the release performed on 2026-08-19, where `C` was
+`755db7297aa993f00d42f9c9794584b5d061f03d`. The commit stays symbolic because rule 1 is about the shape of the
+graph rather than about one release, and every other example here is symbolic too.
 
 **Conforming: released from a maintenance branch.** Stabilization added two commits to `release/0.1`, so the
 candidate is that branch's tip `S`. A verification record is captured at `S`, the release record names `S`, and the

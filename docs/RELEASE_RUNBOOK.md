@@ -22,9 +22,18 @@ this procedure's automation is written against; where the two disagree, the spec
 right and this file is wrong. `WO-MOK-009`'s Lifecycle section records that the automation was
 written before the chain that describes it.
 
-**Approved governance is not a release.** `check_release_authorization.py` still refuses every
-tag, because no tag, no release contract and no release record exists — a verified verification
-record is an input to a release decision, not a release decision. Nothing below has been run.
+**This procedure has now been run once, end to end.** `0.1.0` was released on 2026-08-19: tag
+`v0.1.0` at candidate `755db72`, authorized by `RLS-MOK-001` under `REL-MOK-001`, built by run
+`32294966039`, published the same day. Every phase below was executed, and what was observed
+afterwards is retained in
+`docs/engineering/simulation/evidence/release-0.1.0-observations/observation-window.md` — including
+one known gap, the `release` environment, which Phase I now names.
+
+The sentences that follow describe the procedure, not that release. Where a phase quotes `0.1.0`
+identifiers it is quoting the worked example the release produced; the next release substitutes its
+own, and **approved governance is still not a release** — a verified verification record is an
+input to a release decision, not a release decision, and `check_release_authorization.py` refuses
+any tag that has no `released` record of its own.
 
 ---
 
@@ -469,6 +478,15 @@ If the release owner wants a second human gate *before* any asset is uploaded, p
 `release` environment in repository settings with a required reviewer. The workflow already
 references that environment, so no edit is needed to turn it on.
 
+**As of the `0.1.0` release the environment exists and protects nothing.** Run `32294966039`
+created it implicitly at `2026-08-19T19:49:25Z` by referencing it, with an empty protection-rule
+list, so the second gate `SPEC-MOK-005` rule 12.6 contemplates is currently declared but inert.
+The release owner decided on 2026-08-19 to record that and change no settings; the gap and the
+reasoning are in
+`docs/engineering/simulation/evidence/release-0.1.0-observations/observation-window.md`. Adding a
+required reviewer is one setting, and until someone does, this step of Phase I is the only human
+gate between a build and an upload.
+
 ---
 
 ## If something is wrong after the tag is pushed
@@ -509,3 +527,4 @@ Instead:
 | `docs/engineering/simulation/release/REL-MOK-001.md` | artifact | Phase E |
 | `docs/engineering/simulation/releases/RLS-MOK-001.md` | artifact | Phase F |
 | `docs/engineering/simulation/verification-records/VREC-MOK-0NN.md` | artifact | Phase D |
+| `docs/engineering/simulation/evidence/release-<version>-observations/` | retained evidence | what the observation window observed; not an artifact, approves nothing |

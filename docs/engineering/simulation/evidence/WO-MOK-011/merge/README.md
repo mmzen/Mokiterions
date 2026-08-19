@@ -3,6 +3,17 @@
 Merge parents: `feature/phase-2-5-naming` at `4606145` and `master` at `2157f77`.
 Merge base: `524a675`. Date: 2026-08-19.
 
+**A second merge follows this one.** `master` moved to `44c24d8` while this was being written (PR #28,
+the 0.1.0 observation window and four loose ends). It is merged in too, and it conflicted with
+nothing: the five files it touches — `docs/RELEASE_RUNBOOK.md`, `REPOSITORY_CONTEXT.md`,
+`REQ-MOK-037.md`, `SPEC-MOK-005.md` and a new `evidence/release-0.1.0-observations/` note — are none
+of them this chain's, none of them source, and none of them a file any measurement here reads. The
+gates were re-run at it all the same: **212 passed, 0 failed, 0 ignored**, fmt and clippy clean with
+both crates re-linted, validator PASS over 102 artifacts with 0 errors and 0 warnings, dashboard PASS
+over 335 relations with the same 6 warnings, and the inspector's same 18 findings. The dashboard's
+snapshot digest moves to `2f5274d4…` because `master` edited two of its own artifacts; every figure
+below is unchanged, and the tables in this directory are measured at the `2157f77` merge as they say.
+
 This directory is **not a verification record and takes no decision.** `VREC-MOK-011` is bound to
 `9ddcf83` and stays bound to it; a record for the merge is a new record. What is here is the
 measurement the merge itself needs: which conflicts there were, how each was resolved, and which of
@@ -17,12 +28,13 @@ did not exist when that record was written.
 
 ## Why the merge is against `master` and not the branch this PR targets
 
-Draft PR #22 targets `feature/phase-2-individuality`. That branch has since merged whole into
-`master` (PR #17 at `5eed5a9`), so it is now an ancestor of `master` and merging it would settle
+Draft PR #22 targeted `feature/phase-2-individuality`. That branch has since merged whole into
+`master` (PR #17 at `5eed5a9`), so it is now an ancestor of `master` and merging it would have settled
 nothing: `master` has moved on past it with a 0.1.0 release (`RLS-MOK-001`, PRs #25 and #26), a
-fixture-independence fix (#24), post-release governance facts (#27) and release CI (`a8fa962`). The
-same four files conflict against either branch, so the merge was taken against `master` directly.
-**Retargeting the pull request's base is the repository owner's call and has not been done.**
+fixture-independence fix (#24), post-release governance facts (#27), release CI (`a8fa962`) and the
+observation window (#28). The same four files conflicted against either branch, so the merge was taken
+against `master` directly. **The pull request's base was then retargeted to `master` on the repository
+owner's instruction**, which is why its diff reads this chain's work and not `master`'s.
 
 ## The four conflicts, and how each was resolved
 
