@@ -1,0 +1,13 @@
+$ git diff --stat master -- mokiterions-core/
+exit 0 (no output above means no file under the engine package differs from master)
+
+$ git diff --stat master -- '*Cargo.toml' Cargo.lock
+exit 0
+
+$ git diff --stat master
+ .../simulation/specifications/SPEC-MOK-003.md      |  18 ++
+ .../simulation/verification/VER-MOK-007.md         | 187 +++++++++++++
+ .../simulation/work-orders/WO-MOK-007.md           | 220 ++++++++++++++++
+ mokiterions-tui/src/render.rs                      | 292 +++++++++++++++++++--
+ mokiterions-tui/tests/render.rs                    | 278 +++++++++++++++++++-
+ 5 files changed, 973 insertions(+), 22 deletions(-)

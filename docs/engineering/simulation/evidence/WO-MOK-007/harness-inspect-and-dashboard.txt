@@ -1,0 +1,120 @@
+$ harnessctl inspect
+Harness inspection
+Repository: Mokiterions @ 0b0fe5d1db39fa197fa0ac39291f534c84e057a7
+Formal validation: PASS
+Graph: 70 artifacts | 215 relations | 15 findings
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+Finding severity: error 0 | warning 9 | info 6
+
+Decision required (0):
+- none
+
+Definitions pending (0):
+- none
+
+Active work (1):
+- WO-MOK-007 [approved] start-authorized-work: Colour the roster survival bars by value band (docs/engineering/simulation/work-orders/WO-MOK-007.md)
+
+Assurance pending (0):
+- none
+
+Findings (15):
+- [WARNING] W-HEX-001 (derived): 6 observations [WO-MOK-001, WO-MOK-002, WO-MOK-003, WO-MOK-004, WO-MOK-005, WO-MOK-006]
+- [WARNING] W-HEX-003 (derived): 3 observations [ADR-MOK-001, ARCH-MOK-001, ARCH-MOK-002, SPEC-MOK-003, SPEC-MOK-004]
+- [INFO] I-REV-001 (derived): 6 observations [VREC-MOK-001, VREC-MOK-002, VREC-MOK-003, VREC-MOK-004, VREC-MOK-005, VREC-MOK-006]
+
+Suggested next steps (10):
+- W-HEX-001 -> retain-work-order-evidence (engineering-owner): Retain evidence keyed to the implemented work order and reassess the observation. Repeated for 6 source observations. [WO-MOK-001, WO-MOK-002, WO-MOK-003, WO-MOK-004, WO-MOK-005, WO-MOK-006]
+- W-HEX-003 -> reassess-dependent-artifact (artifact-owner): Reassess the older source against its newer declared dependency or parent. Repeated for 3 source observations. [ADR-MOK-001, ARCH-MOK-001, ARCH-MOK-002, SPEC-MOK-003, SPEC-MOK-004]
+- active_work -> start-bounded-work (engineering-owner): Run start preflight and begin only the approved scope. [WO-MOK-007]
+
+Authority: repository-local, derived observation. Inspection does not validate by exit status, approve, authorize, verify, release, or remediate.
+exit 0
+
+$ harnessctl dashboard
+Harness Explorer generation: PASS | Artifacts: 70 | Relations: 215 | Errors: 0 | Warnings: 9 | Output: target/harness-dashboard | Snapshot: 8949cc05fde6d3e5d4d1fdabfca7a604601b501e8acf853a41b683aad371ead4
+exit 0
+
+$ harnessctl doctor
+PASS AGENTS.md: required
+PASS CLAUDE.md: required
+PASS ENGINEERING_HARNESS.md: required
+PASS claude-import: @AGENTS.md
+PASS config: .engineering-harness.toml
+PASS distribution:.engineering-harness.toml: matches distribution
+PASS distribution:.github/workflows/engineering-harness.yml: matches distribution
+PASS distribution:.gitignore: matches distribution
+PASS distribution:AGENTS.md: matches distribution
+PASS distribution:CLAUDE.md: matches distribution
+PASS distribution:ENGINEERING_HARNESS.md: matches distribution
+PASS distribution:docs/engineering/DECISION_RIGHTS.md: matches distribution
+PASS distribution:docs/engineering/QUALITY_GATES.md: matches distribution
+PASS distribution:docs/engineering/TRACEABILITY.md: matches distribution
+PASS distribution:docs/engineering/WORKFLOW.md: matches distribution
+PASS distribution:docs/engineering/templates/ADR.template.md: matches distribution
+PASS distribution:docs/engineering/templates/ARCHITECTURE.template.md: matches distribution
+PASS distribution:docs/engineering/templates/CAPABILITY.template.md: matches distribution
+PASS distribution:docs/engineering/templates/INTENT.template.md: matches distribution
+PASS distribution:docs/engineering/templates/OPERATING_CONTRACT.template.md: matches distribution
+PASS distribution:docs/engineering/templates/README.md: matches distribution
+PASS distribution:docs/engineering/templates/RELEASE_CONTRACT.template.md: matches distribution
+PASS distribution:docs/engineering/templates/RELEASE_RECORD.template.md: matches distribution
+PASS distribution:docs/engineering/templates/REQUIREMENT.template.md: matches distribution
+PASS distribution:docs/engineering/templates/SPECIFICATION.template.md: matches distribution
+PASS distribution:docs/engineering/templates/VERIFICATION.template.md: matches distribution
+PASS distribution:docs/engineering/templates/VERIFICATION_RECORD.template.md: matches distribution
+PASS distribution:docs/engineering/templates/WORK_ORDER.template.md: matches distribution
+PASS distribution:scripts/artifact_layout_registry.py: matches distribution
+PASS distribution:scripts/check_engineering_harness.ps1: matches distribution
+PASS distribution:scripts/check_engineering_harness.sh: matches distribution
+PASS distribution:scripts/generate_harness_dashboard.py: matches distribution
+PASS distribution:scripts/harness_explorer/index.template.html: matches distribution
+PASS distribution:scripts/inspect_engineering_artifacts.py: matches distribution
+PASS distribution:scripts/select_harness_work_order.py: matches distribution
+PASS distribution:scripts/validate_engineering_artifacts.py: matches distribution
+PASS docs/engineering/DECISION_RIGHTS.md: required
+PASS docs/engineering/QUALITY_GATES.md: required
+PASS docs/engineering/README.md: required
+PASS docs/engineering/REPOSITORY_CONTEXT.md: required
+PASS docs/engineering/TRACEABILITY.md: required
+PASS docs/engineering/WORKFLOW.md: required
+PASS lock: .engineering-harness.lock
+PASS managed:.engineering-harness.toml: unchanged
+PASS managed:.github/workflows/engineering-harness.yml: unchanged
+PASS managed:.gitignore: unchanged
+PASS managed:AGENTS.md: unchanged
+PASS managed:CLAUDE.md: unchanged
+PASS managed:ENGINEERING_HARNESS.md: unchanged
+PASS managed:docs/engineering/DECISION_RIGHTS.md: unchanged
+PASS managed:docs/engineering/QUALITY_GATES.md: unchanged
+PASS managed:docs/engineering/TRACEABILITY.md: unchanged
+PASS managed:docs/engineering/WORKFLOW.md: unchanged
+PASS managed:docs/engineering/templates/ADR.template.md: unchanged
+PASS managed:docs/engineering/templates/ARCHITECTURE.template.md: unchanged
+PASS managed:docs/engineering/templates/CAPABILITY.template.md: unchanged
+PASS managed:docs/engineering/templates/INTENT.template.md: unchanged
+PASS managed:docs/engineering/templates/OPERATING_CONTRACT.template.md: unchanged
+PASS managed:docs/engineering/templates/README.md: unchanged
+PASS managed:docs/engineering/templates/RELEASE_CONTRACT.template.md: unchanged
+PASS managed:docs/engineering/templates/RELEASE_RECORD.template.md: unchanged
+PASS managed:docs/engineering/templates/REQUIREMENT.template.md: unchanged
+PASS managed:docs/engineering/templates/SPECIFICATION.template.md: unchanged
+PASS managed:docs/engineering/templates/VERIFICATION.template.md: unchanged
+PASS managed:docs/engineering/templates/VERIFICATION_RECORD.template.md: unchanged
+PASS managed:docs/engineering/templates/WORK_ORDER.template.md: unchanged
+PASS managed:scripts/artifact_layout_registry.py: unchanged
+PASS managed:scripts/check_engineering_harness.ps1: unchanged
+PASS managed:scripts/check_engineering_harness.sh: unchanged
+PASS managed:scripts/generate_harness_dashboard.py: unchanged
+PASS managed:scripts/harness_explorer/index.template.html: unchanged
+PASS managed:scripts/inspect_engineering_artifacts.py: unchanged
+PASS managed:scripts/select_harness_work_order.py: unchanged
+PASS managed:scripts/validate_engineering_artifacts.py: unchanged
+PASS python: 3.14.6
+PASS scripts/generate_harness_dashboard.py: required
+PASS scripts/harness_explorer/index.template.html: required
+PASS scripts/validate_engineering_artifacts.py: required
+PASS seed:.github/PULL_REQUEST_TEMPLATE.md: present
+PASS seed:docs/engineering/README.md: present
+PASS seed:docs/engineering/REPOSITORY_CONTEXT.md: present
+exit 0

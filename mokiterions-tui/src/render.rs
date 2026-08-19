@@ -47,6 +47,17 @@ const MEDIUM_COLOUR: Color = Color::Yellow;
 const HIGH_COLOUR: Color = Color::Green;
 const BOUNDARY_COLOUR: Color = Color::DarkGray;
 
+/// Rule 4.7's three survival bands. `Indexed(208)` is xterm's dark orange rather than
+/// `Color::Yellow`, which `MEDIUM_COLOUR` already spends on a medium-class resource: two unrelated
+/// meanings sharing one colour on one screen is avoidable here.
+const BAND_HIGH_COLOUR: Color = Color::Green;
+const BAND_MIDDLE_COLOUR: Color = Color::Indexed(208);
+const BAND_LOW_COLOUR: Color = Color::Red;
+
+/// The two boundaries rule 4.7 fixes: green at `80..=100`, orange at `40..=79`, red at `0..=39`.
+const BAND_HIGH_FLOOR: u8 = 80;
+const BAND_MIDDLE_FLOOR: u8 = 40;
+
 /// Columns a roster bar row spends on labels, values and separators, so the bars themselves get
 /// `(interior − this) / 3`. Derived from rule 4's form: five leading columns, then three groups
 /// of `label`, space, bar, space and a three-column value, separated by two columns.
@@ -435,8 +446,11 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
         } else {
             Style::new()
         };
-        for text in entry_lines(agent, bar, two_line) {
-            lines.push(Line::from(Span::styled(text, style)));
+        // Rule 4.7: the entry's style is the line's, which every span patches rather than
+        // replaces, so reversed video covers the whole entry and each gauge keeps its band
+        // inside it. Selection stays marked by reversal and never by colour.
+        for line in entry_lines(agent, bar, two_line) {
+            lines.push(line.style(style));
         }
     }
 
@@ -464,7 +478,7 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
 }
 
 /// Rule 4's entry form. Two lines at 47 columns or more, one line below.
-fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<String> {
+fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<Line<'static>> {
     let applied = agent
         .applied_action
         .as_ref()
@@ -474,22 +488,34 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<String>
     let territory = agent.territory.to_string();
     let position = agent.position.to_string();
     if !two_line {
-        return vec![format!(
+        // Rule 4.7: the collapsed form has no bars and takes no band. It exists to keep the
+        // numbers legible where the bar cells will not fit, and the numbers carry the level.
+        return vec![Line::from(format!(
             "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3}",
             agent.id, agent.health, agent.satiety, agent.energy
-        )];
+        ))];
     }
     vec![
-        format!("{:<5}{territory:<3}{position:<14}{applied}", agent.id),
+        Line::from(format!(
+            "{:<5}{territory:<3}{position:<14}{applied}",
+            agent.id
+        )),
         // Rule 4.5: whatever width remains to the right of the third bar is the reserved slot
         // for Phase 2's `fear`. It renders as nothing at all — no label, no dash and no zero,
-        // because an inert `fear 0` would be a claim the engine cannot support.
-        format!(
-            "     {}  {}  {}",
+        // because an inert `fear 0` would be a claim the engine cannot support. It carries no
+        // band either, for the same reason.
+        //
+        // Rule 4.7: each gauge is its own span so that three values can hold three bands. The
+        // five-column indent and the two-column separators are unstyled, which is what keeps a
+        // band the property of one gauge rather than of the row.
+        Line::from(vec![
+            Span::raw("     "),
             gauge('h', agent.health, bar),
+            Span::raw("  "),
             gauge('s', agent.satiety, bar),
-            gauge('e', agent.energy, bar)
-        ),
+            Span::raw("  "),
+            gauge('e', agent.energy, bar),
+        ]),
     ]
 }
 
@@ -498,14 +524,37 @@ fn bar_width(interior_width: u16) -> usize {
     (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 3).min(FULL_BAR)
 }
 
-/// One proportional bar and its numeric value. `0` renders as `0` with an empty bar (rule 4.4).
-fn gauge(label: char, value: u8, width: usize) -> String {
+/// One proportional bar and its numeric value, in rule 4.7's band for that value. `0` renders as
+/// `0` with an empty bar (rule 4.4) and takes the low band.
+///
+/// The band covers the whole gauge — label, bar cells and value — so one gauge reads as one state.
+/// It changes no character: the text is what it was before rule 4.7 existed.
+fn gauge(label: char, value: u8, width: usize) -> Span<'static> {
     let filled = (usize::from(value) * width / 100).min(width);
-    format!(
-        "{label} {}{} {value:>3}",
-        "\u{2588}".repeat(filled),
-        "\u{2591}".repeat(width - filled)
+    Span::styled(
+        format!(
+            "{label} {}{} {value:>3}",
+            "\u{2588}".repeat(filled),
+            "\u{2591}".repeat(width - filled)
+        ),
+        Style::new().fg(band(value)),
     )
+}
+
+/// Rule 4.7's band for one survival value.
+///
+/// A band is a second presentation of the number the bar already shows. It reads one `u8` the
+/// engine computed and retains nothing, so `REQ-MOK-020`'s constraint against any quantity the
+/// engine does not produce holds literally. The boundaries are the specification's, not this
+/// implementation's.
+fn band(value: u8) -> Color {
+    if value >= BAND_HIGH_FLOOR {
+        BAND_HIGH_COLOUR
+    } else if value >= BAND_MIDDLE_FLOOR {
+        BAND_MIDDLE_COLOUR
+    } else {
+        BAND_LOW_COLOUR
+    }
 }
 
 // ---- inspector ---------------------------------------------------------------------------
@@ -1020,7 +1069,12 @@ mod tests {
                 food_id: "F0058".to_string(),
             }),
         };
-        let lines = entry_lines(&agent, FULL_BAR, true);
+        // Rule 4.7 made an entry line a sequence of styled spans. `Line`'s `Display` writes span
+        // content and nothing else, so the text asserted here is the text that reaches a cell.
+        let lines: Vec<String> = entry_lines(&agent, FULL_BAR, true)
+            .iter()
+            .map(ToString::to_string)
+            .collect();
 
         assert_eq!(
             lines[1],
@@ -1038,6 +1092,27 @@ mod tests {
         // The reserved fourth-bar slot is empty: nothing follows the third value.
         assert_eq!(lines[1].trim_end(), lines[1]);
         assert_eq!(count(&lines[1]), 3 * FULL_BAR + BAR_ROW_OVERHEAD);
+
+        // Rule 4.7 on the mockup's own values: 100 and 81 are high, 72 is middle. Two gauges
+        // sharing a band and one differing is the shape a band read from the row rather than from
+        // the value would get wrong, and it would get it wrong while still reading all-green.
+        let bands: Vec<Option<Color>> = entry_lines(&agent, FULL_BAR, true)
+            .remove(1)
+            .spans
+            .iter()
+            .map(|span| span.style.fg)
+            .collect();
+        assert_eq!(
+            bands,
+            vec![
+                None,
+                Some(Color::Green),
+                None,
+                Some(Color::Green),
+                None,
+                Some(Color::Indexed(208))
+            ]
+        );
     }
 
     #[test]
@@ -1056,6 +1131,189 @@ mod tests {
         }
     }
 
+    /// Rule 4.7's band table, stated here as the specification states it rather than read from the
+    /// implementation's constants, so a test cannot agree with a wrong boundary.
+    fn specified_band(value: u8) -> Color {
+        match value {
+            80..=100 => Color::Green,
+            40..=79 => Color::Indexed(208),
+            0..=39 => Color::Red,
+            _ => panic!("{value} is above the attribute maximum"),
+        }
+    }
+
+    /// Rule 4.7's bands, over the whole domain and at both boundaries by literal value.
+    #[test]
+    fn the_survival_bands_are_the_three_the_rule_fixes() {
+        // Each boundary by its own literal, both sides, so an off-by-one cannot hide in a range.
+        assert_eq!(band(39), Color::Red);
+        assert_eq!(band(40), Color::Indexed(208));
+        assert_eq!(band(79), Color::Indexed(208));
+        assert_eq!(band(80), Color::Green);
+        // The ends, and zero, which the rule places in the low band.
+        assert_eq!(band(0), Color::Red);
+        assert_eq!(band(100), Color::Green);
+
+        // Total and disjoint: every value in the domain is in exactly the band the rule names.
+        for value in 0..=100u8 {
+            assert_eq!(band(value), specified_band(value), "band of {value}");
+        }
+
+        // Monotone: the band never improves as the value falls. This is the property a trend
+        // encoding would have failed, since satiety and energy decay every tick by construction.
+        let rank = |colour: Color| match colour {
+            Color::Red => 0,
+            Color::Indexed(208) => 1,
+            Color::Green => 2,
+            other => panic!("{other:?} is not a band"),
+        };
+        for value in 1..=100u8 {
+            assert!(
+                rank(band(value)) >= rank(band(value - 1)),
+                "band improves falling from {value} to {}",
+                value - 1
+            );
+        }
+    }
+
+    /// Rule 4.7 changes no character. This is the property that keeps rule 4's mockup true and
+    /// keeps every assertion made about the roster before bands existed meaningful.
+    #[test]
+    fn banding_changes_no_character_of_an_entry() {
+        // The unbanded form, written out rather than captured from the current implementation, so
+        // that a regression in `gauge` cannot ratify itself.
+        let unbanded = |label: char, value: u8, width: usize| {
+            let filled = (usize::from(value) * width / 100).min(width);
+            format!(
+                "{label} {}{} {value:>3}",
+                "\u{2588}".repeat(filled),
+                "\u{2591}".repeat(width - filled)
+            )
+        };
+
+        let mut cases = 0;
+        for width in 0..=FULL_BAR {
+            for value in 0..=100u8 {
+                assert_eq!(
+                    gauge('h', value, width).content,
+                    unbanded('h', value, width),
+                    "gauge text at value {value} width {width}"
+                );
+                cases += 1;
+            }
+        }
+        // Every value at every width the layout can ask for: 21 widths × 101 values.
+        assert_eq!(cases, 21 * 101);
+
+        // And at the level of a whole entry, including the indent and the separators.
+        let agent = AgentSnapshot {
+            id: "M07".to_string(),
+            position: Coordinate { x: 3, y: 40 },
+            territory: Territory::B,
+            health: 12,
+            satiety: 55,
+            energy: 88,
+            applied_action: Some(Action::Sleep),
+        };
+        assert_eq!(
+            entry_lines(&agent, FULL_BAR, true)[1].to_string(),
+            format!(
+                "     {}  {}  {}",
+                unbanded('h', 12, FULL_BAR),
+                unbanded('s', 55, FULL_BAR),
+                unbanded('e', 88, FULL_BAR)
+            )
+        );
+    }
+
+    /// Rule 4.7: a band is the property of one gauge, not of the row.
+    #[test]
+    fn each_gauge_carries_its_own_band_and_nothing_else_carries_one() {
+        let agent = AgentSnapshot {
+            id: "M07".to_string(),
+            position: Coordinate { x: 3, y: 40 },
+            territory: Territory::B,
+            // One value in each band, so a single shared style cannot pass.
+            health: 12,
+            satiety: 55,
+            energy: 88,
+            applied_action: Some(Action::Sleep),
+        };
+        let row = entry_lines(&agent, FULL_BAR, true).remove(1);
+
+        // Indent, gauge, separator, gauge, separator, gauge.
+        assert_eq!(row.spans.len(), 6);
+        assert_eq!(row.spans[0].style.fg, None, "the indent carries a band");
+        assert_eq!(row.spans[2].style.fg, None, "a separator carries a band");
+        assert_eq!(row.spans[4].style.fg, None, "a separator carries a band");
+        assert_eq!(row.spans[1].style.fg, Some(Color::Red));
+        assert_eq!(row.spans[3].style.fg, Some(Color::Indexed(208)));
+        assert_eq!(row.spans[5].style.fg, Some(Color::Green));
+
+        // Three distinct bands, and no modifier anywhere: rule 4.6 owns reversed video and rule
+        // 4.7 adds no emphasis of its own.
+        for span in &row.spans {
+            assert_eq!(span.style.add_modifier, Modifier::empty(), "{span:?}");
+        }
+
+        // Rule 4.5's reserved fourth-bar slot: nothing follows the third gauge, so it carries no
+        // character and therefore no band.
+        assert_eq!(row.spans.len(), 6);
+        assert!(row.to_string().ends_with(" 88"));
+    }
+
+    /// Rule 4.7 reads the current value and nothing else. No previous tick is retained, so
+    /// `REQ-MOK-020`'s constraint against a quantity the engine does not produce still holds.
+    #[test]
+    fn a_band_reads_only_the_value_it_is_given() {
+        let of = |value: u8| {
+            let agent = AgentSnapshot {
+                id: "M01".to_string(),
+                position: Coordinate { x: 0, y: 0 },
+                territory: Territory::A,
+                health: value,
+                satiety: value,
+                energy: value,
+                applied_action: None,
+            };
+            entry_lines(&agent, FULL_BAR, true)
+                .remove(1)
+                .spans
+                .iter()
+                .map(|span| span.style.fg)
+                .collect::<Vec<_>>()
+        };
+
+        // Interleaved so that any hidden previous-value state would show as a difference between
+        // the first and second reading of the same value.
+        let first = of(85);
+        for other in [0u8, 100, 39, 40, 79, 80, 12] {
+            let _ = of(other);
+        }
+        assert_eq!(of(85), first, "a band depended on what was rendered before");
+        assert_eq!(band(85), Color::Green);
+    }
+
+    /// Rule 4.7: the collapsed one-line form has no bars and takes no band.
+    #[test]
+    fn the_collapsed_form_takes_no_band() {
+        let agent = AgentSnapshot {
+            id: "M01".to_string(),
+            position: Coordinate { x: 0, y: 0 },
+            territory: Territory::A,
+            health: 12,
+            satiety: 55,
+            energy: 88,
+            applied_action: None,
+        };
+        let lines = entry_lines(&agent, 0, false);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0].to_string(), "M01  A  h 12 s 55 e 88");
+        for span in &lines[0].spans {
+            assert_eq!(span.style.fg, None, "the collapsed form carries a band");
+        }
+    }
+
     #[test]
     fn a_zero_value_is_a_zero_and_an_absent_value_is_a_dash() {
         let mut agent = AgentSnapshot {
@@ -1067,17 +1325,30 @@ mod tests {
             energy: 0,
             applied_action: None,
         };
-        let lines = entry_lines(&agent, 4, true);
+        let lines: Vec<String> = entry_lines(&agent, 4, true)
+            .iter()
+            .map(ToString::to_string)
+            .collect();
         assert!(lines[0].ends_with(ABSENT), "{}", lines[0]);
         assert!(lines[1].contains("h ░░░░   0"), "{}", lines[1]);
+        // Rule 4.7 puts zero in the low band. It stays a `0` with an empty bar, so what
+        // distinguishes it from an absent value is still the character and not the colour.
+        assert_eq!(
+            entry_lines(&agent, 4, true).remove(1).spans[1].style.fg,
+            Some(Color::Red)
+        );
 
         agent.applied_action = Some(Action::Wait);
-        assert!(entry_lines(&agent, 4, true)[0].ends_with("wait"));
+        assert!(
+            entry_lines(&agent, 4, true)[0]
+                .to_string()
+                .ends_with("wait")
+        );
 
         // The one-line form keeps the numbers and drops the bars.
         let compact = entry_lines(&agent, 0, false);
         assert_eq!(compact.len(), 1);
-        assert_eq!(compact[0], "M01  A  h  0 s  0 e  0");
+        assert_eq!(compact[0].to_string(), "M01  A  h  0 s  0 e  0");
     }
 
     /// Rule 3.1 and 3.2, which are states rather than counts.
