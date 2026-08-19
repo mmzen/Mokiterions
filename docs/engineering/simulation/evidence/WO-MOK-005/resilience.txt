@@ -37,8 +37,9 @@ Tests: state::tests::the_event_buffer_drops_the_oldest_record_and_says_so,
 
 ## Rapid resizing across the declared set, below the floor and back
 
-seed 123, held at tick 30: 280 draws cycling the whole declared viewport set,
-including 33 x 21 where drawing is suspended.
+seed 123, held at tick 30: 400 draws cycling the whole declared viewport set,
+including 33 x 21 where drawing is suspended. Forty passes over the ten viewports
+`VER-MOK-005` declares as amended, where the superseded set had seven.
 
 snapshot        UNCHANGED
 records         870 before, 870 after
@@ -65,14 +66,16 @@ Test: tests::the_idle_wait_never_exceeds_the_nearest_deadline (the cadence),
 
 ## An export failure leaves the tick intact
 
-The export path points into a directory that does not exist, so the write fails.
+seed 42, 13 ticks. The export path points into a directory that does not exist, so the
+write fails. Re-captured because the header line below carried a tier name.
 
-write result        Err(The system cannot find the path specified. (os error 3))
+write result        Err("The system cannot find the path specified. (os error 3)")
+notice              Some("export failed: The system cannot find the path specified. (os error 3)")
 file left behind    false
 snapshot            UNCHANGED
-records             379 before and after
-run still live      progression running, finished false
-header after        RUNNING  export failed: The system cannot find the path specified. (os error 3)  x8  overview  filter none  tier A full
+records             451 before, 451 after
+run still live      progression Running, finished false
+header after        RUNNING  export failed: The system cannot find the path specified. (os error 3)  x8  overview  filter none
                     A  standing 61/61  low 21  medium 20  high 20
                     B  standing 61/61  low 21  medium 20  high 20
 

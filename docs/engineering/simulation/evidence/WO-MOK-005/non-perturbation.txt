@@ -81,20 +81,20 @@ surface review. `VER-MOK-005`'s residual-uncertainty section anticipates that th
 is not the whole control set; what it does not say, and this does, is which controls are
 outside it.
 
-The viewport rotates through the whole declared set every seven ticks, `33 x 21` included,
-so each run is observed at every layout tier and while drawing is suspended below the
-floor.
+The viewport rotates through the whole declared set every ten ticks, `33 x 21` included, so
+each run is observed at every combination of panes rule 5 places and while drawing is
+suspended below the floor.
 
 Progression is deliberately not toggled with the space bar in the script, because the
 harness owns the advance: holding is verified separately, below.
 
 ## Result, per declared seed
 
-seed 0    ticks 60   records 1616  unobserved 1616  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
-seed 1    ticks 60   records 1622  unobserved 1622  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
-seed 42   ticks 60   records 1623  unobserved 1623  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
-seed 123  ticks 60   records 1615  unobserved 1615  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
-seed 777  ticks 60   records 1620  unobserved 1620  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 8
+seed 0    ticks 60   records 1616  unobserved 1616  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 6
+seed 1    ticks 60   records 1622  unobserved 1622  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 6
+seed 42   ticks 60   records 1623  unobserved 1623  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 6
+seed 123  ticks 60   records 1615  unobserved 1615  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 6
+seed 777  ticks 60   records 1620  unobserved 1620  streams IDENTICAL   final state IDENTICAL   frames 61   keys 98   frames suspended below the floor 6
 
 Test: verification::observed_and_unobserved_runs_are_identical_on_every_declared_seed
 

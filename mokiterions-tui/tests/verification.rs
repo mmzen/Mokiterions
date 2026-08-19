@@ -41,23 +41,33 @@ use mokiterions_tui::{authority, export, layout, options, render, spatial};
 const SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
 
 /// The declared viewport set. `33 x 21` is the one-below-floor case and is refused, not rendered.
-const VIEWPORTS: [(u16, u16); 7] = [
+///
+/// `160 x 40`, `140 x 43` and `120 x 30` joined the set with `VER-MOK-005`'s 2026-08-19 amendment:
+/// they are the shapes at which the superseded tier table excluded the roster, the inspector and
+/// the log at once, and no viewport in the previous set reached that region.
+const VIEWPORTS: [(u16, u16); 10] = [
     (160, 48),
     (160, 44),
+    (160, 40),
     (140, 44),
+    (140, 43),
     (120, 48),
+    (120, 30),
     (100, 30),
     (34, 22),
     (33, 21),
 ];
 
 /// The declared viewports above the floor, each with the canvas interior rule 5 derives for it.
-const RENDERABLE: [(u16, u16, u16, u16); 6] = [
+const RENDERABLE: [(u16, u16, u16, u16); 9] = [
     (160, 48, 67, 32),
     (160, 44, 67, 32),
+    (160, 40, 67, 28),
     (140, 44, 47, 32),
+    (140, 43, 47, 31),
     (120, 48, 71, 36),
-    (100, 30, 98, 24),
+    (120, 30, 71, 24),
+    (100, 30, 51, 24),
     (34, 22, 32, 16),
 ];
 
@@ -216,12 +226,13 @@ fn interact(observer: &mut Observer, round: u64) {
 /// Drives an observed run to the engine's own end, interacting and drawing throughout.
 ///
 /// The viewport rotates through the declared set, including below the floor, so a run is observed
-/// at every layout tier and while drawing is suspended.
+/// at every combination of panes rule 5 admits and while drawing is suspended.
 fn observed_run(args: &[&str]) -> Observer {
     let mut observer = observer_for(args);
     let mut round = 0u64;
     while !observer.is_finished() {
-        let (width, height) = VIEWPORTS[usize::try_from(round % 7).expect("a small remainder")];
+        let index = usize::try_from(round).expect("a tick count fits a usize") % VIEWPORTS.len();
+        let (width, height) = VIEWPORTS[index];
         frame(&mut observer, width, height);
         interact(&mut observer, round);
         observer.advance().expect("the engine advances");
@@ -476,6 +487,28 @@ fn every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer() {
             footer.contains("42") && footer.contains("reference"),
             "{width}x{height}: {footer}"
         );
+
+        // The reported symptom was a pane missing from the screen, so what is drawn is checked to
+        // agree with what was resolved. This does not check the thresholds themselves — it
+        // compares the frame against the layout, and `tests/layout.rs` compares the layout against
+        // rule 5 — but it is what fails if a pane is resolved and then not drawn. The body's first
+        // row carries the roster's and the inspector's titles and the log's title is on its own
+        // first row; the header is excluded, because it names a pane precisely when it is absent.
+        let body_top = lines[3];
+        assert_eq!(
+            body_top.contains("roster"),
+            panes.roster.is_some(),
+            "{width}x{height}: {body_top}"
+        );
+        assert_eq!(
+            body_top.contains("inspector"),
+            panes.inspector.is_some(),
+            "{width}x{height}: {body_top}"
+        );
+        if let Some(log) = panes.log {
+            let log_top = lines[usize::from(log.y)];
+            assert!(log_top.contains("log"), "{width}x{height}: {log_top}");
+        }
     }
 
     assert!(frame(&mut observer, 33, 21).is_none());
@@ -692,8 +725,8 @@ fn an_injected_export_failure_leaves_the_tick_intact() {
 #[test]
 fn the_declared_sets_are_the_contracts() {
     assert_eq!(SEEDS, [0, 1, 42, 123, 777]);
-    assert_eq!(VIEWPORTS.len(), 7);
-    assert_eq!(RENDERABLE.len(), 6);
+    assert_eq!(VIEWPORTS.len(), 10);
+    assert_eq!(RENDERABLE.len(), 9);
     assert!(VIEWPORTS.contains(&(33, 21)));
     assert!(layout::below_floor(33, 21));
     for (width, height, _, _) in RENDERABLE {

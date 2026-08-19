@@ -1,9 +1,15 @@
-//! Layout, tiers and the viewport floor, as `SPEC-MOK-003` rule 5 fixes them.
+//! Layout, pane thresholds and the viewport floor, as `SPEC-MOK-003` rule 5 fixes them.
 //!
 //! Layout is a pure function of viewport width and height. It reads no tick, no run state,
 //! no entropy and no clock, so the same dimensions always produce the same layout. The
 //! arithmetic is performed here rather than delegated to a constraint solver so that the
 //! derived canvas figures rule 5 declares are checkable directly.
+//!
+//! Each optional pane is decided by one threshold on the one axis that constrains it, so the
+//! combination a viewport gets is whatever those thresholds independently decide. There is no
+//! ordered table of named configurations and therefore no viewport that matches none of them,
+//! which is what rule 5's monotonicity obligation requires: enlarging a terminal never removes
+//! a pane.
 
 use ratatui::layout::Rect;
 
@@ -19,31 +25,20 @@ const INSPECTOR_WIDTH: u16 = 44;
 const FULL_LOG_HEIGHT: u16 = 10;
 const COMPACT_LOG_HEIGHT: u16 = 6;
 
+/// Rule 5's pane thresholds. The roster is a vertical list in a fixed-width column and the
+/// inspector needs width for the roster and a usable view beside it, so both read the width;
+/// the log is a fixed-height band of rows, so it reads the height.
+const ROSTER_MIN_WIDTH: u16 = 100;
+const INSPECTOR_MIN_WIDTH: u16 = 140;
+const LOG_MIN_HEIGHT: u16 = 38;
+const FULL_LOG_MIN_WIDTH: u16 = 140;
+const FULL_LOG_MIN_HEIGHT: u16 = 48;
+
 /// The pane width at or above which a roster entry occupies two lines (rule 4).
 pub const ROSTER_TWO_LINE_WIDTH: u16 = 47;
 
-/// The layout tier. The first matching condition applies, in the order of rule 5's table.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Tier {
-    A,
-    B,
-    C,
-    D,
-}
-
-impl Tier {
-    pub fn label(self) -> &'static str {
-        match self {
-            Self::A => "A full",
-            Self::B => "B compact-log",
-            Self::C => "C narrow",
-            Self::D => "D minimal",
-        }
-    }
-}
-
-/// A pane that a tier may exclude from the body. Every excluded pane is reachable as a
-/// full-body overlay by its bound key.
+/// A pane the current viewport may exclude from the body. Every excluded pane is reachable as
+/// a full-body overlay by its bound key.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Pane {
     Roster,
@@ -64,7 +59,6 @@ impl Pane {
 /// The resolved regions of one frame.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Panes {
-    pub tier: Tier,
     pub header: Rect,
     pub roster: Option<Rect>,
     pub view: Rect,
@@ -76,7 +70,7 @@ pub struct Panes {
 }
 
 impl Panes {
-    /// The panes this tier excludes, in a stable order, for the header's announcement.
+    /// The panes this viewport excludes, in a stable order, for the header's announcement.
     pub fn overlay_only(&self) -> Vec<Pane> {
         let mut panes = Vec::new();
         if self.roster.is_none() {
@@ -98,27 +92,20 @@ pub fn below_floor(width: u16, height: u16) -> bool {
     width < MIN_WIDTH || height < MIN_HEIGHT
 }
 
-/// Rule 5's tier table. The first matching row applies.
-pub fn tier_for(width: u16, height: u16) -> Tier {
-    if width >= 140 && height >= 48 {
-        Tier::A
-    } else if width >= 140 && (44..48).contains(&height) {
-        Tier::B
-    } else if (100..140).contains(&width) && height >= 38 {
-        Tier::C
+/// The rows the log occupies, `0` when the height excludes it.
+fn log_rows(width: u16, height: u16) -> u16 {
+    if height < LOG_MIN_HEIGHT {
+        0
+    } else if width >= FULL_LOG_MIN_WIDTH && height >= FULL_LOG_MIN_HEIGHT {
+        FULL_LOG_HEIGHT
     } else {
-        Tier::D
+        COMPACT_LOG_HEIGHT
     }
 }
 
 /// Resolves every region for a viewport above the floor.
 pub fn resolve(area: Rect) -> Panes {
-    let tier = tier_for(area.width, area.height);
-    let log_height = match tier {
-        Tier::A => FULL_LOG_HEIGHT,
-        Tier::B | Tier::C => COMPACT_LOG_HEIGHT,
-        Tier::D => 0,
-    };
+    let log_height = log_rows(area.width, area.height);
 
     let header = Rect {
         height: HEADER_HEIGHT.min(area.height),
@@ -129,8 +116,8 @@ pub fn resolve(area: Rect) -> Panes {
         height: FOOTER_HEIGHT,
         ..area
     };
-    // The body carries rule 5's `Min` constraint, so it absorbs whatever the fixed rows
-    // leave. Every tier condition guarantees that remainder meets the tier's minimum.
+    // The body absorbs whatever the fixed rows leave. The floor guarantees the remainder is at
+    // least three rows: the log costs six and appears only from 38 rows.
     let body_height = area
         .height
         .saturating_sub(HEADER_HEIGHT + FOOTER_HEIGHT + log_height);
@@ -150,46 +137,39 @@ pub fn resolve(area: Rect) -> Panes {
         ..area
     };
 
-    let (roster, view, inspector) = match tier {
-        Tier::A | Tier::B => {
-            let view_width = body.width.saturating_sub(ROSTER_WIDTH + INSPECTOR_WIDTH);
-            (
-                Some(Rect {
-                    width: ROSTER_WIDTH,
-                    ..body
-                }),
-                Rect {
-                    x: body.x + ROSTER_WIDTH,
-                    width: view_width,
-                    ..body
-                },
-                Some(Rect {
-                    x: body.x + ROSTER_WIDTH + view_width,
-                    width: INSPECTOR_WIDTH,
-                    ..body
-                }),
-            )
-        }
-        Tier::C => {
-            let view_width = body.width.saturating_sub(ROSTER_WIDTH);
-            (
-                Some(Rect {
-                    width: ROSTER_WIDTH,
-                    ..body
-                }),
-                Rect {
-                    x: body.x + ROSTER_WIDTH,
-                    width: view_width,
-                    ..body
-                },
-                None,
-            )
-        }
-        Tier::D => (None, body, None),
+    // Widths first, so the columns are seen to tile the body exactly. A pane the width excludes
+    // costs nothing, which is why the view's width is the subtraction of both.
+    let roster_width = if area.width >= ROSTER_MIN_WIDTH {
+        ROSTER_WIDTH
+    } else {
+        0
     };
+    let inspector_width = if area.width >= INSPECTOR_MIN_WIDTH {
+        INSPECTOR_WIDTH
+    } else {
+        0
+    };
+    // The thresholds themselves keep this positive: the roster's 47 columns arrive at 100, and
+    // the inspector's 44 more arrive at 140, so the view keeps at least 49 columns wherever both
+    // are present and the whole width wherever neither is.
+    let view_width = body.width.saturating_sub(roster_width + inspector_width);
+
+    let roster = (roster_width > 0).then_some(Rect {
+        width: roster_width,
+        ..body
+    });
+    let view = Rect {
+        x: body.x + roster_width,
+        width: view_width,
+        ..body
+    };
+    let inspector = (inspector_width > 0).then_some(Rect {
+        x: view.x + view_width,
+        width: inspector_width,
+        ..body
+    });
 
     Panes {
-        tier,
         header,
         roster,
         view,

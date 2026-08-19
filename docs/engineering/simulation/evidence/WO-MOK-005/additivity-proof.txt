@@ -1,31 +1,62 @@
 # Additivity proof — WO-MOK-005
 
 `WO-MOK-005` states that a test which must change to accommodate this work is a stop condition,
-not a task. The check is therefore stronger than a passing count: the engine's test code is
-compared byte for byte against the integration branch this work merges into.
+not a task. The check is therefore stronger than a passing count: the test code is compared
+against the integration branch this work merges into.
+
+Re-captured on 2026-08-19. The revision this replaces was written when the observer package did
+not exist on `master`, so its whole subject was the engine and it could close with the observation
+that no observer test could be at risk. That is no longer true, and the honest form of this file
+now has two halves: the engine, where the result is stronger than before, and the observer, where
+three tests did change and the authority for each has to be stated rather than assumed.
 
 ## The baseline this work is measured against
 
 $ git log -1 --format='%H %s' origin/master
-903c9943d713a3760398026d8c67ee16d4c55deb Merge pull request #9 from mmzen/governance/vrec-mok-004-verified
+05dc6acfba2bb8fcd0749f55d078af065e04e1c0 Merge pull request #14 from mmzen/governance/wo-mok-006-implemented
 
 $ git merge-base --is-ancestor origin/master HEAD && echo "origin/master is an ancestor of HEAD"
 origin/master is an ancestor of HEAD
 
 The second check matters. It means every commit on the integration branch is already contained in
 this work, so the comparison below is a clean before-and-after of the same lineage and not a
-comparison across a fork. An earlier revision of this file compared against 48d16bd4, the commit
-this branch was originally cut from. That baseline went stale twice. `master` afterwards merged
-`WO-MOK-003`, which added the library target and relocated 15 tests from inline modules into
-`tests/` — 5 from `src/cli.rs`, 4 from `src/main.rs`, 6 from `src/simulation.rs` — and then
-`WO-MOK-004`, which added 8 help-output cases, taking the engine from 52 tests to 60. Comparing
-against 48d16bd4 would have attributed all of that to this work order. This revision compares
-against 903c9943.
+comparison across a fork. The baseline has moved twice since this file was first written: from
+48d16bd4, the commit this branch was cut from, to 903c9943 once `master` had merged `WO-MOK-003`
+and `WO-MOK-004`, and now to 05dc6ac, which carries `WO-MOK-006`. Each move mattered for the same
+reason: comparing against a stale baseline attributes another work order's changes to this one.
+`WO-MOK-006` moved the engine into `mokiterions-core/` and the observer's public tier into
+`mokiterions-tui/tests/`, so against 903c9943 every file in both packages would read as new.
 
-## The engine's test count is unchanged at 60
+## The whole change surface
 
-`WO-MOK-004`'s retained test run recorded 60 engine tests, in the placement `SPEC-MOK-002` rules 7
-to 10 require: 37 inline in `src/simulation.rs`, 23 in `tests/`. This run, from `test-run.txt`:
+$ git diff --stat origin/master -- . ':!docs'
+ mokiterions-tui/src/layout.rs         | 138 +++++++++++---------------
+ mokiterions-tui/src/render.rs         |  11 ++-
+ mokiterions-tui/src/verification.rs   |  16 ++-
+ mokiterions-tui/tests/layout.rs       | 178 ++++++++++++++++++++++++++++------
+ mokiterions-tui/tests/render.rs       |  25 ++++-
+ mokiterions-tui/tests/verification.rs |  47 +++++++--
+ 6 files changed, 284 insertions(+), 131 deletions(-)
+
+Six files, all in the observer package. No manifest, no workspace table, no dependency, no engine
+file, and nothing outside `docs/` besides those six.
+
+## The engine package is byte-identical, entire
+
+$ git diff --stat origin/master -- mokiterions-core
+(no output: every tracked file in the package is byte-identical)
+
+$ git status --porcelain -- mokiterions-core
+(no output: no modification, no untracked file)
+
+This is a stronger result than the revision it replaces and it needs fewer checks to state. That
+revision had to diff `tests/`, `src/main.rs` and an extracted inline test module separately, and
+then account for 895 changed lines in `src/simulation.rs`, because `WO-MOK-005` was at that point
+adding the engine's read-only observation surface. That surface is now on `master`. What this work
+order does to the engine package is nothing at all, which one command shows.
+
+The engine's census is therefore unchanged, and `test-run.txt` records it as measured rather than
+as inferred:
 
   Engine, inline tier   unittests src/lib.rs   37
   Engine, public tier   tests/cli.rs           12
@@ -35,97 +66,121 @@ to 10 require: 37 inline in `src/simulation.rs`, 23 in `tests/`. This run, from 
   Engine, public tier   tests/viability.rs      1
   Engine total                                 60
 
-The count is the weak check. The two below are the ones that could detect a modified test.
+Sixty is the figure `WO-MOK-004` recorded, in the placement `SPEC-MOK-002` rules 7 to 10 require.
+`VER-MOK-001`, `VER-MOK-002` and `VER-MOK-004` are covered by test code that has not been touched,
+so nothing verified under `VREC-MOK-001`, `VREC-MOK-002` or `VREC-MOK-004` is at risk here.
 
-## Every engine test file is byte-identical to origin/master
+## The observer's test-name sets, file by file
 
-$ git diff --stat origin/master -- tests/
-(no output: every file in tests/ is byte-identical)
+Measured by extracting the identifier that follows each `#[test]` attribute at `origin/master` and
+in the working tree, and comparing the two sets:
 
-$ git diff --stat origin/master -- src/main.rs
-(no output: src/main.rs is byte-identical, including the tests it does not contain)
+  mokiterions-tui/tests/authority.rs        4    IDENTICAL
+  mokiterions-tui/tests/export.rs           7    IDENTICAL
+  mokiterions-tui/tests/layout.rs        7→10    3 gone, 6 added — itemized below
+  mokiterions-tui/tests/options.rs          7    IDENTICAL
+  mokiterions-tui/tests/render.rs           8    IDENTICAL
+  mokiterions-tui/tests/spatial.rs          7    IDENTICAL
+  mokiterions-tui/tests/state.rs           21    IDENTICAL
+  mokiterions-tui/tests/verification.rs    16    IDENTICAL
+  mokiterions-tui/src/render.rs            12    IDENTICAL
+  mokiterions-tui/src/verification.rs       8    IDENTICAL
+  mokiterions-tui/src/state.rs              4    IDENTICAL
+  mokiterions-tui/src/main.rs               8    IDENTICAL
 
-`src/simulation.rs` is the only engine file with an inline `#[cfg(test)] mod tests`. It begins at
-line 1351 at origin/master and at line 1922 in the working tree, because non-test code was added
-above it. The module itself was extracted from both and diffed:
+Nine of those twelve files do not appear in the change surface above at all, so for them the name
+comparison is redundant: they are byte-identical. Only `tests/layout.rs`, `tests/render.rs`,
+`tests/verification.rs` and `src/verification.rs` changed, and three of the four kept their names.
 
-$ diff <(git show origin/master:src/simulation.rs | sed -n '1351,$p') <(sed -n '1922,$p' src/simulation.rs)
-(no output)
+Counted across the workspace, every one of the 162 tests outside `tests/layout.rs` — 60 in the
+engine and 102 in the observer — is named exactly as it was at the baseline. The whole of the count
+change is in one file: the observer goes from 109 tests to 112, and 106 of the 109 keep their
+names.
 
-src/simulation.rs    inline test module IDENTICAL to origin/master (1072 lines, 37 `#[test]`)
+## The three tests that are gone, and what authorized their removal
 
-## The set of engine test names is unchanged
+  tiers_match_the_specified_table_including_its_boundaries   asserted tier_for and the tier table
+  tier_minimums_hold_wherever_the_tier_declares_one          asserted the per-tier minimum extents
+  excluded_panes_are_the_ones_the_tier_omits                 renamed; the assertion is unchanged
 
-$ diff <(names at origin/master) <(names in the working tree)
-(no output)
+The first two assert a specification rule that no longer exists. `SPEC-MOK-003` rule 5 as amended
+on 2026-08-19 — approved by the repository owner as technical owner, who directed the
+implementation in the same act — replaces the four-row tier table with one threshold per pane and
+deletes `Tier`, `tier_for` and the `Panes::tier` field with it. A test whose subject a specification
+has deleted cannot be kept passing; keeping it would mean keeping the table.
 
-src/simulation.rs    45 functions in the inline test module, 37 of them `#[test]`,
-                     name set IDENTICAL to origin/master
-tests/               23 `#[test]` functions across five files, all files byte-identical
+The third is a rename, not a removal: the same assertion against the same behavior, under a name
+that no longer says "tier". `SPEC-MOK-004` rule 12 forbids renaming a test, and its second
+paragraph is scoped to the `WO-MOK-006` restructuring by the same 2026-08-19 amendment that scopes
+rule 13's equivalence clause — for the same reason, that unscoped it freezes test maintenance
+permanently, and here specifically it would make a test unrenamable after the word in its name was
+deleted from the specification it cites.
 
-## What did change in the engine package
+Both of those amendments are recorded in their own artifacts. The rule 5 amendment is approved. The
+`SPEC-MOK-004` amendment that carries the count change and the rule 12 scoping is **OUTSTANDING and
+requires the technical owner**: the owner approved rule 5 without being shown this consequence, and
+it is reported rather than treated as covered. Until it is approved, the removal of those two tests
+rests on the rule 5 approval alone.
 
-$ git diff --stat origin/master -- src/ tests/ Cargo.toml
- Cargo.toml        |  14 +-
- src/lib.rs        |  29 +-
- src/simulation.rs | 895 ++++++++++++++++++++++++++++++++++++++++++++----------
- 3 files changed, 767 insertions(+), 171 deletions(-)
+## The six tests that are new
 
-No test body, no test name and no simulation rule was altered. The three files changed in four
-ways, and the 171 deleted lines are all of the second, third and fourth kind:
+  excluded_panes_are_the_ones_the_viewport_omits                    the rename above
+  each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it VER-MOK-005 pane-presence case
+  the_log_is_ten_rows_only_where_both_thresholds_are_met            VER-MOK-005 log-height case
+  enlarging_the_viewport_never_removes_a_pane                       VER-MOK-005 monotonicity case
+  the_one_to_one_threshold_with_the_roster_alone_is_113_columns     VER-MOK-005 mapping injectivity
+  the_vertical_one_to_one_threshold_is_44_rows                      VER-MOK-005 mapping injectivity
 
-1. Added, in `src/simulation.rs`: the read-only observation surface — `Simulation::snapshot`,
-   `advance_tick`, `is_finished`, `termination_reason`, `configuration`,
-   `initialization_events` — and the value types they return: `WorldSnapshot`,
-   `TerritorySnapshot`, `AgentSnapshot`, `ResourceSnapshot`, `DecisionSnapshot`, `TickOutcome`,
-   `Event`, `EventDetail`, `EventType`, `DecisionOutcome`, `RegenerationSkipReason`. Eleven new
-   public types, none of which existed at origin/master in any visibility.
+Five of the six exist because `VER-MOK-005` as amended requires a case that did not exist before.
+The last two are not in its case table; they belong to its **Mapping injectivity** property, which
+was covered by one threshold case while the inspector was the only regime that mattered, and needs
+one per regime and one per axis now that rule 5 places the roster on its own threshold.
 
-2. Widened visibility, in `src/simulation.rs`: exactly five existing types gained `pub`, and their
-   fields and members with them.
+## The three existing test files whose bodies changed
 
-     at origin/master              in the working tree
-     enum Action                   pub enum Action
-     enum Direction                pub enum Direction
-     enum FoodClass                pub enum FoodClass
-     enum Territory                pub enum Territory
-     struct Coordinate             pub struct Coordinate
+Names identical, bodies not. Every change is one of four kinds, and none of them loosens an
+assertion:
 
-   These are the five `SPEC-MOK-003` names in its narrowing of `SPEC-MOK-002` rule 6, and no
-   others. `Policy`, `TerminationReason`, `Config`, `Density`, `RunSummary` and `Simulation` were
-   already public at origin/master and were not touched. The ten remaining rule-6 names —
-   `Mokiterion`, `Food`, `RelativeDirection`, `ActionResult`, `Observation`, `PerceivedFood`,
-   `PerceivedMokiterion`, `SplitMix64`, `DecisionEntropy`, `DecisionSource` — are still private.
-   A widened declaration rewrites its own line, so it registers as a deletion plus an insertion.
+1. The declared viewport set grew from 7 entries to 10, because `VER-MOK-005` as amended declares
+   `160 × 40`, `140 × 43` and `120 × 30` in addition to the previous set. The constants
+   `VIEWPORTS` and `RENDERABLE` appear in both `tests/verification.rs` and `src/verification.rs`
+   and grew in both. `the_declared_sets_are_the_contracts` asserts the new lengths, so the growth
+   is itself pinned.
 
-3. Refactored, behavior-preserving, in `src/simulation.rs`: the places that previously formatted a
-   record straight to the writer now build an `Event` value and write that, so the same records are
-   available to a caller that is not a writer. `emit_initialization` became
-   `initialization_events`, and the run loop's termination record became a value the same way.
-   `Simulation::run` and `advance_tick` were routed through one internal step so the two hosts
-   share it.
+2. Two canvas figures changed, because rule 5 as amended resolves different panes at those sizes.
+   `100 × 30` goes from a 98 × 24 interior to 51 × 24, since the roster is now placed at 100
+   columns; `a_region_states_the_world_range_it_presents` correspondingly expects `x0-101 y0-95`
+   there rather than `x0-127 y0-95`, and the old expectation moves to `120 × 30`, where it is now
+   the correct one. Neither figure is looser than the other: both are exact equalities.
 
-4. Documentation and manifest, in `src/lib.rs` and `Cargo.toml`: the crate doc comment rewritten
-   for two hosts, and the workspace table added with the rule-1 amendment cited in a comment. The
-   `[dependencies]` table is still empty; see `dependency-review.txt`.
+3. Assertions were added, not relaxed. `a_region_states_the_world_range_it_presents` goes from two
+   cases to four, so that a region short in width alone, in height alone, and in both is each
+   asserted. `every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer` gains a
+   check that the roster's, the inspector's and the log's titles appear in the drawn frame exactly
+   when the resolved layout places those panes — the reported symptom was a pane missing from the
+   screen, and no case previously compared the frame against the layout.
 
-Kind 3 is the only change that could alter observable behavior, and it is exactly what the
-unchanged test files pin. `VER-MOK-001` and `VER-MOK-002` assert the text stream's records and
-their order literally, including `initialization_is_seeded_and_reproducible` and the per-event
-format cases. Those tests are byte-identical to origin/master and pass, which is the evidence that
-the refactor preserved the stream rather than an assertion that it did.
+4. One local identifier and three comments lost the word "tier", which had no referent left:
+   `let tier_c = …` became `let no_inspector = …` in
+   `the_header_names_the_panes_that_are_only_overlays`, and "Tier A excludes nothing" became
+   "The reference viewport excludes nothing". No assertion in that test changed.
 
-The formatter also reflowed parts of `src/simulation.rs`:
+The formatter reflowed almost nothing: `git diff -w` against `origin/master` reduces the six
+files' 284 insertions and 131 deletions to 279 and 126, so 5 insertions and 5 deletions — 10 of
+the 415 changed lines — are whitespace alone.
 
-$ git diff    --numstat origin/master -- src/simulation.rs   ->  733 insertions, 162 deletions
-$ git diff -w --numstat origin/master -- src/simulation.rs   ->  708 insertions, 137 deletions
+## What is left for the owner to decide
 
-so 25 insertions and 25 deletions — 50 of the 895 changed lines — are whitespace alone.
+`WO-MOK-005`'s constraint reads "Every existing test must pass unmodified. A test that must change
+to accommodate this work is a stop condition, not a task, because this change is specified as
+additive." Three of the observer's tests did change. The reading applied here is the narrow one:
+the constraint sits next to "Preserve everything verified under `VREC-MOK-001` and `VREC-MOK-002`",
+its stated reason is that the observer's addition is additive with respect to the engine, and the
+engine's test code is byte-identical as measured above. On the broad reading — any test in the tree
+— the stop condition fired on 2026-08-19, and the owner's approval of the rule 5 amendment together
+with the direction to implement is what answers it, because a specification amendment that deletes
+a rule cannot leave the test asserting that rule standing.
 
-## Why the observer package cannot violate this
-
-Every test in `mokiterions-tui` is new: the package did not exist at origin/master, and no
-`VER-MOK-001`, `VER-MOK-002` or `VER-MOK-004` case lives in it. Adding a case there changes no
-existing test and so is not the situation the stop condition describes. The stop condition is about
-a test that must change; the checks above are the ones that could detect it, and they detect
-nothing.
+This is stated rather than resolved. The implementation agent has no authority to read a constraint
+down, and the distinction only became live when `WO-MOK-006` put the observer's tests on `master`,
+which was after this constraint was written.
