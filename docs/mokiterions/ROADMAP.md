@@ -36,8 +36,18 @@ Added and verified under `VREC-MOK-002` (commit `68163ac`), completing Phase 1:
 - A deterministic reference decision source (eat → sustain → approach → search), selectable by `--policy`
 - A measured population viability floor of eight of twelve survivors at 1,000 ticks on five declared seeds
 
-Not yet implemented: `fear`, per-agent individuality, social and combat behavior, LLM-backed decisions, any
-interactive or structured observability.
+Added under `WO-MOK-007` (implemented, **not verified** — see Phase 2's status below):
+
+- One behavioral trait per Mokiterion, `waste_tolerance` in `0..=40`, derived from the seed and the identifier by a
+  generator of its own and fixed for the run
+- `fear` as the fourth dynamic attribute, `0..=100`, rising `+10` on any perceived living Mokiterion and falling `-5`
+  otherwise — computed, bounded, reported, and read by nothing
+- A third decision source, `--policy individual`, which is rule 5 with a trait-scaled waste allowance and is
+  proposal-identical to rule 5 at tolerance zero
+- A fourth roster gauge in the observer
+
+Not yet implemented: per-agent entropy substreams, any second trait, any consumer for `fear`, social and combat
+behavior, LLM-backed decisions, structured observability.
 
 Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
 restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
@@ -292,6 +302,45 @@ moves the density curve and invalidates `REQ-MOK-014`'s floor of eight. Expect t
 re-approval on a fresh measurement rather than an argument. A long-horizon stability requirement should be stated
 at the same time, because the current floor is a claim about tick 1,000 and deliberately not about a steady state.
 
+### What was actually built, and what was cut
+
+The packet approved on 2026-08-19 is `INT-MOK-006`, `CAP-MOK-006`, `REQ-MOK-031` through `REQ-MOK-034`,
+`VER-MOK-007`, `WO-MOK-007`, and in-place amendments of `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003`. It is
+deliberately narrower than the *In scope* list above, and the reductions are the product owner's decisions of
+2026-08-19 rather than implementation shortfalls:
+
+| *In scope* above | What was approved and built | Why |
+|---|---|---|
+| A trait **vector** — "for example caution, aggression, sociability" | **One** trait, `waste_tolerance` | A trait no rule reads is an inert field. Exactly one rule reads exactly one trait, so the individuality claim is measurable rather than asserted. A second trait is a later governed change and needs a rule to read it |
+| **Per-agent entropy substreams** | **Not implemented.** The shared stream stays shared; the trait derivation uses a separate generator that neither reads nor advances it | Substreams would have moved every draw in every pre-existing run, so no run predating this phase would reproduce. Divergence is carried by the trait instead, which is what makes the whole change additive. Substreams remain available as a later change, and would cost the additivity property |
+| `fear` with "defined rise and decay dynamics" | Delivered, and **inert** — no rule and no decision source reads it | `SPEC-MOK-003` rule 4.5 refused an attribute the engine cannot support; this is the opposite case, an attribute the engine computes and nothing consumes. Recorded as a residual rather than presented as complete |
+| **Carried in: high-class resource accumulation** | **Not addressed.** Still carried | Out of `WO-MOK-007`'s scope. The note above still stands unchanged: fixing it invalidates `REQ-MOK-014`'s floor and needs a fresh measurement, and `REQ-MOK-034` has now added a second floor of the same shape to re-approve alongside it. The measured share of standing high-class supply at tick 1,000 did not improve |
+
+Two further cuts were accepted at the specification level, and both are the reason the observer changed as little as
+it did: **no per-Mokiterion trait display** in the observer, and **no trait in the event vocabulary** beyond the one
+`agent_initialized` record. Displaying a per-agent trait would have required a fifth roster field at a bar width
+already narrowed to 2, and adding trait fields to further event types would have widened the record format for
+values that never change.
+
+**Status.** Implemented under `WO-MOK-007`, which is left at `in_progress`. **Not verified: no verification record
+exists for this phase**, and three things stand in the way of one:
+
+1. Five of `VER-MOK-007`'s seven manual assessments are outstanding and a sixth is unsigned.
+2. Two amendments written during implementation are unratified — a `SPEC-MOK-001` *Help output* correction and three
+   `SPEC-MOK-003` provisions outside rule 4.
+3. `WO-MOK-007`'s own gate required `VREC-MOK-005` to be `verified` with its six amendments approved and its seven
+   assessments recorded. **It was none of those.** The product, technical and assurance owner overrode the gate on
+   2026-08-19 and authorized implementation over it, on the recorded mitigation that the two layers stay separable
+   by inspection. Phase 1.5's obligations are therefore still open and are now a prerequisite of *two* verification
+   records rather than one.
+
+Everything measured, and everything it does not establish, is in
+`docs/engineering/simulation/evidence/WO-MOK-007/` — start with its `README.md`, then `completion-summary.md`.
+The survivor figures there are downstream of one mid-implementation owner decision: `WO-MOK-007` stop condition 6
+fired when `REQ-MOK-034`'s floor was missed on three of five declared seeds at the `0..=100` trait range first
+specified, and the technical owner chose to narrow the range to `0..=40` rather than amend the floor
+(`escalation.md`).
+
 ---
 
 ## Phase 3 — Social encounter and conflict
@@ -415,7 +464,7 @@ means to the same risk reduction.
 | 0 | `ARCH-MOK-001` schema migration; managed harness files; evidence-naming convention |
 | 1 | `SPEC-MOK-001` amended in place; new intent and capability added; no existing requirement changed |
 | 1.5 | `ARCH-MOK-001` amended in place to scope its one-crate, empty-dependency and UI-framework rules to the engine package; new intent, capability, nine requirements, specification, architecture and ADR added; `ADR-MOK-001` not superseded; `SPEC-MOK-001` unchanged |
-| 2 | New requirements only; observation contract extended |
+| 2 | New intent, capability and four requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `ARCH-MOK-001` confirmed unchanged; no existing requirement changed; observation contract extended. Broader than this row anticipated: the trait had to be stated in `SPEC-MOK-001`, the new tests' tiers in `SPEC-MOK-002`, and the fourth gauge in `SPEC-MOK-003` |
 | 3 | `REQ-MOK-005` extended or superseded |
 | 4 | `REQ-MOK-010` preserved, extended additively |
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
@@ -430,6 +479,14 @@ Two decisions are cheaper to settle now than at the phase in which they bind:
    `VER-MOK-002`. All twelve surviving on every declared seed is an adverse observation, not a success.
 2. **Determinism strategy for Phase 5.** Record/replay is recommended. This propagates into Phase 4's output
    format, so deciding it before Phase 4 avoids rework.
+
+A third was settled during Phase 2 rather than before it, and is recorded here because the phase order did not
+anticipate it:
+
+3. **Trait range for Phase 2.** *Decided 2026-08-19:* `0..=40` rather than the `0..=100` first specified, chosen on a
+   fifty-seed distribution rather than on the five declared seeds, because the declared-five result is not monotonic
+   in the bound. The upper half of the original range was measurably dominated, not a second strategy. Recorded in
+   `SPEC-MOK-001`'s *Behavioral trait* subsection and in `WO-MOK-007`'s evidence as `escalation.md`.
 
 ## Maintenance
 

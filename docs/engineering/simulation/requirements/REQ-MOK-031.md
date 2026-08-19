@@ -2,7 +2,7 @@
 id = "REQ-MOK-031"
 type = "requirement"
 title = "Derive a per-Mokiterion behavioral trait from the seed and the identifier"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

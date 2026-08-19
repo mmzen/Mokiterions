@@ -2,7 +2,7 @@
 id = "INT-MOK-006"
 type = "intent"
 title = "Make Mokiterions individually distinguishable"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

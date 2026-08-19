@@ -2,7 +2,7 @@
 id = "REQ-MOK-032"
 type = "requirement"
 title = "Maintain fear as a fourth bounded dynamic attribute driven by perceived company"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

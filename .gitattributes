@@ -1,0 +1,13 @@
+# Retained verification evidence is hashed. `docs/engineering/simulation/evidence/` holds captured
+# simulation output together with the SHA-256 digest of each captured file, and a reviewer is expected
+# to reproduce those digests by hashing the retained files. End-of-line conversion on checkout breaks
+# that: with `core.autocrlf = true` a Windows clone rewrites every retained stream to CRLF, and every
+# recorded digest then fails to match a file whose content is in fact correct.
+#
+# This was found while committing `WO-MOK-007`: `WO-MOK-006`'s retained
+# `baseline/engine/full/short_seed42_baseline_trace_on.txt` hashes to `08eadb21...` as checked out on
+# Windows, while its own manifest records `3424133a...`, which is the same bytes with LF endings.
+#
+# `-text` disables conversion for these paths in both directions, so the retained files are written to
+# the working tree exactly as stored. This changes no recorded value and no committed blob.
+docs/engineering/simulation/evidence/** -text

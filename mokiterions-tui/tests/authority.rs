@@ -5,6 +5,12 @@
 //! already public, so the move changes the path and nothing else: the assertions are verbatim and
 //! no item was widened to bring them out. `SPEC-MOK-004` rule 12 is the obligation and the
 //! per-test comparison under `WO-MOK-006` is the evidence.
+//!
+//! `WO-MOK-007` added a third decision source, and with it a third arm to the mapping these tests
+//! cover. Two cases below gained assertions for it: the exhaustiveness sweep now runs under each
+//! of the three policies, and the source-dependent mapping names all three. Nothing was removed
+//! or weakened — an untested arm in an exhaustiveness check is the one thing this file exists to
+//! prevent.
 
 use mokiterions::simulation::{Event, EventDetail};
 use mokiterions::simulation::{EventType, Policy};
@@ -12,15 +18,17 @@ use mokiterions_tui::authority::*;
 
 #[test]
 fn every_event_type_the_observer_can_present_has_an_entry() {
-    for event_type in EventType::ALL {
-        let resolved = for_type(event_type, Some(Policy::Reference));
-        assert!(resolved.is_some(), "{event_type} has no authority");
-        assert!(
-            resolved.unwrap().starts_with("REQ-MOK-"),
-            "{event_type} maps to {resolved:?}"
-        );
+    for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+        for event_type in EventType::ALL {
+            let resolved = for_type(event_type, Some(policy));
+            assert!(resolved.is_some(), "{event_type} has no authority");
+            assert!(
+                resolved.unwrap().starts_with("REQ-MOK-"),
+                "{event_type} maps to {resolved:?}"
+            );
+        }
+        assert_eq!(table(policy).len(), EventType::ALL.len());
     }
-    assert_eq!(table(Policy::Reference).len(), EventType::ALL.len());
 }
 
 #[test]
@@ -55,6 +63,7 @@ fn the_decision_source_maps_by_the_source_the_record_names() {
 
     assert_eq!(for_event(&source("baseline")), Some("REQ-MOK-008"));
     assert_eq!(for_event(&source("reference")), Some("REQ-MOK-015"));
+    assert_eq!(for_event(&source("individual")), Some("REQ-MOK-033"));
 
     // A source the observer does not know is reported as missing, never guessed.
     assert_eq!(for_event(&source("something-else")), None);

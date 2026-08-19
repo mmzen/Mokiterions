@@ -2,7 +2,7 @@
 id = "CAP-MOK-006"
 type = "capability"
 title = "Per-Mokiterion individuality: a derived trait, a fear attribute, and a trait-aware decision source"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

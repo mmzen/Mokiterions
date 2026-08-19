@@ -5,7 +5,7 @@ title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-19"
 
 [relations]
 specifies = [
@@ -18,6 +18,7 @@ specifies = [
   "REQ-MOK-025",
   "REQ-MOK-026",
   "REQ-MOK-027",
+  "REQ-MOK-032",
 ]
 +++
 
@@ -46,6 +47,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-18 | Corrected the statement of required `SPEC-MOK-002` amendments in *Compatibility and migration*, which the merge with `master` exposed as understated. Rule 3 is added as a fourth required amendment: it freezes `src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code. Rule 6's required narrowing is extended to the "by … return value" path, since every accessor returns an owned copy. The list of names that stay private is corrected from nine to **ten** — `DecisionEntropy` was omitted. No rule of this specification changed, and no obligation on the observer changed. | Corrected by the implementation agent as a statement of fact about another artifact; the four amendments it states remain the technical owner's act and are outstanding. |
 | 2026-08-18 | *Data and interface contracts* corrected on a claim about the engine's surface that does not hold as written, and which `WO-MOK-005` requires be fixed by amending the specification rather than by relaxing the assertion. Clause 2 said `advance_tick` was the only `&mut self` method on the surface that changes state; `Simulation::run`, the pre-existing `REQ-MOK-010` whole-run entry point, is a second. The clause now states the two, why `run` is there, why it cannot be narrowed away without relocating the engine's sources or duplicating the run loop, and the checks that can actually be met — including that the observer reaches neither `run` nor anything leading to it. The method listing is corrected to the real signatures and completed with `termination_reason` and `initialization_events`, with a note that it is what the observer calls and not the whole public interface. No obligation on the observer changed, and the non-perturbation property is unaffected. | **OUTSTANDING.** Requires the technical owner, as a correction to an approved specification. `boundary-and-security-review.md` under `WO-MOK-005` is the measurement that found it. |
 | 2026-08-18 | Four provisions amended so that `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030` can be conformed to. **Component layout**: the tree restated to one directory per package, matching `SPEC-MOK-004` rule 1, and clause 2 given the concrete path-dependency form. **Clause 3**: "The engine's sources are not relocated" replaced by the reason it existed for — the `REQ-MOK-010` text stream does not move — which a directory move preserves and `VER-MOK-006` measures. **Data and interface contracts clause 2**: its reasoning no longer appeals to the component layout forbidding relocation, since it no longer does; what would narrow `run` away is a target split, not a directory move, and the `grep` check is re-based on `mokiterions-core/src/simulation.rs`. **Explicitly unspecified decisions**: the grant of "test organization" withdrawn to `REQ-MOK-029` and `SPEC-MOK-004` rules 8 to 10, leaving fixtures and helpers with the implementation; and "the package layout", withheld but previously fixed nowhere, now pointed at `SPEC-MOK-004` rules 1 to 4, together with the observer's target shape and test-tier placement. No rule about the observer's behavior, presentation, key bindings, export, snapshot contract or non-perturbation changes, and no figure changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005`, which binds this specification to `WO-MOK-005`'s commit, is not edited: what it verified was correct at its commit, and the two rows above it remain **OUTSTANDING** and untouched. |
+| 2026-08-19 | Rule 4 amended in three provisions, under `REQ-MOK-032`, so the roster presents a computed `fear`. The two-line mockup shows four gauges. Rule 4's prose reads four attributes and four numeric values, in the two-line form and in the collapsed one-line form below 47 columns. **Item 5, the reservation, is replaced by the presentation of a computed value, and item 4 now governs the zero case**: `fear 0` renders as `0` with an empty bar, distinguishable from an absent value, and it is a computed zero rather than an inert one — which is the condition item 5 was waiting for. The reservation's own reasoning is retained here rather than deleted, because it is what made the empty slot correct for a phase: the row reserved trailing space for a fourth bar so that Phase 2's `fear` could occupy it, rendering empty with no label, no dash and no zero, because "an inert `fear 0` would be a claim the engine cannot support". The measured consequence is stated in the amended item: the width rule becomes `bar_width(interior) = min(20, (interior - 35) / 4)`, since a fourth group of label, space, bar, space and a three-column value raises the row overhead from 27 to 35 and the divisor from 3 to 4, so at the reference roster's 45-column interior the bars narrow from 6 cells to 2 while the three-column numeric values are unaffected. This closes `VREC-MOK-005` finding 3, which recorded that the reserved slot was zero-wide and therefore absent rather than empty. | Approved 2026-08-19 by the repository owner acting as technical owner, who accepted the narrowing on that date rather than widening the roster pane in rule 5, which would have taken fourteen columns from the map pane, or raising rule 4's two-line threshold, which would have cost bars entirely to operators between 47 and 60 columns. The implementation agent wrote the text and did not decide the substance. **The 2026-08-18 row marked OUTSTANDING above is untouched** and still belongs to `WO-MOK-005`; the finding-3 resolution it recorded is superseded by this row, but its own amendment is not, and remains awaiting the owner's separate act. **Three further provisions were found during implementation and are amended here, beyond the three `WO-MOK-007` named.** Each is forced by the change rather than chosen with it. *Data and interface contracts*: the `AgentSnapshot` field list gains `fear`, which `SPEC-MOK-002` rule 5 admits to the interface, because a field list that omitted it would contradict that rule. Rule 10 item 7 loses `fear` and traits from its list of values the engine does not compute, because the engine now computes both; the item states why each is still absent from the inspector, and rule 10's presented-value list is **not** amended, so the inspector is unchanged. Rule 11's `decision_source_selected` row gains `REQ-MOK-033` for `individual`, because that mapping is exhaustive by construction — the observer resolves it in a `match` over the policy — so a third source without a row is a gap the compiler reaches before an operator does. |
 
 ## Actors and external systems
 
@@ -226,13 +228,13 @@ Each entry occupies two lines at widths of 47 columns or more:
 
 ```text
 M05  A  81:14         eat F0058
-     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72
+     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20
 ```
 
 Line one carries the identifier, current territory, position, and the action the engine applied on the most recently
-completed tick. Line two carries health, satiety and energy, each as a twenty-cell proportional bar and a numeric
-value. Below 47 columns each entry collapses to one line carrying identifier, territory and the three numeric values
-without bars.
+completed tick. Line two carries health, satiety, energy and fear, each as a proportional bar of at most twenty cells
+and a numeric value. Below 47 columns each entry collapses to one line carrying identifier, territory and the four
+numeric values without bars.
 
 1. Twelve living entries in the two-line form require 24 lines plus the pane border, which the reference viewport
    provides; the no-scroll obligation of `REQ-MOK-020` is an obligation at the reference size and rule 5 states what
@@ -242,9 +244,25 @@ without bars.
    far, so a disappearance is corroborated by a total.
 4. A value of `0` renders as `0` with an empty bar, which is distinguishable from an absent value because absent
    values render as `—`.
-5. Attributes the engine does not compute are absent. The line-two bar row reserves trailing space for a fourth bar
-   so that Phase 2's `fear` occupies it without re-specifying the pane, and that space renders empty with no label,
-   no dash and no zero. An inert `fear 0` would be a claim the engine cannot support.
+5. Attributes the engine does not compute are absent. The line-two bar row carries four gauges, the fourth being
+   `fear`, which `SPEC-MOK-001` rule 12 computes and reports. Item 4 governs its zero case like any other: `fear 0`
+   renders as `0` with an empty bar, and it is a computed zero rather than an inert one.
+
+   This item previously reserved the fourth slot instead of filling it, requiring it to render "empty with no label,
+   no dash and no zero" because "an inert `fear 0` would be a claim the engine cannot support". That reasoning is
+   retained here rather than deleted: it is what made an empty slot correct while the engine computed three
+   attributes, and it is the condition this amendment satisfies rather than waives.
+
+   **The bar width follows from the fourth gauge, and the consequence is stated rather than left to be discovered.**
+   The row is five leading columns, then four groups of label, space, bar, space and a three-column value, separated
+   by two columns: `5 + 4 * 6 + 3 * 2 = 35` columns of overhead and four bars. So
+   `bar_width(interior) = min(20, (interior - 35) / 4)`, replacing the three-gauge rule
+   `min(20, (interior - 27) / 3)`. At the reference roster's 45-column interior the bars therefore narrow from
+   `(45 - 27) / 3 = 6` cells to `(45 - 35) / 4 = 2`, while the three-column numeric values are unaffected at every
+   width. The narrowing was accepted rather than avoided: widening the roster pane in rule 5 would have taken
+   fourteen columns from the map pane, and raising this rule's 47-column two-line threshold would have cost bars
+   entirely to operators between 47 and 60 columns. This also closes `VREC-MOK-005` finding 3, which recorded that
+   the reserved slot was zero-wide at the reference roster and therefore absent there rather than empty.
 6. Selecting a roster entry and selecting a Mokiterion are the same operation; the selected entry is highlighted by
    reversed video, not by colour alone.
 
@@ -381,8 +399,18 @@ stated ground on rejection, and the action applied.
 6. When the selected Mokiterion dies, the selection is retained and the pane presents the death, the tick of death,
    and the final attribute values. The next selection control moves to the nearest living Mokiterion in roster
    order.
-7. Fields for values the engine does not compute — fear, traits, name, age, kills, combats, remembered locations,
-   model latency and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+7. Fields for values the engine does not compute — name, age, kills, combats, remembered locations, model latency
+   and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+
+   Amended 2026-08-19: this list named `fear` and traits, and the engine now computes both, so naming them here
+   asserted something untrue of the engine. Each is nonetheless still absent from this pane, for a different reason
+   in each case, and the reasons are stated rather than left as an apparent oversight. `fear` is absent because this
+   rule's presented-value list above is not amended by `WO-MOK-007`, whose observer change surface is the roster's
+   bar row alone, and rule 4 presents `fear` there for every living Mokiterion including the selected one, so no
+   value is unreachable. The trait is absent because `SPEC-MOK-002` rule 5 deliberately keeps `waste_tolerance` off
+   `AgentSnapshot`, so the read-only interface this specification consumes does not carry it; it reaches a host only
+   through the retained event log. Presenting either in this pane is a later decision, and either would need this
+   rule's presented-value list amended first.
 
 ### Rule 11 — Authority mapping
 
@@ -394,7 +422,7 @@ authorizes the behavior the event reports. The `t` control presents it for the h
 | `world_initialized` | `REQ-MOK-001` |
 | `food_initialized` | `REQ-MOK-001` |
 | `agent_initialized` | `REQ-MOK-002` |
-| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference` |
+| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference`, `REQ-MOK-033` when `individual` |
 | `survival_changed` | `REQ-MOK-003` |
 | `agent_died` | `REQ-MOK-003` |
 | `food_consumed` | `REQ-MOK-006` |
@@ -468,7 +496,7 @@ WorldSnapshot {
 }
 
 TerritorySnapshot { id, standing, low, medium, high, capacity, permanently_depleted }
-AgentSnapshot     { id, position, territory, health, satiety, energy, applied_action }
+AgentSnapshot     { id, position, territory, health, satiety, energy, fear, applied_action }
 ResourceSnapshot  { id, position, territory, class }
 DecisionSnapshot  { agent_id, proposed, outcome: Accepted | Rejected(ground), applied }
 TickOutcome       { events: [Event], finished, reason }

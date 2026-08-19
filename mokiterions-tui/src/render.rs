@@ -48,9 +48,11 @@ const HIGH_COLOUR: Color = Color::Green;
 const BOUNDARY_COLOUR: Color = Color::DarkGray;
 
 /// Columns a roster bar row spends on labels, values and separators, so the bars themselves get
-/// `(interior − this) / 3`. Derived from rule 4's form: five leading columns, then three groups
-/// of `label`, space, bar, space and a three-column value, separated by two columns.
-const BAR_ROW_OVERHEAD: usize = 27;
+/// `(interior − this) / 4`. Derived from rule 4's form as amended on 2026-08-19: five leading
+/// columns, then four groups of `label`, space, bar, space and a three-column value, separated
+/// by two columns — `5 + 4 × 6 + 3 × 2`. It was `27` for three groups until `WO-MOK-007` filled
+/// rule 4.5's reserved slot with `fear`.
+const BAR_ROW_OVERHEAD: usize = 35;
 
 /// The bar length rule 4's mockup uses, and the maximum this implementation draws.
 const FULL_BAR: usize = 20;
@@ -474,27 +476,28 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<String>
     let position = agent.position.to_string();
     if !two_line {
         return vec![format!(
-            "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3}",
-            agent.id, agent.health, agent.satiety, agent.energy
+            "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3} f{:>3}",
+            agent.id, agent.health, agent.satiety, agent.energy, agent.fear
         )];
     }
     vec![
         format!("{:<5}{territory:<3}{position:<14}{applied}", agent.id),
-        // Rule 4.5: whatever width remains to the right of the third bar is the reserved slot
-        // for Phase 2's `fear`. It renders as nothing at all — no label, no dash and no zero,
-        // because an inert `fear 0` would be a claim the engine cannot support.
+        // Rule 4 as amended on 2026-08-19: the slot rule 4.5 reserved for `fear` now carries it,
+        // on the same terms as the other three. `WO-MOK-007` made the value an engine attribute,
+        // so the gauge is no longer the unsupportable claim the reservation was there to avoid.
         format!(
-            "     {}  {}  {}",
+            "     {}  {}  {}  {}",
             gauge('h', agent.health, bar),
             gauge('s', agent.satiety, bar),
-            gauge('e', agent.energy, bar)
+            gauge('e', agent.energy, bar),
+            gauge('f', agent.fear, bar)
         ),
     ]
 }
 
-/// The bar length that fits three bars in an interior of this width, capped at rule 4's twenty.
+/// The bar length that fits four bars in an interior of this width, capped at rule 4's twenty.
 fn bar_width(interior_width: u16) -> usize {
-    (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 3).min(FULL_BAR)
+    (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 4).min(FULL_BAR)
 }
 
 /// One proportional bar and its numeric value. `0` renders as `0` with an empty bar (rule 4.4).
@@ -1015,6 +1018,7 @@ mod tests {
             health: 100,
             satiety: 81,
             energy: 72,
+            fear: 20,
             applied_action: Some(Action::Eat {
                 food_id: "F0058".to_string(),
             }),
@@ -1023,7 +1027,7 @@ mod tests {
 
         assert_eq!(
             lines[1],
-            "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72"
+            "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20"
         );
         // Line one carries identifier, territory, position and the applied action, in the
         // mockup's columns. The action uses the engine's own rendering, `eat:F0058`.
@@ -1034,24 +1038,36 @@ mod tests {
         );
         assert!(lines[0].ends_with("eat:F0058"));
 
-        // The reserved fourth-bar slot is empty: nothing follows the third value.
+        // The fourth slot rule 4.5 reserved now carries `fear`, and the row ends there: no fifth
+        // group and no trailing padding follow it.
         assert_eq!(lines[1].trim_end(), lines[1]);
-        assert_eq!(count(&lines[1]), 3 * FULL_BAR + BAR_ROW_OVERHEAD);
+        assert_eq!(count(&lines[1]), 4 * FULL_BAR + BAR_ROW_OVERHEAD);
     }
 
     #[test]
     fn a_bar_row_shrinks_to_its_pane_and_never_overflows_it() {
-        // The 47-column roster pane has a 45-column interior.
-        assert_eq!(bar_width(45), 6);
-        assert_eq!(3 * bar_width(45) + BAR_ROW_OVERHEAD, 45);
+        // The 47-column roster pane has a 45-column interior. Four groups narrow the bars to two
+        // cells where three groups gave six — rule 4 as amended on 2026-08-19 accepts that.
+        assert_eq!(bar_width(45), 2);
+        // `45 − 35` is not a multiple of four, so two interior columns stay unused. The row is
+        // shorter than the interior rather than wider than it, which is the property that matters.
+        assert_eq!(4 * bar_width(45) + BAR_ROW_OVERHEAD, 43);
         // A full-width overlay reaches the mockup's twenty.
         assert_eq!(bar_width(158), FULL_BAR);
         // A pane too narrow for any bar asks for none rather than for a negative width.
         assert_eq!(bar_width(20), 0);
 
-        for interior in 28..200u16 {
+        for interior in 1..200u16 {
             let bar = bar_width(interior);
-            assert!(3 * bar + BAR_ROW_OVERHEAD <= usize::from(interior).max(27) + 2);
+            if usize::from(interior) < BAR_ROW_OVERHEAD {
+                // Nothing is left to divide, so the row asks for no bar at all.
+                assert_eq!(bar, 0, "interior {interior} asked for a bar it cannot hold");
+            } else {
+                assert!(
+                    4 * bar + BAR_ROW_OVERHEAD <= usize::from(interior),
+                    "interior {interior} overflows with a bar of {bar}"
+                );
+            }
         }
     }
 
@@ -1064,11 +1080,15 @@ mod tests {
             health: 0,
             satiety: 0,
             energy: 0,
+            fear: 0,
             applied_action: None,
         };
         let lines = entry_lines(&agent, 4, true);
         assert!(lines[0].ends_with(ABSENT), "{}", lines[0]);
         assert!(lines[1].contains("h ░░░░   0"), "{}", lines[1]);
+        // Rule 4.4 governs the fourth gauge on the same terms: a computed zero is a zero and an
+        // empty bar, which is also every Mokiterion's initial `fear`.
+        assert!(lines[1].contains("f ░░░░   0"), "{}", lines[1]);
 
         agent.applied_action = Some(Action::Wait);
         assert!(entry_lines(&agent, 4, true)[0].ends_with("wait"));
@@ -1076,7 +1096,7 @@ mod tests {
         // The one-line form keeps the numbers and drops the bars.
         let compact = entry_lines(&agent, 0, false);
         assert_eq!(compact.len(), 1);
-        assert_eq!(compact[0], "M01  A  h  0 s  0 e  0");
+        assert_eq!(compact[0], "M01  A  h  0 s  0 e  0 f  0");
     }
 
     /// Rule 3.1 and 3.2, which are states rather than counts.

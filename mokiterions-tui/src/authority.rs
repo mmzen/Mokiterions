@@ -23,6 +23,7 @@ pub fn for_type(event_type: EventType, source: Option<Policy>) -> Option<&'stati
         EventType::DecisionSourceSelected => match source? {
             Policy::Baseline => "REQ-MOK-008",
             Policy::Reference => "REQ-MOK-015",
+            Policy::Individual => "REQ-MOK-033",
         },
         EventType::SurvivalChanged | EventType::AgentDied => "REQ-MOK-003",
         EventType::FoodConsumed => "REQ-MOK-006",
@@ -53,7 +54,8 @@ pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
         .map(|event_type| {
             let identifier = match event_type {
                 EventType::DecisionSourceSelected => {
-                    "REQ-MOK-008 baseline / REQ-MOK-015 reference".to_string()
+                    "REQ-MOK-008 baseline / REQ-MOK-015 reference / REQ-MOK-033 individual"
+                        .to_string()
                 }
                 other => for_type(*other, Some(policy))
                     .map(str::to_string)

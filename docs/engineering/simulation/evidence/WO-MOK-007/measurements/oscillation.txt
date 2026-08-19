@@ -1,0 +1,61 @@
+WO-MOK-007 - the oscillation rate under each source, by rule 5's own measure
+
+The measure is `SPEC-MOK-001` rule 5's: the fraction of traced agent-ticks at which an
+agent's position equals its position two ticks earlier and differs from its position one
+tick earlier. Positions are the post-action positions the `action_trace` records report.
+
+Rule 5 records two figures measured this way, and reproducing them is what licenses the
+third row: a 10.6% residual for the reference source at seed 42, and a 12.2% rate for the
+unbiased walk that `--policy baseline` still implements.
+
+source      seed 0  seed 1  seed 42  seed 123  seed 777  pooled
+----------  ------  ------  -------  --------  --------  ------
+baseline    11.8%   11.9%   12.2%    10.5%     12.3%     11.7%
+reference   10.0%   10.2%   10.6%    11.4%     12.1%     10.8%
+individual  11.8%   10.6%   11.3%    10.4%     10.0%     10.8%
+
+The same cells as oscillating agent-ticks over counted agent-ticks, so that every rate above
+is checkable rather than merely stated:
+
+source      seed 0      seed 1      seed 42     seed 123    seed 777    pooled
+----------  ----------  ----------  ----------  ----------  ----------  ----------
+baseline    166/1404    167/1404    174/1427    153/1453    175/1419    835/7107
+reference   1095/10966  1199/11800  1097/10339  1110/9741   1387/11450  5888/54296
+individual  1406/11900  1162/10994  1246/11043  1161/11155  1200/11976  6175/57068
+
+Reproduction of the recorded controls. WO-MOK-002 states counts for two of these cells, and
+both are reproduced here exactly, numerator and denominator:
+
+  reference, seed 42   1,097 of 10,339 = 10.6%   (manual-observation.md, WO-MOK-002)
+  baseline,  seed 42     174 of  1,427 = 12.2%   (density-curve.md, WO-MOK-002)
+
+The pooled oscillating-event counts are reproduced exactly as well: 5,888 for the reference
+source and 835 for the unbiased walk. This is therefore the same measure, and that is what
+licenses the third row.
+
+One discrepancy, reported rather than smoothed over: WO-MOK-002's pooled DENOMINATORS are
+54,392 and 7,203 where the same runs measured here give 54,296 and 7,107 -- higher by exactly
+96 in both rows, while every event count and every per-cell figure agrees exactly. Exact
+agreement per cell and a constant offset when pooled points at that record's pooled column,
+not at the measurement. It moves the pooled reference rate by under 0.1 and the pooled walk
+rate by 0.2 percentage points, so no conclusion in either record turns on it. It is raised
+here because WO-MOK-007 is measured against those figures; resolving it belongs to whoever
+owns VER-MOK-002, not to this work order.
+
+A rate above the unbiased-walk rate is a finding under VER-MOK-007, so the trait-aware source
+is compared against the walk seed by seed and not only pooled. Two comparisons per seed: the
+declared 12.2% rate, and the walk measured on that same seed, which is the stricter of the
+two wherever the walk came in under 12.2%.
+
+seed  individual  walk, same seed  against 12.2%  against the same seed's walk  margin (pp)
+----  ----------  ---------------  -------------  ----------------------------  -----------
+0     11.815%     11.823%          below          below                         +0.008
+1     10.569%     11.895%          below          below                         +1.325
+42    11.283%     12.193%          below          below                         +0.910
+123   10.408%     10.530%          below          below                         +0.122
+777   10.020%     12.333%          below          below                         +2.313
+
+No cell exceeds either comparator. The seed-0 margin against that seed's own walk is 0.01
+percentage points -- 11.815% against 11.823% -- which is agreement, not headroom, and it is
+stated at that precision here so that it is not read as a comfortable result. The pooled
+trait-aware rate equals the reference source's pooled rate to one decimal place.

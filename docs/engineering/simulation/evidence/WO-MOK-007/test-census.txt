@@ -1,0 +1,106 @@
+WO-MOK-007 - the test suite before and after, reconciled name by name and tier by tier
+
+before: target/static/list-pre-labelled.txt
+        commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff, a clean git worktree at that commit
+after:  target/static/list-post-labelled.txt
+        the candidate tree
+
+Method, and what it does and does not show: see the header of analysis/test-census.py.
+
+  tests listed before:  169   over 19 runners   (their own totals sum to 169)
+  tests listed after:   190   over 20 runners   (their own totals sum to 190)
+  added:                 21
+  removed:                0
+
+On both sides the number of names listed equals the sum of the runners' own totals, so no
+test is missing from this reconciliation, and no (binary, name) pair occurs twice.
+
+By runner. A test that changed tier would show as a fall in one row and a rise in another; a
+runner that lists no tests is a row of zeroes rather than a missing line, so a binary that had
+been emptied could not hide.
+
+  runner  (target)                       tier                                      before  after  change
+  -------------------------------------  ----------------------------------------  ------  -----  ------
+  mokiterions  (src/lib.rs)              internal (crate's own #[cfg(test)])           37     50     +13
+  Mokiterions  (src/main.rs)             internal (crate's own #[cfg(test)])            0      0      +0
+  cli  (tests/cli.rs)                    public (integration, links from outside)      12     13      +1
+  density  (tests/density.rs)            public (integration, links from outside)       2      2      +0
+  process  (tests/process.rs)            public (integration, links from outside)       5      6      +1
+  termination  (tests/termination.rs)    public (integration, links from outside)       3      4      +1
+  viability  (tests/viability.rs)        public (integration, links from outside)       1      2      +1
+  mokiterions_tui  (src/lib.rs)          internal (crate's own #[cfg(test)])           24     24      +0
+  mokiterions_tui  (src/main.rs)         internal (crate's own #[cfg(test)])            8      8      +0
+  authority  (tests/authority.rs)        public (integration, links from outside)       4      4      +0
+  export  (tests/export.rs)              public (integration, links from outside)       7      7      +0
+  layout  (tests/layout.rs)              public (integration, links from outside)       7      7      +0
+  options  (tests/options.rs)            public (integration, links from outside)       7      8      +1
+  render  (tests/render.rs)              public (integration, links from outside)       8     10      +2
+  spatial  (tests/spatial.rs)            public (integration, links from outside)       7      7      +0
+  state  (tests/state.rs)                public (integration, links from outside)      21     21      +0
+  verification  (tests/verification.rs)  public (integration, links from outside)      16     16      +0
+  mokiterions  (doc comments)            doc-test                                       0      0      +0
+  mokiterions_tui  (doc comments)        doc-test                                       0      0      +0
+  decisions  (tests/decisions.rs)        public (integration, links from outside)       0      1      +1
+
+The names added, in full, with the runner each one runs in:
+
+  + cli          tests/cli.rs          the_trait_aware_policy_is_selectable_and_does_not_become_the_default
+  + decisions    tests/decisions.rs    the_trait_aware_source_never_waits_and_proposes_only_valid_actions
+  + mokiterions  src/lib.rs            simulation::tests::a_dead_mokiterion_reports_no_fear_and_no_decision
+  + mokiterions  src/lib.rs            simulation::tests::a_trait_difference_alone_decides_whether_a_clipped_resource_is_eaten
+  + mokiterions  src/lib.rs            simulation::tests::at_tolerance_zero_the_trait_aware_source_proposes_what_the_reference_source_proposes
+  + mokiterions  src/lib.rs            simulation::tests::fear_ignores_how_many_are_perceived_how_far_and_in_which_direction
+  + mokiterions  src/lib.rs            simulation::tests::fear_rises_at_the_perception_boundary_and_decays_one_cell_beyond_it
+  + mokiterions  src/lib.rs            simulation::tests::fear_saturates_at_both_bounds_and_is_reported_every_tick
+  + mokiterions  src/lib.rs            simulation::tests::individual_runs_are_reported_and_byte_identically_reproducible
+  + mokiterions  src/lib.rs            simulation::tests::the_tolerant_test_governs_seeking_as_well_as_eating
+  + mokiterions  src/lib.rs            simulation::tests::the_trace_reports_the_fear_the_survival_record_then_changes
+  + mokiterions  src/lib.rs            simulation::tests::the_trait_is_fixed_for_the_run_and_independent_of_every_configuration
+  + mokiterions  src/lib.rs            simulation::tests::the_trait_reads_the_seed_and_not_only_the_identifier
+  + mokiterions  src/lib.rs            simulation::tests::the_twelve_traits_are_the_recorded_ones_and_are_neither_uniform_nor_out_of_range
+  + mokiterions  src/lib.rs            simulation::tests::trait_derivation_leaves_the_shared_stream_where_it_found_it
+  + options      tests/options.rs      the_usage_text_advertises_every_policy_the_engine_accepts
+  + process      tests/process.rs      the_trait_aware_source_runs_to_completion_and_reports_each_trait_once
+  + render       tests/render.rs       the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it
+  + render       tests/render.rs       the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it
+  + termination  tests/termination.rs  a_long_run_is_bounded_under_the_trait_aware_source
+  + viability    tests/viability.rs    the_trait_aware_source_sustains_the_population_at_every_declared_density
+
+The names removed, in full:
+
+  (none)
+
+21 additions: 13 in the internal tier and 8 in the public tier.
+No name was removed, no runner lost a test and no runner was emptied or removed (0 removed names, 0 runners with a fall, 0 emptied, 0 runners gone), so nothing was renamed away or dropped.
+
+1 runner is new to the after side, and it is the one row that needs prose rather than a count:
+
+  + decisions  (tests/decisions.rs)  public (integration, links from outside)
+
+A new public-tier runner is exactly how a relocated test looks in this census, so what moved is
+stated here rather than left to be inferred.
+`the_trait_aware_source_never_waits_and_proposes_only_valid_actions` was first written inline in
+`mokiterions-core/src/simulation.rs`, beside the source it covers, and was moved into
+`mokiterions-core/tests/decisions.rs` before this capture was taken. The move corrects a
+`SPEC-MOK-002` rule 7 misclassification -- rule 7 fixes the tier by the access a test requires and
+states that the subject it covers does not decide the tier -- and this test requires only `Config`,
+`Policy`, `Density`, `Simulation::new` and `Simulation::run`. Its assertions are verbatim across
+the move, as rule 12 requires; only the construction of `Config` changed, from a private test
+helper to the public struct literal. Nothing was widened to carry it, which is checkable rather
+than asserted: `interface-and-purity.txt` finds the same two public additions and no removals.
+Both ends of the move are inside this work order, so on the before side the test does not exist
+and it appears here as an addition rather than as a fall in one row and a rise in another. The
+file itself is added on rule 8's own terms -- "a further file may be added when a further public
+subject appears" -- and the subject, what a decision source proposes over a whole run, is one none
+of the five files rule 8 lists covers.
+
+A public-tier addition is the one case worth stating plainly, because the tier rule can be
+satisfied dishonestly -- by widening an item to `pub` so that an integration test can reach
+it. It was not: `interface-and-purity.txt` enumerates the public interface on both sides and
+finds two additions, both of them the values `SPEC-MOK-001` declares -- `Policy::Individual`
+and `AgentSnapshot.fear` -- and no removals. The trait-aware policy is selectable from the
+command line and the fourth gauge is on the observer's roster, so both public-tier additions
+are written through interface that the specification puts there and that a user of the engine
+has anyway.
+
+RESULT: PASS

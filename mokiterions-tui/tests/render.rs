@@ -217,3 +217,284 @@ fn drawing_never_advances_the_simulation() {
     let after: Vec<String> = observer.events().iter().map(ToString::to_string).collect();
     assert_eq!(after, events);
 }
+
+// ---- rule 4's four-gauge row -------------------------------------------------------------
+
+/// One gauge parsed out of a rendered roster row: its label, the column the label occupies, the
+/// filled and shaded halves of its bar, and the value it presents.
+struct Gauge {
+    label: char,
+    column: usize,
+    filled: usize,
+    shaded: usize,
+    value: u8,
+}
+
+impl Gauge {
+    fn bar(&self) -> usize {
+        self.filled + self.shaded
+    }
+}
+
+/// The gauge starting at `index`, and the column just past it, or `None` if none starts there.
+///
+/// A gauge is a label, one space, a run of filled cells, a run of shaded cells, one space, and a
+/// three-column right-aligned value. Recognised positionally off the buffer's own cells so that a
+/// slot rendered as a blank, as a dash, or with a bar of zero cells is not recognised at all —
+/// which is what makes the absence visible as a gap in the parsed order rather than as a passing
+/// substring match on the neighbouring gauges. Rule 4's one-line form, which presents the same
+/// four values without bars, yields nothing here for the same reason.
+fn gauge_at(cells: &[char], index: usize) -> Option<(Gauge, usize)> {
+    const FILLED: char = '\u{2588}';
+    const SHADED: char = '\u{2591}';
+
+    let label = *cells.get(index)?;
+    if !matches!(label, 'h' | 's' | 'e' | 'f') || *cells.get(index + 1)? != ' ' {
+        return None;
+    }
+    let mut cursor = index + 2;
+    let mut filled = 0;
+    while cells.get(cursor) == Some(&FILLED) {
+        filled += 1;
+        cursor += 1;
+    }
+    let mut shaded = 0;
+    while cells.get(cursor) == Some(&SHADED) {
+        shaded += 1;
+        cursor += 1;
+    }
+    if filled + shaded == 0 || *cells.get(cursor)? != ' ' {
+        return None;
+    }
+    let value: u8 = cells
+        .get(cursor + 1..cursor + 4)?
+        .iter()
+        .collect::<String>()
+        .trim()
+        .parse()
+        .ok()?;
+    Some((
+        Gauge {
+            label,
+            column: index,
+            filled,
+            shaded,
+            value,
+        },
+        cursor + 4,
+    ))
+}
+
+/// Every gauge on one rendered row, in the order the row presents them.
+fn gauges_in(row: &str) -> Vec<Gauge> {
+    let cells: Vec<char> = row.chars().collect();
+    let mut gauges = Vec::new();
+    let mut index = 0;
+    while index < cells.len() {
+        match gauge_at(&cells, index) {
+            Some((gauge, next)) => {
+                gauges.push(gauge);
+                index = next;
+            }
+            None => index += 1,
+        }
+    }
+    gauges
+}
+
+/// The frame's gauge rows, in the order the frame presents them.
+fn gauge_rows(buffer: &Buffer) -> Vec<Vec<Gauge>> {
+    rows(buffer)
+        .iter()
+        .map(|row| gauges_in(row))
+        .filter(|gauges| !gauges.is_empty())
+        .collect()
+}
+
+/// Rule 4 as amended on 2026-08-19, and `REQ-MOK-032`'s reporting clause read at the frame: the
+/// roster presents four gauges, not three and a gap, at every declared viewport that presents the
+/// roster at all.
+///
+/// Which viewports those are is recorded rather than derived, so that a layout change dropping the
+/// roster from a viewport that used to carry it fails here. The four that carry it are the ones
+/// whose roster pane is presented and wide enough for rule 4's two-line entry; at `100x30` and
+/// below the pane is an overlay and the frame carries no gauge row, which is pre-existing behaviour
+/// this change does not touch.
+#[test]
+fn the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it() {
+    let declared = [
+        (160u16, 48u16, true),
+        (160, 44, true),
+        (140, 44, true),
+        (120, 48, true),
+        (100, 30, false),
+        (34, 22, false),
+        (33, 21, false),
+    ];
+
+    let mut presenting = 0;
+    for (width, height, presents_gauges) in declared {
+        let mut observer = start(&[]);
+        // Thirty ticks, so that the values asserted below are ones the engine had to compute and
+        // not the ones every Mokiterion starts the run holding.
+        for _ in 0..30 {
+            observer.advance().unwrap();
+        }
+        let buffer = frame_of(&mut observer, width, height);
+        let found = gauge_rows(&buffer);
+        assert_eq!(
+            !found.is_empty(),
+            presents_gauges,
+            "{width}x{height} presents {} gauge rows",
+            found.len()
+        );
+        if !presents_gauges {
+            continue;
+        }
+        presenting += 1;
+
+        let agents = &observer.snapshot().agents;
+        assert_eq!(
+            found.len(),
+            agents.len(),
+            "{width}x{height} presents {} gauge rows for {} living Mokiterions",
+            found.len(),
+            agents.len()
+        );
+
+        for gauges in &found {
+            let labels: Vec<char> = gauges.iter().map(|gauge| gauge.label).collect();
+            assert_eq!(
+                labels,
+                vec!['h', 's', 'e', 'f'],
+                "{width}x{height} presents the gauges as {labels:?} rather than health, satiety, \
+                 energy, fear"
+            );
+
+            // The fourth gauge is on the same terms as the first three: the same bar width, and a
+            // bar of at least one cell. A zero-width bar in the fourth slot is `VREC-MOK-005`
+            // finding 3, and a narrower one there would be the reserved slot half-honoured.
+            let bar = gauges[0].bar();
+            assert!(
+                bar >= 1,
+                "{width}x{height} renders a bar of zero cells, which rule 4.4 forbids"
+            );
+            for gauge in gauges {
+                assert_eq!(
+                    gauge.bar(),
+                    bar,
+                    "{width}x{height} renders the {} gauge {} cells wide against {bar} for health",
+                    gauge.label,
+                    gauge.bar()
+                );
+            }
+
+            // Cell positions rather than order alone: each gauge occupies a label, a space, the
+            // bar, a space and three value columns, and consecutive gauges are two columns apart.
+            // That is the arithmetic `BAR_ROW_OVERHEAD` encodes, asserted against the buffer.
+            for (index, gauge) in gauges.iter().enumerate() {
+                let expected = gauges[0].column + index * (bar + 8);
+                assert_eq!(
+                    gauge.column, expected,
+                    "{width}x{height} places the {} gauge at column {} rather than {expected}",
+                    gauge.label, gauge.column
+                );
+            }
+        }
+
+        // Every presented value is the snapshot's own, the fourth slot on the same footing as the
+        // other three. Compared as multisets because a gauge row carries no identifier of its own.
+        let slots: [(char, Vec<u8>); 4] = [
+            ('h', agents.iter().map(|agent| agent.health).collect()),
+            ('s', agents.iter().map(|agent| agent.satiety).collect()),
+            ('e', agents.iter().map(|agent| agent.energy).collect()),
+            ('f', agents.iter().map(|agent| agent.fear).collect()),
+        ];
+        for (slot, (label, mut expected)) in slots.into_iter().enumerate() {
+            let mut presented: Vec<u8> = found.iter().map(|row| row[slot].value).collect();
+            presented.sort_unstable();
+            expected.sort_unstable();
+            assert_eq!(
+                presented, expected,
+                "{width}x{height} presents the {label} gauges as {presented:?} against the \
+                 snapshot's {expected:?}"
+            );
+        }
+    }
+
+    assert_eq!(
+        presenting, 4,
+        "four declared viewports are expected to present the roster's gauge rows"
+    );
+}
+
+/// `VREC-MOK-005` finding 3, closed: the slot rule 4.5 reserved carries a gauge on rule 4's own
+/// terms, at zero as well as away from it.
+///
+/// The finding was that the fourth slot presented nothing, because no engine attribute stood behind
+/// it. Asserting a non-zero value alone would not close it, since a slot could present a value with
+/// a bar that is decorative or absent. So the bar is checked against rule 4.4 in both directions:
+/// empty at zero, and proportional to the value the snapshot holds once fear has risen.
+#[test]
+fn the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it() {
+    let mut observer = start(&[]);
+
+    // Rule 4.4 at the initial tick, where every Mokiterion's fear is zero: a presented `0` over an
+    // empty bar. This is what distinguishes a gauge reading zero from a gauge that is not there.
+    let buffer = frame_of(&mut observer, 160, 48);
+    let found = gauge_rows(&buffer);
+    assert_eq!(
+        found.len(),
+        12,
+        "the reference viewport presents twelve entries"
+    );
+    for gauges in &found {
+        // Checked before the slot is read, so that a row presenting three gauges reports the
+        // missing fourth rather than panicking on the index.
+        assert_eq!(gauges.len(), 4, "a row presents no fourth gauge");
+        let fear = &gauges[3];
+        assert_eq!(fear.label, 'f');
+        assert_eq!(fear.value, 0);
+        assert_eq!(fear.filled, 0);
+        assert_eq!(
+            fear.shaded,
+            fear.bar(),
+            "a gauge reading zero renders an empty bar, not an absent one"
+        );
+    }
+    // `WO-MOK-007` stop condition 9's arithmetic, read off the frame rather than off the constant:
+    // the pane's interior is 45 columns, `(45 - 35) / 4` is 2, and two cells is at least one, so
+    // the narrowing the fourth gauge causes needs no escalation.
+    assert_eq!(found[0][0].bar(), 2, "the roster's bar width moved");
+
+    for _ in 0..30 {
+        observer.advance().unwrap();
+    }
+    let buffer = frame_of(&mut observer, 160, 48);
+    let found = gauge_rows(&buffer);
+    let agents = &observer.snapshot().agents;
+    assert_eq!(found.len(), agents.len());
+    assert!(
+        agents.iter().any(|agent| agent.fear > 0),
+        "no Mokiterion perceived another in thirty ticks, so the fourth gauge is unexercised"
+    );
+
+    // Roster order is ascending identifier, which is the snapshot's own order, so the rows pair
+    // with the agents positionally.
+    for (gauges, agent) in found.iter().zip(agents) {
+        assert_eq!(gauges.len(), 4, "{} carries a fifth gauge", agent.id);
+        let fear = &gauges[3];
+        assert_eq!(
+            fear.value, agent.fear,
+            "{} presents fear {} against the snapshot's {}",
+            agent.id, fear.value, agent.fear
+        );
+        assert_eq!(
+            fear.filled,
+            usize::from(agent.fear) * fear.bar() / 100,
+            "{}'s fear bar is not proportional to the {} it presents",
+            agent.id,
+            agent.fear
+        );
+    }
+}

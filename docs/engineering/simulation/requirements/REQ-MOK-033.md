@@ -2,7 +2,7 @@
 id = "REQ-MOK-033"
 type = "requirement"
 title = "Provide a trait-aware decision source without changing the existing sources"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

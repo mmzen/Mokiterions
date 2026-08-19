@@ -1,0 +1,83 @@
+seed0_baseline_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy baseline --density 0.75
+seed0_baseline_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy baseline --density 0.75 --trace-actions
+seed0_baseline_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy baseline --density 1.50
+seed0_baseline_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy baseline --density 1.50 --trace-actions
+seed0_reference_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy reference --density 0.75
+seed0_reference_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy reference --density 0.75 --trace-actions
+seed0_reference_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy reference --density 1.50
+seed0_reference_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy reference --density 1.50 --trace-actions
+seed1_baseline_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy baseline --density 0.75
+seed1_baseline_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy baseline --density 0.75 --trace-actions
+seed1_baseline_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy baseline --density 1.50
+seed1_baseline_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy baseline --density 1.50 --trace-actions
+seed1_reference_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy reference --density 0.75
+seed1_reference_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy reference --density 0.75 --trace-actions
+seed1_reference_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy reference --density 1.50
+seed1_reference_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy reference --density 1.50 --trace-actions
+seed42_baseline_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy baseline --density 0.75
+seed42_baseline_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy baseline --density 0.75 --trace-actions
+seed42_baseline_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy baseline --density 1.50
+seed42_baseline_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy baseline --density 1.50 --trace-actions
+seed42_reference_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy reference --density 0.75
+seed42_reference_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy reference --density 0.75 --trace-actions
+seed42_reference_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy reference --density 1.50
+seed42_reference_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy reference --density 1.50 --trace-actions
+seed123_baseline_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy baseline --density 0.75
+seed123_baseline_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy baseline --density 0.75 --trace-actions
+seed123_baseline_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy baseline --density 1.50
+seed123_baseline_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy baseline --density 1.50 --trace-actions
+seed123_reference_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy reference --density 0.75
+seed123_reference_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy reference --density 0.75 --trace-actions
+seed123_reference_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy reference --density 1.50
+seed123_reference_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy reference --density 1.50 --trace-actions
+seed777_baseline_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy baseline --density 0.75
+seed777_baseline_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy baseline --density 0.75 --trace-actions
+seed777_baseline_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy baseline --density 1.50
+seed777_baseline_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy baseline --density 1.50 --trace-actions
+seed777_reference_d0.75_traceoff  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy reference --density 0.75
+seed777_reference_d0.75_traceon  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy reference --density 0.75 --trace-actions
+seed777_reference_d1.50_traceoff  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy reference --density 1.50
+seed777_reference_d1.50_traceon  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy reference --density 1.50 --trace-actions
+seed0_individual_d0.75_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 0.75
+seed0_individual_d0.75_traceon_a  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed0_individual_d0.75_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 0.75
+seed0_individual_d0.75_traceon_b  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed0_individual_d1.50_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 1.50
+seed0_individual_d1.50_traceon_a  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed0_individual_d1.50_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 1.50
+seed0_individual_d1.50_traceon_b  exit=0  stderr_bytes=0  argv=--seed 0 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed1_individual_d0.75_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 0.75
+seed1_individual_d0.75_traceon_a  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed1_individual_d0.75_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 0.75
+seed1_individual_d0.75_traceon_b  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed1_individual_d1.50_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 1.50
+seed1_individual_d1.50_traceon_a  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed1_individual_d1.50_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 1.50
+seed1_individual_d1.50_traceon_b  exit=0  stderr_bytes=0  argv=--seed 1 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed42_individual_d0.75_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 0.75
+seed42_individual_d0.75_traceon_a  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed42_individual_d0.75_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 0.75
+seed42_individual_d0.75_traceon_b  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed42_individual_d1.50_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 1.50
+seed42_individual_d1.50_traceon_a  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed42_individual_d1.50_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 1.50
+seed42_individual_d1.50_traceon_b  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed123_individual_d0.75_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 0.75
+seed123_individual_d0.75_traceon_a  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed123_individual_d0.75_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 0.75
+seed123_individual_d0.75_traceon_b  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed123_individual_d1.50_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 1.50
+seed123_individual_d1.50_traceon_a  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed123_individual_d1.50_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 1.50
+seed123_individual_d1.50_traceon_b  exit=0  stderr_bytes=0  argv=--seed 123 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed777_individual_d0.75_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 0.75
+seed777_individual_d0.75_traceon_a  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed777_individual_d0.75_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 0.75
+seed777_individual_d0.75_traceon_b  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 0.75 --trace-actions
+seed777_individual_d1.50_traceoff_a  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 1.50
+seed777_individual_d1.50_traceon_a  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 1.50 --trace-actions
+seed777_individual_d1.50_traceoff_b  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 1.50
+seed777_individual_d1.50_traceon_b  exit=0  stderr_bytes=0  argv=--seed 777 --ticks 1000 --policy individual --density 1.50 --trace-actions
+short_seed42_reference_traceon  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 20 --policy reference --trace-actions
+short_seed42_individual_traceon  exit=0  stderr_bytes=0  argv=--seed 42 --ticks 20 --policy individual --trace-actions
+no_arguments  exit=0  stderr_bytes=0  argv=

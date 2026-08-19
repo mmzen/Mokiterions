@@ -1,0 +1,106 @@
+VER-MOK-007 oracle 1 - projected byte comparison
+
+pre-change commit: 60fda9faffbd452752a34efa356f16cc6ad1d3ff
+projection: baseline/projection.py, applied to both captures
+
+A cell passes when the projected post-change stream is byte-identical to the pre-change
+stream, and when the projection is a no-op on the pre-change stream. Both are checked as
+SHA-256 equality over the whole stream, not over summary counts.
+
+cell                                         proj(post)==pre  proj(pre)==pre  bytes removed
+no_arguments                                 True             True                    15698
+seed0_baseline_d0.75_traceoff                True             True                    17586
+seed0_baseline_d0.75_traceon                 True             True                    29077
+seed0_baseline_d1.50_traceoff                True             True                    18014
+seed0_baseline_d1.50_traceon                 True             True                    30017
+seed0_reference_d0.75_traceoff               True             True                   132095
+seed0_reference_d0.75_traceon                True             True                   219963
+seed0_reference_d1.50_traceoff               True             True                   144307
+seed0_reference_d1.50_traceon                True             True                   240070
+seed123_baseline_d0.75_traceoff              True             True                    19182
+seed123_baseline_d0.75_traceon               True             True                    31564
+seed123_baseline_d1.50_traceoff              True             True                    17445
+seed123_baseline_d1.50_traceon               True             True                    28863
+seed123_reference_d0.75_traceoff             True             True                   113976
+seed123_reference_d0.75_traceon              True             True                   190336
+seed123_reference_d1.50_traceoff             True             True                   143493
+seed123_reference_d1.50_traceon              True             True                   238738
+seed1_baseline_d0.75_traceoff                True             True                    16798
+seed1_baseline_d0.75_traceon                 True             True                    27895
+seed1_baseline_d1.50_traceoff                True             True                    17754
+seed1_baseline_d1.50_traceon                 True             True                    29357
+seed1_reference_d0.75_traceoff               True             True                   139195
+seed1_reference_d0.75_traceon                True             True                   232282
+seed1_reference_d1.50_traceoff               True             True                   141825
+seed1_reference_d1.50_traceon                True             True                   236577
+seed42_baseline_d0.75_traceoff               True             True                    18070
+seed42_baseline_d0.75_traceon                True             True                    29846
+seed42_baseline_d1.50_traceoff               True             True                    18897
+seed42_baseline_d1.50_traceon                True             True                    31383
+seed42_reference_d0.75_traceoff              True             True                   122842
+seed42_reference_d0.75_traceon               True             True                   204832
+seed42_reference_d1.50_traceoff              True             True                   142194
+seed42_reference_d1.50_traceon               True             True                   237131
+seed777_baseline_d0.75_traceoff              True             True                    17543
+seed777_baseline_d0.75_traceon               True             True                    29041
+seed777_baseline_d1.50_traceoff              True             True                    17758
+seed777_baseline_d1.50_traceon               True             True                    29396
+seed777_reference_d0.75_traceoff             True             True                   136390
+seed777_reference_d0.75_traceon              True             True                   227374
+seed777_reference_d1.50_traceoff             True             True                   145105
+seed777_reference_d1.50_traceon              True             True                   241499
+short_seed42_reference_traceon               True             True                     5162
+
+frozen-source cells compared: 42
+
+REQ-MOK-009 under the new source: two processes per cell, byte-identical
+cell                                         pass a == pass b
+seed0_individual_d0.75_traceoff              True            
+seed0_individual_d0.75_traceon               True            
+seed0_individual_d1.50_traceoff              True            
+seed0_individual_d1.50_traceon               True            
+seed123_individual_d0.75_traceoff            True            
+seed123_individual_d0.75_traceon             True            
+seed123_individual_d1.50_traceoff            True            
+seed123_individual_d1.50_traceon             True            
+seed1_individual_d0.75_traceoff              True            
+seed1_individual_d0.75_traceon               True            
+seed1_individual_d1.50_traceoff              True            
+seed1_individual_d1.50_traceon               True            
+seed42_individual_d0.75_traceoff             True            
+seed42_individual_d0.75_traceon              True            
+seed42_individual_d1.50_traceoff             True            
+seed42_individual_d1.50_traceon              True            
+seed777_individual_d0.75_traceoff            True            
+seed777_individual_d0.75_traceon             True            
+seed777_individual_d1.50_traceoff            True            
+seed777_individual_d1.50_traceon             True            
+
+new-source cells compared: 20
+
+The new source differs from the reference source (it must, or nothing changed)
+cell                                         differs         
+seed0_individual_d0.75_traceoff              True            
+seed0_individual_d0.75_traceon               True            
+seed0_individual_d1.50_traceoff              True            
+seed0_individual_d1.50_traceon               True            
+seed123_individual_d0.75_traceoff            True            
+seed123_individual_d0.75_traceon             True            
+seed123_individual_d1.50_traceoff            True            
+seed123_individual_d1.50_traceon             True            
+seed1_individual_d0.75_traceoff              True            
+seed1_individual_d0.75_traceon               True            
+seed1_individual_d1.50_traceoff              True            
+seed1_individual_d1.50_traceon               True            
+seed42_individual_d0.75_traceoff             True            
+seed42_individual_d0.75_traceon              True            
+seed42_individual_d1.50_traceoff             True            
+seed42_individual_d1.50_traceon              True            
+seed777_individual_d0.75_traceoff            True            
+seed777_individual_d0.75_traceon             True            
+seed777_individual_d1.50_traceoff            True            
+seed777_individual_d1.50_traceon             True            
+
+differing cells: 20 of 20
+
+RESULT: PASS

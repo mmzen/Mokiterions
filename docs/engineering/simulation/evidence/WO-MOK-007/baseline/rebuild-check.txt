@@ -1,0 +1,121 @@
+WO-MOK-007 - the committed source rebuilt, and the captured cells reproduced
+
+Why this check exists, including the two mistakes it records: see the header of
+baseline/rebuild-check.py.
+
+first capture:  target/cap-post   the capture every figure in this packet derives from,
+                             taken with a binary that then fell behind the source twice
+second capture: target/cap-post3   binary rebuilt from the committed source
+
+  cells in both captures:      83
+  cells only in the first:     10
+  cells only in the second:    0
+
+  identical, byte for byte:    83
+  differing:                   0
+
+Every cell in both captures, with the digest that is common to the two:
+
+  no_arguments.log                         identical  ba584878f8681450478007d681b4a11cf8a01b7a3218b974121dee38118af3d9
+  seed0_baseline_d0.75_traceoff.log        identical  1b58213fae2a128ce80d37ce2055af06affcc69dbf646b242149985fe75ce916
+  seed0_baseline_d0.75_traceon.log         identical  e86e7f8c002c0318cbcd87db119ef6587737ee8b3deb031a47ccc569d0ace092
+  seed0_baseline_d1.50_traceoff.log        identical  571eb3d59fd6f797d91f3956902f501a35bd273f46d6e31df9ccbaaa55ddbb95
+  seed0_baseline_d1.50_traceon.log         identical  3708b33fdf2ce1167baafbb72c7ad6b9eb4d8c4c04aa3e3ffac14caf9afcdc5b
+  seed0_individual_d0.75_traceoff_a.log    identical  65b812d0919425f1a95044d1e7882320fd8cf42d08e23cae0a6dd7550813eded
+  seed0_individual_d0.75_traceoff_b.log    identical  65b812d0919425f1a95044d1e7882320fd8cf42d08e23cae0a6dd7550813eded
+  seed0_individual_d0.75_traceon_a.log     identical  af64081f687c65bbc7111bc1b894bb474a3c45e01ac7272a41d8c60b36d34cb1
+  seed0_individual_d0.75_traceon_b.log     identical  af64081f687c65bbc7111bc1b894bb474a3c45e01ac7272a41d8c60b36d34cb1
+  seed0_individual_d1.50_traceoff_a.log    identical  02ea874cbe20671479bc9de6c46675397ba1ecc48729fbfe8468c67d9bd09503
+  seed0_individual_d1.50_traceoff_b.log    identical  02ea874cbe20671479bc9de6c46675397ba1ecc48729fbfe8468c67d9bd09503
+  seed0_individual_d1.50_traceon_a.log     identical  ce8c2cd057d37b5ae64b36fae2d8e9e174ceefa5e79c3da25c75508267dfdb23
+  seed0_individual_d1.50_traceon_b.log     identical  ce8c2cd057d37b5ae64b36fae2d8e9e174ceefa5e79c3da25c75508267dfdb23
+  seed0_reference_d0.75_traceoff.log       identical  6541b60d8b1e7d714441c8e2b19279675a03ef62f4fc97ce2757c637064096d6
+  seed0_reference_d0.75_traceon.log        identical  30deef6344acfed3254a62f64d98cca54cc976a94c18553b372dcec908b2a308
+  seed0_reference_d1.50_traceoff.log       identical  15544d3764219c4239d33ba7d8943f3eb4966e8b106621f9f3e6b79c965cff10
+  seed0_reference_d1.50_traceon.log        identical  f8c4210e3a7ca4b6bed940a7c17bb4226bca389c619da9c97d34570ae8e8692f
+  seed123_baseline_d0.75_traceoff.log      identical  9ae7e942c399565bd70e85b7d2e402a6db588203d0725a9e25017b5803a98402
+  seed123_baseline_d0.75_traceon.log       identical  3bd0de775b29275ff09e19a240266772d89b8600b1853c62678e7959fba8c81b
+  seed123_baseline_d1.50_traceoff.log      identical  8bb0530f180c59aa87fdec5732f4b3c14757cd643eb96e42411322ba8630a968
+  seed123_baseline_d1.50_traceon.log       identical  8491cf6953320ce3db3756f9ef656e71e0b1c477600d5ced66f2aa884e6adaf1
+  seed123_individual_d0.75_traceoff_a.log  identical  97275c43b228b03e07098eb38bbada68afdd2f72a1bb6a2be605e1977e4b1f34
+  seed123_individual_d0.75_traceoff_b.log  identical  97275c43b228b03e07098eb38bbada68afdd2f72a1bb6a2be605e1977e4b1f34
+  seed123_individual_d0.75_traceon_a.log   identical  15d98f7e33cbd502610ba63c53109be78cb8e66147e3135a6576d6c624507b94
+  seed123_individual_d0.75_traceon_b.log   identical  15d98f7e33cbd502610ba63c53109be78cb8e66147e3135a6576d6c624507b94
+  seed123_individual_d1.50_traceoff_a.log  identical  4a69bdc30bfe01c3e677aa4a7fe7966e0dcc91112b8d718fac2b78a292deaff8
+  seed123_individual_d1.50_traceoff_b.log  identical  4a69bdc30bfe01c3e677aa4a7fe7966e0dcc91112b8d718fac2b78a292deaff8
+  seed123_individual_d1.50_traceon_a.log   identical  a3d23ab45b1333374ed0bbeedf06e09444f0ebc695cf04b3f94a9801fc1a6942
+  seed123_individual_d1.50_traceon_b.log   identical  a3d23ab45b1333374ed0bbeedf06e09444f0ebc695cf04b3f94a9801fc1a6942
+  seed123_reference_d0.75_traceoff.log     identical  17c094ab39464d440f02e844a4c183453f986481f2b990faebdf82cafc2952a3
+  seed123_reference_d0.75_traceon.log      identical  87a52a6c9c50d52cca9db7a61bf1d13fc7f912b765994b67735641427d615f9f
+  seed123_reference_d1.50_traceoff.log     identical  b9102f8cadd9c4b5d8eb152701269c1a7dedf8fa6a83f1ef84c077c25ac17049
+  seed123_reference_d1.50_traceon.log      identical  b9662ac6856a57ef279bf5bdd6858c7b20a88774ae149aaa0ba3a0501225ea7e
+  seed1_baseline_d0.75_traceoff.log        identical  3f65926df97d0db8565f48ab19c36de4ea8351f70efd4f2fba8ab41b16500151
+  seed1_baseline_d0.75_traceon.log         identical  8629e9d986b9c7bae7ed0f45894961c97adfe4a4c76b2eb2c11c5fe687265900
+  seed1_baseline_d1.50_traceoff.log        identical  b139130dbb86e7cffb566cfe79d85e5414ea84bb7ef49eef7f320d7d056bb137
+  seed1_baseline_d1.50_traceon.log         identical  c0da503b8c4bef5058737b5e40894d3ebbfb2c2edfeeafc2f3e70ad02fe713f2
+  seed1_individual_d0.75_traceoff_a.log    identical  663e21c46c176140df9ce58da7e25604ce5f3cdb1e0347f5f136218616abbcef
+  seed1_individual_d0.75_traceoff_b.log    identical  663e21c46c176140df9ce58da7e25604ce5f3cdb1e0347f5f136218616abbcef
+  seed1_individual_d0.75_traceon_a.log     identical  5c21b326738b55d319bcca8f4fdc28946e8fa3d884894c93347e75c2e9535a46
+  seed1_individual_d0.75_traceon_b.log     identical  5c21b326738b55d319bcca8f4fdc28946e8fa3d884894c93347e75c2e9535a46
+  seed1_individual_d1.50_traceoff_a.log    identical  b65d676e0a7efe386a6b348798f1f164765b085d0f64c38af488f37e4ce14c1e
+  seed1_individual_d1.50_traceoff_b.log    identical  b65d676e0a7efe386a6b348798f1f164765b085d0f64c38af488f37e4ce14c1e
+  seed1_individual_d1.50_traceon_a.log     identical  ba3887da14c9ab73d62724e01cfab2a0631bc1154abc2e3761d597fc9f3c27cb
+  seed1_individual_d1.50_traceon_b.log     identical  ba3887da14c9ab73d62724e01cfab2a0631bc1154abc2e3761d597fc9f3c27cb
+  seed1_reference_d0.75_traceoff.log       identical  2af6caa557620899dda3794e0036ffd6bef4d12cce544baa279491cbd1e03668
+  seed1_reference_d0.75_traceon.log        identical  1b916affac9854efa3068fede6e9eba5c329a6123d296eed08b028578ef4657e
+  seed1_reference_d1.50_traceoff.log       identical  dd136212fc4c2703983e6fb3b6e1b0b46e1aaed32881a1da3e3c5452003c9d7f
+  seed1_reference_d1.50_traceon.log        identical  20daf97a2347579c439b479332b5c6ee3cf1b0a02a41868d2f448ef09bc40d6f
+  seed42_baseline_d0.75_traceoff.log       identical  47640ceb1238f5d1cf368b530c2812934ab863be21bd62207b4ae0e75ec90fe1
+  seed42_baseline_d0.75_traceon.log        identical  213166999e47bc2512e8811c81bd48a3ddfd679896a3038d39cb3b5257325ccd
+  seed42_baseline_d1.50_traceoff.log       identical  6da968480b53db96aa6ccece51c01c5e4226270de8d5a048b7af2fbbea0eb1b1
+  seed42_baseline_d1.50_traceon.log        identical  b05f54a10faff7b16310c37956389487133788dca58ff45705b233a112a0909f
+  seed42_individual_d0.75_traceoff_a.log   identical  7747331f3fb25fa020fd83b8ebc99f947086151a821b510f836fca7c0ee5326b
+  seed42_individual_d0.75_traceoff_b.log   identical  7747331f3fb25fa020fd83b8ebc99f947086151a821b510f836fca7c0ee5326b
+  seed42_individual_d0.75_traceon_a.log    identical  04008184eeb9533c5ef4ef8e0aa762d8d1c8aecabed5a104b19868e359ae49c4
+  seed42_individual_d0.75_traceon_b.log    identical  04008184eeb9533c5ef4ef8e0aa762d8d1c8aecabed5a104b19868e359ae49c4
+  seed42_individual_d1.50_traceoff_a.log   identical  1f6accadc0d84ca6b3c9f55933118a39e43643867fa6691d9eaf17955b13f091
+  seed42_individual_d1.50_traceoff_b.log   identical  1f6accadc0d84ca6b3c9f55933118a39e43643867fa6691d9eaf17955b13f091
+  seed42_individual_d1.50_traceon_a.log    identical  5cc7008af87ef8a026db39734bb6577891261e6e2703ce1f34e1da52f5d8387a
+  seed42_individual_d1.50_traceon_b.log    identical  5cc7008af87ef8a026db39734bb6577891261e6e2703ce1f34e1da52f5d8387a
+  seed42_reference_d0.75_traceoff.log      identical  c406415f27cde7d93d94e00f9238704605b942d6e54a011ea6e7cc34967b761e
+  seed42_reference_d0.75_traceon.log       identical  a6b2b2cb27d9f2fc8696ce333280319e7ace461f34cb60b64d38032312e7f513
+  seed42_reference_d1.50_traceoff.log      identical  8bbd439496106503b0e2bd4137975cfc6e5720e6cf1cf19f7ead0e282889b7ab
+  seed42_reference_d1.50_traceon.log       identical  4a0270f18099c76a1961e28713995248a1cf6cf4a23bba68a853ce28ac519a9f
+  seed777_baseline_d0.75_traceoff.log      identical  c18c593fe806095fa359e48e649463ee0845c007147e81a9ee3a063c794c3fe5
+  seed777_baseline_d0.75_traceon.log       identical  16cb92d367b9573bd2045fbc5aacfc19c076205738e0c1f9f563b54ab055996c
+  seed777_baseline_d1.50_traceoff.log      identical  b7137be193ba47664c60e2ffa714c0d9989c425f69cff479ae892c297cac3ba1
+  seed777_baseline_d1.50_traceon.log       identical  ef64c5a1788ab64c41d431897d471332dbeabe752aa8dc5a8ce3304175e7817f
+  seed777_individual_d0.75_traceoff_a.log  identical  69aa7918b2e52e043f3a38aed47592fab0e56a25285d2d01a5c477f7d99712ca
+  seed777_individual_d0.75_traceoff_b.log  identical  69aa7918b2e52e043f3a38aed47592fab0e56a25285d2d01a5c477f7d99712ca
+  seed777_individual_d0.75_traceon_a.log   identical  14abc9635eb86c49d77427ccd8a02d0e65c006a4a85975ddbb2a972a4f05edf4
+  seed777_individual_d0.75_traceon_b.log   identical  14abc9635eb86c49d77427ccd8a02d0e65c006a4a85975ddbb2a972a4f05edf4
+  seed777_individual_d1.50_traceoff_a.log  identical  ce361a1e1580e7849f15adee4f6c8886cf4e1fbde062075208426f127126e25b
+  seed777_individual_d1.50_traceoff_b.log  identical  ce361a1e1580e7849f15adee4f6c8886cf4e1fbde062075208426f127126e25b
+  seed777_individual_d1.50_traceon_a.log   identical  4d0900507ad922d3edf6045b5e6055e512c773ab56a5b9f74eb7eddaa173a638
+  seed777_individual_d1.50_traceon_b.log   identical  4d0900507ad922d3edf6045b5e6055e512c773ab56a5b9f74eb7eddaa173a638
+  seed777_reference_d0.75_traceoff.log     identical  b0a67d3bd77037b733341bfd91f5a2309cb34e20a32727a528b66d7a1f871309
+  seed777_reference_d0.75_traceon.log      identical  9b6c65c825be27a7611461c7b7f02184fc83c38ef62500d3efab2b00c2841a81
+  seed777_reference_d1.50_traceoff.log     identical  cba2bfa2669748b97c8f6c3d914c2c00a30c7d803f5ad6250851003491dd7f1e
+  seed777_reference_d1.50_traceon.log      identical  bebb268dcc3441b7ecc7d3bf6b86ae526422eee63ecdce07752a0cdec03eaeff
+  short_seed42_individual_traceon.log      identical  8bb55856e4fb63b8b4c7f3ba76d4128c73a533949352e40cbfd52145942a1671
+  short_seed42_reference_traceon.log       identical  744ef2605aadfd90d93354f6b94866b7466deb22629d28c718f6343f9167222e
+
+Present in the first capture only. These are the tick-10,000 long-horizon runs, which
+were added to the first capture after it was taken and were not re-run for the second;
+they carry no obligation in either direction and `measurements/long-horizon.txt` says
+so. They are named here so the asymmetry in the counts above is not left to inference:
+
+  long_seed0_individual.log
+  long_seed0_reference.log
+  long_seed123_individual.log
+  long_seed123_reference.log
+  long_seed1_individual.log
+  long_seed1_reference.log
+  long_seed42_individual.log
+  long_seed42_reference.log
+  long_seed777_individual.log
+  long_seed777_reference.log
+
+RESULT: PASS - the rebuilt binary reproduced every shared cell byte for byte, so none of the
+        three later edits changed any behaviour and the retained evidence is evidence
+        about the committed source

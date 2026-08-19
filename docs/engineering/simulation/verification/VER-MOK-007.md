@@ -2,7 +2,7 @@
 id = "VER-MOK-007"
 type = "verification"
 title = "Individuality verification: derived trait, fear attribute, trait-aware source, and the unchanged control"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

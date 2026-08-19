@@ -1,0 +1,21 @@
+WO-MOK-007 - recapture fidelity of the pre-change baseline
+
+commit: 60fda9faffbd452752a34efa356f16cc6ad1d3ff, built in a clean git worktree
+compared: the eleven cells captured before the first code change against their recapture
+
+cell captured before the change                  identical  sha256
+pre-baseline-seed0-ticks1000.log                 True       801b67cdb70c274afecd2e379497f968f53674e813388f14b18dfea89d7f4e6c
+pre-baseline-seed1-ticks1000.log                 True       504cee19ab0b80e634b85fe1fcfe925f1198a385ed21b9280cd544e0eb94b22e
+pre-baseline-seed42-ticks1000.log                True       f694718f91e1f9e9df54a25f8e532deb2982ec6973d4cbeaf5c07e41b6c3838d
+pre-baseline-seed123-ticks1000.log               True       82aa98b34fdbd9b6b7e271c2d250146c322d2f79954c9dccdd1464c7e6b63609
+pre-baseline-seed777-ticks1000.log               True       8a26bd2f82166013b87ada0e63d178e129546201d3d33016126affa24384bdde
+pre-reference-seed0-ticks1000.log                True       3d4a717d68e882aae83f36c18c165878c648f344aba970b76d647ebffbe89bfb
+pre-reference-seed1-ticks1000.log                True       be394d449131d1f2c36542e642adde22b52b3080ac225d5cfd327821423bb876
+pre-reference-seed42-ticks1000.log               True       894018ab7cd8987737b7de08b4c2d0a59875653dfbd8c9edf4a6896c904f9372
+pre-reference-seed123-ticks1000.log              True       97e0581c7aa1725490238842dfb63fa330d544f20307f34594362ab15bd95d5d
+pre-reference-seed777-ticks1000.log              True       c32baa577bf6c51c24ea6854d7de0a7eb134a512718fb2c9f7ace30c1134780e
+pre-reference-seed42-ticks20-trace.log           True       489897a4ebd4c246f3fc740eadc4ca90d36f50eba4ccc3337fb070747f358fa9
+
+cells compared: 11
+
+RESULT: PASS

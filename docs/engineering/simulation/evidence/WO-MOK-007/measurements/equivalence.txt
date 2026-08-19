@@ -1,0 +1,84 @@
+VER-MOK-007 oracle 3 - the enumerated situation set, and the run that exhausts it
+
+What this checks, and why the number is not enough on its own: see the header of
+analysis/equivalence.py. Every figure below is read out of
+mokiterions-core/src/simulation.rs.
+
+The five dimensions the enumeration varies
+
+  dimension                     size  values
+  ----------------------------  ----  ------
+  satiety                         13  0, 49, 50, 51, 60, 69, 70, 71, 84, 85, 86, 99, 100
+  resource class                   3  Low, Medium, High
+  resource placement              18  underfoot, then the 8 compass offsets at each of the 2 distances 1, i16::from(PERCEPTION_RADIUS), then no resource at all
+  energy                           2  REFERENCE_SLEEP_THRESHOLD - 1, REFERENCE_SLEEP_THRESHOLD
+  a second resource underfoot      2  false, true
+                                ----
+  product                       2808
+
+  the count the test asserts for itself:              2808
+  the count this evidence packet reports:             2808
+  all three agree:                                    True
+
+  The test asserts its own count twice, once structurally and once as a literal, so a change
+  to any dimension fails it rather than silently shrinking the set:
+
+    assert_eq!(cases, SATIETIES.len() * 3 * placements.len() * 2 * 2);
+    assert_eq!(cases, 2_808, "the enumerated situation set changed size");
+
+What each dimension is chosen to catch
+
+  satiety      The 13 values are not a sweep, they are the boundaries. Each class of resource
+               has a satiety at which it exactly fills the attribute and one either side:
+               50/51 and 49 for the high class, 70/71 and 69 for the medium, 85/86 and 84 for
+               the low, plus 0 and 100 at the ends. A tolerant test that differed from the
+               exact-fit test would differ first at one of these, because that is where the
+               clipped part changes from zero to non-zero.
+  class        All three, because the admitted waste is a fraction of the restoration and so
+               depends on the class.
+  placement    Underfoot exercises rule 19 case 1, distance 1 and distance 16 exercise case 3
+               at the near end and exactly at the perception radius, all eight compass
+               directions exercise the direction preference, and no resource at all exercises
+               the fallback. The two distances are read from the source, and one of them is
+               `PERCEPTION_RADIUS` itself rather than a copy of its value.
+  energy       Either side of the sleep threshold, because rule 19 case 2 and rule 5 case 2
+               share one constant and the enumeration should notice if they stopped doing so.
+  companion    A second resource underfoot makes case 1 choose between two candidates rather
+               than accept or decline one, which is where a difference in the selection order
+               would appear.
+
+What it does not cover, stated rather than left to be inferred
+
+  * One acting Mokiterion, alone. The eleven others are placed far away, so nothing is
+    perceived but resources. Fear is not in the observation at all -- `interface-and-purity.txt`
+    checks that -- so company cannot enter a decision, and this dimension is deliberately
+    absent rather than overlooked.
+  * Tolerance `0` only. That is the whole point of the oracle: it is the lower bound, where the
+    two sources must coincide. Sensitivity above the bound is a different claim, established by
+    the two tests run below it and measured over whole runs in `measurements/divergence.txt`.
+  * One position in the world, far from every edge. Edge behaviour is rule 4's and is
+    unchanged by this work order.
+
+The runs
+
+  $ cargo test -p Mokiterions --lib at_tolerance_zero_the_trait_aware_source_proposes_what_the_reference_source_proposes -- --exact
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.01s
+
+  $ cargo test -p Mokiterions --lib the_tolerant_test_governs_seeking_as_well_as_eating -- --exact
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.00s
+
+  $ cargo test -p Mokiterions --lib a_trait_difference_alone_decides_whether_a_clipped_resource_is_eaten -- --exact
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.00s
+
+  The first is the enumeration itself. The two below it are the companions that keep it from
+  being vacuous in the other direction: one shows the same tolerant test governing rule 19
+  case 3 as well as case 1, and one shows a single unit of tolerance changing the proposal --
+  at `T = 34` and not at `T = 33` for a medium-class resource, which is what pins the division
+  as truncating rather than rounding.
+
+  `negative-control/oracle-3.txt` shows this enumeration failing when the trait-aware source
+  is perturbed, on the proposal in one control and on the stream position in the other, so a
+  pass here is a result and not an absence of checking.
+
+RESULT: PASS - the enumerated set is 2,808 situations by construction, by the test's own
+        assertion and by this independent factorization, and it is exhausted

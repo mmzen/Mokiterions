@@ -5,6 +5,11 @@
 //! already public, so the move changes the path and nothing else: the assertions are verbatim and
 //! no item was widened to bring them out. `SPEC-MOK-004` rule 12 is the obligation and the
 //! per-test comparison under `WO-MOK-006` is the evidence.
+//!
+//! One test below is not from that move. `the_usage_text_advertises_every_policy_the_engine_accepts`
+//! was added under `WO-MOK-007`, when the third policy the engine accepts was found missing from the
+//! observer's usage text. It reaches `USAGE`, `parse` and `Policy::parse`, all of which were already
+//! public, so rule 9's condition holds for it as well.
 
 use mokiterions::simulation::{Density, Policy};
 use mokiterions_tui::options::*;
@@ -58,6 +63,24 @@ fn simulation_inputs_keep_the_engine_parser_and_its_rejections() {
     assert!(parse(vec!["--policy", "random"]).is_err());
     assert!(parse(vec!["--seed", "1", "--seed", "2"]).is_err());
     assert!(parse(vec!["--unknown"]).is_err());
+}
+
+#[test]
+fn the_usage_text_advertises_every_policy_the_engine_accepts() {
+    // `SPEC-MOK-003` rule 5 requires identical parsing, not identical prose, so the observer's
+    // usage text is its own and nothing but this test keeps the list it advertises from falling
+    // behind the list the engine parses. The match is exhaustive deliberately: a fourth policy
+    // stops the compilation here rather than shipping an accepted value the help omits.
+    for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+        let name = match policy {
+            Policy::Baseline => "baseline",
+            Policy::Reference => "reference",
+            Policy::Individual => "individual",
+        };
+        assert_eq!(Policy::parse(name), Some(policy), "{name}");
+        assert_eq!(run(&["--policy", name]).config.policy, policy, "{name}");
+        assert!(USAGE.contains(name), "the usage text omits --policy {name}");
+    }
 }
 
 #[test]

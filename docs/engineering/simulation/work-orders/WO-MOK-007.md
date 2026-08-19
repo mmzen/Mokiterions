@@ -2,7 +2,7 @@
 id = "WO-MOK-007"
 type = "work_order"
 title = "Give each Mokiterion a derived trait, a fear attribute, and a decision source that reads them"
-status = "draft"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -39,8 +39,16 @@ relation and a deciding ADR before it can be approved.
 
 **This work order cannot be approved before its governing artifacts are.** It depends on `INT-MOK-006`,
 `CAP-MOK-006`, `REQ-MOK-031`, `REQ-MOK-032`, `REQ-MOK-033` and `REQ-MOK-034` being approved by the product owner, and
-on `VER-MOK-007` being approved by the assurance owner. Every one of them is `draft` at the time this work order is
-written. Preflight must report this exact work order as eligible before implementation begins.
+on `VER-MOK-007` being approved by the assurance owner. Every one of them was `draft` at the time this work order was
+written. **All seven, and this work order, were approved by the repository owner on 2026-08-19**, acting as product
+owner, technical owner and assurance owner; the same act confirmed that `ARCH-MOK-001` requires no amendment, on the
+ground that the added snapshot field carries a value and grants no borrow into authoritative state, which is what its
+prohibition addresses. Preflight must report this exact work order as eligible before implementation begins.
+
+Status moved to `in_progress` on 2026-08-19, in the same commit as the first code change, on the owner's instruction
+to implement. The pre-change capture named under *Evidence* was taken before that change, against the commit recorded
+in `evidence/WO-MOK-007/baseline/COMMIT.txt`, because a capture taken afterwards could not establish the absence
+claim this work order rests on.
 
 ### Decision record
 
@@ -56,12 +64,17 @@ substance a later approval acts on is written down rather than reconstructed.
 | Where the trait-aware source is specified | Appended as rule 19 rather than renumbering thirteen rules | technical owner |
 | The roster's bar width once the fourth slot is filled | Narrowing accepted: two cells at the reference roster's 45-column interior | technical owner |
 | `fear`'s driver and step sizes | Any perceived living Mokiterion, `+10` and `-5`. No distance constant is added | technical owner |
-| The trait's range | `waste_tolerance` over `0..=100`, uniform | technical owner |
+| The trait's range | `waste_tolerance` over `0..=100`, uniform. **Superseded by the row below on 2026-08-19; kept because a later reviewer should see what was decided before measurement, not only after** | technical owner |
+| The trait's range, corrected under stop condition 6 | Narrowed to `0..=40`, uniform, chosen from a fifty-seed distribution rather than from the declared five. Narrowing the range was preferred to amending `REQ-MOK-034`'s floor, so individuality does not cost habitability. Evidence and the option comparison: `evidence/WO-MOK-007/escalation.md` | technical owner |
 | The default decision source | Unchanged. `reference` stays the default; whether `individual` should become it is deferred until its floor is measured | product owner |
+| Approval of this chain | All eight artifacts transitioned `draft` to `approved`, and `ARCH-MOK-001` confirmed to need no amendment | product owner, technical owner, assurance owner |
+| The `VREC-MOK-005` gate | Overridden. Implementation proceeds with the gate unmet, under the separability mitigation recorded above | repository owner |
 
 `REQ-MOK-032` records the arithmetic behind the `fear` driver, and provision 3 of the `SPEC-MOK-001` list records the
-reasoning behind the full trait range. Both are stated as reasons rather than as preferences so that a later reviewer
-can disagree with the argument rather than only with the number.
+reasoning behind the trait range, in both its original and its amended form. Both are stated as reasons rather than as
+preferences so that a later reviewer can disagree with the argument rather than only with the number — which is what
+happened to the range: the argument for the full range was disagreed with by measurement, and provision 3 records the
+correction beside the original rather than in place of it.
 
 ### The prior gate: this work cannot begin while the last change is unsettled
 
@@ -86,6 +99,27 @@ The gate is therefore:
 Drafting and approving this work order's governing chain may proceed in parallel; **implementation may not begin
 until the gate is met**, and beginning anyway is a stop condition rather than a judgement call.
 
+#### The gate was overridden, and this records it rather than obscures it
+
+**On 2026-08-19 the repository owner, having been shown this gate and the three conditions above, directed that
+implementation proceed with the gate unmet.** None of the three conditions is satisfied at the time the work begins:
+`VREC-MOK-005` is `ready`, its six amendments remain **OUTSTANDING**, and its seven manual assessments remain
+unrecorded. The decision is the owner's to take and it is taken; what follows is a statement of what it costs and of
+the one mitigation available.
+
+The cost is the disentanglement concern above, and it is real: `SPEC-MOK-002` and `SPEC-MOK-003` now carry two layers
+of amendment, the earlier unapproved and the later approved. The mitigation is that the two layers are separable by
+inspection. Every amendment-record row this work order adds is dated 2026-08-19, names this work order, and records
+the owner's approval; every row left by `WO-MOK-005` keeps its 2026-08-18 date and its **OUTSTANDING** marking. **No
+row from the earlier layer is edited, reordered or removed**, and no clause the earlier layer amended is amended again
+here except where this work order's amendment list already names it. A reviewer settling `VREC-MOK-005` later can
+therefore still see exactly which text that record's amendments introduced.
+
+What the override does not do: it does not approve the six outstanding amendments, does not verify `VREC-MOK-005`,
+does not perform its seven manual assessments, and does not transition `WO-MOK-005`. Those remain open and are
+unaffected by anything in this work order. `VREC-MOK-005` binds commit `9d9641fe`, which is an ancestor of `master`,
+so the evidence it holds describes a tree this work builds on top of rather than one it invalidates.
+
 ### Required amendments to approved specifications
 
 This work order depends additionally on amendments to three specifications that are already approved. They are
@@ -100,13 +134,19 @@ not decide the substance.
 2. *State model → Mokiterion*. The contents list gains the trait, stated as fixed for the run, and gains `fear` among
    the attributes. The sentence "All three attributes start at `100`" is restated so that health, satiety and energy
    start at `100` and `fear` starts at `0`.
-3. *State model*. A new subsection fixes the trait: its name `waste_tolerance`, its integer range `0..=100`, and the
+3. *State model*. A new subsection fixes the trait: its name `waste_tolerance`, its integer range, and the
    exact derivation from the seed and the identifier, with the explicit statement that the derivation uses a generator
-   of its own and consumes nothing from the shared stream. Integer arithmetic only. The full range is deliberate: at
-   tolerance `T` a high-class resource restoring `50` satiety is eaten up to satiety `50 + T/2`, so `T = 0` reproduces
-   rule 5 exactly and `T = 100` accepts any clipping. A narrower range would compress divergence toward the reference
-   source and weaken `REQ-MOK-033`'s evidence; if measurement shows the range costs survivors, narrowing it is this
-   subsection's amendment to make.
+   of its own and consumes nothing from the shared stream. Integer arithmetic only. At tolerance `T` a high-class
+   resource restoring `50` satiety is eaten up to satiety `50 + T/2`, so `T = 0` reproduces rule 5 exactly.
+
+   **The range was specified as `0..=100` and amended to `0..=40` during this work order.** The full range was chosen
+   deliberately, on the argument that a wider range strengthens `REQ-MOK-033`'s divergence evidence, and the subsection
+   recorded that narrowing it was its own amendment to make if measurement showed the range cost survivors. Measurement
+   showed exactly that and stop condition 6 fired; the owner chose narrowing over amending the floor. The measured
+   evidence and the option comparison are in `evidence/WO-MOK-007/escalation.md`, and the amendment is the second
+   2026-08-19 row of `SPEC-MOK-001`'s amendment record. Both the original reasoning and its correction are left standing
+   here, because the argument that a wider range gives better evidence was sound and was defeated by measurement rather
+   than by being wrong in principle.
 4. *Time and entropy*. The sentence "One explicit SplitMix64 pseudo-random stream, seeded from `--seed`, supplies all
    initialization, decision-source, and regeneration entropy" is qualified: trait derivation is outside it. And "The
    two decision sources consume from it at different rates, so a run under one source is comparable only with runs

@@ -10,6 +10,13 @@ const SATIETY_DECAY: u8 = 1;
 const ENERGY_DECAY: u8 = 1;
 const PERCEPTION_RADIUS: u8 = 16;
 const REFERENCE_SLEEP_THRESHOLD: u8 = 20;
+const FEAR_INCREASE: u8 = 10;
+const FEAR_DECREASE: u8 = 5;
+
+/// The constant mixed with the run seed to derive a Mokiterion's trait, fixed by
+/// `SPEC-MOK-001`'s *Behavioral trait*. It is a salt, not a generator parameter: the
+/// generator's own multipliers are in [`SplitMix64`].
+const TRAIT_SALT: u64 = 0xC2B2_AE3D_27D4_EB4F;
 
 /// Cells in one territory. Density is expressed relative to this, not to the world.
 ///
@@ -138,6 +145,7 @@ pub enum Policy {
     Baseline,
     #[default]
     Reference,
+    Individual,
 }
 
 impl Policy {
@@ -145,6 +153,7 @@ impl Policy {
         match value {
             "baseline" => Some(Self::Baseline),
             "reference" => Some(Self::Reference),
+            "individual" => Some(Self::Individual),
             _ => None,
         }
     }
@@ -155,6 +164,7 @@ impl fmt::Display for Policy {
         match self {
             Self::Baseline => formatter.write_str("baseline"),
             Self::Reference => formatter.write_str("reference"),
+            Self::Individual => formatter.write_str("individual"),
         }
     }
 }
@@ -384,7 +394,41 @@ struct Mokiterion {
     health: u8,
     satiety: u8,
     energy: u8,
+    /// Rule 12's fourth bounded attribute. No rule reads it: it is computed, bounded and
+    /// reported, and a consumer is a later governed change.
+    fear: u8,
+    /// The one behavioral trait of `SPEC-MOK-001`'s *Behavioral trait*, derived at
+    /// initialization and never written again. Only the trait-aware source reads it.
+    waste_tolerance: u8,
     alive: bool,
+}
+
+/// The inclusive upper bound of the `waste_tolerance` range, from `SPEC-MOK-001`'s *Behavioral
+/// trait* as amended on 2026-08-19.
+///
+/// It was `ATTRIBUTE_MAX` until the sweep in `evidence/WO-MOK-007/escalation.md` showed the full
+/// range missing `REQ-MOK-034`'s survivor floor on three of five declared seeds, with a fifty-seed
+/// mean of 7.40 against a floor of 8. Narrowing to `40` leaves a mean of 9.94 and a 4% miss rate,
+/// against the reference source's own 6%.
+///
+/// **This is a bound of its own and not the attribute bound**, even though the two happened to
+/// coincide in the first form. The trait is not an attribute: it is not clipped, not decayed and
+/// not reported per tick, and tying it to `ATTRIBUTE_MAX` would make a later change to either one
+/// silently move the other.
+const WASTE_TOLERANCE_MAX: u8 = 40;
+
+/// The `waste_tolerance` of the Mokiterion numbered `number`, in `0..=`[`WASTE_TOLERANCE_MAX`].
+///
+/// `SPEC-MOK-001`'s *Behavioral trait* fixes the whole derivation: a generator whose initial
+/// state is the seed exclusive-ored with the identifier's number times [`TRAIT_SALT`], and one
+/// unbiased bounded selection from it.
+///
+/// **The generator is constructed here and dropped here.** It neither reads nor advances the
+/// shared stream, which is the property that leaves every run predating this revision
+/// unchanged. Integer arithmetic only, as the trait's every use is.
+fn derive_waste_tolerance(seed: u64, number: u8) -> u8 {
+    let mut generator = SplitMix64::new(seed ^ u64::from(number).wrapping_mul(TRAIT_SALT));
+    generator.choose_index(usize::from(WASTE_TOLERANCE_MAX) + 1) as u8
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -434,6 +478,10 @@ struct Observation {
     health: u8,
     satiety: u8,
     energy: u8,
+    /// Rule 3 carries the acting Mokiterion's trait so that a source can read it without
+    /// reaching into authoritative state. `fear` is deliberately absent: no rule and no
+    /// source reads it.
+    waste_tolerance: u8,
     co_located_food: Vec<String>,
     perceived_food: Vec<PerceivedFood>,
     perceived_mokiterions: Vec<PerceivedMokiterion>,
@@ -448,6 +496,7 @@ impl Observation {
             && self.health <= ATTRIBUTE_MAX
             && self.satiety <= ATTRIBUTE_MAX
             && self.energy <= ATTRIBUTE_MAX
+            && self.waste_tolerance <= WASTE_TOLERANCE_MAX
             && !self.valid_actions.is_empty()
             && self.co_located_food.iter().all(|food_id| {
                 self.valid_actions.contains(&Action::Eat {
@@ -513,6 +562,61 @@ impl Observation {
             .iter()
             .filter(|food| food.distance > 0)
             .filter(|food| self.fits(food))
+            .min_by(|left, right| {
+                left.distance
+                    .cmp(&right.distance)
+                    .then_with(|| right.class.calorie_rank().cmp(&left.class.calorie_rank()))
+                    .then_with(|| left.id.cmp(&right.id))
+            })
+    }
+
+    /// Whether consuming this resource wastes no more of its satiety restoration than the
+    /// acting Mokiterion's own tolerance admits.
+    ///
+    /// Rule 19's tolerant test verbatim: the resource fits outright, or the part the
+    /// attribute maximum would clip is at most `T * R / 100` with the division truncating
+    /// toward zero. `u16` throughout, so no intermediate saturates and no float appears. At
+    /// tolerance `0` the second clause reads `S + R - 100 <= 0`, which is [`Self::fits`], so
+    /// the two agree on every observation at that tolerance.
+    ///
+    /// [`Self::fits`] and the two selectors beside it are deliberately left as they are
+    /// rather than generalized to take a tolerance. They are the control this change is
+    /// measured against, and a shared implementation would make the reference source's
+    /// behavior depend on code written for the trait-aware one. The cost is the ordering
+    /// below, repeated once.
+    fn fits_within_tolerance(&self, food: &PerceivedFood) -> bool {
+        let restored = u16::from(food.class.restoration().0);
+        let resulting = u16::from(self.satiety) + restored;
+        let maximum = u16::from(ATTRIBUTE_MAX);
+        if resulting <= maximum {
+            return true;
+        }
+        resulting - maximum <= u16::from(self.waste_tolerance) * restored / 100
+    }
+
+    /// The co-located resource rule 19 case 1 selects: the richest one the tolerance admits,
+    /// then lowest identifier.
+    fn best_tolerated_co_located_food(&self) -> Option<&PerceivedFood> {
+        self.perceived_food
+            .iter()
+            .filter(|food| food.distance == 0)
+            .filter(|food| self.fits_within_tolerance(food))
+            .max_by(|left, right| {
+                left.class
+                    .calorie_rank()
+                    .cmp(&right.class.calorie_rank())
+                    .then_with(|| right.id.cmp(&left.id))
+            })
+    }
+
+    /// The target rule 19 case 3 selects: nearest first, then highest calorie class, then
+    /// lowest identifier, among those the tolerance admits. Case 1 and case 3 screen by the
+    /// same test, which is what keeps the resource just left from being re-targeted.
+    fn best_tolerated_distant_food(&self) -> Option<&PerceivedFood> {
+        self.perceived_food
+            .iter()
+            .filter(|food| food.distance > 0)
+            .filter(|food| self.fits_within_tolerance(food))
             .min_by(|left, right| {
                 left.distance
                     .cmp(&right.distance)
@@ -628,6 +732,66 @@ impl DecisionSource for ReferenceDecisionSource {
         }
 
         if let Some(target) = observation.best_fitting_distant_food()
+            && let Some(direction) = target.direction
+        {
+            let preferred = direction.horizontal().or_else(|| direction.vertical());
+            let alternate = direction.vertical().or_else(|| direction.horizontal());
+            for candidate in [preferred, alternate].into_iter().flatten() {
+                let step = Action::Move {
+                    direction: candidate,
+                };
+                if observation.allows(&step) {
+                    return step;
+                }
+            }
+        }
+
+        let moves = observation.valid_moves();
+        debug_assert!(
+            !moves.is_empty(),
+            "every in-bounds position has at least two valid cardinal moves"
+        );
+        let choice = entropy.choose_index(moves.len());
+        Action::Move {
+            direction: moves[choice],
+        }
+    }
+}
+
+/// Rule 19's trait-aware source. It is the reference source's order of business with one
+/// substitution: where that source asks whether a resource fits, this asks whether the acting
+/// Mokiterion's own tolerance admits it. Two Mokiterions in identical situations therefore
+/// propose differently, which is the whole point of `CAP-MOK-006`.
+///
+/// It reads the trait and nothing else new. Reading the trait grants it no authority: it
+/// proposes, and the engine decides under rule 6 with no relaxation.
+#[derive(Default)]
+struct IndividualDecisionSource;
+
+impl DecisionSource for IndividualDecisionSource {
+    fn name(&self) -> &str {
+        "individual"
+    }
+
+    fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action {
+        debug_assert!(observation.is_consistent());
+
+        if let Some(food) = observation.best_tolerated_co_located_food() {
+            let eat = Action::Eat {
+                food_id: food.id.clone(),
+            };
+            if observation.allows(&eat) {
+                return eat;
+            }
+        }
+
+        // Rule 19 case 2 states the same threshold rule 5 case 2 does, so the two share one
+        // constant and cannot drift apart.
+        if observation.energy < REFERENCE_SLEEP_THRESHOLD && observation.allows(&Action::Sleep) {
+            return Action::Sleep;
+        }
+
+        if let Some(target) = observation.best_tolerated_distant_food()
             && let Some(direction) = target.direction
         {
             let preferred = direction.horizontal().or_else(|| direction.vertical());
@@ -850,6 +1014,9 @@ pub enum EventDetail {
         health: u8,
         satiety: u8,
         energy: u8,
+        fear: u8,
+        /// Reported once, here, because the trait cannot change during a run.
+        waste_tolerance: u8,
     },
     DecisionSourceSelected {
         source: String,
@@ -858,6 +1025,7 @@ pub enum EventDetail {
         health: (u8, u8),
         satiety: (u8, u8),
         energy: (u8, u8),
+        fear: (u8, u8),
     },
     AgentDied {
         health: u8,
@@ -893,6 +1061,9 @@ pub enum EventDetail {
         health: u8,
         satiety: u8,
         energy: u8,
+        /// Rule 7 places the trace before survival decay, so this is the value held before
+        /// rule 12's update for this tick.
+        fear: u8,
     },
 }
 
@@ -940,19 +1111,22 @@ impl fmt::Display for EventDetail {
                 health,
                 satiety,
                 energy,
+                fear,
+                waste_tolerance,
             } => write!(
                 formatter,
-                "position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy}"
+                "position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy},fear:{fear},waste_tolerance:{waste_tolerance}"
             ),
             Self::DecisionSourceSelected { source } => write!(formatter, "source:{source}"),
             Self::SurvivalChanged {
                 health,
                 satiety,
                 energy,
+                fear,
             } => write!(
                 formatter,
-                "health:{}->{},satiety:{}->{},energy:{}->{}",
-                health.0, health.1, satiety.0, satiety.1, energy.0, energy.1
+                "health:{}->{},satiety:{}->{},energy:{}->{},fear:{}->{}",
+                health.0, health.1, satiety.0, satiety.1, energy.0, energy.1, fear.0, fear.1
             ),
             Self::AgentDied { health } => write!(formatter, "health:{health}"),
             Self::FoodConsumed {
@@ -984,9 +1158,10 @@ impl fmt::Display for EventDetail {
                 health,
                 satiety,
                 energy,
+                fear,
             } => write!(
                 formatter,
-                "proposal:{proposal},status:{},detail:{detail},position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy}",
+                "proposal:{proposal},status:{},detail:{detail},position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy},fear:{fear}",
                 if *accepted { "accepted" } else { "rejected" }
             ),
         }
@@ -1074,6 +1249,7 @@ pub struct AgentSnapshot {
     pub health: u8,
     pub satiety: u8,
     pub energy: u8,
+    pub fear: u8,
     /// The action the engine applied on the most recently completed tick. Absent before
     /// tick 1 completes and when the proposal was rejected.
     pub applied_action: Option<Action>,
@@ -1185,6 +1361,11 @@ impl Simulation {
                 health: ATTRIBUTE_MAX,
                 satiety: ATTRIBUTE_MAX,
                 energy: ATTRIBUTE_MAX,
+                // Rule 12's attribute starts at zero: no Mokiterion begins afraid.
+                fear: 0,
+                // Rule 1 derives the trait at the point the agent is created. The derivation
+                // has a generator of its own, so it cannot move the placement draws above.
+                waste_tolerance: derive_waste_tolerance(config.seed, number),
                 alive: true,
             });
         }
@@ -1210,6 +1391,10 @@ impl Simulation {
             }
             Policy::Reference => {
                 let mut source = ReferenceDecisionSource;
+                self.run_with_source(output, &mut source)
+            }
+            Policy::Individual => {
+                let mut source = IndividualDecisionSource;
                 self.run_with_source(output, &mut source)
             }
         }
@@ -1276,6 +1461,10 @@ impl Simulation {
                 let mut source = ReferenceDecisionSource;
                 self.advance_tick_with_source(&mut source)
             }
+            Policy::Individual => {
+                let mut source = IndividualDecisionSource;
+                self.advance_tick_with_source(&mut source)
+            }
         }
     }
 
@@ -1331,6 +1520,7 @@ impl Simulation {
                 health: agent.health,
                 satiety: agent.satiety,
                 energy: agent.energy,
+                fear: agent.fear,
                 applied_action: self
                     .decisions
                     .iter()
@@ -1388,6 +1578,7 @@ impl Simulation {
         let source = match self.config.policy {
             Policy::Baseline => BaselineDecisionSource.name().to_string(),
             Policy::Reference => ReferenceDecisionSource.name().to_string(),
+            Policy::Individual => IndividualDecisionSource.name().to_string(),
         };
         let mut events = self.entity_initialization_events();
         events.push(Event::new(
@@ -1430,6 +1621,8 @@ impl Simulation {
                     health: agent.health,
                     satiety: agent.satiety,
                     energy: agent.energy,
+                    fear: agent.fear,
+                    waste_tolerance: agent.waste_tolerance,
                 },
             ));
         }
@@ -1488,6 +1681,9 @@ impl Simulation {
             }
 
             let observation = self.observation(agent_index);
+            // Rule 12 updates `fear` from *this* observation's perceived-Mokiterion list, so
+            // the driver is read here and carried, not re-perceived after the action.
+            let perceived_company = !observation.perceived_mokiterions.is_empty();
             let proposal = {
                 let mut entropy = DecisionEntropy::new(&mut self.entropy);
                 decision_source.decide(&observation, &mut entropy)
@@ -1510,7 +1706,7 @@ impl Simulation {
                 self.emit_action_trace(output, agent_index, &proposal, &result)?;
             }
 
-            self.apply_survival(output, agent_index)?;
+            self.apply_survival(output, agent_index, perceived_company)?;
         }
 
         if self.tick.is_multiple_of(REGENERATION_INTERVAL) {
@@ -1596,6 +1792,7 @@ impl Simulation {
             health: agent.health,
             satiety: agent.satiety,
             energy: agent.energy,
+            waste_tolerance: agent.waste_tolerance,
             co_located_food,
             perceived_food,
             perceived_mokiterions,
@@ -1731,24 +1928,42 @@ impl Simulation {
                     health: agent.health,
                     satiety: agent.satiety,
                     energy: agent.energy,
+                    fear: agent.fear,
                 },
             )
         };
         self.emit(output, event)
     }
 
-    fn apply_survival<W: Write>(&mut self, output: &mut W, agent_index: usize) -> io::Result<()> {
+    /// Rule 12: survival decay, then rule 12's `fear` update from the same tick's rule 3
+    /// observation. `perceived_company` is whether that observation's perceived-Mokiterion
+    /// list held at least one entry — the whole driver, with no distance constant of its own,
+    /// because rule 3's list is already bounded by the perception radius.
+    fn apply_survival<W: Write>(
+        &mut self,
+        output: &mut W,
+        agent_index: usize,
+        perceived_company: bool,
+    ) -> io::Result<()> {
         let (event, died) = {
             let agent = &mut self.agents[agent_index];
             let previous_health = agent.health;
             let previous_satiety = agent.satiety;
             let previous_energy = agent.energy;
+            let previous_fear = agent.fear;
 
             agent.satiety = agent.satiety.saturating_sub(SATIETY_DECAY);
             agent.energy = agent.energy.saturating_sub(ENERGY_DECAY);
             if agent.satiety == 0 || agent.energy == 0 {
                 agent.health = agent.health.saturating_sub(5);
             }
+            // Saturation at both bounds is a normal outcome here, not an error: a Mokiterion
+            // in lasting company sits at 100 and one lastingly alone sits at 0.
+            agent.fear = if perceived_company {
+                agent.fear.saturating_add(FEAR_INCREASE).min(ATTRIBUTE_MAX)
+            } else {
+                agent.fear.saturating_sub(FEAR_DECREASE)
+            };
 
             let event = Event::new(
                 self.tick,
@@ -1757,6 +1972,7 @@ impl Simulation {
                     health: (previous_health, agent.health),
                     satiety: (previous_satiety, agent.satiety),
                     energy: (previous_energy, agent.energy),
+                    fear: (previous_fear, agent.fear),
                 },
             );
 
@@ -2212,7 +2428,10 @@ mod tests {
         simulation.agents[0].energy = 50;
         let mut output = Vec::new();
 
-        simulation.apply_survival(&mut output, 0).unwrap();
+        // The third argument is rule 12's `fear` driver, whose own saturation is asserted in
+        // `fear_saturates_at_both_bounds_and_is_reported_every_tick`. Passing `false` keeps
+        // this test's subject the decay of the three attributes it was written for.
+        simulation.apply_survival(&mut output, 0, false).unwrap();
 
         assert_eq!(simulation.agents[0].health, 0);
         assert_eq!(simulation.agents[0].satiety, 0);
@@ -2988,6 +3207,763 @@ mod tests {
         assert_eq!(output.matches("proposal:wait").count(), 0);
         for agent in simulation.agents.iter().filter(|agent| agent.alive) {
             assert!(agent.energy > 0, "{} ran its energy to zero", agent.id);
+        }
+    }
+    // ---- WO-MOK-007: the trait, fear, and the trait-aware source -------------------------
+
+    /// The verification seed set `VER-MOK-002` declares, reused unchanged by `VER-MOK-007` so
+    /// that this change's measurements and the control's are taken on the same worlds.
+    const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
+
+    /// The twelve `waste_tolerance` values per declared seed, `M01` first, in the order of
+    /// [`DECLARED_SEEDS`].
+    ///
+    /// `VER-MOK-007` requires a recorded expectation checked into the suite rather than a
+    /// re-derivation: a re-derivation restates the implementation and would follow it wherever
+    /// it went. These values were computed from `SPEC-MOK-001`'s *Behavioral trait* by a
+    /// separate implementation of SplitMix64 and agree with this one on all sixty values.
+    ///
+    /// Re-recorded on 2026-08-19 when *Behavioral trait* narrowed the range to `0..=40`. The
+    /// independent derivation was re-run at the amended bound and agreed again on all sixty; the
+    /// negative control in `evidence/WO-MOK-007/negative-control/oracle-2.txt` shows why a
+    /// re-derived expectation would not have been worth having.
+    const RECORDED_TRAITS: [[u8; 12]; 5] = [
+        [6, 8, 8, 5, 4, 32, 15, 10, 39, 18, 20, 37],
+        [26, 3, 22, 39, 39, 37, 2, 17, 15, 16, 28, 0],
+        [11, 40, 4, 24, 21, 13, 7, 40, 24, 15, 10, 23],
+        [20, 33, 40, 13, 35, 19, 40, 35, 24, 0, 19, 4],
+        [36, 3, 7, 10, 30, 18, 36, 24, 0, 22, 8, 38],
+    ];
+
+    /// The densities `VER-MOK-002` sweeps for resource counts, with the number of values the
+    /// shared stream has produced by the end of initialization at each declared seed.
+    ///
+    /// These counts are what `VER-MOK-007` oracle 2 pins. Initialization places
+    /// `2 x resources_per_territory + 12` entities, each from two draws, plus two more for every
+    /// coordinate rejected as occupied; at `0.15%` that is `2 x (2 x 12 + 12) = 72` on every
+    /// seed, with no rejection anywhere and therefore no slack in which a thirteenth draw could
+    /// hide. Twelve trait derivations happen in the middle of the agent placements and contribute
+    /// none of these values.
+    const INITIALIZATION_DRAWS: [(&str, [u64; 5]); 3] = [
+        ("0.15", [72, 72, 72, 72, 72]),
+        ("0.75", [270, 268, 268, 268, 268]),
+        ("1.50", [516, 516, 516, 514, 516]),
+    ];
+
+    fn individual_config(seed: u64, tick_limit: u64, trace_actions: bool) -> Config {
+        Config {
+            seed,
+            tick_limit,
+            policy: Policy::Individual,
+            density: Density::DEFAULT,
+            trace_actions,
+        }
+    }
+
+    fn decide_individual_once(simulation: &Simulation, agent_index: usize) -> (Action, u32) {
+        let observation = simulation.observation(agent_index);
+        let mut stream = simulation.entropy;
+        let mut entropy = DecisionEntropy::new(&mut stream);
+        let action = IndividualDecisionSource.decide(&observation, &mut entropy);
+        (action, entropy.draws)
+    }
+
+    fn traits_of(simulation: &Simulation) -> Vec<u8> {
+        simulation
+            .agents
+            .iter()
+            .map(|agent| agent.waste_tolerance)
+            .collect()
+    }
+
+    /// How many values the shared stream has produced since it was seeded.
+    ///
+    /// `SplitMix64` advances its state by one fixed increment per value, so the state alone
+    /// carries the count. Recovering it by stepping forward from the seed needs no inverse and
+    /// no constant this file does not already hold.
+    fn shared_stream_draws(simulation: &Simulation) -> u64 {
+        let mut probe = SplitMix64::new(simulation.config.seed);
+        for count in 0..10_000 {
+            if probe.state == simulation.entropy.state {
+                return count;
+            }
+            probe.next_u64();
+        }
+        panic!("the shared stream is more than 10,000 values past its seed");
+    }
+
+    /// The `fear` transition the named subject's `survival_changed` line reports, per line.
+    fn reported_fear_transitions(output: &str, subject: &str) -> Vec<(u8, u8)> {
+        output
+            .lines()
+            .filter(|line| line.contains(&format!("subject={subject} ")))
+            .filter(|line| line.contains("event=survival_changed"))
+            .map(|line| {
+                let field = line
+                    .split(",fear:")
+                    .nth(1)
+                    .expect("every survival_changed line reports fear");
+                let (from, to) = field.split_once("->").expect("a transition has two ends");
+                (
+                    from.parse().expect("the earlier value is an integer"),
+                    to.trim_end()
+                        .parse()
+                        .expect("the later value is an integer"),
+                )
+            })
+            .collect()
+    }
+
+    /// Rule 12's driver, constructed: the acting Mokiterion at `origin` with the listed
+    /// companions inside its perception and every other Mokiterion far outside it.
+    fn with_companions(simulation: &mut Simulation, origin: Coordinate, companions: &[Coordinate]) {
+        simulation.agents[0].position = origin;
+        // The other territory, past the boundary and past the radius from `origin`, at distinct
+        // coordinates so that nothing here depends on shared-cell behavior.
+        for (index, agent) in simulation.agents.iter_mut().enumerate().skip(1) {
+            agent.position = Coordinate {
+                x: u8::try_from(index).expect("twelve fits"),
+                y: 120,
+            };
+        }
+        for (offset, position) in companions.iter().enumerate() {
+            simulation.agents[offset + 1].position = *position;
+        }
+        simulation.foods.clear();
+    }
+
+    /// Oracle 3's placement dimension: the resource underfoot, then each of the eight relative
+    /// directions at distance `1` and at the perception radius, then no resource at all.
+    fn enumerated_placements(origin: Coordinate) -> Vec<Option<Coordinate>> {
+        const OFFSETS: [(i16, i16); 8] = [
+            (0, -1),
+            (1, -1),
+            (1, 0),
+            (1, 1),
+            (0, 1),
+            (-1, 1),
+            (-1, 0),
+            (-1, -1),
+        ];
+        let mut placements = vec![Some(origin)];
+        for distance in [1, i16::from(PERCEPTION_RADIUS)] {
+            for (offset_x, offset_y) in OFFSETS {
+                placements.push(Some(Coordinate {
+                    x: u8::try_from(i16::from(origin.x) + offset_x * distance)
+                        .expect("the origin is far from every edge"),
+                    y: u8::try_from(i16::from(origin.y) + offset_y * distance)
+                        .expect("the origin is far from every edge"),
+                }));
+            }
+        }
+        placements.push(None);
+        placements
+    }
+
+    /// `VER-MOK-007` oracle 2: the shared entropy stream's own position, either side of trait
+    /// derivation and after initialization as a whole.
+    ///
+    /// The derivation takes no stream, so the before-and-after pair alone could not fail. The
+    /// recorded draw counts are what makes this test able to fail: a derivation that drew from
+    /// the shared stream — the design `REQ-MOK-031` forbids — would raise every count by twelve.
+    /// The counts themselves are validated by oracle 1, which found the whole event stream
+    /// byte-identical to the pre-change capture on all five seeds, so they are the pre-change
+    /// positions and not merely this build's own.
+    #[test]
+    fn trait_derivation_leaves_the_shared_stream_where_it_found_it() {
+        for (density, counts) in INITIALIZATION_DRAWS {
+            for (index, seed) in DECLARED_SEEDS.into_iter().enumerate() {
+                let simulation = Simulation::new(Config {
+                    density: Density::parse(density).unwrap(),
+                    ..individual_config(seed, 1, false)
+                })
+                .unwrap();
+
+                assert_eq!(
+                    shared_stream_draws(&simulation),
+                    counts[index],
+                    "the shared stream is not where initialization at seed {seed}, density \
+                     {density}% left it before this change"
+                );
+
+                // The direct before-and-after form the contract names, for every Mokiterion.
+                let before = simulation.entropy;
+                for number in 1..=12u8 {
+                    let derived = derive_waste_tolerance(seed, number);
+                    assert_eq!(
+                        simulation.entropy, before,
+                        "deriving M{number:02}'s trait at seed {seed} moved the shared stream"
+                    );
+                    assert!(derived <= WASTE_TOLERANCE_MAX);
+                }
+                assert_eq!(simulation.entropy, before);
+            }
+        }
+    }
+
+    /// `REQ-MOK-031`: the twelve values, their range, their spread, and their reproducibility
+    /// across two independent initializations at one seed.
+    #[test]
+    fn the_twelve_traits_are_the_recorded_ones_and_are_neither_uniform_nor_out_of_range() {
+        for (index, seed) in DECLARED_SEEDS.into_iter().enumerate() {
+            let first = Simulation::new(individual_config(seed, 1, false)).unwrap();
+            let second = Simulation::new(individual_config(seed, 1, false)).unwrap();
+            let values = traits_of(&first);
+
+            assert_eq!(
+                values,
+                RECORDED_TRAITS[index].to_vec(),
+                "seed {seed} no longer derives the recorded traits"
+            );
+            assert_eq!(
+                values,
+                traits_of(&second),
+                "seed {seed} is not reproducible"
+            );
+            assert!(
+                values.iter().all(|value| *value <= WASTE_TOLERANCE_MAX),
+                "seed {seed} derived a value outside 0..={WASTE_TOLERANCE_MAX}: {values:?}"
+            );
+            let distinct: HashSet<u8> = values.iter().copied().collect();
+            assert!(
+                distinct.len() > 1,
+                "seed {seed} gave all twelve the same trait, which is no individuality at all"
+            );
+        }
+
+        // Both endpoints of the specified range are attained somewhere in the declared set, so the
+        // range is the inclusive one *Behavioral trait* states and not one narrower by a value at
+        // either end. This is what an off-by-one in the bounded selection would break, and it is
+        // also the check that a later narrowing of the range cannot pass by accident.
+        let all: Vec<u8> = RECORDED_TRAITS.iter().flatten().copied().collect();
+        assert!(all.contains(&0), "no declared seed derives the lower bound");
+        assert!(
+            all.contains(&WASTE_TOLERANCE_MAX),
+            "no declared seed derives the upper bound of {WASTE_TOLERANCE_MAX}, so the range the \
+             tests exercise is narrower than the one specified"
+        );
+    }
+
+    /// `REQ-MOK-031`: the derivation reads the seed, not the identifier alone. Were it otherwise
+    /// every world would hold the same twelve personalities.
+    #[test]
+    fn the_trait_reads_the_seed_and_not_only_the_identifier() {
+        let first = derive_waste_tolerance(DECLARED_SEEDS[0], 1);
+        assert!(
+            DECLARED_SEEDS
+                .into_iter()
+                .any(|seed| derive_waste_tolerance(seed, 1) != first),
+            "M01 holds the same trait at every declared seed"
+        );
+    }
+
+    /// `REQ-MOK-031`: fixed for the run, and a property of the Mokiterion rather than of the
+    /// configuration. The same twelve values under every source, at every swept density, at
+    /// every tick limit, and unchanged after a thousand ticks of living and dying.
+    #[test]
+    fn the_trait_is_fixed_for_the_run_and_independent_of_every_configuration() {
+        let expected = RECORDED_TRAITS[2].to_vec();
+        let seed = DECLARED_SEEDS[2];
+
+        for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+            for density in ["0.15", "0.75", "1.50"] {
+                for tick_limit in [1, 37] {
+                    let simulation = Simulation::new(Config {
+                        seed,
+                        tick_limit,
+                        policy,
+                        density: Density::parse(density).unwrap(),
+                        trace_actions: false,
+                    })
+                    .unwrap();
+                    assert_eq!(
+                        traits_of(&simulation),
+                        expected,
+                        "{policy} at density {density}% over {tick_limit} ticks derived other \
+                         traits"
+                    );
+                }
+            }
+        }
+
+        // A thousand ticks later the values are the same ones, for the dead as for the living:
+        // the field has one writer and it runs once, at initialization.
+        let mut simulation = Simulation::new(individual_config(seed, 1_000, false)).unwrap();
+        simulation.run(&mut io::sink()).unwrap();
+        assert_eq!(traits_of(&simulation), expected);
+    }
+
+    /// `VER-MOK-007` oracle 3: at the trait's lower bound the trait-aware source proposes what
+    /// the reference source proposes, over an enumerated situation set rather than a sampled one.
+    ///
+    /// The set is the product of five dimensions:
+    ///
+    /// - thirteen satiety values straddling every clipping boundary the food table produces —
+    ///   `85` for the low class, `70` for the medium and `50` for the high — with one value below,
+    ///   at and above each, plus both ends of the range and one value between the boundaries;
+    /// - the three calorie classes;
+    /// - eighteen placements: underfoot, then each of the eight relative directions at distance
+    ///   `1` and at the perception radius, then nothing perceived at all, which is the case that
+    ///   makes the search fallback reachable;
+    /// - two energy values, one below rule 19 case 2's threshold and one at it, so the sleep
+    ///   branch is taken in half the set and skipped in the other;
+    /// - two companion states, with and without a low-class resource underfoot, so case 1's
+    ///   tie-break and case 3's fallthrough are both reached.
+    ///
+    /// Its size is asserted below so that the set cannot silently shrink. Both sources are given
+    /// the identical observation and a copy of the identical stream, so the search step's
+    /// selection is comparable too, and the streams are compared after the proposal: two sources
+    /// that agreed on the action while consuming different amounts of entropy would diverge on
+    /// the next tick.
+    #[test]
+    fn at_tolerance_zero_the_trait_aware_source_proposes_what_the_reference_source_proposes() {
+        const SATIETIES: [u8; 13] = [0, 49, 50, 51, 60, 69, 70, 71, 84, 85, 86, 99, 100];
+
+        let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
+        simulation.tick = 1;
+        // Far from every edge, so every placement below is in bounds and in territory A, and
+        // far from the other eleven, so that only resources are perceived.
+        let origin = Coordinate { x: 60, y: 30 };
+        with_companions(&mut simulation, origin, &[]);
+        simulation.agents[0].waste_tolerance = 0;
+        let placements = enumerated_placements(origin);
+
+        let mut cases = 0usize;
+        for satiety in SATIETIES {
+            for class in FoodClass::ALL {
+                for placement in &placements {
+                    for energy in [REFERENCE_SLEEP_THRESHOLD - 1, REFERENCE_SLEEP_THRESHOLD] {
+                        for companion in [false, true] {
+                            simulation.agents[0].satiety = satiety;
+                            simulation.agents[0].energy = energy;
+                            simulation.foods.clear();
+                            if let Some(position) = *placement {
+                                simulation.foods.push(Food {
+                                    id: "F0001".into(),
+                                    position,
+                                    class,
+                                });
+                            }
+                            if companion {
+                                simulation.foods.push(Food {
+                                    id: "F0002".into(),
+                                    position: origin,
+                                    class: FoodClass::Low,
+                                });
+                            }
+
+                            let observation = simulation.observation(0);
+                            let mut reference_stream = simulation.entropy;
+                            let mut individual_stream = simulation.entropy;
+                            let reference = ReferenceDecisionSource.decide(
+                                &observation,
+                                &mut DecisionEntropy::new(&mut reference_stream),
+                            );
+                            let individual = IndividualDecisionSource.decide(
+                                &observation,
+                                &mut DecisionEntropy::new(&mut individual_stream),
+                            );
+
+                            let case = format!(
+                                "satiety {satiety}, {class} class, placement {placement:?}, \
+                                 energy {energy}, companion {companion}"
+                            );
+                            assert_eq!(individual, reference, "{case}");
+                            assert_eq!(individual_stream, reference_stream, "{case}");
+                            cases += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        assert_eq!(cases, SATIETIES.len() * 3 * placements.len() * 2 * 2);
+        assert_eq!(cases, 2_808, "the enumerated situation set changed size");
+    }
+
+    /// `REQ-MOK-033`: a trait difference alone changes the proposal, in both of rule 19's worked
+    /// cases as amended on 2026-08-19.
+    ///
+    /// The medium-class case is the interior one: at satiety `80` a medium-class resource restores
+    /// `30` and wastes `10`, which the tolerant test admits when `10 <= T * 30 / 100`, so at
+    /// `T = 34` (`1020 / 100 = 10`) and not at `T = 33` (`990 / 100 = 9`). **The pair either side
+    /// of `34` is what pins the division as truncating rather than rounding**, and neither value is
+    /// near the range's ends, so it survives a further narrowing.
+    ///
+    /// The high-class case sits exactly at the range's upper bound: at satiety `70` the waste is
+    /// `20` and `40 * 50 / 100 = 20` admits it while `39 * 50 / 100 = 19` does not. A resource of
+    /// that class at satiety `80` is declined at every reachable tolerance, which is the effect the
+    /// narrowing was made to produce, so that is asserted too.
+    #[test]
+    fn a_trait_difference_alone_decides_whether_a_clipped_resource_is_eaten() {
+        let underfoot = Coordinate { x: 60, y: 30 };
+        let expected = Action::Eat {
+            food_id: "F0001".into(),
+        };
+
+        for (class, satiety, admits, declines) in [
+            (FoodClass::Medium, 80u8, 34u8, 33u8),
+            (
+                FoodClass::High,
+                70,
+                WASTE_TOLERANCE_MAX,
+                WASTE_TOLERANCE_MAX - 1,
+            ),
+        ] {
+            let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
+            simulation.tick = 1;
+            for agent in &mut simulation.agents {
+                agent.position = underfoot;
+                agent.satiety = satiety;
+                agent.energy = ATTRIBUTE_MAX;
+            }
+            simulation.foods = vec![Food {
+                id: "F0001".into(),
+                position: underfoot,
+                class,
+            }];
+            simulation.agents[0].waste_tolerance = admits;
+            simulation.agents[1].waste_tolerance = declines;
+            simulation.agents[2].waste_tolerance = 0;
+            simulation.agents[3].waste_tolerance = admits;
+
+            let (tolerant, draws) = decide_individual_once(&simulation, 0);
+            assert_eq!(
+                tolerant, expected,
+                "tolerance {admits} declined a {class}-class resource at satiety {satiety}"
+            );
+            assert_eq!(draws, 0, "eating consumes no entropy");
+
+            for index in [1, 2] {
+                let tolerance = simulation.agents[index].waste_tolerance;
+                let (rejected, draws) = decide_individual_once(&simulation, index);
+                assert!(
+                    matches!(rejected, Action::Move { .. }),
+                    "tolerance {tolerance} accepted the waste of a {class}-class resource at \
+                     satiety {satiety}, proposing {rejected}"
+                );
+                assert_eq!(draws, 1, "a Mokiterion with nothing to eat searches");
+            }
+
+            // Equal traits in situations identical in everything rule 19 reads propose identically.
+            let (same, _) = decide_individual_once(&simulation, 3);
+            assert_eq!(same, tolerant);
+        }
+
+        // The narrowing's intended effect: a high-class resource at satiety 80 wastes 30, and no
+        // tolerance the amended range can produce admits it, because `40 * 50 / 100 = 20 < 30`.
+        let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
+        simulation.tick = 1;
+        with_companions(&mut simulation, underfoot, &[]);
+        simulation.agents[0].satiety = 80;
+        simulation.foods = vec![Food {
+            id: "F0001".into(),
+            position: underfoot,
+            class: FoodClass::High,
+        }];
+        for tolerance in 0..=WASTE_TOLERANCE_MAX {
+            simulation.agents[0].waste_tolerance = tolerance;
+            let (proposal, _) = decide_individual_once(&simulation, 0);
+            assert!(
+                matches!(proposal, Action::Move { .. }),
+                "tolerance {tolerance} ate a high-class resource at satiety 80, wasting 30, which \
+                 the amended range was narrowed to prevent"
+            );
+        }
+    }
+
+    /// Rule 19's *The test governs cases 1 and 3 alike*, in the form rule 5's own test is held
+    /// to: the resource a tolerance declines underfoot must not become the target of the next
+    /// step. Only the search step consumes entropy, so the draw count separates a deliberate
+    /// approach from a search without naming how either source ranks candidates.
+    #[test]
+    fn the_tolerant_test_governs_seeking_as_well_as_eating() {
+        let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
+        simulation.tick = 1;
+        let underfoot = Coordinate { x: 50, y: 30 };
+        with_companions(&mut simulation, underfoot, &[]);
+        // Rule 19's medium-class worked case, whose boundary at 34 is interior to the amended
+        // range: tolerance 33 declines a waste of 10 and 34 admits it.
+        simulation.agents[0].satiety = 80;
+        simulation.agents[0].waste_tolerance = 33;
+        simulation.foods = vec![Food {
+            id: "F0001".into(),
+            position: underfoot,
+            class: FoodClass::Medium,
+        }];
+
+        let (declined, draws) = decide_individual_once(&simulation, 0);
+        assert!(matches!(declined, Action::Move { .. }), "got {declined}");
+        assert_eq!(draws, 1, "with nothing worth eating the step is a search");
+
+        // Standing one cell away, the resource it just declined must not be re-targeted.
+        simulation.agents[0].position = Coordinate { x: 49, y: 30 };
+        let (adjacent, draws) = decide_individual_once(&simulation, 0);
+        assert_eq!(
+            draws, 1,
+            "the cell just left must not be re-targeted, got {adjacent}"
+        );
+
+        // The tolerance is a filter and not a blanket: one point higher and the same resource is
+        // both approached and eaten, neither of which consumes entropy.
+        simulation.agents[0].waste_tolerance = 34;
+        let (approach, draws) = decide_individual_once(&simulation, 0);
+        assert_eq!(
+            approach,
+            Action::Move {
+                direction: Direction::East
+            }
+        );
+        assert_eq!(draws, 0, "approaching must not consume entropy");
+
+        simulation.agents[0].position = underfoot;
+        let (eaten, draws) = decide_individual_once(&simulation, 0);
+        assert_eq!(
+            eaten,
+            Action::Eat {
+                food_id: "F0001".into()
+            }
+        );
+        assert_eq!(draws, 0);
+    }
+
+    /// `REQ-MOK-032`: the driver is rule 3's perceived-Mokiterion list, so the boundary is
+    /// perception's own. Constructed at Chebyshev distance `16` and at `17`, one cell apart: an
+    /// off-by-one here is an off-by-one in perception.
+    #[test]
+    fn fear_rises_at_the_perception_boundary_and_decays_one_cell_beyond_it() {
+        for (distance, expected) in [
+            (PERCEPTION_RADIUS, (20, 20 + FEAR_INCREASE)),
+            (PERCEPTION_RADIUS + 1, (20, 20 - FEAR_DECREASE)),
+        ] {
+            let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
+            simulation.tick = 1;
+            let origin = Coordinate { x: 60, y: 30 };
+            with_companions(
+                &mut simulation,
+                origin,
+                &[Coordinate {
+                    x: origin.x + distance,
+                    y: origin.y,
+                }],
+            );
+            simulation.agents[0].fear = 20;
+            let mut output = Vec::new();
+
+            simulation
+                .run_tick(&mut output, &mut IndividualDecisionSource)
+                .unwrap();
+
+            let output = String::from_utf8(output).unwrap();
+            assert_eq!(
+                reported_fear_transitions(&output, "M01"),
+                vec![expected],
+                "at Chebyshev distance {distance}"
+            );
+        }
+    }
+
+    /// `REQ-MOK-032`: the step is fixed. How many are perceived, how far away and in which
+    /// direction do not enter it, because the update reads whether rule 3's list is empty and
+    /// nothing else about it.
+    #[test]
+    fn fear_ignores_how_many_are_perceived_how_far_and_in_which_direction() {
+        let origin = Coordinate { x: 60, y: 30 };
+        let cases: [(&str, Vec<Coordinate>); 5] = [
+            (
+                "one companion one cell east",
+                vec![Coordinate { x: 61, y: 30 }],
+            ),
+            (
+                "one companion at the radius",
+                vec![Coordinate { x: 76, y: 30 }],
+            ),
+            (
+                "one companion to the north west",
+                vec![Coordinate { x: 55, y: 25 }],
+            ),
+            ("one companion due south", vec![Coordinate { x: 60, y: 38 }]),
+            (
+                "four companions at four distances",
+                vec![
+                    Coordinate { x: 61, y: 30 },
+                    Coordinate { x: 60, y: 25 },
+                    Coordinate { x: 48, y: 42 },
+                    Coordinate { x: 76, y: 46 },
+                ],
+            ),
+        ];
+
+        for (case, companions) in cases {
+            let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
+            simulation.tick = 1;
+            with_companions(&mut simulation, origin, &companions);
+            simulation.agents[0].fear = 20;
+            let mut output = Vec::new();
+
+            simulation
+                .run_tick(&mut output, &mut IndividualDecisionSource)
+                .unwrap();
+
+            let output = String::from_utf8(output).unwrap();
+            assert_eq!(
+                reported_fear_transitions(&output, "M01"),
+                vec![(20, 20 + FEAR_INCREASE)],
+                "{case}"
+            );
+        }
+    }
+
+    /// `REQ-MOK-032`: saturation at both bounds over many consecutive ticks, and a transition
+    /// reported on every one of them — including `0->0`, which is the lower bound holding rather
+    /// than a missing update. In a debug build a wrap would be a panic, so this also covers the
+    /// requirement's no-wrap clause.
+    #[test]
+    fn fear_saturates_at_both_bounds_and_is_reported_every_tick() {
+        let mut simulation = Simulation::new(individual_config(0, 40, false)).unwrap();
+        simulation.tick = 1;
+        let mut output = Vec::new();
+
+        // Ten increments of ten reach the upper bound; the eleventh tick must hold there.
+        for _ in 0..11 {
+            simulation.apply_survival(&mut output, 0, true).unwrap();
+            assert!(simulation.agents[0].fear <= ATTRIBUTE_MAX);
+        }
+        assert_eq!(simulation.agents[0].fear, ATTRIBUTE_MAX);
+
+        // Twenty decrements of five reach the lower bound; the twenty-first must hold there
+        // rather than wrap to 251.
+        for _ in 0..21 {
+            simulation.apply_survival(&mut output, 0, false).unwrap();
+            assert!(simulation.agents[0].fear <= ATTRIBUTE_MAX);
+        }
+        assert_eq!(simulation.agents[0].fear, 0);
+
+        let output = String::from_utf8(output).unwrap();
+        let transitions = reported_fear_transitions(&output, "M01");
+        assert_eq!(transitions.len(), 32, "every tick reports a transition");
+        assert_eq!(
+            transitions
+                .iter()
+                .filter(|pair| **pair == (100, 100))
+                .count(),
+            1,
+            "the upper bound holds exactly once in this sequence"
+        );
+        assert_eq!(
+            transitions.iter().filter(|pair| **pair == (0, 0)).count(),
+            1,
+            "the lower bound holds exactly once in this sequence"
+        );
+        assert!(
+            simulation.agents[0].alive,
+            "this test must exercise fear, not death"
+        );
+    }
+
+    /// `REQ-MOK-032`: rule 7 places the trace before survival decay, so the traced value is the
+    /// one the survival record then changes.
+    #[test]
+    fn the_trace_reports_the_fear_the_survival_record_then_changes() {
+        let mut simulation = Simulation::new(individual_config(0, 1, true)).unwrap();
+        simulation.tick = 1;
+        with_companions(
+            &mut simulation,
+            Coordinate { x: 60, y: 30 },
+            &[Coordinate { x: 61, y: 30 }],
+        );
+        simulation.agents[0].fear = 20;
+        let mut output = Vec::new();
+
+        simulation
+            .run_tick(&mut output, &mut IndividualDecisionSource)
+            .unwrap();
+
+        let output = String::from_utf8(output).unwrap();
+        let trace = output
+            .lines()
+            .find(|line| line.contains("subject=M01 ") && line.contains("event=action_trace"))
+            .expect("tracing is on");
+        assert!(trace.ends_with(",fear:20"), "{trace}");
+        assert_eq!(
+            reported_fear_transitions(&output, "M01"),
+            vec![(20, 30)],
+            "{output}"
+        );
+    }
+
+    /// `REQ-MOK-032`: a dead Mokiterion has no fear to report and reports nothing at all.
+    #[test]
+    fn a_dead_mokiterion_reports_no_fear_and_no_decision() {
+        let mut simulation = Simulation::new(individual_config(0, 2, true)).unwrap();
+        simulation.tick = 1;
+        with_companions(
+            &mut simulation,
+            Coordinate { x: 60, y: 30 },
+            &[Coordinate { x: 61, y: 30 }],
+        );
+        simulation.agents[0].health = 5;
+        simulation.agents[0].satiety = 1;
+        let mut output = Vec::new();
+
+        simulation.apply_survival(&mut output, 0, true).unwrap();
+        assert!(!simulation.agents[0].alive);
+        assert!(
+            String::from_utf8(output)
+                .unwrap()
+                .contains("event=agent_died")
+        );
+
+        simulation.tick = 2;
+        let mut output = Vec::new();
+        simulation
+            .run_tick(&mut output, &mut IndividualDecisionSource)
+            .unwrap();
+
+        let output = String::from_utf8(output).unwrap();
+        assert!(!output.contains("subject=M01 "), "{output}");
+        assert!(output.contains("subject=M02 "));
+        assert!(
+            !simulation
+                .snapshot()
+                .agents
+                .iter()
+                .any(|agent| agent.id == "M01")
+        );
+    }
+
+    /// `REQ-MOK-033`: the third source is reported once, its runs reproduce byte for byte, and
+    /// they differ from the reference source's, as a source with behavior of its own must.
+    #[test]
+    fn individual_runs_are_reported_and_byte_identically_reproducible() {
+        for seed in DECLARED_SEEDS {
+            let mut first = Simulation::new(individual_config(seed, 200, true)).unwrap();
+            let mut second = Simulation::new(individual_config(seed, 200, true)).unwrap();
+            let mut reference = Simulation::new(reference_config(seed, 200, true)).unwrap();
+            let mut first_output = Vec::new();
+            let mut second_output = Vec::new();
+            let mut reference_output = Vec::new();
+
+            let summary = first.run(&mut first_output).unwrap();
+            assert_eq!(summary, second.run(&mut second_output).unwrap());
+            reference.run(&mut reference_output).unwrap();
+
+            assert_eq!(state_snapshot(&first), state_snapshot(&second));
+            assert_eq!(
+                first_output, second_output,
+                "seed {seed} is not reproducible"
+            );
+            assert_ne!(
+                first_output, reference_output,
+                "seed {seed} produced the reference source's stream exactly"
+            );
+
+            let text = String::from_utf8(first_output).unwrap();
+            assert_eq!(
+                text.matches("event=decision_source_selected result=source:individual")
+                    .count(),
+                1
+            );
         }
     }
 }
