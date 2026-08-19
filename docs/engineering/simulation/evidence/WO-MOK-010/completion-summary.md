@@ -56,9 +56,17 @@ assessments recorded, before implementation began, with dates". The true state, 
 
 | What the gate required | State before implementation began | State now |
 |---|---|---|
-| `VREC-MOK-005` at `verified` | `ready` | `ready`, unchanged |
-| Its six amendments approved | six **OUTSTANDING** across `SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-001` | six **OUTSTANDING**, unchanged |
+| `VREC-MOK-005` at `verified` | `ready` | `verified` — **by `master`'s act, not this branch's**, on 2026-08-19 |
+| Its six amendments approved | six **OUTSTANDING** across `SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-001` | still **OUTSTANDING**, and the record now counts eleven provisions across four artifacts |
 | Its seven manual assessments recorded | none recorded | none recorded, unchanged |
+
+**The one row that moved was moved by `master`, and it does not close the gate.** `master` re-captured `VREC-MOK-005`
+and transitioned it from `ready` to `verified` while this branch sat unmerged, rebinding it from commit `9d9641fe` to
+`f3613701`. What that transition decided is stated in the record itself: the assurance owner accepts the automated
+evidence "with all seven manual assessments outstanding and unauthored, and eleven provisions across four approved
+artifacts awaiting the technical owner". The status moved and the substance did not, so the gate `WO-MOK-010` names —
+`verified` **and** its amendments approved **and** its assessments recorded — is still unmet, and this work order is
+still proceeding under the override rather than past a satisfied condition.
 
 The override is recorded as the tenth row of `WO-MOK-010`'s *Decision record*, dated 2026-08-19, taken by the
 repository owner acting as product, technical and assurance owner in answer to a blocking question from the
@@ -66,7 +74,10 @@ implementation agent. The agent did not proceed past the gate on its own reading
 
 The mitigation the owner accepted was that the two layers stay separable by inspection. That claim is checked rather
 than asserted: `amendment-approvals.md` §4 compares every amendment row dated before 2026-08-19 against **60fda9f**
-and finds each byte-identical, and records that `VREC-MOK-005` itself is untouched. **It is a cost carried forward, not
+and finds each byte-identical, checks that every row `master` carried at **7a2b502** survived the merge byte for byte,
+and records that this branch touches neither `VREC-MOK-005` nor `ARCH-MOK-001` — the first measured against `master`'s
+tip rather than the branch point, because comparing a file `master` re-captured against the commit this work started
+from would report `master`'s act as this one's. **It is a cost carried forward, not
 a debt paid**, and `VER-MOK-010`'s own matrix row for it — "the amendments left outstanding by `VREC-MOK-005` are
 resolved, before this change is verified" — is unsatisfied. That row is reproduced in
 `requirement-to-test-mapping.md` in place.
@@ -90,7 +101,11 @@ resolved, before this change is verified" — is unsatisfied. That row is reprod
 **The amendments the owner approved as a list.** Nine provisions plus one appended rule in `SPEC-MOK-001`, two rule-5
 entries in `SPEC-MOK-002`, three rule-4 provisions in `SPEC-MOK-003`. Every one is present in both the amendment record
 and the specification body, checked over disjoint text; two amend by deletion and are checked by locating the sentence
-and asserting its contents against an anchor at the far end of the list. All 7 self-tests on those checks held.
+and asserting its contents against an anchor at the far end of the list. The rows searched are the ones naming this work
+order rather than every row of 2026-08-19, because the merge brought rows of the same date, approved by the same owner on
+the same day, into three of those records — in `SPEC-MOK-003` five rows of that date narrow to two — and a search across
+the date would let one of `master`'s rows vouch for an amendment this work order made. All 12 self-tests on those checks
+held, two of them on that narrowing.
 **In every case the implementation agent wrote the text and did not decide the substance**, and each amendment row says
 so.
 
@@ -100,14 +115,24 @@ so.
   inherited citation moves.
 - **Roster bar width** — the narrowing from three gauges to four accepted, `BAR_ROW_OVERHEAD` rising from 27 to 35.
 
-**The three amendments written during implementation, beyond that list.** Named in full in `amendment-approvals.md` §3
-and in each specification's own amendment record:
+**The seven amendments written during implementation, beyond that list.** Named in full in `amendment-approvals.md` §3
+and in each specification's own amendment record. Three were written before `master` was merged into this branch and
+four after it. **Four require the technical owner's ratification**; one was that owner's own decision under a stop
+condition, and two record facts that change no provision:
 
 | Amendment | State |
 |---|---|
 | `SPEC-MOK-001`: the trait range narrowed from `0..=100` to `0..=40`, with rule 19's upper-bound note and two acceptance examples | **Approved.** The owner, as technical owner, decided it on 2026-08-19 when stop condition 6 fired; `escalation.md` holds the measurement it was decided on |
 | `SPEC-MOK-001`: the *Help output* sentence this work order's own first amendment added, corrected — the clause requiring the prose to state the default is withdrawn | **OUTSTANDING.** A correction to text the technical owner approved on 2026-08-19; needs that owner's ratification. See section 13 |
 | `SPEC-MOK-003`: three provisions outside rule 4 — `AgentSnapshot` gains `fear`, rule 10 item 7 loses `fear` and traits, rule 11 gains `REQ-MOK-033` | **OUTSTANDING.** Forced by the change rather than chosen with it, written into the 2026-08-19 row rather than made quietly; needs the technical owner's ratification |
+| `SPEC-MOK-003`: a row that changes no provision, recording that rule 5 as `WO-MOK-005` amended it and rule 4 as this work order amended it are consistent where they meet — rule 4's collapse threshold of 47 columns against rule 5's 47-column roster pane | **Recorded, and it ratifies nothing.** No provision is added, removed or reworded. Its consequence is oracle 4's re-derivation, which `renumbering.md` records and `observer/roster-frames.txt` carries |
+| `SPEC-MOK-003`: rule 4 clause 7 amended in two provisions, so that `master`'s bands apply to health, satiety and energy and `fear` renders as a number with no colour at all — clause 7 as `master` approved it said "the roster's three bars" where clause 5 as this work order approved it draws four | **Decided by the owner; the wording is OUTSTANDING.** The repository owner, as technical owner, was shown the collision on 2026-08-19 and chose bands on the three survival bars only. The substance is the owner's; the text recording it is the agent's and needs ratification |
+| `SPEC-MOK-004`: the recorded test counts of rules 9, 10 and 11 corrected for this work order and for `master`'s `WO-MOK-007` — 85 in the public tier, 17 internal tests and 47 private items in `render.rs`, 200 in the workspace | **OUTSTANDING.** Rule 11 instructs a work order that adds a test to correct these figures here, and neither work order did. Half the correction is `master`'s to answer for, and neither half is statable without the other, because only the merged tree runs both sets |
+| `SPEC-MOK-004`: rule 11's pointer to this work order's `test-census.txt` brought up to the recapture — 179 before and 200 after, against `master`'s tip | **Recorded, and it ratifies nothing.** No provision and no figure moves; the superseded 190 stays in the text rather than being deleted, because a capture is re-run rather than corrected |
+
+The last four are consequences of the merge rather than of the implementation: an approved work order drafted before
+`master` advanced could not have listed them, and three of them exist only because two owners' approvals of the same
+date met in one tree. `renumbering.md` records the merge and the re-derivations it forced.
 
 Oracle 5's first condition holds and its second does not. `amendment-approvals.md` returns **PASS** on the first and
 states the second unmet rather than counting it.
@@ -634,7 +659,7 @@ accountable for.
 | `completion-summary.md` | This report |
 | `escalation.md` | Stop condition 6 firing, the fifty-seed sweep, and the owner's decision to narrow the trait range |
 | `manual-assessment.md` | The seven judgements no script can make, five outstanding and one unsigned |
-| `amendment-approvals.md` | Oracle 5: every approved provision present in both the record and the text over disjoint text; the three amendments beyond the list; the earlier layer byte-identical to **60fda9f**; 7 of 7 self-tests held |
+| `amendment-approvals.md` | Oracle 5: every approved provision present in both the record and the text over disjoint text; the seven amendments beyond the list, four of them OUTSTANDING; the earlier layer byte-identical to **60fda9f** and every row `master` carried at **7a2b502** preserved through the merge; 12 of 12 self-tests held |
 | `baseline/COMMIT.txt`, `capture.sh`, `pre-manifest.txt`, `full/`, `exit-codes.txt` | The pre-change baseline at **60fda9f**: 42 cells by digest, 11 streams retained whole |
 | `baseline/projection.py` | The projection's full text — three anchored patterns |
 | `baseline/compare.py`, `post/additivity.txt`, `post/post-manifest.txt`, `post/full/`, `post/exit-codes.txt` | Oracle 1: 42 frozen cells byte-identical projected, the projection a no-op on the pre-change stream, 20 new-source cells reproducible across processes and all differing from the reference |
@@ -691,13 +716,17 @@ uncertainty is items 1 to 4; items 5 to 11 were found during the work.
 4. **The trait derivation is not a security primitive.** SplitMix64 is not cryptographic and the seed is a public
    command-line argument, so trait values are trivially predictable by design. Nothing in this change relies on their
    unpredictability and no future requirement should.
-5. **The `VREC-MOK-005` gate was overridden, not met** — section 2. Six amendments and seven assessments from the
-   previous work order remain unresolved. The mitigation is checked, not asserted, but it is a cost carried forward.
+5. **The `VREC-MOK-005` gate was overridden, not met** — section 2. `master` has since transitioned that record to
+   `verified`, and its own text records that the transition left all seven manual assessments outstanding and eleven
+   provisions across four artifacts awaiting the technical owner. The status moved; the substance did not. The
+   mitigation is checked, not asserted, but it is a cost carried forward.
 6. **Five manual assessments are outstanding and a sixth is unsigned** — section 14. No verification record can be
    written against this commit.
-7. **Two amendments written during implementation are OUTSTANDING** — the `SPEC-MOK-001` *Help output* correction and
-   the three extra `SPEC-MOK-003` provisions. Oracle 5's own words: "an amendment nobody approved is not a
-   specification."
+7. **Four amendments written during implementation are OUTSTANDING** — the `SPEC-MOK-001` *Help output* correction,
+   the three extra `SPEC-MOK-003` provisions, the wording of `SPEC-MOK-003` rule 4 clause 7's reconciliation with
+   `master`'s bands, and `SPEC-MOK-004`'s corrected test counts. Half of that last one is `master`'s work order's
+   defect rather than this one's, and neither half is statable without the other. Oracle 5's own words: "an amendment
+   nobody approved is not a specification."
 8. **Oracle 1's pre-change baseline covers eleven cells with certainty and forty on an argument** — section 4.
 9. **The oscillation comparison reproduces `WO-MOK-002`'s counts but not its denominators**, differing by exactly 96 in
    both rows, and the seed-0 margin against the unbiased-walk rate is 0.008 percentage points.

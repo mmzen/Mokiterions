@@ -66,9 +66,10 @@ from the crate — the `WO-MOK-006` precedent for a probe that must not become a
   `0..=40` rather than amend the floor. Every survivor figure in this packet is downstream of that decision, which is
   why it is read early rather than found late.
 - **`amendment-approvals.md`** — oracle 5. Every provision the owner approved is in both the amendment record and the
-  specification text, checked over disjoint text so a record cannot vouch for itself. It also names **three amendments
-  written during implementation beyond the owner's stated list**, one approved and two awaiting the technical owner's
-  ratification.
+  specification text, checked over disjoint text so a record cannot vouch for itself. It also names **seven amendments
+  written during implementation beyond the owner's stated list** — one approved as a decision under a stop condition,
+  **four awaiting the technical owner's ratification**, and two that change no provision — and checks that every
+  amendment row `master` carried at **7a2b502** survived the merge byte for byte.
 - **`observer/roster-frames.txt`** — oracle 4, and the packet's one reachability finding: because the roster pane's
   width and rule 4's collapse threshold are both 47, the drawn roster is *always* two-line at a 45-column interior,
   so `bar = 2` is the only bar width reachable through `render::draw`. The `min(20, …)` cap and the collapsed
@@ -113,11 +114,14 @@ are the same behavior counted without requiring a coincidence, but substituting 
 space.** Oracle 3 is exhaustive over its 2,808 situations because that set is finite; oracle 1 covers 40 cells of a
 much larger space.
 
-**The `VREC-MOK-005` gate was overridden, not met.** Six amendments from the previous work order remain
+**The `VREC-MOK-005` gate was overridden, not met.** The amendments from the previous work order remain
 **OUTSTANDING** and its seven manual assessments remain unrecorded, by the repository owner's explicit decision of
-2026-08-19. The mitigation is that the two layers stay separable by inspection, and `amendment-approvals.md` checks
-that claim rather than asserting it: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f**.
-It is a cost carried forward, not a debt paid.
+2026-08-19. `master` has since transitioned that record to `verified`, which does not close the gate: the record's own
+text says the transition accepted the automated evidence with all seven assessments outstanding and eleven provisions
+across four artifacts awaiting the technical owner. The status moved and the substance did not. The mitigation is that
+the two layers stay separable by inspection, and `amendment-approvals.md` checks that claim rather than asserting it:
+every amendment row dated before 2026-08-19 is byte-identical to **60fda9f**, and every row `master` carried at
+**7a2b502** survived the merge byte for byte. It is a cost carried forward, not a debt paid.
 
 **The pre-change baseline is incomplete relative to the declared 40 cells, and the shortfall is disclosed rather than
 repaired.** Eleven cells — the ten 1,000-tick default-density frozen-source runs and one 20-tick traced run — were

@@ -144,8 +144,10 @@ recorded here so the two are not confused:
 - `VREC-MOK-010` is a `ready` candidate still bound to commit `4f32a9f`, which predates the merge, this renumbering and
   the reconciliation of rule 4 with `master`'s bands. It is re-captured against the merged commit, not edited into
   agreement with it.
-- Five of `VER-MOK-010`'s seven manual assessments remain outstanding, and three amendment corrections await the
-  technical owner. The renumbering changes none of that.
+- Five of `VER-MOK-010`'s seven manual assessments remain outstanding, and four amendment corrections await the
+  technical owner — two of the four written after the merge, which also forced two further rows that change no
+  provision. All seven beyond-the-list amendments are in `amendment-approvals.md` §3. The renumbering changes none of
+  that.
 
 ## The three captures re-taken on 2026-08-19, two of which discharge the notes above
 

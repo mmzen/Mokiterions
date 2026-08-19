@@ -6,7 +6,7 @@ Usage, from the repository root:
 
 `VER-MOK-010` makes this a verification oracle rather than a formality: "an amendment nobody approved is not a
 specification", and its absence fails the contract regardless of the state of the code. So this script reads the
-artifacts and the git history and checks four things a reader would otherwise take on trust.
+artifacts and the git history and checks five things a reader would otherwise take on trust.
 
   1. **Status.** Every artifact in this work order's chain is `approved` and the work order is `in_progress`.
   2. **The amendment record covers what the owner approved, and the text carries it.** `WO-MOK-010` states the
@@ -15,16 +15,23 @@ artifacts and the git history and checks four things a reader would otherwise ta
      record's 2026-08-19 row, and in the specification's body. The two searches are over disjoint text -- the
      `## Amendment record` section is cut out of the body before the body is searched -- because otherwise a record
      that claims an amendment the text does not carry would satisfy both searches with the same sentence, which is
-     exactly the failure this oracle exists to catch.
+     exactly the failure this oracle exists to catch. The rows read are the 2026-08-19 rows *naming this work order*:
+     the merge brought rows of the same date, approved by the same owner on the same day, into three of these records,
+     and a search across the whole date would let one of `master`'s rows supply this work order's approval.
   3. **The earlier layer is untouched.** `WO-MOK-005` left six amendments **OUTSTANDING** across `SPEC-MOK-002`,
      `SPEC-MOK-003` and `ARCH-MOK-001`, and the repository owner overrode the gate that would have settled them
      before this work began. The mitigation recorded in `WO-MOK-010` is that the two layers stay separable by
      inspection, and that is a checkable claim: every amendment row dated before 2026-08-19 must be byte-identical to
-     the one at the commit this work started from, and `VREC-MOK-005` and `ARCH-MOK-001` must not have been touched at
-     all.
-  4. **What this work order added beyond what was approved.** Three amendments were written during implementation that
-     were not in the owner's stated list. They are named here with what each needs, rather than left for a reviewer to
-     find by diffing.
+     the one at the commit this work started from, and `VREC-MOK-005` and `ARCH-MOK-001` must not have been touched by
+     this branch at all.
+  4. **`master`'s own rows survived the merge.** `master` advanced by ten commits while this branch sat unmerged, and
+     four of its amendment rows are dated 2026-08-19 -- the same date this work order's rows carry. Check 3 cannot see
+     them: they did not exist at the commit this work started from, and their date puts them outside the "before this
+     date" window. So they are checked against `master`'s tip instead, and every row present there must be present here
+     byte for byte. A merge that silently dropped one of them would otherwise read as a clean result.
+  5. **What this work order added beyond what was approved.** Seven amendments were written during implementation that
+     were not in the owner's stated list, four of them after the merge. They are named here with what each needs, rather
+     than left for a reviewer to find by diffing.
 
 Two provisions amend by deletion, and a search for a phrase cannot show that a phrase is gone. Those two are checked
 negatively instead: the sentence that used to name `fear` and traits is located and its contents asserted. A negative
@@ -36,9 +43,17 @@ controls held. This is not ceremony: the first form of the `SPEC-MOK-003` deleti
 em dash *preceding* the list, inspected forty-six characters of preamble, found no `fear` in them and passed. A check
 that finds nothing reads exactly like a check that looks for nothing, so each one is made to fail on purpose first.
 
-The date and the commit are inputs, not discoveries: the work began from 60fda9f and every row this work order adds is
-dated 2026-08-19. A row appearing under this work order with a different date, or an earlier row that moved, is a
-finding.
+The date and the two commits are inputs, not discoveries: the work began from 60fda9f, it is merged with `master` at
+7a2b502, and every row this work order adds is dated 2026-08-19. A row appearing under this work order with a different
+date, an earlier row that moved, or a row of `master`'s that the merge did not carry through, is a finding.
+
+Which commit each check uses is a decision the merge forced, and it is stated rather than left implicit. The
+row-immobility check of item 3 stays on 60fda9f, because what it establishes is that *this branch* moved no earlier row.
+The untouched-artifact check of item 3 moved to 7a2b502, because `VREC-MOK-005` is no longer the file this work started
+from: `master` re-captured it and transitioned it to `verified`, in commits 3696fae and a53712c, and comparing against
+60fda9f reports that change as this work order's when it is not. Against `master`'s tip the same check answers the
+question it was written to answer -- did this branch touch it -- and the change `master` made is disclosed in the table
+rather than dropped.
 """
 
 import io
@@ -56,8 +71,19 @@ while not os.path.exists(os.path.join(ROOT, 'Cargo.toml')):
 OUT = os.path.join(os.path.dirname(HERE), 'amendment-approvals.md')
 
 BASE = '60fda9faffbd452752a34efa356f16cc6ad1d3ff'
+MASTER = '7a2b502b908be03ad8e2de7c23ee3eaaf4ece048'
 TODAY = '2026-08-19'
 DOCS = 'docs/engineering/simulation'
+
+
+def spec_path(name):
+    """The path of a specification by identifier, so an artifact can be reached without being in `AMENDED`.
+
+    `SPEC-MOK-004` is amended by this work order but is not in `AMENDED`, because `WO-MOK-010` states no provision of
+    it: the amendment is a consequence the implementation found, and it is in `BEYOND` instead.
+    """
+    return f'{DOCS}/specifications/{name}.md'
+
 
 CHAIN = [
     (f'{DOCS}/intent/INT-MOK-006.md', 'approved'),
@@ -168,12 +194,17 @@ DELETIONS = [
 ]
 
 # Written during implementation, beyond the owner's stated list. Each is named with what it needs.
+#
+# The last four were written after `master` was merged in, and three of them exist only because two owners' approvals of
+# the same date met in one tree. They are here rather than in `AMENDED` because `WO-MOK-010` states none of them: a work
+# order approved before the merge could not have.
 BEYOND = [
     {
         'artifact': 'SPEC-MOK-001',
         'what': 'The trait range narrowed from `0..=100` to `0..=40`, and with it rule 19\'s upper-bound note and the '
                 'two acceptance examples that cited unreachable tolerances.',
         'marker': 'Narrowed the `waste_tolerance` range from `0..=100` to `0..=40`',
+        'outstanding': False,
         'body': ['an integer in `0..=40`',
                  'The range is `0..=40`, narrowed on measured evidence'],
         'state': '**Approved.** The repository owner, acting as technical owner, chose narrowing over amending '
@@ -189,6 +220,7 @@ BEYOND = [
                 'section\'s approved *stated once* paragraph. The default clause is withdrawn; the three-source '
                 'description stays.',
         'marker': "Corrected the *Help output* sentence this work order's first amendment added",
+        'outstanding': True,
         'body': ['It states no default and no value constraint',
                  'the prose is where an earlier copy of them lived'],
         'state': '**Recorded, not approved — OUTSTANDING.** The contradiction was between two provisions of one '
@@ -205,6 +237,7 @@ BEYOND = [
                 'loses `fear` and traits from its list of values the engine does not compute; rule 11\'s '
                 '`decision_source_selected` row gains `REQ-MOK-033` for `individual`.',
         'marker': 'Three further provisions were found during implementation',
+        'outstanding': True,
         'body': ['energy, fear, applied_action',
                  'Amended 2026-08-19: this list named `fear` and traits',
                  '`REQ-MOK-033` when `individual`'],
@@ -216,15 +249,92 @@ BEYOND = [
                  'into the 2026-08-19 amendment row rather than made quietly. **They require the technical owner\'s '
                  'ratification, and this artifact is where that obligation is recorded.**',
     },
+    {
+        'artifact': 'SPEC-MOK-003',
+        'what': 'A row that changes no provision, recording that rule 5 as `WO-MOK-005` amended it and rule 4 as this '
+                'work order amended it were approved on the same date by the same owner against different trees, and '
+                'that where they meet — rule 4\'s collapse threshold of 47 columns against rule 5\'s roster pane of '
+                '47 columns — the merged text is consistent. The consequence is a re-derivation of oracle 4, not a '
+                'change of text.',
+        'marker': '**No rule changed. This row records the reconciliation of the rule 5 and rule 4 rows above',
+        'outstanding': False,
+        'body': ['| roster | `W ≥ 100` |',
+                 'bar_width(interior) = min(20, (interior - 35) / 4)'],
+        'state': '**Recorded, and it ratifies nothing.** The row states a fact about two amendments it holds no '
+                 'authority over, and adds, removes and rewords no provision — which is checkable, and is what the two '
+                 'phrases above check: both amendments are present in the body, in the words their own rows use. It '
+                 'needs no ratification of its own, and it supplies none for the two rows it reconciles.',
+    },
+    {
+        'artifact': 'SPEC-MOK-003',
+        'what': 'Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with '
+                '`master`\'s bands: the bands apply to health, satiety and energy and not to `fear`, and `fear` renders '
+                'as a numeric value with no colour at all. Clause 7 as `master` approved it said "the roster\'s three '
+                'bars" when clause 5 as this work order approved it draws four.',
+        'marker': '**Rule 4 clause 7 amended in two provisions',
+        'outstanding': True,
+        'body': ['7. **Survival bands.**',
+                 'Each of the three survival bars — health, satiety and energy —',
+                 'numeric value with no colour at all'],
+        'state': '**Decided by the owner; the wording is the agent\'s and is OUTSTANDING.** The repository owner, '
+                 'acting as technical owner, was shown the collision and chose bands on health, satiety and energy '
+                 'only, with `fear` unbanded, on 2026-08-19. The substance is the owner\'s. The text that records it '
+                 'was written by the implementation agent and **requires that owner\'s ratification**; the decision it '
+                 'records does not.',
+    },
+    {
+        'artifact': 'SPEC-MOK-004',
+        'what': 'Recorded test-count figures corrected in rules 9, 10 and 11 for this work order and for `master`\'s '
+                '`WO-MOK-007`, neither of which corrected them: the public tier reaches 85, `render.rs` 17 internal '
+                'tests and 47 private items, and the workspace 200 tests. Rule 11 instructs a work order that adds a '
+                'test to correct these figures, so the correction is the rule\'s own requirement rather than a '
+                'discretionary edit.',
+        'marker': '**Recorded test-count figures corrected for `WO-MOK-010` and for `master`\'s `WO-MOK-007`',
+        'outstanding': True,
+        'body': ['| **Total** | | **85** |',
+                 'the module declares 47 private items — 30 functions and 17 constants',
+                 "the workspace's is **200**"],
+        'state': '**Recorded, not approved — OUTSTANDING.** This artifact is not in `WO-MOK-010`\'s amendment list at '
+                 'all: the obligation was found by measuring the merged tree against rule 11. Half of it is not this '
+                 'branch\'s to answer for — `WO-MOK-007` reached `master` with seven tests added and rules 9, 10 and 11 '
+                 'left as they were — and neither half can be stated without the other, because only the merged tree '
+                 'runs both sets. **It requires the technical owner\'s ratification.**',
+    },
+    {
+        'artifact': 'SPEC-MOK-004',
+        'what': 'Rule 11\'s pointer to this work order\'s `test-census.txt` brought up to the recapture: the census '
+                'now reads 179 before and 200 after against `master`\'s tip, where the sentence still described the '
+                'earlier capture at `4f32a9f` reaching 190 and the recapture as something still to be taken.',
+        'marker': "**Rule 11's pointer to `WO-MOK-010`'s census corrected",
+        'outstanding': False,
+        'body': ["was re-taken on 2026-08-19 against `master`'s tip and reads **179 before, 200 after**",
+                 'capture, taken at `4f32a9f` against the branch point, reached 190'],
+        'state': '**Recorded, and it ratifies nothing.** No provision is added, removed or reworded and no figure '
+                 'moves: the 122, 78 and 200 are the row above\'s. The superseded 190 is kept in the text rather than '
+                 'deleted, because a capture is re-run rather than corrected and a reader should be able to see which '
+                 'tree each figure was taken on. The ratification this points at is the row above\'s, which is '
+                 '**OUTSTANDING**.',
+    },
 ]
 
+# Artifacts this work order must not touch. Each is compared against `master`'s tip rather than the commit this work
+# started from, because the question is whether *this branch* touched it, and one of the two moved on `master` in the
+# meantime. The move is disclosed in the third column rather than hidden by the choice of base.
 UNTOUCHED = [
     (f'{DOCS}/verification-records/VREC-MOK-005.md',
-     'the record whose gate was overridden: still `ready`, its six amendments still OUTSTANDING, its seven manual '
-     'assessments still unrecorded'),
+     'the record whose gate was overridden: this work order does not approve its amendments, does not perform its '
+     'seven manual assessments and does not transition `WO-MOK-005`',
+     '`master` re-captured it in 3696fae and transitioned it from `ready` to `verified` in a53712c, rebinding it from '
+     'commit `9d9641fe` to `f3613701`. The transition accepted the automated evidence with all seven manual '
+     'assessments outstanding and eleven provisions across four artifacts awaiting the technical owner, so the gate '
+     '`WO-MOK-010` names is not met by it: the status moved and the substance did not.'),
     (f'{DOCS}/architecture/ARCH-MOK-001.md',
-     'no architecture amendment is required by this work order, and none was made'),
+     'no architecture amendment is required by this work order, and none was made',
+     'nothing. It is byte-identical at both, so this check is unaffected by the choice of base.'),
 ]
+
+# Specifications amended beyond the stated list, so not in `AMENDED`, but still subject to the checks of section 4.
+BEYOND_PATHS = [spec_path('SPEC-MOK-004')]
 
 ROW = re.compile(r'^\| (\d{4}-\d{2}-\d{2}) \|')
 HEADING = re.compile(r'^## ')
@@ -271,6 +381,33 @@ def rows(text):
         if match:
             collected.setdefault(match.group(1), []).append(line.strip())
     return collected
+
+
+def own_rows(record):
+    """The rows of `record` dated `TODAY` that name this work order.
+
+    The merge brought rows of the same date, approved by the same owner on the same day, into three of these records.
+    A search across every row of the date would let one of `master`'s rows supply the approval or the attribution for an
+    amendment *this* work order made, which is the one thing section 2 exists to establish. So the rows are narrowed to
+    those naming `WO-MOK-010` before anything is looked for in them, and the controls check that the narrowing is not a
+    formality: `master`'s rows of this date do carry an approval marking, and none of them survives the narrowing.
+    """
+    return [row for row in rows(record).get(TODAY, []) if 'WO-MOK-010' in row]
+
+
+def preserved(before, after):
+    """The rows in `before` that no row of `after` reproduces byte for byte, as (date, row) pairs.
+
+    A merge is the one operation that can lose a row with no edit having been made to this branch, and a lost row reads
+    exactly like a row that was never written. So this is a containment check rather than a count: rows may be added
+    beside `master`'s, and none of `master`'s may be altered or dropped.
+    """
+    lost = []
+    for date, values in before.items():
+        for value in values:
+            if value not in after.get(date, []):
+                lost.append((date, value))
+    return lost
 
 
 def sentence(text, opening, terminator):
@@ -338,6 +475,28 @@ def self_test():
         ('a forbidden word still present in the sentence is reported',
          len(deletion('X', body, 'L', 'Rule 5', 'Every field', 'snapshot', ['snapshot'])[1]) == 1),
     ]
+
+    # Controls on the row-preservation check of section 4, which is the one check whose subject is a merge rather than
+    # an edit. A merge can lose a row without anything on this branch having touched it.
+    earlier = rows(split(at(MASTER, f'{DOCS}/specifications/SPEC-MOK-003.md'))[1])
+    total = sum(len(values) for values in earlier.values())
+    dropped = {date: values for date, values in list(earlier.items())[1:]}
+    altered = {date: [value.replace('|', '¦', 1) for value in values] for date, values in earlier.items()}
+    # Controls on the row narrowing of section 2. The narrowing is only worth anything if the rows it drops could have
+    # satisfied the searches, so that is checked on the record where they exist rather than assumed.
+    spec3 = split(now(f'{DOCS}/specifications/SPEC-MOK-003.md'))[1]
+    foreign = [row for row in rows(spec3).get(TODAY, []) if 'WO-MOK-010' not in row]
+    controls += [
+        (f'a row of {TODAY} that the narrowing drops carries an approval marking too, so narrowing the search to this '
+         'work order\'s rows is not a formality',
+         any(f'Approved {TODAY}' in row for row in foreign)),
+        ('no row lacking this work order\'s identifier survives the narrowing',
+         not [row for row in own_rows(spec3) if row in foreign]),
+        ('a record compared against itself reports no row lost', not preserved(earlier, earlier)),
+        ('a row the later record does not carry is reported lost', len(preserved(earlier, dropped)) >= 1),
+        ('a row altered by one character is reported lost rather than matched loosely',
+         len(preserved(earlier, altered)) == total),
+    ]
     return controls
 
 
@@ -351,8 +510,12 @@ def main():
         'code. This file is generated by `analysis/amendments.py`, which reads the artifacts and the git history.',
         'What it checks, and why each check is not a formality, is in that script\'s header.',
         '',
-        f'Everything below is measured against the commit this work started from, `{BASE[:7]}`, and every row this',
-        f'work order adds is dated `{TODAY}`.',
+        'Everything below is measured against one of two commits, and each section says which. Amendment rows this',
+        f'branch must not have moved are compared against `{BASE[:7]}`, the commit this work started from. Artifacts it',
+        f'must not have touched at all are compared against `{MASTER[:7]}`, `master`\'s tip, which this branch is merged',
+        'with — because one of those artifacts moved on `master` in the meantime, and against the earlier commit the',
+        'check would report `master`\'s act as this work order\'s. What `master` changed is disclosed in §4 rather than',
+        f'hidden by the choice of base. Every row this work order adds is dated `{TODAY}`.',
         '',
         '## 1. The chain\'s governance state',
         '',
@@ -367,13 +530,15 @@ def main():
             problems.append(f'{os.path.basename(path)} is `{status}`, expected `{expected}`')
         lines.append(f'| `{os.path.basename(path)[:-3]}` | `{status}` | `{expected}` | '
                      f'{field(text, "updated")} | {"yes" if ok else "**NO**"} |')
-    for spec in AMENDED:
-        text = now(spec['path'])
-        name = os.path.basename(spec['path'])[:-3]
+    for path in [entry['path'] for entry in AMENDED] + BEYOND_PATHS:
+        text = now(path)
+        name = os.path.basename(path)[:-3]
         moved = field(text, 'updated') == TODAY
         if not moved:
             problems.append(f'{name} was amended but its `updated` date is not {TODAY}')
-        lines.append(f'| `{name}` | `{field(text, "status")}` | `approved`, amended | '
+        stated = '`approved`, amended' if path in [entry['path'] for entry in AMENDED] \
+            else '`approved`, amended beyond the list'
+        lines.append(f'| `{name}` | `{field(text, "status")}` | {stated} | '
                      f'{field(text, "updated")} | {"yes" if moved else "**NO**"} |')
 
     lines += [
@@ -381,28 +546,42 @@ def main():
         'The work order is `in_progress` and not `complete`: a work order is closed by a verification record that',
         'binds a commit, and that record is written after the commit it names. `WO-MOK-006` closed the same way.',
         '',
+        '`SPEC-MOK-004` is in that table although `WO-MOK-010` states no provision of it. Rule 11 of it instructs a',
+        'work order that adds a test to correct the recorded counts there, and this one adds twenty-one; the correction',
+        'is in §3 with the rest of what was written beyond the stated list.',
+        '',
         '## 2. The amendment record against the approved list',
         '',
         f'Each provision `WO-MOK-010` states in full is looked for twice — in the amendment record\'s {TODAY} row,',
         'and in the specification\'s body — and the two searches are over disjoint text, because a record that',
         'claimed an amendment the text does not carry would otherwise satisfy both with the same sentence.',
         '',
+        f'The rows read here are the {TODAY} rows **that name `WO-MOK-010`**, not every row of that date. Three of',
+        'these records now carry rows the same owner approved on the same day through `master`, and a search across the',
+        'whole date would let one of those vouch for an amendment this work order made. Two controls below check that',
+        'the narrowing bites rather than reading as diligence: a row it drops does carry an approval marking, and no',
+        'row it drops is among the rows searched. In `SPEC-MOK-003` it drops three of five — two of `master`\'s and one',
+        'of this work order\'s own, a beyond-the-list row that names no work order and is checked in §3 by its own',
+        'text instead.',
+        '',
     ]
     for spec in AMENDED:
         body, record = split(now(spec['path']))
         name = os.path.basename(spec['path'])[:-3]
-        dated = rows(record).get(TODAY, [])
+        all_dated = rows(record).get(TODAY, [])
+        dated = own_rows(record)
         row_text = '\n'.join(dated)
         approved = f'Approved {TODAY}' in row_text
-        names_wo = 'WO-MOK-010' in row_text
+        names_wo = bool(dated)
         attributed = 'did not decide the substance' in row_text
-        for held, complaint in ((approved, f'no approval recorded in its {TODAY} row'),
-                                (names_wo, f'its {TODAY} row does not name this work order'),
-                                (attributed, f'its {TODAY} row does not record who wrote the text')):
+        for held, complaint in ((approved, f'no approval recorded in its own {TODAY} rows'),
+                                (names_wo, f'no {TODAY} row names this work order'),
+                                (attributed, f'its own {TODAY} rows do not record who wrote the text')):
             if not held:
                 problems.append(f'{name}: {complaint}')
         lines += [f'### `{name}` — {spec["stated"]}', '',
-                  f'- rows dated {TODAY}: **{len(dated)}**',
+                  f'- rows dated {TODAY}: **{len(all_dated)}**, of which naming this work order: **{len(dated)}** — '
+                  'the searches below read those alone',
                   f'- approval recorded in the row: {"yes" if approved else "**NO**"}',
                   f'- names this work order: {"yes" if names_wo else "**NO**"}',
                   '- records that the implementation agent wrote the text and did not decide the substance: '
@@ -426,8 +605,7 @@ def main():
         '|---|---|---|---|',
     ]
     for artifact, label, opening, terminator, anchor, forbidden in DELETIONS:
-        spec = next(entry for entry in AMENDED if entry['path'].endswith(f'{artifact}.md'))
-        body, _ = split(now(spec['path']))
+        body, _ = split(now(spec_path(artifact)))
         cell, found = deletion(artifact, body, label, opening, terminator, anchor, forbidden)
         lines.append(cell)
         problems += found
@@ -450,23 +628,51 @@ def main():
         '',
         '## 3. What was amended beyond the approved list',
         '',
-        'Three amendments were written during implementation and are not in the list `WO-MOK-010` states. None is left',
-        'to be found in a diff: each is written into the specification\'s own amendment record, and each is named here',
-        'with what it still needs. One is approved, because the owner took it as a decision under a stop condition.',
-        'The other two are not, and say so.',
+        f'{len(BEYOND)} amendments were written during implementation and are not in the list `WO-MOK-010` states. None',
+        'is left to be found in a diff: each is written into the specification\'s own amendment record, and each is',
+        'named here with what it still needs.',
+        '',
+        'Three were written before the merge. One of those is **approved**, because the owner took it as a decision',
+        'under a stop condition; the other two are not, and say so. The remaining four were written after `master` was',
+        'merged in, and three of them exist only because two owners\' approvals of the same date met in one tree: an',
+        'approved work order drafted before the merge could not have listed them. **Two of the four require the',
+        'technical owner\'s ratification and two record facts that change no provision** — which is a claim about the',
+        'text, so each of those two is checked against the body rather than asserted.',
+        '',
+        'Whether a row is outstanding is read off the specification, not declared here: a row this file calls unratified',
+        'must carry the **OUTSTANDING** marking where a reader of the specification meets it, and a run in which one did',
+        'not would fail. Only that direction is checked, because two of the rows that need no ratification of their own',
+        'quote the marking of a row that does, and a check that forbade the word would report those as defects.',
+        '',
+        f'**{sum(1 for extra in BEYOND if extra["outstanding"])} of the {len(BEYOND)} require the technical owner\'s',
+        'ratification and are marked OUTSTANDING in the specification\'s own record. The other',
+        f'{sum(1 for extra in BEYOND if not extra["outstanding"])} are one approved decision and two rows that change',
+        'no provision.**',
         '',
     ]
     for extra in BEYOND:
-        spec = next(entry for entry in AMENDED if entry['path'].endswith(f'{extra["artifact"]}.md'))
-        body, record = split(now(spec['path']))
+        body, record = split(now(spec_path(extra['artifact'])))
         in_record = extra['marker'] in record
         missing = [phrase for phrase in extra['body'] if phrase not in body]
         if not in_record:
             problems.append(f'{extra["artifact"]}: the record does not state the amendment beyond the list')
         if missing:
             problems.append(f'{extra["artifact"]}: the body lacks {missing} for the amendment beyond the list')
+        # The OUTSTANDING flag is checked against the specification's own row rather than taken from this script: a
+        # row this file calls unratified must say so where a reader of the specification will meet it. Only that
+        # direction is checked. A row that changes no provision may still mention the marking of another row, and one
+        # of them does.
+        row = next((line for lines_ in rows(record).values() for line in lines_ if extra['marker'] in line), '')
+        marked = 'OUTSTANDING' in row
+        if extra['outstanding'] and not marked:
+            problems.append(f'{extra["artifact"]}: the row for "{extra["marker"][:40]}..." is named here as '
+                            f'awaiting ratification but is not marked OUTSTANDING in the specification')
         lines += [f'**`{extra["artifact"]}`.** {extra["what"]}', '',
                   f'- in the amendment record: {"yes" if in_record else "**NO**"}',
+                  f'- **OUTSTANDING** appears in its row: {"yes" if marked else "no"}'
+                  + ('' if extra['outstanding']
+                     else ", but not as this row's own state — it names the marking of another row"
+                     if marked else ', and this row needs none'),
                   f'- in the specification\'s body: {len(extra["body"]) - len(missing)}/{len(extra["body"])} phrases'
                   + ('' if not missing else f', **missing {missing}**'),
                   f'- {extra["state"]}', '']
@@ -501,20 +707,63 @@ def main():
         lines.append(f'| `{name}` | {sum(len(value) for value in earlier_after.values())} | '
                      f'{"yes" if identical else "**NO**"} | {marks_before}, then {marks_after} |')
 
-    lines += ['', '| Artifact | changed since the base commit | why it must not be |', '|---|---|---|']
-    for path, why in UNTOUCHED:
-        name = os.path.basename(path)[:-3]
-        changed = at(BASE, path) != now(path)
-        if changed:
-            problems.append(f'{name} changed, and this work order must not touch it')
-        lines.append(f'| `{name}` | {"**YES**" if changed else "no"} | {why} |')
-
-    vrec = now(f'{DOCS}/verification-records/VREC-MOK-005.md')
     lines += [
         '',
-        f'`VREC-MOK-005` is `{field(vrec, "status")}`, as it was. This work order does not approve its six',
-        'amendments, does not verify it, does not perform its seven manual assessments and does not transition',
-        '`WO-MOK-005`. **The override is a cost carried forward, not a debt paid.** So the honest statement of this',
+        '`master` advanced by ten commits while this branch sat unmerged, and four of its own amendment rows are dated',
+        f'{TODAY} — the same date this work order\'s rows carry. The table above cannot see them: they did not exist at',
+        f'`{BASE[:7]}`, and their date puts them outside its window. So they are checked separately, against',
+        f'`{MASTER[:7]}`. Every row present there must be present here byte for byte, because a merge is the one act',
+        'that can lose a row with nothing on this branch having edited it, and a lost row reads exactly like a row that',
+        'was never written.',
+        '',
+        f'| Artifact | rows at `{MASTER[:7]}` | all preserved here byte for byte | rows added by this branch |',
+        '|---|---|---|---|',
+    ]
+    for path in [entry['path'] for entry in AMENDED] + BEYOND_PATHS:
+        name = os.path.basename(path)[:-3]
+        before = rows(split(at(MASTER, path))[1])
+        after = rows(split(now(path))[1])
+        lost = preserved(before, after)
+        for date, _ in lost:
+            problems.append(f'{name}: a {date} amendment row present at {MASTER[:7]} is not preserved here')
+        count_before = sum(len(value) for value in before.values())
+        count_after = sum(len(value) for value in after.values())
+        lines.append(f'| `{name}` | {count_before} | '
+                     f'{"yes" if not lost else f"**NO**, {len(lost)} lost"} | {count_after - count_before} |')
+
+    lines += [
+        '',
+        f'Two artifacts must not have been touched at all. They are compared against `{MASTER[:7]}` and not against',
+        f'`{BASE[:7]}`, because the question is whether *this branch* touched them, and one of the two moved on',
+        '`master` in the meantime. What `master` did to it is in the last column rather than absent from the check.',
+        '',
+        f'| Artifact | changed by this branch | why it must not be | what `master` did between `{BASE[:7]}` and'
+        f' `{MASTER[:7]}` |',
+        '|---|---|---|---|',
+    ]
+    for path, why, master_note in UNTOUCHED:
+        name = os.path.basename(path)[:-3]
+        changed = at(MASTER, path) != now(path)
+        moved_on_master = at(BASE, path) != at(MASTER, path)
+        if changed:
+            problems.append(f'{name} changed, and this work order must not touch it')
+        lines.append(f'| `{name}` | {"**YES**" if changed else "no"} | {why} | '
+                     f'{"**changed.** " if moved_on_master else ""}{master_note} |')
+
+    vrec = now(f'{DOCS}/verification-records/VREC-MOK-005.md')
+    quoted = 'with all seven manual assessments outstanding and unauthored, and eleven'
+    if quoted not in ' '.join(vrec.split()):
+        problems.append('VREC-MOK-005 no longer carries the sentence this artifact quotes about the scope of its own '
+                        'transition, so the paragraph below states it from memory rather than from the record')
+    lines += [
+        '',
+        f'`VREC-MOK-005` is `{field(vrec, "status")}`, which is not what it was when this work began, and the change is',
+        f'`master`\'s: it was `ready` at `{BASE[:7]}` and the assurance owner transitioned it on {TODAY}. That does not',
+        'close the gate, and the record says so in its own words — it accepts the automated evidence at its candidate',
+        f'commit "{quoted} provisions across four approved artifacts awaiting the technical owner". The status moved and',
+        'the substance did not. This work order approves none of those provisions, performs none of those seven',
+        'assessments, verifies nothing and does not transition `WO-MOK-005`. **The override is a cost carried forward,',
+        'not a debt paid.** So the honest statement of this',
         'oracle is that its second condition — that the amendments already outstanding under `VREC-MOK-005` be',
         'resolved before this change is verified — is **not met**, by the repository owner\'s explicit decision of',
         f'{TODAY}, recorded in `WO-MOK-010` under *The gate was overridden*. What this artifact establishes is the',
@@ -529,11 +778,15 @@ def main():
         lines += ['Findings:', ''] + [f'- {problem}' for problem in problems] + ['']
     lines += ['**RESULT: ' + (
         'PASS** — every artifact in the chain is approved, every provision the owner approved is in both the record '
-        'and the text, the two provisions that amend by deletion are shown to have deleted, the three amendments beyond '
-        'the approved list are named with what each needs, and the earlier layer is byte-identical to the commit this '
-        f'work started from. All {len(controls)} controls on the checks themselves held, so no result above is a check '
-        'that looked for nothing. Oracle 5\'s second condition is unmet by the owner\'s recorded override, which is '
-        'stated above rather than counted as a pass.'
+        'and the text, the two provisions that amend by deletion are shown to have deleted, the '
+        f'{len(BEYOND)} amendments beyond the approved list are named with what each needs and '
+        f'{sum(1 for extra in BEYOND if extra["outstanding"])} of them are marked OUTSTANDING where a reader of the '
+        f'specification will meet them, the earlier layer is byte-identical to `{BASE[:7]}`, and every amendment row '
+        f'`master` carried at `{MASTER[:7]}` survived the merge byte for byte. All {len(controls)} controls on the '
+        'checks themselves held, so no result above is a check that looked for nothing. Oracle 5\'s second condition '
+        'is unmet by the owner\'s recorded override, which is stated above rather than counted as a pass, and '
+        '`master`\'s transition of `VREC-MOK-005` to `verified` does not meet it either: that record\'s own text says '
+        'the substance stayed where it was.'
         if not problems else f'FAIL** — {len(problems)} finding(s) above.')]
 
     io.open(OUT, 'w', encoding='utf-8', newline='\n').write(
