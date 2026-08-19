@@ -2,7 +2,7 @@
 id = "WO-MOK-009"
 type = "work_order"
 title = "Implement the release authorization gate, the release process and the compiler declaration"
-status = "draft"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -25,6 +25,24 @@ verification = ["VER-MOK-008"]
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope
 below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
 completed change and retained evidence. Verification and release require separate commit-bound records.
+
+Commit-bound verification is classified `required` above.
+
+**Approval record.** On 2026-08-19 the repository owner, acting in all four accountable roles, approved the complete
+governing chain — `INT-MOK-007`, `CAP-MOK-007`, `REQ-MOK-035` through `REQ-MOK-039`, `SPEC-MOK-005` and
+`VER-MOK-008` — and authorized this work order, which was transitioned `draft` → `approved` → `in_progress` →
+`implemented` on the same date. The implementation agent recorded the transitions; it did not make the decision.
+`WO-MOK-008` is not part of that authorization and remains `draft`: it is a defect report against `SPEC-MOK-003`
+with no implementation, and nothing here approves it.
+
+**The four transitions of this work order were recorded as one act, and the reason is the disclosure below.** The
+candidate was already complete and its evidence already retained when approval was given, so there was no interval
+in which `approved` or `in_progress` described the repository. Recording the path rather than only its endpoint keeps
+the lifecycle honest about which authority each step carries — approval authorized the scope, implementation records
+the completed change — while not pretending the two were separated in time. What bridges them is the rule-by-rule
+conformance statement in `docs/engineering/simulation/evidence/WO-MOK-009/candidate-conformance.md`, which states
+what the candidate already satisfied and what had to change, because approval authorizes implementing
+`SPEC-MOK-005` and does not adopt the candidate.
 
 ### A candidate implementation already exists, and it was written before this chain
 
@@ -74,6 +92,38 @@ must exist and this work order must gain the relation before approval.
 **4. The release-record and release-contract types must be exercisable.** Neither has ever been used in this
 repository. If `prepare-release` or `create-artifact` cannot produce a conforming artifact for either type, that is
 a harness question to settle before implementation rather than during it.
+
+### How each precondition was discharged
+
+Recorded here rather than by editing the four above, so that what was required before the decision stays readable
+beside what was done about it.
+
+**1 — discharged by construction.** The ten transitions were written in one edit and one commit, so no revision of
+this repository holds `REQ-MOK-035`..`039` active without `SPEC-MOK-005` and `VER-MOK-008` also active. The validator
+was re-run on the transitioned tree: 79 artifacts, 0 errors, 0 warnings, with `E007` and `E008` now live against the
+five requirements rather than exempt.
+
+**2 — decided by the technical owner, as an approval of this chain with no architecture artifact in it.** The
+`architecture` relation is still absent and no architecture or deciding record was created, so the recorded decision
+is that none is required and that `SPEC-MOK-005` governs the release process alone. `WO-MOK-002` and `WO-MOK-004` are
+the precedent for a work order without the relation; `WO-MOK-001`, `WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006` carry
+one. **This is a reading of the approval rather than a separately worded decision**, and it is the one item in this
+record that a reader should check rather than accept: precondition 2 says that if one *is* required, an architecture
+and a deciding record must exist and this work order must gain the relation *before* approval. If the technical owner
+intends that, the correction is an `ARCH`, an `ADR`, an `architecture` relation here, and an amendment to this note —
+and the approval above would then have been premature rather than merely under-documented. Nothing in the evidence
+changes under either reading.
+
+**3 — discharged.** `SPEC-MOK-005` is `approved` by the technical owner and `VER-MOK-008` by the assurance owner,
+both 2026-08-19. `SPEC-MOK-005`'s amendment record now carries the technical owner against its original row as well
+as against the rule 12.5 amendment.
+
+**4 — half discharged, and the other half is not reachable from here.** `create-artifact` produces both types:
+`RLS-` under `simulation/releases/`, `REL-` under `simulation/release/`, with the transcripts in
+`docs/engineering/simulation/evidence/WO-MOK-009/release-artifact-types.md`. `prepare-release` takes a verification
+record as input, so it cannot be exercised before one exists and is eligible. That ordering is inherent to the
+command rather than an omission, and it is a precondition of a release rather than of this work order — the same
+position `VER-MOK-008` M4 already takes about the release contract.
 
 ## Objective
 

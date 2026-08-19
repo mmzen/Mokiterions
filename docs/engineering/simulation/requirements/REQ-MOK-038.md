@@ -2,7 +2,7 @@
 id = "REQ-MOK-038"
 type = "requirement"
 title = "Confine the release process to acts that are not accountable decisions"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

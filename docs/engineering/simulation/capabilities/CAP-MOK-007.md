@@ -2,7 +2,7 @@
 id = "CAP-MOK-007"
 type = "capability"
 title = "Publish a release that refuses to exist without a recorded authorization"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

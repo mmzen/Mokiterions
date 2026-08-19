@@ -2,7 +2,7 @@
 id = "REQ-MOK-037"
 type = "requirement"
 title = "Carry provenance inside every published asset"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

@@ -2,7 +2,7 @@
 id = "SPEC-MOK-005"
 type = "specification"
 title = "Release authorization, compliance re-establishment, asset provenance and reserved acts"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -17,7 +17,7 @@ specifies = ["REQ-MOK-035", "REQ-MOK-036", "REQ-MOK-037", "REQ-MOK-038", "REQ-MO
 
 | Date | Change | Approval |
 |---|---|---|
-| 2026-08-19 | Original content for `REQ-MOK-035` through `REQ-MOK-039`. | **Draft.** Requires the technical owner. |
+| 2026-08-19 | Original content for `REQ-MOK-035` through `REQ-MOK-039`. | Technical owner, 2026-08-19. |
 | 2026-08-19 | Rule 12.5 restated in platform-aware terms: write access is confined to the smallest job containing the attaching step, with the credential reaching that step alone. The original wording ("the attaching step is the only step granted write access") was unsatisfiable as written, because GitHub Actions scopes `permissions` per job and offers no step-level grant. Raised by `WO-MOK-009`'s implementation. | Technical owner, 2026-08-19. |
 
 ## Scope

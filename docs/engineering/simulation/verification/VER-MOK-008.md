@@ -2,7 +2,7 @@
 id = "VER-MOK-008"
 type = "verification"
 title = "Release authorization, compliance, provenance and reserved-act verification"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

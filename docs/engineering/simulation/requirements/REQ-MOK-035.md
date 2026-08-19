@@ -2,7 +2,7 @@
 id = "REQ-MOK-035"
 type = "requirement"
 title = "Refuse to produce or publish a release the graph does not authorize"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

@@ -5,8 +5,9 @@ process against SPEC-MOK-005*, captured on 2026-08-19.
 
 The records are observations of the working tree. They do not independently approve verification, create a
 candidate commit, or authorize release. `VER-MOK-008` is the verification contract these records serve; the
-accountable assurance decision and any verification record remain the owner's act. `WO-MOK-009` is `draft`,
-and nothing in this directory transitions it.
+accountable assurance decision remains the owner's act. **`WO-MOK-009` was `draft` throughout every capture
+below and is now `implemented`**, by the owner's decision of 2026-08-19 rather than by anything in this
+directory: `approval-and-transition.md` records what was transitioned and on whose word.
 
 ## Commit binding
 
@@ -84,11 +85,15 @@ in `compliance-rehearsal.md` C1.
 - `determinism-rehearsal.md` — the two-run comparison for rule 8.5: byte-identical output, identical final
   state, identical exit code, and `git status` unchanged across both.
 
-### The commit these records describe
+### The commit these records describe, and the decisions taken after them
 
 - `commit-binding.md` — the commit the owner directed after the captures were taken, the gates re-run on the
   committed tree, and the reconciliation of the three statements above that said there was no candidate
-  commit. Also records why no verification record accompanies it.
+  commit. Also records why no verification record accompanied it.
+- `approval-and-transition.md` — the ten status transitions the owner authorized on 2026-08-19, what was
+  deliberately left `draft`, the gates and the rule 7.4 preflight loop on the transitioned tree, the one
+  reading of the approval that a reader should check, and the two claims elsewhere in this directory that
+  the transition makes stale.
 - `release-artifact-types.md` — `WO-MOK-009`'s approval precondition 4, half discharged: both the release
   record and the release contract are creatable, with the prefixes and the two nearly identical directory
   names the harness enforces. `prepare-release` needs a verified record as input and so cannot be exercised
@@ -112,12 +117,16 @@ in `compliance-rehearsal.md` C1.
   archive to be read by someone who did not build the packaging step. That is this work order's author. So
   V1 through V6 do not close by further work in this directory; they close on the first run, read by
   someone else.
-- **No status transition, and no prepared verification record.** `DECISION_RIGHTS.md:14` reserves
-  transitions to `verified` and `released` to accountable owners. Ten new artifacts are `draft` and stay
-  that way. The harness enforces the consequence rather than leaving it to good intentions:
-  `capture-verification` refuses while `WO-MOK-009` is `draft`, with the transcript in
-  `commit-binding.md`. `a5-refusal-ladder.md` records that the real graph holds no release record, which is
-  a fact about the repository rather than something to fix here.
+- **No status transition taken by anything in this directory, and no decision made here.** Every capture
+  below observed a chain in which all ten new artifacts were `draft`, and the harness enforced the
+  consequence rather than leaving it to good intentions: `capture-verification` refused while `WO-MOK-009`
+  was `draft`, with the transcript in `commit-binding.md`. **The owner then approved the chain and
+  authorized the transition**, which the implementation agent recorded; nine artifacts are now `approved`
+  and `WO-MOK-009` is `implemented`. `approval-and-transition.md` holds the detail, including the one
+  reading in it that a reader should check rather than accept. `VREC-MOK-007` is prepared and `ready`;
+  `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners, so it stays `ready`
+  here. `WO-MOK-008` is untouched and still `draft`. `a5-refusal-ladder.md` records that the real graph
+  holds no release record, which is a fact about the repository rather than something to fix here.
 - **No copy of the process definition or the gate.** They are tracked files at
   `.github/workflows/release.yml`, `scripts/check_release_authorization.py` and
   `scripts/check_release_reachability.py`. `static-checks.md` cites them by line against a definition

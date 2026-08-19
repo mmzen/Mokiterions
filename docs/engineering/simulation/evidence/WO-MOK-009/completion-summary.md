@@ -8,13 +8,16 @@ Captured 2026-08-19, worktree of the primary clone, branch `feature/release-ci`,
 
 ## Status of this work order
 
-`WO-MOK-009` is `draft`. Its own stop condition says to halt while that is true and while review preflight
-does not pass, and its approval preconditions include an architecture decision that is the technical
-owner's. Neither has happened. **Nothing here transitions any status**, and no status was transitioned:
-transitions are reserved to accountable owners by `docs/engineering/DECISION_RIGHTS.md:14`.
+`WO-MOK-009` was `draft` throughout the work this record summarizes, and its own stop condition said to
+halt while that was true and while review preflight did not pass. So read the measurements below as
+prepared work measured against `SPEC-MOK-005` as the contract, captured before any approval existed.
 
-So read this as prepared work measured against `SPEC-MOK-005` as the contract, awaiting the approval chain
-listed at the end. It is not a claim that the work order is complete in the governance sense.
+**The owner has since approved the chain and authorized the transition, on 2026-08-19.** Nine artifacts are
+`approved` and `WO-MOK-009` is `implemented`; review preflight now passes. The implementation agent recorded
+the transitions and made none of the decisions — `docs/engineering/DECISION_RIGHTS.md:14` reserves them to
+accountable owners — and `approval-and-transition.md` states what was transitioned, what was deliberately
+left `draft`, and the one reading of the approval that a reader should check rather than accept. Nothing in
+this record's measurements changed, because a status transition edits a field.
 
 ## Final affected components
 
@@ -33,7 +36,8 @@ listed at the end. It is not a claim that the work order is complete in the gove
 ### Governed artifacts — new
 
 `INT-MOK-007`, `CAP-MOK-007`, `REQ-MOK-035` through `REQ-MOK-039`, `SPEC-MOK-005`, `VER-MOK-008`,
-`WO-MOK-008`, `WO-MOK-009`. Ten artifacts, all `draft`.
+`WO-MOK-008`, `WO-MOK-009`. Ten artifacts, all `draft` when they were written; nine of the ten now carry the
+owner's 2026-08-19 approval, and `WO-MOK-008` alone is still `draft`.
 
 ### Governed artifacts — modified
 
@@ -44,9 +48,10 @@ listed at the end. It is not a claim that the work order is complete in the gove
 
 ### Evidence — this work order
 
-Fourteen records and a directory index, listed in `README.md`. Two were written after the owner directed the
-commit: `commit-binding.md`, which names it, and `release-artifact-types.md`, which discharges half of this
-work order's fourth approval precondition.
+Fifteen records and a directory index, listed in `README.md`. Three were written after the captures, as the
+owner directed each act: `commit-binding.md`, which names the commit; `release-artifact-types.md`, which
+discharges half of this work order's fourth approval precondition; and `approval-and-transition.md`, which
+records the approvals and the ten status transitions.
 
 ### Not this work order
 
@@ -226,19 +231,23 @@ performed, 0 unexercisable.
 
 ## Harness state at the end of the work
 
-Re-run with the pinned `0.4.0` wheel after the last evidence file was written, and again after the four
-decisions below were written into `SPEC-MOK-005`, `VER-MOK-008` and `WO-MOK-001`, so that the numbers below
-describe the tree as it stands rather than as it stood mid-work. All three captures agree.
+Re-run with the pinned `0.4.0` wheel after the last evidence file was written, again after the four
+decisions below were written into `SPEC-MOK-005`, `VER-MOK-008` and `WO-MOK-001`, and again after the ten
+status transitions, so that the numbers below describe the tree as it stands rather than as it stood
+mid-work. Every capture agrees.
 
 | Command | Result |
 | --- | --- |
 | `python -m se_harness doctor .` | exit 0 — 81 verdict lines, PASS 81, WARN 0, FAIL 0 |
 | `python scripts/validate_engineering_artifacts.py --root .` | exit 0 — 79 artifacts, 0 errors, 0 warnings, all four planes clean |
-| `python -m se_harness preflight . --work-order WO-MOK-009 --phase review` | exit 1 — the expected outcome while the chain is `draft`, and the reason this work order's own stop condition is unmet |
+| `python -m se_harness preflight . --work-order WO-MOK-009 --phase review` | **exit 1 while the chain was `draft`**, which was the reason this work order's own stop condition was unmet; **exit 0, PASS, after the transitions** |
 
-The artifact count is unchanged at 79 across the four evidence files added at the end, which is the
-measured form of the claim that the validator does not walk `evidence` directories. Transcripts in
-`verification-output.md`.
+The artifact count is unchanged at 79 across the five evidence files added at the end, which is the
+measured form of the claim that the validator does not walk `evidence` directories, and unchanged again
+across the ten transitions, because a transition edits a field. What the transitions do change is what the
+silence is worth: `E007` and `E008` exempt draft requirements and now check `REQ-MOK-035`–`039` against
+`SPEC-MOK-005`'s `specifies` and `VER-MOK-008`'s `verifies`. Transcripts in `verification-output.md` and
+`approval-and-transition.md`.
 
 ## Settled on 2026-08-19
 
@@ -254,22 +263,24 @@ the artifact it changed as well as here.
 
 ## What has to happen next, and by whom
 
-| # | Act | Whose |
-| --- | --- | --- |
-| 1 | decide the architecture question `WO-MOK-009` names as an approval precondition | technical owner |
-| 2 | approve `INT-MOK-007`, `CAP-MOK-007`, `REQ-MOK-035`–`039` | as `DECISION_RIGHTS.md` assigns |
-| 3 | approve `SPEC-MOK-005`, including the amended rule 12.5 | technical owner |
-| 4 | approve `VER-MOK-008`, with the amended C5 | assurance owner |
-| 5 | approve `WO-MOK-008` and `WO-MOK-009` | engineering owner |
-| 6 | run the process once and read V1–V6 and P1–P3 | release owner, plus a reader who is not this work order's author |
-| 7 | configure the `release` environment if rule 12.6's second human gate is wanted | release owner |
+| # | Act | Whose | State on 2026-08-19 |
+| --- | --- | --- | --- |
+| 1 | decide the architecture question `WO-MOK-009` names as an approval precondition | technical owner | **taken by approving the pack with no architecture artifact in it** — a reading, flagged in `approval-and-transition.md` |
+| 2 | approve `INT-MOK-007`, `CAP-MOK-007`, `REQ-MOK-035`–`039` | as `DECISION_RIGHTS.md` assigns | **done** |
+| 3 | approve `SPEC-MOK-005`, including the amended rule 12.5 | technical owner | **done** |
+| 4 | approve `VER-MOK-008`, with the amended C5 | assurance owner | **done** |
+| 5 | approve `WO-MOK-009` and transition it | engineering owner | **done** — `implemented` |
+| 5b | approve `WO-MOK-008` | engineering owner | outstanding — deliberately not part of this approval |
+| 6 | run the process once and read V1–V6 and P1–P3 | release owner, plus a reader who is not this work order's author | outstanding |
+| 7 | configure the `release` environment if rule 12.6's second human gate is wanted | release owner | outstanding |
 
 Steps 6 and 7 are reserved acts. Nothing in this changeset performs them, and nothing here should be read
-as authorizing them. Steps 1 through 5 remain outstanding: the four decisions above resolved specification
-and classification questions, not approvals.
+as authorizing them.
 
-**Two acts have since been performed on the owner's instruction, and neither is one of the seven.** The
-changeset was committed as `17be4ba` and opened as pull request #20; `commit-binding.md` records both. The
-commit-bound verification record that `WO-MOK-009`'s `[assurance]` table requires could not be prepared:
-`capture-verification` refuses while the work order is `draft`, so step 5 gates it. Merging is not among the
-seven either, and it was not done.
+**Four acts have been performed on the owner's instruction since the captures, and none is step 6 or 7.**
+The changeset was committed as `17be4ba` and opened as pull request #20, both recorded in
+`commit-binding.md`. The owner then approved the chain and authorized the work order's transition, recorded
+in `approval-and-transition.md` and in `WO-MOK-009`'s own *Approval record*, which lets the fourth act
+happen: `capture-verification` had refused while the work order was `draft`, and `VREC-MOK-007` is now
+prepared and **`ready`**. Making it `verified` is the accountable assurance owner's act and was not taken.
+Merging pull request #20 was not instructed and was not done.

@@ -2,7 +2,7 @@
 id = "REQ-MOK-036"
 type = "requirement"
 title = "Re-establish declared compliance at the released revision before publishing"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"

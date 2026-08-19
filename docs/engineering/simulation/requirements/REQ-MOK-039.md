@@ -2,7 +2,7 @@
 id = "REQ-MOK-039"
 type = "requirement"
 title = "Build and verify a release with one compiler version the repository declares"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
