@@ -5,7 +5,12 @@ title = "Implement the minimum simulation foundation"
 status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-11"
-updated = "2026-08-11"
+updated = "2026-08-19"
+
+[assurance]
+commit_bound_verification = "required"
+rationale = "This work order implemented the whole simulation engine: the world and its two territories, bounded survival state, tick ordering and death, action validation, conditional regeneration, the seeded entropy stream, the text event record and the process exit codes. Every later work order builds on that behavior, VER-MOK-001 through VER-MOK-006 measure against it, and any release of this repository releases it, so later engineering, assurance and release decisions rely on its correctness. The classification is recorded late rather than reclassified: the declaration did not exist when this work order was approved on 2026-08-11, and WO-MOK-002 on 2026-08-17 is the first to carry one. Renewed preflight selection is what requires it, and a review preflight against this work order is what surfaced the omission. VREC-MOK-001 already binds this work order to commit ecd03a89c0c8680d8ce82d7767b787a49aa815fb and is verified, so the coverage this classification calls for is already in place; this table records the decision and creates no new obligation."
+decided_by = "engineering owner"
 
 [relations]
 implements = [
@@ -32,6 +37,12 @@ verification = ["VER-MOK-001"]
 ## Lifecycle
 
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the completed change and retained evidence. Verification and release require separate commit-bound records.
+
+### Assurance classification recorded 2026-08-19
+
+The `[assurance]` table was added on 2026-08-19 and nothing else about this work order changed. It is the declaration `docs/engineering/WORKFLOW.md` requires of every approved or in-progress work order, which did not exist when this one was approved on 2026-08-11; `WO-MOK-002`, approved 2026-08-17, is the first to carry one. Completed legacy work may omit it, but renewed preflight selection may not, so `python -m se_harness preflight . --work-order WO-MOK-001 --phase review` reported `[W023]` and refused while the other five work orders passed. The scope, the implemented requirements, the retained evidence and the `implemented` status are untouched, and `VREC-MOK-001` is not edited: it binds this work order's content at its own commit, and that content is unchanged.
+
+The classification and its rationale were **affirmed by the engineering owner on 2026-08-19**, which is what `decided_by` records. The omission was surfaced by `WO-MOK-009`'s rule 7.4 rehearsal, and this file is outside that work order's declared change surface. The owner's disposition, recorded the same day, is to keep the edit here and let the deviation stand as a stated finding in `WO-MOK-009`'s completion report rather than widen that work order's scope or open a separate governance work order.
 
 ## Objective
 
