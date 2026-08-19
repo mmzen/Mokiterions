@@ -6,12 +6,12 @@ status = "ready"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
-commit = "4f32a9f0accb141fb9d21795faf9554bdd3afbd6"
+commit = "035a001169757464c7f2eda2e2dfafc06b3f8910"
 git_object_format = "sha1"
 worktree_state = "clean"
-verified_at = "2026-08-19T11:25:08Z"
-artifact_snapshot_sha256 = "545b9b9937ec7024ffff5ca2a139a1f9e965e44954f4a8d3037148c701421f28"
-evidence_paths = ["docs/engineering/simulation/evidence/WO-MOK-010/README.md", "docs/engineering/simulation/evidence/WO-MOK-010/amendment-approvals.md", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/amendments.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/analyze.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/capture-static.sh", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/equivalence.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/frames.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/interface-census.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/long-horizon.sh", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/static-checks.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/test-census.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/COMMIT.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/capture.sh", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/compare.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/pre-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/projection.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.txt", "docs/engineering/simulation/evidence/WO-MOK-010/completion-summary.md", "docs/engineering/simulation/evidence/WO-MOK-010/escalation.md", "docs/engineering/simulation/evidence/WO-MOK-010/interface-and-purity.txt", "docs/engineering/simulation/evidence/WO-MOK-010/manual-assessment.md", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/divergence.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/equivalence.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/fear.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/long-horizon.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/oscillation.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/proposals.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/traits.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/viability.txt", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/controls.py", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/oracle-2.txt", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/oracle-3.txt", "docs/engineering/simulation/evidence/WO-MOK-010/observer/frame-probe.rs", "docs/engineering/simulation/evidence/WO-MOK-010/observer/roster-frames.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/additivity.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/full/post-individual-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/post/full/post-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/post/post-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-010/requirement-to-test-mapping.md", "docs/engineering/simulation/evidence/WO-MOK-010/static-checks.txt", "docs/engineering/simulation/evidence/WO-MOK-010/test-census.txt"]
+verified_at = "2026-08-19T16:50:02Z"
+artifact_snapshot_sha256 = "71dc899e899465f9d851c5804f40d8ca799ccd613072d147e0036d504cfb8954"
+evidence_paths = ["docs/engineering/simulation/evidence/WO-MOK-010/README.md", "docs/engineering/simulation/evidence/WO-MOK-010/amendment-approvals.md", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/amendments.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/analyze.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/capture-static.sh", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/equivalence.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/frames.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/interface-census.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/long-horizon.sh", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/static-checks.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/test-census.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/COMMIT.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/capture.sh", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/compare.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/pre-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/projection.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.txt", "docs/engineering/simulation/evidence/WO-MOK-010/completion-summary.md", "docs/engineering/simulation/evidence/WO-MOK-010/escalation.md", "docs/engineering/simulation/evidence/WO-MOK-010/interface-and-purity.txt", "docs/engineering/simulation/evidence/WO-MOK-010/manual-assessment.md", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/divergence.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/equivalence.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/fear.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/long-horizon.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/oscillation.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/proposals.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/traits.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/viability.txt", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/controls.py", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/oracle-2.txt", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/oracle-3.txt", "docs/engineering/simulation/evidence/WO-MOK-010/observer/frame-probe.rs", "docs/engineering/simulation/evidence/WO-MOK-010/observer/roster-frames.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/additivity.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/full/post-individual-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/post/full/post-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/post/post-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-010/renumbering.md", "docs/engineering/simulation/evidence/WO-MOK-010/requirement-to-test-mapping.md", "docs/engineering/simulation/evidence/WO-MOK-010/static-checks.txt", "docs/engineering/simulation/evidence/WO-MOK-010/test-census.txt"]
 
 [relations]
 verifies_work_order = ["WO-MOK-010"]
@@ -21,16 +21,26 @@ conforms_to = ["VER-MOK-010"]
 # Verification Record Candidate
 
 This ready record binds the retained evidence for `WO-MOK-010` to candidate commit
-`4f32a9f0accb141fb9d21795faf9554bdd3afbd6`. An accountable assurance owner must review the evidence
+`035a001169757464c7f2eda2e2dfafc06b3f8910`. An accountable assurance owner must review the evidence
 and decide whether to transition it to `verified`. Preparing it approved, verified, merged, tagged,
 released and published nothing.
 
+**It is a re-capture.** The candidate this replaces bound `4f32a9f0accb141fb9d21795faf9554bdd3afbd6`,
+a commit that predates `master`'s merge into this branch; the next section says what moved and why the
+figures below are not the figures it carried. A `ready` record may be re-captured; a `verified` one may
+not, and none was touched.
+
 The record is intentionally created after the candidate commit it names, avoiding self-referential
 commit metadata. **`verified_at` above is the capture timestamp, not a verification decision** — the
-capture was taken at `2026-08-19T11:25:08Z` against a clean worktree at this commit, and the
-`artifact_snapshot_sha256` is the harness snapshot of the **76**-artifact, 240-relation graph as it
-stood before this file was written, so it records the graph this record binds rather than the graph
-containing it. The status is `ready` and no verification decision has been taken by anyone.
+capture was taken at `2026-08-19T16:50:02Z` against a clean worktree at this commit, and the
+`artifact_snapshot_sha256` is the harness snapshot of the **80**-artifact, 248-relation graph as it
+stood at that commit, so it records the graph this record binds rather than the graph containing this
+text. On a re-capture that distinction is sharper than on a first capture and is worth stating exactly:
+`dashboard-data.json` embeds this record's own `commit`, `verified_at` and `artifact_snapshot_sha256`
+fields, so the graph it digests is the one holding the **retired** form of this file, and the digest
+could not name the graph holding this form without being an input to itself. It also embeds
+`repository.revision`, which is `035a001` — the digest names both the graph and the commit. The status
+is `ready` and no verification decision has been taken by anyone.
 
 ## This record is written over its own evidence packet's objection, and that is stated first
 
@@ -46,13 +56,18 @@ Two readings of it exist and the difference is not academic.
   outstanding", which is a statement about satisfaction, and satisfaction is what a verification
   decision rests on. A `ready` candidate takes no decision. It binds the commit, fixes the evidence
   set, and puts the unmet obligations in front of the roles that own them in a form the harness can
-  see — which is what `VREC-MOK-005` already is, and has been since 2026-08-18 with all seven of its
-  own manual assessments outstanding. On this reading a `ready` record is the repository's existing
-  form for precisely this state. That last claim is checkable rather than rhetorical: with this file in
-  the tree, `scripts/inspect_engineering_artifacts.py` reports `decision_required ->
-  review-assurance-decision (assurance-owner)` against `VREC-MOK-005` **and** `VREC-MOK-010`, where
-  before it reported it against `VREC-MOK-005` alone. Adding the record raised the signal and changed
-  no error, warning or informational count.
+  see — which is what `VREC-MOK-005` was for a day: `ready` from 2026-08-18 with all seven of its own
+  manual assessments outstanding, until `master`'s assurance owner transitioned it to `verified` on
+  2026-08-19 with those seven still outstanding. On this reading a `ready` record is the repository's
+  existing form for precisely this state, and the precedent stands on what that record was when this
+  reading was taken rather than on what it is now. That last claim is checkable rather than rhetorical:
+  with this file in the tree, `scripts/inspect_engineering_artifacts.py` reports `decision_required ->
+  review-assurance-decision (assurance-owner)` against `VREC-MOK-010`, and with the file removed from a
+  worktree at this commit it reports that queue **empty** — 79 artifacts, 246 relations, 12 warnings and
+  7 informational against this commit's 80, 248, 12 and 8. Adding the record raises the signal by
+  exactly one informational observation, which is the decision it asks for, and changes no error and no
+  warning. At the first capture the queue already named `VREC-MOK-005` and the informational count did
+  not move; `master`'s transition is what makes this record the only entry in it now.
 - **The narrower reading.** Nothing should be written until the assessments are recorded, in which
   case this file is premature. It binds no decision and confers nothing, so retracting it costs one
   commit and no recorded value; nothing in the evidence changes either way.
@@ -63,10 +78,47 @@ accountable role here, so the instruction is the strongest available signal that
 wanted. It is still an agent's construction of what the packet's own sentence permits, and it is named
 at the top rather than left to be found.
 
+## Why this record was re-captured, and what the retired candidate said
+
+The retired candidate bound `4f32a9f0accb141fb9d21795faf9554bdd3afbd6`, captured at
+`2026-08-19T11:25:08Z` over a 76-artifact, 240-relation graph digesting to `545b9b99…`. Everything it
+said was true of a tree that no longer exists. `master` advanced by ten commits while this branch sat
+unmerged and was merged in at `7a2b502b908be03ad8e2de7c23ee3eaaf4ece048`, which withdrew `SPEC-MOK-003`
+rule 5's tier table in favour of one threshold per pane, added `master`'s own survival bands to rule 4,
+and created a different `WO-MOK-007` — so this chain was renumbered to `010` on the owner's decision
+(`renumbering.md`). A record binds a commit, and this one bound a commit from before all of that.
+
+**It was re-captured rather than edited into agreement.** The distinction is the same one the evidence
+packet applies to its captures: a candidate that has been corrected into looking current is not a
+capture of anything. Three retained captures were re-run against the merged tree rather than adjusted —
+`observer/roster-frames.txt`, `test-census.txt` and `static-checks.txt` — and the figures below are read
+from those. Sixteen retained captures still name this work order `WO-MOK-007`, because that was its name
+when they were taken, and `renumbering.md` says which and why.
+
+What moved between the two candidates, so a reader of the retired one can see the difference rather than
+diff it:
+
+| Figure | Retired candidate at `4f32a9f` | This candidate at `035a001` |
+|---|---|---|
+| Workspace suite | 20 runners, 190 passed | 20 runners, **200 passed** — re-run at this commit |
+| Test census | 169 over 19 runners → 190 over 20, before side `60fda9f` | **179 over 19 → 200 over 20**, before side `master`'s tip |
+| Oracle 4 | 864 bar rows over 134 probed frames, 4 roster-drawing viewports | **996 bar rows over the 85 of 157 probed frames that draw a roster**, 8 viewports |
+| Validator / harness | 76 artifacts, 240 relations | **80 artifacts, 248 relations** |
+| Inspector | 10 warnings, 6 informational, 3 warnings new to this change | **12 warnings, 8 informational, 2 new to this change** |
+| Amendments beyond the approved list | 3, of which 2 OUTSTANDING | **7, of which 4 OUTSTANDING** and 2 changing no provision |
+| Oracle 5 controls | 7 | **12**, and a second base for the checks the merge made ambiguous |
+| `VREC-MOK-005` | `ready`, gate overridden | **`verified` by `master`'s act**, gate still not met |
+
+Five results did not move, and that is a measurement rather than an omission: `master` did not touch the
+engine by one byte — `git diff --stat 60fda9f 7a2b502 -- mokiterions-core/` is empty — so oracle 1,
+oracle 2, oracle 3, the `fear` measurements and the public-interface census stand at this commit with the
+before side they were taken against. No figure in this record is carried over from the retired candidate
+without either being re-run here or resting on that emptiness.
+
 ## What this record claims
 
 `WO-MOK-010` is `in_progress` and `VER-MOK-010` is `approved`. At candidate commit
-`4f32a9f0accb141fb9d21795faf9554bdd3afbd6`, **every automated case, oracle, static check and
+`035a001169757464c7f2eda2e2dfafc06b3f8910`, **every automated case, oracle, static check and
 comparison in `VER-MOK-010` was executed and passed. Three of the contract's own obligations are not
 satisfied — its manual-assessment clause and two rows of its requirement-to-evidence matrix — so this
 record cannot claim that the contract is met.** That is the difference between this candidate and
@@ -75,25 +127,30 @@ what an assurance owner is being asked to accept.
 
 | Gate | Result |
 |---|---|
-| `cargo test --workspace` | **exit 0. 20 runners, 20 ok, 190 passed, 0 failed, 0 ignored, 0 filtered out** |
+| `cargo test --workspace` | **exit 0. 20 runners, 20 ok, 200 passed, 0 failed, 0 ignored, 0 filtered out** — re-run at this commit, not read off the retained capture |
 | `cargo fmt --all -- --check` | exit 0, 0 diff lines |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | exit 0, 0 warning or error lines, **2 crates re-linted in the run** so the result is this tree's and not a cache's. No `allow` added, no lint suppressed |
 | `cargo tree -p Mokiterions` | **one line** — the package alone; dependency and dev-dependency tables empty |
 | `cargo tree -p mokiterions-tui` | 111 lines, identical to the pre-change commit's line for line with the checkout path normalised |
-| `python scripts/validate_engineering_artifacts.py` | PASS — 76 artifacts, 0 errors, 0 warnings, across all four planes |
-| `bash scripts/check_engineering_harness.sh` | PASS — 76 artifacts, 240 relations, 0 errors |
-| `python scripts/inspect_engineering_artifacts.py` | 0 errors, **10 warnings**, 6 informational — **three warnings are new and caused by this change**, see the disclosures below |
+| `python scripts/validate_engineering_artifacts.py` | PASS — 80 artifacts, 0 errors, 0 warnings, across all four planes |
+| `bash scripts/check_engineering_harness.sh` | PASS — 80 artifacts, 248 relations, 0 errors |
+| `python scripts/inspect_engineering_artifacts.py` | 0 errors, **12 warnings**, 8 informational — **two warnings are new and caused by this change**, see the disclosures below |
 
 Zero ignored and zero filtered out is the part worth stating: a suite can be made to pass by not
 running, and those two counts are what would show it. `static-checks.txt` retains the transcripts and
 `analysis/capture-static.sh` reproduces them.
 
-The three harness rows are the state **at the candidate commit**, where this record does not yet exist.
-With it in the tree the validator reports 77 artifacts and 242 relations, still 0 errors and 0 warnings
-across all four planes, and the inspector's counts are unchanged at 10 warnings and 6 informational.
-The three new warnings are `ARCH-MOK-001` and `ARCH-MOK-002` now predating specifications they declare
-conformance to, and they belong to the change rather than to this record; the reason neither artifact
-was edited to silence them is below.
+The three harness rows are the state **at the candidate commit**, where this record already exists in the
+retired form this one replaces — that is what a re-capture means, and it is why the counts include it. A
+worktree at this commit with the file removed reports 79 artifacts and 246 relations, 0 errors and 0
+warnings across all four planes, and 12 warnings with 7 informational: this record's contribution to the
+graph is itself, its two relations and the one informational observation asking for the decision it
+exists to ask for. The two new warnings are `ARCH-MOK-001` now predating `SPEC-MOK-001` and
+`SPEC-MOK-002`, which it declares conformance to; they belong to the change rather than to this record,
+and the reason the artifact was not edited to silence them is below. The five `W-HEX-003` observations
+the inspector reports are not all this change's, which is measured rather than assumed: three of them —
+`ADR-MOK-001` → `ARCH-MOK-001`, `ARCH-MOK-002` → `SPEC-MOK-003` and `ARCH-MOK-002` → `SPEC-MOK-004` —
+are present at `master`'s tip without this branch.
 
 `VER-MOK-010`'s central claim is that the two frozen decision sources are untouched and the new one
 behaves as `SPEC-MOK-001` rule 19 specifies. That claim is not carried by one measurement. Five
@@ -115,15 +172,23 @@ oracles, each able to fail without the others failing:
   controls, and control B fails at the very first case on the *stream position* rather than on the
   proposal, which is the failure mode a proposal-only comparison would have missed.
   `measurements/equivalence.txt`, `negative-control/oracle-3.txt`.
-- **Oracle 4 — the in-memory character buffer, cell by cell.** **864 bar rows across 134 viewport
-  renders**, rebuilt from `SPEC-MOK-003` rule 4's named parts rather than read back from the product,
-  **0 discrepancies**, with the fourth gauge at its predicted absolute columns at every roster-drawing
-  viewport — label 36, bar 38–39, value 41–43. `observer/roster-frames.txt`.
+- **Oracle 4 — the in-memory character buffer, cell by cell.** **996 bar rows across the 85 of 157
+  probed frames that draw a roster**, rebuilt from `SPEC-MOK-003` rule 4's named parts rather than read
+  back from the product, **0 discrepancies**, with the fourth gauge at its predicted absolute columns at
+  **all eight** roster-drawing viewports — label 36, bar 38–39, value 41–43. Re-derived against the
+  merged tree, where rule 5 as amended presents the roster at more viewports than the withdrawn tier
+  table did; every figure moved upward and nothing true of the earlier capture became false.
+  `observer/roster-frames.txt`.
 - **Oracle 5 — the governance state of the amended artifacts.** Its **first** condition holds: every
   provision the owner approved on 2026-08-19 is present in both the amendment record and the
   specification text, checked over disjoint text, with the two amend-by-deletion provisions shown to
-  have deleted and 7 of 7 controls on the checks themselves holding. Its **second** condition does not.
-  `amendment-approvals.md`.
+  have deleted and **12 of 12** controls on the checks themselves holding. The merge made two of its
+  checks ambiguous and both were re-derived rather than left to read clean: row immobility stays on the
+  branch point, because it establishes that *this branch* moved no earlier row, while the
+  untouched-artifact checks move to `master`'s tip, because `VREC-MOK-005` is no longer the file this
+  work started from; and every amendment row present at `master`'s tip is checked to be present here
+  byte for byte, because a merge can lose a row with nothing on this branch having touched it. Its
+  **second** condition does not hold. `amendment-approvals.md`.
 
 Four structural obligations, each measured rather than argued:
 
@@ -131,11 +196,14 @@ Four structural obligations, each measured rather than argued:
   fields 42 → 43 (`AgentSnapshot.fear`), enum variants 47 → 48 (`Policy::Individual`); 2 additions, 0
   removals. `SPEC-MOK-002` rule 6's prohibition was re-checked rather than amended.
   `interface-and-purity.txt`.
-- **The test census reconciles name by name in both directions.** 169 tests over 19 runners → **190
+- **The test census reconciles name by name in both directions.** 179 tests over 19 runners → **200
   over 20**, with **21 additions named in full and 0 removals**; on both sides the listed names equal
   the sum of the runners' own declared totals. One runner is new — `decisions (tests/decisions.rs)` —
   and the census names what moved into it and why, because a new public-tier runner is exactly how a
-  relocated test would look. `test-census.txt`.
+  relocated test would look. The before side is `master`'s tip rather than the branch point, so
+  `master`'s own ten arrivals sit there rather than among this work order's additions, and
+  `analysis/test-census.py` takes the commit as an argument so the recorded command says which
+  comparison was made. `test-census.txt`.
 - **Tier placement is by required access, not by subject.** 13 of the 21 new tests are internal-tier
   and each is listed with the private item or `#[cfg(test)]` hook it requires; 8 are public-tier across
   5 files. One test changed tier, and its assertions are verbatim across the move as `SPEC-MOK-002`
@@ -160,15 +228,20 @@ quoted rather than paraphrased.
    to the product owner, 4 to the technical owner and 6 to the assurance owner, and **none has an
    author**. `manual-assessment.md` puts each in front of its role with the measured facts already
    assembled; it is not the record of the judgement, and it says so in its own second paragraph.
-2. **Oracle 5's amendment row is not satisfied.** Two amendments written during implementation are
+2. **Oracle 5's amendment row is not satisfied.** **Four** amendments written during implementation are
    OUTSTANDING, and the contract's own words are "an amendment nobody approved is not a
-   specification". Detail in the next section.
-3. **The `VREC-MOK-005` gate row is not satisfied.** `WO-MOK-005`'s six amendments and seven manual
+   specification". Two of the four were written after the merge and could not have been listed by a work
+   order approved before it. Detail in the next section.
+3. **The `VREC-MOK-005` gate row is not satisfied.** `WO-MOK-005`'s six amendment rows and seven manual
    assessments were not resolved before this implementation began; the repository owner overrode the
-   gate on 2026-08-19. `amendment-approvals.md` §4 checks the mitigation rather than asserting it —
-   every amendment row dated before 2026-08-19 is byte-identical to `60fda9f`, and `VREC-MOK-005` and
-   `ARCH-MOK-001` are unchanged — but the row is unmet, and **it is a cost carried forward, not a debt
-   paid**.
+   gate on 2026-08-19. **`master` has since transitioned that record to `verified`, which does not close
+   the gate**: the record's own text says the transition accepted the automated evidence with all seven
+   manual assessments outstanding and eleven provisions across four approved artifacts awaiting the
+   technical owner. The status moved and the substance did not. `amendment-approvals.md` §4 checks the
+   mitigation rather than asserting it — every amendment row dated before 2026-08-19 is byte-identical to
+   `60fda9f`, every row `master` carried at `7a2b502` survived the merge byte for byte, and neither
+   `VREC-MOK-005` nor `ARCH-MOK-001` was changed by this branch — but the row is unmet, and **it is a
+   cost carried forward, not a debt paid**.
 
 Two further limits bound what the green gates mean:
 
@@ -183,10 +256,17 @@ Two further limits bound what the green gates mean:
 
 ## Amendments to approved artifacts that this record does not carry
 
-Three amendments were written beyond the list `WO-MOK-010` states. **One is approved and two are
-OUTSTANDING because ratification is the technical owner's act and the owner has not taken it.** This
-record cannot supply it, and transitioning this record to `verified` would not supply it either — an
-assurance owner's verification is a statement about evidence, not about another role's approvals.
+Seven amendments were written beyond the list `WO-MOK-010` states. **One is approved, four are
+OUTSTANDING because ratification is the technical owner's act and the owner has not taken it, and two
+change no provision and so require none.** This record cannot supply a ratification, and transitioning it
+to `verified` would not supply one either — an assurance owner's verification is a statement about
+evidence, not about another role's approvals. Whether a row is outstanding is read off the specification's
+own text by oracle 5 rather than asserted here; that check is what raised the count from the two the
+retired candidate named.
+
+Three were written before the merge and are the first three below. The last four exist because two
+owners' approvals of the same date met in one tree, and an approved work order drafted before the merge
+could not have listed them.
 
 - **Approved.** `SPEC-MOK-001`'s trait range narrowed from `0..=100` to `0..=40`, with rule 19's
   upper-bound note and the two acceptance examples that cited unreachable tolerances. The repository
@@ -207,26 +287,59 @@ assurance owner's verification is a statement about evidence, not about another 
   compute, and rule 11's `decision_source_selected` row gains `REQ-MOK-033` for `individual`. Each is
   forced by the change rather than chosen with it, and each is written into the 2026-08-19 amendment
   row rather than made quietly. **They require the technical owner's ratification.**
+- **No ratification required — it changes no provision.** `SPEC-MOK-003` gains a row recording the
+  reconciliation of `WO-MOK-005`'s rule 5 amendment with this work order's rule 4 amendment, which were
+  approved on the same date by the same owner against different trees and met in the merge. Both are
+  retained verbatim, neither is edited or folded into the other, and the row adds, removes and rewords no
+  provision: what the merge changes is a set rather than a rule, since rule 5 as amended presents the
+  roster at eight declared viewports rather than four. That row names one thing as outstanding — the
+  oracle 4 frame capture taken against the withdrawn tier table — and **that re-derivation is discharged
+  at this commit**, at 996 bar rows over 85 roster-drawing frames. The row is not edited to say so,
+  because a row is never edited once written.
+- **OUTSTANDING.** `SPEC-MOK-003` rule 4 clause 7 amended in two provisions, so that clause 5's four
+  gauges coexist with clause 7's bands. The two clauses meet at exactly one point — clause 5 makes the
+  bar row four gauges, clause 7 bands "each of the three bars" — which left the fourth gauge unstated.
+  The banded set is now named rather than counted: health, satiety and energy take the band, and `fear`
+  renders as a bar and a numeric value with no colour, because the three bands are a survival scale on
+  which a high value is a good one and `fear` inverts that. The collapsed one-line form's count is
+  corrected from three numeric values to four. **The repository owner chose the banded set on 2026-08-19;
+  the wording is the implementation agent's and needs the technical owner's ratification.**
+- **OUTSTANDING.** `SPEC-MOK-004`'s recorded test-count figures corrected for this work order, under rule
+  11 of that specification, which instructs a work order that adds a test to correct the counts there.
+  This one adds twenty-one. `WO-MOK-010` states no provision of `SPEC-MOK-004`, so the correction is
+  beyond its list although the instruction to make it comes from the amended artifact itself. **It needs
+  the technical owner's ratification.**
+- **No ratification required — it changes no provision.** A further `SPEC-MOK-004` row corrects rule 11's
+  pointer, which named a census figure of 190 that the re-taken capture no longer carries. A capture is
+  re-run rather than edited, and an amendment row is not edited once written, so the correction is a new
+  row — the precedent is this work order's own *Help output* row above. It states a fact about retained
+  evidence and ratifies nothing; what it points at is the row above it, which is OUTSTANDING.
 
 The six `OUTSTANDING` amendment rows that `SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-001` carry from
-`WO-MOK-005` are untouched and still say OUTSTANDING. No commit-bound record was edited.
+`WO-MOK-005` are untouched and still say OUTSTANDING; by `VREC-MOK-005`'s own count that layer is now
+eleven provisions across four approved artifacts. No commit-bound record was edited by this branch —
+`master` re-captured and transitioned `VREC-MOK-005` itself, which is `master`'s act and is checked here
+rather than inherited on trust.
 
-**Two architecture artifacts were deliberately not edited**, and this is the reason the harness
-inspection now reports three warnings it did not report before. `ARCH-MOK-001` (2026-08-18) now
-predates `SPEC-MOK-001` and `SPEC-MOK-002` (2026-08-19), and `ARCH-MOK-002` predates `SPEC-MOK-003`,
-in each case a specification they declare `conforms_to`, so the inspector asks for a reassessment. The
+**An architecture artifact was deliberately not edited**, and this is the reason the harness inspection
+reports two warnings it did not report before. `ARCH-MOK-001` (2026-08-18) now predates `SPEC-MOK-001`
+and `SPEC-MOK-002` (2026-08-19), in each case a specification it declares `conforms_to`, so the inspector
+asks for a reassessment. `ARCH-MOK-002` predates `SPEC-MOK-003` and `SPEC-MOK-004` in the same way, but
+those two observations are `master`'s and not this change's — they are present at `7a2b502` without this
+branch, because `master` amended both specifications itself — which is measured rather than argued: the
+inspector reports three `W-HEX-003` observations there and five here. The
 substantive reassessment was in fact made — the technical owner confirmed on 2026-08-19 that
 `ARCH-MOK-001`'s boundaries, prohibited patterns and dependency prohibition hold unchanged, recorded
 in `WO-MOK-010`'s *Decision record* — but it was recorded in the work order rather than in the
 architecture artifact, so the date comparison still fires. Bumping an approved artifact's `updated`
 field to silence a warning would have been a governance act on an artifact this work order was
-authorized to *confirm* and not to amend, and would have created a third unratified amendment. **The
-warning is left standing.** Closing it is the artifact owner's act, in `ARCH-MOK-001` and
-`ARCH-MOK-002`.
+authorized to *confirm* and not to amend, and would have created a further unratified amendment. **The
+warning is left standing.** Closing it is the artifact owner's act, in `ARCH-MOK-001`; the two
+observations against `ARCH-MOK-002` are `master`'s to close.
 
 ## What the accountable assurance owner must weigh before verifying
 
-The three unmet obligations and the two unratified amendments above are the first items.
+The three unmet obligations and the four unratified amendments above are the first items.
 `completion-summary.md` §16 discloses fifteen findings and its §4 two more; none is a failure against
 an automated case, and each is stated so that verification, if given, is given knowingly. The nine that
 bear most on how much the green gates mean:
@@ -299,7 +412,7 @@ bear most on how much the green gates mean:
    fixture or in retained evidence, and the retained evidence contains simulation output only.
 
 Four of the fifteen are stated in the sections above rather than repeated here: the overridden
-`VREC-MOK-005` gate, the five outstanding assessments, the two unratified amendments and the three new
+`VREC-MOK-005` gate, the five outstanding assessments, the four unratified amendments and the two new
 inspection warnings. **The last three need a read rather than a decision.** Equivalence is exhaustive
 over a finite 2,808-situation set rather than over the input space, and oracle 1 covers 40 cells of a
 much larger one. Seed 777 is both the only `individual` run to go extinct by tick 10,000, at 9,938, and
@@ -353,11 +466,16 @@ role that owes it.
    it.
 4. **Assessment 7 — technical owner.** The signature. The substance is not in doubt; the approved
    `SPEC-MOK-001` *Scope* sentence carries it.
-5. **Two amendment ratifications — technical owner.** The `SPEC-MOK-001` *Help output* correction and
-   the three extra `SPEC-MOK-003` provisions.
-6. **The `VREC-MOK-005` layer — repository owner.** Six amendments and seven manual assessments, which
-   the override deferred rather than discharged. This is the only item that cannot be closed inside
-   `WO-MOK-010`'s scope, and oracle 5's second condition stays unmet until it is.
+5. **Four amendment ratifications — technical owner.** The `SPEC-MOK-001` *Help output* correction, the
+   three extra `SPEC-MOK-003` provisions, `SPEC-MOK-003` rule 4 clause 7's two reconciled provisions, and
+   `SPEC-MOK-004`'s corrected test counts. The last two are consequences of the merge rather than of the
+   implementation, and the owner's substantive decision on the banded set is already recorded — what is
+   outstanding on that one is ratification of the agent's wording.
+6. **The `VREC-MOK-005` layer — repository owner.** Six amendment rows and seven manual assessments,
+   eleven provisions by that record's own count, which the override deferred rather than discharged.
+   `master`'s transition of that record to `verified` did not discharge them either. This is the only item
+   that cannot be closed inside `WO-MOK-010`'s scope, and oracle 5's second condition stays unmet until it
+   is.
 
 Items 1 to 5 are all judgements or ratifications; **none is waiting on code, a measurement or a
 re-run.** All five automated oracles pass at this commit.
@@ -366,7 +484,7 @@ re-run.** All five automated oracles pass at this commit.
 
 **No transition is requested yet.** Transitioning this record to `verified` as it stands would record
 that the assurance owner accepts the evidence **with five of `VER-MOK-010`'s seven manual assessments
-unperformed, a sixth unsigned, two amendments to approved artifacts unratified, and two rows of the
+unperformed, a sixth unsigned, four amendments to approved artifacts unratified, and two rows of the
 contract's own requirement-to-evidence matrix unsatisfied** — which is not a judgement about
 disclosures but the contract's own stated condition for being unsatisfied. This record should stay
 `ready` until the six items above are closed, or until the owner decides on the record and states what
@@ -375,6 +493,11 @@ is being accepted in their place.
 It would not perform those assessments, would not supply those ratifications, and would not merge,
 release, tag, publish or deploy anything.
 
-The candidate commit sits on `feature/phase-2-individuality` with no upstream: **nothing has been
-pushed, and no pull request exists.** Verification is not merge and not release; release remains a
-separate record and a separate accountable decision.
+The candidate commit sits on `feature/phase-2-individuality`, which now has an upstream: the branch is
+pushed to `origin` and carries **draft pull request #17**, opened on 2026-08-19 on the repository owner's
+instruction and pushed further on the same instruction. The retired candidate was written when nothing had
+been pushed and said so, which is one of the facts this re-capture corrects. **A push and a draft pull
+request are not verification, not merge and not release**: nothing is merged, no review is approved, the
+pull request is a draft, and its body carries `Harness-Work-Order: WO-MOK-010`, which is the line the
+harness `candidate` job selects its work order from and not an authorization of anything. Release remains
+a separate record and a separate accountable decision.
