@@ -114,11 +114,31 @@ All four harness gates were re-run on the corrected tree and every figure is ide
     preflight --work-order WO-MOK-005 --phase review PASS   in_progress, review phase
     scripts/generate_harness_dashboard.py --root .   PASS   68 artifacts, 211 relations, 0 errors, 8 warnings
 
-The dashboard's snapshot digest is also unchanged, byte for byte:
+The dashboard's snapshot digest behaves as follows, and this paragraph corrects an earlier draft of
+it that claimed the digest was simply unchanged. Three measurements:
 
-    e921e8dbe8ca2424bf8785de49e4f23c0a775c8506126ff2a800d72198657e21
+    at 360a5e4, clean worktree                       e921e8dbe8ca2424bf8785de49e4f23c0a775c8506126ff2a800d72198657e21
+    at 360a5e4, evidence corrections uncommitted     e921e8dbe8ca2424bf8785de49e4f23c0a775c8506126ff2a800d72198657e21
+    at 7fa037b, clean worktree                       ff6c1b54f6f465d0e2f6b0d54e681663a87258b4eb07aeb075faed61afc88680
 
-That is the expected result and it is worth stating, because it is what makes the digest usable as
-provenance for a verification record written after these corrections: the generator reads the typed
-artifacts under `docs/engineering/`, and an evidence file carries no frontmatter and is not one. So
-editing evidence prose cannot move the digest, while amending a specification does.
+Editing evidence prose does not move it: the generator reads the typed artifacts under
+`docs/engineering/`, and an evidence file carries no frontmatter and is not one, which the first two
+lines measure. Committing does move it, because the snapshot embeds the revision it was generated
+at — `repository.revision` in `target/harness-dashboard/dashboard-data.json` is `HEAD`, and each
+entry of its `revision_provenance` array carries an `observed_revision` field that is also `HEAD`.
+
+So the digest is commit-bound by construction, and that is what makes it provenance rather than a
+checksum of the artifact set: a record naming a digest names the tree the digest was taken at. The
+consequence for this packet is that a verification record must name the digest measured at the
+commit it binds itself to, not one measured earlier. `VREC-MOK-005` carries its own commit and
+digest in its frontmatter, and this file deliberately does not restate them: a value written here
+would have to be measured before this file's own commit, and so could not be the value the record
+needs.
+
+One thing follows from that and is worth stating plainly, because it looks like an error and is not:
+the commit that *adds* the record to the tree is necessarily a child of the commit the record
+*names*. `harnessctl capture-verification` reads `HEAD`, writes the record file, and then that file
+has to be committed, so no record can name its own commit. A reviewer who regenerates the dashboard
+at this branch's head will therefore read a third digest and see this record reported with
+`match_state: different`, exactly as `VREC-MOK-001` through `VREC-MOK-004` are already reported. The
+record binds the tree that was verified, not the commit that files the record about it.
