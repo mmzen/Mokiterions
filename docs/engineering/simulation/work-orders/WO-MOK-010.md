@@ -2,7 +2,7 @@
 id = "WO-MOK-010"
 type = "work_order"
 title = "Give each Mokiterion a derived trait, a fear attribute, and a decision source that reads them"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -49,6 +49,44 @@ Status moved to `in_progress` on 2026-08-19, in the same commit as the first cod
 to implement. The pre-change capture named under *Evidence* was taken before that change, against the commit recorded
 in `evidence/WO-MOK-010/baseline/COMMIT.txt`, because a capture taken afterwards could not establish the absence
 claim this work order rests on.
+
+### Transition to `implemented`
+
+**Status moved from `in_progress` to `implemented` on 2026-08-19**, on the repository owner's instruction, given as
+engineering owner: "you can push on existing branch, swicth VREC-MOK-010 to verified, commit and push again (implying
+transitioning WO-MOK-10)". The implementation agent recorded the transition and did not decide it. The status had
+stood at `in_progress` through implementation, through three verification captures and through the closing review,
+because no earlier instruction covered a lifecycle transition and this work order's *Authorized decision envelope*
+does not place one inside the agent's local decisions.
+
+**What is implemented.** Everything under *In scope*: the derived `waste_tolerance` trait over `0..=40`, the `fear`
+attribute with the approved `+10`/`-5` ratchet, `SPEC-MOK-001` rule 19's trait-aware decision source as the third
+`--policy` value, the fourth roster gauge, and the twenty-one tests that carry them. The candidate commit is
+`1a937a1a9a3ff24c23e45946ad023bde95f83d02`, whose gates are recorded in `VREC-MOK-010` and reproduced from
+`evidence/WO-MOK-010/static-checks.txt`: 200 tests over 20 runners with 0 failed, 0 ignored and 0 filtered out,
+`cargo fmt` and `cargo clippy -D warnings` clean with both crates re-linted from a cold target directory, the engine's
+dependency table still empty at one `cargo tree` line, the public interface grown by exactly the one snapshot field
+and the one enumeration variant, and validator PASS at 80 artifacts with 0 errors and 0 warnings across all four
+planes. Nothing outside *In scope* changed in the implementation: `git diff --stat 035a001 1a937a1 -- ':!docs'` is
+empty across the closing review, and the code lineage is `60fda9f` → implementation → merge at `7a2b502` →
+`035a001` → `1a937a1`.
+
+**What this status does not do.** It does not verify the work: `WORKFLOW.md` states that the verification record moves
+separately through an accountable human decision and that work-order status never substitutes for it. It does not
+release anything, and no release record exists. It does not discharge the one obligation this chain still carries —
+the `VREC-MOK-005` layer, whose eleven provisions and seven manual assessments the owner's override of 2026-08-19 left
+standing with a stated obligation: a work order of its own, completing before the next release record. That work order
+does not exist yet, and *Out of scope* above puts resolving `VREC-MOK-005` outside this one.
+
+**Two derived figures move with the status, and neither is a new defect.** The harness dashboard goes from 12 warnings
+to 13; the thirteenth is the `W-HEX-001` that every implemented work order in this repository already carries, because
+evidence discovery keys on file names beginning with the work-order identifier and this chain retains its evidence in
+a directory named `WO-MOK-010/` instead. `inspect` drops *Active work* from 1 to 0, so its recommendation to continue
+bounded work on a change that is complete is gone. Separately, `evidence/WO-MOK-010/analysis/amendments.py` expects
+this file to read `in_progress`, which was true at the commit it was captured against; that retained capture describes
+the candidate commit and is not edited to track a status that moved after it, so re-running it here reports that one
+control failing for the stated reason. `evidence/WO-MOK-010/assurance-decision.md` records the measured before and
+after.
 
 ### Decision record
 
