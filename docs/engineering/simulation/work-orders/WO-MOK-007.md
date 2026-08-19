@@ -2,7 +2,7 @@
 id = "WO-MOK-007"
 type = "work_order"
 title = "Colour the roster survival bars by value band"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -35,7 +35,14 @@ the relation is omitted rather than fabricated.
 
 ## Approval preconditions
 
-**One amendment to an approved specification must be applied first.** `REQ-MOK-020` states that "indicator form"
+**Both provisions below were approved on 2026-08-19 by the repository owner as technical owner and are applied to
+`SPEC-MOK-003`.** The owner reviewed this text and approved it together with this work order and `VER-MOK-007`, in
+one act, having first been shown that the trend encoding their request asked for inverts. The implementation agent
+drafted the provisions and recorded the approval; it decided neither. The provisions are retained here verbatim
+because this work order's scope is defined by them, and because the amendment record in `SPEC-MOK-003` cites this
+document for the palette.
+
+**One amendment to an approved specification had to be applied first.** `REQ-MOK-020` states that "indicator form"
 is fixed by `SPEC-MOK-003`, and rule 4 currently specifies each bar as "a twenty-cell proportional bar and a
 numeric value" with no colour. Colouring it changes indicator form, and the band boundaries are exactly the kind of
 threshold rule 4's *Explicitly unspecified decisions* withholds from the implementation. The amendment is the

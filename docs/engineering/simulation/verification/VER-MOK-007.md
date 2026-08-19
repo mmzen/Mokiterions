@@ -2,7 +2,7 @@
 id = "VER-MOK-007"
 type = "verification"
 title = "Roster survival band verification"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -12,6 +12,12 @@ verifies = ["REQ-MOK-020"]
 +++
 
 # Verification Contract: Roster survival band verification
+
+## Approval record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-19 | Original content, for `SPEC-MOK-003` rule 4 clause 7 under `WO-MOK-007`. | Approved 2026-08-19 by the repository owner as assurance owner, in one act with the `SPEC-MOK-003` rule 4 amendment this contract measures, with `WO-MOK-007`, and with the direction to implement. The implementation agent drafted this text and recorded this approval on the owner's explicit instruction; it holds authority over neither. |
 
 ## Independence
 
