@@ -171,3 +171,15 @@ released, PR #17 is still a draft, and the `VREC-MOK-005` obligation named earli
 the transition retires none of it. One consequence is visible in the packet: re-running `analysis/amendments.py` after
 the status move fails its first control, which expects `in_progress`, and the retained `amendment-approvals.md` was
 **not** edited to agree with the later status.
+
+**This packet is now on `master`, and release 0.1.0 shipped without it.** The owner took pull request #17 out of draft
+and merged it at `5eed5a9`, 19:45:55Z, as a merge commit rather than a squash, so the commit `VREC-MOK-010` binds is an
+ancestor of `master` and every file here arrived byte-identical. So the sentence above about nothing being merged is
+what was true of the capture. Two facts a reader of this page needs from `master` rather than from here:
+**`RLS-MOK-001` released version 0.1.0 under tag `v0.1.0` four minutes before this chain merged, and it releases
+`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009` — not `WO-MOK-010`**, whose work is therefore on `master` and in no
+release record; and **0.1.0 releases `WO-MOK-005`**, so the eleven provisions and seven assessments that *The
+`VREC-MOK-005` gate was overridden, not met* describes above are now shipped, undisclosed by the release chain, with no
+work order resolving them. The owner's reading of decision 12's obligation, and why it still stands rather than having
+been breached by 0.1.0, is in `closing-review.md`; the full account of what changed on `master` — including why
+`W-HEX-001` now names this work order alone — is in `assurance-decision.md`.

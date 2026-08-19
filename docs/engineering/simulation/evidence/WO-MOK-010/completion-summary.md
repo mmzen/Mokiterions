@@ -808,3 +808,16 @@ stands undischarged. One measurable consequence is that item 13's warning count 
 `W-HEX-001` observation against `WO-MOK-010`, the same one every implemented work order in this repository already
 carries — and that re-running `analysis/amendments.py` now fails its first control, which expects `in_progress`; the
 retained capture was not edited to agree with the later status.
+
+**Merged, and 0.1.0 released without this work order.** Pull request #17 was taken out of draft and merged at `5eed5a9`,
+19:45:55Z, as a merge commit rather than a squash, so the commit `VREC-MOK-010` binds is an ancestor of `master` and
+every file of this packet arrived byte-identical. Three corrections to the paragraph above, none of them to a figure or
+a judgement in this summary. Merge and the draft state: taken by the owner, after the commit this summary is bound to.
+Release: `RLS-MOK-001` released version 0.1.0 under tag `v0.1.0` four minutes before this chain merged, covering
+`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009` — **not `WO-MOK-010`**, whose work is on `master` and in no release
+record — and it does release `WO-MOK-005`, so the layer item 5's obligation names is shipped, undisclosed by the release
+chain, with no work order resolving it; `closing-review.md` records which release record that obligation binds and why
+it still stands. Item 13's warning: on `master` it fires for `WO-MOK-010` **alone**, not for every implemented work
+order, because the release evidence retains a containment statement per released work order in a file *named* for it,
+which is what evidence discovery keys on; the count there is 6 warnings rather than 13. Nothing was renamed or added to
+match that pattern. `assurance-decision.md` has the full account and the checks behind each figure.
