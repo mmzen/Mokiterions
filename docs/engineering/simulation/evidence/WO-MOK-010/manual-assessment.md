@@ -291,4 +291,7 @@ standing is recorded with it — the zero same-tick coincidences of assessment 2
 **What these seven do not settle.** They satisfy `VER-MOK-010`'s manual-assessment contract and nothing more. Nothing
 in the code or the automated oracles was ever waiting on them — all five automated oracles pass — and recording them
 verifies nothing on its own: `VREC-MOK-010` is re-captured against the commit that carries them and remains a `ready`
-candidate until the accountable assurance owner reviews it and says so.
+candidate until the accountable assurance owner reviews it and says so. **That owner did so later on 2026-08-19, in a
+commit after the one this file is bound to, and `assurance-decision.md` records the act.** The sentence above is not
+withdrawn: recording an assessment still verifies nothing, and the transition was a separate decision taken on this file
+rather than by it. None of the seven judgements, and neither adverse fact above, is changed or retired by it.

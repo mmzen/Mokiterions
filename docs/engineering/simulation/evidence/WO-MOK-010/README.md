@@ -21,7 +21,8 @@ completeness is checkable without reading the packet.
 | The seven manual assessments above, each with its accountable role and date | `manual-assessment.md` — **all seven recorded**, five of them in the closing review of 2026-08-19 that `closing-review.md` records; see below |
 | The amendment-approval check of oracle 5 | `amendment-approvals.md` |
 
-**Nine files are not on the retention list.** `requirement-to-test-mapping.md` maps every one of `VER-MOK-010`'s 45
+**Ten files are not on the retention list** — nine as captured, and `assurance-decision.md`, added after the capture
+and described in the last paragraph of this page. `requirement-to-test-mapping.md` maps every one of `VER-MOK-010`'s 45
 matrix rows to the test or file that discharges it, in the contract's own order, and names the one row that is *not*
 satisfied in place rather than in a footnote; both prior work orders retained the same mapping and
 `measurements/traits.txt` cites it. `completion-summary.md` is the work order's own required closing report.
@@ -153,8 +154,20 @@ amended trait range states. Each has a reason it cannot matter and none of those
 rebuilt from the committed source and the whole matrix captured again, and all 83 shared cells came out byte-identical.
 
 This packet was written before the implementation was committed, and its governance sections were completed after the
-closing review of 2026-08-19. `WO-MOK-010` is left at `status = "in_progress"`, and `VREC-MOK-010` is a **`ready`
-candidate** bound to the commit that carries this packet — a verification record binds a commit and is created after the
-one it names, which is why it is re-captured whenever that commit moves rather than rewritten. Moving it from `ready` to
-`verified` is the accountable assurance owner's act and moving this work order to `implemented` is the engineering
-owner's; neither has been taken, and nothing here merges, tags or releases anything.
+closing review of 2026-08-19. As captured, `WO-MOK-010` is left at `status = "in_progress"`, and `VREC-MOK-010` is a
+**`ready` candidate** bound to the commit that carries this packet — a verification record binds a commit and is created
+after the one it names, which is why it is re-captured whenever that commit moves rather than rewritten. Moving it from
+`ready` to `verified` is the accountable assurance owner's act and moving this work order to `implemented` is the
+engineering owner's; neither had been taken when this packet was captured, and nothing here merges, tags or releases
+anything.
+
+**Both acts were then taken, on 2026-08-19, in commits after the one this packet is bound to.** The repository owner
+moved `WO-MOK-010` to `implemented` and then `VREC-MOK-010` from `ready` to `verified`;
+`assurance-decision.md` records the instruction, the two transitions, their order and the measured harness state before
+and after each. That file is deliberately **not** on the retention list above and not among the record's
+`evidence_paths`, because it postdates the commit the record binds. Nothing in the paragraph above is withdrawn: it is
+what was true of the capture, and the retained streams and digests are unchanged. Nothing is merged, tagged or
+released, PR #17 is still a draft, and the `VREC-MOK-005` obligation named earlier on this page is still outstanding —
+the transition retires none of it. One consequence is visible in the packet: re-running `analysis/amendments.py` after
+the status move fails its first control, which expects `in_progress`, and the retained `amendment-approvals.md` was
+**not** edited to agree with the later status.

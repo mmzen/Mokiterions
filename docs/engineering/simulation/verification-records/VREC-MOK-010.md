@@ -2,7 +2,7 @@
 id = "VREC-MOK-010"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-010"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-19"
 updated = "2026-08-19"
@@ -18,12 +18,26 @@ verifies_work_order = ["WO-MOK-010"]
 conforms_to = ["VER-MOK-010"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This ready record binds the retained evidence for `WO-MOK-010` to candidate commit
-`1a937a1a9a3ff24c23e45946ad023bde95f83d02`. An accountable assurance owner must review the evidence
-and decide whether to transition it to `verified`. Preparing it approved, verified, merged, tagged,
-released and published nothing.
+**Transitioned from `ready` to `verified` on 2026-08-19 by the repository owner, acting as accountable
+assurance owner.** `DECISION_RIGHTS.md` reserves that transition to that role and states that record
+preparation never makes it; the implementation agent recorded the decision and did not take it. The
+instruction, verbatim: *"you can push on existing branch, swicth VREC-MOK-010 to verified, commit and push
+again (implying transitioning WO-MOK-10)"*. What the transition accepted, and what it leaves standing, is
+in *Scope of the transition taken* at the end of this record — read that before relying on the status.
+
+**`status` is the only front-matter field that changed.** `commit`, `git_object_format`, `worktree_state`,
+`verified_at`, `artifact_snapshot_sha256`, all 59 `evidence_paths`, both relations and the `title` — which
+still reads *candidate*, because the record was captured as one — are exactly as the capture produced them.
+The provenance is the capture's, not the decision's.
+
+What this file said as a candidate is kept rather than overwritten: *"This ready record binds the retained
+evidence for `WO-MOK-010` to candidate commit `1a937a1a9a3ff24c23e45946ad023bde95f83d02`. An accountable
+assurance owner must review the evidence and decide whether to transition it to `verified`. Preparing it
+approved, verified, merged, tagged, released and published nothing."* That is still true of the preparation;
+the decision came afterwards and is recorded here. **Verification is not release.** Nothing here or in the
+two commits around it merges, tags, releases or publishes anything, and no release record exists.
 
 **It is the second re-capture.** The candidate this replaces bound
 `035a001169757464c7f2eda2e2dfafc06b3f8910` and the one before that
@@ -31,7 +45,9 @@ released and published nothing.
 figures below are not the figures either carried. The commit this one names is the closing review of
 2026-08-19, which recorded the seven manual assessments `VER-MOK-010` requires and the four amendment
 ratifications the technical owner owed — so what moved is the governance state, and not one measurement.
-A `ready` record may be re-captured; a `verified` one may not, and none was touched.
+A `ready` record may be re-captured; a `verified` one may not, and none was touched. **This record is now
+`verified`, so no further re-capture of it is available** — that is one of the things the transition spent,
+and it is why the re-capture was taken before the decision rather than after it.
 
 The record is intentionally created after the candidate commit it names, avoiding self-referential
 commit metadata. **`verified_at` above is the capture timestamp, not a verification decision** — the
@@ -48,8 +64,9 @@ measurable rather than asserted: the same artifact content digested one commit e
 in the closing review's own commit message is that `e2571bec…`**, computed over this artifact content
 before the commit existed and therefore naming its predecessor's revision; the value that belongs to the
 candidate commit is the one in the front matter, and a reader re-running
-`scripts/check_engineering_harness.sh` at `1a937a1` gets it. The status is `ready` and no verification
-decision has been taken by anyone.
+`scripts/check_engineering_harness.sh` at `1a937a1` gets it. **The digest is left exactly as captured by the
+transition**, so it still names the 80-artifact graph holding the retired form of this file rather than the
+graph holding the verified form — a decision does not re-measure provenance.
 
 ## The objection this record was written over, and how it lapsed
 
@@ -81,15 +98,18 @@ Two things about that lapse are worth a reader's suspicion, so both are stated h
   empty, every `measurements/`, `baseline/`, `post/`, `observer/` and `negative-control/` file is
   byte-identical to `035a001`, and the retired candidates' text survives in git history and in the
   section below rather than being replaced by a tidier account.
-- **The harness signal is unchanged by this record's presence except for the decision it asks for.** With
-  this file in the tree, `scripts/inspect_engineering_artifacts.py` reports `decision_required ->
-  review-assurance-decision (assurance-owner)` against `VREC-MOK-010`; with the file removed from a clean
-  worktree at this commit it reports that queue **empty** — 79 artifacts, 246 relations, 0 errors and 0
-  warnings across all four planes, 12 warnings and 7 informational, against this commit's 80, 248, 12 and
-  8. Adding the record raises the signal by exactly one informational observation — `I-REV-001`, which
-  compares a record's declared candidate commit against the observed checkout — and changes no error and no
-  warning. The gate section below says why that observation is about this file's position in history and
-  not about its content.
+- **The harness signal is unchanged by this record's presence except for the decision it asks for.**
+  Measured at the candidate commit, where this file is still a `ready` candidate:
+  `scripts/inspect_engineering_artifacts.py` reports `decision_required -> review-assurance-decision
+  (assurance-owner)` against `VREC-MOK-010`; with the file removed from a clean worktree at that commit it
+  reports that queue **empty** — 79 artifacts, 246 relations, 0 errors and 0 warnings across all four
+  planes, 12 warnings and 7 informational, against that commit's 80, 248, 12 and 8. Adding the record
+  raises the signal by exactly one informational observation — `I-REV-001`, which compares a record's
+  declared candidate commit against the observed checkout — and changes no error and no warning. The gate
+  section below says why that observation is about this file's position in history and not about its
+  content, and says what the two transitions of 2026-08-19 moved afterwards: the queue this bullet
+  describes is empty from the commit that carries the `verified` status, because the decision it was asking
+  for was taken.
 
 ## Why this record was re-captured, and what the retired candidates said
 
@@ -156,16 +176,18 @@ everything outside `docs/` across the closing review.
 
 ## What this record claims
 
-`WO-MOK-010` is `in_progress` and `VER-MOK-010` is `approved`. At candidate commit
+`WO-MOK-010` was `in_progress` and `VER-MOK-010` `approved` at the candidate commit; the work order moved to
+`implemented` afterwards, in the commit before this transition, and `WORKFLOW.md` is explicit that its status
+never substitutes for this record's. At candidate commit
 `1a937a1a9a3ff24c23e45946ad023bde95f83d02`, **every automated case, oracle, static check and
 comparison in `VER-MOK-010` was executed and passed, and its manual-assessment clause is satisfied: all
 seven judgements are recorded by the accountable role. One of the contract's obligations is still not
 satisfied — one row of its requirement-to-evidence matrix, the `VREC-MOK-005` gate, unsatisfied by the
 repository owner's recorded override — so this record still cannot claim that the contract is met in
-full.** That is the difference between this candidate and `VREC-MOK-001` through `VREC-MOK-004` and
-`VREC-MOK-006`, and it is stated here because it changes what an assurance owner is being asked to accept.
-It is also narrower than what the two retired candidates asked: they carried five unperformed assessments,
-a sixth unsigned and four unratified amendments besides.
+full.** That is the difference between this record and `VREC-MOK-001` through `VREC-MOK-004` and
+`VREC-MOK-006`, and it is stated here because it changes what the assurance owner was asked to accept — and
+what, on 2026-08-19, was accepted. It is narrower than what the two retired candidates asked: they carried
+five unperformed assessments, a sixth unsigned and four unratified amendments besides.
 
 | Gate | Result |
 |---|---|
@@ -194,7 +216,22 @@ candidate commit of the retired form declaring `035a001`, and true again from th
 form, which is one commit later than the `1a937a1` it declares. Put this form's front matter into a
 worktree at `1a937a1` and the count drops to 7, because declared and observed then agree — a configuration
 no commit will ever hold, measured only to show what the observation is about. It is informational in the
-harness's own classification and not a warning. The two new warnings are `ARCH-MOK-001` now predating `SPEC-MOK-001` and
+harness's own classification and not a warning.
+
+**The three harness rows are left as measured and are already one warning behind, which is stated rather than
+re-measured into agreement.** Moving `WO-MOK-010` to `implemented` in the commit before this transition takes
+the dashboard from 12 warnings to 13. The thirteenth is `W-HEX-001` against `WO-MOK-010`, the warning every
+implemented work order in this repository already carries: evidence discovery keys on file names beginning
+with the work-order identifier, and this chain retains its evidence in a directory named `WO-MOK-010/`
+instead, so eight implemented work orders now carry it where seven did. `inspect` also drops *Active work*
+from 1 to 0. This transition itself empties the `decision_required` queue, from the one entry asking for it to
+none, and takes *Suggested next steps* from 14 to 13 with it. Neither figure is a defect found in the change,
+each was measured at the step that moved it rather than reported afterwards, and the gate rows above stay at
+the candidate commit's numbers because that is what they are rows about.
+`evidence/WO-MOK-010/assurance-decision.md` tabulates all of it, before and after each of the two
+transitions.
+
+The two new warnings are `ARCH-MOK-001` now predating `SPEC-MOK-001` and
 `SPEC-MOK-002`, which it declares conformance to; they belong to the change rather than to this record,
 and the reason the artifact was not edited to silence them is below. The five `W-HEX-003` observations
 the inspector reports are not all this change's, which is measured rather than assumed: three of them —
@@ -422,14 +459,17 @@ authorized to *confirm* and not to amend, and would have created a further unrat
 warning is left standing.** Closing it is the artifact owner's act, in `ARCH-MOK-001`; the two
 observations against `ARCH-MOK-002` are `master`'s to close.
 
-## What the accountable assurance owner must weigh before verifying
+## What the accountable assurance owner had to weigh, and what the decision was taken with
 
-The one unmet obligation above is the first item, and the seven judgements the owner recorded on
-2026-08-19 are the second: a verification is a statement about evidence, and part of this evidence is now
-a set of recorded decisions whose *reasoning* the assurance owner may weigh even though the decisions
-themselves are not theirs to retake. `completion-summary.md` §16 discloses fifteen findings and its §4 two
-more; none is a failure against an automated case, and each is stated so that verification, if given, is
-given knowingly. The nine that bear most on how much the green gates mean:
+**This section is unchanged in substance by the transition, and deliberately so.** It is the list the
+verification decision was taken against, so it is left standing as the account of what was accepted rather
+than rewritten now that acceptance has been given. The one unsatisfied obligation above is the first item,
+and the seven judgements the owner recorded on 2026-08-19 are the second: a verification is a statement about
+evidence, and part of this evidence is a set of recorded decisions whose *reasoning* the assurance owner may
+weigh even though the decisions themselves were not theirs to retake. `completion-summary.md` §16 discloses
+fifteen findings and its §4 two more; none is a failure against an automated case, and each is stated so
+that verification, having been given, was given knowingly. The nine that bear most on how much the green
+gates mean:
 
 1. **Individuality is demonstrated at the scale it was measured, and that scale is the weakest result
    in the packet.** `REQ-MOK-033`'s real-run divergence case yields **10, 3, 3, 5 and 3** divergent
@@ -540,59 +580,80 @@ the work, in the form `WO-MOK-005`'s summary used.
   than decorative — and `simulation.rs` was verified byte-identical by SHA-256
   (`4850384d0fec95682dadda00d87a53fbeba026474a6916a773058a46927b3671`) before and after every negative
   control, so no control's perturbation survives in the candidate.
-- **`WO-MOK-010` remains `in_progress`**, matching `WO-MOK-005` and `WO-MOK-006` and differing from
-  `VREC-MOK-001` through `VREC-MOK-004`, whose work orders were transitioned to `implemented` first.
-  Verification is carried by this record rather than by a change to the work order, and
-  `scripts/validate_engineering_artifacts.py` reports no error or warning against that. Whether `WO-MOK-010` should also move
-  is a separate lifecycle decision belonging to the owner; it was not instructed and was not taken.
+- **`WO-MOK-010` was `in_progress` at the candidate commit**, matching `WO-MOK-005` and `WO-MOK-006` and
+  differing from `VREC-MOK-001` through `VREC-MOK-004`, whose work orders were transitioned to `implemented`
+  first. `scripts/validate_engineering_artifacts.py` reported no error or warning against that either way.
+  **It moved to `implemented` on 2026-08-19, in the commit before this transition**, on the owner's own
+  instruction — the parenthetical "(implying transitioning WO-MOK-10)" — and that commit records what the
+  status does and does not carry. Verification is still carried by this record and not by the work order's
+  status; the order was chosen so that this record could state the work order's final status instead of
+  going stale one commit later, which is the `WO-MOK-007` precedent on `master`.
 
-## What must happen before this record can be verified
+## What had to happen before this record could be verified, and what still stands
 
-Six items stood here at the retired candidates. **Five are closed**, each by a recorded act of the
+Six items stood here at the retired candidates and two at the `ready` capture. **The first of those two is
+now discharged and the second is not.** The five that closed earlier closed by a recorded act of the
 accountable role on 2026-08-19: assessments 1, 2 and 3 by the product owner, assessment 4 by the technical
 owner, assessment 5 reaffirmed by the technical owner with the reachability sweep in front of them,
 assessment 6 by the assurance owner, assessment 7 signed by the technical owner, and the four amendment
 ratifications by the technical owner. `closing-review.md` records each act with the role it was taken in;
-`manual-assessment.md` records what each was decided on. Two items remain, and neither is waiting on code,
-a measurement or a re-run — all five automated oracles pass at this commit.
+`manual-assessment.md` records what each was decided on. None of the closures waited on code, a measurement
+or a re-run, and all five automated oracles pass at the candidate commit.
 
-1. **The assurance owner's own review of this record — assurance owner.** Nothing above substitutes for it.
-   The seven assessments include one this record's own accountable role took (assessment 6, the
-   projection), and a role's judgement on one evidence item is not that role's verification of the record
-   that binds all of them. What is being asked is a read of the fifteen disclosures, the one unmet matrix
-   row, and the recorded judgements' reasoning — not a re-taking of judgements that belong to other roles.
-2. **The `VREC-MOK-005` layer — repository owner.** Six amendment rows and seven manual assessments,
-   eleven provisions by that record's own count, which the override deferred rather than discharged.
-   `master`'s transition of that record to `verified` did not discharge them either. On 2026-08-19 the owner
-   let the override stand and **attached an obligation: a work order of its own, resolving them, completing
-   before the next release record.** That names the work and schedules it; it does not do it. This is still
-   the only item that cannot be closed inside `WO-MOK-010`'s scope, the matrix row it fails is still
-   unsatisfied, and no such work order exists at this commit.
+1. **Discharged — the assurance owner's own review of this record.** Nothing in the seven assessments
+   substituted for it, and this record said so while it was a candidate: the assessments include one this
+   record's own accountable role took (assessment 6, the projection), and a role's judgement on one evidence
+   item is not that role's verification of the record binding all of them. The owner reviewed the record and
+   directed the transition on 2026-08-19. What the review was asked to weigh — the fifteen disclosures, the
+   one unsatisfied matrix row, and the recorded judgements' reasoning — is unchanged by the decision, and the
+   next section states what accepting it accepted.
+2. **Still standing — the `VREC-MOK-005` layer, the repository owner's.** Six amendment rows and seven
+   manual assessments, eleven provisions by that record's own count, which the override deferred rather than
+   discharged. `master`'s transition of that record to `verified` did not discharge them either. On
+   2026-08-19 the owner let the override stand and **attached an obligation: a work order of its own,
+   resolving them, completing before the next release record.** That names the work and schedules it; it does
+   not do it. **This record's own transition does not do it either** — a verification decision is a statement
+   about this work order's evidence and cannot approve another chain's amendments or take another role's
+   assessments. It remains the one item that cannot be closed inside `WO-MOK-010`'s scope, the matrix row it
+   fails is still unsatisfied, and no such work order exists at this commit.
 
-## Scope of the transition being requested
+## Scope of the transition taken
 
-**No transition is requested here.** What the closing review changed is how narrow the acceptance would be,
-not that one is being asked for. Transitioning this record to `verified` as it stands would record that the
-assurance owner accepts the evidence **with one row of the contract's own requirement-to-evidence matrix
-unsatisfied — the `VREC-MOK-005` gate, overridden with an obligation recorded and not yet discharged — and
-with the fifteen disclosures above read**. That is a narrower acceptance than either retired candidate
-asked for: the seven assessments are recorded and the four ratifications are given, so the transition no
-longer stands in for another role's missing act. It remains an acceptance of an unsatisfied row, which is
-the contract's own stated condition for not being satisfied, and it is the assurance owner's to give or
-withhold.
+**What the `verified` status records is this: the accountable assurance owner accepts the retained evidence
+for `WO-MOK-010` at commit `1a937a1`, with one row of `VER-MOK-010`'s own requirement-to-evidence matrix
+unsatisfied — the `VREC-MOK-005` gate, overridden and now carrying a recorded obligation that is not
+discharged — and with the fifteen disclosures above read.** That is the whole of it, and it is stated in the
+same words the candidate used to describe what would be accepted, so the acceptance cannot be read as wider
+than what was put in front of the owner.
 
-Three acts follow this record and none is taken here: moving it from `ready` to `verified` is the assurance
-owner's, moving `WO-MOK-010` from `in_progress` to `implemented` is the engineering owner's, and taking
-PR #17 out of draft and merging it is the repository owner's. **PR #17 remains a draft.**
+It is a narrower acceptance than either retired candidate could have asked for: the seven manual assessments
+are recorded by their accountable roles and the four amendments are ratified by theirs, so the status does
+not stand in for another role's missing act. What it does stand on is an unsatisfied row, which is the
+contract's own stated condition for not being satisfied. `VER-MOK-010` is therefore **satisfied but for that
+row**, and this record does not claim otherwise anywhere above.
 
-It would not perform those assessments, would not supply those ratifications, and would not merge,
-release, tag, publish or deploy anything.
+**Nothing outstanding is retired by the status.** It performs no assessment, supplies no ratification,
+approves no amendment in the `WO-MOK-005` layer, and creates no work order for the obligation attached to
+that layer. It does not re-measure the gates: every figure above is the candidate commit's, and the two
+derived figures that moved when `WO-MOK-010` became `implemented` are stated where they moved rather than
+folded into the rows.
 
-The candidate commit sits on `feature/phase-2-individuality`, which now has an upstream: the branch is
-pushed to `origin` and carries **draft pull request #17**, opened on 2026-08-19 on the repository owner's
-instruction and pushed further on the same instruction. The retired candidate was written when nothing had
-been pushed and said so, which is one of the facts this re-capture corrects. **A push and a draft pull
-request are not verification, not merge and not release**: nothing is merged, no review is approved, the
-pull request is a draft, and its body carries `Harness-Work-Order: WO-MOK-010`, which is the line the
-harness `candidate` job selects its work order from and not an authorization of anything. Release remains
-a separate record and a separate accountable decision.
+**What is still not taken.** Release: no release record exists, `VER-MOK-010` is a verification contract and
+not a release gate, and a verified record is an input to a release decision rather than one. Merge: PR #17
+**remains a draft**, and taking it out of draft, approving a review and merging are the repository owner's
+acts, none of them performed here.
+
+The candidate commit sits on `feature/phase-2-individuality`, which is pushed to `origin` with **draft pull
+request #17**, opened on 2026-08-19 on the repository owner's instruction and pushed again on the same day on
+the instruction that also directed this transition. **A push and a draft pull request are not verification,
+not merge and not release**: nothing is merged, no review is approved, the pull request is a draft, and its
+body carries `Harness-Work-Order: WO-MOK-010`, which is the line the harness `candidate` job selects its work
+order from and not an authorization of anything.
+
+The first candidate was written when nothing had been pushed and said so; that is one of the facts the
+re-capture corrected, and release remains a separate record and a separate accountable decision either way.
+
+`evidence/WO-MOK-010/assurance-decision.md` records this decision, the instruction it was given in, the
+measured harness state before and after the two transitions, and why it is deliberately not among this
+record's `evidence_paths`: it postdates the commit this record binds, and a record's evidence set is the
+capture's, not the decision's.

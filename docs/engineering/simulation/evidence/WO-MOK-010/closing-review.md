@@ -79,3 +79,12 @@ nothing on their own: `VREC-MOK-010` is re-captured against the commit that carr
 until the accountable assurance owner reviews it and says so, `WO-MOK-010` stays `in_progress` until that owner moves
 it, and nothing here merges, tags, releases or publishes anything. Release remains a separate record and a separate
 decision.
+
+**Both transitions were then taken, later on 2026-08-19, as separate acts in later commits.** The owner moved
+`WO-MOK-010` to `implemented` and then `VREC-MOK-010` from `ready` to `verified`; `assurance-decision.md` records the
+instruction they were given in, the order and why it is that order, and the measured harness state before and after
+each. Nothing above is withdrawn — these twelve decisions still transition nothing, and each of the two transitions was
+its own act taken on this review rather than contained in it. In particular, decision 12's obligation survives the
+verification unchanged: the eleven provisions and seven assessments of the `VREC-MOK-005` layer are still to be resolved
+by a work order of their own, completing before the next release record. No such work order exists, and release remains
+a separate record and a separate decision.

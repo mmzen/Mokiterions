@@ -104,7 +104,7 @@ the act.
 | `REQ-MOK-031` … `REQ-MOK-034` | product owner | 2026-08-19 |
 | `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003` (amendments) | technical owner | 2026-08-19 |
 | `VER-MOK-010` | assurance owner | 2026-08-19 |
-| `WO-MOK-010` | engineering owner | 2026-08-19, left at `in_progress` |
+| `WO-MOK-010` | engineering owner | 2026-08-19, `approved` and at `in_progress` when this was captured; moved to `implemented` by the same owner later on 2026-08-19, in a commit after the one this packet is bound to — see `assurance-decision.md` |
 | `ARCH-MOK-001` confirmation — boundaries, prohibited patterns and the dependency prohibition satisfied unchanged, no amendment required | technical owner | 2026-08-19 |
 
 `amendment-approvals.md` §1 reads each artifact's front matter and confirms `status` and `approved` agree.
@@ -789,11 +789,22 @@ uncertainty is items 1 to 4; items 5 to 11 were found during the work.
     instead of taken from a digest. Whether that trade is worth the repository weight is the owner's call; the
     alternative is retaining digests alone and asking a reviewer to trust `compare.py`.
 
-**Status of this work order.** `WO-MOK-010` is left at `status = "in_progress"`, and `VREC-MOK-010` is a **`ready`
-candidate** re-captured against the commit that carries the closing review — not a `verified` record. A verification
-record binds a commit and is created after the one it names, which is why it is re-captured rather than rewritten
-whenever that commit moves. All seven manual assessments are recorded and the four outstanding amendments are ratified;
-oracle 5's second condition is still unmet by the owner's recorded override, now with the obligation of item 5 attached.
-Moving `VREC-MOK-010` from `ready` to `verified` is the accountable assurance owner's act, moving this work order to
-`implemented` is a separate act of the engineering owner's, and neither has been taken. **This packet is the input to a
-verification decision, not that decision.**
+**Status of this work order, as captured.** `WO-MOK-010` is left at `status = "in_progress"`, and `VREC-MOK-010` is a
+**`ready` candidate** re-captured against the commit that carries the closing review — not a `verified` record. A
+verification record binds a commit and is created after the one it names, which is why it is re-captured rather than
+rewritten whenever that commit moves. All seven manual assessments are recorded and the four outstanding amendments are
+ratified; oracle 5's second condition is still unmet by the owner's recorded override, now with the obligation of item 5
+attached. Moving `VREC-MOK-010` from `ready` to `verified` is the accountable assurance owner's act, moving this work
+order to `implemented` is a separate act of the engineering owner's, and neither has been taken. **This packet is the
+input to a verification decision, not that decision.**
+
+**Both acts were taken afterwards, on 2026-08-19, and this packet is still the input to them.** The repository owner
+moved `WO-MOK-010` to `implemented` and then `VREC-MOK-010` to `verified`, in that order and in commits after the one
+this packet is bound to; `assurance-decision.md` records the instruction, the order and its reason, and the measured
+harness state before and after each. The paragraph above is not withdrawn — it is what was true of the capture — and no
+figure, digest or judgement in this summary is changed by the transitions. What the two statuses do **not** do is
+listed there: nothing is merged, tagged or released, PR #17 remains a draft, and the `VREC-MOK-005` obligation of item 5
+stands undischarged. One measurable consequence is that item 13's warning count moves from twelve to thirteen — a
+`W-HEX-001` observation against `WO-MOK-010`, the same one every implemented work order in this repository already
+carries — and that re-running `analysis/amendments.py` now fails its first control, which expects `in_progress`; the
+retained capture was not edited to agree with the later status.
