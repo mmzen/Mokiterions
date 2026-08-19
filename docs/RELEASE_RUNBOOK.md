@@ -214,7 +214,21 @@ the same way — the harness refuses a `--verification` set that is not exactly 
 chosen work orders' `verification` relations, so an edit to one list that misses another is a
 refusal, not a silent mistake.
 
-With `HEAD` at the candidate commit and the worktree clean:
+The evidence paths have to exist as committed files **before** you capture, because the command
+requires a clean worktree and checks every path. So the keyed evidence lands in its own commit
+first, and that commit becomes the candidate — the one the record binds, and the one Phase H
+eventually tags. Choosing a candidate in Phase A and then adding the aggregate evidence on top of
+it is normal and is not a change of candidate in any way that matters, provided the evidence commit
+touches no Rust source, no manifest and no lockfile. Check that rather than assume it:
+
+```bash
+git diff --name-only <phase-A candidate> HEAD -- '*.rs' Cargo.toml Cargo.lock '*/Cargo.toml'
+```
+
+Empty output means the repository checks from Phase B still describe the tree you are about to
+bind. Non-empty means you have a new candidate and Phase B has to run again.
+
+With `HEAD` at that commit and the worktree clean:
 
 ```bash
 python -m se_harness capture-verification . \
@@ -225,28 +239,46 @@ python -m se_harness capture-verification . \
   --verification VER-MOK-001 --verification VER-MOK-002 --verification VER-MOK-003 \
   --verification VER-MOK-004 --verification VER-MOK-005 --verification VER-MOK-006 \
   --verification VER-MOK-007 --verification VER-MOK-008 \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-001/completion-report.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-002/completion-summary.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-003/completion-summary.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-004/completion-summary.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-005/completion-summary.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-006/completion-summary.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-007/completion-summary.md \
-  --evidence docs/engineering/simulation/evidence/WO-MOK-009/completion-summary.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-001-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-002-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-003-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-004-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-005-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-006-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-007-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/WO-MOK-009-containment.md \
+  --evidence docs/engineering/simulation/evidence/release-0.1.0/candidate-checks.md \
   --owner "assurance owner"
 ```
 
 `WO-MOK-009` pairs with `VER-MOK-008`, not `VER-MOK-009`; the numbering does not line up, and
-reading it as if it did is the mistake this line exists to prevent. `WO-MOK-001`'s evidence file
-is `completion-report.md` where every other work order's is `completion-summary.md`.
+reading it as if it did is the mistake this line exists to prevent.
 
 Three things about that command are not arbitrary:
 
 - The `--verification` set must be **exactly** the union of the `verification` relations the
   selected work orders declare. For an aggregate, a missing one and an extra one are both
   refused.
-- Each work order needs at least one evidence path keyed to its own ID. A path is checked for
-  existence and must name a **file**, not a directory.
+- Every selected work order needs at least one evidence path whose **file name begins with that
+  work order's ID**, followed by `-`, `.`, or nothing. The harness matches
+  `^WO-MOK-0NN(?:-|\.|$)` against the file's *base name* and ignores the directories above it, so
+  `evidence/WO-MOK-001/completion-report.md` is **not** keyed to `WO-MOK-001` — the directory
+  carries the ID and the file name does not. Every path is also checked for existence and must name
+  a file rather than a directory, which is a separate requirement from the keying.
+
+  This is worth spelling out because this file got it wrong. The example above used to pass the
+  eight per-work-order `completion-summary.md` paths, and every one of them was rejected:
+
+  ```console
+  harnessctl: aggregate evidence is not keyed to work orders: WO-MOK-001, WO-MOK-002, WO-MOK-003,
+  WO-MOK-004, WO-MOK-005, WO-MOK-006, WO-MOK-007, WO-MOK-009
+  ```
+
+  The check runs only when more than one work order is selected, and every record in this
+  repository before `VREC-MOK-009` covered exactly one, so nothing had ever exercised it while the
+  whole evidence tree keys by directory. If you are capturing an aggregate for a different release,
+  the paths above will not exist and you need keyed files of your own; do not reach for
+  `work-orders/WO-MOK-0NN.md`, which satisfies the regex without being evidence of anything.
 - The record binds `commit` to `HEAD`, so being at the candidate commit is the whole point.
 
 The result is `docs/engineering/simulation/verification-records/<VREC>.md` with
