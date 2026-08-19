@@ -636,9 +636,9 @@ fn the_applied_action_presented_is_always_the_engines() {
 /// acceptance scenario 2 describes a state no shipped source produces, and the case that follows
 /// reaches it the only way it can be reached.
 ///
-/// `WO-MOK-007` added a third shipped source and extended the sweep below to it rather than
+/// `WO-MOK-010` added a third shipped source and extended the sweep below to it rather than
 /// leaving the name of this case broader than what it checked. `IndividualDecisionSource` screens
-/// its candidates through the same `allows`, so the claim holds for the same reason; `VER-MOK-007`
+/// its candidates through the same `allows`, so the claim holds for the same reason; `VER-MOK-010`
 /// requires it as *validation is not relaxed*. No assertion here was changed to admit it.
 #[test]
 fn no_shipped_decision_source_has_a_proposal_rejected() {

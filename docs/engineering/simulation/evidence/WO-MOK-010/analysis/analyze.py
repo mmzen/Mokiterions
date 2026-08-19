@@ -1,8 +1,8 @@
-"""WO-MOK-007 / VER-MOK-007: the measurements, computed from the event stream alone.
+"""WO-MOK-010 / VER-MOK-010: the measurements, computed from the event stream alone.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/analyze.py <capture-dir>
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/analyze.py <capture-dir>
 
 `<capture-dir>` is a directory produced by `baseline/capture.sh`, plus (optionally) the long-horizon
 runs named `long_seed<seed>_<policy>.log`.
@@ -500,7 +500,7 @@ def main():
         rows.append([seed, ' '.join(f'{value:2}' for value in reported), min(reported),
                      max(reported), len(set(reported)), agree])
     traits_text = [
-        'WO-MOK-007 - the twelve derived traits per declared seed',
+        'WO-MOK-010 - the twelve derived traits per declared seed',
         '',
         'Reported: the `waste_tolerance` field of each `agent_initialized` record, in M01..M12 order.',
         'Expected: recomputed here from `SPEC-MOK-001`\'s *Behavioral trait* subsection as amended on',
@@ -537,7 +537,7 @@ def main():
             if run.consumed == 0:
                 failures.append(f'{policy} seed {seed}: no consumption')
     viability_text = [
-        'WO-MOK-007 - REQ-MOK-034: survivors, consumption and standing resources at tick 1,000',
+        'WO-MOK-010 - REQ-MOK-034: survivors, consumption and standing resources at tick 1,000',
         '',
         'Density 0.75%, the default and the only density carrying a floor. Consumption is counted',
         'from `food_consumed` records. Resource columns are the `summary` record\'s own counts, as',
@@ -585,7 +585,7 @@ def main():
         if mine >= 12.2 or mine >= walk:
             failures.append(f'seed {seed}: oscillation {mine:.3f}% against a walk of {walk:.3f}%')
     oscillation_text = [
-        'WO-MOK-007 - the oscillation rate under each source, by rule 5\'s own measure',
+        'WO-MOK-010 - the oscillation rate under each source, by rule 5\'s own measure',
         '',
         'The measure is `SPEC-MOK-001` rule 5\'s: the fraction of traced agent-ticks at which an',
         'agent\'s position equals its position two ticks earlier and differs from its position one',
@@ -618,10 +618,10 @@ def main():
         'agreement per cell and a constant offset when pooled points at that record\'s pooled column,',
         'not at the measurement. It moves the pooled reference rate by under 0.1 and the pooled walk',
         'rate by 0.2 percentage points, so no conclusion in either record turns on it. It is raised',
-        'here because WO-MOK-007 is measured against those figures; resolving it belongs to whoever',
+        'here because WO-MOK-010 is measured against those figures; resolving it belongs to whoever',
         'owns VER-MOK-002, not to this work order.',
         '',
-        'A rate above the unbiased-walk rate is a finding under VER-MOK-007, so the trait-aware source',
+        'A rate above the unbiased-walk rate is a finding under VER-MOK-010, so the trait-aware source',
         'is compared against the walk seed by seed and not only pooled. Two comparisons per seed: the',
         'declared 12.2% rate, and the walk measured on that same seed, which is the stricter of the',
         'two wherever the walk came in under 12.2%.',
@@ -666,7 +666,7 @@ def main():
                 failures.append(f'{policy} seed {seed}: a nearest-other at exactly 17 did not lower '
                                 'fear')
     fear_text = [
-        'WO-MOK-007 - REQ-MOK-032: the fear attribute over full runs, not sampled ticks',
+        'WO-MOK-010 - REQ-MOK-032: the fear attribute over full runs, not sampled ticks',
         '',
         'Every `survival_changed` record of every 1,000-tick run at the default density, under the',
         'reference source and the trait-aware source. Three properties are checked per agent-tick,',
@@ -731,7 +731,7 @@ def main():
 
     # ---- divergence
     lines = [
-        'WO-MOK-007 - REQ-MOK-033: divergence in a real run, not only in a constructed state',
+        'WO-MOK-010 - REQ-MOK-033: divergence in a real run, not only in a constructed state',
         '',
         'A SITUATION is a resource class underfoot at a stated satiety -- the two of rule 19\'s three',
         'inputs that are not the trait. Every agent-tick of the 1,000-tick traced run at the default',
@@ -843,7 +843,7 @@ def main():
             if run.proposals.get('wait', 0):
                 failures.append(f'{policy} seed {seed}: proposed wait')
     proposals_text = [
-        'WO-MOK-007 - REQ-MOK-033: the proposals each source actually made',
+        'WO-MOK-010 - REQ-MOK-033: the proposals each source actually made',
         '',
         'Counted from every `action_trace` record of the 1,000-tick traced runs at the default',
         'density. The trait-aware source must never propose `wait`, matching the reference source,',
@@ -868,17 +868,17 @@ def main():
                               run.summary.get('deaths'), run.consumed])
     if long_rows:
         long_text = [
-            'WO-MOK-007 - the tick-10,000 result, which carries no obligation in either direction',
+            'WO-MOK-010 - the tick-10,000 result, which carries no obligation in either direction',
             '',
             '`--ticks 10000` at the default density, untraced. Everything below comes from records the',
             'engine emits with or without `--trace-actions`. `REQ-MOK-034` sets no target at this',
-            'horizon and none is claimed; WO-MOK-007 asks for the result to be reported, and a',
+            'horizon and none is claimed; WO-MOK-010 asks for the result to be reported, and a',
             'difference here is information rather than a failure.',
             '',
             table(long_rows, ['source', 'seed', 'reason', 'ticks', 'survivors', 'deaths',
                               'consumed']),
             '',
-            'THE RECORDED CONTROL IS REPRODUCED EXACTLY. VER-MOK-002 and WO-MOK-007 record the',
+            'THE RECORDED CONTROL IS REPRODUCED EXACTLY. VER-MOK-002 and WO-MOK-010 record the',
             'reference source reaching extinction at tick 9,154. That is this table\'s reference row at',
             'seed 123, to the tick. The 1,000-tick oracle proves the frozen sources byte-identical only',
             'within its own window; this reproduces a recorded frozen-source outcome nine times further',
@@ -898,7 +898,7 @@ def main():
             'Seed 777 is the exception in both directions and is stated rather than smoothed over: it',
             'is the trait-aware source\'s only extinction here, at tick 9,938, and it is also the only',
             'seed where that source keeps all twelve Mokiterions alive to tick 1,000. Nothing in',
-            'REQ-MOK-034 or VER-MOK-007 turns on either fact.',
+            'REQ-MOK-034 or VER-MOK-010 turns on either fact.',
         ]
         write(os.path.join(out, 'long-horizon.txt'), '\n'.join(long_text) + '\n')
 

@@ -1,12 +1,12 @@
-"""WO-MOK-007 oracle 4: the drawn roster, checked cell by cell against rule 4 as amended.
+"""WO-MOK-010 oracle 4: the drawn roster, checked cell by cell against rule 4 as amended.
 
 Usage, from the repository root:
 
-    cp docs/engineering/simulation/evidence/WO-MOK-007/observer/frame-probe.rs \
+    cp docs/engineering/simulation/evidence/WO-MOK-010/observer/frame-probe.rs \
        mokiterions-tui/tests/frame_probe.rs
     cargo test -p mokiterions-tui --test frame_probe
     rm mokiterions-tui/tests/frame_probe.rs
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/frames.py
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/frames.py
 
 `observer/frame-probe.rs` renders the observer into an in-memory backend and writes down two things
 per frame: the cells the roster pane holds, and the attribute values the same frame was drawn from.
@@ -219,7 +219,7 @@ def main():
     absent = [record['viewport'] for record, summary in sweep if summary is None]
 
     lines = [
-        'VER-MOK-007 oracle 4 - the drawn roster, cell by cell',
+        'VER-MOK-010 oracle 4 - the drawn roster, cell by cell',
         '=====================================================',
         '',
         'Why the probe and the expectation are separate programs, and what is rebuilt rather than',

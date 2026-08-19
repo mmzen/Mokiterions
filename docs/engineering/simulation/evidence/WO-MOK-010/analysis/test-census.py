@@ -1,8 +1,8 @@
-"""WO-MOK-007: the test suite before and after, reconciled name by name and tier by tier.
+"""WO-MOK-010: the test suite before and after, reconciled name by name and tier by tier.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/test-census.py \
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/test-census.py \
         <list-before.txt> <list-after.txt>
 
 Each input is `cargo test --workspace -- --list` with standard error included, captured at the
@@ -13,7 +13,7 @@ to that test binary, and the binary is what fixes the tier.
 
 What this is for. `SPEC-MOK-004` fixes which tier a test belongs to: a test may sit in the public tier
 only if it can be written through the public API with its assertions unchanged and no item widened to
-reach it, and it sits in the internal tier otherwise. WO-MOK-007 forbids three things a growing suite
+reach it, and it sits in the internal tier otherwise. WO-MOK-010 forbids three things a growing suite
 could hide -- relocating a test by widening an item, weakening an assertion, and ignoring a test. A
 count of tests shows none of them. This reconciliation shows two:
 
@@ -103,7 +103,7 @@ def main():
     declared_after = sum(runner[3] or 0 for runner in after_runners)
 
     lines = [
-        'WO-MOK-007 - the test suite before and after, reconciled name by name and tier by tier',
+        'WO-MOK-010 - the test suite before and after, reconciled name by name and tier by tier',
         '',
         f'before: {before_path}',
         '        commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff, a clean git worktree at that commit',

@@ -1,8 +1,8 @@
-"""WO-MOK-007: the tooling runs, assembled from their own captured output.
+"""WO-MOK-010: the tooling runs, assembled from their own captured output.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/static-checks.py <capture-dir>
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/static-checks.py <capture-dir>
 
 The capture directory holds one file per command, each of them the command line, that command's own
 combined output, and its exit status as a final `exit=<n>` line:
@@ -68,7 +68,7 @@ def main():
                        'static-checks.txt')
     failures = []
 
-    lines = ['WO-MOK-007 - the tooling runs', '',
+    lines = ['WO-MOK-010 - the tooling runs', '',
              'Method, and what is checked rather than restated: see the header of',
              'analysis/static-checks.py. Every figure below is read from the command\'s own captured',
              f'output under {directory}/.', '']
@@ -155,7 +155,7 @@ def main():
               '',
               '  One line: the engine crate depends on nothing. `SPEC-MOK-001` puts determinism, integer',
               '  arithmetic and the single entropy stream inside this crate, and no external crate can',
-              '  move any of them because there is no external crate. WO-MOK-007 added no dependency,',
+              '  move any of them because there is no external crate. WO-MOK-010 added no dependency,',
               '  and it did not need one -- SplitMix64 is thirty lines of shifts and multiplications.',
               '',
               f'  $ cargo tree -p mokiterions-tui   ->   {len(body_tui)} lines, unchanged',

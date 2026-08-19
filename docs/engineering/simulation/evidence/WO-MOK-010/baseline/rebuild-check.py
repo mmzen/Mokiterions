@@ -1,8 +1,8 @@
-"""WO-MOK-007: the committed source rebuilt, and every captured cell reproduced byte for byte.
+"""WO-MOK-010: the committed source rebuilt, and every captured cell reproduced byte for byte.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/baseline/rebuild-check.py \
+    python docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.py \
         <first-capture-dir> <second-capture-dir>
 
 Why this check exists, stated plainly because it records two mistakes. The first capture of the
@@ -60,7 +60,7 @@ def main():
     only_second = sorted(set(second) - set(first))
 
     lines = [
-        'WO-MOK-007 - the committed source rebuilt, and the captured cells reproduced',
+        'WO-MOK-010 - the committed source rebuilt, and the captured cells reproduced',
         '',
         'Why this check exists, including the two mistakes it records: see the header of',
         'baseline/rebuild-check.py.',

@@ -406,7 +406,7 @@ struct Mokiterion {
 /// The inclusive upper bound of the `waste_tolerance` range, from `SPEC-MOK-001`'s *Behavioral
 /// trait* as amended on 2026-08-19.
 ///
-/// It was `ATTRIBUTE_MAX` until the sweep in `evidence/WO-MOK-007/escalation.md` showed the full
+/// It was `ATTRIBUTE_MAX` until the sweep in `evidence/WO-MOK-010/escalation.md` showed the full
 /// range missing `REQ-MOK-034`'s survivor floor on three of five declared seeds, with a fifty-seed
 /// mean of 7.40 against a floor of 8. Narrowing to `40` leaves a mean of 9.94 and a 4% miss rate,
 /// against the reference source's own 6%.
@@ -3209,23 +3209,23 @@ mod tests {
             assert!(agent.energy > 0, "{} ran its energy to zero", agent.id);
         }
     }
-    // ---- WO-MOK-007: the trait, fear, and the trait-aware source -------------------------
+    // ---- WO-MOK-010: the trait, fear, and the trait-aware source -------------------------
 
-    /// The verification seed set `VER-MOK-002` declares, reused unchanged by `VER-MOK-007` so
+    /// The verification seed set `VER-MOK-002` declares, reused unchanged by `VER-MOK-010` so
     /// that this change's measurements and the control's are taken on the same worlds.
     const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
 
     /// The twelve `waste_tolerance` values per declared seed, `M01` first, in the order of
     /// [`DECLARED_SEEDS`].
     ///
-    /// `VER-MOK-007` requires a recorded expectation checked into the suite rather than a
+    /// `VER-MOK-010` requires a recorded expectation checked into the suite rather than a
     /// re-derivation: a re-derivation restates the implementation and would follow it wherever
     /// it went. These values were computed from `SPEC-MOK-001`'s *Behavioral trait* by a
     /// separate implementation of SplitMix64 and agree with this one on all sixty values.
     ///
     /// Re-recorded on 2026-08-19 when *Behavioral trait* narrowed the range to `0..=40`. The
     /// independent derivation was re-run at the amended bound and agreed again on all sixty; the
-    /// negative control in `evidence/WO-MOK-007/negative-control/oracle-2.txt` shows why a
+    /// negative control in `evidence/WO-MOK-010/negative-control/oracle-2.txt` shows why a
     /// re-derived expectation would not have been worth having.
     const RECORDED_TRAITS: [[u8; 12]; 5] = [
         [6, 8, 8, 5, 4, 32, 15, 10, 39, 18, 20, 37],
@@ -3238,7 +3238,7 @@ mod tests {
     /// The densities `VER-MOK-002` sweeps for resource counts, with the number of values the
     /// shared stream has produced by the end of initialization at each declared seed.
     ///
-    /// These counts are what `VER-MOK-007` oracle 2 pins. Initialization places
+    /// These counts are what `VER-MOK-010` oracle 2 pins. Initialization places
     /// `2 x resources_per_territory + 12` entities, each from two draws, plus two more for every
     /// coordinate rejected as occupied; at `0.15%` that is `2 x (2 x 12 + 12) = 72` on every
     /// seed, with no rejection anywhere and therefore no slack in which a thirteenth draw could
@@ -3360,7 +3360,7 @@ mod tests {
         placements
     }
 
-    /// `VER-MOK-007` oracle 2: the shared entropy stream's own position, either side of trait
+    /// `VER-MOK-010` oracle 2: the shared entropy stream's own position, either side of trait
     /// derivation and after initialization as a whole.
     ///
     /// The derivation takes no stream, so the before-and-after pair alone could not fail. The
@@ -3493,7 +3493,7 @@ mod tests {
         assert_eq!(traits_of(&simulation), expected);
     }
 
-    /// `VER-MOK-007` oracle 3: at the trait's lower bound the trait-aware source proposes what
+    /// `VER-MOK-010` oracle 3: at the trait's lower bound the trait-aware source proposes what
     /// the reference source proposes, over an enumerated situation set rather than a sampled one.
     ///
     /// The set is the product of five dimensions:

@@ -1,7 +1,7 @@
 +++
-id = "VREC-MOK-007"
+id = "VREC-MOK-010"
 type = "verification_record"
-title = "Verification candidate for WO-MOK-007"
+title = "Verification candidate for WO-MOK-010"
 status = "ready"
 owners = ["assurance owner"]
 created = "2026-08-19"
@@ -11,16 +11,16 @@ git_object_format = "sha1"
 worktree_state = "clean"
 verified_at = "2026-08-19T11:25:08Z"
 artifact_snapshot_sha256 = "545b9b9937ec7024ffff5ca2a139a1f9e965e44954f4a8d3037148c701421f28"
-evidence_paths = ["docs/engineering/simulation/evidence/WO-MOK-007/README.md", "docs/engineering/simulation/evidence/WO-MOK-007/amendment-approvals.md", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/amendments.py", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/analyze.py", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/capture-static.sh", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/equivalence.py", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/frames.py", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/interface-census.py", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/long-horizon.sh", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/static-checks.py", "docs/engineering/simulation/evidence/WO-MOK-007/analysis/test-census.py", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/COMMIT.txt", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/capture.sh", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/compare.py", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-baseline-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-baseline-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-baseline-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-baseline-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-baseline-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-reference-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-reference-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-reference-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-reference-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/full/pre-reference-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/pre-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/projection.py", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/rebuild-check.py", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/rebuild-check.txt", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/recapture-check.py", "docs/engineering/simulation/evidence/WO-MOK-007/baseline/recapture-check.txt", "docs/engineering/simulation/evidence/WO-MOK-007/completion-summary.md", "docs/engineering/simulation/evidence/WO-MOK-007/escalation.md", "docs/engineering/simulation/evidence/WO-MOK-007/interface-and-purity.txt", "docs/engineering/simulation/evidence/WO-MOK-007/manual-assessment.md", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/divergence.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/equivalence.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/fear.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/long-horizon.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/oscillation.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/proposals.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/traits.txt", "docs/engineering/simulation/evidence/WO-MOK-007/measurements/viability.txt", "docs/engineering/simulation/evidence/WO-MOK-007/negative-control/controls.py", "docs/engineering/simulation/evidence/WO-MOK-007/negative-control/oracle-2.txt", "docs/engineering/simulation/evidence/WO-MOK-007/negative-control/oracle-3.txt", "docs/engineering/simulation/evidence/WO-MOK-007/observer/frame-probe.rs", "docs/engineering/simulation/evidence/WO-MOK-007/observer/roster-frames.txt", "docs/engineering/simulation/evidence/WO-MOK-007/post/additivity.txt", "docs/engineering/simulation/evidence/WO-MOK-007/post/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-007/post/full/post-individual-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-007/post/full/post-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-007/post/post-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-007/requirement-to-test-mapping.md", "docs/engineering/simulation/evidence/WO-MOK-007/static-checks.txt", "docs/engineering/simulation/evidence/WO-MOK-007/test-census.txt"]
+evidence_paths = ["docs/engineering/simulation/evidence/WO-MOK-010/README.md", "docs/engineering/simulation/evidence/WO-MOK-010/amendment-approvals.md", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/amendments.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/analyze.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/capture-static.sh", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/equivalence.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/frames.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/interface-census.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/long-horizon.sh", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/static-checks.py", "docs/engineering/simulation/evidence/WO-MOK-010/analysis/test-census.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/COMMIT.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/capture.sh", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/compare.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-baseline-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed0-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed1-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed123-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed42-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/full/pre-reference-seed777-ticks1000.log", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/pre-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/projection.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/rebuild-check.txt", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.py", "docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.txt", "docs/engineering/simulation/evidence/WO-MOK-010/completion-summary.md", "docs/engineering/simulation/evidence/WO-MOK-010/escalation.md", "docs/engineering/simulation/evidence/WO-MOK-010/interface-and-purity.txt", "docs/engineering/simulation/evidence/WO-MOK-010/manual-assessment.md", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/divergence.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/equivalence.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/fear.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/long-horizon.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/oscillation.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/proposals.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/traits.txt", "docs/engineering/simulation/evidence/WO-MOK-010/measurements/viability.txt", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/controls.py", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/oracle-2.txt", "docs/engineering/simulation/evidence/WO-MOK-010/negative-control/oracle-3.txt", "docs/engineering/simulation/evidence/WO-MOK-010/observer/frame-probe.rs", "docs/engineering/simulation/evidence/WO-MOK-010/observer/roster-frames.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/additivity.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/exit-codes.txt", "docs/engineering/simulation/evidence/WO-MOK-010/post/full/post-individual-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/post/full/post-reference-seed42-ticks20-trace.log", "docs/engineering/simulation/evidence/WO-MOK-010/post/post-manifest.txt", "docs/engineering/simulation/evidence/WO-MOK-010/requirement-to-test-mapping.md", "docs/engineering/simulation/evidence/WO-MOK-010/static-checks.txt", "docs/engineering/simulation/evidence/WO-MOK-010/test-census.txt"]
 
 [relations]
-verifies_work_order = ["WO-MOK-007"]
-conforms_to = ["VER-MOK-007"]
+verifies_work_order = ["WO-MOK-010"]
+conforms_to = ["VER-MOK-010"]
 +++
 
 # Verification Record Candidate
 
-This ready record binds the retained evidence for `WO-MOK-007` to candidate commit
+This ready record binds the retained evidence for `WO-MOK-010` to candidate commit
 `4f32a9f0accb141fb9d21795faf9554bdd3afbd6`. An accountable assurance owner must review the evidence
 and decide whether to transition it to `verified`. Preparing it approved, verified, merged, tagged,
 released and published nothing.
@@ -41,7 +41,7 @@ walked past.
 
 Two readings of it exist and the difference is not academic.
 
-- **The reading applied here.** What the packet means, and what `VER-MOK-007` actually forbids, is a
+- **The reading applied here.** What the packet means, and what `VER-MOK-010` actually forbids, is a
   *`verified`* record: the contract says it "is not satisfied while any [assessment] remains
   outstanding", which is a statement about satisfaction, and satisfaction is what a verification
   decision rests on. A `ready` candidate takes no decision. It binds the commit, fixes the evidence
@@ -50,7 +50,7 @@ Two readings of it exist and the difference is not academic.
   own manual assessments outstanding. On this reading a `ready` record is the repository's existing
   form for precisely this state. That last claim is checkable rather than rhetorical: with this file in
   the tree, `scripts/inspect_engineering_artifacts.py` reports `decision_required ->
-  review-assurance-decision (assurance-owner)` against `VREC-MOK-005` **and** `VREC-MOK-007`, where
+  review-assurance-decision (assurance-owner)` against `VREC-MOK-005` **and** `VREC-MOK-010`, where
   before it reported it against `VREC-MOK-005` alone. Adding the record raised the signal and changed
   no error, warning or informational count.
 - **The narrower reading.** Nothing should be written until the assessments are recorded, in which
@@ -65,9 +65,9 @@ at the top rather than left to be found.
 
 ## What this record claims
 
-`WO-MOK-007` is `in_progress` and `VER-MOK-007` is `approved`. At candidate commit
+`WO-MOK-010` is `in_progress` and `VER-MOK-010` is `approved`. At candidate commit
 `4f32a9f0accb141fb9d21795faf9554bdd3afbd6`, **every automated case, oracle, static check and
-comparison in `VER-MOK-007` was executed and passed. Three of the contract's own obligations are not
+comparison in `VER-MOK-010` was executed and passed. Three of the contract's own obligations are not
 satisfied — its manual-assessment clause and two rows of its requirement-to-evidence matrix — so this
 record cannot claim that the contract is met.** That is the difference between this candidate and
 `VREC-MOK-001` through `VREC-MOK-004` and `VREC-MOK-006`, and it is stated here because it changes
@@ -95,7 +95,7 @@ The three new warnings are `ARCH-MOK-001` and `ARCH-MOK-002` now predating speci
 conformance to, and they belong to the change rather than to this record; the reason neither artifact
 was edited to silence them is below.
 
-`VER-MOK-007`'s central claim is that the two frozen decision sources are untouched and the new one
+`VER-MOK-010`'s central claim is that the two frozen decision sources are untouched and the new one
 behaves as `SPEC-MOK-001` rule 19 specifies. That claim is not carried by one measurement. Five
 oracles, each able to fail without the others failing:
 
@@ -148,7 +148,7 @@ Four structural obligations, each measured rather than argued:
 
 ## What this record does not claim
 
-**`VER-MOK-007` is not satisfied at this commit.** Three of its obligations are unmet, and each is
+**`VER-MOK-010` is not satisfied at this commit.** Three of its obligations are unmet, and each is
 quoted rather than paraphrased.
 
 1. **Five of the seven manual assessments are outstanding and a sixth is unsigned.** The contract:
@@ -183,7 +183,7 @@ Two further limits bound what the green gates mean:
 
 ## Amendments to approved artifacts that this record does not carry
 
-Three amendments were written beyond the list `WO-MOK-007` states. **One is approved and two are
+Three amendments were written beyond the list `WO-MOK-010` states. **One is approved and two are
 OUTSTANDING because ratification is the technical owner's act and the owner has not taken it.** This
 record cannot supply it, and transitioning this record to `verified` would not supply it either — an
 assurance owner's verification is a statement about evidence, not about another role's approvals.
@@ -191,7 +191,7 @@ assurance owner's verification is a statement about evidence, not about another 
 - **Approved.** `SPEC-MOK-001`'s trait range narrowed from `0..=100` to `0..=40`, with rule 19's
   upper-bound note and the two acceptance examples that cited unreachable tolerances. The repository
   owner, acting as technical owner, chose narrowing over amending `REQ-MOK-034`'s survivor floor on
-  2026-08-19 when `WO-MOK-007` stop condition 6 fired; `escalation.md` retains the measurement the
+  2026-08-19 when `WO-MOK-010` stop condition 6 fired; `escalation.md` retains the measurement the
   decision was taken on. The first form of *Behavioral trait* named this amendment as the one to make
   on exactly this evidence, so it is a foreseen correction rather than an unplanned one. **Every
   survivor figure in this packet is downstream of it.**
@@ -217,7 +217,7 @@ predates `SPEC-MOK-001` and `SPEC-MOK-002` (2026-08-19), and `ARCH-MOK-002` pred
 in each case a specification they declare `conforms_to`, so the inspector asks for a reassessment. The
 substantive reassessment was in fact made — the technical owner confirmed on 2026-08-19 that
 `ARCH-MOK-001`'s boundaries, prohibited patterns and dependency prohibition hold unchanged, recorded
-in `WO-MOK-007`'s *Decision record* — but it was recorded in the work order rather than in the
+in `WO-MOK-010`'s *Decision record* — but it was recorded in the work order rather than in the
 architecture artifact, so the date comparison still fires. Bumping an approved artifact's `updated`
 field to silence a warning would have been a governance act on an artifact this work order was
 authorized to *confirm* and not to amend, and would have created a third unratified amendment. **The
@@ -233,7 +233,7 @@ bear most on how much the green gates mean:
 
 1. **Individuality is demonstrated at the scale it was measured, and that scale is the weakest result
    in the packet.** `REQ-MOK-033`'s real-run divergence case yields **10, 3, 3, 5 and 3** divergent
-   situations per thousand-tick run — within a factor of three of the figure `VER-MOK-007` itself names
+   situations per thousand-tick run — within a factor of three of the figure `VER-MOK-010` itself names
    as a failure — and **zero** cases across all five seeds of two Mokiterions facing the same situation
    on the same tick, so no divergence is ever visible side by side in one frame. The 54 to 97
    waste-accepting eats per run, by 9 or 10 distinct Mokiterions of twelve, are the same behavior
@@ -272,7 +272,7 @@ bear most on how much the green gates mean:
    involved, which is what an off-by-one tick-boundary convention looks like. The rates agree to 0.1
    percentage point either way: 10.8% `individual`, 10.8% `reference`, 11.7% `baseline`, against rule
    5's recorded 10.6% and the 12.2% unbiased-walk rate, so no seed exceeds the walk rate and
-   `VER-MOK-007`'s finding condition is not triggered. **The seed-0 margin is 0.008 percentage
+   `VER-MOK-010`'s finding condition is not triggered. **The seed-0 margin is 0.008 percentage
    points** — 11.815% against 11.823% — which is not a margin to treat as established.
 7. **Only one roster bar width is reachable through `render::draw`.** The roster pane is 47 columns
    wide and rule 4's collapse threshold is also 47, so the drawn roster is always two-line at a
@@ -332,10 +332,10 @@ the work, in the form `WO-MOK-005`'s summary used.
   than decorative — and `simulation.rs` was verified byte-identical by SHA-256
   (`4850384d0fec95682dadda00d87a53fbeba026474a6916a773058a46927b3671`) before and after every negative
   control, so no control's perturbation survives in the candidate.
-- **`WO-MOK-007` remains `in_progress`**, matching `WO-MOK-005` and `WO-MOK-006` and differing from
+- **`WO-MOK-010` remains `in_progress`**, matching `WO-MOK-005` and `WO-MOK-006` and differing from
   `VREC-MOK-001` through `VREC-MOK-004`, whose work orders were transitioned to `implemented` first.
   Verification is carried by this record rather than by a change to the work order, and
-  `scripts/validate_engineering_artifacts.py` reports no error or warning against that. Whether `WO-MOK-007` should also move
+  `scripts/validate_engineering_artifacts.py` reports no error or warning against that. Whether `WO-MOK-010` should also move
   is a separate lifecycle decision belonging to the owner; it was not instructed and was not taken.
 
 ## What must happen before this record can be verified
@@ -357,7 +357,7 @@ role that owes it.
    the three extra `SPEC-MOK-003` provisions.
 6. **The `VREC-MOK-005` layer — repository owner.** Six amendments and seven manual assessments, which
    the override deferred rather than discharged. This is the only item that cannot be closed inside
-   `WO-MOK-007`'s scope, and oracle 5's second condition stays unmet until it is.
+   `WO-MOK-010`'s scope, and oracle 5's second condition stays unmet until it is.
 
 Items 1 to 5 are all judgements or ratifications; **none is waiting on code, a measurement or a
 re-run.** All five automated oracles pass at this commit.
@@ -365,7 +365,7 @@ re-run.** All five automated oracles pass at this commit.
 ## Scope of the transition being requested
 
 **No transition is requested yet.** Transitioning this record to `verified` as it stands would record
-that the assurance owner accepts the evidence **with five of `VER-MOK-007`'s seven manual assessments
+that the assurance owner accepts the evidence **with five of `VER-MOK-010`'s seven manual assessments
 unperformed, a sixth unsigned, two amendments to approved artifacts unratified, and two rows of the
 contract's own requirement-to-evidence matrix unsatisfied** — which is not a judgement about
 disclosures but the contract's own stated condition for being unsatisfied. This record should stay

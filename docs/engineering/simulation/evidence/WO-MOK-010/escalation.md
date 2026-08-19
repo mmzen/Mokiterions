@@ -1,4 +1,4 @@
-# WO-MOK-007 escalation: the survivor floor of eight is missed on three declared seeds
+# WO-MOK-010 escalation: the survivor floor of eight is missed on three declared seeds
 
 **Stop condition 6.** *"The survivor floor of eight is missed on any declared seed under the new source at the default
 density. The correction is either an amended `SPEC-MOK-001` constant approved by the technical owner or an amended
@@ -160,7 +160,7 @@ at `T = 0`, in every resource class:
 | Medium | 30 | 70 | 82 | 12 points |
 | Low | 15 | 85 | 91 | 6 points |
 
-So the divergence evidence `VER-MOK-007` requires remains producible across all three classes. Because the upper half
+So the divergence evidence `VER-MOK-010` requires remains producible across all three classes. Because the upper half
 of the range is a dominated strategy rather than a distinct one, truncating it removes bad strategies and not
 individuality. This bound has **not** yet been measured for divergence instances or re-verified for the other oracles;
 choosing it means re-running the whole matrix on the amended constant.
@@ -219,5 +219,5 @@ only after the amended floor is approved and transcribed into it.
 Also outstanding, and independent of this decision: the observer's four-gauge cell-position assertions at the declared
 viewports, the divergence-instance record, the test census, and the tooling runs.
 
-Blocked on this decision: the viability test's asserted floor, the completion summary, and `VREC-MOK-007`. Nothing is
+Blocked on this decision: the viability test's asserted floor, the completion summary, and `VREC-MOK-010`. Nothing is
 committed pending the decision, and no artifact has been amended in anticipation of any option.

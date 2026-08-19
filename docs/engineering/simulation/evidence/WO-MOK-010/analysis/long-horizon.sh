@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# WO-MOK-007: the tick-10,000 runs, which carry no obligation in either direction.
+# WO-MOK-010: the tick-10,000 runs, which carry no obligation in either direction.
 #
-# VER-MOK-002 records the reference source reaching extinction at tick 9,154, and WO-MOK-007 asks for
+# VER-MOK-002 records the reference source reaching extinction at tick 9,154, and WO-MOK-010 asks for
 # the same horizon under the new source so that the two can be compared. No target exists at this
 # horizon and none is claimed; a difference is information, not a failure.
 #

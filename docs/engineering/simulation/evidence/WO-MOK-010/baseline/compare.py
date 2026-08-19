@@ -1,8 +1,8 @@
-"""VER-MOK-007 oracle 1: hash every captured cell, apply the projection, and compare.
+"""VER-MOK-010 oracle 1: hash every captured cell, apply the projection, and compare.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/baseline/compare.py \
+    python docs/engineering/simulation/evidence/WO-MOK-010/baseline/compare.py \
         <pre-capture-dir> <post-capture-dir> <output-dir>
 
 Writes three files into the output directory:
@@ -67,12 +67,12 @@ def write(path, text):
 def main():
     pre_dir, post_dir, out_dir = sys.argv[1:4]
     pre = manifest(pre_dir, os.path.join(out_dir, 'pre-manifest.txt'),
-                   'VER-MOK-007 oracle 1: pre-change capture, commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff')
+                   'VER-MOK-010 oracle 1: pre-change capture, commit 60fda9faffbd452752a34efa356f16cc6ad1d3ff')
     post = manifest(post_dir, os.path.join(out_dir, 'post-manifest.txt'),
-                    'VER-MOK-007 oracle 1: post-change capture, the candidate tree')
+                    'VER-MOK-010 oracle 1: post-change capture, the candidate tree')
 
     report = [
-        'VER-MOK-007 oracle 1 - projected byte comparison',
+        'VER-MOK-010 oracle 1 - projected byte comparison',
         '',
         'pre-change commit: 60fda9faffbd452752a34efa356f16cc6ad1d3ff',
         'projection: baseline/projection.py, applied to both captures',

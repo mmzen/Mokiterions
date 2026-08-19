@@ -1,8 +1,8 @@
-"""WO-MOK-007: the engine's public interface, and the two arithmetic prohibitions, on both sides.
+"""WO-MOK-010: the engine's public interface, and the two arithmetic prohibitions, on both sides.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/interface-census.py \
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/interface-census.py \
         <pre-change-root> <candidate-root>
 
 Each root is a checkout root containing `mokiterions-core/src`. The pre-change root is a git worktree
@@ -11,7 +11,7 @@ at 60fda9faffbd452752a34efa356f16cc6ad1d3ff; the candidate root is the working t
 Three checks, all of them differential where a difference is what matters:
 
   1. THE PUBLIC INTERFACE. `SPEC-MOK-002` rule 5 fixes the engine's interface as closed, and
-     `lib.rs` states that WO-MOK-007 grows it by exactly two things, both values: a third `Policy`
+     `lib.rs` states that WO-MOK-010 grows it by exactly two things, both values: a third `Policy`
      variant and a fourth attribute on the observation snapshot's Mokiterion entry. This enumerates
      the public items, public fields and enum variants on both sides and diffs them, so the claim is
      checked rather than repeated.
@@ -217,7 +217,7 @@ def main():
     pre = census(pre_root)
     post = census(post_root)
     lines = [
-        'WO-MOK-007 - the engine\'s public interface, and the two arithmetic prohibitions',
+        'WO-MOK-010 - the engine\'s public interface, and the two arithmetic prohibitions',
         '',
         f'pre-change root:  {pre_root}   (60fda9faffbd452752a34efa356f16cc6ad1d3ff)',
         f'candidate root:   {post_root}',

@@ -1,6 +1,6 @@
-"""WO-MOK-007: the pre-change capture was completed by recapture, and this checks the recapture.
+"""WO-MOK-010: the pre-change capture was completed by recapture, and this checks the recapture.
 
-VER-MOK-007 oracle 1 declares a matrix of 40 cells. Eleven of them -- the ten 1,000-tick
+VER-MOK-010 oracle 1 declares a matrix of 40 cells. Eleven of them -- the ten 1,000-tick
 default-density frozen-source runs and one 20-tick traced run -- were captured before the first line
 of code changed, and are retained in full under `baseline/full/`. The remaining 31 cells (the 1.50%
 density and the `--trace-actions` variants) were not, and were captured afterwards from a clean git
@@ -14,7 +14,7 @@ reproduces those eleven exactly, the 31 it adds are from the same world.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/baseline/recapture-check.py <recapture-dir>
+    python docs/engineering/simulation/evidence/WO-MOK-010/baseline/recapture-check.py <recapture-dir>
 """
 
 import hashlib
@@ -46,7 +46,7 @@ def main():
                   'short_seed42_reference_traceon.log'))
 
     lines = [
-        'WO-MOK-007 - recapture fidelity of the pre-change baseline',
+        'WO-MOK-010 - recapture fidelity of the pre-change baseline',
         '',
         'commit: 60fda9faffbd452752a34efa356f16cc6ad1d3ff, built in a clean git worktree',
         'compared: the eleven cells captured before the first code change against their recapture',

@@ -36,7 +36,7 @@ Added and verified under `VREC-MOK-002` (commit `68163ac`), completing Phase 1:
 - A deterministic reference decision source (eat → sustain → approach → search), selectable by `--policy`
 - A measured population viability floor of eight of twelve survivors at 1,000 ticks on five declared seeds
 
-Added under `WO-MOK-007` (implemented, **not verified** — see Phase 2's status below):
+Added under `WO-MOK-010` (implemented, **not verified** — see Phase 2's status below):
 
 - One behavioral trait per Mokiterion, `waste_tolerance` in `0..=40`, derived from the seed and the identifier by a
   generator of its own and fixed for the run
@@ -305,7 +305,7 @@ at the same time, because the current floor is a claim about tick 1,000 and deli
 ### What was actually built, and what was cut
 
 The packet approved on 2026-08-19 is `INT-MOK-006`, `CAP-MOK-006`, `REQ-MOK-031` through `REQ-MOK-034`,
-`VER-MOK-007`, `WO-MOK-007`, and in-place amendments of `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003`. It is
+`VER-MOK-010`, `WO-MOK-010`, and in-place amendments of `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003`. It is
 deliberately narrower than the *In scope* list above, and the reductions are the product owner's decisions of
 2026-08-19 rather than implementation shortfalls:
 
@@ -314,7 +314,7 @@ deliberately narrower than the *In scope* list above, and the reductions are the
 | A trait **vector** — "for example caution, aggression, sociability" | **One** trait, `waste_tolerance` | A trait no rule reads is an inert field. Exactly one rule reads exactly one trait, so the individuality claim is measurable rather than asserted. A second trait is a later governed change and needs a rule to read it |
 | **Per-agent entropy substreams** | **Not implemented.** The shared stream stays shared; the trait derivation uses a separate generator that neither reads nor advances it | Substreams would have moved every draw in every pre-existing run, so no run predating this phase would reproduce. Divergence is carried by the trait instead, which is what makes the whole change additive. Substreams remain available as a later change, and would cost the additivity property |
 | `fear` with "defined rise and decay dynamics" | Delivered, and **inert** — no rule and no decision source reads it | `SPEC-MOK-003` rule 4.5 refused an attribute the engine cannot support; this is the opposite case, an attribute the engine computes and nothing consumes. Recorded as a residual rather than presented as complete |
-| **Carried in: high-class resource accumulation** | **Not addressed.** Still carried | Out of `WO-MOK-007`'s scope. The note above still stands unchanged: fixing it invalidates `REQ-MOK-014`'s floor and needs a fresh measurement, and `REQ-MOK-034` has now added a second floor of the same shape to re-approve alongside it. The measured share of standing high-class supply at tick 1,000 did not improve |
+| **Carried in: high-class resource accumulation** | **Not addressed.** Still carried | Out of `WO-MOK-010`'s scope. The note above still stands unchanged: fixing it invalidates `REQ-MOK-014`'s floor and needs a fresh measurement, and `REQ-MOK-034` has now added a second floor of the same shape to re-approve alongside it. The measured share of standing high-class supply at tick 1,000 did not improve |
 
 Two further cuts were accepted at the specification level, and both are the reason the observer changed as little as
 it did: **no per-Mokiterion trait display** in the observer, and **no trait in the event vocabulary** beyond the one
@@ -322,15 +322,15 @@ it did: **no per-Mokiterion trait display** in the observer, and **no trait in t
 already narrowed to 2, and adding trait fields to further event types would have widened the record format for
 values that never change.
 
-**Status.** Implemented under `WO-MOK-007`, which is left at `in_progress`. **Not verified.**
-`VREC-MOK-007` is a `ready` candidate bound to commit `4f32a9f`; it takes no decision, states that
-`VER-MOK-007` is *not* satisfied at that commit, and should not be transitioned as it stands. Three things
+**Status.** Implemented under `WO-MOK-010`, which is left at `in_progress`. **Not verified.**
+`VREC-MOK-010` is a `ready` candidate bound to commit `4f32a9f`; it takes no decision, states that
+`VER-MOK-010` is *not* satisfied at that commit, and should not be transitioned as it stands. Three things
 stand in the way of a verified record:
 
-1. Five of `VER-MOK-007`'s seven manual assessments are outstanding and a sixth is unsigned.
+1. Five of `VER-MOK-010`'s seven manual assessments are outstanding and a sixth is unsigned.
 2. Two amendments written during implementation are unratified — a `SPEC-MOK-001` *Help output* correction and three
    `SPEC-MOK-003` provisions outside rule 4.
-3. `WO-MOK-007`'s own gate required `VREC-MOK-005` to be `verified` with its six amendments approved and its seven
+3. `WO-MOK-010`'s own gate required `VREC-MOK-005` to be `verified` with its six amendments approved and its seven
    assessments recorded. It was none of those when implementation began, and the product, technical and assurance
    owner overrode the gate on 2026-08-19 and authorized implementation over it, on the recorded mitigation that the
    two layers stay separable by inspection. **One half of that has since resolved and the other has not.**
@@ -340,19 +340,19 @@ stand in the way of a verified record:
    obligations are therefore still open and still a prerequisite of *two* verification records rather than one — what
    changed is that they are no longer also a blocked governance transition.
 
-**The record predates the merge with `master` and has not been re-captured against it.** `VREC-MOK-007` binds
+**The record predates the merge with `master` and has not been re-captured against it.** `VREC-MOK-010` binds
 `4f32a9f`, which is not this branch's tip. Everything it says was true of the tree it names, and item 3 above is the
 part a reader would otherwise carry forward wrongly. Two of its figures are now measurements of code `master` has
 replaced: `WO-MOK-005`'s rule 5 amendment withdrew the layout tier table the oracle-4 frame capture enumerated its
 viewports from, so the roster is now presented at eight of nine declared viewports rather than four, and the workspace
 test census reconciles 169 → 190 where the merged tree runs 193. The bar arithmetic itself is unaffected, because the
 roster pane is 47 columns wide under both versions of rule 5. Re-capturing the record and re-deriving oracle 4 against
-the merged commit is outstanding work under `WO-MOK-007`, on the precedent `VREC-MOK-005` set when `master` moved
+the merged commit is outstanding work under `WO-MOK-010`, on the precedent `VREC-MOK-005` set when `master` moved
 under its own first candidate.
 
 Everything measured, and everything it does not establish, is in
-`docs/engineering/simulation/evidence/WO-MOK-007/` — start with its `README.md`, then `completion-summary.md`.
-The survivor figures there are downstream of one mid-implementation owner decision: `WO-MOK-007` stop condition 6
+`docs/engineering/simulation/evidence/WO-MOK-010/` — start with its `README.md`, then `completion-summary.md`.
+The survivor figures there are downstream of one mid-implementation owner decision: `WO-MOK-010` stop condition 6
 fired when `REQ-MOK-034`'s floor was missed on three of five declared seeds at the `0..=100` trait range first
 specified, and the technical owner chose to narrow the range to `0..=40` rather than amend the floor
 (`escalation.md`).
@@ -502,7 +502,7 @@ anticipate it:
 3. **Trait range for Phase 2.** *Decided 2026-08-19:* `0..=40` rather than the `0..=100` first specified, chosen on a
    fifty-seed distribution rather than on the five declared seeds, because the declared-five result is not monotonic
    in the bound. The upper half of the original range was measurably dominated, not a second strategy. Recorded in
-   `SPEC-MOK-001`'s *Behavioral trait* subsection and in `WO-MOK-007`'s evidence as `escalation.md`.
+   `SPEC-MOK-001`'s *Behavioral trait* subsection and in `WO-MOK-010`'s evidence as `escalation.md`.
 
 ## Maintenance
 

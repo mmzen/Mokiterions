@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# WO-MOK-007 / VER-MOK-007 oracle 1: capture the declared matrix from one engine binary.
+# WO-MOK-010 / VER-MOK-010 oracle 1: capture the declared matrix from one engine binary.
 #
-# The matrix is the one VER-MOK-007 oracle 1 declares: the seeds 0, 1, 42, 123 and 777; the frozen
+# The matrix is the one VER-MOK-010 oracle 1 declares: the seeds 0, 1, 42, 123 and 777; the frozen
 # decision sources `baseline` and `reference`; the default density 0.75% and the swept density 1.50%
 # that VER-MOK-002 declares; --ticks 1000; with and without --trace-actions. That is 40 cells.
 #

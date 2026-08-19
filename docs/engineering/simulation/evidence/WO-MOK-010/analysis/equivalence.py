@@ -1,8 +1,8 @@
-"""WO-MOK-007 oracle 3: the enumerated situation set, its size, and the run that exhausts it.
+"""WO-MOK-010 oracle 3: the enumerated situation set, its size, and the run that exhausts it.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/equivalence.py
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/equivalence.py
 
 Oracle 3 is arithmetic equivalence at the trait's lower bound: rule 19's tolerant test is written so
 that at tolerance `0` it reduces to rule 5's exact-fit test, and the trait-aware source must therefore
@@ -101,7 +101,7 @@ def main():
     structural = re.search(r'assert_eq!\(\s*cases,\s*(SATIETIES\.len\(\).*?)\);', text, re.S)
 
     lines = [
-        'VER-MOK-007 oracle 3 - the enumerated situation set, and the run that exhausts it',
+        'VER-MOK-010 oracle 3 - the enumerated situation set, and the run that exhausts it',
         '',
         'What this checks, and why the number is not enough on its own: see the header of',
         'analysis/equivalence.py. Every figure below is read out of',

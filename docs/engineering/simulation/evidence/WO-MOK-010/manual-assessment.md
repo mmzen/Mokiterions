@@ -1,6 +1,6 @@
-# WO-MOK-007 manual assessments
+# WO-MOK-010 manual assessments
 
-`VER-MOK-007` names seven judgements that no measurement can make: "Each of the following is an explicit judgement
+`VER-MOK-010` names seven judgements that no measurement can make: "Each of the following is an explicit judgement
 recorded by the accountable role. An unrecorded assessment is an outstanding assessment, and this contract is not
 satisfied while any remains outstanding."
 
@@ -11,7 +11,7 @@ measured facts already assembled, state where the repository owner has already r
 and say plainly which remain outstanding.
 
 **Status: one of seven recorded, one recorded in substance, five outstanding.** The manual-assessment contract of
-`VER-MOK-007` is therefore **not satisfied**, and no verification record can be written against this commit until it
+`VER-MOK-010` is therefore **not satisfied**, and no verification record can be written against this commit until it
 is. That is a statement about this artifact's completeness, not a defect in the code.
 
 Every figure below is quoted from a file in this evidence pack and is reproducible from the commands those files
@@ -31,7 +31,7 @@ record. Nothing here is a new measurement.
 
 ## 1. Scarcity, by the product owner — outstanding
 
-**What is to be judged.** `VER-MOK-007`: at the default density under the new source, not all declared seeds retain
+**What is to be judged.** `VER-MOK-010`: at the default density under the new source, not all declared seeds retain
 twelve survivors; twelve everywhere would satisfy `REQ-MOK-034`'s literal floor and contradict `INT-MOK-002`'s
 scarcity principle, and would have to be reported as adverse rather than passed over.
 
@@ -60,7 +60,7 @@ on three of the five seeds.
 
 ## 2. Individuality is meaningful, by the product owner — outstanding
 
-**What is to be judged.** `VER-MOK-007`: reading the recorded divergences, the trait produces behavior a reader would
+**What is to be judged.** `VER-MOK-010`: reading the recorded divergences, the trait produces behavior a reader would
 call different individuals rather than arithmetic noise — and, in its own words, "a change that satisfies every
 automated check while producing one visible divergence per thousand ticks has not delivered `INT-MOK-006`".
 
@@ -77,7 +77,7 @@ automated check while producing one visible divergence per thousand ticks has no
 
 **The adverse reading, stated first.** A *divergent situation* is one where two different traits, presented with the
 same resource class at the same satiety, decided differently. On three of five seeds there are **three** of them in a
-thousand ticks. That is within a factor of three of the figure `VER-MOK-007` itself names as a failure. The count is
+thousand ticks. That is within a factor of three of the figure `VER-MOK-010` itself names as a failure. The count is
 low for a structural reason and not by accident: a divergence requires two Mokiterions to meet the *same* class at the
 *same* satiety at some point in the run, and 401–454 presented situations spread over 124–137 distinct ones leaves few
 situations visited by traits on both sides of their threshold. There were also **zero** cases across all five seeds of
@@ -92,7 +92,7 @@ decisively: the reference source goes extinct on four of five seeds, the trait-a
 four of five (`measurements/long-horizon.txt`).
 
 **What remains for the product owner.** Which measure answers `INT-MOK-006` — the 3-to-10 divergent situations, which
-is what `VER-MOK-007` names, or the 54-to-97 waste-accepting eats, which is the same behavior counted without
+is what `VER-MOK-010` names, or the 54-to-97 waste-accepting eats, which is the same behavior counted without
 requiring a second Mokiterion to have met the same situation. The implementation agent's view, offered as a
 recommendation and not as the judgement: the eats are the better measure of the same phenomenon, but the divergence
 figure is the one the approved contract names, and substituting a more favourable measure for the named one is exactly
@@ -101,7 +101,7 @@ rather than buried.
 
 ## 3. The accumulation result, by the product owner — outstanding
 
-**What is to be judged.** `VER-MOK-007`: the measured high-class share at tick 1,000 and the tick-10,000 outcome under
+**What is to be judged.** `VER-MOK-010`: the measured high-class share at tick 1,000 and the tick-10,000 outcome under
 the new source are read against the reference source's recorded 45 of 61 and its extinction at tick 9,154, and the
 owner records whether the result is an improvement, a regression or neither. `REQ-MOK-034` states no obligation on it.
 
@@ -129,11 +129,11 @@ column moves the same way, but the two are not independent, since a longer run h
 consumption is corroboration and not a second finding.
 
 **What remains for the product owner.** Improvement, regression or neither. Nothing in the approved chain turns on the
-answer; `VER-MOK-007` requires it recorded rather than inferred.
+answer; `VER-MOK-010` requires it recorded rather than inferred.
 
 ## 4. `fear`'s constants, by the technical owner — outstanding, and carrying an adverse figure
 
-**What is to be judged.** `VER-MOK-007`: the `+10` increment and the `-5` decrement produce a value that moves on a
+**What is to be judged.** `VER-MOK-010`: the `+10` increment and the `-5` decrement produce a value that moves on a
 timescale a reader can interpret, neither saturating in the first few ticks nor effectively constant across a run.
 "This is a judgement because nothing consumes `fear`, so no outcome can falsify the constants." The owner also records
 the measured share of agent-ticks on which `fear` was non-zero, because a value pinned at the lower bound would be the
@@ -167,7 +167,7 @@ and neither is in question here; what is asked is the judgement on the measured 
 
 ## 5. Roster legibility at four bars, by the technical owner — **recorded 2026-08-19**
 
-**What was to be judged.** `VER-MOK-007`: filling the reserved slot narrows the bars; at the reference roster's
+**What was to be judged.** `VER-MOK-010`: filling the reserved slot narrows the bars; at the reference roster's
 45-column interior, four gauges leave `(45 − 35) / 4 = 2` cells per bar where three left 6. The owner records that a
 2-cell bar beside its 3-column numeric value is acceptable at that viewport, or requires the roster pane to be widened
 in `SPEC-MOK-003` rule 5 instead — and "either way the decision is stated in the rule 4.5 amendment, not settled in
@@ -191,7 +191,7 @@ render tests instead, which oracle 4 runs.
 
 ## 6. The projection, by the assurance owner — outstanding
 
-**What is to be judged.** `VER-MOK-007`: the transformation oracle 1 applies deletes only the fields this change adds,
+**What is to be judged.** `VER-MOK-010`: the transformation oracle 1 applies deletes only the fields this change adds,
 and the owner confirms it could not mask a change to a position, an identifier, an event kind, an ordering or an
 attribute value.
 
@@ -220,7 +220,7 @@ to three regular expressions.
 
 ## 7. The absence of a `fear` consumer, by the technical owner — recorded in substance, not separately signed
 
-**What is to be judged.** `VER-MOK-007`: no engine rule reads the attribute, and the owner confirms that the value's
+**What is to be judged.** `VER-MOK-010`: no engine rule reads the attribute, and the owner confirms that the value's
 only purpose in this scope is to be reported.
 
 **Where it is already recorded.** `SPEC-MOK-001`'s *Scope*, as amended and approved on 2026-08-19, states it as an
@@ -234,7 +234,7 @@ that carries this assessment's content, on this date, in the specification.
 from the inspector — that rule's presented-value list was not amended by this work order — rather than leaving the
 absence to read as an oversight.
 
-**What remains.** `VER-MOK-007` asks for this as one of seven explicit assessments, and approving a specification
+**What remains.** `VER-MOK-010` asks for this as one of seven explicit assessments, and approving a specification
 sentence is not the same act as signing an assessment. The substance is not in doubt; the signature is missing. The
 implementation agent records the distinction rather than deciding that the approval already covers it.
 
@@ -242,7 +242,7 @@ implementation agent records the distinction rather than deciding that the appro
 
 ## What this means for the verification record
 
-`VER-MOK-007` is explicit: "An unrecorded assessment is an outstanding assessment, and this contract is not satisfied
+`VER-MOK-010` is explicit: "An unrecorded assessment is an outstanding assessment, and this contract is not satisfied
 while any remains outstanding." Five of the seven are outstanding and a sixth is unsigned. **No verification record
 can be written against this commit yet, and this artifact is where that obligation is recorded rather than left to be
 discovered.** Nothing in the code or the automated oracles is waiting on these judgements — all five automated oracles

@@ -1,6 +1,6 @@
-# WO-MOK-007 completion summary
+# WO-MOK-010 completion summary
 
-The sixteen sections `WO-MOK-007`'s *Completion report format* asks for, in its order and under its headings.
+The sixteen sections `WO-MOK-010`'s *Completion report format* asks for, in its order and under its headings.
 
 Two of them do not report success. **Section 2** reports that the gate the work order set was overridden rather than
 met, and **section 14** reports that five of seven manual assessments are outstanding and a sixth is unsigned. Both are
@@ -50,7 +50,7 @@ Four changes were made that the *In scope* list does not name and that are repor
 **The gate was not met. It was overridden by the repository owner on 2026-08-19, and this section reports that rather
 than a satisfied condition.**
 
-`WO-MOK-007` requires "Evidence that `VREC-MOK-005` was `verified`, its six amendments approved and its seven
+`WO-MOK-010` requires "Evidence that `VREC-MOK-005` was `verified`, its six amendments approved and its seven
 assessments recorded, before implementation began, with dates". The true state, at the commit this work started from
 (**60fda9f**) and at the commit it ends at:
 
@@ -60,14 +60,14 @@ assessments recorded, before implementation began, with dates". The true state, 
 | Its six amendments approved | six **OUTSTANDING** across `SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-001` | six **OUTSTANDING**, unchanged |
 | Its seven manual assessments recorded | none recorded | none recorded, unchanged |
 
-The override is recorded as the tenth row of `WO-MOK-007`'s *Decision record*, dated 2026-08-19, taken by the
+The override is recorded as the tenth row of `WO-MOK-010`'s *Decision record*, dated 2026-08-19, taken by the
 repository owner acting as product, technical and assurance owner in answer to a blocking question from the
 implementation agent. The agent did not proceed past the gate on its own reading.
 
 The mitigation the owner accepted was that the two layers stay separable by inspection. That claim is checked rather
 than asserted: `amendment-approvals.md` §4 compares every amendment row dated before 2026-08-19 against **60fda9f**
 and finds each byte-identical, and records that `VREC-MOK-005` itself is untouched. **It is a cost carried forward, not
-a debt paid**, and `VER-MOK-007`'s own matrix row for it — "the amendments left outstanding by `VREC-MOK-005` are
+a debt paid**, and `VER-MOK-010`'s own matrix row for it — "the amendments left outstanding by `VREC-MOK-005` are
 resolved, before this change is verified" — is unsatisfied. That row is reproduced in
 `requirement-to-test-mapping.md` in place.
 
@@ -81,8 +81,8 @@ resolved, before this change is verified" — is unsatisfied. That row is reprod
 | `CAP-MOK-006` | product owner | 2026-08-19 |
 | `REQ-MOK-031` … `REQ-MOK-034` | product owner | 2026-08-19 |
 | `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003` (amendments) | technical owner | 2026-08-19 |
-| `VER-MOK-007` | assurance owner | 2026-08-19 |
-| `WO-MOK-007` | engineering owner | 2026-08-19, left at `in_progress` |
+| `VER-MOK-010` | assurance owner | 2026-08-19 |
+| `WO-MOK-010` | engineering owner | 2026-08-19, left at `in_progress` |
 | `ARCH-MOK-001` confirmation — boundaries, prohibited patterns and the dependency prohibition satisfied unchanged, no amendment required | technical owner | 2026-08-19 |
 
 `amendment-approvals.md` §1 reads each artifact's front matter and confirms `status` and `approved` agree.
@@ -214,7 +214,7 @@ Nine to eleven distinct values per seed, `0` and `40` both reached across the se
 a population that reproduces the reference source**, which is the condition `VER-MOK-034`'s third row exists to check.
 
 **Every survivor figure above is downstream of an owner decision taken mid-implementation.** At the specified
-`0..=100` range the floor was missed on three of five declared seeds. `WO-MOK-007` stop condition 6 fired, the agent
+`0..=100` range the floor was missed on three of five declared seeds. `WO-MOK-010` stop condition 6 fired, the agent
 stopped and escalated, and the owner — as technical owner — chose to narrow the range to `0..=40` rather than amend the
 floor. A fifty-seed sweep put the `0..=100` mean at 7.40 survivors against a floor of 8, and `0..=40` at 9.94 with a 4%
 miss rate against the reference source's own 6%. `escalation.md` holds the sweep and the decision.
@@ -235,7 +235,7 @@ direction and none is claimed:
 | individual | 123 | tick_limit | 10,000 | 1 | 1,633 |
 | individual | 777 | **extinction at 9,938** | 9,938 | 0 | 1,669 |
 
-**The recorded control reproduces to the tick.** `VER-MOK-002` and `WO-MOK-007` record the reference source reaching
+**The recorded control reproduces to the tick.** `VER-MOK-002` and `WO-MOK-010` record the reference source reaching
 extinction at tick 9,154; that is this table's reference row at seed 123 exactly. It is a frozen-source outcome
 reproduced nine times further out than the 1,000-tick oracle's window, on a run that had 9,154 ticks in which to
 diverge. Adversely: **seed 777 is the one individual run that goes extinct at this horizon**, at tick 9,938, and it is
@@ -250,7 +250,7 @@ also the only seed that retains all twelve at tick 1,000.
 | baseline | | | | | | 11.7% (835/7,107) |
 
 Against rule 5's recorded **10.6%** residual and the **12.2%** unbiased-walk rate: no seed exceeds the walk rate, so
-`VER-MOK-007`'s finding condition is not triggered. Two things temper that. **The seed-0 margin is 0.008 percentage
+`VER-MOK-010`'s finding condition is not triggered. Two things temper that. **The seed-0 margin is 0.008 percentage
 points** — 11.815% against 11.823% — which is not a margin to treat as established. And while this measurement
 reproduces `WO-MOK-002`'s recorded counts 1,097/10,339 and 174/1,427 exactly, **its own pooled denominators are larger
 by exactly 96 in both rows**, one per Mokiterion-run of the eight runs involved, which is what an off-by-one tick
@@ -289,7 +289,7 @@ identically.
 | distinct eaters | 9 | 9 | 9 | 10 | 9 |
 
 Each divergent instance is recorded with its tick, the two Mokiterions, their traits and their differing proposals, as
-`VER-MOK-007` requires. But three to ten per thousand-tick run is **within a factor of three of the figure the contract
+`VER-MOK-010` requires. But three to ten per thousand-tick run is **within a factor of three of the figure the contract
 itself names as failure**, and **zero same-tick coincidences** means no divergence is ever visible side by side in one
 frame. The file also records a counterexample to the naive reading of the trait ordering: at seed 0 a Mokiterion at
 tolerance `10` never accepted a resource that one at tolerance `6` did, because the situations they met were not the
@@ -399,7 +399,7 @@ added to a public type: `AgentSnapshot.fear` is a `u8` by value on an owned snap
 values only and the new field grants the observer no new authority. The engine's one mutating public operation set is
 unchanged.
 
-One honesty note on the contract's own wording: `VER-MOK-007`'s `REQ-MOK-031` row says rule 5's enumeration grows by
+One honesty note on the contract's own wording: `VER-MOK-010`'s `REQ-MOK-031` row says rule 5's enumeration grows by
 the `fear` field alone and its `REQ-MOK-033` row says exactly one option value is added. **Read singly, neither row
 describes the census; read together they describe it exactly.** Both hold jointly.
 
@@ -419,7 +419,7 @@ From `static-checks.txt`, regenerated from a fresh capture at the committed sour
 Zero ignored and zero filtered out is the part worth stating: a suite can be made to pass by not running, and those two
 counts are what would show it.
 
-**The harness preflight, which is not on `VER-MOK-007`'s retention list and is reported here anyway:**
+**The harness preflight, which is not on `VER-MOK-010`'s retention list and is reported here anyway:**
 
 | Gate | Result |
 |---|---|
@@ -436,7 +436,7 @@ The three new ones are all the same `W-HEX-003` shape, and they are honest signa
 Amending three specifications made all three newer than the architecture artifacts that declare conformance to them,
 so the inspector asks for a reassessment of each. **The reassessment was in fact made** — the technical owner
 confirmed on 2026-08-19 that `ARCH-MOK-001`'s boundaries, prohibited patterns and dependency prohibition are
-satisfied unchanged and no amendment is required, recorded in `WO-MOK-007`'s *Decision record* — but it was recorded
+satisfied unchanged and no amendment is required, recorded in `WO-MOK-010`'s *Decision record* — but it was recorded
 in the work order rather than in `ARCH-MOK-001` itself, so the date comparison still fires. **Neither architecture
 artifact was edited to silence it.** Bumping an approved artifact's `updated` field would be a governance act on an
 artifact this work order was authorized to confirm and not to amend, and it would have added a third unratified
@@ -526,7 +526,7 @@ way.
 
 **No assertion was weakened, no test ignored, no item widened and no `allow` added anywhere in this change.** One
 inherited test's name was left alone deliberately: `cli::both_policies_are_selectable_and_reference_is_the_default`
-still says "both", because a rename cannot be distinguished from a removal in the census `VER-MOK-007` requires, and
+still says "both", because a rename cannot be distinguished from a removal in the census `VER-MOK-010` requires, and
 what it asserts is still true. The third value got a named sibling instead.
 
 ## 13. Specification mismatches found
@@ -542,7 +542,7 @@ exactly once — and the inherited public-tier test `cli::each_declared_default_
 `VREC-MOK-004`, asserts that the prose contains no occurrence of "default" at all. The implementation is on the side of
 the older paragraph and the test.
 
-Satisfying the new clause would have required relaxing an assertion a verified record binds, which `WO-MOK-007`
+Satisfying the new clause would have required relaxing an assertion a verified record binds, which `WO-MOK-010`
 explicitly forbids. So **the specification was corrected, not the code and not the assertion**: the default clause is
 withdrawn and the sentence now reads that the prose "states no default and no value constraint", with the options block
 carrying both. A third amendment row was appended to `SPEC-MOK-001`, marked **OUTSTANDING** and attributed to the
@@ -579,12 +579,12 @@ formally violated, but the observer would have accepted an undocumented value. C
 `options::the_usage_text_advertises_every_policy_the_engine_accepts` asserts the general property — every value the
 engine accepts appears in the observer's usage text — so the gap cannot reopen when a fourth source is added.
 
-**Nothing was resolved by a quietly adjusted constraint or a relaxed assertion**, which `WO-MOK-007` forbids. Two of
+**Nothing was resolved by a quietly adjusted constraint or a relaxed assertion**, which `WO-MOK-010` forbids. Two of
 the four were corrected in code, one in the specification with an outstanding amendment row, and one by moving a file.
 
 ## 14. Manual assessments
 
-**Five of seven are outstanding and a sixth is unsigned, so `VER-MOK-007`'s manual-assessment contract is not
+**Five of seven are outstanding and a sixth is unsigned, so `VER-MOK-010`'s manual-assessment contract is not
 satisfied.** The contract is explicit: "An unrecorded assessment is an outstanding assessment, and this contract is not
 satisfied while any remains outstanding." Full text in `manual-assessment.md`.
 
@@ -611,7 +611,7 @@ accountable for.
 
 ## 15. Evidence index
 
-`README.md` maps `VER-MOK-007`'s 15 retention bullets to files. What each file establishes:
+`README.md` maps `VER-MOK-010`'s 15 retention bullets to files. What each file establishes:
 
 | File | What it establishes |
 |---|---|
@@ -662,7 +662,7 @@ through `WO-MOK-006` as a side effect.
 
 ## 16. Residual disclosure
 
-Everything a verifier should weigh that the checks above do not settle. `VER-MOK-007`'s own stated residual
+Everything a verifier should weigh that the checks above do not settle. `VER-MOK-010`'s own stated residual
 uncertainty is items 1 to 4; items 5 to 11 were found during the work.
 
 1. **`fear` has no consumer, so its constants are unfalsifiable by any outcome.** One writer, no reader, by census.
@@ -698,7 +698,7 @@ uncertainty is items 1 to 4; items 5 to 11 were found during the work.
     offered here.
 13. **This change added three `W-HEX-003` warnings to the harness inspection** — section 11. `ARCH-MOK-001` and
     `ARCH-MOK-002` now predate specifications they declare conformance to. The substantive reassessment exists in
-    `WO-MOK-007`'s decision record; the artifacts themselves were deliberately not edited.
+    `WO-MOK-010`'s decision record; the artifacts themselves were deliberately not edited.
 14. **A `.gitattributes` was added outside this work order's *In scope* list** — one line, disabling end-of-line
     conversion for the retained evidence, without which no manifest digest in this packet or in the six before it
     reproduces from a Windows clone. Section 15 has the check. It changes no code and no recorded value, but it is a
@@ -708,7 +708,7 @@ uncertainty is items 1 to 4; items 5 to 11 were found during the work.
     instead of taken from a digest. Whether that trade is worth the repository weight is the owner's call; the
     alternative is retaining digests alone and asking a reviewer to trust `compare.py`.
 
-**Status of this work order.** `WO-MOK-007` is left at `status = "in_progress"` and no verification record exists. A
+**Status of this work order.** `WO-MOK-010` is left at `status = "in_progress"` and no verification record exists. A
 verification record binds a commit and is created after the one it names; five manual assessments are outstanding, two
 amendments are unratified, and oracle 5's second condition is unmet by the owner's recorded override. This packet was
 written before the implementation was committed, and it is the input to a verification decision, not that decision.

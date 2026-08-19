@@ -86,7 +86,7 @@ fn a_density_resolving_to_no_resources_exits_with_code_two_before_initialization
 /// `REQ-MOK-031`, `REQ-MOK-033`: the third source reaches the process boundary, and the trait is
 /// reported once per Mokiterion at initialization and never restated afterwards.
 ///
-/// Added under `WO-MOK-007`. This is the only place the whole path — argument, configuration,
+/// Added under `WO-MOK-010`. This is the only place the whole path — argument, configuration,
 /// initialization, run, standard output — is exercised for the new source, so it is where an
 /// option accepted by the parser but unreachable from `execute` would be caught. The
 /// once-and-only-once assertion is the reporting obligation stated as a count: a value that is

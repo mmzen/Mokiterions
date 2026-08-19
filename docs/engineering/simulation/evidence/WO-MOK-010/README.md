@@ -1,6 +1,6 @@
-# WO-MOK-007 evidence packet
+# WO-MOK-010 evidence packet
 
-`VER-MOK-007`'s evidence-retention list has 15 bullets. Each is below with the file that discharges it, so retention
+`VER-MOK-010`'s evidence-retention list has 15 bullets. Each is below with the file that discharges it, so retention
 completeness is checkable without reading the packet.
 
 | Retention bullet | File |
@@ -21,17 +21,22 @@ completeness is checkable without reading the packet.
 | The seven manual assessments above, each with its accountable role and date | `manual-assessment.md` — **five are outstanding and a sixth is unsigned; see below** |
 | The amendment-approval check of oracle 5 | `amendment-approvals.md` |
 
-**Seven files are not on the retention list.** `requirement-to-test-mapping.md` maps every one of `VER-MOK-007`'s 45
+**Eight files are not on the retention list.** `requirement-to-test-mapping.md` maps every one of `VER-MOK-010`'s 45
 matrix rows to the test or file that discharges it, in the contract's own order, and names the two rows that are *not*
 satisfied in place rather than in a footnote; both prior work orders retained the same mapping and
 `measurements/traits.txt` cites it. `completion-summary.md` is the work order's own required closing report.
-`escalation.md` records `WO-MOK-007` stop condition 6 firing and the owner's decision on it, because a stop condition
+`escalation.md` records `WO-MOK-010` stop condition 6 firing and the owner's decision on it, because a stop condition
 that fired and was resolved is not something a reader should have to reconstruct from an amendment row.
 `negative-control/` holds the controls on oracles 2 and 3 — each designed failure injected and confirmed to fail.
 `interface-and-purity.txt` is the public-interface census and the `fear` writer/reader count.
 `measurements/proposals.txt` counts what each source actually proposed, and is the check that the trait-aware source
 never proposes `wait` and that the engine's own validation rejected none of its proposals — zero `wait` and zero
-rejections on all ten runs. This `README.md` is the map itself.
+rejections on all ten runs. `renumbering.md` records a governance act rather than a measurement: this chain was
+approved and implemented as `WO-MOK-007`, `master` then created a different `WO-MOK-007` and verified it,
+`feature/release-ci` had taken `008` and `009`, and the owner renumbered this one to `010`. **Read it before
+hashing anything, and before reading any `.txt` here that says `WO-MOK-007`** — the retained captures were not
+edited, so nineteen of them still carry the former name, and one recorded digest no longer reproduces for that
+reason. This `README.md` is the map itself.
 
 **Before hashing anything here, note that a `.gitattributes` was added for this directory.** Every manifest below
 records the SHA-256 of a captured file so that a reviewer can hash the retained file and get the recorded number, and
@@ -50,7 +55,7 @@ from the crate — the `WO-MOK-006` precedent for a probe that must not become a
 ## Read these four first
 
 - **`manual-assessment.md`** — the seven judgements no script can make. **One is recorded, one is recorded in
-  substance, and five are outstanding**, so `VER-MOK-007`'s manual-assessment contract is *not satisfied* and no
+  substance, and five are outstanding**, so `VER-MOK-010`'s manual-assessment contract is *not satisfied* and no
   verification record can be written against this commit yet. Two carry facts that point adversely and are named at
   the top of that file rather than the bottom: assessment 2, where the divergence count is within a factor of three
   of the figure the contract itself names as failure, and assessment 4, where `fear` sits at its ceiling on 39% of
@@ -70,7 +75,7 @@ from the crate — the `WO-MOK-006` precedent for a probe that must not become a
 
 ## The five independent oracles
 
-`VER-MOK-007`'s central claim is that the two frozen decision sources are untouched and the new one behaves as rule 19
+`VER-MOK-010`'s central claim is that the two frozen decision sources are untouched and the new one behaves as rule 19
 specifies. That claim is not carried by one measurement:
 
 1. **The recorded pre-change baseline under a stated projection** — 42 frozen-source cells at **60fda9f**, compared
@@ -100,7 +105,7 @@ pair will only be answerable once something consumes it.
 10 divergent situations per thousand-tick run and **zero** cases of two Mokiterions facing the same situation on the
 same tick, so no divergence is ever visible side by side in a single frame. The 54 to 97 waste-accepting eats per run
 are the same behavior counted without requiring a coincidence, but substituting that measure for the one
-`VER-MOK-007` names is the product owner's call, not the implementation agent's.
+`VER-MOK-010` names is the product owner's call, not the implementation agent's.
 
 **Equivalence is demonstrated across the declared matrix and the enumerated situation set, not across the input
 space.** Oracle 3 is exhaustive over its 2,808 situations because that set is finite; oracle 1 covers 40 cells of a
@@ -128,6 +133,6 @@ crate's `#[cfg(test)]` block into the public tier, and one `debug_assert!` invar
 amended trait range states. Each has a reason it cannot matter and none of those reasons is relied on: the tree was
 rebuilt from the committed source and the whole matrix captured again, and all 83 shared cells came out byte-identical.
 
-This packet was written before the implementation was committed. `WO-MOK-007` is left at `status = "in_progress"` and
+This packet was written before the implementation was committed. `WO-MOK-010` is left at `status = "in_progress"` and
 no verification record exists — a verification record binds a commit and is created after the one it names, and five
 manual assessments are outstanding besides.

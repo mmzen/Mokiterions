@@ -1,15 +1,15 @@
-"""WO-MOK-007 oracle 5: the governance state of every artifact this change amends.
+"""WO-MOK-010 oracle 5: the governance state of every artifact this change amends.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/analysis/amendments.py
+    python docs/engineering/simulation/evidence/WO-MOK-010/analysis/amendments.py
 
-`VER-MOK-007` makes this a verification oracle rather than a formality: "an amendment nobody approved is not a
+`VER-MOK-010` makes this a verification oracle rather than a formality: "an amendment nobody approved is not a
 specification", and its absence fails the contract regardless of the state of the code. So this script reads the
 artifacts and the git history and checks four things a reader would otherwise take on trust.
 
   1. **Status.** Every artifact in this work order's chain is `approved` and the work order is `in_progress`.
-  2. **The amendment record covers what the owner approved, and the text carries it.** `WO-MOK-007` states the
+  2. **The amendment record covers what the owner approved, and the text carries it.** `WO-MOK-010` states the
      required amendments in full -- nine provisions and one appended rule in `SPEC-MOK-001`, two provisions and a
      re-check in `SPEC-MOK-002`, three provisions in `SPEC-MOK-003`. Each is looked for twice: in the amendment
      record's 2026-08-19 row, and in the specification's body. The two searches are over disjoint text -- the
@@ -18,7 +18,7 @@ artifacts and the git history and checks four things a reader would otherwise ta
      exactly the failure this oracle exists to catch.
   3. **The earlier layer is untouched.** `WO-MOK-005` left six amendments **OUTSTANDING** across `SPEC-MOK-002`,
      `SPEC-MOK-003` and `ARCH-MOK-001`, and the repository owner overrode the gate that would have settled them
-     before this work began. The mitigation recorded in `WO-MOK-007` is that the two layers stay separable by
+     before this work began. The mitigation recorded in `WO-MOK-010` is that the two layers stay separable by
      inspection, and that is a checkable claim: every amendment row dated before 2026-08-19 must be byte-identical to
      the one at the commit this work started from, and `VREC-MOK-005` and `ARCH-MOK-001` must not have been touched at
      all.
@@ -66,11 +66,11 @@ CHAIN = [
     (f'{DOCS}/requirements/REQ-MOK-032.md', 'approved'),
     (f'{DOCS}/requirements/REQ-MOK-033.md', 'approved'),
     (f'{DOCS}/requirements/REQ-MOK-034.md', 'approved'),
-    (f'{DOCS}/verification/VER-MOK-007.md', 'approved'),
-    (f'{DOCS}/work-orders/WO-MOK-007.md', 'in_progress'),
+    (f'{DOCS}/verification/VER-MOK-010.md', 'approved'),
+    (f'{DOCS}/work-orders/WO-MOK-010.md', 'in_progress'),
 ]
 
-# The provisions `WO-MOK-007` states in full. Each is a label, the phrase that identifies it in the amendment record,
+# The provisions `WO-MOK-010` states in full. Each is a label, the phrase that identifies it in the amendment record,
 # and the phrases that identify the amended text in the body -- an empty list where the provision is a statement about
 # the amendment itself rather than a change to the text.
 AMENDED = [
@@ -177,7 +177,7 @@ BEYOND = [
         'body': ['an integer in `0..=40`',
                  'The range is `0..=40`, narrowed on measured evidence'],
         'state': '**Approved.** The repository owner, acting as technical owner, chose narrowing over amending '
-                 '`REQ-MOK-034`\'s survivor floor on 2026-08-19, when `WO-MOK-007` stop condition 6 fired. The '
+                 '`REQ-MOK-034`\'s survivor floor on 2026-08-19, when `WO-MOK-010` stop condition 6 fired. The '
                  'work order records the decision and `escalation.md` the measurement it was taken on. The first '
                  'form of *Behavioral trait* named this amendment as the one to make on exactly this evidence, so '
                  'it is a foreseen correction rather than an unplanned one.',
@@ -195,7 +195,7 @@ BEYOND = [
                  'section, one approved 2026-08-17 and one 2026-08-19, and the inherited test '
                  '`cli::each_declared_default_is_stated_once` — bound by a `verified` `VREC-MOK-004` — asserts the '
                  'side the implementation is already on. Satisfying the withdrawn clause would have meant relaxing '
-                 'that assertion, which `WO-MOK-007` forbids, so the specification is corrected instead. **It is a '
+                 'that assertion, which `WO-MOK-010` forbids, so the specification is corrected instead. **It is a '
                  'correction to text the technical owner approved on 2026-08-19 and needs that owner\'s '
                  'ratification.**',
     },
@@ -209,7 +209,7 @@ BEYOND = [
                  'Amended 2026-08-19: this list named `fear` and traits',
                  '`REQ-MOK-033` when `individual`'],
         'state': '**Recorded, not separately approved.** These were found while implementing and are not in the list '
-                 '`WO-MOK-007` states, so the owner has not approved them as such. Each is forced by the change '
+                 '`WO-MOK-010` states, so the owner has not approved them as such. Each is forced by the change '
                  'rather than chosen with it — a field list omitting `fear` would contradict `SPEC-MOK-002` rule 5, '
                  'an item claiming the engine computes neither `fear` nor traits would be false, and an exhaustive '
                  'mapping missing a row is a gap the compiler reaches before an operator does — and each is written '
@@ -344,9 +344,9 @@ def self_test():
 def main():
     problems = []
     lines = [
-        '# WO-MOK-007 amendment approvals — oracle 5',
+        '# WO-MOK-010 amendment approvals — oracle 5',
         '',
-        '`VER-MOK-007`\'s fifth oracle is the governance state of the artifacts this change amends: "an amendment',
+        '`VER-MOK-010`\'s fifth oracle is the governance state of the artifacts this change amends: "an amendment',
         'nobody approved is not a specification", and its absence fails the contract regardless of the state of the',
         'code. This file is generated by `analysis/amendments.py`, which reads the artifacts and the git history.',
         'What it checks, and why each check is not a formality, is in that script\'s header.',
@@ -383,7 +383,7 @@ def main():
         '',
         '## 2. The amendment record against the approved list',
         '',
-        f'Each provision `WO-MOK-007` states in full is looked for twice — in the amendment record\'s {TODAY} row,',
+        f'Each provision `WO-MOK-010` states in full is looked for twice — in the amendment record\'s {TODAY} row,',
         'and in the specification\'s body — and the two searches are over disjoint text, because a record that',
         'claimed an amendment the text does not carry would otherwise satisfy both with the same sentence.',
         '',
@@ -394,7 +394,7 @@ def main():
         dated = rows(record).get(TODAY, [])
         row_text = '\n'.join(dated)
         approved = f'Approved {TODAY}' in row_text
-        names_wo = 'WO-MOK-007' in row_text
+        names_wo = 'WO-MOK-010' in row_text
         attributed = 'did not decide the substance' in row_text
         for held, complaint in ((approved, f'no approval recorded in its {TODAY} row'),
                                 (names_wo, f'its {TODAY} row does not name this work order'),
@@ -450,7 +450,7 @@ def main():
         '',
         '## 3. What was amended beyond the approved list',
         '',
-        'Three amendments were written during implementation and are not in the list `WO-MOK-007` states. None is left',
+        'Three amendments were written during implementation and are not in the list `WO-MOK-010` states. None is left',
         'to be found in a diff: each is written into the specification\'s own amendment record, and each is named here',
         'with what it still needs. One is approved, because the owner took it as a decision under a stop condition.',
         'The other two are not, and say so.',
@@ -476,7 +476,7 @@ def main():
         '',
         '`WO-MOK-005` left six amendments **OUTSTANDING** across `SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-001`,',
         'and the repository owner overrode the gate that would have settled them before this work began. The',
-        'mitigation `WO-MOK-007` records is that the two layers remain separable by inspection. That is a checkable',
+        'mitigation `WO-MOK-010` records is that the two layers remain separable by inspection. That is a checkable',
         'claim, and this is the check: every amendment row dated before this work order\'s date, compared byte for',
         f'byte against `{BASE[:7]}`.',
         '',
@@ -517,7 +517,7 @@ def main():
         '`WO-MOK-005`. **The override is a cost carried forward, not a debt paid.** So the honest statement of this',
         'oracle is that its second condition — that the amendments already outstanding under `VREC-MOK-005` be',
         'resolved before this change is verified — is **not met**, by the repository owner\'s explicit decision of',
-        f'{TODAY}, recorded in `WO-MOK-007` under *The gate was overridden*. What this artifact establishes is the',
+        f'{TODAY}, recorded in `WO-MOK-010` under *The gate was overridden*. What this artifact establishes is the',
         'first condition: the amendments this change itself requires are present, approved, carried by the text, and',
         'separable from the earlier layer.',
         '',

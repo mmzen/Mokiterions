@@ -1,7 +1,7 @@
 //! Public tier, `SPEC-MOK-002` rule 8: what a decision source proposes over a whole run, and
 //! whether the engine's own validation accepts it.
 //!
-//! A sixth file, added under `WO-MOK-007` on rule 8's own terms — "a further file may be added
+//! A sixth file, added under `WO-MOK-010` on rule 8's own terms — "a further file may be added
 //! when a further public subject appears". The subject is new: the five files rule 8 lists cover
 //! argument parsing, the process boundary, resolved density, termination and the population
 //! floor, and none of them covers the proposals a source makes.

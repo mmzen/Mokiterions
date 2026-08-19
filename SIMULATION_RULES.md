@@ -481,7 +481,7 @@ over the wider range the trait-aware decider dropped below the required eight su
 the five seeds, and on four of five seeds the creatures that died had a *higher* average tolerance
 than the ones that lived. Cutting the range at 40 removed a stretch of the scale that was strictly
 worse, not a second way of living. The full working is in
-`docs/engineering/simulation/evidence/WO-MOK-007/escalation.md`.
+`docs/engineering/simulation/evidence/WO-MOK-010/escalation.md`.
 
 **What this did not fix.** The feast pile-up above is untouched, and no promise was made about it.
 At turn 1,000 the share of standing food that is High runs 35% to 77% per territory under the
@@ -624,5 +624,5 @@ All of these are planned. The order they arrive in, and why, is in `docs/mokiter
 |---|---|
 | The exact, binding rules | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
 | What is planned, and in what order | `docs/mokiterions/ROADMAP.md` |
-| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/` and `.../WO-MOK-007/` |
+| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/` and `.../WO-MOK-010/` |
 | How changes get approved here | `ENGINEERING_HARNESS.md` |

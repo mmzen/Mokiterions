@@ -79,7 +79,7 @@ verification seed set — `0`, `1`, `42`, `123` and `777` — not merely on a fa
 - Viability must not be achieved by narrowing the trait range until individuality disappears. A range collapsed
   toward the lower bound would satisfy this floor by reproducing the reference source and would defeat
   `REQ-MOK-033`. Narrowing the range on evidence is a legitimate specification amendment; narrowing it until the
-  divergence evidence `VER-MOK-007` requires can no longer be produced is not.
+  divergence evidence `VER-MOK-010` requires can no longer be produced is not.
 - Determinism is preserved, so every measurement here is reproducible rather than statistical.
 - Meeting this floor must not be achieved by any change to the reference or baseline source. Their outcomes are frozen
   under `REQ-MOK-033`.
@@ -134,6 +134,6 @@ here as a product decision on measured evidence instead of being tuned away in t
 
 One matter is deferred rather than open. `SPEC-MOK-001` rule 5 records that high-class resources accumulate to 45 of
 61 standing resources in a territory by tick 1,000 under the reference source, and that a 10,000-tick run reaches
-extinction. A per-Mokiterion tolerance is expected to reduce that accumulation, and `VER-MOK-007` measures it at both
+extinction. A per-Mokiterion tolerance is expected to reduce that accumulation, and `VER-MOK-010` measures it at both
 horizons. No obligation is stated on the result, in either direction, because no long-horizon stability requirement
 exists yet and inventing a target before the first measurement is the error this requirement's sibling made twice.

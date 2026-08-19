@@ -67,8 +67,8 @@ fn both_policies_are_selectable_and_reference_is_the_default() {
 /// the two values that were already there.
 ///
 /// A named sibling rather than an edit to the test above, whose name states what it asserted
-/// when there were two policies. `WO-MOK-007` does not rename inherited tests: a rename cannot
-/// be told from a removal in the census `VER-MOK-007` requires, and the assertions above are
+/// when there were two policies. `WO-MOK-010` does not rename inherited tests: a rename cannot
+/// be told from a removal in the census `VER-MOK-010` requires, and the assertions above are
 /// still true and still worth keeping.
 #[test]
 fn the_trait_aware_policy_is_selectable_and_does_not_become_the_default() {
@@ -77,7 +77,7 @@ fn the_trait_aware_policy_is_selectable_and_does_not_become_the_default() {
         Command::Run(config_with(Policy::Individual))
     );
 
-    // The owner kept `reference` as the default under `WO-MOK-007`, so the third value is
+    // The owner kept `reference` as the default under `WO-MOK-010`, so the third value is
     // opt-in and an unflagged invocation still selects the source it selected before.
     assert_eq!(
         parse(Vec::<String>::new()).unwrap(),

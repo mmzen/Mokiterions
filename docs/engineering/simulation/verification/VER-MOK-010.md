@@ -1,5 +1,5 @@
 +++
-id = "VER-MOK-007"
+id = "VER-MOK-010"
 type = "verification"
 title = "Individuality verification: derived trait, fear attribute, trait-aware source, and the unchanged control"
 status = "approved"
@@ -118,7 +118,7 @@ here so that this change's measurements and the control's are taken on the same 
 | `REQ-MOK-034` | automated-test | Traits actually spanned in the verified runs | The twelve trait values per seed are recorded, and at least one seed's population includes values away from the lower bound, so the floor is not met by a population that reproduces the reference source |
 | `REQ-MOK-034` | manual | Scarcity assessment | Not all declared seeds retain twelve survivors; twelve everywhere is an adverse observation requiring product review |
 | all four | automated-test | Prior coverage preserved | Every case, invariant and check in `VER-MOK-001` through `VER-MOK-006` still maps to a passing test; the workspace census reconciles name by name against the predecessor commit, with additions accounted for and no removal |
-| all four | static-analysis | **Required amendments present and approved** (oracle 5) | The `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` amendments named in `WO-MOK-007` are approved, and the amendments left outstanding by `VREC-MOK-005` are resolved, before this change is verified. Absence fails this contract regardless of code state |
+| all four | static-analysis | **Required amendments present and approved** (oracle 5) | The `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` amendments named in `WO-MOK-010` are approved, and the amendments left outstanding by `VREC-MOK-005` are resolved, before this change is verified. Absence fails this contract regardless of code state |
 
 ## Acceptance scenarios
 
@@ -264,7 +264,7 @@ outstanding assessment, and this contract is not satisfied while any remains out
 
 ## Evidence retention
 
-Retained under `docs/engineering/simulation/evidence/WO-MOK-007/`:
+Retained under `docs/engineering/simulation/evidence/WO-MOK-010/`:
 
 - the pre-change baseline capture of the declared matrix, captured before any code change, with the commit it was
   taken at recorded;

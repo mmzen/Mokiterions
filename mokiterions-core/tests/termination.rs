@@ -78,9 +78,9 @@ fn a_long_run_is_bounded_under_either_source() {
 /// `REQ-MOK-033`, `REQ-MOK-034`: the same bound under the trait-aware source.
 ///
 /// A named sibling rather than a third entry in the loop above: the test above is
-/// `a_long_run_is_bounded_under_either_source` and its name would then be false. `WO-MOK-007`
+/// `a_long_run_is_bounded_under_either_source` and its name would then be false. `WO-MOK-010`
 /// does not rename inherited tests, because a rename is indistinguishable from a removal in the
-/// census `VER-MOK-007` requires.
+/// census `VER-MOK-010` requires.
 ///
 /// Ten thousand ticks is the run length that would expose an unbounded fear accumulation, a
 /// saturating-arithmetic slip surviving only in release mode, or a tolerance that starves its

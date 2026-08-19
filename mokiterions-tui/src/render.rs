@@ -50,7 +50,7 @@ const BOUNDARY_COLOUR: Color = Color::DarkGray;
 /// Columns a roster bar row spends on labels, values and separators, so the bars themselves get
 /// `(interior − this) / 4`. Derived from rule 4's form as amended on 2026-08-19: five leading
 /// columns, then four groups of `label`, space, bar, space and a three-column value, separated
-/// by two columns — `5 + 4 × 6 + 3 × 2`. It was `27` for three groups until `WO-MOK-007` filled
+/// by two columns — `5 + 4 × 6 + 3 × 2`. It was `27` for three groups until `WO-MOK-010` filled
 /// rule 4.5's reserved slot with `fear`.
 const BAR_ROW_OVERHEAD: usize = 35;
 
@@ -484,7 +484,7 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<String>
     vec![
         format!("{:<5}{territory:<3}{position:<14}{applied}", agent.id),
         // Rule 4 as amended on 2026-08-19: the slot rule 4.5 reserved for `fear` now carries it,
-        // on the same terms as the other three. `WO-MOK-007` made the value an engine attribute,
+        // on the same terms as the other three. `WO-MOK-010` made the value an engine attribute,
         // so the gauge is no longer the unsupportable claim the reservation was there to avoid.
         format!(
             "     {}  {}  {}  {}",

@@ -1,6 +1,6 @@
-# Requirement-to-test mapping — WO-MOK-007
+# Requirement-to-test mapping — WO-MOK-010
 
-One row per case in `VER-MOK-007`'s requirement-to-evidence matrix, in the contract's own order,
+One row per case in `VER-MOK-010`'s requirement-to-evidence matrix, in the contract's own order,
 against the test or the retained file that discharges it. Test names are as `cargo test -- --list`
 reports them. Engine tests are qualified: `simulation::tests::` is the engine's internal tier, and
 `cli::`, `process::`, `termination::`, `viability::` and `decisions::` are its public tier. The
@@ -84,7 +84,7 @@ rather than collected into a footnote.
 |---|---|---|
 | Prior coverage preserved | `test-census.txt`, `static-checks.txt` | 169 → 190 tests over 19 → 20 runners, reconciled name by name; 21 additions, zero removals, zero ignored, zero filtered out. One runner is new and the one test that changed tier is named there |
 | **Required amendments present and approved** (oracle 5) | `amendment-approvals.md` | **This row is not satisfied.** Every provision the owner approved on 2026-08-19 is present in both the amendment record and the specification text, checked over disjoint text. But three amendments were written during implementation beyond the owner's stated list — one taken as a decision under a stop condition, two **OUTSTANDING** — and the six amendments `VREC-MOK-005` left outstanding are still outstanding. The contract says absence fails it regardless of code state, and it does |
-| The `VREC-MOK-005` gate | `README.md`, `WO-MOK-007` *Decision record*, `amendment-approvals.md` | **This row is not satisfied either.** `WO-MOK-005`'s six amendments and seven manual assessments were not resolved before implementation began; the repository owner overrode the gate on 2026-08-19. The mitigation is checked rather than asserted: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f** |
+| The `VREC-MOK-005` gate | `README.md`, `WO-MOK-010` *Decision record*, `amendment-approvals.md` | **This row is not satisfied either.** `WO-MOK-005`'s six amendments and seven manual assessments were not resolved before implementation began; the repository owner overrode the gate on 2026-08-19. The mitigation is checked rather than asserted: every amendment row dated before 2026-08-19 is byte-identical to **60fda9f** |
 
 ## Caveats a reviewer should read before trusting the table
 

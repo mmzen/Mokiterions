@@ -485,7 +485,7 @@ fn the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it() {
             "a gauge reading zero renders an empty bar, not an absent one"
         );
     }
-    // `WO-MOK-007` stop condition 9's arithmetic, read off the frame rather than off the constant:
+    // `WO-MOK-010` stop condition 9's arithmetic, read off the frame rather than off the constant:
     // the pane's interior is 45 columns, `(45 - 35) / 4` is 2, and two cells is at least one, so
     // the narrowing the fourth gauge causes needs no escalation.
     assert_eq!(found[0][0].bar(), 2, "the roster's bar width moved");

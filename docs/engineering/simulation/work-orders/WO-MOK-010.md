@@ -1,5 +1,5 @@
 +++
-id = "WO-MOK-007"
+id = "WO-MOK-010"
 type = "work_order"
 title = "Give each Mokiterion a derived trait, a fear attribute, and a decision source that reads them"
 status = "in_progress"
@@ -15,7 +15,7 @@ decided_by = "engineering owner"
 [relations]
 implements = ["REQ-MOK-031", "REQ-MOK-032", "REQ-MOK-033", "REQ-MOK-034"]
 specifications = ["SPEC-MOK-001", "SPEC-MOK-002", "SPEC-MOK-003"]
-verification = ["VER-MOK-007"]
+verification = ["VER-MOK-010"]
 +++
 
 # Work Order: Give each Mokiterion a derived trait, a fear attribute, and a decision source that reads them
@@ -33,13 +33,13 @@ No `architecture` relation is declared. No active architecture carries an `addre
 worse than omitting it. That is a statement about the traceability rule, not a claim that the change is
 architecturally trivial: it adds a field to a public type and a variant to a public enum, so `ARCH-MOK-001`'s
 component boundaries, its prohibition on any public item exposing a mutable borrow into authoritative state, and its
-prohibition on any engine dependency are all in force and are checked under `VER-MOK-007`. **The technical owner must
+prohibition on any engine dependency are all in force and are checked under `VER-MOK-010`. **The technical owner must
 confirm at approval that `ARCH-MOK-001` requires no amendment.** If it does, this work order needs an `architecture`
 relation and a deciding ADR before it can be approved.
 
 **This work order cannot be approved before its governing artifacts are.** It depends on `INT-MOK-006`,
 `CAP-MOK-006`, `REQ-MOK-031`, `REQ-MOK-032`, `REQ-MOK-033` and `REQ-MOK-034` being approved by the product owner, and
-on `VER-MOK-007` being approved by the assurance owner. Every one of them was `draft` at the time this work order was
+on `VER-MOK-010` being approved by the assurance owner. Every one of them was `draft` at the time this work order was
 written. **All seven, and this work order, were approved by the repository owner on 2026-08-19**, acting as product
 owner, technical owner and assurance owner; the same act confirmed that `ARCH-MOK-001` requires no amendment, on the
 ground that the added snapshot field carries a value and grants no borrow into authoritative state, which is what its
@@ -47,7 +47,7 @@ prohibition addresses. Preflight must report this exact work order as eligible b
 
 Status moved to `in_progress` on 2026-08-19, in the same commit as the first code change, on the owner's instruction
 to implement. The pre-change capture named under *Evidence* was taken before that change, against the commit recorded
-in `evidence/WO-MOK-007/baseline/COMMIT.txt`, because a capture taken afterwards could not establish the absence
+in `evidence/WO-MOK-010/baseline/COMMIT.txt`, because a capture taken afterwards could not establish the absence
 claim this work order rests on.
 
 ### Decision record
@@ -65,7 +65,7 @@ substance a later approval acts on is written down rather than reconstructed.
 | The roster's bar width once the fourth slot is filled | Narrowing accepted: two cells at the reference roster's 45-column interior | technical owner |
 | `fear`'s driver and step sizes | Any perceived living Mokiterion, `+10` and `-5`. No distance constant is added | technical owner |
 | The trait's range | `waste_tolerance` over `0..=100`, uniform. **Superseded by the row below on 2026-08-19; kept because a later reviewer should see what was decided before measurement, not only after** | technical owner |
-| The trait's range, corrected under stop condition 6 | Narrowed to `0..=40`, uniform, chosen from a fifty-seed distribution rather than from the declared five. Narrowing the range was preferred to amending `REQ-MOK-034`'s floor, so individuality does not cost habitability. Evidence and the option comparison: `evidence/WO-MOK-007/escalation.md` | technical owner |
+| The trait's range, corrected under stop condition 6 | Narrowed to `0..=40`, uniform, chosen from a fifty-seed distribution rather than from the declared five. Narrowing the range was preferred to amending `REQ-MOK-034`'s floor, so individuality does not cost habitability. Evidence and the option comparison: `evidence/WO-MOK-010/escalation.md` | technical owner |
 | The default decision source | Unchanged. `reference` stays the default; whether `individual` should become it is deferred until its floor is measured | product owner |
 | Approval of this chain | All eight artifacts transitioned `draft` to `approved`, and `ARCH-MOK-001` confirmed to need no amendment | product owner, technical owner, assurance owner |
 | The `VREC-MOK-005` gate | Overridden. Implementation proceeds with the gate unmet, under the separability mitigation recorded above | repository owner |
@@ -143,7 +143,7 @@ not decide the substance.
    deliberately, on the argument that a wider range strengthens `REQ-MOK-033`'s divergence evidence, and the subsection
    recorded that narrowing it was its own amendment to make if measurement showed the range cost survivors. Measurement
    showed exactly that and stop condition 6 fired; the owner chose narrowing over amending the floor. The measured
-   evidence and the option comparison are in `evidence/WO-MOK-007/escalation.md`, and the amendment is the second
+   evidence and the option comparison are in `evidence/WO-MOK-010/escalation.md`, and the amendment is the second
    2026-08-19 row of `SPEC-MOK-001`'s amendment record. Both the original reasoning and its correction are left standing
    here, because the argument that a wider range gives better evidence was sound and was defeated by measurement rather
    than by being wrong in principle.
@@ -185,7 +185,7 @@ the test governs eating *and* seeking, that only the search case consumes entrop
 source is proposal-identical to rule 5.
 
 Rule 5 itself is not otherwise touched. Its paragraph recording high-class accumulation gains a cross-reference to
-`REQ-MOK-034` and `VER-MOK-007`, which measure the effect under the new source; the reference source's own behavior
+`REQ-MOK-034` and `VER-MOK-010`, which measure the effect under the new source; the reference source's own behavior
 is unchanged, and changing it is out of scope under `INT-MOK-006`.
 
 **`SPEC-MOK-002`** — the engine's public interface. Two provisions, both in rule 5's enumeration:
@@ -257,7 +257,7 @@ work began from.
 - The observer's fourth gauge, and the bar-width arithmetic that makes room for it, closing `VREC-MOK-005` finding 3.
 - The nine `SPEC-MOK-001`, two `SPEC-MOK-002` and three `SPEC-MOK-003` provisions above, plus rule 19, written as
   amendments the technical owner has approved.
-- Every check, measurement and manual assessment `VER-MOK-007` requires, and the evidence it retains.
+- Every check, measurement and manual assessment `VER-MOK-010` requires, and the evidence it retains.
 - Updating `SIMULATION_RULES.md`, which describes the implemented behavior in plain language and states that
   `SPEC-MOK-001` governs where the two disagree.
 - Updating the functional roadmap's Phase 2 entry, whose maintenance rule triggers when a phase is converted into an
@@ -312,7 +312,7 @@ The implementation agent may **not** decide:
 ## Constraints
 
 - **The two existing decision sources produce byte-identical projected output to the pre-change build**, across the
-  matrix `VER-MOK-007` declares. The projection removes only the fields this change adds. Any other difference is a
+  matrix `VER-MOK-010` declares. The projection removes only the fields this change adds. Any other difference is a
   defect in this change and is corrected rather than rebaselined.
 - The pre-change baseline is captured **before the first line of code changes**, at the commit the work begins from,
   and is never recaptured to resolve a discrepancy.
@@ -374,7 +374,7 @@ Stated as components. Paths are the current ones and are not a licence to change
 
 - `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`: the amendments above, each with its amendment-record row.
 - `SIMULATION_RULES.md` and `docs/mokiterions/ROADMAP.md`.
-- `docs/engineering/simulation/evidence/WO-MOK-007/`.
+- `docs/engineering/simulation/evidence/WO-MOK-010/`.
 
 **Tests.** New cases in both tiers of both packages, placed by `SPEC-MOK-004`'s rule. No existing test is deleted,
 renamed without record, or made ignored; a test whose expected output changes because a record gained a field is
@@ -382,7 +382,7 @@ updated and the update is enumerated in the completion report.
 
 ## Required verification
 
-`VER-MOK-007` in full. Nothing in it may be waived by this work order, and in particular:
+`VER-MOK-010` in full. Nothing in it may be waived by this work order, and in particular:
 
 - the projected byte comparison against the pre-change baseline, over the whole declared matrix, under both existing
   sources;
@@ -402,7 +402,7 @@ updated and the update is enumerated in the completion report.
 
 ## Evidence to record
 
-Under `docs/engineering/simulation/evidence/WO-MOK-007/`, as `VER-MOK-007`'s *Evidence retention* section
+Under `docs/engineering/simulation/evidence/WO-MOK-010/`, as `VER-MOK-010`'s *Evidence retention* section
 enumerates: the pre-change baseline and the commit it was taken at; the post-change capture and every projected
 comparison; the projection's full text and its no-op result on the pre-change stream; the twelve trait values per
 declared seed; per-seed survivor counts and consumption totals under the new source; per-seed final resource counts
@@ -480,4 +480,4 @@ Stop and escalate, rather than deciding locally, when:
     reported as outstanding rather than omitted.
 15. **Evidence index.** Every retained file and what it establishes.
 16. **Residual disclosure.** Everything a verifier should weigh that the checks above do not settle, including
-    `VER-MOK-007`'s stated residual uncertainty and anything found during the work.
+    `VER-MOK-010`'s stated residual uncertainty and anything found during the work.

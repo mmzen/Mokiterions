@@ -1,10 +1,10 @@
-"""WO-MOK-007: the negative controls, applied to the committed source and reverted.
+"""WO-MOK-010: the negative controls, applied to the committed source and reverted.
 
 Usage, from the repository root:
 
-    python docs/engineering/simulation/evidence/WO-MOK-007/negative-control/controls.py
+    python docs/engineering/simulation/evidence/WO-MOK-010/negative-control/controls.py
 
-VER-MOK-007's acceptance scenario 3 requires that a check which could pass vacuously be shown able to
+VER-MOK-010's acceptance scenario 3 requires that a check which could pass vacuously be shown able to
 fail. Two of the five oracles are in that position:
 
   * Oracle 2 compares the shared entropy stream's position either side of trait derivation. The
@@ -250,7 +250,7 @@ def main():
     for spec in CONTROLS:
         controls = spec.get('controls', [spec])
         held = True
-        lines = [f'VER-MOK-007 {spec["oracle"]} - negative control',
+        lines = [f'VER-MOK-010 {spec["oracle"]} - negative control',
                  '=' * (len(spec['oracle']) + 30), '',
                  spec['scenario'], '',
                  'Each perturbation below was applied to the committed source, the engine\'s own suite',

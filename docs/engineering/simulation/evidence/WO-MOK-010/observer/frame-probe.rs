@@ -1,8 +1,8 @@
-//! Oracle 4 for `WO-MOK-007`: the drawn roster, cell by cell.
+//! Oracle 4 for `WO-MOK-010`: the drawn roster, cell by cell.
 //!
 //! This file is an oracle, not part of the product. It is placed here, run once, removed, and
 //! retained as evidence at
-//! `docs/engineering/simulation/evidence/WO-MOK-007/observer/frame-probe.rs`, on the precedent of
+//! `docs/engineering/simulation/evidence/WO-MOK-010/observer/frame-probe.rs`, on the precedent of
 //! `WO-MOK-006`'s `frame-and-export-oracle.rs`.
 //!
 //! It asserts nothing. It renders into an in-memory backend and writes down what the buffer holds,

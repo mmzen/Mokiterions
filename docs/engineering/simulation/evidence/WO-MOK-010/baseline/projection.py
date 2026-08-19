@@ -1,6 +1,6 @@
-"""VER-MOK-007 oracle 1: the projection, in full, as the reviewed artifact.
+"""VER-MOK-010 oracle 1: the projection, in full, as the reviewed artifact.
 
-The projection deletes exactly the text WO-MOK-007 adds to the three record kinds that gained a
+The projection deletes exactly the text WO-MOK-010 adds to the three record kinds that gained a
 field, and nothing else:
 
   * `,fear:<a>-><b>`  -- the transition form, on `survival_changed` lines;

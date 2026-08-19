@@ -6,7 +6,7 @@
 //! no item was widened to bring them out. `SPEC-MOK-004` rule 12 is the obligation and the
 //! per-test comparison under `WO-MOK-006` is the evidence.
 //!
-//! `WO-MOK-007` added a third decision source, and with it a third arm to the mapping these tests
+//! `WO-MOK-010` added a third decision source, and with it a third arm to the mapping these tests
 //! cover. Two cases below gained assertions for it: the exhaustiveness sweep now runs under each
 //! of the three policies, and the source-dependent mapping names all three. Nothing was removed
 //! or weakened — an untested arm in an exhaustiveness check is the one thing this file exists to

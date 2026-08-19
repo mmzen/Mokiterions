@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# WO-MOK-007: capture the tooling runs `analysis/static-checks.py` reads.
+# WO-MOK-010: capture the tooling runs `analysis/static-checks.py` reads.
 #
 # Usage, from the repository root:
 #
-#     bash docs/engineering/simulation/evidence/WO-MOK-007/analysis/capture-static.sh target/static
-#     python docs/engineering/simulation/evidence/WO-MOK-007/analysis/static-checks.py target/static
+#     bash docs/engineering/simulation/evidence/WO-MOK-010/analysis/capture-static.sh target/static
+#     python docs/engineering/simulation/evidence/WO-MOK-010/analysis/static-checks.py target/static
 #
 # Each file holds the command line as a `### ` heading, that command's own combined output, and its
 # exit status as a final `exit=<n>` line. Nothing is filtered: the analysis reads these files, so a
