@@ -89,6 +89,10 @@ in `compliance-rehearsal.md` C1.
 - `commit-binding.md` — the commit the owner directed after the captures were taken, the gates re-run on the
   committed tree, and the reconciliation of the three statements above that said there was no candidate
   commit. Also records why no verification record accompanies it.
+- `release-artifact-types.md` — `WO-MOK-009`'s approval precondition 4, half discharged: both the release
+  record and the release contract are creatable, with the prefixes and the two nearly identical directory
+  names the harness enforces. `prepare-release` needs a verified record as input and so cannot be exercised
+  yet.
 
 ### The process definition, read statically
 

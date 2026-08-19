@@ -44,8 +44,9 @@ listed at the end. It is not a claim that the work order is complete in the gove
 
 ### Evidence — this work order
 
-Thirteen records and a directory index, listed in `README.md`. The thirteenth, `commit-binding.md`, was
-written after the owner directed the commit and names it.
+Fourteen records and a directory index, listed in `README.md`. Two were written after the owner directed the
+commit: `commit-binding.md`, which names it, and `release-artifact-types.md`, which discharges half of this
+work order's fourth approval precondition.
 
 ### Not this work order
 

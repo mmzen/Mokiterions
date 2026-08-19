@@ -100,4 +100,5 @@ merged, and the commit it names is on an unmerged branch. `VER-MOK-008`'s scenar
 47 observed, 3 rehearsed, 15 not performed, 0 unexercisable: committing is not a run, so V1–V6, P1–P3 and
 C4 are exactly as `scenario-map.md` leaves them.
 
-This is the fourteenth file in the directory — thirteen records and the index.
+This record and `release-artifact-types.md` take the directory to fifteen files — fourteen records and the
+index. Both were written after the commit they describe.
