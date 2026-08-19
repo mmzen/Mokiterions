@@ -14,12 +14,17 @@ down somewhere or it lives only in someone's head.
 attaches a **draft**. It creates no tag, transitions no artifact, bumps no version, creates no
 branch, and publishes nothing. Every check in it fails closed.
 
-The tooling this file operates is itself proposed for governance: `INT-MOK-007` → `CAP-MOK-007`
-→ `REQ-MOK-035`..`039` → `SPEC-MOK-005` → `VER-MOK-008` → `WO-MOK-009`. All of those are
-`draft` as of 2026-08-19, so none of them authorizes anything yet. `SPEC-MOK-005` is the
-contract this procedure's automation is written against; where the two disagree, the
-specification is right and this file is wrong. `WO-MOK-009`'s Lifecycle section records that
-the automation was written before the chain that describes it.
+The tooling this file operates is governed: `INT-MOK-007` → `CAP-MOK-007` → `REQ-MOK-035`..`039`
+→ `SPEC-MOK-005` → `VER-MOK-008` → `WO-MOK-009`. All of those were `draft` when this file was
+written; the owners approved the chain on 2026-08-19, `WO-MOK-009` is `implemented`, and
+`VREC-MOK-008` is `verified` against candidate commit `d35f817`. `SPEC-MOK-005` is the contract
+this procedure's automation is written against; where the two disagree, the specification is
+right and this file is wrong. `WO-MOK-009`'s Lifecycle section records that the automation was
+written before the chain that describes it.
+
+**Approved governance is not a release.** `check_release_authorization.py` still refuses every
+tag, because no tag, no release contract and no release record exists — a verified verification
+record is an input to a release decision, not a release decision. Nothing below has been run.
 
 ---
 
@@ -70,13 +75,29 @@ Consequences you cannot design around:
 
 Nothing in this phase is mechanical. Do not start Phase B until each item has an answer.
 
-1. **Which work orders?** Only `implemented`, `verified` or `released` ones are eligible. As of
-   2026-08-19 that is `WO-MOK-001` through `WO-MOK-006`. `WO-MOK-007` is in flight on an
-   unmerged branch and is not eligible; `WO-MOK-008` is a `draft` proposal.
+1. **Which work orders?** Only `implemented`, `verified` or `released` ones are eligible. **Derive
+   the set from the command below rather than from this paragraph** — the list here is a dated
+   reading, and it has already gone stale once: it said `WO-MOK-001` through `WO-MOK-006` and
+   named `WO-MOK-007` as in flight on an unmerged branch. As of `a8fa962` on 2026-08-19 the
+   eligible set is **`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`**, all `implemented`;
+   `WO-MOK-008` is a `draft` proposal and is not eligible. Eligible is not the same as chosen —
+   which of the eight the release covers is yours to decide here, and every command below has to
+   match that decision.
+
+   How `WO-MOK-007` stopped being ineligible is the part worth keeping. Pull request #18 merged
+   its branch, and that changed nothing here: it was still `approved`, and `approved` is not in
+   `RELEASABLE_WORK_STATUSES`. Pull request #19 set it to `implemented`, and *that* made it
+   eligible. **Eligibility follows the status field, not the merge**, so a paragraph like this one
+   goes stale on a governance commit that may touch no code at all.
 
    ```bash
    python -m se_harness inspect .
+   python -m se_harness preflight . --work-order WO-MOK-0NN --phase review   # per candidate
    ```
+
+   The second command is rule 7.4's own check, and it is worth running per work order before you
+   commit to a set: a work order that fails review preflight cannot be released, and at
+   `a8fa962` `WO-MOK-008` is the only one that fails.
 
 2. **Which version?** Both package manifests declare `0.1.0`, so the first release is
    `v0.1.0` on branch `release/0.1`. Changing a version in a manifest is *authorized work* —
@@ -169,23 +190,29 @@ From here on:
 
 ## Phase D — the aggregate verification record
 
-The six existing verification records each bind a **different** commit, one per work order. A
+The existing verification records each bind a **different** commit, one per work order. A
 release needs the included records to identify exactly **one** candidate commit — the harness
 enforces it (`prepare_release`) and so does the gate. So an aggregate release needs one new
-verification record captured at the final candidate commit. The six existing records are not
+verification record captured at the final candidate commit. The existing records are not
 edited and not replaced; they remain the record of their own work.
 
 Pick the next free record ID, and pick it from `origin/master` rather than from the branch you are on.
-`VREC-MOK-001` through `007` are taken: `007` was claimed by `WO-MOK-007` while `WO-MOK-009` was in flight,
-which is the case this step exists for, and skipping the check once already produced an add/add merge
-conflict — `docs/engineering/simulation/evidence/WO-MOK-009/id-collision.md` records it. Run the query, then
-set the variable from what it returns:
+`VREC-MOK-001` through `008` are taken as of `a8fa962`: `007` was claimed by `WO-MOK-007` while `WO-MOK-009`
+was in flight, which is the case this step exists for, and skipping the check once already produced an add/add
+merge conflict — `docs/engineering/simulation/evidence/WO-MOK-009/id-collision.md` records it. Do not read
+that count as current either; run the query, then set the variable from what it returns:
 
 ```bash
 git ls-tree -r --name-only origin/master \
   -- docs/engineering/simulation/verification-records/ | sort
 VREC=VREC-MOK-0NN      # the next ID the command above does not list
 ```
+
+The three sets in the command below are **the eight eligible work orders as of `a8fa962`, not the
+release's scope**. Cut them down to the work orders Phase A actually chose, and cut all three sets
+the same way — the harness refuses a `--verification` set that is not exactly the union of the
+chosen work orders' `verification` relations, so an edit to one list that misses another is a
+refusal, not a silent mistake.
 
 With `HEAD` at the candidate commit and the worktree clean:
 
@@ -194,16 +221,24 @@ python -m se_harness capture-verification . \
   --id "$VREC" \
   --work-order WO-MOK-001 --work-order WO-MOK-002 --work-order WO-MOK-003 \
   --work-order WO-MOK-004 --work-order WO-MOK-005 --work-order WO-MOK-006 \
+  --work-order WO-MOK-007 --work-order WO-MOK-009 \
   --verification VER-MOK-001 --verification VER-MOK-002 --verification VER-MOK-003 \
   --verification VER-MOK-004 --verification VER-MOK-005 --verification VER-MOK-006 \
+  --verification VER-MOK-007 --verification VER-MOK-008 \
   --evidence docs/engineering/simulation/evidence/WO-MOK-001/completion-report.md \
   --evidence docs/engineering/simulation/evidence/WO-MOK-002/completion-summary.md \
   --evidence docs/engineering/simulation/evidence/WO-MOK-003/completion-summary.md \
   --evidence docs/engineering/simulation/evidence/WO-MOK-004/completion-summary.md \
   --evidence docs/engineering/simulation/evidence/WO-MOK-005/completion-summary.md \
   --evidence docs/engineering/simulation/evidence/WO-MOK-006/completion-summary.md \
+  --evidence docs/engineering/simulation/evidence/WO-MOK-007/completion-summary.md \
+  --evidence docs/engineering/simulation/evidence/WO-MOK-009/completion-summary.md \
   --owner "assurance owner"
 ```
+
+`WO-MOK-009` pairs with `VER-MOK-008`, not `VER-MOK-009`; the numbering does not line up, and
+reading it as if it did is the mistake this line exists to prevent. `WO-MOK-001`'s evidence file
+is `completion-report.md` where every other work order's is `completion-summary.md`.
 
 Three things about that command are not arbitrary:
 
@@ -241,11 +276,15 @@ observation window — and set:
 [relations]
 gates = ["WO-MOK-001", "WO-MOK-002", "WO-MOK-003",
          "WO-MOK-004", "WO-MOK-005", "WO-MOK-006",
+         "WO-MOK-007", "WO-MOK-009",
          "VER-MOK-001", "VER-MOK-002", "VER-MOK-003",
-         "VER-MOK-004", "VER-MOK-005", "VER-MOK-006"]
+         "VER-MOK-004", "VER-MOK-005", "VER-MOK-006",
+         "VER-MOK-007", "VER-MOK-008"]
 ```
 
-Every released work order must appear in `gates`, or both the harness and the gate refuse.
+Every released work order must appear in `gates`, or both the harness and the gate refuse. This
+list is the same dated eight as Phase D's and carries the same instruction: match it to Phase A's
+decision, not to this file.
 
 Rollback deserves a real answer rather than a placeholder: this repository ships two binaries
 with no state, no network and no persistence, so rollback is "install the previous archive" —
@@ -267,6 +306,7 @@ python -m se_harness prepare-release . \
   --verification-record "$VREC" \
   --work-order WO-MOK-001 --work-order WO-MOK-002 --work-order WO-MOK-003 \
   --work-order WO-MOK-004 --work-order WO-MOK-005 --work-order WO-MOK-006 \
+  --work-order WO-MOK-007 --work-order WO-MOK-009 \
   --version 0.1.0 \
   --authorized-by "release owner" \
   --tag v0.1.0
@@ -430,9 +470,10 @@ Instead:
 | `scripts/test_check_release_reachability.py` | repository-owned | scenarios R23–R24 |
 | `rust-toolchain.toml` | repository-owned | pins the compiler the evidence was produced with |
 | `.github/workflows/engineering-harness.yml` | **managed** | do not edit; `doctor` integrity-checks it |
-| `docs/engineering/simulation/specifications/SPEC-MOK-005.md` | artifact | the contract the automation is written against; `draft` |
-| `docs/engineering/simulation/verification/VER-MOK-008.md` | artifact | the verification contract for it; `draft` |
-| `docs/engineering/simulation/work-orders/WO-MOK-009.md` | artifact | authorizes implementing it; `draft` |
+| `docs/engineering/simulation/specifications/SPEC-MOK-005.md` | artifact | the contract the automation is written against; `approved` |
+| `docs/engineering/simulation/verification/VER-MOK-008.md` | artifact | the verification contract for it; `approved` |
+| `docs/engineering/simulation/work-orders/WO-MOK-009.md` | artifact | authorizes implementing it; `implemented` |
+| `docs/engineering/simulation/verification-records/VREC-MOK-008.md` | artifact | binds `WO-MOK-009`'s evidence to `d35f817`; `verified` |
 | `docs/engineering/simulation/release/REL-MOK-001.md` | artifact | Phase E |
 | `docs/engineering/simulation/releases/RLS-MOK-001.md` | artifact | Phase F |
 | `docs/engineering/simulation/verification-records/VREC-MOK-0NN.md` | artifact | Phase D |
