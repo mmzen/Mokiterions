@@ -1,0 +1,40 @@
+$ harnessctl validate
+Engineering artifact validation: PASS
+Artifacts: 70 | Errors: 0 | Warnings: 0
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+exit 0
+
+$ harnessctl preflight --phase review --work-order WO-MOK-007
+Harness preflight: PASS
+Phase: review
+Work order: WO-MOK-007 (approved)
+
+Assurance classification:
+- Commit-bound verification: required
+- Decided by: engineering owner
+- Rationale: This changes what the observer asserts about how close a Mokiterion is to dying, on the instrument every later phase uses to judge whether a decision source behaves plausibly. A band applied to the wrong attribute, or an off-by-one at a boundary, would misinform that judgement in the direction of false reassurance, and it would do so silently because the number beside the bar would still be right. The change also converts the roster entry from plain text to styled spans, so the claim that no rendered character moves is a claim about the presentation contract `REQ-MOK-020` and `SPEC-MOK-003` rule 4 fix, and it must be bound to a commit rather than asserted.
+
+Reading manifest:
+- ENGINEERING_HARNESS.md
+- docs/engineering/REPOSITORY_CONTEXT.md
+- docs/engineering/README.md
+- docs/engineering/WORKFLOW.md
+- docs/engineering/DECISION_RIGHTS.md
+- docs/engineering/QUALITY_GATES.md
+- docs/engineering/TRACEABILITY.md
+- docs/engineering/simulation/intent/INT-MOK-004.md
+- docs/engineering/simulation/capabilities/CAP-MOK-004.md
+- docs/engineering/simulation/requirements/REQ-MOK-020.md
+- docs/engineering/simulation/specifications/SPEC-MOK-003.md
+- docs/engineering/simulation/verification/VER-MOK-007.md
+- docs/engineering/simulation/work-orders/WO-MOK-007.md
+
+Repository commands:
+- additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. `cargo tree -p Mokiterions` must resolve to one crate — the engine's dependency table is required to stay empty. Behavior-specific verification must be added as simulation requirements are approved.
+- build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+- lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+- setup: Install the stable Rust toolchain. No additional project setup is currently required.
+- test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+
+Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+exit 0

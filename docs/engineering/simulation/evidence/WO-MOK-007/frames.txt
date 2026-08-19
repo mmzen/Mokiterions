@@ -1,0 +1,273 @@
+frames — the banded roster at the reference viewport
+===================================================
+
+
+running 1 test
+run: default options, advanced to tick 71
+snapshot values and the band each takes, from the specification's table:
+  M01  h 100 green   s  74 orange  e  44 orange
+  M02  h 100 green   s  74 orange  e  44 orange
+  M03  h 100 green   s  89 green   e  49 orange
+  M04  h 100 green   s  74 orange  e  44 orange
+  M05  h 100 green   s  59 orange  e  39 red   
+  M06  h 100 green   s  74 orange  e  44 orange
+  M07  h 100 green   s  59 orange  e  39 red   
+  M08  h 100 green   s  59 orange  e  39 red   
+  M09  h 100 green   s  74 orange  e  44 orange
+  M10  h 100 green   s  74 orange  e  44 orange
+  M11  h 100 green   s  74 orange  e  44 orange
+  M12  h 100 green   s  89 green   e  49 orange
+
+legend under each row that carries colour: G green, O orange, R red, . unstyled.
+Only the roster pane's columns 0..46 are shown, so the view and inspector panes are cut.
+The green on the header row is rule 5's run-state colour and predates clause 7; the only
+rows clause 7 touches are the bar rows, and there the band map must read: six unstyled
+cells (the pane border and rule 4's five-column indent), then twelve banded, two
+unstyled, twelve banded, two unstyled, twelve banded, to the pane's edge.
+
+--- 160 x 48: reference viewport, no selection
+y 0 |RUNNING  x8  overview  filter none            |
+     |GGGGGGG.......................................|
+y 1 |A  standing 59/61  low 16  medium 20  high 23 |
+y 2 |B  standing 59/61  low 16  medium 18  high 25 |
+y 3 |┌ roster  living 12  deaths 0 ────────────────|
+y 4 |│M01  A  92:34         move:east              |
+y 5 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y 6 |│M02  A  58:51         move:west              |
+y 7 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y 8 |│M03  A  27:57         move:north             |
+y 9 |│     h ██████ 100  s █████░  89  e ██░░░░  49|
+     |......GGGGGGGGGGGG..GGGGGGGGGGGG..OOOOOOOOOOOO|
+y10 |│M04  A  96:44         move:east              |
+y11 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y12 |│M05  A  48:40         move:south             |
+y13 |│     h ██████ 100  s ███░░░  59  e ██░░░░  39|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR|
+y14 |│M06  A  97:24         move:south             |
+y15 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y16 |│M07  B  46:109        move:north             |
+y17 |│     h ██████ 100  s ███░░░  59  e ██░░░░  39|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR|
+y18 |│M08  B  46:110        move:north             |
+y19 |│     h ██████ 100  s ███░░░  59  e ██░░░░  39|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR|
+y20 |│M09  B  115:109       move:east              |
+y21 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y22 |│M10  B  67:95         move:south             |
+y23 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y24 |│M11  B  20:64         move:north             |
+y25 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y26 |│M12  B  113:96        move:north             |
+y27 |│     h ██████ 100  s █████░  89  e ██░░░░  49|
+     |......GGGGGGGGGGGG..GGGGGGGGGGGG..OOOOOOOOOOOO|
+y28 |│                                             |
+y29 |│                                             |
+y30 |│                                             |
+y31 |│                                             |
+y32 |│                                             |
+y33 |│                                             |
+y34 |│                                             |
+y35 |│                                             |
+y36 |└─────────────────────────────────────────────|
+y37 |┌ log  retained 1888 ─────────────────────────|
+y38 |│tick=71 subject=M09 event=action_trace result|
+y39 |│tick=71 subject=M09 event=survival_changed re|
+y40 |│tick=71 subject=M10 event=action_trace result|
+y41 |│tick=71 subject=M10 event=survival_changed re|
+y42 |│tick=71 subject=M11 event=action_trace result|
+y43 |│tick=71 subject=M11 event=survival_changed re|
+y44 |│tick=71 subject=M12 event=action_trace result|
+y45 |│tick=71 subject=M12 event=survival_changed re|
+y46 |└─────────────────────────────────────────────|
+y47 |seed 0  ticks 100  density 0.75%  source refer|
+
+selection = Some("M05")
+--- 160 x 48: reference viewport, M05 selected (three bands under reversed video)
+y 0 |RUNNING  x8  overview  sel M05  filter none   |
+     |GGGGGGG.......................................|
+y 1 |A  standing 59/61  low 16  medium 20  high 23 |
+y 2 |B  standing 59/61  low 16  medium 18  high 25 |
+y 3 |┌ roster  living 12  deaths 0 ────────────────|
+y 4 |│M01  A  92:34         move:east              |
+y 5 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y 6 |│M02  A  58:51         move:west              |
+y 7 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y 8 |│M03  A  27:57         move:north             |
+y 9 |│     h ██████ 100  s █████░  89  e ██░░░░  49|
+     |......GGGGGGGGGGGG..GGGGGGGGGGGG..OOOOOOOOOOOO|
+y10 |│M04  A  96:44         move:east              |
+y11 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y12 |│M05  A  48:40         move:south             |
+y13 |│     h ██████ 100  s ███░░░  59  e ██░░░░  39|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR|
+y14 |│M06  A  97:24         move:south             |
+y15 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y16 |│M07  B  46:109        move:north             |
+y17 |│     h ██████ 100  s ███░░░  59  e ██░░░░  39|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR|
+y18 |│M08  B  46:110        move:north             |
+y19 |│     h ██████ 100  s ███░░░  59  e ██░░░░  39|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..RRRRRRRRRRRR|
+y20 |│M09  B  115:109       move:east              |
+y21 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y22 |│M10  B  67:95         move:south             |
+y23 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y24 |│M11  B  20:64         move:north             |
+y25 |│     h ██████ 100  s ████░░  74  e ██░░░░  44|
+     |......GGGGGGGGGGGG..OOOOOOOOOOOO..OOOOOOOOOOOO|
+y26 |│M12  B  113:96        move:north             |
+y27 |│     h ██████ 100  s █████░  89  e ██░░░░  49|
+     |......GGGGGGGGGGGG..GGGGGGGGGGGG..OOOOOOOOOOOO|
+y28 |│                                             |
+y29 |│                                             |
+y30 |│                                             |
+y31 |│                                             |
+y32 |│                                             |
+y33 |│                                             |
+y34 |│                                             |
+y35 |│                                             |
+y36 |└─────────────────────────────────────────────|
+y37 |┌ log  retained 1888 ─────────────────────────|
+y38 |│tick=71 subject=M09 event=action_trace result|
+y39 |│tick=71 subject=M09 event=survival_changed re|
+y40 |│tick=71 subject=M10 event=action_trace result|
+y41 |│tick=71 subject=M10 event=survival_changed re|
+y42 |│tick=71 subject=M11 event=action_trace result|
+y43 |│tick=71 subject=M11 event=survival_changed re|
+y44 |│tick=71 subject=M12 event=action_trace result|
+y45 |│tick=71 subject=M12 event=survival_changed re|
+y46 |└─────────────────────────────────────────────|
+y47 |seed 0  ticks 100  density 0.75%  source refer|
+
+gauge colours as ratatui reports them, M05's bar row at the reference viewport:
+  x 6 "h" fg=Green bg=Reset mod=REVERSED -> green 
+  x20 "s" fg=Indexed(208) bg=Reset mod=REVERSED -> orange
+  x34 "e" fg=Red bg=Reset mod=REVERSED -> red   
+
+
+
+--- the harness that produced this capture (throwaway; not a shipped test)
+
+//! Throwaway evidence harness for WO-MOK-007. Not a shipped test; deleted after capture.
+use mokiterions_tui::options::{self, Startup};
+use mokiterions_tui::render::draw;
+use mokiterions_tui::state::Observer;
+use ratatui::Terminal;
+use ratatui::backend::TestBackend;
+use ratatui::buffer::Buffer;
+use ratatui::style::{Color, Modifier};
+
+fn start(args: &[&str]) -> Observer {
+    match options::parse(args.to_vec()).unwrap() {
+        Startup::Run(o) => Observer::new(o).unwrap(),
+        Startup::Help => panic!(),
+    }
+}
+
+fn frame_of(observer: &mut Observer, w: u16, h: u16) -> Buffer {
+    let mut t = Terminal::new(TestBackend::new(w, h)).unwrap();
+    t.draw(|f| draw(f, observer)).unwrap();
+    t.backend().buffer().clone()
+}
+
+fn name(c: Color) -> &'static str {
+    match c {
+        Color::Green => "green ",
+        Color::Indexed(208) => "orange",
+        Color::Red => "red   ",
+        Color::Reset => "-     ",
+        _ => "?     ",
+    }
+}
+
+fn dump(observer: &mut Observer, w: u16, h: u16, note: &str) {
+    let buffer = frame_of(observer, w, h);
+    println!("--- {w} x {h}: {note}");
+    for y in buffer.area.top()..buffer.area.bottom() {
+        let cells: Vec<_> = (0..46.min(w)).map(|x| buffer.cell((x, y)).unwrap()).collect();
+        let text: String = cells.iter().map(|c| c.symbol()).collect();
+        if text.trim().is_empty() {
+            continue;
+        }
+        // One band letter per cell, so a band that leaked into an unstyled cell is visible.
+        let bands: String = cells
+            .iter()
+            .map(|c| match c.fg {
+                Color::Green => 'G',
+                Color::Indexed(208) => 'O',
+                Color::Red => 'R',
+                _ => '.',
+            })
+            .collect();
+        let rev = if cells.iter().all(|c| c.modifier.contains(Modifier::REVERSED)) {
+            " REVERSED"
+        } else {
+            ""
+        };
+        if bands.contains(['G', 'O', 'R']) {
+            println!("y{y:>2} |{text}|{rev}");
+            println!("     |{bands}|");
+        } else {
+            println!("y{y:>2} |{text}|{rev}");
+        }
+    }
+    println!();
+}
+
+#[test]
+fn capture() {
+    let mut observer = start(&[]);
+    while observer.snapshot().tick < 71 {
+        observer.advance().unwrap();
+    }
+    let snapshot = observer.snapshot().clone();
+    println!("run: default options, advanced to tick {}", snapshot.tick);
+    println!("snapshot values and the band each takes, from the specification's table:");
+    for a in &snapshot.agents {
+        let b = |v: u8| if v >= 80 { "green " } else if v >= 40 { "orange" } else { "red   " };
+        println!(
+            "  {}  h {:>3} {}  s {:>3} {}  e {:>3} {}",
+            a.id, a.health, b(a.health), a.satiety, b(a.satiety), a.energy, b(a.energy)
+        );
+    }
+    println!();
+    println!("legend under each row that carries colour: G green, O orange, R red, . unstyled.");
+    println!("Only the roster pane's columns 0..46 are shown, so the view and inspector panes are cut.");
+    println!("The green on the header row is rule 5's run-state colour and predates clause 7; the only");
+    println!("rows clause 7 touches are the bar rows, and there the band map must read: six unstyled");
+    println!("cells (the pane border and rule 4's five-column indent), then twelve banded, two");
+    println!("unstyled, twelve banded, two unstyled, twelve banded, to the pane's edge.");
+    println!();
+    dump(&mut observer, 160, 48, "reference viewport, no selection");
+
+    for _ in 0..5 {
+        observer
+            .handle_key(ratatui::crossterm::event::KeyEvent::new(
+                ratatui::crossterm::event::KeyCode::Tab,
+                ratatui::crossterm::event::KeyModifiers::NONE,
+            ))
+            .unwrap();
+    }
+    println!("selection = {:?}", observer.selection());
+    dump(&mut observer, 160, 48, "reference viewport, M05 selected (three bands under reversed video)");
+
+    println!("gauge colours as ratatui reports them, M05's bar row at the reference viewport:");
+    let buffer = frame_of(&mut observer, 160, 48);
+    for x in [6u16, 20, 34] {
+        let c = buffer.cell((x, 13)).unwrap();
+        println!("  x{x:>2} {:?} fg={:?} bg={:?} mod={:?} -> {}", c.symbol(), c.fg, c.bg, c.modifier, name(c.fg));
+    }
+}

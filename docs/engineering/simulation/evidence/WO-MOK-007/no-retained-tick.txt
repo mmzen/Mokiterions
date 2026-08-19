@@ -1,0 +1,69 @@
+no-retained-tick — structural evidence that clause 7 reads one value and no history
+===============================================================================
+
+1. Every call site of the band function, in shipped code (the test module excluded):
+$ grep -n 'band(' mokiterions-tui/src/render.rs   # lines above the #[cfg(test)] module at 982
+540:        Style::new().fg(band(value)),
+550:fn band(value: u8) -> Color {
+
+   One call site. Its argument is `gauge`'s `value: u8` parameter, so the band is a function
+   of the number the bar already presents and of nothing else.
+
+2. The gauge and the band function, whole:
+/// One proportional bar and its numeric value, in rule 4.7's band for that value. `0` renders as
+/// `0` with an empty bar (rule 4.4) and takes the low band.
+///
+/// The band covers the whole gauge — label, bar cells and value — so one gauge reads as one state.
+/// It changes no character: the text is what it was before rule 4.7 existed.
+fn gauge(label: char, value: u8, width: usize) -> Span<'static> {
+    let filled = (usize::from(value) * width / 100).min(width);
+    Span::styled(
+        format!(
+            "{label} {}{} {value:>3}",
+            "\u{2588}".repeat(filled),
+            "\u{2591}".repeat(width - filled)
+        ),
+        Style::new().fg(band(value)),
+    )
+}
+
+/// Rule 4.7's band for one survival value.
+///
+/// A band is a second presentation of the number the bar already shows. It reads one `u8` the
+/// engine computed and retains nothing, so `REQ-MOK-020`'s constraint against any quantity the
+/// engine does not produce holds literally. The boundaries are the specification's, not this
+/// implementation's.
+fn band(value: u8) -> Color {
+    if value >= BAND_HIGH_FLOOR {
+        BAND_HIGH_COLOUR
+    } else if value >= BAND_MIDDLE_FLOOR {
+        BAND_MIDDLE_COLOUR
+    } else {
+        BAND_LOW_COLOUR
+    }
+}
+
+3. No previous-tick, delta or trend state anywhere in the observer's shipped source:
+$ grep -rniE '\b(previous|prev|delta|trend|last_tick|_ago|history)\b' mokiterions-tui/src/
+mokiterions-tui/src/render.rs:844:        ("Tab / Shift-Tab", "select next / previous Mokiterion"),
+mokiterions-tui/src/render.rs:1141:        // Monotone: the band never improves as the value falls. This is the property a trend
+mokiterions-tui/src/render.rs:1244:    /// Rule 4.7 reads the current value and nothing else. No previous tick is retained, so
+mokiterions-tui/src/render.rs:1266:        // Interleaved so that any hidden previous-value state would show as a difference between
+mokiterions-tui/src/verification.rs:40:/// the log at once, and no viewport in the previous set reached that region.
+
+4. The one pre-existing pair-valued field, disclosed rather than omitted:
+$ grep -rn 'latest_survival' mokiterions-tui/src/
+mokiterions-tui/src/state.rs:161:    latest_survival: BTreeMap<String, (u8, u8)>,
+mokiterions-tui/src/state.rs:193:            latest_survival: BTreeMap::new(),
+mokiterions-tui/src/state.rs:224:                    self.latest_survival
+mokiterions-tui/src/state.rs:228:                    let survival = self.latest_survival.get(&event.subject).copied();
+
+   `latest_survival` exists on master, is untouched by this work order, and holds the
+   satiety/energy pair the engine itself puts in `EventDetail::SurvivalChanged`. It is read
+   only by `Observer::ingest` for the event log. It is not reachable from `band`, from
+   `gauge` or from `entry_lines`, and the roster reads `AgentSnapshot` directly.
+
+5. The observer still retains exactly one snapshot, replaced wholesale:
+$ grep -rn 'self.snapshot = ' mokiterions-tui/src/state.rs
+214:        self.snapshot = self.simulation.snapshot();
+619:        self.snapshot = snapshot;
