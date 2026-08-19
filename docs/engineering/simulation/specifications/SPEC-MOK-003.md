@@ -18,6 +18,7 @@ specifies = [
   "REQ-MOK-025",
   "REQ-MOK-026",
   "REQ-MOK-027",
+  "REQ-MOK-032",
 ]
 +++
 
@@ -47,7 +48,10 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-18 | *Data and interface contracts* corrected on a claim about the engine's surface that does not hold as written, and which `WO-MOK-005` requires be fixed by amending the specification rather than by relaxing the assertion. Clause 2 said `advance_tick` was the only `&mut self` method on the surface that changes state; `Simulation::run`, the pre-existing `REQ-MOK-010` whole-run entry point, is a second. The clause now states the two, why `run` is there, why it cannot be narrowed away without relocating the engine's sources or duplicating the run loop, and the checks that can actually be met — including that the observer reaches neither `run` nor anything leading to it. The method listing is corrected to the real signatures and completed with `termination_reason` and `initialization_events`, with a note that it is what the observer calls and not the whole public interface. No obligation on the observer changed, and the non-perturbation property is unaffected. | **OUTSTANDING.** Requires the technical owner, as a correction to an approved specification. `boundary-and-security-review.md` under `WO-MOK-005` is the measurement that found it. |
 | 2026-08-18 | Four provisions amended so that `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030` can be conformed to. **Component layout**: the tree restated to one directory per package, matching `SPEC-MOK-004` rule 1, and clause 2 given the concrete path-dependency form. **Clause 3**: "The engine's sources are not relocated" replaced by the reason it existed for — the `REQ-MOK-010` text stream does not move — which a directory move preserves and `VER-MOK-006` measures. **Data and interface contracts clause 2**: its reasoning no longer appeals to the component layout forbidding relocation, since it no longer does; what would narrow `run` away is a target split, not a directory move, and the `grep` check is re-based on `mokiterions-core/src/simulation.rs`. **Explicitly unspecified decisions**: the grant of "test organization" withdrawn to `REQ-MOK-029` and `SPEC-MOK-004` rules 8 to 10, leaving fixtures and helpers with the implementation; and "the package layout", withheld but previously fixed nowhere, now pointed at `SPEC-MOK-004` rules 1 to 4, together with the observer's target shape and test-tier placement. No rule about the observer's behavior, presentation, key bindings, export, snapshot contract or non-perturbation changes, and no figure changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005`, which binds this specification to `WO-MOK-005`'s commit, is not edited: what it verified was correct at its commit, and the two rows above it remain **OUTSTANDING** and untouched. |
 | 2026-08-19 | **Rule 5's four-row tier table replaced by one threshold per pane on the axis that constrains it**: roster `W ≥ 100`, inspector `W ≥ 140`, log `H ≥ 38` at 6 rows and 10 when `W ≥ 140` and `H ≥ 48`. The tier table was an ordered ladder over a two-dimensional space and left a gap: `W ≥ 140` with `38 ≤ H < 44` matched no row and fell to `otherwise`, which excludes the roster, the inspector and the log at once. A 160 × 40 terminal therefore presented no roster while 120 × 40 — the same height, narrower — presented one, so enlarging a terminal could remove panes. The repository owner reported the missing roster as a blocking defect. A **monotonicity** obligation is added — no pane present at a viewport is absent at any larger one — which holds by construction and is checkable over the whole plane rather than at named sizes, and which is the obligation whose absence let the gap through. The derived table gains `160 × 40`, `140 × 43` and `120 × 30`, the three sizes the previous table handled worst; one existing figure changes, `100 × 30` from 98 × 24 to 51 × 24, because the roster is now present at that width — it remains a region and remains annotated, and the row carrying the width-versus-height asymmetry becomes `120 × 30`. Two trades are stated where canvas area is not monotone: the inspector at `W = 140`, already declared, and the log at `H = 38`, which costs whole-world rows between 38 and 43. The alternative of admitting the log only at `H ≥ 44` is stated and rejected, and is reversible by changing one threshold. Consequentially: rule 8's "present in every tier" becomes "at every viewport above the floor", two examples no longer name a tier, and the withheld-decisions sentence points at rule 5's pane thresholds instead of its tier table. The floor and its exit `2` refusal, the announcement obligation, the resize behavior, rule 2's fidelity minimum and mapping, the key bindings, the glyphs, the export, the authority mapping and the snapshot contract are untouched, and no requirement changes — `REQ-MOK-024` fixes no threshold itself and delegates every one of them to this specification. | Approved 2026-08-19 by the repository owner as technical owner, who directed the implementation in the same act. The owner had chosen this direction over removing adaptive layout altogether on 2026-08-18, after being shown both, and reviewed this text before approving it. The implementation agent measured the defect, drafted this text and recorded this approval on the owner's explicit instruction; it holds no authority over either, since `WO-MOK-005`'s decision envelope withholds rule 5's thresholds from the implementation. `VREC-MOK-005` is not edited here: it is `ready`, not `verified`, and it is re-captured against the commit that carries the implementation. |
+| 2026-08-19 | Rule 4 amended in three provisions, under `REQ-MOK-032`, so the roster presents a computed `fear`. The two-line mockup shows four gauges. Rule 4's prose reads four attributes and four numeric values, in the two-line form and in the collapsed one-line form below 47 columns. **Item 5, the reservation, is replaced by the presentation of a computed value, and item 4 now governs the zero case**: `fear 0` renders as `0` with an empty bar, distinguishable from an absent value, and it is a computed zero rather than an inert one — which is the condition item 5 was waiting for. The reservation's own reasoning is retained here rather than deleted, because it is what made the empty slot correct for a phase: the row reserved trailing space for a fourth bar so that Phase 2's `fear` could occupy it, rendering empty with no label, no dash and no zero, because "an inert `fear 0` would be a claim the engine cannot support". The measured consequence is stated in the amended item: the width rule becomes `bar_width(interior) = min(20, (interior - 35) / 4)`, since a fourth group of label, space, bar, space and a three-column value raises the row overhead from 27 to 35 and the divisor from 3 to 4, so at the reference roster's 45-column interior the bars narrow from 6 cells to 2 while the three-column numeric values are unaffected. This closes `VREC-MOK-005` finding 3, which recorded that the reserved slot was zero-wide and therefore absent rather than empty. | Approved 2026-08-19 by the repository owner acting as technical owner, who accepted the narrowing on that date rather than widening the roster pane in rule 5, which would have taken fourteen columns from the map pane, or raising rule 4's two-line threshold, which would have cost bars entirely to operators between 47 and 60 columns. The implementation agent wrote the text and did not decide the substance. **The 2026-08-18 row marked OUTSTANDING above is untouched** and still belongs to `WO-MOK-005`; the finding-3 resolution it recorded is superseded by this row, but its own amendment is not, and remains awaiting the owner's separate act. **Three further provisions were found during implementation and are amended here, beyond the three `WO-MOK-010` named.** Each is forced by the change rather than chosen with it. *Data and interface contracts*: the `AgentSnapshot` field list gains `fear`, which `SPEC-MOK-002` rule 5 admits to the interface, because a field list that omitted it would contradict that rule. Rule 10 item 7 loses `fear` and traits from its list of values the engine does not compute, because the engine now computes both; the item states why each is still absent from the inspector, and rule 10's presented-value list is **not** amended, so the inspector is unchanged. Rule 11's `decision_source_selected` row gains `REQ-MOK-033` for `individual`, because that mapping is exhaustive by construction — the observer resolves it in a `match` over the policy — so a third source without a row is a gap the compiler reaches before an operator does. **Those three provisions were unratified until 2026-08-19, when the repository owner, acting as technical owner, ratified all three in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`.** The ratification covers the three provisions of this paragraph and nothing else in this row: the amendment at its head was approved with the work order, and the 2026-08-18 row above remains **OUTSTANDING**. |
 | 2026-08-19 | **Rule 4 gains clause 7, survival bands.** The roster's three bars take a colour read from the value they present — green `80..=100`, orange `40..=79`, red `0..=39` — applied to each gauge's label, bar cells and numeric value together. The bands are a presentation of a number the bar already carries, so no quantity the engine does not compute enters the roster and `REQ-MOK-020`'s constraint against derived survival estimates is untouched; nor is any threshold borrowed from `SPEC-MOK-001` rule 5's reference-source sleep threshold of `20`, which is a decision source's policy rather than a survival state. Zero is red and clause 4's rendering of `0` as `0` with an empty bar is unchanged, as is what distinguishes zero from an absent value. Rule 2.5 needs no amendment, because the numeric value and the proportional fill already carry level without colour, which is what makes a band redundant reinforcement rather than the sole carrier of a distinction. No character of the entry moves and clause 4's mockup is unchanged. Clause 6's reversed-video selection composes with the band. The collapsed one-line form takes no band, stated in the clause and reversible by one sentence. No other rule, figure, glyph, key binding, export, authority mapping or snapshot contract changes. | Approved 2026-08-19 by the repository owner as technical owner, who fixed the three bands in the same act and reviewed this text before approving it. The owner's request had been green when the attribute is fine, orange when it is decreasing, red when it is low; the trend half was withdrawn after being shown that it inverts. `SPEC-MOK-001` decays satiety and energy by one each tick for every living Mokiterion, so "decreasing" is true of nearly every bar on nearly every tick and would become false only at zero, and `EventDetail::SurvivalChanged` carries the decay leg alone so reading the engine's own trend reproduces that inversion. Zero was unstated in the owner's bands and was confirmed as red on the same occasion. The implementation agent measured the inversion, drafted this text and recorded this approval on the owner's explicit instruction; it holds authority over neither, since this specification withholds thresholds of this kind from the implementation. The concrete colour values are the implementation's under the grant of "the exact palette, provided every distinction remains available without colour", and are recorded in `WO-MOK-007`. |
+| 2026-08-19 | **No rule changed. This row records the reconciliation of the rule 5 and rule 4 rows above, which were written independently and met in a merge.** `WO-MOK-005`'s rule 5 amendment and `WO-MOK-010`'s rule 4 amendment were approved on the same date by the same owner against different trees, and both are retained above verbatim: neither owner act is edited, summarised, or folded into the other. They occupy disjoint text and do not contradict each other in substance — rule 4 fixes the form of a roster entry, rule 5 fixes which viewports present the roster pane and how wide it is. **The one figure spanning them holds unchanged**: rule 5 gives the roster `47` columns wherever it is present, before and after its amendment, so rule 4's 45-column interior, its `bar_width(interior) = min(20, (interior - 35) / 4)` and the two-cell bars that follow are untouched, and rule 4's 47-column two-line threshold is met at every viewport presenting the pane at all. **What the merge changes is not a rule but a set**: rule 5's derived table now presents the roster at eight of its nine declared viewports rather than four, `100 × 30` among them, so any measurement of *which viewports present the roster* taken against the withdrawn tier table describes a table this document no longer contains. `WO-MOK-010`'s oracle 4 frame capture and its `the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it` test were both taken that way. The test is corrected in the merge commit against rule 5 as amended; the capture is **OUTSTANDING** re-derivation under `WO-MOK-010`. | Recorded by the implementation agent as a statement of fact about two approved amendments it holds no authority over. No provision of this specification is added, removed, or reworded by this row. The re-derivation it names belongs to `WO-MOK-010` and is the assurance owner's to accept once taken. **It was taken on 2026-08-19**: the frame capture was re-derived against rule 5 as amended and reads 996 bar rows over the 85 of 157 probed frames that draw a roster, with zero discrepancies, in `evidence/WO-MOK-010/observer/roster-frames.txt` with the method recorded in `evidence/WO-MOK-010/renumbering.md`. The **OUTSTANDING** re-derivation this row names is therefore discharged, and `VREC-MOK-010` binds it. This row still changes no provision and still ratifies nothing. |
+| 2026-08-19 | **Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with the bands of clause 7.** The two clauses were approved on the same date by the same owner against different trees, and each is retained above verbatim. They meet at exactly one point: clause 5 makes the bar row four gauges and clause 7 bands "each of the three bars", which leaves the fourth gauge unstated. **The banded set is now named rather than counted**: the band applies to health, satiety and energy, and `fear` renders as a bar and a numeric value with no colour at all. The reason is stated in the clause rather than left to be inferred — the three bands are a survival scale on which a high value is a good one, and `fear` inverts that, so a banded `fear 100` would read green while naming the worst state that attribute has. **The collapsed one-line form's count is corrected from three numeric values to four**, which clause 5 had already changed; it remains unstyled and takes no band, so that provision's substance is untouched. Nothing else in either clause changes: no boundary, no colour, no glyph, no character of the entry, no bar width, and no band for health, satiety or energy either gains or loses. Rule 2.5 still holds for the same reason it held before, and holds a fortiori for `fear`, which now carries no colour to be the sole carrier of anything. | **Decided 2026-08-19 by the repository owner acting as technical owner**, on the choice put to them once the collision was found: band `fear` on the same three-band scale, give it a second and opposite scale of its own, or leave it unbanded. The owner chose unbanded, on the reasoning that the scale is a survival scale and `fear`, whose direction inverts, does not borrow it; a second opposite scale was declined because it would put two contradictory colour meanings on one row. The implementation agent found the collision, put the choice, wrote this text and the amended clause, and decided none of the substance. **The wording is the agent's and was OUTSTANDING for the owner's ratification until 2026-08-19, when the repository owner, acting as technical owner, ratified it in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`; the decision it records never needed one.** `VREC-MOK-010` is a `ready` candidate bound to a commit that predates this row and is re-captured against the merge, not edited. |
 
 ## Actors and external systems
 
@@ -228,13 +232,13 @@ Each entry occupies two lines at widths of 47 columns or more:
 
 ```text
 M05  A  81:14         eat F0058
-     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72
+     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20
 ```
 
 Line one carries the identifier, current territory, position, and the action the engine applied on the most recently
-completed tick. Line two carries health, satiety and energy, each as a twenty-cell proportional bar and a numeric
-value. Below 47 columns each entry collapses to one line carrying identifier, territory and the three numeric values
-without bars.
+completed tick. Line two carries health, satiety, energy and fear, each as a proportional bar of at most twenty cells
+and a numeric value. Below 47 columns each entry collapses to one line carrying identifier, territory and the four
+numeric values without bars.
 
 1. Twelve living entries in the two-line form require 24 lines plus the pane border, which the reference viewport
    provides; the no-scroll obligation of `REQ-MOK-020` is an obligation at the reference size and rule 5 states what
@@ -244,28 +248,53 @@ without bars.
    far, so a disappearance is corroborated by a total.
 4. A value of `0` renders as `0` with an empty bar, which is distinguishable from an absent value because absent
    values render as `—`.
-5. Attributes the engine does not compute are absent. The line-two bar row reserves trailing space for a fourth bar
-   so that Phase 2's `fear` occupies it without re-specifying the pane, and that space renders empty with no label,
-   no dash and no zero. An inert `fear 0` would be a claim the engine cannot support.
+5. Attributes the engine does not compute are absent. The line-two bar row carries four gauges, the fourth being
+   `fear`, which `SPEC-MOK-001` rule 12 computes and reports. Item 4 governs its zero case like any other: `fear 0`
+   renders as `0` with an empty bar, and it is a computed zero rather than an inert one.
+
+   This item previously reserved the fourth slot instead of filling it, requiring it to render "empty with no label,
+   no dash and no zero" because "an inert `fear 0` would be a claim the engine cannot support". That reasoning is
+   retained here rather than deleted: it is what made an empty slot correct while the engine computed three
+   attributes, and it is the condition this amendment satisfies rather than waives.
+
+   **The bar width follows from the fourth gauge, and the consequence is stated rather than left to be discovered.**
+   The row is five leading columns, then four groups of label, space, bar, space and a three-column value, separated
+   by two columns: `5 + 4 * 6 + 3 * 2 = 35` columns of overhead and four bars. So
+   `bar_width(interior) = min(20, (interior - 35) / 4)`, replacing the three-gauge rule
+   `min(20, (interior - 27) / 3)`. At the reference roster's 45-column interior the bars therefore narrow from
+   `(45 - 27) / 3 = 6` cells to `(45 - 35) / 4 = 2`, while the three-column numeric values are unaffected at every
+   width. The narrowing was accepted rather than avoided: widening the roster pane in rule 5 would have taken
+   fourteen columns from the map pane, and raising this rule's 47-column two-line threshold would have cost bars
+   entirely to operators between 47 and 60 columns. This also closes `VREC-MOK-005` finding 3, which recorded that
+   the reserved slot was zero-wide at the reference roster and therefore absent there rather than empty.
 6. Selecting a roster entry and selecting a Mokiterion are the same operation; the selected entry is highlighted by
    reversed video, not by colour alone.
-7. **Survival bands.** Each of the three bars carries a colour band read from the value it presents: green at
-   `80..=100`, orange at `40..=79`, red at `0..=39`. The band applies to the gauge as a whole — its label character,
-   its bar cells and its numeric value — so one gauge reads as one state; the two spaces separating gauges and the
-   five-column indent are unstyled. A band is a second presentation of the number the bar already shows. It
-   introduces no quantity the engine does not compute, no trend, and no threshold borrowed from anything else: in
-   particular it is not `SPEC-MOK-001` rule 5's reference-source sleep threshold of `20`, which is one decision
-   source's policy rather than a survival state, and which a Phase 2 decision source need not share.
+7. **Survival bands.** Each of the three survival bars — health, satiety and energy — carries a colour band read from
+   the value it presents: green at `80..=100`, orange at `40..=79`, red at `0..=39`. The band applies to the gauge as
+   a whole — its label character, its bar cells and its numeric value — so one gauge reads as one state; the two
+   spaces separating gauges and the five-column indent are unstyled. A band is a second presentation of the number the
+   bar already shows. It introduces no quantity the engine does not compute, no trend, and no threshold borrowed from
+   anything else: in particular it is not `SPEC-MOK-001` rule 5's reference-source sleep threshold of `20`, which is
+   one decision source's policy rather than a survival state, and which a Phase 2 decision source need not share.
    `REQ-MOK-020`'s constraint against derived survival estimates is therefore unaffected. Level stays available
    without colour through the numeric value and the proportional fill, so rule 2.5 holds and colour is redundant
    reinforcement here as everywhere else. Zero takes the red band and still renders as `0` with an empty bar under
-   clause 4, which remains what distinguishes it from an absent value. Banding changes no character of the entry:
-   the rendered text is identical with and without it, and clause 4's mockup stands unchanged. A selected entry's
-   reversed video composes with the band rather than replacing it, so clause 6 is unaffected; the band colour
-   becomes the reversed cell's background there, and selection remains marked by reversal rather than by colour.
-   The collapsed one-line form below 47 columns has no bars and takes no band: its three numeric values are
-   unstyled, because that form exists to keep the numbers legible where the bar cells will not fit, and the numbers
-   carry the level directly.
+   clause 4, which remains what distinguishes it from an absent value. Banding changes no character of the entry: the
+   rendered text is identical with and without it, and clause 4's mockup stands unchanged. A selected entry's reversed
+   video composes with the band rather than replacing it, so clause 6 is unaffected; the band colour becomes the
+   reversed cell's background there, and selection remains marked by reversal rather than by colour. The collapsed
+   one-line form below 47 columns has no bars and takes no band: its four numeric values are unstyled, because that
+   form exists to keep the numbers legible where the bar cells will not fit, and the numbers carry the level directly.
+
+   **The fourth gauge takes no band.** `fear`, which clause 5 fills the reserved slot with, renders as a bar and a
+   numeric value with no colour at all, in the two-line form as in the collapsed one. The three bands are a
+   survival scale, and on that scale a high value is a good one; `fear` inverts it, so a banded `fear 100` would
+   read green while naming the worst state that attribute has. Giving `fear` a second scale of its own, running the
+   other way, was declined: it would put two contradictory colour meanings on one row, and a reader would have to
+   know which gauge a colour belongs to before knowing what the colour says. Leaving it unstyled costs nothing that
+   rule 2.5 protects, because `fear`'s level is carried by its numeric value and its proportional fill exactly as
+   the other three are. This is the single point at which clause 5 and this clause meet, and it is decided rather
+   than derived: neither provision forces it.
 
 ### Rule 5 — Layout and degradation
 
@@ -434,8 +463,18 @@ stated ground on rejection, and the action applied.
 6. When the selected Mokiterion dies, the selection is retained and the pane presents the death, the tick of death,
    and the final attribute values. The next selection control moves to the nearest living Mokiterion in roster
    order.
-7. Fields for values the engine does not compute — fear, traits, name, age, kills, combats, remembered locations,
-   model latency and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+7. Fields for values the engine does not compute — name, age, kills, combats, remembered locations, model latency
+   and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+
+   Amended 2026-08-19: this list named `fear` and traits, and the engine now computes both, so naming them here
+   asserted something untrue of the engine. Each is nonetheless still absent from this pane, for a different reason
+   in each case, and the reasons are stated rather than left as an apparent oversight. `fear` is absent because this
+   rule's presented-value list above is not amended by `WO-MOK-010`, whose observer change surface is the roster's
+   bar row alone, and rule 4 presents `fear` there for every living Mokiterion including the selected one, so no
+   value is unreachable. The trait is absent because `SPEC-MOK-002` rule 5 deliberately keeps `waste_tolerance` off
+   `AgentSnapshot`, so the read-only interface this specification consumes does not carry it; it reaches a host only
+   through the retained event log. Presenting either in this pane is a later decision, and either would need this
+   rule's presented-value list amended first.
 
 ### Rule 11 — Authority mapping
 
@@ -447,7 +486,7 @@ authorizes the behavior the event reports. The `t` control presents it for the h
 | `world_initialized` | `REQ-MOK-001` |
 | `food_initialized` | `REQ-MOK-001` |
 | `agent_initialized` | `REQ-MOK-002` |
-| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference` |
+| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference`, `REQ-MOK-033` when `individual` |
 | `survival_changed` | `REQ-MOK-003` |
 | `agent_died` | `REQ-MOK-003` |
 | `food_consumed` | `REQ-MOK-006` |
@@ -521,7 +560,7 @@ WorldSnapshot {
 }
 
 TerritorySnapshot { id, standing, low, medium, high, capacity, permanently_depleted }
-AgentSnapshot     { id, position, territory, health, satiety, energy, applied_action }
+AgentSnapshot     { id, position, territory, health, satiety, energy, fear, applied_action }
 ResourceSnapshot  { id, position, territory, class }
 DecisionSnapshot  { agent_id, proposed, outcome: Accepted | Rejected(ground), applied }
 TickOutcome       { events: [Event], finished, reason }

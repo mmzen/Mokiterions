@@ -1,0 +1,84 @@
+WO-MOK-010 - the tooling runs
+
+Method, and what is checked rather than restated: see the header of
+analysis/static-checks.py. Every figure below is read from the command's own captured
+output under target/static/.
+
+The toolchain that produced every result in this file
+
+  cargo 1.97.1 (c980f4866 2026-06-30)
+  rustc 1.97.1 (8bab26f4f 2026-07-14)
+  rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)
+  clippy 0.1.97 (8bab26f4f6 2026-07-14)
+
+  A different toolchain can format differently and lint differently, so the version is
+  part of the result. It is not part of the simulation's determinism: `SPEC-MOK-001`
+  fixes the arithmetic, and `baseline/` shows the frozen sources reproducing their
+  pre-change output byte for byte under this toolchain.
+
+1. Formatting
+
+  $ cargo fmt --all -- --check
+    exit=0, and 0 diff lines printed.
+
+  `--check` prints a diff for every file it would rewrite and exits non-zero. It printed
+  nothing. The engine source was reformatted by `cargo fmt` during this work order, and
+  the reformatting happened after the binary that produced the first post-change capture
+  had been built -- as did two later edits to the same file. `baseline/rebuild-check.txt`
+  records what was done about that: the tree was rebuilt from the committed source and the
+  matrix captured again, and all 83 shared cells came out byte-identical, so none of the
+  three is left to be argued about.
+
+2. Lints
+
+  $ cargo clippy --workspace --all-targets --all-features -- -D warnings
+    exit=0, 0 warning or error lines, 2 crates re-linted in this run:
+
+      Checking Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-phase2\mokiterions-core)
+      Checking mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-phase2\mokiterions-tui)
+
+  The sources were touched before this run so that the result is a fresh lint of the
+  candidate tree and not a cached one -- a cached clippy run prints no warning because it
+  ran nothing, which is the failure mode this guards against. `--all-targets` includes
+  the test code, `--all-features` includes every feature, and `-D warnings` turns any
+  single warning into a non-zero exit. `SPEC-MOK-004` forbids an `allow` attribute added
+  to keep this quiet, and none was: the diff of this work order adds no `allow`.
+
+3. Tests
+
+  $ cargo test --workspace
+    exit=0
+
+  runners reporting a result: 20
+  runners reporting ok:       20
+  passed:                     200
+  failed:                     0
+  ignored:                    0
+  filtered out:               0
+
+  Zero ignored and zero filtered out is the part worth stating: a suite can be made to
+  pass by not running, and these two counts are what would show it. The whole suite ran.
+  `test-census.txt` reconciles those 200 names against the pre-change commit's,
+  name by name and tier by tier.
+
+4. Dependencies
+
+  $ cargo tree -p Mokiterions
+
+    Mokiterions v0.1.0 (local path)
+
+  One line: the engine crate depends on nothing. `SPEC-MOK-001` puts determinism, integer
+  arithmetic and the single entropy stream inside this crate, and no external crate can
+  move any of them because there is no external crate. WO-MOK-010 added no dependency,
+  and it did not need one -- SplitMix64 is thirty lines of shifts and multiplications.
+
+  $ cargo tree -p mokiterions-tui   ->   111 lines, unchanged
+
+  The observer draws with ratatui and that is where its tree comes from. Both trees are
+  identical to the pre-change commit's, compared line by line with the checkout path
+  normalised away, so nothing was added, removed or bumped:
+
+    engine tree lines:   1 before, 1 after, identical = True
+    observer tree lines: 111 before, 111 after, identical = True
+
+RESULT: PASS - four commands, all clean, and no dependency moved

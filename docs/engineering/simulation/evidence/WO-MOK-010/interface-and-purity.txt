@@ -1,0 +1,125 @@
+WO-MOK-007 - the engine's public interface, and the two arithmetic prohibitions
+
+pre-change root:  target/pre   (60fda9faffbd452752a34efa356f16cc6ad1d3ff)
+candidate root:   .
+
+Method: see the header of analysis/interface-census.py. Both sides are parsed identically,
+so the diff is the load-bearing part and the absolute counts are what this method counts.
+
+1. The public interface
+-----------------------
+
+  surface        before  after  change
+  -------------  ------  -----  ------
+  public items       49     49      +0
+  public fields      42     43      +1
+  enum variants      47     48      +1
+
+The difference, item by item
+----------------------------
+
+  + public field: simulation.rs: AgentSnapshot.fear
+  + enum variant: simulation.rs: Policy::Individual
+  (no removals)
+
+  additions: 2    removals: 0
+
+  `lib.rs` claims the interface grew by exactly two things, both values: a
+  third `Policy` variant and a fourth attribute on the observation
+  snapshot's Mokiterion entry. That is what the difference shows, and
+  nothing was removed.
+
+2. No floating point in the engine
+----------------------------------
+
+  position          before  after
+  ----------------  ------  -----
+  float type             0      0
+  CODE                   0      0
+  string literal         3      3
+  comment                9     11
+
+  A float type or a decimal in CODE would be a violation; both are zero on both sides.
+  Rule 19's tolerant test is integer arithmetic with division that truncates toward
+  zero, and the density argument arrives as text and is held in integer hundredths, so
+  no float exists to be rounded. The decimals that do occur are that text and the
+  specification rule numbers cited in comments; all of them are listed here so that the
+  classification can be disputed line by line:
+
+  [string literal] cli.rs: 0.75   "                                 decimal places. Default: 0.75.\n",
+  [comment] simulation.rs: 0.75   /// The default density, `0.75%`, which resolves to 61 resources per territory.
+  [comment] simulation.rs: 0.75   /// Parses a percentage with at most two decimal places, such as `0.75` or `1.5`
+  [comment] simulation.rs: 1.5   /// Parses a percentage with at most two decimal places, such as `0.75` or `1.5`
+  [string literal] simulation.rs: 0.75   return Err("expected a percentage such as 0.75".into());
+  [string literal] simulation.rs: 0.02   const SMALLEST_USABLE: &'static str = "0.02";
+  [comment] simulation.rs: 0.15   /// truncates toward zero, as `SPEC-MOK-001` requires. `0.15%` yields 12, `0.75%
+  [comment] simulation.rs: 0.75   /// truncates toward zero, as `SPEC-MOK-001` requires. `0.15%` yields 12, `0.75%
+  [comment] simulation.rs: 1.50   /// yields 61, and `1.50%` yields 122.
+  [comment] simulation.rs: 7.40   /// mean of 7.40 against a floor of 8. Narrowing to `40` leaves a mean of 9.94 a
+  [comment] simulation.rs: 9.94   /// mean of 7.40 against a floor of 8. Narrowing to `40` leaves a mean of 9.94 a
+  [comment] simulation.rs: 1.4   /// Set once the run has ended. `SPEC-MOK-003` rule 1.4 requires a further advan
+  [comment] simulation.rs: 1.4   /// Advancing a finished run is refused with no state change, as `SPEC-MOK-003` 
+  [comment] simulation.rs: 8.1   /// `SPEC-MOK-003` rule 8.1 requires of a host presenting provenance.
+
+3. `fear` has one writer and no reader
+--------------------------------------
+
+  occurrences of the identifier in non-test engine source: 24
+  of which assign to it:                                   1
+
+  [mutation] simulation.rs:1962  agent.fear = if perceived_company {
+
+  Every occurrence, so that the one mutation is visible in its context rather than
+  asserted:
+
+  simulation.rs:399              fear: u8,
+  simulation.rs:482              /// reaching into authoritative state. `fear` is deliberately absent: no rule and no
+  simulation.rs:1017             fear: u8,
+  simulation.rs:1028             fear: (u8, u8),
+  simulation.rs:1066             fear: u8,
+  simulation.rs:1114             fear,
+  simulation.rs:1118             "position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy},fear:{f
+  simulation.rs:1125             fear,
+  simulation.rs:1128             "health:{}->{},satiety:{}->{},energy:{}->{},fear:{}->{}",
+  simulation.rs:1129             health.0, health.1, satiety.0, satiety.1, energy.0, energy.1, fear.0, fear.1
+  simulation.rs:1161             fear,
+  simulation.rs:1164             "proposal:{proposal},status:{},detail:{detail},position:{position},territory:{territory},health:{hea
+  simulation.rs:1252             pub fear: u8,
+  simulation.rs:1365             fear: 0,
+  simulation.rs:1523             fear: agent.fear,
+  simulation.rs:1624             fear: agent.fear,
+  simulation.rs:1684             // Rule 12 updates `fear` from *this* observation's perceived-Mokiterion list, so
+  simulation.rs:1931             fear: agent.fear,
+  simulation.rs:1938             /// Rule 12: survival decay, then rule 12's `fear` update from the same tick's rule 3
+  simulation.rs:1953             let previous_fear = agent.fear;
+  simulation.rs:1962   mutation  agent.fear = if perceived_company {
+  simulation.rs:1963             agent.fear.saturating_add(FEAR_INCREASE).min(ATTRIBUTE_MAX)
+  simulation.rs:1965             agent.fear.saturating_sub(FEAR_DECREASE)
+  simulation.rs:1975             fear: (previous_fear, agent.fear),
+
+  The decision path, checked directly. A reader would have to be inside the
+  `DecisionSource` trait, inside one of the three `fn decide` bodies, or on the
+  `Observation` type a source reads from. Each of those regions is extracted by brace
+  matching and searched:
+
+  region                                                         lines  code  all
+  -------------------------------------------------------------- ----- ----- ----
+  simulation.rs:678  trait DecisionSource {                          7     0    0
+  simulation.rs:696  fn decide                                       9     0    0
+  simulation.rs:718  fn decide                                      41     0    0
+  simulation.rs:776  fn decide                                      43     0    0
+  simulation.rs:473  struct Observation {                           17     0    1
+
+  `code` counts occurrences with every `//` tail removed; `all` includes the comments.
+  The one comment mention is inside the `Observation` type and is the sentence stating
+  that `fear` is deliberately absent from it -- which is the claim, written where the
+  next person to add a field will read it.
+
+  Zero code occurrences in every region. Rule 3 states that `fear` is not carried on the
+  observation, and the observation is the only thing a decision source is given.
+  The single mutation is rule 12's, and the remaining occurrences are the field's own
+  declaration, its initialization at `0`, the snapshot the observer reads, and the
+  three event records that report it.
+
+
+RESULT: PASS - two additions, no removals, no float in code, no `fear` reader

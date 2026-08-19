@@ -16,6 +16,12 @@
 //! `FoodClass` and `Action` — by value. The ten others it lists stay private, including
 //! `Observation` and `DecisionSource`, which carry the `ADR-MOK-001` trust boundary.
 //!
+//! `WO-MOK-010` grew that interface by exactly two things, both of them values: a third
+//! `Policy` variant and a fourth attribute on the observation snapshot's Mokiterion entry.
+//! The trait-aware source, the `Observation` it reads and the `waste_tolerance` that
+//! observation carries all stay on the private side of the same boundary, so a Mokiterion's
+//! trait reaches a host only as text in the retained event log.
+//!
 //! Two hosts drive the same interface: the `Mokiterions` binary, which streams the
 //! `REQ-MOK-010` text record to standard output, and the `mokiterions-tui` observer, which
 //! advances one tick at a time and reads snapshots. Neither is privileged; the engine owns

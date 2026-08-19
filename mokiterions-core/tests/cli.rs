@@ -63,6 +63,38 @@ fn both_policies_are_selectable_and_reference_is_the_default() {
     assert_eq!(default, reference);
 }
 
+/// `REQ-MOK-033`: the third value is selectable, and adding it moved neither the default nor
+/// the two values that were already there.
+///
+/// A named sibling rather than an edit to the test above, whose name states what it asserted
+/// when there were two policies. `WO-MOK-010` does not rename inherited tests: a rename cannot
+/// be told from a removal in the census `VER-MOK-010` requires, and the assertions above are
+/// still true and still worth keeping.
+#[test]
+fn the_trait_aware_policy_is_selectable_and_does_not_become_the_default() {
+    assert_eq!(
+        parse(["--policy", "individual"]).unwrap(),
+        Command::Run(config_with(Policy::Individual))
+    );
+
+    // The owner kept `reference` as the default under `WO-MOK-010`, so the third value is
+    // opt-in and an unflagged invocation still selects the source it selected before.
+    assert_eq!(
+        parse(Vec::<String>::new()).unwrap(),
+        Command::Run(config_with(Policy::Reference))
+    );
+    assert_ne!(
+        parse(Vec::<String>::new()).unwrap(),
+        Command::Run(config_with(Policy::Individual))
+    );
+
+    // The name is exact: neither an abbreviation nor a near miss selects it.
+    assert!(parse(["--policy", "individuals"]).is_err());
+    assert!(parse(["--policy", "Individual"]).is_err());
+    assert!(parse(["--policy", "indiv"]).is_err());
+    assert!(parse(["--policy", "individual", "--policy", "reference"]).is_err());
+}
+
 fn config_with(policy: Policy) -> Config {
     Config {
         seed: 0,
@@ -314,10 +346,16 @@ fn the_entries_state_the_constraints_that_decide_validity() {
     assert!(ticks.contains("greater than zero"), "{ticks}");
     assert!(parse(["--ticks", "0"]).is_err());
 
-    // The value set is stated in the placeholder, so the whole entry is read here.
+    // The value set is stated in the placeholder, so the whole entry is read here. Every value
+    // the parser accepts is named and every value it names is accepted, so the help can neither
+    // hide the third source nor advertise a fourth.
     let policy = entry("--policy");
     assert!(policy.contains("baseline"), "{policy}");
     assert!(policy.contains("reference"), "{policy}");
+    assert!(policy.contains("individual"), "{policy}");
+    assert!(parse(["--policy", "baseline"]).is_ok());
+    assert!(parse(["--policy", "reference"]).is_ok());
+    assert!(parse(["--policy", "individual"]).is_ok());
     assert!(parse(["--policy", "random"]).is_err());
 
     let density = description("--density").to_lowercase();

@@ -8,7 +8,8 @@ use crate::simulation::{Config, Density, Policy};
 /// escaped literal too long to read, and a multi-line literal would take its line endings
 /// from however the file was checked out.
 pub const USAGE: &str = concat!(
-    "Usage: Mokiterions [--seed <u64>] [--ticks <u64>] [--policy <baseline|reference>]\n",
+    "Usage: Mokiterions [--seed <u64>] [--ticks <u64>]\n",
+    "                   [--policy <baseline|reference|individual>]\n",
     "                   [--density <percent>] [--trace-actions]\n",
     "       Mokiterions --help\n",
     "\n",
@@ -16,7 +17,8 @@ pub const USAGE: &str = concat!(
     "  --seed <u64>                   Entropy stream seed. Default: 0.\n",
     "  --ticks <u64>                  Ticks to run; must be greater than zero.\n",
     "                                 Default: 100.\n",
-    "  --policy <baseline|reference>  Decision source. Default: reference.\n",
+    "  --policy <baseline|reference|individual>\n",
+    "                                 Decision source. Default: reference.\n",
     "  --density <percent>            Resource density per territory, at most two\n",
     "                                 decimal places. Default: 0.75.\n",
     "  --trace-actions                Emit one action trace per living-agent decision\n",
@@ -27,7 +29,10 @@ pub const USAGE: &str = concat!(
     "\n",
     "The reference policy is a deterministic development instrument, not autonomous\n",
     "behavior. It seeks and consumes perceived food so that world viability can be\n",
-    "measured. The baseline policy selects uniformly among valid actions.\n",
+    "measured. The baseline policy selects uniformly among valid actions. The\n",
+    "individual policy seeks and consumes as the reference policy does, except that\n",
+    "each Mokiterion also accepts food it would partly waste, in proportion to its own\n",
+    "waste tolerance, which is derived from the seed and its identifier.\n",
     "\n",
     "--density is the percentage of a territory's cells that hold a resource. It sets\n",
     "the initial endowment, the territory capacity, and the replenishment target\n",
@@ -89,7 +94,9 @@ where
                 }
                 let value = option_value(&args, index, "--policy")?;
                 policy = Some(Policy::parse(value).ok_or_else(|| {
-                    format!("invalid --policy value: {value}; expected baseline or reference")
+                    format!(
+                        "invalid --policy value: {value}; expected baseline, reference, or individual"
+                    )
                 })?);
                 index += 2;
             }

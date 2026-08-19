@@ -1,0 +1,19 @@
+WO-MOK-007 - REQ-MOK-033: the proposals each source actually made
+
+Counted from every `action_trace` record of the 1,000-tick traced runs at the default
+density. The trait-aware source must never propose `wait`, matching the reference source,
+and every proposal it makes must be accepted by the engine's own validation, since a
+rejection would mean it proposed something the observation did not list as valid.
+
+source      seed  move   eat  wait  rejected by validation
+----------  ----  -----  ---  ----  ----------------------
+reference   0     10288  379  0     0
+reference   1     11068  410  0     0
+reference   42    9717   344  0     0
+reference   123   9159   324  0     0
+reference   777   10771  372  0     0
+individual  0     11190  400  0     0
+individual  1     10340  368  0     0
+individual  42    10371  378  0     0
+individual  123   10489  379  0     0
+individual  777   11245  417  0     0

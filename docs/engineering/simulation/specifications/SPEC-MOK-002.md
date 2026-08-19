@@ -5,10 +5,10 @@ title = "Crate targets, public interface, and test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-19"
 
 [relations]
-specifies = ["REQ-MOK-016", "REQ-MOK-017"]
+specifies = ["REQ-MOK-016", "REQ-MOK-017", "REQ-MOK-032", "REQ-MOK-033"]
 +++
 
 # Specification: Crate targets, public interface, and test placement
@@ -20,6 +20,7 @@ specifies = ["REQ-MOK-016", "REQ-MOK-017"]
 | 2026-08-17 | Original approved content for `REQ-MOK-016` and `REQ-MOK-017`. | Approved; implemented under `WO-MOK-003` and verified under `VREC-MOK-003`. |
 | 2026-08-18 | Four provisions amended so that the terminal observer of `SPEC-MOK-003` can be conformed to. **Rule 1**: "no second package, no workspace" narrowed to a workspace of exactly two packages, on the approved requirement `REQ-MOK-026` that the clause reserved the exception for. **Rule 3**: the clause freezing `src/cli.rs` and `src/simulation.rs` scoped to the `WO-MOK-003` restructuring it was written for, so that an approved requirement may add code to them. **Rule 5**: the closed enumeration grown by the read-only observation surface, under rule 5's own growth clause. **Rule 6**: the prohibition narrowed from five named value types to the capability it was written to deny. Nothing about mutation, dependency direction, determinism or observable behavior is relaxed, and the engine package's dependency table stays empty. | **OUTSTANDING.** Requires the technical owner. All four are approval preconditions of `WO-MOK-005`, alongside the 2026-08-18 amendment to `ARCH-MOK-001`. None could have been part of the 2026-08-17 approval of the observer chain: this specification was not on that branch when the approval was given, and it reached `master` afterwards. |
 | 2026-08-18 | Every root-relative path re-based on `mokiterions-core/`, the engine package's own directory, and rule 1's "unchanged in source location" clause corrected. Stated once in *Scope* under **Paths** and at rule 1, so that no rule's substance is restated and none is re-opened. The two target paths in rule 1's table, the file list in *Inputs*, the rule 3 and rule 4 file names, rule 5's `grep` check, rule 8's file table and rule 9's locations all move by prefix alone. No file is renamed, no rule changes what it requires, no target, target name, target kind or package name changes, and the engine package's dependency table stays empty. `REQ-MOK-030` is the approved requirement; `SPEC-MOK-004` rules 1 to 3 fix the layout and `ADR-MOK-004` decides it. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-003`, which binds this specification's 2026-08-17 content to `WO-MOK-003`'s commit, is not edited: the paths it names were correct at its commit and this row records why they differ afterwards. The 2026-08-18 row above is untouched and remains **OUTSTANDING**. |
+| 2026-08-19 | Rule 5's enumeration amended in two entries, under `REQ-MOK-032` and `REQ-MOK-033`. `simulation::Policy` gains a third variant, `Individual`; `Default` is unchanged and still resolves to `Reference`. `simulation::AgentSnapshot` carries four `u8` attributes rather than three, the fourth being `fear`. Its justification holds unchanged, because `REQ-MOK-032` requires `fear` in the event stream as well. Rule 6 is **not** amended and was re-checked instead: the added field carries a value, so no public item yields a mutable borrow of or a reference into authoritative state, and the trait-aware source and the `Observation` it consumes stay private, keeping the `ADR-MOK-001` trust boundary where it is. `waste_tolerance` deliberately does **not** join the snapshot: no approved requirement needs the observer to render it, and rule 5 holds the interface to what approved requirements need. It reaches the observer through the event log, which `REQ-MOK-022` already retains. Public interface growth is therefore exactly two items. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `WO-MOK-010`. The implementation agent wrote the text and did not decide the substance. **The two rows above this one, dated 2026-08-18, remain OUTSTANDING and are untouched**: they belong to `WO-MOK-005` and are awaiting the same owner's separate act. `VREC-MOK-003`, which binds this specification, is not edited. |
 
 ## Scope
 
@@ -155,7 +156,7 @@ The library target's public interface is exactly the union of the three lists be
 | `cli::parse` | function returning `Result<Command, String>` |
 | `simulation::Config` | struct with public fields `seed`, `tick_limit`, `policy`, `density`, `trace_actions` |
 | `simulation::Density` | value type with associated constant `DEFAULT` and function `parse` |
-| `simulation::Policy` | enum with variants `Baseline` and `Reference`, with `parse` and `Default` |
+| `simulation::Policy` | enum with variants `Baseline`, `Reference` and `Individual`, with `parse` and `Default` |
 | `simulation::RunSummary` | opaque value type; its fields stay private |
 | `simulation::Simulation::new` | `Config` in, `Result<Simulation, String>` out |
 | `simulation::Simulation::run` | `&mut self` and a writer in, `io::Result<RunSummary>` out |
@@ -189,7 +190,7 @@ every item below; this list is the enumeration that closes the interface, and th
 | `Simulation::initialization_events` | `&self` in, `Vec<Event>` out | An owned copy of events the text stream already emits before tick 1 |
 | `simulation::WorldSnapshot` | struct of owned fields, with `[TerritorySnapshot; 2]` and `Vec` of the three snapshot types | The observed state of one completed tick |
 | `simulation::TerritorySnapshot` | struct of `Territory` and `usize`/`bool` counts | Every field is already printed in the summary line or derivable from it |
-| `simulation::AgentSnapshot` | struct of `String`, `Coordinate`, `Territory`, three `u8` attributes and `Option<Action>` | Every field is already printed in the event stream |
+| `simulation::AgentSnapshot` | struct of `String`, `Coordinate`, `Territory`, four `u8` attributes and `Option<Action>` | Every field is already printed in the event stream |
 | `simulation::ResourceSnapshot` | struct of `String`, `Coordinate`, `Territory`, `FoodClass` | Every field is already printed in the event stream |
 | `simulation::DecisionSnapshot` | struct of `String`, `Action`, `DecisionOutcome`, `Option<Action>` | Exactly what a `--trace-actions` line already prints |
 | `simulation::TickOutcome` | struct of `Vec<Event>`, `bool` and `Option<TerminationReason>` | What one tick emitted, owned |

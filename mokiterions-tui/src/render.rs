@@ -59,9 +59,11 @@ const BAND_HIGH_FLOOR: u8 = 80;
 const BAND_MIDDLE_FLOOR: u8 = 40;
 
 /// Columns a roster bar row spends on labels, values and separators, so the bars themselves get
-/// `(interior − this) / 3`. Derived from rule 4's form: five leading columns, then three groups
-/// of `label`, space, bar, space and a three-column value, separated by two columns.
-const BAR_ROW_OVERHEAD: usize = 27;
+/// `(interior − this) / 4`. Derived from rule 4's form as amended on 2026-08-19: five leading
+/// columns, then four groups of `label`, space, bar, space and a three-column value, separated
+/// by two columns — `5 + 4 × 6 + 3 × 2`. It was `27` for three groups until `WO-MOK-010` filled
+/// rule 4.5's reserved slot with `fear`.
+const BAR_ROW_OVERHEAD: usize = 35;
 
 /// The bar length rule 4's mockup uses, and the maximum this implementation draws.
 const FULL_BAR: usize = 20;
@@ -490,9 +492,10 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<Line<'s
     if !two_line {
         // Rule 4.7: the collapsed form has no bars and takes no band. It exists to keep the
         // numbers legible where the bar cells will not fit, and the numbers carry the level.
+        // Rule 4.5 as amended makes that four numbers rather than three.
         return vec![Line::from(format!(
-            "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3}",
-            agent.id, agent.health, agent.satiety, agent.energy
+            "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3} f{:>3}",
+            agent.id, agent.health, agent.satiety, agent.energy, agent.fear
         ))];
     }
     vec![
@@ -500,14 +503,15 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<Line<'s
             "{:<5}{territory:<3}{position:<14}{applied}",
             agent.id
         )),
-        // Rule 4.5: whatever width remains to the right of the third bar is the reserved slot
-        // for Phase 2's `fear`. It renders as nothing at all — no label, no dash and no zero,
-        // because an inert `fear 0` would be a claim the engine cannot support. It carries no
-        // band either, for the same reason.
+        // Rule 4.5 reserved the fourth slot for Phase 2's `fear`, to render empty with no label,
+        // no dash and no zero, because an inert `fear 0` would be a claim the engine cannot
+        // support. `WO-MOK-010` made the value an engine attribute, so the slot is filled and the
+        // gauge is no longer that claim.
         //
-        // Rule 4.7: each gauge is its own span so that three values can hold three bands. The
+        // Rule 4.7: each gauge is its own span so that values can hold their own bands. The
         // five-column indent and the two-column separators are unstyled, which is what keeps a
-        // band the property of one gauge rather than of the row.
+        // band the property of one gauge rather than of the row. The fourth gauge is unbanded --
+        // the three bands are a survival scale on which high is good, and `fear` inverts it.
         Line::from(vec![
             Span::raw("     "),
             gauge('h', agent.health, bar),
@@ -515,29 +519,44 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<Line<'s
             gauge('s', agent.satiety, bar),
             Span::raw("  "),
             gauge('e', agent.energy, bar),
+            Span::raw("  "),
+            unbanded_gauge('f', agent.fear, bar),
         ]),
     ]
 }
 
-/// The bar length that fits three bars in an interior of this width, capped at rule 4's twenty.
+/// The bar length that fits four bars in an interior of this width, capped at rule 4's twenty.
 fn bar_width(interior_width: u16) -> usize {
-    (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 3).min(FULL_BAR)
+    (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 4).min(FULL_BAR)
 }
 
-/// One proportional bar and its numeric value, in rule 4.7's band for that value. `0` renders as
-/// `0` with an empty bar (rule 4.4) and takes the low band.
+/// One survival gauge: a proportional bar and its numeric value, in rule 4.7's band for that
+/// value. `0` renders as `0` with an empty bar (rule 4.4) and takes the low band.
 ///
 /// The band covers the whole gauge — label, bar cells and value — so one gauge reads as one state.
 /// It changes no character: the text is what it was before rule 4.7 existed.
 fn gauge(label: char, value: u8, width: usize) -> Span<'static> {
-    let filled = (usize::from(value) * width / 100).min(width);
     Span::styled(
-        format!(
-            "{label} {}{} {value:>3}",
-            "\u{2588}".repeat(filled),
-            "\u{2591}".repeat(width - filled)
-        ),
+        gauge_text(label, value, width),
         Style::new().fg(band(value)),
+    )
+}
+
+/// Rule 4.7's fourth gauge, which takes no band. `fear` is not on the scale the three bands read:
+/// high health is the best state health has and high `fear` the worst state `fear` has, so banding
+/// it green at `100` would say the opposite of what the same colour says on the other three. A
+/// second scale running the other way was declined for putting two colour meanings on one row.
+fn unbanded_gauge(label: char, value: u8, width: usize) -> Span<'static> {
+    Span::raw(gauge_text(label, value, width))
+}
+
+/// The text of one gauge, which is the same for all four whether a band applies to it or not.
+fn gauge_text(label: char, value: u8, width: usize) -> String {
+    let filled = (usize::from(value) * width / 100).min(width);
+    format!(
+        "{label} {}{} {value:>3}",
+        "\u{2588}".repeat(filled),
+        "\u{2591}".repeat(width - filled)
     )
 }
 
@@ -1065,6 +1084,7 @@ mod tests {
             health: 100,
             satiety: 81,
             energy: 72,
+            fear: 20,
             applied_action: Some(Action::Eat {
                 food_id: "F0058".to_string(),
             }),
@@ -1078,7 +1098,7 @@ mod tests {
 
         assert_eq!(
             lines[1],
-            "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72"
+            "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20"
         );
         // Line one carries identifier, territory, position and the applied action, in the
         // mockup's columns. The action uses the engine's own rendering, `eat:F0058`.
@@ -1089,19 +1109,20 @@ mod tests {
         );
         assert!(lines[0].ends_with("eat:F0058"));
 
-        // The reserved fourth-bar slot is empty: nothing follows the third value.
+        // The fourth slot rule 4.5 reserved now carries `fear`, and the row ends there: no fifth
+        // group and no trailing padding follow it.
         assert_eq!(lines[1].trim_end(), lines[1]);
-        assert_eq!(count(&lines[1]), 3 * FULL_BAR + BAR_ROW_OVERHEAD);
+        assert_eq!(count(&lines[1]), 4 * FULL_BAR + BAR_ROW_OVERHEAD);
 
         // Rule 4.7 on the mockup's own values: 100 and 81 are high, 72 is middle. Two gauges
         // sharing a band and one differing is the shape a band read from the row rather than from
         // the value would get wrong, and it would get it wrong while still reading all-green.
-        let bands: Vec<Option<Color>> = entry_lines(&agent, FULL_BAR, true)
-            .remove(1)
-            .spans
-            .iter()
-            .map(|span| span.style.fg)
-            .collect();
+        //
+        // The fourth gauge takes no band, so its span carries no foreground -- the same `None` a
+        // separator carries. Its content is asserted alongside the vector, because the vector
+        // alone cannot tell an unbanded gauge from the space in front of it.
+        let spans = entry_lines(&agent, FULL_BAR, true).remove(1).spans;
+        let bands: Vec<Option<Color>> = spans.iter().map(|span| span.style.fg).collect();
         assert_eq!(
             bands,
             vec![
@@ -1110,24 +1131,38 @@ mod tests {
                 None,
                 Some(Color::Green),
                 None,
-                Some(Color::Indexed(208))
+                Some(Color::Indexed(208)),
+                None,
+                None
             ]
         );
+        assert!(spans[7].content.starts_with('f'), "{}", spans[7].content);
     }
 
     #[test]
     fn a_bar_row_shrinks_to_its_pane_and_never_overflows_it() {
-        // The 47-column roster pane has a 45-column interior.
-        assert_eq!(bar_width(45), 6);
-        assert_eq!(3 * bar_width(45) + BAR_ROW_OVERHEAD, 45);
+        // The 47-column roster pane has a 45-column interior. Four groups narrow the bars to two
+        // cells where three groups gave six — rule 4 as amended on 2026-08-19 accepts that.
+        assert_eq!(bar_width(45), 2);
+        // `45 − 35` is not a multiple of four, so two interior columns stay unused. The row is
+        // shorter than the interior rather than wider than it, which is the property that matters.
+        assert_eq!(4 * bar_width(45) + BAR_ROW_OVERHEAD, 43);
         // A full-width overlay reaches the mockup's twenty.
         assert_eq!(bar_width(158), FULL_BAR);
         // A pane too narrow for any bar asks for none rather than for a negative width.
         assert_eq!(bar_width(20), 0);
 
-        for interior in 28..200u16 {
+        for interior in 1..200u16 {
             let bar = bar_width(interior);
-            assert!(3 * bar + BAR_ROW_OVERHEAD <= usize::from(interior).max(27) + 2);
+            if usize::from(interior) < BAR_ROW_OVERHEAD {
+                // Nothing is left to divide, so the row asks for no bar at all.
+                assert_eq!(bar, 0, "interior {interior} asked for a bar it cannot hold");
+            } else {
+                assert!(
+                    4 * bar + BAR_ROW_OVERHEAD <= usize::from(interior),
+                    "interior {interior} overflows with a bar of {bar}"
+                );
+            }
         }
     }
 
@@ -1199,6 +1234,15 @@ mod tests {
                     unbanded('h', value, width),
                     "gauge text at value {value} width {width}"
                 );
+                // Rule 4.7's fourth gauge takes no band, and the same property has to hold of
+                // its absence: an unbanded gauge is a banded one with the colour removed and
+                // not a different form. `fear` is held to rule 4's mockup exactly as the three
+                // survival gauges are.
+                assert_eq!(
+                    unbanded_gauge('f', value, width).content,
+                    unbanded('f', value, width),
+                    "unbanded gauge text at value {value} width {width}"
+                );
                 cases += 1;
             }
         }
@@ -1213,15 +1257,19 @@ mod tests {
             health: 12,
             satiety: 55,
             energy: 88,
+            // Rule 4.5 as amended fills the reserved fourth slot with `fear`, and rule 4.7
+            // leaves that gauge unbanded. Its characters are still the rule's characters.
+            fear: 33,
             applied_action: Some(Action::Sleep),
         };
         assert_eq!(
             entry_lines(&agent, FULL_BAR, true)[1].to_string(),
             format!(
-                "     {}  {}  {}",
+                "     {}  {}  {}  {}",
                 unbanded('h', 12, FULL_BAR),
                 unbanded('s', 55, FULL_BAR),
-                unbanded('e', 88, FULL_BAR)
+                unbanded('e', 88, FULL_BAR),
+                unbanded('f', 33, FULL_BAR)
             )
         );
     }
@@ -1237,15 +1285,20 @@ mod tests {
             health: 12,
             satiety: 55,
             energy: 88,
+            // In the low band, had it one, and distinct from all three so that the tail of the
+            // row identifies it. Rule 4.7 as amended puts `fear` outside the scale, so a shared
+            // style borrowed from the row would show here as a red gauge.
+            fear: 7,
             applied_action: Some(Action::Sleep),
         };
         let row = entry_lines(&agent, FULL_BAR, true).remove(1);
 
-        // Indent, gauge, separator, gauge, separator, gauge.
-        assert_eq!(row.spans.len(), 6);
+        // Indent, gauge, separator, gauge, separator, gauge, separator, gauge.
+        assert_eq!(row.spans.len(), 8);
         assert_eq!(row.spans[0].style.fg, None, "the indent carries a band");
         assert_eq!(row.spans[2].style.fg, None, "a separator carries a band");
         assert_eq!(row.spans[4].style.fg, None, "a separator carries a band");
+        assert_eq!(row.spans[6].style.fg, None, "a separator carries a band");
         assert_eq!(row.spans[1].style.fg, Some(Color::Red));
         assert_eq!(row.spans[3].style.fg, Some(Color::Indexed(208)));
         assert_eq!(row.spans[5].style.fg, Some(Color::Green));
@@ -1256,10 +1309,19 @@ mod tests {
             assert_eq!(span.style.add_modifier, Modifier::empty(), "{span:?}");
         }
 
-        // Rule 4.5's reserved fourth-bar slot: nothing follows the third gauge, so it carries no
-        // character and therefore no band.
-        assert_eq!(row.spans.len(), 6);
-        assert!(row.to_string().ends_with(" 88"));
+        // Rule 4.5's reserved fourth-bar slot is filled, and rule 4.7 as amended gives what
+        // fills it no band. This is the one span that carries characters and no colour, so the
+        // vector alone cannot tell it from a separator: its content is asserted with its style.
+        assert_eq!(
+            row.spans[7].style.fg, None,
+            "the fourth gauge carries a band"
+        );
+        assert!(
+            row.spans[7].content.starts_with('f'),
+            "{}",
+            row.spans[7].content
+        );
+        assert!(row.to_string().ends_with("  7"));
     }
 
     /// Rule 4.7 reads the current value and nothing else. No previous tick is retained, so
@@ -1274,6 +1336,7 @@ mod tests {
                 health: value,
                 satiety: value,
                 energy: value,
+                fear: value,
                 applied_action: None,
             };
             entry_lines(&agent, FULL_BAR, true)
@@ -1304,11 +1367,14 @@ mod tests {
             health: 12,
             satiety: 55,
             energy: 88,
+            // Rule 4.5 as amended makes the collapsed form four numeric values rather than
+            // three, which is the correction this work order made to clause 7's own wording.
+            fear: 7,
             applied_action: None,
         };
         let lines = entry_lines(&agent, 0, false);
         assert_eq!(lines.len(), 1);
-        assert_eq!(lines[0].to_string(), "M01  A  h 12 s 55 e 88");
+        assert_eq!(lines[0].to_string(), "M01  A  h 12 s 55 e 88 f  7");
         for span in &lines[0].spans {
             assert_eq!(span.style.fg, None, "the collapsed form carries a band");
         }
@@ -1323,6 +1389,7 @@ mod tests {
             health: 0,
             satiety: 0,
             energy: 0,
+            fear: 0,
             applied_action: None,
         };
         let lines: Vec<String> = entry_lines(&agent, 4, true)
@@ -1331,12 +1398,17 @@ mod tests {
             .collect();
         assert!(lines[0].ends_with(ABSENT), "{}", lines[0]);
         assert!(lines[1].contains("h ░░░░   0"), "{}", lines[1]);
+        // Rule 4.4 governs the fourth gauge on the same terms: a computed zero is a zero and an
+        // empty bar, which is also every Mokiterion's initial `fear`.
+        assert!(lines[1].contains("f ░░░░   0"), "{}", lines[1]);
         // Rule 4.7 puts zero in the low band. It stays a `0` with an empty bar, so what
-        // distinguishes it from an absent value is still the character and not the colour.
-        assert_eq!(
-            entry_lines(&agent, 4, true).remove(1).spans[1].style.fg,
-            Some(Color::Red)
-        );
+        // distinguishes it from an absent value is still the character and not the colour. The
+        // fourth gauge is outside that scale entirely: `fear 0` is the best state `fear` has
+        // rather than the worst, and it takes no band at all.
+        let spans = entry_lines(&agent, 4, true).remove(1).spans;
+        assert_eq!(spans[1].style.fg, Some(Color::Red));
+        assert_eq!(spans[7].style.fg, None);
+        assert!(spans[7].content.starts_with('f'), "{}", spans[7].content);
 
         agent.applied_action = Some(Action::Wait);
         assert!(
@@ -1348,7 +1420,7 @@ mod tests {
         // The one-line form keeps the numbers and drops the bars.
         let compact = entry_lines(&agent, 0, false);
         assert_eq!(compact.len(), 1);
-        assert_eq!(compact[0].to_string(), "M01  A  h  0 s  0 e  0");
+        assert_eq!(compact[0].to_string(), "M01  A  h  0 s  0 e  0 f  0");
     }
 
     /// Rule 3.1 and 3.2, which are states rather than counts.

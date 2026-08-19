@@ -627,7 +627,7 @@ fn the_applied_action_presented_is_always_the_engines() {
     }
 }
 
-/// Neither shipped decision source can have a proposal rejected.
+/// No shipped decision source can have a proposal rejected.
 ///
 /// `BaselineDecisionSource` selects from the observation's valid actions and
 /// `ReferenceDecisionSource` guards every candidate with the observation's own `allows`, so both
@@ -635,9 +635,14 @@ fn the_applied_action_presented_is_always_the_engines() {
 /// through a run of either policy, which is asserted here as the fact it is: `VER-MOK-005`'s
 /// acceptance scenario 2 describes a state no shipped source produces, and the case that follows
 /// reaches it the only way it can be reached.
+///
+/// `WO-MOK-010` added a third shipped source and extended the sweep below to it rather than
+/// leaving the name of this case broader than what it checked. `IndividualDecisionSource` screens
+/// its candidates through the same `allows`, so the claim holds for the same reason; `VER-MOK-010`
+/// requires it as *validation is not relaxed*. No assertion here was changed to admit it.
 #[test]
 fn no_shipped_decision_source_has_a_proposal_rejected() {
-    for policy in ["baseline", "reference"] {
+    for policy in ["baseline", "reference", "individual"] {
         let mut observer = observer_for(&["--policy", policy, "--seed", "42", "--ticks", "400"]);
         while !observer.is_finished() {
             observer.advance().expect("the engine advances");

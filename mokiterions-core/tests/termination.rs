@@ -74,3 +74,30 @@ fn a_long_run_is_bounded_under_either_source() {
         assert_eq!(summary.survivors() + summary.deaths(), 12);
     }
 }
+
+/// `REQ-MOK-033`, `REQ-MOK-034`: the same bound under the trait-aware source.
+///
+/// A named sibling rather than a third entry in the loop above: the test above is
+/// `a_long_run_is_bounded_under_either_source` and its name would then be false. `WO-MOK-010`
+/// does not rename inherited tests, because a rename is indistinguishable from a removal in the
+/// census `VER-MOK-010` requires.
+///
+/// Ten thousand ticks is the run length that would expose an unbounded fear accumulation, a
+/// saturating-arithmetic slip surviving only in release mode, or a tolerance that starves its
+/// holder over a horizon a thousand ticks does not reach.
+#[test]
+fn a_long_run_is_bounded_under_the_trait_aware_source() {
+    let mut simulation = Simulation::new(Config {
+        seed: 123,
+        tick_limit: 10_000,
+        policy: Policy::Individual,
+        density: Density::DEFAULT,
+        trace_actions: false,
+    })
+    .unwrap();
+
+    let summary = simulation.run(&mut io::sink()).unwrap();
+
+    assert!(summary.ticks() <= 10_000);
+    assert_eq!(summary.survivors() + summary.deaths(), 12);
+}

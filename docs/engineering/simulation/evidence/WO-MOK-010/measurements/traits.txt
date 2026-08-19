@@ -1,0 +1,20 @@
+WO-MOK-007 - the twelve derived traits per declared seed
+
+Reported: the `waste_tolerance` field of each `agent_initialized` record, in M01..M12 order.
+Expected: recomputed here from `SPEC-MOK-001`'s *Behavioral trait* subsection as amended on
+2026-08-19 -- its generator, its salt, its rejection-sampled bound of 0..=40 -- so that the
+checked-in expectation is not the implementation restating itself.
+
+seed  M01..M12                             min  max  distinct  expectation agrees
+----  -----------------------------------  ---  ---  --------  ------------------
+0      6  8  8  5  4 32 15 10 39 18 20 37  4    39   11        True
+1     26  3 22 39 39 37  2 17 15 16 28  0  0    39   11        True
+42    11 40  4 24 21 13  7 40 24 15 10 23  4    40   10        True
+123   20 33 40 13 35 19 40 35 24  0 19  4  0    40   9         True
+777   36  3  7 10 30 18 36 24  0 22  8 38  0    38   11        True
+
+The trait is also verified invariant across a run, across sources, across densities and
+across tick limits by the internal-tier tests named in the requirement-to-test mapping; the
+table above is the record of which populations the survivor floor was measured on.
+
+range specified: 0..=40   lowest value seen across all five seeds: 0   highest: 40

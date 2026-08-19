@@ -29,6 +29,7 @@ fn buffer() -> EventBuffer {
             health: (100, 100),
             satiety: (97, 96),
             energy: (97, 96),
+            fear: (12, 22),
         },
     });
     buffer.push(Event {
@@ -58,7 +59,7 @@ fn records_use_the_engines_own_line_format_in_authoritative_order() {
     );
     assert_eq!(
         lines[1],
-        "tick=4 subject=M03 event=survival_changed result=health:100->100,satiety:97->96,energy:97->96"
+        "tick=4 subject=M03 event=survival_changed result=health:100->100,satiety:97->96,energy:97->96,fear:12->22"
     );
     assert_eq!(
         lines[2],

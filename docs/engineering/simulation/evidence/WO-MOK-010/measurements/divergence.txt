@@ -1,0 +1,146 @@
+WO-MOK-007 - REQ-MOK-033: divergence in a real run, not only in a constructed state
+
+A SITUATION is a resource class underfoot at a stated satiety -- the two of rule 19's three
+inputs that are not the trait. Every agent-tick of the 1,000-tick traced run at the default
+density that presented a situation is grouped by it, which isolates the trait: two
+occurrences of one situation differ in the trait and in nothing else the test reads. The
+situations are reconstructed from the resource field, not read from the engine, so an agent
+standing on a resource and walking away from it is counted as the decline it is.
+
+DIVERGENT situations are those where two traits decided differently. `separated` states that
+every eating trait exceeds every declining trait, which is the monotonicity rule 19's
+arithmetic implies. DISAGREEMENTS are occurrences where the engine's decision differs from
+the tolerant test evaluated here; CONTRADICTIONS are one situation and one trait deciding
+both ways somewhere in the run. Both must be zero, and both are checks on the engine rather
+than observations of it.
+
+WASTE-ACCEPTING EATS are eats of a resource whose restored satiety overflows 100. The
+reference source declines every one of them by its non-waste test, so each is a tick at
+which the two sources would have proposed differently for the same Mokiterion.
+
+seed  situations presented  distinct  divergent  same-tick  disagreements  contradictions  unseparated  waste eats  distinct eaters
+----  --------------------  --------  ---------  ---------  -------------  --------------  -----------  ----------  ---------------
+0     449                   136       10         0          0              0               0            73          9
+1     408                   137       3          0          0              0               0            86          9
+42    401                   124       3          0          0              0               0            54          9
+123   410                   131       5          0          0              0               0            97          10
+777   454                   134       3          0          0              0               0            75          9
+
+--- seed 0: the first five divergent situations of 10
+
+class  satiety  ate            declined       eats  declines  separated  a shared tick
+-----  -------  -------------  -------------  ----  --------  ---------  -------------
+high   55       M07 T=15 @136  M03 T=8 @594   5     1         True       -
+high   57       M12 T=37 @305  M03 T=8 @592   2     1         True       -
+high   58       M06 T=32 @439  M07 T=15 @615  3     1         True       -
+high   61       M06 T=32 @621  M01 T=6 @435   4     2         True       -
+high   64       M06 T=32 @397  M04 T=5 @792   3     1         True       -
+
+--- seed 0: the first five waste-accepting eats of 73
+
+tick  agent  trait  class   satiety  satiety wasted  the trait admits it
+----  -----  -----  ------  -------  --------------  -------------------
+29    M06    32     medium  72       2               True
+73    M06    32     low     86       1               True
+102   M06    32     medium  71       1               True
+130   M12    37     medium  76       6               True
+136   M07    15     high    55       5               True
+
+--- seed 1: the first five divergent situations of 3
+
+class   satiety  ate            declined       eats  declines  separated  a shared tick
+------  -------  -------------  -------------  ----  --------  ---------  -------------
+high    66       M04 T=39 @158  M02 T=3 @35    2     2         True       -
+high    67       M04 T=39 @403  M09 T=15 @665  1     1         True       -
+medium  79       M05 T=39 @672  M08 T=17 @450  1     1         True       -
+
+--- seed 1: the first five waste-accepting eats of 86
+
+tick  agent  trait  class   satiety  satiety wasted  the trait admits it
+----  -----  -----  ------  -------  --------------  -------------------
+41    M11    28     medium  75       5               True
+56    M03    22     medium  75       5               True
+66    M04    39     medium  80       10              True
+75    M01    26     medium  71       1               True
+75    M05    39     high    56       6               True
+
+--- seed 42: the first five divergent situations of 3
+
+class  satiety  ate            declined       eats  declines  separated  a shared tick
+-----  -------  -------------  -------------  ----  --------  ---------  -------------
+high   58       M08 T=40 @419  M10 T=15 @343  2     1         True       -
+high   59       M12 T=23 @136  M10 T=15 @342  4     1         True       -
+high   68       M08 T=40 @466  M04 T=24 @904  1     1         True       -
+
+--- seed 42: the first five waste-accepting eats of 54
+
+tick  agent  trait  class   satiety  satiety wasted  the trait admits it
+----  -----  -----  ------  -------  --------------  -------------------
+14    M08    40     low     87       2               True
+36    M08    40     medium  78       8               True
+45    M02    40     medium  71       1               True
+50    M12    23     high    51       1               True
+87    M02    40     medium  73       3               True
+
+--- seed 123: the first five divergent situations of 5
+
+class   satiety  ate            declined       eats  declines  separated  a shared tick
+------  -------  -------------  -------------  ----  --------  ---------  -------------
+high    61       M07 T=40 @749  M10 T=0 @955   1     1         True       -
+high    67       M05 T=35 @955  M12 T=4 @717   1     1         True       -
+high    68       M07 T=40 @398  M01 T=20 @924  1     1         True       -
+high    69       M07 T=40 @840  M04 T=13 @272  1     3         True       -
+medium  78       M08 T=35 @334  M04 T=13 @128  1     1         True       -
+
+--- seed 123: the first five waste-accepting eats of 97
+
+tick  agent  trait  class   satiety  satiety wasted  the trait admits it
+----  -----  -----  ------  -------  --------------  -------------------
+15    M07    40     low     86       1               True
+40    M05    35     medium  76       6               True
+58    M03    40     high    58       8               True
+65    M05    35     medium  75       5               True
+73    M02    33     medium  73       3               True
+
+--- seed 777: the first five divergent situations of 3
+
+class  satiety  ate            declined       eats  declines  separated  a shared tick
+-----  -------  -------------  -------------  ----  --------  ---------  -------------
+high   58       M12 T=38 @482  M09 T=0 @913   1     1         True       -
+high   59       M01 T=36 @364  M09 T=0 @912   4     1         True       -
+high   62       M07 T=36 @69   M04 T=10 @249  1     1         True       -
+
+--- seed 777: the first five waste-accepting eats of 75
+
+tick  agent  trait  class   satiety  satiety wasted  the trait admits it
+----  -----  -----  ------  -------  --------------  -------------------
+27    M06    18     medium  74       4               True
+39    M01    36     medium  77       7               True
+69    M07    36     high    62       12              True
+73    M08    24     medium  73       3               True
+76    M06    18     high    51       1               True
+
+--- the low end of the range, which shows the trait by what it refuses
+
+seed  never accepted a clipped resource  highest such trait  lowest accepting trait  they overlap
+----  ---------------------------------  ------------------  ----------------------  ------------
+0     M05 T=4 M04 T=5 M08 T=10           10                  6                       True
+1     M12 T=0 M07 T=2 M02 T=3            3                   15                      False
+42    M03 T=4 M07 T=7 M11 T=10           10                  11                      False
+123   M10 T=0 M12 T=4                    4                   13                      False
+777   M09 T=0 M02 T=3 M03 T=7            7                   8                       False
+
+Two or three Mokiterions per seed never accepted a clipped resource in 1,000 ticks, and they
+are drawn from the low end of the range. The ordering is not strict, and it should not be:
+seed 0 has a tolerance-10 Mokiterion that never accepted one and a tolerance-6 Mokiterion
+that did. Accepting a clipped resource requires standing on one at the right satiety, which
+is a matter of where a Mokiterion walked and what regenerated near it, so a lifetime
+aggregate mixes the trait with the itinerary. The strict ordering is the situation-level one
+in the table above, where the situation is held equal and only the trait varies. A Mokiterion
+at tolerance 0 behaves as rule 5 does, by rule 19's own statement, and seeds 1, 123 and 777
+each carry one.
+
+Divergence is present on every declared seed; disagreements, contradictions and unseparated
+situations are zero on every declared seed. `a shared tick` names a tick at which the two
+decisions were taken simultaneously where one exists -- a stricter coincidence than the
+requirement asks for, and not one every situation supplies.

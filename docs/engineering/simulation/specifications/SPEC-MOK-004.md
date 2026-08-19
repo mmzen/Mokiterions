@@ -19,6 +19,8 @@ specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
 |---|---|---|
 | 2026-08-18 | Original content for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`. | Approved by the technical owner; implemented under `WO-MOK-006` and verified under `VREC-MOK-006`. |
 | 2026-08-19 | Recorded figures and two subject lines corrected, because `SPEC-MOK-003` rule 5 as amended the same day replaced the observer's four-row layout-tier table with one threshold per pane, and the implementation that conforms to it removes the `layout` module's `Tier` enum, that enum's `label` method, the `tier_for` function and the `Panes::tier` field. **Rule 6**: the recorded extent falls from 13 `layout` items to **10** and from **97** items to **94**; the same interface counted the other way falls from 122 to **118**, and its public fields from 25 to **24**. What the field figure counts is now stated, because 25 is reproducible only as 122 − 97 — it counts public fields, and the variants of a public enum are not written `pub` and were never in it. The `layout` row's subject, "viewport tiers and the pane geometry of each", is corrected: there are no tiers to name. A **Reduction** clause is added, symmetric with the existing **Growth** clause, so that removal is governed the way addition already was. The byte-identity check is scoped to the `WO-MOK-006` restructuring it was written for, exactly as `SPEC-MOK-002` rule 3's freeze was scoped to `WO-MOK-003`; unscoped it forbids the observer's code from ever changing again, which was never its subject and is not what rule 6 is for. **Rule 9**: `tests/layout.rs` rises from 7 tests to **10** and the public tier from 77 to **80**. The +3 is a net figure and the rule now carries the measured composition: three tests go, because they assert the tier table and the per-tier minimums that rule 5 no longer defines, and six arrive — the rename of the third departure, the per-pane threshold case, the ten-row log case and the monotonicity sweep that `VER-MOK-005` as amended requires, and two one-to-one threshold cases that its **Mapping injectivity** property needs once rule 5 creates a second placement regime. **Rule 11**: the observer's executed total rises from 109 to **112** and the workspace's from 169 to **172**, with the "same before and after" clause scoped to the restructuring. **Rule 12**: its second paragraph is scoped to the `WO-MOK-006` restructuring, exactly as rule 13's clause is and for the same reason — unscoped it forbids any later work order from renaming a test in either package, which is a freeze on test maintenance the rule was not written to impose, and it would make `excluded_panes_are_the_ones_the_tier_omits` unrenamable after the term "tier" was deleted from the specification it cites. The assertion itself is unchanged; only the name and the rule it names change. **Rule 13** and the second worked example no longer say "layout tier". No rule changes what it requires. No target, target name, path, package name, tier boundary, hook or prohibition changes, and no item's visibility widens: the interface only loses items, so rule 7 is satisfied by construction. | **OUTSTANDING.** Requires the technical owner. The repository owner approved the `SPEC-MOK-003` rule 5 amendment that authorizes the removal and directed the implementation in the same act on 2026-08-19, but was not shown this consequence: the implementation agent found it after the fact, by measuring the interface against this rule, and has reported it rather than treating the rule 5 approval as covering it. Records bound to commits are not re-opened — `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit. |
+| 2026-08-19 | **Recorded test-count figures corrected for `WO-MOK-010` and for `master`'s `WO-MOK-007`, both of which added tests without correcting them.** Rule 11 states the obligation this row discharges: "a work order that adds a test corrects these figures here, and one that loses a test has a defect". The figures are measured on the merge of `master` at `7a2b502` into this branch, which is the first tree in which both sets of additions exist; neither work order's figures are statable without the other's, and correcting only one would leave the rule stating a number no tree runs. **Rule 9**: `tests/options.rs` rises from 7 to **8** and `tests/render.rs` from 8 to **12**, so the public tier rises from 80 to **85**. Five tests arrive, three from this work order and two from `WO-MOK-007`, each named below with the obligation it carries, and none departs. **Rule 10**: `mokiterions-tui/src/render.rs` rises from 12 tests to **17** and the internal tier from 32 to **37**, all five arrivals `WO-MOK-007`'s bands. The same row's item count rises from 39 private items to **47** — 30 functions and 17 constants — because `WO-MOK-007` adds one function and five constants and this work order adds two functions, none of them public. The five internal tests that use a hook are still the same five: neither work order adds one that does. **Rule 11**: the observer's executed total rises from 112 to **122**, the engine's from 60 to **78**, and the workspace's from 172 to **200**. Of the 28 the workspace gains, 21 are `WO-MOK-010`'s — 18 engine and 3 observer — and 7 are `WO-MOK-007`'s, 5 internal and 2 public. The engine's 18 are 13 internal and 5 public under `SPEC-MOK-002` rules 5 and 7, which state no figure of their own, and the split is recorded here only because the workspace total is stated here and is otherwise not reproducible. Nothing else changes — no target, target name, path, package name, tier boundary, hook or prohibition, and no item's visibility. The interface of rule 6 is untouched at 94, measured rather than assumed: neither work order adds a public item to the observer, and `WO-MOK-007`'s band constants and its `band` function are private to `render.rs`. | **Ratified 2026-08-19 by the repository owner acting as technical owner**, in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`, on the reading that neither half of the correction is statable without the other. It was **OUTSTANDING** until that act. This is a defect in two work orders' conformance rather than in this specification, and the second of them is not this branch's to answer for: `WO-MOK-007` reached `master` with seven tests added and rules 9, 10 and 11 left as they were. The implementation agent found both by measuring the merged tree against this rule, wrote this text, and decides none of it. Records bound to commits are not re-opened: `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit, and `VREC-MOK-007` is verified at `dfab77b` against the tree it was taken on. `VREC-MOK-010` measured 190 and is bound to a commit that predates this correction and the merge; it is re-captured, not edited. |
+| 2026-08-19 | **Rule 11's pointer to `WO-MOK-010`'s census corrected to the recapture the row above foretold.** That row closes "`VREC-MOK-010` measured 190 and is bound to a commit that predates this correction and the merge; it is re-captured, not edited", and the same was true of the census itself: rule 11's last paragraph said it "was captured at `4f32a9f` and reaches 190 rather than 200; that census is a capture and is re-taken against the merge rather than edited". It has since been re-taken, from a clean worktree at `master`'s tip `7a2b502`, and reads **179 before, 200 after** with `master`'s ten arrivals on its before side. The paragraph now says so, and keeps the superseded 190 on the record rather than deleting it. **No provision of this specification is added, removed or reworded, and no figure changes**: the observer's 122, the engine's 78 and the workspace's 200 are the row above's and are unmoved, as are the 21 additions and 0 removals; only the sentence saying where and against which tree they are reconciled is brought up to date. | Recorded by the implementation agent as a statement of fact about retained evidence, under rule 11's own instruction that a work order which adds a test corrects these figures here. It carries no ratification of its own because it changes nothing that requires one; the correction it points at is the row above, which was **OUTSTANDING** when this row was written and which the technical owner ratified on 2026-08-19 in the closing review of `WO-MOK-010`. |
 
 ## Scope
 
@@ -302,12 +304,12 @@ reaching the code as `use mokiterions_tui::…`. The arrangement, with the count
 | `tests/authority.rs` | the engine's verdict and its presentation | 4 |
 | `tests/export.rs` | export content and its rendered form | 7 |
 | `tests/layout.rs` | the pane thresholds, the floor and pane geometry | 10 |
-| `tests/options.rs` | the observer's argument handling | 7 |
-| `tests/render.rs` | frame content asserted through the frame entry points | 8 |
+| `tests/options.rs` | the observer's argument handling | 8 |
+| `tests/render.rs` | frame content asserted through the frame entry points | 12 |
 | `tests/spatial.rs` | world-to-canvas mapping | 7 |
 | `tests/state.rs` | observer state, accessors, filters and the event buffer | 21 |
 | `tests/verification.rs` | the cross-cutting properties: non-perturbation, export fidelity, presented-value fidelity, the authority verdict, colour independence | 16 |
-| **Total** | | **80** |
+| **Total** | | **85** |
 
 The counts began as the measured outcome of applying rule 8 to the 109 tests at the `WO-MOK-006` predecessor commit —
 77 in this table — and they are stated so that a relocation that loses or invents a test is detectable. They are not a
@@ -341,17 +343,40 @@ only regime; rule 5 as amended creates a second regime, so the property needs a 
 row axis. Every item all nine name is already in rule 6's interface, so rule 8 places them in the public tier and
 nothing widens.
 
+`tests/options.rs` reads 8 rather than 7 and `tests/render.rs` reads 12 rather than 8 as corrected for
+`WO-MOK-010`, which `VER-MOK-010` obliges to assert `REQ-MOK-032` at the frame, and for `master`'s `WO-MOK-007`,
+which `VER-MOK-007` obliges to assert rule 4 clause 7 at the frame. Five tests arrive and none departs:
+
+| Added | Obligation it carries |
+|---|---|
+| `the_usage_text_advertises_every_policy_the_engine_accepts` | `SPEC-MOK-001`'s *Help output* against the third decision source `REQ-MOK-033` adds |
+| `the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it` | `VER-MOK-010` oracle 4's cell-position case, at every viewport rule 5 presents the roster at |
+| `the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it` | `VREC-MOK-005` finding 3, read against `SPEC-MOK-003` rule 4.4 at zero and away from it |
+| `the_survival_bands_reach_the_frame_and_three_differ_in_one_entry` | `WO-MOK-007`: rule 4 clause 7's bands in drawn cells, on an entry whose three attributes fall in three bands |
+| `a_selected_entry_keeps_its_bands_under_reversed_video` | `WO-MOK-007`: clause 6's reversal and clause 7's band on one entry, neither replacing the other |
+
+All five reach the code as `use mokiterions_tui::…` and name only items already in rule 6's interface, so rule 8
+places them in the public tier and nothing widens. The internal tier of rule 10 rises to 37, all five of its
+arrivals `WO-MOK-007`'s: `WO-MOK-010` adds no observer test that requires a private item or a hook.
+
 ### 10. Internal tier
 
 Located in a `#[cfg(test)]` module inside the crate, beside the code it covers:
 
 | Location | Tests | Why they cannot move |
 |---|---|---|
-| `mokiterions-tui/src/render.rs` | 12 | assert drawing internals; the module declares 39 private items — 27 functions and 12 constants — against 2 public ones, and 5 of the 12 additionally use a hook |
+| `mokiterions-tui/src/render.rs` | 17 | assert drawing internals; the module declares 47 private items — 30 functions and 17 constants — against 2 public ones, and 5 of the 17 additionally use a hook |
 | `mokiterions-tui/src/verification.rs` | 8 | reach several modules **and** a hook, so they belong to no single module's tier and cannot leave the crate |
 | `mokiterions-tui/src/state.rs` | 4 | 3 use a hook; 1 asserts a private detail of the state type |
 | `mokiterions-tui/src/main.rs` | 8 | every one requires a private item of the binary: 4 name `tick_interval`, `due`, `idle_for` or `report` directly, and 4 reach the start-up function and the private `Launch` type through two helpers in the test module |
-| **Total** | **32** | |
+| **Total** | **37** | |
+
+`mokiterions-tui/src/render.rs` reads 17 rather than 12 as corrected for `master`'s `WO-MOK-007`. Its five arrivals
+are `the_survival_bands_are_the_three_the_rule_fixes`, `banding_changes_no_character_of_an_entry`,
+`each_gauge_carries_its_own_band_and_nothing_else_carries_one`, `a_band_reads_only_the_value_it_is_given` and
+`the_collapsed_form_takes_no_band`. Each names `band`, `gauge` or `entry_lines`, every one of them private to the
+module, so rule 8 places them here and none of them is writable in the public tier. None uses a hook, which is why the
+hook figure in the table above is unchanged at five.
 
 `mokiterions-tui/src/verification.rs` is declared from `lib.rs` under rule 5 and contains only the eight tests above.
 This is the one place the observer's structure differs from the engine's, where `SPEC-MOK-002` rule 3 leaves
@@ -375,6 +400,20 @@ The number of executed tests is the same before and after the restructuring: 109
 and the workspace's **172**, the engine's 60 unchanged, the three added by `WO-MOK-005`'s conformance to
 `SPEC-MOK-003` rule 5 as amended. The clause this paragraph exists for is conservation across a move, not a ceiling on
 the corpus: a work order that adds a test corrects these figures here, and one that loses a test has a defect.
+
+As corrected for `WO-MOK-010` and for `master`'s `WO-MOK-007`, the observer's total is **122**, the engine's is
+**78**, and the workspace's is **200**. The observer's 10 are the five of rule 9 above and the five of rule 10; the
+engine's 18 are 13 in its internal tier and 5 in its public tier, under `SPEC-MOK-002` rules 5 and 7 rather than this
+rule, which states no figure of its own for them. The split is recorded here because this paragraph is the only place
+the workspace total is stated and 200 is otherwise not reproducible.
+
+No test was lost, and the two work orders' additions are reconciled separately because their evidence was taken on two
+different trees. `WO-MOK-010`'s 21 additions and 0 removals are reconciled name by name in its `test-census.txt`, which
+was re-taken on 2026-08-19 against `master`'s tip and reads **179 before, 200 after**; `master`'s ten arrivals sit on
+its before side rather than among this work order's additions. It was not edited to reach that figure — the earlier
+capture, taken at `4f32a9f` against the branch point, reached 190, and a capture is re-run rather than corrected.
+`WO-MOK-007`'s 7 additions and 0 removals are the seven named in rules 9 and 10 above, which is where its own evidence
+left them uncounted.
 
 An observer test asserts a rendering claim against an in-memory character buffer. A test requiring a terminal, a
 pseudo-terminal, a screenshot, or a recording is not admissible in either tier; `SPEC-MOK-003` is the authority and

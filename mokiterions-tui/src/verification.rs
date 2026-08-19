@@ -471,6 +471,7 @@ fn contrived(base: &WorldSnapshot) -> WorldSnapshot {
         health: 60,
         satiety: 50,
         energy: 40,
+        fear: 30,
         applied_action: Some(Action::Wait),
     };
     // (0, 0) and (1, 0) fall in one 2 x 4 overview cell, so rule 2.4's shared cell is reached.

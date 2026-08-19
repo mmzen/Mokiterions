@@ -18,8 +18,14 @@ Nobody tells them what to do as a group — each one decides for itself, one at 
 
 The interesting question is: **who is still alive after 1,000 turns?**
 
-The answer is usually 8 to 11 of the 12. Some always die. That is on purpose. A world where everyone
-survives easily would be boring, and a world where everyone dies would tell us nothing.
+The answer is usually 8 to 11 of the 12, and 9 to 12 with the newest of the three deciders described
+in section 11. Some always die. That is on purpose. A world where everyone survives easily would be
+boring, and a world where everyone dies would tell us nothing.
+
+The twelve are also no longer interchangeable. Each is born with one fixed quirk — how much food it
+is willing to waste — which changes what it will eat and what it will walk to (section 3, section
+11). Each also carries a mood, `fear`, that rises when it is not alone. The quirk changes behaviour.
+**The mood, so far, changes nothing at all** (section 8).
 
 ---
 
@@ -60,20 +66,43 @@ same square, and a creature can stand on top of a piece of food.
 There are exactly **twelve**, named `M01` to `M12`. Six start in territory A (`M01`–`M06`) and six
 start in territory B (`M07`–`M12`), at random positions, never two on the same square at the start.
 
-Each one carries three numbers, each from 0 to 100:
+Each one carries four numbers, each from 0 to 100:
 
 | Number | What it means | Starts at |
 |---|---|---:|
 | **health** | how alive you are. Reaches 0 and you are dead, permanently | 100 |
 | **satiety** | how *full* you are. This is hunger, counted upwards | 100 |
 | **energy** | how rested you are | 100 |
+| **fear** | how uneasy you are. Rises when others are in sight, falls when you are alone | 0 |
 
 **Satiety is the word to remember.** It is not hunger — it is the opposite. 100 means completely
 full, 0 means completely empty. It only goes up by eating.
 
-That is the whole creature. No name, no personality, no memory, no fear, no preferences. All twelve
-are identical apart from their number and their position. (Giving them individual personalities is
-planned work, not something the simulation does today.)
+Those four change during the run. There is also one number that never changes:
+
+| Trait | What it means | Range |
+|---|---|---|
+| **waste tolerance** | how much of a piece of food you are willing to throw away in order to eat it now | 0 to 40 |
+
+**This is the only thing that makes one Mokiterion different from another.** It is decided once, at
+the moment the world is created, from the seed and the creature's own number — so `M07` on seed 42 has
+the same tolerance every single time you run seed 42, and a different one on seed 43. It is announced
+once, on the creature's first line of output, and never mentioned again. Nothing in the run can
+change it: not eating, not starving, not dying.
+
+The values are genuinely spread out. On seed 42, the twelve are:
+
+```
+M01 11   M02 40   M03  4   M04 24   M05 21   M06 13
+M07  7   M08 40   M09 24   M10 15   M11 10   M12 23
+```
+
+Nine to eleven different values per seed, in practice, with both `0` and `40` turning up across the
+five seeds the project measures. What the number actually *does* is section 12 — and only the newest
+decider reads it at all. Under the other two it is derived, reported, and ignored.
+
+Still absent: no name, no memory, no preferences, no relationships. Two Mokiterions with the same
+tolerance are still interchangeable apart from where they are standing.
 
 ---
 
@@ -104,7 +133,7 @@ in this exact order:
    - **It looks around.** The simulation hands it a description of what it can see (see section 7).
    - **It picks one action** — just one — from wait, sleep, eat, or move.
    - **The simulation checks the action is legal**, and applies it if so.
-   - **Then it gets hungrier and more tired** (see section 8).
+   - **Then it gets hungrier and more tired, and its fear moves** (see section 8).
 4. **After everyone has moved, food may regrow** — but only on ticks that divide by 10 (tick 10, 20,
    30 …). See section 9.
 5. **The simulation checks whether to stop**: either everyone is dead, or the turn limit was reached.
@@ -168,13 +197,14 @@ shortage of food in the world, but the walking distance to it.
 
 ---
 
-## 8. Getting hungry, and dying
+## 8. Getting hungry, dying, and being afraid
 
 At the end of every single turn, for every living creature:
 
 - **satiety drops by 1**
 - **energy drops by 1**
 - **and then**, if either of those has hit 0, **health drops by 5**
+- **and then fear moves**, up or down — see below
 
 Neither number can go below 0. Health reaching 0 means death, and death is final: no more turns, no
 more looking around, no more anything.
@@ -192,6 +222,43 @@ twelfth happened to be standing near the one piece of food, ate it, and lasted u
 Notice that **sleep saves you from tiredness but nothing saves you from hunger except food**. Energy
 has a free refill; satiety does not. That is why hunger is what actually kills everyone, and why the
 whole simulation is really about food.
+
+### Fear
+
+Fear is not part of dying. It is bolted onto the same end-of-turn step, and the rule is two lines
+long:
+
+| What the creature saw this turn | What happens to fear |
+|---|---|
+| **at least one** other living Mokiterion in its look-around | **+10** |
+| nobody at all | **−5** |
+
+It stops at 0 at the bottom and at 100 at the top; overshoot is simply lost, exactly like satiety.
+
+Four things about that rule are worth spelling out, because they are all deliberate:
+
+- **It reuses the look-around the creature already did** to make its decision that turn (section 7).
+  There is no second look, no extra cost, no randomness, and no separate "fear distance". If it is in
+  sight, it counts.
+- **Quantity, distance and direction are all ignored.** One stranger 16 squares away and eleven
+  strangers standing on your square produce the same +10. The rule cannot tell the two apart.
+- **Being seen is not the same as seeing.** Because the twelve act in order, `M01` looks around while
+  `M02` is still in its old spot. So two neighbours may not both notice each other on the same turn.
+- **The step is +10 up and −5 down**, so fear climbs twice as fast as it fades. In a world where you
+  usually have company, that adds up quickly.
+
+It adds up rather more quickly than the numbers suggest. Measured over 111,604 creature-turns across
+every seed and every decider: **fear is sitting at exactly 100 on 39% of them**, and above 0 on
+roughly half to two thirds. There is also one step size the table above does not predict — **+5**,
+which occurred 219 times. That is a creature at 95 gaining 10 and stopping at 100.
+
+**And now the honest part: nothing reads fear.** No rule consults it, no decider consults it, no
+creature behaves differently because of it. It is computed, kept in range, reported on every
+`survival_changed` line and on the observer's roster, and that is the end of it. Which means the two
+numbers `+10` and `−5` cannot be shown to be right or wrong by anything that happens in the world —
+there is no outcome for them to be wrong *about* yet. Fear exists now so that the thing that will use
+it, in a later phase, does not have to invent it. Until then, treat that 39% as a fact about the
+current constants and not as a finding.
 
 ---
 
@@ -261,9 +328,11 @@ description of its surroundings and hands back a *request*: "I would like to mov
 change anything itself. The simulation checks the request and decides what actually happens.
 
 This separation is the whole point of the design. It means the thing making decisions can be swapped
-out — for something smarter, later — without it ever being able to cheat.
+out — for something smarter, later — without it ever being able to cheat. The newest decider reads
+each creature's waste tolerance, and that changes nothing about the arrangement: it still only asks,
+and the simulation still decides.
 
-Two deciders exist today. Pick one with `--policy`.
+Three deciders exist today. Pick one with `--policy`.
 
 ### The baseline decider — `--policy baseline`
 
@@ -292,6 +361,57 @@ that proves the world is survivable and gives future, smarter deciders something
 against. Without it, "the clever decider kept 9 alive" would be a meaningless claim — you would not
 know whether 9 was good.
 
+### The trait-aware decider — `--policy individual`
+
+**This is the same four-step list as the reference decider, with exactly one difference:** how much
+food it is prepared to throw away. It reads the creature's waste tolerance from section 3 and nothing
+else. Steps 1 and 3 — eat what I am standing on, walk toward the nearest food worth reaching — use the
+looser test described in section 12. Steps 2 and 4 are untouched. It never chooses "wait" either.
+
+Because the tolerance is a different number for each creature, **two Mokiterions in exactly the same
+spot, at exactly the same fullness, looking at exactly the same piece of food, can make different
+choices.** That is the entire point of it, and it is the first time anything in this simulation has
+been true of one creature and not another.
+
+Two ends of the range are worth knowing:
+
+- **A creature with tolerance 0 behaves like the reference decider — not roughly, exactly.** Every one
+  of 2,808 possible situations was checked one by one, and it proposed the identical action in all of
+  them. So the new decider contains the old one as its own most careful member.
+- **A creature with tolerance 40**, the highest possible, will eat a feast at satiety 70 where the
+  reference decider stops at 50. See the table in section 12.
+
+Measured over 1,000 turns at the default density, on the five seeds the project uses:
+
+| seed | 0 | 1 | 42 | 123 | 777 |
+|---|---:|---:|---:|---:|---:|
+| survivors, trait-aware | 11 | 9 | 9 | 10 | **12** |
+| survivors, reference | 8 | 11 | 8 | 9 | 11 |
+
+It is not simply better. It wins on three of the five seeds, loses on one, and on seed 777 keeps all
+twelve alive — which the project treats as an adverse result rather than a good one, because a world
+nobody dies in is not testing anything.
+
+**A real difference, from a real run.** On seed 42, turn 14, `M08` — whose tolerance is 40, the maximum
+— ate a low snack while its satiety was 87. The snack restores 15, so 2 of it were destroyed. The
+reference decider refuses any snack above satiety 85, so it would have walked away. You can see the
+line yourself:
+
+```bash
+cargo run --bin Mokiterions -- --policy individual --seed 42 --ticks 20 | grep food_consumed
+```
+
+Two honest limits on all of this:
+
+- **Differences of that kind are rare.** Across a 1,000-turn run there are only about 3 to 10 moments
+  where two creatures facing the genuinely same situation would have chosen differently — and in the
+  runs measured, **never two such creatures on the same turn**, so you cannot watch it happen side by
+  side in one frame. Counted the looser way, as "meals eaten that the reference decider would have
+  refused", it is 54 to 97 per run by 9 or 10 different creatures. Both numbers are real; they measure
+  different things.
+- **A higher tolerance is not a better tolerance.** It stops helping well before the range runs out,
+  which is why the range stops at 40 and not at 100 — see section 12.
+
 ---
 
 ## 12. The rule that surprises everyone: don't waste food
@@ -299,7 +419,8 @@ know whether 9 was good.
 A Mokiterion will refuse a feast it is standing on.
 
 Nothing can go above 100. So eating a High piece (worth 50 satiety) at satiety 80 would waste 30 of
-it. The reference decider will not do that. It only eats when the food fits **completely**:
+it. The reference decider will not do that. It only eats when the food fits **completely**. The
+trait-aware decider bends this, and by how much is the second half of this section.
 
 | Class | Worth | Eaten only when satiety is at most |
 |---|---:|---:|
@@ -324,9 +445,51 @@ Two honest consequences of this rule, both known and accepted:
 - **Feasts pile up.** High pieces are only wanted by quite hungry creatures, so they get eaten last
   and accumulate. By turn 1,000 at the default density, roughly three quarters of the remaining food
   is High. Territories look full while the food anybody will actually walk to has run out. Over very
-  long runs this is fatal: at the default density, everyone is dead by tick 9,154. Nothing promised
-  otherwise — the survivor target is about turn 1,000 — and fixing it is scheduled work, recorded in
-  `docs/mokiterions/ROADMAP.md`.
+  long runs this is fatal: at the default density on seed 123, everyone is dead by tick 9,154. Nothing
+  promised otherwise — the survivor target is about turn 1,000 — and fixing it is scheduled work,
+  recorded in `docs/mokiterions/ROADMAP.md`.
+
+### Bending the rule: waste tolerance
+
+Every creature has a number saying how much waste it will put up with (section 3). The trait-aware
+decider uses it like this: a piece of food worth `R` satiety, eaten at satiety `S`, spills
+`S + R − 100` if that is positive, and the creature accepts the piece when
+
+> the spill is no more than **`T` percent of the piece**, where `T` is its waste tolerance.
+
+Whole numbers only, rounded down, and a piece that fits completely is always fine. So the thresholds
+from the table above stretch as the tolerance rises:
+
+| Class | Worth | Refused above satiety, at tolerance **0** | at tolerance **20** | at tolerance **40** |
+|---|---:|---:|---:|---:|
+| Low | 15 | **85** | 88 | **91** |
+| Medium | 30 | **70** | 76 | **82** |
+| High | 50 | **50** | 60 | **70** |
+
+The left column is the reference decider exactly. The right column is the loosest any creature can
+ever be. And notice what the shape of the rule does: it is a *percentage of the piece*, so a tolerant
+creature bends most on feasts, which are the pieces the strict rule leaves lying around.
+
+The same test still governs eating and walking together, for exactly the reason the two-cell jitter
+bug taught, so no tolerance setting can reintroduce it.
+
+**Why the range stops at 40 and not at 100.** It was originally written as 0 to 100, and that was
+measured and thrown out. A creature at satiety 80 eating a feast gains 20 satiety and destroys 30 —
+and it lands on 100, which a snack would also have reached. So tolerance past a certain point buys its
+holder nothing while stripping a world whose food only regrows from food. The measurements agreed:
+over the wider range the trait-aware decider dropped below the required eight survivors on three of
+the five seeds, and on four of five seeds the creatures that died had a *higher* average tolerance
+than the ones that lived. Cutting the range at 40 removed a stretch of the scale that was strictly
+worse, not a second way of living. The full working is in
+`docs/engineering/simulation/evidence/WO-MOK-010/escalation.md`.
+
+**What this did not fix.** The feast pile-up above is untouched, and no promise was made about it.
+At turn 1,000 the share of standing food that is High runs 35% to 77% per territory under the
+trait-aware decider against 45% to 75% under the reference one — no clean improvement either way.
+Over 10,000 turns the trait-aware runs do last longer, reaching the limit on four of the five seeds
+with 1 to 5 survivors while the reference runs go extinct on four of the five — but the fifth
+trait-aware run goes extinct too, at tick 9,938, and that is seed 777, the same seed that keeps all
+twelve alive at turn 1,000. Nothing in the project claims a long-horizon result in either direction.
 
 ---
 
@@ -339,12 +502,20 @@ random; the `--seed` number drives a formula that produces random-*looking* resu
 This is a hard requirement, not a nicety. It is what makes a claim like "8 survived on seed 42"
 something you can check for yourself rather than take on trust.
 
-Two consequences worth knowing:
+That includes the traits. `M08` on seed 42 has waste tolerance 40 today, tomorrow, and on anybody
+else's machine.
 
-- Runs are only comparable to runs with the **same decider** and the **same density**. The two
+Three consequences worth knowing:
+
+- Runs are only comparable to runs with the **same decider** and the **same density**. All three
   deciders draw on the random stream at different rates, so switching decider reshuffles everything
   downstream.
 - Turning on `--trace-actions` does not change the run. It only prints more about it.
+- **Adding traits and fear did not disturb any run that existed before them.** Each creature's trait
+  is worked out by a little formula of its own, off to one side, which never touches the shared random
+  stream — so a `baseline` or `reference` run at any seed prints exactly the same output today as it
+  did before individuality existed, apart from the two new numbers appearing on their lines. That was
+  checked over 42 recorded runs, character for character, with the new numbers stripped back out.
 
 ---
 
@@ -376,13 +547,15 @@ cargo run --bin Mokiterions -- --help                      # what all the option
 cargo run --bin Mokiterions                                # defaults: seed 0, 100 turns, food-seeker, 0.75%
 cargo run --bin Mokiterions -- --seed 42 --ticks 1000      # the standard measurement
 cargo run --bin Mokiterions -- --policy baseline           # watch the random decider starve
+cargo run --bin Mokiterions -- --policy individual         # the trait-aware decider
 cargo run --bin Mokiterions -- --density 1.5               # a kinder world
 cargo run --bin Mokiterions -- --ticks 40 --trace-actions  # show every single decision
 ```
 
 `--bin Mokiterions` says which program to run. There are two: this one, which prints the run as
-text, and `mokiterions-tui`, which shows the same run in a live terminal display. If you want that
-one instead, `cargo run -p mokiterions-tui -- --help` will tell you how.
+text, and `mokiterions-tui`, which shows the same run in a live terminal display — with a bar each for
+health, satiety, energy and now fear beside every living creature. If you want that one instead,
+`cargo run -p mokiterions-tui -- --help` will tell you how.
 
 Exit codes: `0` fine, `2` you typed something invalid, `1` something broke while running.
 
@@ -390,25 +563,37 @@ Exit codes: `0` fine, `2` you typed something invalid, `1` something broke while
 
 Every line has the same shape: the turn, who it is about, what happened, and the details.
 
+Five real lines, all from `--seed 42 --ticks 40`:
+
 ```
 tick=0  subject=F0002 event=food_initialized  result=class:medium,position:82:20,territory:A
-tick=40 subject=M12   event=survival_changed  result=health:100->100,satiety:61->60,energy:61->60
-tick=40 subject=A     event=food_regenerated  result=food:F0027,class:low,position:57:27
-tick=40 subject=B     event=food_regeneration_skipped result=reason:capacity,count:12
+tick=0  subject=M08   event=agent_initialized result=position:62:104,territory:B,health:100,satiety:100,energy:100,fear:0,waste_tolerance:40
+tick=10 subject=A     event=food_regeneration_skipped result=reason:capacity,count:61
+tick=40 subject=A     event=food_regenerated  result=food:F0128,class:medium,position:110:32
+tick=40 subject=M12   event=survival_changed  result=health:100->100,satiety:91->90,energy:71->70,fear:100->100
 ```
 
-In order: a medium piece placed at the start; `M12` getting hungrier at the end of turn 40; territory
-A growing a new snack; territory B growing nothing because it is already full.
+In order: a medium piece placed at the start; `M08` arriving in the world, on the one and only line
+that will ever state its waste tolerance; territory A growing nothing on turn 10 because it is already
+at its 61-piece cap; the same territory growing a meal on turn 40, after somebody had eaten; and `M12`
+getting hungrier and more tired at the end of turn 40.
+
+That last line is where fear shows up. `fear:100->100` means `M12` could see somebody *and* was already
+at the top of the range, so nothing moved. A rise from 30 would print `fear:30->40` and a fall
+`fear:30->25`. Every living creature gets one of these lines every turn, so fear is always visible even
+though nothing acts on it.
 
 The last line is always the scoreboard:
 
 ```
-summary reason=tick_limit ticks=40 survivors=12 deaths=0 territory_a=6 territory_b=6
-        food_a_low=4 food_a_medium=4 food_a_high=4 food_b_low=3 food_b_medium=5 food_b_high=4
+summary reason=tick_limit ticks=40 survivors=12 deaths=0 territory_a=5 territory_b=7
+        food_a_low=19 food_a_medium=21 food_a_high=20 food_b_low=16 food_b_medium=21 food_b_high=21
 ```
 
-Stopped because it hit the turn limit, after 40 turns, everybody alive, six in each half, and the
-food left over broken down by half and by size. The other possible `reason` is `extinction`.
+Stopped because it hit the turn limit, after 40 turns, everybody alive, five creatures in one half and
+seven in the other, and the food left over broken down by half and by size. The other possible `reason`
+is `extinction`. Note that this early the three sizes are still roughly even — it is over hundreds of
+turns that the High pieces pile up, for the reason in section 12.
 
 ---
 
@@ -416,12 +601,17 @@ food left over broken down by half and by size. The other possible `reason` is `
 
 Worth stating plainly, because the project's eventual goals make people expect more than is there:
 
-- **No fear, no personality, no individuality.** All twelve are interchangeable.
+- **One trait, not a personality.** There is exactly one thing that differs between creatures — waste
+  tolerance — and it only affects what they will eat. No caution, no aggression, no sociability, no
+  preferences.
+- **Fear is measured but unused.** It rises, falls, stays in range and gets reported, and no rule and
+  no decider reads it. It changes nobody's behaviour. This is deliberate: it is there for the fighting
+  and fleeing that come next, and it is honest to call it inert until then.
 - **No fighting, no threatening, no fleeing, no cooperating.** Creatures cannot interact at all. They
-  can see each other and that is the end of it.
+  can see each other, they get uneasy about it, and that is the end of it.
 - **No memory.** Each decision is made from what is visible right now. Nothing is remembered between
-  turns.
-- **No AI or language model.** The reference decider is a few lines of fixed rules.
+  turns — including how afraid you were.
+- **No AI or language model.** All three deciders are a few lines of fixed rules.
 - **No graphics, no saved files, no network.** Text output only.
 
 All of these are planned. The order they arrive in, and why, is in `docs/mokiterions/ROADMAP.md`.
@@ -434,5 +624,5 @@ All of these are planned. The order they arrive in, and why, is in `docs/mokiter
 |---|---|
 | The exact, binding rules | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
 | What is planned, and in what order | `docs/mokiterions/ROADMAP.md` |
-| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/` |
+| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/` and `.../WO-MOK-010/` |
 | How changes get approved here | `ENGINEERING_HARNESS.md` |
