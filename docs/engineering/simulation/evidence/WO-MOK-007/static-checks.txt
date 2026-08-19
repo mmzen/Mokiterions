@@ -1,0 +1,7 @@
+$ cargo fmt --all -- --check
+exit 0
+
+$ cargo clippy --workspace --all-targets --all-features -- -D warnings
+    Checking mokiterions-tui v0.1.0 (C:\Users\mathi\RustroverProjects\Mokiterions\mokiterions-tui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.81s
+exit 0
