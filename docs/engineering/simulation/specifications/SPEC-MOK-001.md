@@ -29,6 +29,7 @@ specifies = [
   "REQ-MOK-032",
   "REQ-MOK-033",
   "REQ-MOK-034",
+  "REQ-MOK-040",
 ]
 +++
 
@@ -36,7 +37,7 @@ specifies = [
 
 ## Scope
 
-This specification defines the smallest local, in-memory, text-only Mokiterions simulation. It fixes the world layout, initial state, tick order, survival values, core actions, food behavior, bounded perception, per-Mokiterion behavioral variation, deterministic decision sources, output, and termination needed to implement `CAP-MOK-001`, `CAP-MOK-002`, and `CAP-MOK-006`.
+This specification defines the smallest local, in-memory, text-only Mokiterions simulation. It fixes the world layout, initial state, tick order, survival values, core actions, food behavior, bounded perception, per-Mokiterion identity and behavioral variation, deterministic decision sources, output, and termination needed to implement `CAP-MOK-001`, `CAP-MOK-002`, `CAP-MOK-006`, and `CAP-MOK-008`.
 
 It does not define OpenAI integration, combat, social behavior, persistence, structured output, or a user interface. It defines one behavioral trait and the `fear` attribute, but no rule reads `fear`: threat response, retreat, surrender and encounter memory remain undefined.
 
@@ -55,6 +56,7 @@ This is the single behavior contract for the simulation core. It is amended in p
 | 2026-08-19 | Individuality, under `CAP-MOK-006`. Nine provisions amended and one rule appended. *Scope* no longer excludes fear and individual traits and now names `CAP-MOK-006`, while recording that no rule reads `fear`. *Actors* names three sources. *Inputs* and *Help output* take the third `--policy` value `individual`. *State model / Mokiterion* gains `fear` among the bounded attributes, starting at `0`, and gains the trait. A new *Behavioral trait* subsection fixes `waste_tolerance`, its range `0..=100`, and its derivation from the seed and the identifier through a generator of its own. *Time and entropy* records that trait derivation is the one exception to the single shared stream. *Data and interface contracts* puts `waste_tolerance` on the observation and fixes `fear` in the `agent_initialized`, `survival_changed` and `action_trace` details, with the trait reported once in `agent_initialized`. Rule 1 places the derivation. Rule 3 carries the trait and states that `fear` is deliberately absent from the observation. Rule 7 states that the traced `fear` is the pre-update value. Rule 12 becomes *Survival decay and fear* and gains the update: `+10` when rule 3's perceived-Mokiterion list is non-empty, `-5` when it is empty, saturating at both bounds, reading that list and nothing else, consuming no entropy. Rule 5's accumulation paragraph gains a cross-reference to `REQ-MOK-034` and `VER-MOK-007`; **rule 5 is otherwise untouched and the reference source's behavior is unchanged**. Rule 19 is appended, specifying the trait-aware source and the tolerant test `S + R - 100 <= T * R / 100`, applied to eating and seeking alike, proposal-identical to rule 5 at `T = 0`. A *Behavioral rules* preamble states that rule order stops matching tick order for that one rule. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-006`, `CAP-MOK-006`, `REQ-MOK-031` through `REQ-MOK-034`, `VER-MOK-007` and `WO-MOK-007`. The implementation agent wrote the amended text under `WO-MOK-007` and chose the derivation's salt constant within the approved shape; it did not decide the substance. Appending rule 19 rather than renumbering thirteen rules, the trait's full range, the two `fear` step sizes and the driver were the owner's decisions of the same date, recorded in `WO-MOK-007`. |
 | 2026-08-19 | Narrowed the `waste_tolerance` range from `0..=100` to `0..=40` in *Behavioral trait*, and with it the bounded selection the derivation takes. Rule 19's upper-bound note now reads the bound as `T = 40`, giving `S + R - 100 <= 2R/5`, and records that no reachable tolerance accepts restoration that is entirely clipped. The two *Acceptance examples* that cited the unreachable tolerances `60` and `58` are replaced by a medium-class pair at `34` and `33`, which also fixes the division as truncating, and a high-class pair at `40` and `39` at the bound. **No other provision changed: the derivation, the salt, the tolerant test's form, rule 19's case order, the `fear` provisions and rule 5 are all untouched, and the baseline and reference sources remain byte-identically unchanged.** | Approved 2026-08-19 by the repository owner acting as technical owner, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-007/escalation.md`, in correction of `REQ-MOK-034`'s survivor floor missed on three of five declared seeds under `WO-MOK-007` stop condition 6. The first form of *Behavioral trait* named this amendment as the one to make on that evidence. The owner chose narrowing the range over amending the floor; the implementation agent measured the sweep, recommended the bound and wrote the amended text, and did not decide the substance. `REQ-MOK-031`, `REQ-MOK-033` and `REQ-MOK-034` need no amendment, each having delegated the range to this specification. |
 | 2026-08-19 | Corrected the *Help output* sentence this work order's first amendment added. It read "The explanatory prose on the decision sources describes all three, and states which one is the default", which contradicted the same section's *Every default stated in the options block* paragraph — approved 2026-08-17 — under which each default is stated once and the prose is where the removed copy lived. The sentence now states that the prose describes all three sources and states neither a default nor a value constraint. **The three-source description is retained; only the default clause is withdrawn.** No behavior changed, and the implementation was already on the corrected side of the contradiction. | **OUTSTANDING** — written by the implementation agent under `WO-MOK-007` on 2026-08-19, approved by nobody. It is a correction to text the technical owner approved on this date, so it needs that owner's ratification. The defect was found by reading the amended section against the inherited test `cli::each_declared_default_is_stated_once`, which asserts that the explanatory prose contains no default at all; satisfying the withdrawn clause would have required relaxing an assertion `VREC-MOK-004` binds, which `WO-MOK-007` forbids. Recorded in `evidence/WO-MOK-007/completion-summary.md` §13 and checked in `evidence/WO-MOK-007/amendment-approvals.md`. |
+| 2026-08-19 | Naming, under `CAP-MOK-008`. Five provisions. *Scope* names `CAP-MOK-008` and per-Mokiterion identity. *State model / Mokiterion* gains the name. A new *Name* subsection fixes the twelve names and their assignment to `M01` through `M12`, the character and length domain, the pairwise distinctness of the names and of their twelve first characters, and the three load-bearing properties: the assignment reads neither the seed nor the configuration, naming performs no draw against any generator, and nothing in the engine reads a name. It also records that a name is not carried on the rule 3 observation, for the reason `fear` is not. *Time and entropy* records that naming is not an exception to the single shared stream because it is not a draw at all. *Data and interface contracts* puts `name` first in the `agent_initialized` details, before `position`, reports it once and on no other record kind, and states that both the name's leading position and `waste_tolerance`'s trailing position are fixed because two test suites parse that record positionally. Rule 1 places the assignment at agent creation. **No other provision changed: no rule, no decision source, no constant, no floor, no attribute, no ordering and no exit code is touched, and every run's outcome and entropy sequence are unchanged.** | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-010` and `WO-MOK-010`. The twelve names and their assignment are the product owner's decision of the same date, recorded in `WO-MOK-010`; the name's position in the record and the decision that the observer sources it from the retained event stream rather than from a new public interface item are the technical owner's decisions of the same date, recorded there too. The implementation agent wrote the amended text under `WO-MOK-010` and did not decide the substance. |
 
 The released implementation at commit `09c4e1a` conforms to the 2026-08-11 content. `VREC-MOK-001` remains the
 commit-bound record of that earlier content.
@@ -158,6 +160,7 @@ the operator's benefit, and where the two differ this specification's *Inputs* l
 Each Mokiterion contains:
 
 - a stable identifier from `M01` through `M12`;
+- a name, fixed for the run and identical in every run, specified in *Name* below;
 - a current coordinate;
 - a derived current territory;
 - integer `health`, `satiety`, `energy`, and `fear` values in `0..=100`;
@@ -167,6 +170,54 @@ Each Mokiterion contains:
 `health`, `satiety`, and `energy` start at `100`; `fear` starts at `0`, so no Mokiterion begins afraid. `M01` through `M06` start in territory A and `M07` through `M12` start in territory B. Initial coordinates are selected without duplicate agent positions using seeded entropy.
 
 Multiple agents may occupy the same coordinate after initialization. Agents do not block movement. An agent and a food resource may share a coordinate.
+
+### Name
+
+Each Mokiterion has one name. It carries no behavior: it exists so that an operator reading a run follows twelve
+individuals rather than twelve serial numbers, and it is the only property of a Mokiterion this specification defines
+that nothing in the engine reads.
+
+- The name is taken from this table, by the identifier's number. The assignment is total, injective and fixed:
+
+  | Identifier | Name | Identifier | Name |
+  |---|---|---|---|
+  | `M01` | `Zug` | `M07` | `Hozz` |
+  | `M02` | `Krul` | `M08` | `Nurb` |
+  | `M03` | `Quib` | `M09` | `Vonk` |
+  | `M04` | `Sput` | `M10` | `Gorm` |
+  | `M05` | `Trok` | `M11` | `Xob` |
+  | `M06` | `Womp` | `M12` | `Drix` |
+
+- The table holds exactly as many names as the world holds Mokiterions, which *Performance and capacity* fixes at
+  twelve. A table longer or shorter than the population is a defect, not a spare.
+- **The assignment reads neither the seed nor the configuration.** `M05` is `Trok` at every seed, at every density, under
+  every decision source and at every tick limit. This is what makes a name usable as a label across runs and across
+  retained evidence files.
+- **Naming performs no draw, against the shared stream of *Time and entropy* or against any other generator.** It is a
+  table lookup. This is a stronger property than *Behavioral trait*'s, which needs a generator of its own; naming needs
+  none, so the shared stream cannot move and every run predating this revision is unchanged.
+- The name is fixed at initialization and never changes. No tick, action, rejection, death or regeneration alters it.
+- Every name consists only of characters in `A`–`Z` and `a`–`z`, and is between one and five characters long. The
+  character restriction exists because the name is written unescaped into the comma-and-colon delimited details of *Data
+  and interface contracts*; the length restriction exists because `SPEC-MOK-003` rule 4 renders the name in a
+  fixed-width column.
+- The twelve names are pairwise distinct, **and so are their twelve first characters** — `Z K Q S T W H N V G X D`. The
+  first-character property is an obligation rather than an aesthetic: `SPEC-MOK-003` rule 2 derives a one-character map
+  glyph from the name, and rule 2.5 requires every distinction carrying identity to survive the loss of colour. None of
+  the twelve is `A`, `B`, `F` or `M`, the letters the output already uses for the two territory labels, the resource
+  identifier prefix and the Mokiterion identifier prefix, so no name's initial can be read as one of those.
+- No name equals any identifier this specification defines, so a name can never be read as an identifier.
+- **Nothing reads a name.** No rule, no decision source, no validation path, no ordering, no tie-break and no
+  termination condition consults it. Acting order is ascending *identifier* order under rule 2; ordering by name would
+  reorder acting order and move every outcome, so the absence of a reader is a specified property and not an accident of
+  the current implementation.
+
+A name is not carried on the observation of rule 3, for the same reason `fear` is not: no decision source reads it, and a
+value carried where nothing reads it is an inert field. It reaches an observer through the reported record instead.
+
+The names are invented rather than borrowed from any living language's given-name stock. Which twelve words they are, and
+which identifier each belongs to, is a product decision recorded in `WO-MOK-010`; it is not an implementation choice and
+is not to be reordered.
 
 ### Behavioral trait
 
@@ -269,7 +320,7 @@ with runs under the same decision source.
 ### Time and entropy
 
 - Time is an integer tick beginning at `0`; agent processing begins on tick `1`.
-- One explicit SplitMix64 pseudo-random stream, seeded from `--seed`, supplies all initialization, decision-source, and regeneration entropy. Trait derivation is the one exception and lies outside it: *Behavioral trait* fixes a generator of its own that leaves this stream's state unmoved. The three decision sources consume from this stream at different rates, so a run under one source is comparable only with runs under the same source.
+- One explicit SplitMix64 pseudo-random stream, seeded from `--seed`, supplies all initialization, decision-source, and regeneration entropy. Trait derivation is the one exception and lies outside it: *Behavioral trait* fixes a generator of its own that leaves this stream's state unmoved. Naming is not an exception because it is not a draw at all: *Name* is a table lookup and consumes from no generator. The three decision sources consume from this stream at different rates, so a run under one source is comparable only with runs under the same source.
 - Random selection uses a stable candidate order and an unbiased bounded selection method.
 
 ## Behavioral rules
@@ -281,7 +332,7 @@ rule 5 would have renumbered thirteen rules and invalidated every one of those c
 stops matching tick order for exactly one rule, which this paragraph exists to state rather than leave to be
 discovered.
 
-1. **Initialization order.** Create the entropy stream, world, initial food, and agents in that order. Each agent's `waste_tolerance` is derived as *Behavioral trait* specifies at the point that agent is created, from the seed and its identifier; because the derivation uses a generator of its own, it cannot move the shared stream's draw sequence and the placement draws are unaffected. Emit initialization events only after the complete initial state is valid, then emit the selected decision source exactly once before tick processing begins.
+1. **Initialization order.** Create the entropy stream, world, initial food, and agents in that order. Each agent's name is assigned as *Name* specifies at the point that agent is created, by table lookup on its identifier's number, drawing nothing. Each agent's `waste_tolerance` is derived as *Behavioral trait* specifies at the point that agent is created, from the seed and its identifier; because the derivation uses a generator of its own, it cannot move the shared stream's draw sequence and the placement draws are unaffected. Emit initialization events only after the complete initial state is valid, then emit the selected decision source exactly once before tick processing begins.
 2. **Tick start.** Increment the tick once, then consider living agents in ascending identifier order.
 3. **Observation.** For each considered agent, the engine creates a read-only observation containing tick, identity, position, territory, health, satiety, energy, `waste_tolerance`, co-located food, perceived food, perceived Mokiterions, valid cardinal moves, and the complete list of currently valid core action proposals. The trait is carried on the observation so that a decision source can read the acting Mokiterion's trait without reaching into authoritative state. `fear` is deliberately **not** carried: no rule and no decision source reads it.
 
@@ -379,11 +430,18 @@ Stable core event types are `world_initialized`, `food_initialized`, `agent_init
 Three record kinds carry the attributes, and their stable details are fixed in this order:
 
 ```text
-tick=0 subject=<mokiterion-id> event=agent_initialized result=position:<x:y>,territory:<A|B>,health:<number>,satiety:<number>,energy:<number>,fear:<number>,waste_tolerance:<number>
+tick=0 subject=<mokiterion-id> event=agent_initialized result=name:<letters>,position:<x:y>,territory:<A|B>,health:<number>,satiety:<number>,energy:<number>,fear:<number>,waste_tolerance:<number>
 tick=<number> subject=<mokiterion-id> event=survival_changed result=health:<a>-><b>,satiety:<a>-><b>,energy:<a>-><b>,fear:<a>-><b>
 ```
 
-`fear` follows the other three attributes in every record that carries them, and `waste_tolerance` is reported once, in `agent_initialized`. The trait is reported and never restated, because it cannot change during a run.
+`fear` follows the other three attributes in every record that carries them, and `waste_tolerance` is reported once, in `agent_initialized`. The trait is reported and never restated, because it cannot change during a run. The name is reported once, in `agent_initialized`, for the same reason, and it is reported on no other record kind.
+
+**The name is the first detail and `waste_tolerance` remains the last, and both positions are fixed rather than
+incidental.** Two test suites parse this record positionally — one asserts `fear` and `waste_tolerance` as an adjacent
+pair, the other reads the trait by splitting on the record's final field — so appending the name would have required
+changing assertions that `VREC-MOK-005` and `VREC-MOK-007` bind, which `WO-MOK-010` forbids. Placing it first also puts
+identity at the head of the record, where a reader looks for it. A later field is appended after `waste_tolerance` only
+by an amendment that states what it does to those parsers.
 
 An action trace uses the same leading fields and stable details in this order:
 

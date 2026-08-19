@@ -1,0 +1,105 @@
+VER-MOK-010 oracle 1 - projected byte comparison
+
+pre-change commit: 524a6758d74b5240079959e9827ea40a7af22a30
+projection: baseline/projection.py, applied to both captures
+
+A cell passes when the projected post-change stream is byte-identical to the pre-change
+stream, when the projection is a no-op on the pre-change stream, and when the two exit
+codes are equal. Equality is SHA-256 over the whole stream, not over summary counts.
+
+cell                               proj(post)==pre  proj(pre)==pre  exit      bytes removed
+seed0-baseline-d0.15-traceoff      True             True            0==0                118
+seed0-baseline-d0.15-traceon       True             True            0==0                118
+seed0-baseline-d0.75-traceoff      True             True            0==0                118
+seed0-baseline-d0.75-traceon       True             True            0==0                118
+seed0-baseline-d1.50-traceoff      True             True            0==0                118
+seed0-baseline-d1.50-traceon       True             True            0==0                118
+seed0-individual-d0.15-traceoff    True             True            0==0                118
+seed0-individual-d0.15-traceon     True             True            0==0                118
+seed0-individual-d0.75-traceoff    True             True            0==0                118
+seed0-individual-d0.75-traceon     True             True            0==0                118
+seed0-individual-d1.50-traceoff    True             True            0==0                118
+seed0-individual-d1.50-traceon     True             True            0==0                118
+seed0-reference-d0.15-traceoff     True             True            0==0                118
+seed0-reference-d0.15-traceon      True             True            0==0                118
+seed0-reference-d0.75-traceoff     True             True            0==0                118
+seed0-reference-d0.75-traceon      True             True            0==0                118
+seed0-reference-d1.50-traceoff     True             True            0==0                118
+seed0-reference-d1.50-traceon      True             True            0==0                118
+seed1-baseline-d0.15-traceoff      True             True            0==0                118
+seed1-baseline-d0.15-traceon       True             True            0==0                118
+seed1-baseline-d0.75-traceoff      True             True            0==0                118
+seed1-baseline-d0.75-traceon       True             True            0==0                118
+seed1-baseline-d1.50-traceoff      True             True            0==0                118
+seed1-baseline-d1.50-traceon       True             True            0==0                118
+seed1-individual-d0.15-traceoff    True             True            0==0                118
+seed1-individual-d0.15-traceon     True             True            0==0                118
+seed1-individual-d0.75-traceoff    True             True            0==0                118
+seed1-individual-d0.75-traceon     True             True            0==0                118
+seed1-individual-d1.50-traceoff    True             True            0==0                118
+seed1-individual-d1.50-traceon     True             True            0==0                118
+seed1-reference-d0.15-traceoff     True             True            0==0                118
+seed1-reference-d0.15-traceon      True             True            0==0                118
+seed1-reference-d0.75-traceoff     True             True            0==0                118
+seed1-reference-d0.75-traceon      True             True            0==0                118
+seed1-reference-d1.50-traceoff     True             True            0==0                118
+seed1-reference-d1.50-traceon      True             True            0==0                118
+seed123-baseline-d0.15-traceoff    True             True            0==0                118
+seed123-baseline-d0.15-traceon     True             True            0==0                118
+seed123-baseline-d0.75-traceoff    True             True            0==0                118
+seed123-baseline-d0.75-traceon     True             True            0==0                118
+seed123-baseline-d1.50-traceoff    True             True            0==0                118
+seed123-baseline-d1.50-traceon     True             True            0==0                118
+seed123-individual-d0.15-traceoff  True             True            0==0                118
+seed123-individual-d0.15-traceon   True             True            0==0                118
+seed123-individual-d0.75-traceoff  True             True            0==0                118
+seed123-individual-d0.75-traceon   True             True            0==0                118
+seed123-individual-d1.50-traceoff  True             True            0==0                118
+seed123-individual-d1.50-traceon   True             True            0==0                118
+seed123-reference-d0.15-traceoff   True             True            0==0                118
+seed123-reference-d0.15-traceon    True             True            0==0                118
+seed123-reference-d0.75-traceoff   True             True            0==0                118
+seed123-reference-d0.75-traceon    True             True            0==0                118
+seed123-reference-d1.50-traceoff   True             True            0==0                118
+seed123-reference-d1.50-traceon    True             True            0==0                118
+seed42-baseline-d0.15-traceoff     True             True            0==0                118
+seed42-baseline-d0.15-traceon      True             True            0==0                118
+seed42-baseline-d0.75-traceoff     True             True            0==0                118
+seed42-baseline-d0.75-traceon      True             True            0==0                118
+seed42-baseline-d1.50-traceoff     True             True            0==0                118
+seed42-baseline-d1.50-traceon      True             True            0==0                118
+seed42-individual-d0.15-traceoff   True             True            0==0                118
+seed42-individual-d0.15-traceon    True             True            0==0                118
+seed42-individual-d0.75-traceoff   True             True            0==0                118
+seed42-individual-d0.75-traceon    True             True            0==0                118
+seed42-individual-d1.50-traceoff   True             True            0==0                118
+seed42-individual-d1.50-traceon    True             True            0==0                118
+seed42-reference-d0.15-traceoff    True             True            0==0                118
+seed42-reference-d0.15-traceon     True             True            0==0                118
+seed42-reference-d0.75-traceoff    True             True            0==0                118
+seed42-reference-d0.75-traceon     True             True            0==0                118
+seed42-reference-d1.50-traceoff    True             True            0==0                118
+seed42-reference-d1.50-traceon     True             True            0==0                118
+seed777-baseline-d0.15-traceoff    True             True            0==0                118
+seed777-baseline-d0.15-traceon     True             True            0==0                118
+seed777-baseline-d0.75-traceoff    True             True            0==0                118
+seed777-baseline-d0.75-traceon     True             True            0==0                118
+seed777-baseline-d1.50-traceoff    True             True            0==0                118
+seed777-baseline-d1.50-traceon     True             True            0==0                118
+seed777-individual-d0.15-traceoff  True             True            0==0                118
+seed777-individual-d0.15-traceon   True             True            0==0                118
+seed777-individual-d0.75-traceoff  True             True            0==0                118
+seed777-individual-d0.75-traceon   True             True            0==0                118
+seed777-individual-d1.50-traceoff  True             True            0==0                118
+seed777-individual-d1.50-traceon   True             True            0==0                118
+seed777-reference-d0.15-traceoff   True             True            0==0                118
+seed777-reference-d0.15-traceon    True             True            0==0                118
+seed777-reference-d0.75-traceoff   True             True            0==0                118
+seed777-reference-d0.75-traceon    True             True            0==0                118
+seed777-reference-d1.50-traceoff   True             True            0==0                118
+seed777-reference-d1.50-traceon    True             True            0==0                118
+
+cells compared: 90
+cells in the post-change capture: 90
+
+RESULT: PASS

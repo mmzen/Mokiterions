@@ -144,26 +144,23 @@ impl Viewport {
     }
 }
 
-/// The glyph for a Mokiterion, derived mechanically from the engine's identifier.
+/// The glyph for a Mokiterion, derived mechanically from the name the engine reported for it.
 ///
-/// `SPEC-MOK-003` rule 2 assigns `1`–`9` to `M01`–`M09` and `A`, `B`, `C` to `M10`–`M12`.
-/// The identifier's numeric suffix written as an uppercase base-13 digit is exactly that
-/// assignment. An identifier without a numeric suffix falls back to its last character
-/// uppercased, which is the layer table's general rule.
-pub fn agent_glyph(id: &str) -> char {
-    let digits: String = id
-        .chars()
-        .filter(|character| character.is_ascii_digit())
-        .collect();
-    if let Some(glyph) = digits
-        .parse::<u32>()
-        .ok()
-        .and_then(|index| char::from_digit(index, 13))
-    {
-        return glyph.to_ascii_uppercase();
-    }
-    id.chars()
-        .next_back()
+/// `SPEC-MOK-003` rule 2 as amended on 2026-08-19 assigns the name's first character, uppercased,
+/// at both zoom levels, and `?` where no name was received. `SPEC-MOK-001`'s *Name* fixes the
+/// twelve first characters as pairwise distinct, which is what rule 2.5's colour-independent
+/// identity distinction rests on.
+///
+/// The empty string is the caller's way of saying the engine reported no name for the subject. It
+/// yields `?` — a stated character, not the identifier and not a digit — because `REQ-MOK-041`
+/// admits no fallback name and no derivation from an identifier. It is unreachable in a run the
+/// engine initialized.
+///
+/// Until that amendment this took an identifier and assigned `1`–`9` to `M01`–`M09` and `A`, `B`,
+/// `C` to `M10`–`M12`, by writing the numeric suffix as a base-13 digit.
+pub fn agent_glyph(name: &str) -> char {
+    name.chars()
+        .next()
         .map(|character| character.to_ascii_uppercase())
         .unwrap_or('?')
 }

@@ -80,6 +80,32 @@ fn observer_for(args: &[&str]) -> Observer {
     }
 }
 
+/// The name the engine reported for each identifier, read from the retained records.
+///
+/// `REQ-MOK-041` forbids the observer from holding a name table or deriving a name from an
+/// identifier, so the expectation a frame is checked against is read from the engine's own
+/// `agent_initialized` record — the same source the observer reads, reached here through the
+/// already-public `events()` accessor. No name is written as a literal anywhere in this package's
+/// presentation path or in this file.
+fn reported_names(observer: &Observer) -> BTreeMap<String, String> {
+    observer
+        .events()
+        .iter()
+        .filter(|event| event.event_type() == EventType::AgentInitialized)
+        .map(|event| {
+            let details = event.detail.to_string();
+            let name = details
+                .strip_prefix("name:")
+                .expect("the name is the first detail")
+                .split_once(',')
+                .expect("a field is followed by the next")
+                .0
+                .to_string();
+            (event.subject.clone(), name)
+        })
+        .collect()
+}
+
 fn press(code: KeyCode) -> KeyEvent {
     KeyEvent {
         code,
@@ -796,8 +822,13 @@ fn a_death_removes_the_subject_from_the_presentation_and_is_corroborated() {
         region(&buffer, roster)
     );
 
-    // Rule 2's glyphs are one per identifier, so the dead subject's glyph cannot be another's.
-    let glyph = spatial::agent_glyph(&dead);
+    // Rule 2's glyphs are one per name and the twelve names' initials are distinct, so the dead
+    // subject's glyph cannot be another's. The expected name is the engine's reported one.
+    let names = reported_names(&observer);
+    let name = names
+        .get(&dead)
+        .expect("the engine reported every name before tick 1");
+    let glyph = spatial::agent_glyph(name);
     for zoom in ["overview", "detail"] {
         let buffer = frame(&mut observer, 160, 48).expect("above the floor");
         let canvas = region(&buffer, canvas_of(160, 48));
@@ -807,4 +838,241 @@ fn a_death_removes_the_subject_from_the_presentation_and_is_corroborated() {
         );
         tap(&mut observer, KeyCode::Char('z'));
     }
+}
+
+// ---- WO-MOK-010: the name in the presentation -----------------------------------------------
+
+/// `REQ-MOK-041`: wherever a pane identifies a Mokiterion, the name it presents is the one the
+/// engine reported for *that* Mokiterion, and the identifier is still there beside it.
+///
+/// The pairing is the point. A frame that presented one subject's name against another's values
+/// would be a defect of the same kind as `SPEC-MOK-003` rule 10.3's proposal-outcome mismatch, and a
+/// per-pane check that only counted names would not catch it, so every identifier drawn in the
+/// roster is required to be preceded by its own name in rule 4's six-column field.
+#[test]
+fn every_pane_identifying_a_mokiterion_presents_its_own_reported_name() {
+    for seed in SEEDS {
+        let mut observer = observer_for(&["--seed", &seed.to_string(), "--start-paused"]);
+        observer.advance().expect("the engine advances");
+        let names = reported_names(&observer);
+        assert_eq!(
+            names.len(),
+            12,
+            "seed {seed} reported {} names",
+            names.len()
+        );
+
+        for (width, height) in VIEWPORTS
+            .into_iter()
+            .filter(|(width, height)| !layout::below_floor(*width, *height))
+        {
+            let buffer = frame(&mut observer, width, height).expect("above the floor");
+            let panes = layout::resolve(*buffer.area());
+
+            let Some(roster) = panes.roster else {
+                continue;
+            };
+            let text = region(&buffer, roster);
+            let mut presented = 0;
+            for (id, name) in &names {
+                if !text.contains(id.as_str()) {
+                    continue;
+                }
+                presented += 1;
+                assert!(
+                    text.contains(&format!("{name:<6}{id}")),
+                    "{width}x{height} presents {id} without its own name {name}:\n{text}"
+                );
+            }
+            assert!(
+                presented > 0,
+                "{width}x{height} presents a roster with no entry in it:\n{text}"
+            );
+        }
+
+        // Rule 10: the inspector identifies the selected subject by name and identifier. The
+        // selection is made through the key binding, so nothing here reaches past the interface.
+        tap(&mut observer, KeyCode::Tab);
+        let selected = observer
+            .selection()
+            .expect("Tab selects the first living Mokiterion")
+            .to_string();
+        let name = names
+            .get(&selected)
+            .expect("the selected subject was named");
+        let buffer = frame(&mut observer, 160, 48).expect("above the floor");
+        let inspector = layout::resolve(*buffer.area())
+            .inspector
+            .expect("the reference viewport shows the inspector");
+        let text = region(&buffer, inspector);
+        assert!(
+            text.contains(&format!("{name}  {selected}")),
+            "the inspector does not identify {selected} as {name}:\n{text}"
+        );
+    }
+}
+
+/// `REQ-MOK-041` and `SPEC-MOK-003` rule 2 as amended: every Mokiterion glyph drawn is its own
+/// subject's initial, in both zoom levels, and the withdrawn digit assignment is gone from the
+/// canvas entirely.
+///
+/// The absence of a digit is what makes this able to fail against the previous behavior rather than
+/// merely agree with the new one: `M01`-`M09` drew `1`-`9`, and no other canvas layer draws a digit.
+#[test]
+fn every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms() {
+    let mut observer = observer_for(&["--seed", "42", "--start-paused"]);
+    observer.advance().expect("the engine advances");
+    let names = reported_names(&observer);
+    let initials: std::collections::BTreeSet<char> = names
+        .values()
+        .map(|name| spatial::agent_glyph(name))
+        .collect();
+
+    for zoom in ["overview", "detail"] {
+        let buffer = frame(&mut observer, 160, 48).expect("above the floor");
+        let canvas = region(&buffer, canvas_of(160, 48));
+
+        // The cell each visible Mokiterion maps onto has to carry that Mokiterion's own initial.
+        // A cell with more than one occupant is rule 2.4's, which draws the lowest identifier, so
+        // only uniquely occupied cells are asserted; a shared cell's glyph is
+        // `a_death_removes_the_subject_from_the_presentation_and_is_corroborated`'s subject and
+        // `every_distinction_survives_the_loss_of_colour`'s.
+        let area = canvas_of(160, 48);
+        let viewport = spatial::Viewport::resolve(
+            observer.zoom(),
+            (area.width, area.height),
+            observer.camera(),
+        );
+        let mut occupants: BTreeMap<(u16, u16), Vec<String>> = BTreeMap::new();
+        for agent in &observer.snapshot().agents {
+            if let Some(cell) = viewport.cell_of(
+                observer.zoom(),
+                agent.position.x.into(),
+                agent.position.y.into(),
+            ) && cell.0 < area.width
+                && cell.1 < area.height
+            {
+                occupants.entry(cell).or_default().push(agent.id.clone());
+            }
+        }
+        assert!(
+            !occupants.is_empty(),
+            "{zoom} zoom maps no Mokiterion into the canvas at all"
+        );
+        let mut asserted = 0;
+        for ((x, y), ids) in &occupants {
+            if ids.len() > 1 {
+                continue;
+            }
+            let name = names.get(&ids[0]).expect("every living subject was named");
+            let drawn = buffer
+                .cell((area.x + x, area.y + y))
+                .expect("inside the canvas")
+                .symbol();
+            assert_eq!(
+                drawn,
+                spatial::agent_glyph(name).to_string(),
+                "{} is drawn as {drawn} rather than as {name}'s initial in {zoom} zoom",
+                ids[0]
+            );
+            asserted += 1;
+        }
+        assert!(
+            asserted > 0,
+            "{zoom} zoom drew nothing but shared cells, so no pairing was checked"
+        );
+
+        // No drawn cell carries the withdrawn identifier-derived assignment.
+        assert!(
+            !canvas.chars().any(|character| character.is_ascii_digit()),
+            "{zoom} zoom still draws a digit glyph:\n{canvas}"
+        );
+
+        // Every uppercase letter drawn is one of the reported names' initials, so no glyph belongs
+        // to nothing and none is a placeholder.
+        for character in canvas
+            .chars()
+            .filter(|character| character.is_ascii_uppercase())
+        {
+            assert!(
+                initials.contains(&character),
+                "{zoom} zoom draws {character}, which is no reported name's initial:\n{canvas}"
+            );
+        }
+
+        tap(&mut observer, KeyCode::Char('z'));
+    }
+}
+
+/// `REQ-MOK-041` with `SPEC-MOK-003` rule 10.6: the inspector identifies a dead subject by name and
+/// identifier, the same way it identified it living.
+///
+/// The subject has to be selected before it dies, because a dead subject cannot be selected — it is
+/// out of the roster. So the run is taken twice: once to find which Mokiterion dies first and when,
+/// and once to select that subject and hold the selection through its death. Both runs are the same
+/// seed and configuration, so the second reaches the same death on the same tick.
+#[test]
+fn the_inspector_identifies_a_dead_subject_by_name_and_identifier() {
+    let arguments = ["--policy", "baseline", "--ticks", "400", "--start-paused"];
+
+    let mut scout = observer_for(&arguments);
+    let (victim, tick) = loop {
+        assert!(!scout.is_finished(), "the run ended before any death");
+        let living: Vec<String> = scout
+            .snapshot()
+            .agents
+            .iter()
+            .map(|agent| agent.id.clone())
+            .collect();
+        scout.advance().expect("the engine advances");
+        if let Some(gone) = living
+            .into_iter()
+            .find(|was| !scout.snapshot().agents.iter().any(|is| is.id == *was))
+        {
+            break (gone, scout.snapshot().tick);
+        }
+    };
+
+    let mut observer = observer_for(&arguments);
+    let names = reported_names(&observer);
+    let name = names.get(&victim).expect("the victim was named").clone();
+    for _ in 0..12 {
+        if observer.selection() == Some(victim.as_str()) {
+            break;
+        }
+        tap(&mut observer, KeyCode::Tab);
+    }
+    assert_eq!(
+        observer.selection(),
+        Some(victim.as_str()),
+        "the victim could not be selected while living"
+    );
+
+    while observer.snapshot().tick < tick {
+        observer.advance().expect("the engine advances");
+    }
+    assert!(
+        !observer
+            .snapshot()
+            .agents
+            .iter()
+            .any(|agent| agent.id == victim),
+        "{victim} is still living at tick {tick}"
+    );
+    assert_eq!(
+        observer.selection(),
+        Some(victim.as_str()),
+        "rule 10.6's selection did not survive the death"
+    );
+
+    let buffer = frame(&mut observer, 160, 48).expect("above the floor");
+    let inspector = layout::resolve(*buffer.area())
+        .inspector
+        .expect("the reference viewport shows the inspector");
+    let text = region(&buffer, inspector);
+    assert!(
+        text.contains(&format!("{name}  {victim}")),
+        "the inspector does not identify the dead {victim} as {name}:\n{text}"
+    );
+    assert!(text.contains("died on tick"), "{text}");
 }

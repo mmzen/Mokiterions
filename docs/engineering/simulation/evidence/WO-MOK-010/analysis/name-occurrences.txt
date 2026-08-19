@@ -1,0 +1,87 @@
+VER-MOK-010 — every occurrence of `name:` in a full run, under each source
+==========================================================================
+
+Work order   WO-MOK-010 (Phase 2.5, naming)
+Date         2026-08-19
+Binary       target/release/Mokiterions.exe, built from the candidate tree
+
+Purpose: REQ-MOK-040's "reported once, and nowhere else" clause, measured on the stream the
+binary writes rather than inside a test. Each run is 1,000 ticks with action tracing on, seed
+42, density 0.75, which is the longest and most talkative configuration the matrix declares.
+
+--- policy baseline ---
+  stream lines                                   3082
+  occurrences of the substring `name:`            12
+  lines carrying it                              12
+  of those, event=agent_initialized              12
+  of those, any other event                      0
+  distinct event types carrying it:
+    agent_initialized
+  the tick every occurrence is on:
+    tick 0
+  event types present in the run that carry no name:
+    action_trace
+    agent_died
+    decision_source_selected
+    food_consumed
+    food_initialized
+    food_regenerated
+    food_regeneration_skipped
+    simulation_ended
+    survival_changed
+    territory_crossed
+    world_initialized
+  the summary line carries a name:                0
+
+--- policy reference ---
+  stream lines                                   21585
+  occurrences of the substring `name:`            12
+  lines carrying it                              12
+  of those, event=agent_initialized              12
+  of those, any other event                      0
+  distinct event types carrying it:
+    agent_initialized
+  the tick every occurrence is on:
+    tick 0
+  event types present in the run that carry no name:
+    action_trace
+    agent_died
+    decision_source_selected
+    food_consumed
+    food_initialized
+    food_regenerated
+    food_regeneration_skipped
+    simulation_ended
+    survival_changed
+    territory_crossed
+    world_initialized
+  the summary line carries a name:                0
+
+--- policy individual ---
+  stream lines                                   23059
+  occurrences of the substring `name:`            12
+  lines carrying it                              12
+  of those, event=agent_initialized              12
+  of those, any other event                      0
+  distinct event types carrying it:
+    agent_initialized
+  the tick every occurrence is on:
+    tick 0
+  event types present in the run that carry no name:
+    action_trace
+    agent_died
+    decision_source_selected
+    food_consumed
+    food_initialized
+    food_regenerated
+    food_regeneration_skipped
+    simulation_ended
+    survival_changed
+    territory_crossed
+    world_initialized
+  the summary line carries a name:                0
+
+--- conclusion ---
+Under all three sources: twelve occurrences, all on tick 0, all on `agent_initialized` lines,
+one per Mokiterion, and none on any survival, trace, decision, consumption, regeneration,
+death or summary line.

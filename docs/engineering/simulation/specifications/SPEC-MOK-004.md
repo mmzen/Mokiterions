@@ -20,6 +20,7 @@ specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
 | 2026-08-18 | Original content for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`. | Approved by the technical owner; implemented under `WO-MOK-006` and verified under `VREC-MOK-006`. |
 | 2026-08-19 | Recorded figures and two subject lines corrected, because `SPEC-MOK-003` rule 5 as amended the same day replaced the observer's four-row layout-tier table with one threshold per pane, and the implementation that conforms to it removes the `layout` module's `Tier` enum, that enum's `label` method, the `tier_for` function and the `Panes::tier` field. **Rule 6**: the recorded extent falls from 13 `layout` items to **10** and from **97** items to **94**; the same interface counted the other way falls from 122 to **118**, and its public fields from 25 to **24**. What the field figure counts is now stated, because 25 is reproducible only as 122 − 97 — it counts public fields, and the variants of a public enum are not written `pub` and were never in it. The `layout` row's subject, "viewport tiers and the pane geometry of each", is corrected: there are no tiers to name. A **Reduction** clause is added, symmetric with the existing **Growth** clause, so that removal is governed the way addition already was. The byte-identity check is scoped to the `WO-MOK-006` restructuring it was written for, exactly as `SPEC-MOK-002` rule 3's freeze was scoped to `WO-MOK-003`; unscoped it forbids the observer's code from ever changing again, which was never its subject and is not what rule 6 is for. **Rule 9**: `tests/layout.rs` rises from 7 tests to **10** and the public tier from 77 to **80**. The +3 is a net figure and the rule now carries the measured composition: three tests go, because they assert the tier table and the per-tier minimums that rule 5 no longer defines, and six arrive — the rename of the third departure, the per-pane threshold case, the ten-row log case and the monotonicity sweep that `VER-MOK-005` as amended requires, and two one-to-one threshold cases that its **Mapping injectivity** property needs once rule 5 creates a second placement regime. **Rule 11**: the observer's executed total rises from 109 to **112** and the workspace's from 169 to **172**, with the "same before and after" clause scoped to the restructuring. **Rule 12**: its second paragraph is scoped to the `WO-MOK-006` restructuring, exactly as rule 13's clause is and for the same reason — unscoped it forbids any later work order from renaming a test in either package, which is a freeze on test maintenance the rule was not written to impose, and it would make `excluded_panes_are_the_ones_the_tier_omits` unrenamable after the term "tier" was deleted from the specification it cites. The assertion itself is unchanged; only the name and the rule it names change. **Rule 13** and the second worked example no longer say "layout tier". No rule changes what it requires. No target, target name, path, package name, tier boundary, hook or prohibition changes, and no item's visibility widens: the interface only loses items, so rule 7 is satisfied by construction. | **OUTSTANDING.** Requires the technical owner. The repository owner approved the `SPEC-MOK-003` rule 5 amendment that authorizes the removal and directed the implementation in the same act on 2026-08-19, but was not shown this consequence: the implementation agent found it after the fact, by measuring the interface against this rule, and has reported it rather than treating the rule 5 approval as covering it. Records bound to commits are not re-opened — `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit. |
 | 2026-08-19 | **Recorded test-count figures corrected for `WO-MOK-007`, which added tests without correcting them.** Rule 11 states the obligation this row discharges: "a work order that adds a test corrects these figures here, and one that loses a test has a defect". **Rule 9**: `tests/options.rs` rises from 7 to **8** and `tests/render.rs` from 8 to **10**, so the public tier rises from 80 to **83**; the three arrivals are named with the obligation each carries, and none departs. **Rule 11**: the observer's executed total rises from 112 to **115**, the engine's from 60 to **78**, and the workspace's from 172 to **193**. The engine's 18 are 13 internal and 5 public under `SPEC-MOK-002` rules 5 and 7, which state no figure of their own, and the split is recorded here only because the workspace total is stated here and is otherwise not reproducible. **Rule 10 is unchanged at 32**, measured rather than assumed: `WO-MOK-007` adds no observer test requiring a private item or a hook. Nothing else changes — no target, target name, path, package name, tier boundary, hook or prohibition, and no item's visibility. The interface of rule 6 is untouched at 94, because the work order added no public item to the observer. | **OUTSTANDING.** Requires the technical owner. This is a defect in `WO-MOK-007`'s conformance rather than in this specification: the figures were stale at that work order's implementation commit `4f32a9f`, where the workspace ran 190 against the 169 recorded at the time, and the merge with `master` moves both numbers without creating the gap. The implementation agent found it by measuring the merged tree against this rule, wrote this text, and decides none of it. Records bound to commits are not re-opened: `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit. `VREC-MOK-007` measured 190 and is bound to a commit that predates this correction; it is re-captured, not edited. |
+| 2026-08-19 | **Recorded test-count figures corrected for `WO-MOK-010`, which adds twelve tests for `REQ-MOK-040` and `REQ-MOK-041`.** Rule 11 states the obligation this row discharges: "a work order that adds a test corrects these figures here, and one that loses a test has a defect". **Rule 9**: `tests/verification.rs` rises from 16 to **19**, so the public tier rises from 83 to **86**; the three arrivals are named with the obligation each carries, none departs, and the file's subject line is deliberately not extended, because the name is a presented value from the moment `SPEC-MOK-003` rule 10 as amended lists it as one. It is also recorded there that all three read the expected name from the engine's own records through the already-public `Observer::events`, which is what keeps them in this tier. **Rule 10**: `src/render.rs` rises from 12 to **13**, `src/verification.rs` from 8 to **9**, and the internal tier from 32 to **34**; the two arrivals are the entry's column arithmetic asserted through the private `entry_lines`, and `REQ-MOK-041`'s provenance claim in its negative form, which needs a subject the observer holds and was never told the name of and therefore needs the state hook. `src/render.rs`'s private and public item counts are unchanged, because `entry_lines` gains a parameter and no item is added or removed, and `src/verification.rs` still declares no item at all. **Rule 11**: the observer's executed total rises from 115 to **120**, the engine's from 78 to **85**, and the workspace's from 193 to **205**, with the twelve arrivals attributed to the five targets that run them and the engine's 54-internal, 31-public split recorded because 205 is otherwise not reproducible. `mokiterions-core/tests/naming.rs` is recorded as a new engine public-tier target, admitted by `SPEC-MOK-002` rule 8's closing sentence without obliging that rule's initial-arrangement table, which `tests/decisions.rs` already joined the same way. **Rule 6 is unchanged at 94 items, 118 `pub` lines and 24 public fields**, measured rather than assumed: `Observer::name_of` is `pub(crate)` and `spatial::agent_glyph` keeps the `&str` parameter and `char` return it already had, so this work order adds no member of the interface and changes no member's shape. Nothing else changes — no target name, path, package name, tier boundary, hook or prohibition, and no item's visibility widens. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-010`, `WO-MOK-010` and the same-day amendments to `SPEC-MOK-001` and `SPEC-MOK-003`. Every figure in this row is a measured outcome rather than a decision: the counts are `cargo test`'s per-target output and the interface figures are the enumeration retained as `WO-MOK-010` evidence. The two decisions the figures reflect — that the observer's name accessor stays `pub(crate)`, and that the entry test is placed in the internal tier rather than reached by widening a public item — are the technical owner's of the same date and are recorded in `WO-MOK-010`. The implementation agent measured, wrote this text and decided none of it. **The two rows above marked OUTSTANDING are untouched**, and no record bound to a commit is re-opened. |
 
 ## Scope
 
@@ -307,8 +308,8 @@ reaching the code as `use mokiterions_tui::…`. The arrangement, with the count
 | `tests/render.rs` | frame content asserted through the frame entry points | 10 |
 | `tests/spatial.rs` | world-to-canvas mapping | 7 |
 | `tests/state.rs` | observer state, accessors, filters and the event buffer | 21 |
-| `tests/verification.rs` | the cross-cutting properties: non-perturbation, export fidelity, presented-value fidelity, the authority verdict, colour independence | 16 |
-| **Total** | | **83** |
+| `tests/verification.rs` | the cross-cutting properties: non-perturbation, export fidelity, presented-value fidelity, the authority verdict, colour independence | 19 |
+| **Total** | | **86** |
 
 The counts began as the measured outcome of applying rule 8 to the 109 tests at the `WO-MOK-006` predecessor commit —
 77 in this table — and they are stated so that a relocation that loses or invents a test is detectable. They are not a
@@ -355,17 +356,47 @@ All three reach the code as `use mokiterions_tui::…` and name only items alrea
 places them in the public tier and nothing widens. The internal tier of rule 10 is unchanged at 32: `WO-MOK-007`
 adds no observer test that requires a private item or a hook.
 
+`tests/verification.rs` reads 19 rather than 16 as corrected for `WO-MOK-010`, which `VER-MOK-010` obliges to assert
+`REQ-MOK-041` at the frame. Three tests arrive and none departs:
+
+| Added | Obligation it carries |
+|---|---|
+| `every_pane_identifying_a_mokiterion_presents_its_own_reported_name` | `SPEC-MOK-003` rule 10 as amended, which adds the name to the presented values, against the roster and the inspector in both entry forms |
+| `every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms` | `SPEC-MOK-003` rule 2 as amended, checked cell by cell in overview and in detail |
+| `the_inspector_identifies_a_dead_subject_by_name_and_identifier` | the same rule 10 clause on a subject whose record is the only place its name survives |
+
+The file's subject line is unchanged and is not extended for them: presented-value fidelity is what all three assert,
+and the name is a presented value from the moment `SPEC-MOK-003` rule 10 as amended lists it as one. All three read
+the expected name from the engine's own `agent_initialized` records through the already-public `Observer::events`,
+which is what keeps them in this tier. `Observer::name_of` is `pub(crate)`, so a test that wanted it would belong to
+the internal tier under rule 8 rather than justify widening it — rule 6's **Growth** clause says a test is never the
+requirement that grows the interface, and none of the three needs it.
+
 ### 10. Internal tier
 
 Located in a `#[cfg(test)]` module inside the crate, beside the code it covers:
 
 | Location | Tests | Why they cannot move |
 |---|---|---|
-| `mokiterions-tui/src/render.rs` | 12 | assert drawing internals; the module declares 39 private items — 27 functions and 12 constants — against 2 public ones, and 5 of the 12 additionally use a hook |
-| `mokiterions-tui/src/verification.rs` | 8 | reach several modules **and** a hook, so they belong to no single module's tier and cannot leave the crate |
+| `mokiterions-tui/src/render.rs` | 13 | assert drawing internals; the module declares 39 private items — 27 functions and 12 constants — against 2 public ones, and 5 of the 13 additionally use a hook |
+| `mokiterions-tui/src/verification.rs` | 9 | reach several modules **and** a hook, so they belong to no single module's tier and cannot leave the crate |
 | `mokiterions-tui/src/state.rs` | 4 | 3 use a hook; 1 asserts a private detail of the state type |
 | `mokiterions-tui/src/main.rs` | 8 | every one requires a private item of the binary: 4 name `tick_interval`, `due`, `idle_for` or `report` directly, and 4 reach the start-up function and the private `Launch` type through two helpers in the test module |
-| **Total** | **32** | |
+| **Total** | **34** | |
+
+`mokiterions-tui/src/render.rs` reads 13 rather than 12, `src/verification.rs` 9 rather than 8, and the total 34
+rather than 32, as corrected for `WO-MOK-010`. Two tests arrive:
+
+| Added | Where, and why it cannot move |
+|---|---|
+| `an_entry_carries_the_name_before_the_identifier_and_takes_six_columns` | `src/render.rs`: it asserts the column arithmetic of `SPEC-MOK-003` rule 4 as amended — the name occupies the entry's first six columns and the identifier follows it — by calling the private `entry_lines`. No public entry point yields one roster entry |
+| `a_subject_whose_record_was_never_ingested_is_presented_without_a_name` | `src/verification.rs`: it reaches the state hook **and** three modules, and `REQ-MOK-041`'s provenance claim in its negative form needs a subject the observer holds and was never told the name of, which no run produces because `Observer::new` ingests the initialization records before the first frame |
+
+Rule 8 places both here because of the access they require and not because of the subject they cover, and widening
+an item to relocate either is what rule 8's second paragraph and rule 6's **Growth** clause forbid. `src/render.rs`'s
+item counts in the row above are unchanged, measured rather than assumed: `entry_lines` gains a parameter and no
+private function, constant or public item is added or removed. `src/verification.rs` still declares no item at all,
+so the sentence below about it holding "only the eight tests above" reads nine as of this correction.
 
 `mokiterions-tui/src/verification.rs` is declared from `lib.rs` under rule 5 and contains only the eight tests above.
 This is the one place the observer's structure differs from the engine's, where `SPEC-MOK-002` rule 3 leaves
@@ -395,6 +426,27 @@ and the workspace's is **193**. The engine's 18 are 13 in its internal tier and 
 `SPEC-MOK-002` rules 5 and 7 rather than this rule, which states no figure of its own for them; the split is recorded
 here because this paragraph is the only place the workspace total is stated and 193 is otherwise not reproducible.
 No test was lost: the 21 additions and 0 removals are reconciled name by name in `WO-MOK-007`'s `test-census.txt`.
+
+As corrected for `WO-MOK-010`, the observer's total is **120** and the engine's is **85**, so the workspace's is
+**205**. The twelve arrivals, each measured from the target that runs it and none departing:
+
+| Where | Tests | What arrives |
+|---|---|---|
+| `mokiterions-core/src/simulation.rs` | 4 | the name table is the specified twelve, well-formed and as long as the population a run creates; naming draws nothing and reads neither the seed nor the configuration; the reported record carries the name the agent holds; a name is the same value at both ends of a run, including for a Mokiterion that died in it |
+| `mokiterions-core/tests/naming.rs` | 3 | the twelve names in identifier order at every declared seed, density, decision source and trace setting; a name reported once and on no other record; the record's field order, with the name first and the trait last |
+| `mokiterions-tui/src/render.rs` | 1 | rule 10 above |
+| `mokiterions-tui/src/verification.rs` | 1 | rule 10 above |
+| `mokiterions-tui/tests/verification.rs` | 3 | rule 9 above |
+
+The engine's split is 54 internal and 31 public, under `SPEC-MOK-002` rules 7 and 8 rather than this rule; it is
+recorded here for the same reason the previous paragraph records one, which is that 205 is otherwise not reproducible.
+`mokiterions-core/tests/naming.rs` is a new public-tier target of the engine, admitted by `SPEC-MOK-002` rule 8's
+closing sentence — "A further file may be added when a further public subject appears" — which grants the addition
+without obliging that rule's table, whose own heading calls it the initial arrangement and which `tests/decisions.rs`
+already joined the same way. The observer's target count is unchanged, at three internal-tier and eight public-tier
+targets. Rule 6's interface is unchanged at **94** items, **118** `pub` lines and **24** public fields, measured
+rather than assumed: `Observer::name_of` is `pub(crate)`, and `spatial::agent_glyph` keeps the `&str` parameter and
+the `char` return it already had, so nothing in this work order is a member of the interface or changes one's shape.
 
 An observer test asserts a rendering claim against an in-memory character buffer. A test requiring a terminal, a
 pseudo-terminal, a screenshot, or a recording is not admissible in either tier; `SPEC-MOK-003` is the authority and

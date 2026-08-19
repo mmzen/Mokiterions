@@ -63,8 +63,21 @@ same square, and a creature can stand on top of a piece of food.
 
 ## 3. The Mokiterions
 
-There are exactly **twelve**, named `M01` to `M12`. Six start in territory A (`M01`–`M06`) and six
-start in territory B (`M07`–`M12`), at random positions, never two on the same square at the start.
+There are exactly **twelve**, and each one has a name as well as an identifier. Six start in
+territory A and six start in territory B, at random positions, never two on the same square at the
+start.
+
+| Territory | Who lives there |
+|---|---|
+| **A** | `M01` Zug, `M02` Krul, `M03` Quib, `M04` Sput, `M05` Trok, `M06` Womp |
+| **B** | `M07` Hozz, `M08` Nurb, `M09` Vonk, `M10` Gorm, `M11` Xob, `M12` Drix |
+
+The name is fixed for good. Trok is `M05` on seed 42, on seed 43, and on every run of every seed;
+nothing that happens in a run changes it, and no name is ever reused or handed on when somebody dies.
+The identifier stays as well, because it is what every line of output is filed under and what the
+observer's panes are joined on — so a name is something a Mokiterion *has in addition to* its number,
+not instead of it. The twelve initials are twelve different letters, which is what lets the map draw a
+Mokiterion as a single letter and still tell you which one it is.
 
 Each one carries four numbers, each from 0 to 100:
 
@@ -84,11 +97,11 @@ Those four change during the run. There is also one number that never changes:
 |---|---|---|
 | **waste tolerance** | how much of a piece of food you are willing to throw away in order to eat it now | 0 to 40 |
 
-**This is the only thing that makes one Mokiterion different from another.** It is decided once, at
-the moment the world is created, from the seed and the creature's own number — so `M07` on seed 42 has
-the same tolerance every single time you run seed 42, and a different one on seed 43. It is announced
-once, on the creature's first line of output, and never mentioned again. Nothing in the run can
-change it: not eating, not starving, not dying.
+**This is the only thing that makes one Mokiterion behave differently from another.** It is decided
+once, at the moment the world is created, from the seed and the creature's own number — so `M07` on
+seed 42 has the same tolerance every single time you run seed 42, and a different one on seed 43. It
+is announced once, on the creature's first line of output, and never mentioned again. Nothing in the
+run can change it: not eating, not starving, not dying.
 
 The values are genuinely spread out. On seed 42, the twelve are:
 
@@ -101,8 +114,9 @@ Nine to eleven different values per seed, in practice, with both `0` and `40` tu
 five seeds the project measures. What the number actually *does* is section 12 — and only the newest
 decider reads it at all. Under the other two it is derived, reported, and ignored.
 
-Still absent: no name, no memory, no preferences, no relationships. Two Mokiterions with the same
-tolerance are still interchangeable apart from where they are standing.
+Still absent: no memory, no preferences, no relationships. A name is not a personality — Zug and Krul
+run on the same rules, and two Mokiterions with the same tolerance are still interchangeable apart
+from where they are standing and what they are called.
 
 ---
 
@@ -516,13 +530,18 @@ Three consequences worth knowing:
   stream — so a `baseline` or `reference` run at any seed prints exactly the same output today as it
   did before individuality existed, apart from the two new numbers appearing on their lines. That was
   checked over 42 recorded runs, character for character, with the new numbers stripped back out.
+- **Giving everybody a name did not disturb anything either.** A name is looked up from a fixed list by
+  the creature's number, so it costs no random draw at all — not even one off to the side, the way the
+  trait does. Every run at every seed makes exactly the same decisions it made before the names existed,
+  and the only difference in the output is the name now standing at the front of each creature's first
+  line. That was checked the same way, over 90 recorded runs with the names stripped back out.
 
 ---
 
 ## 14. A real run, step by step
 
-This is genuine output, not an illustration. `M05`, seed 42, default density, with `--trace-actions`.
-Read `satiety:` as the value at the moment it decided.
+This is genuine output, not an illustration. Trok (`M05`), seed 42, default density, with
+`--trace-actions`. Read `satiety:` as the value at the moment it decided.
 
 | Tick | What it did | Satiety | Why |
 |---:|---|---:|---|
@@ -567,14 +586,15 @@ Five real lines, all from `--seed 42 --ticks 40`:
 
 ```
 tick=0  subject=F0002 event=food_initialized  result=class:medium,position:82:20,territory:A
-tick=0  subject=M08   event=agent_initialized result=position:62:104,territory:B,health:100,satiety:100,energy:100,fear:0,waste_tolerance:40
+tick=0  subject=M08   event=agent_initialized result=name:Nurb,position:62:104,territory:B,health:100,satiety:100,energy:100,fear:0,waste_tolerance:40
 tick=10 subject=A     event=food_regeneration_skipped result=reason:capacity,count:61
 tick=40 subject=A     event=food_regenerated  result=food:F0128,class:medium,position:110:32
 tick=40 subject=M12   event=survival_changed  result=health:100->100,satiety:91->90,energy:71->70,fear:100->100
 ```
 
-In order: a medium piece placed at the start; `M08` arriving in the world, on the one and only line
-that will ever state its waste tolerance; territory A growing nothing on turn 10 because it is already
+In order: a medium piece placed at the start; `M08` arriving in the world and giving its name as Nurb,
+on the one and only line that will ever state either its name or its waste tolerance — every later line
+about it says `M08` and nothing else; territory A growing nothing on turn 10 because it is already
 at its 61-piece cap; the same territory growing a meal on turn 40, after somebody had eaten; and `M12`
 getting hungrier and more tired at the end of turn 40.
 

@@ -112,20 +112,31 @@ fn the_territory_rule_is_present_exactly_when_the_boundary_is_visible() {
     assert!(Viewport::resolve(Zoom::Detail, (40, 44), (0, 40)).shows_territory_boundary());
 }
 
+/// `SPEC-MOK-003` rule 2's glyph assignment as amended on 2026-08-19 for `REQ-MOK-041`: the name's
+/// first character uppercased, and `?` where the engine reported no name.
+///
+/// The twelve names are `SPEC-MOK-001`'s and are not restated here as a table, because a name table
+/// in the observer is exactly what `REQ-MOK-041` forbids. What is asserted is the derivation itself,
+/// over every initial a name can carry and over the boundary cases, which subsumes the twelve
+/// without holding them. That the engine reports those names is `Mokiterions`' own test; that the
+/// glyphs drawn in a frame are each subject's own initial is `tests/verification.rs`, which reads
+/// the names from the records rather than from a fixture.
 #[test]
 fn glyphs_are_the_assigned_ones() {
-    let expected = [
-        ("M01", '1'),
-        ("M02", '2'),
-        ("M09", '9'),
-        ("M10", 'A'),
-        ("M11", 'B'),
-        ("M12", 'C'),
-    ];
-    for (id, glyph) in expected {
-        assert_eq!(agent_glyph(id), glyph, "{id}");
+    for initial in 'a'..='z' {
+        let upper = initial.to_ascii_uppercase();
+        // Whatever follows the first character, and whichever case the first character arrives in,
+        // the glyph is that character uppercased.
+        assert_eq!(agent_glyph(&initial.to_string()), upper, "{initial}");
+        assert_eq!(agent_glyph(&format!("{initial}bcd")), upper, "{initial}");
+        assert_eq!(agent_glyph(&format!("{upper}bcde")), upper, "{initial}");
     }
-    assert_eq!(agent_glyph("unnamed"), 'D');
+    // Distinct initials give distinct glyphs, which is what rule 2.5 rests on: twelve names with
+    // twelve distinct initials therefore draw twelve distinct glyphs.
+    let glyphs: std::collections::BTreeSet<char> =
+        ('a'..='z').map(|c| agent_glyph(&c.to_string())).collect();
+    assert_eq!(glyphs.len(), 26);
+    // No name reported: a stated character, not the identifier and not a digit.
     assert_eq!(agent_glyph(""), '?');
 
     assert_eq!(resource_glyph(FoodClass::Low), '○');

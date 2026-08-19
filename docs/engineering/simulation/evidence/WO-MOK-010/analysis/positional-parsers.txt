@@ -1,0 +1,88 @@
+VER-MOK-010 — oracle 3, second half: the positional parsers are untouched
+=========================================================================
+
+Work order   WO-MOK-010 (Phase 2.5, naming)
+Baseline     524a6758d74b5240079959e9827ea40a7af22a30
+Date         2026-08-19
+
+Why this check exists
+---------------------
+
+`EventDetail::AgentInitialized` gains a field, and its rendering puts that field first:
+
+    name:Nurb,position:62:104,territory:B,health:100,satiety:100,energy:100,fear:0,waste_tolerance:40
+
+Two engine test files read that stream by its rendered text rather than by parsing keys into a map,
+which is what VER-MOK-010 calls parsing it "positionally" —
+`mokiterions-core/tests/process.rs` and `mokiterions-core/tests/viability.rs`. If either had had to
+be adjusted to accommodate the new field, the record's shape would have changed for every existing
+consumer, and REQ-MOK-040's additivity claim would have been about the draws only. The check is
+therefore not "do they still pass" but "are they the same bytes": passing after an edit would prove
+nothing about a consumer that this repository does not contain.
+
+Both files are byte-identical to the baseline. Neither was opened.
+
+
+Measurement
+-----------
+
+    git config core.autocrlf
+    true
+
+That matters for reading what follows. This clone checks files out with CRLF line endings and stores
+them with LF, so a digest of the working-tree file cannot be compared with a digest of the blob
+`git show` prints. Both are given, and the comparison is made on the LF form.
+
+    mokiterions-core/tests/process.rs
+      working tree, raw         232dd8ed8f707b140c96aca1f5f3378bfa59e906b4ef4c40c5c853452aa3243a
+      working tree, CR removed  08d64608892d90822ff53d66b37e84612f3ee3d8868b2bdf6d44ff60b1c3555a
+      baseline blob             08d64608892d90822ff53d66b37e84612f3ee3d8868b2bdf6d44ff60b1c3555a
+      cmp                       IDENTICAL
+
+    mokiterions-core/tests/viability.rs
+      working tree, raw         3bd94c0f34b5e2eb807a89d53e35a8883a872046b1856cd10a493e7fee9238ee
+      working tree, CR removed  04e3546e665bcdfe6ec3e504cc694001119d57f9201674eec80c7fd0f3e64f67
+      baseline blob             04e3546e665bcdfe6ec3e504cc694001119d57f9201674eec80c7fd0f3e64f67
+      cmp                       IDENTICAL
+
+Commands, per file:
+
+    sha256sum < <file>                                            the raw working-tree digest
+    tr -d '\r' < <file> | sha256sum                               the same file as LF
+    git show <baseline>:<file> | sha256sum                        the blob
+    git show <baseline>:<file> > blob; tr -d '\r' < <file> > wt; cmp blob wt
+
+The whole directory says the same thing independently of the digests:
+
+    git diff --numstat <baseline> -- mokiterions-core/tests/
+    (no output)
+
+    git status --porcelain mokiterions-core/tests/
+    ?? mokiterions-core/tests/naming.rs
+
+No tracked file under `mokiterions-core/tests/` differs from the baseline by one line. The single
+entry is the new public-tier naming target, which is an addition and not a modification.
+
+
+What makes this possible
+------------------------
+
+Neither parser indexes fields by ordinal. Both anchor on the rendering's tail, which is the part
+the new field cannot move:
+
+    tests/process.rs:116-129   counts the substrings "event=agent_initialized",
+                               "waste_tolerance:" and ",fear:0,waste_tolerance:", the last being
+                               the pairing that makes it an initialization assertion
+    tests/viability.rs:40-49   filters on "event=agent_initialized" and reads the trait with
+                               `line.rsplit_once(",waste_tolerance:")`
+
+Inserting `name:` ahead of `position:` changes none of those substrings and moves nothing to the
+right of `fear`, so both files hold without an edit. That is the reason the field is first rather
+than appended: SPEC-MOK-001's amendment records it as a decision, and this file is the measurement
+that the decision holds. `waste_tolerance` stays last, which
+`mokiterions-core/tests/naming.rs::the_initialization_record_keeps_the_name_first_and_the_trait_last`
+asserts as a contract rather than an accident.
+
+Twelve records per run grow by 118 bytes in total — 46 characters of name plus the twelve `name:`
+keys and their commas — which is the figure `additivity.txt` removes per cell before
+comparing streams, and it is removed by deleting one leading field rather than by re-parsing a line.

@@ -389,7 +389,10 @@ fn draw_mokiterions(
         let Some(cell) = buffer.cell_mut((inner.x + x, inner.y + y)) else {
             continue;
         };
-        cell.set_char(spatial::agent_glyph(&agent.id));
+        // Rule 2 as amended on 2026-08-19: the glyph is the engine's reported name's initial.
+        cell.set_char(spatial::agent_glyph(
+            observer.name_of(&agent.id).unwrap_or_default(),
+        ));
         let mut style = Style::new()
             .fg(territory_colour(agent.territory))
             .add_modifier(Modifier::BOLD);
@@ -437,7 +440,12 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
         } else {
             Style::new()
         };
-        for text in entry_lines(agent, bar, two_line) {
+        for text in entry_lines(
+            agent,
+            observer.name_of(&agent.id).unwrap_or_default(),
+            bar,
+            two_line,
+        ) {
             lines.push(Line::from(Span::styled(text, style)));
         }
     }
@@ -466,7 +474,11 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
 }
 
 /// Rule 4's entry form. Two lines at 47 columns or more, one line below.
-fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<String> {
+///
+/// `name` is what the engine reported for this Mokiterion, or empty where it reported none, in
+/// which case the field is blank rather than filled with the identifier (`REQ-MOK-041`). It takes
+/// six columns of line one only, so the bar row's 35-column overhead and `bar_width` are untouched.
+fn entry_lines(agent: &AgentSnapshot, name: &str, bar: usize, two_line: bool) -> Vec<String> {
     let applied = agent
         .applied_action
         .as_ref()
@@ -477,12 +489,15 @@ fn entry_lines(agent: &AgentSnapshot, bar: usize, two_line: bool) -> Vec<String>
     let position = agent.position.to_string();
     if !two_line {
         return vec![format!(
-            "{:<5}{territory:<3}h{:>3} s{:>3} e{:>3} f{:>3}",
+            "{name:<6}{:<5}{territory:<3}h{:>3} s{:>3} e{:>3} f{:>3}",
             agent.id, agent.health, agent.satiety, agent.energy, agent.fear
         )];
     }
     vec![
-        format!("{:<5}{territory:<3}{position:<14}{applied}", agent.id),
+        format!(
+            "{name:<6}{:<5}{territory:<3}{position:<14}{applied}",
+            agent.id
+        ),
         // Rule 4 as amended on 2026-08-19: the slot rule 4.5 reserved for `fear` now carries it,
         // on the same terms as the other three. `WO-MOK-007` made the value an engine attribute,
         // so the gauge is no longer the unsupportable claim the reservation was there to avoid.
@@ -536,8 +551,16 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
         ];
     };
 
+    // Rule 10 as amended on 2026-08-19: the name precedes the identifier, and this line is above
+    // the living-or-dead branch below, so rule 10.6's retained selection is identified the same
+    // way after death as before it. Where the engine reported no name the identifier stands alone
+    // rather than being presented as one.
+    let heading = match observer.name_of(selection) {
+        Some(name) => format!("{name}  {selection}"),
+        None => selection.to_string(),
+    };
     let mut lines = vec![Line::from(Span::styled(
-        selection.to_string(),
+        heading,
         Style::new().add_modifier(Modifier::BOLD),
     ))];
 
@@ -1024,16 +1047,22 @@ mod tests {
                 food_id: "F0058".to_string(),
             }),
         };
-        let lines = entry_lines(&agent, FULL_BAR, true);
+        let lines = entry_lines(&agent, "Blip", FULL_BAR, true);
 
         assert_eq!(
             lines[1],
             "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20"
         );
-        // Line one carries identifier, territory, position and the applied action, in the
-        // mockup's columns. The action uses the engine's own rendering, `eat:F0058`.
+        // Line one carries the name, identifier, territory, position and the applied action, in
+        // the mockup's columns. The action uses the engine's own rendering, `eat:F0058`. The bar
+        // row asserted above is the mockup's unchanged, which is the measurement that rule 4 as
+        // amended on 2026-08-19 for `REQ-MOK-041` leaves line two and its arithmetic alone.
+        //
+        // The name here is a fabricated four-character stand-in, not the name rule 4's mockup
+        // prints beside `M05`: `REQ-MOK-041` lets no engine name be written down in this package,
+        // and what the columns hold is a length, not a particular name.
         assert!(
-            lines[0].starts_with("M05  A  81:14         "),
+            lines[0].starts_with("Blip  M05  A  81:14         "),
             "{}",
             lines[0]
         );
@@ -1084,7 +1113,7 @@ mod tests {
             fear: 0,
             applied_action: None,
         };
-        let lines = entry_lines(&agent, 4, true);
+        let lines = entry_lines(&agent, "Ort", 4, true);
         assert!(lines[0].ends_with(ABSENT), "{}", lines[0]);
         assert!(lines[1].contains("h ░░░░   0"), "{}", lines[1]);
         // Rule 4.4 governs the fourth gauge on the same terms: a computed zero is a zero and an
@@ -1092,12 +1121,50 @@ mod tests {
         assert!(lines[1].contains("f ░░░░   0"), "{}", lines[1]);
 
         agent.applied_action = Some(Action::Wait);
-        assert!(entry_lines(&agent, 4, true)[0].ends_with("wait"));
+        assert!(entry_lines(&agent, "Ort", 4, true)[0].ends_with("wait"));
 
-        // The one-line form keeps the numbers and drops the bars.
-        let compact = entry_lines(&agent, 0, false);
+        // The one-line form keeps the numbers and drops the bars, and carries the name.
+        let compact = entry_lines(&agent, "Ort", 0, false);
         assert_eq!(compact.len(), 1);
-        assert_eq!(compact[0], "M01  A  h  0 s  0 e  0 f  0");
+        assert_eq!(compact[0], "Ort   M01  A  h  0 s  0 e  0 f  0");
+    }
+
+    /// `REQ-MOK-041`: the name is presented in addition to the identifier and before it, in both
+    /// entry forms, and it costs the fields beside it nothing.
+    #[test]
+    fn an_entry_carries_the_name_before_the_identifier_and_takes_six_columns() {
+        let agent = AgentSnapshot {
+            id: "M12".to_string(),
+            position: Coordinate { x: 127, y: 127 },
+            territory: Territory::B,
+            health: 100,
+            satiety: 100,
+            energy: 100,
+            fear: 0,
+            applied_action: Some(Action::Sleep),
+        };
+
+        // The longest name the engine can report is five characters, so the six-column field
+        // holds it with its separating space and the identifier still starts at column six. The
+        // four fixtures are fabricated, one per admissible length: what the field has to hold is
+        // a length, and an engine name written down here would be the table `REQ-MOK-041` forbids.
+        for name in ["O", "Ort", "Blip", "Weeee"] {
+            let two_line = entry_lines(&agent, name, 2, true);
+            let one_line = entry_lines(&agent, name, 0, false);
+            for line in [&two_line[0], &one_line[0]] {
+                assert!(line.starts_with(name), "{line}");
+                assert_eq!(&line[6..9], "M12", "{line}");
+            }
+            // Line two is the same row whatever the name is: the name is on line one only.
+            assert_eq!(two_line[1], entry_lines(&agent, "Ort", 2, true)[1]);
+        }
+
+        // Where the engine reported no name the field is blank. The identifier is not moved into
+        // it, which `REQ-MOK-041` forbids as a derivation, and it is not filled with a
+        // placeholder, which `SPEC-MOK-003` rule 10.7 forbids as an uncomputed value.
+        let unnamed = entry_lines(&agent, "", 2, true);
+        assert!(unnamed[0].starts_with("      M12"), "{}", unnamed[0]);
+        assert_eq!(unnamed[1], entry_lines(&agent, "Ort", 2, true)[1]);
     }
 
     /// Rule 3.1 and 3.2, which are states rather than counts.

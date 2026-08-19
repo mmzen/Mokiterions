@@ -46,6 +46,14 @@ Added under `WO-MOK-007` (implemented, **not verified** — see Phase 2's status
   proposal-identical to rule 5 at tolerance zero
 - A fourth roster gauge in the observer
 
+Added under `WO-MOK-010` (implemented, **not verified** — see Phase 2.5's status below):
+
+- A name per Mokiterion, one of twelve the specification fixes, assigned by identifier number and reported once on
+  `agent_initialized` ahead of every other field
+- The observer presenting that name in the roster, the inspector and the map, sourced from the engine's own record and
+  from nowhere else — no name table, no fallback, no derivation from an identifier
+- The map glyph becoming the name's initial, replacing the digit-and-letter table, on twelve pairwise-distinct letters
+
 Not yet implemented: per-agent entropy substreams, any second trait, any consumer for `fear`, social and combat
 behavior, LLM-backed decisions, structured observability.
 
@@ -115,6 +123,8 @@ Phase 1.5  Terminal observer  ── the instrument every later phase is assesse
    ▼
 Phase 2  Individuality: traits and fear
    │
+   ├── Phase 2.5  Names  ── identity in the presentation; prerequisite of nothing
+   │
    ├──────────────┬───────────────┐
    ▼              ▼               │
 Phase 3        Phase 4            │   (3 and 4 are independent
@@ -132,6 +142,10 @@ Conflict       Analytical         │    and may run in parallel)
 Phase 1.5 is not a prerequisite of Phase 2 in a technical sense — Phase 2 could be built without it. It is placed
 here because it is the instrument by which Phases 2 through 6 are *judged*, and building it after the behavior it
 would have helped assess wastes its main benefit.
+
+Phase 2.5 hangs off Phase 2 rather than following it because nothing depends on it. It needs the initialization
+record Phase 1 established and the roster Phase 1.5 built, and no later phase needs it — a name changes what a run
+is *called*, never what it does. It is placed here because that is when it was asked for.
 
 Running alongside Phases 1–2: a bounded **LLM feasibility experiment** (see Cross-cutting work).
 
@@ -356,6 +370,53 @@ The survivor figures there are downstream of one mid-implementation owner decisi
 fired when `REQ-MOK-034`'s floor was missed on three of five declared seeds at the `0..=100` trait range first
 specified, and the technical owner chose to narrow the range to `0..=40` rather than amend the floor
 (`escalation.md`).
+
+---
+
+## Phase 2.5 — Names
+
+**Goal.** Twelve Mokiterions who are someone rather than something: each has a name, and the presentation uses it.
+
+**Why here, and why it is numbered 2.5.** It was not in the original sequence. It was asked for on 2026-08-19, in
+those terms — you cannot be someone and not have a name — and it is numbered 2.5 for the same reason Phase 1.5 is
+numbered 1.5: it delivers no simulation behavior. Nothing decides differently, nothing is perceived differently, no
+rule reads a name, and no later phase needs one. It belongs after Phase 2 because Phase 2 is where a Mokiterion first
+became distinguishable at all, and a name on interchangeable subjects would have been decoration.
+
+**What was built**
+
+- `SPEC-MOK-001`'s *Name*: twelve names — Zug, Krul, Quib, Sput, Trok, Womp, Hozz, Nurb, Vonk, Gorm, Xob, Drix —
+  assigned to `M01` through `M12` by table lookup on the identifier's number, identical in every run at every seed
+- The name reported once, first in the `agent_initialized` detail list, and on no other record
+- The observer presenting it in the roster's first six columns, in the inspector heading beside the identifier, and as
+  the map glyph — the name's initial uppercased, on twelve pairwise-distinct letters, replacing rule 2's `1`–`9` and
+  `A`, `B`, `C` table
+- The identifier retained everywhere it already was, because it is the join key between the panes and the stream
+
+**What was deliberately not built**
+
+| Considered | Decided | Why |
+|---|---|---|
+| Names generated from the seed | **Fixed list, assigned by number** | A generated name would make a run's cast depend on entropy, and the product owner accepted a hard-coded list explicitly. It also keeps the twelve initials distinct by construction rather than by luck |
+| The name replacing the identifier in output | **Both, identifier unchanged** | Every pane and every test joins subject to record on `M01`–`M12`. Replacing it would have been a breaking change to the observation stream for a presentational gain |
+| A name accessor in the observer's public interface | **`pub(crate)`** | `SPEC-MOK-004` rule 6's **Growth** clause: the interface grows only when an approved requirement needs it to, and a test is never that requirement. The public-tier tests read names from the engine's records through the already-public `Observer::events` |
+| Renaming, nicknames, names for the dead differing from the living | **Out of scope** | Nothing asked for them, and a name that can change is a state field with rules attached rather than an identity |
+
+**The additivity property Phase 2 established is preserved and was measured, not assumed.** A name costs no draw at
+all — not even a side-generator draw, which is what the trait costs — so every pre-existing run makes the same
+decisions in the same order and the only difference in its output is the name at the front of twelve lines. That is
+checked across 90 recorded runs with the names projected back out, against the pre-change capture of the same 90.
+
+**Status.** Implemented under `WO-MOK-010`. **Not verified.** `VER-MOK-010` carries seven manual assessments and
+`VREC-MOK-010` is a separate record bound to the implementation commit, which the implementation agent cannot
+self-approve. Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
+`SPEC-MOK-004` — are approved by the repository owner's act of 2026-08-19; the rows marked `OUTSTANDING` in those
+specifications from earlier work are untouched and still outstanding. Everything measured is in
+`docs/engineering/simulation/evidence/WO-MOK-010/`.
+
+**It does not close anything Phase 2 left open.** `fear` is still read by nothing, the trait vector is still one
+trait, entropy substreams are still unimplemented, and high-class resource accumulation is still carried. Phase 2's
+status section above stands unchanged.
 
 ---
 

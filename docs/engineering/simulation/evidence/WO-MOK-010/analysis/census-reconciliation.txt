@@ -1,0 +1,117 @@
+VER-MOK-010 — oracle 3: the test census, reconciled name by name
+================================================================
+
+Work order   WO-MOK-010 (Phase 2.5, naming)
+Baseline     524a6758d74b5240079959e9827ea40a7af22a30
+Date         2026-08-19
+Inputs       baseline/test-run.txt     `cargo test` at the baseline, 193 names
+             post/test-run.txt     `cargo test` at the candidate, 205 names
+Tool         analysis/census.py, which qualifies every test name by the target that ran it
+
+Both logs come from one `cargo test` invocation at the workspace root, which is the gate
+SPEC-MOK-004 states. Neither is assembled from per-package runs.
+
+    grep -v '^#' baseline/test-census.txt | sed 's/ :: ok$//' | sort > pre.txt      193 lines
+    grep -v '^#' post/test-census.txt | sed 's/ :: ok$//' | sort > post.txt     205 lines
+    comm -13 pre.txt post.txt      the additions
+    comm -23 pre.txt post.txt      the removals
+
+
+Result
+------
+
+    193 before, 205 after, 12 additions, 0 removals, 0 renames.
+    205 passed, 0 failed, 0 ignored. No `#[ignore]` anywhere in either package.
+
+The reconciliation is by qualified name, not by count: a case that moved between tiers or between
+targets would appear here as one addition and one removal even with the total unchanged. None does.
+
+
+The twelve additions
+--------------------
+
+Engine, internal tier — `mokiterions-core/src/simulation.rs`, four:
+
+    unittests :: simulation::tests::the_names_are_the_specified_twelve
+        SPEC-MOK-001 rule 1's table is the specified one, the twelve are distinct, the initials are
+        distinct, each name is one to five ASCII letters, no name is also an identifier, and the
+        table's length is the population a run actually builds.
+    unittests :: simulation::tests::naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration
+        REQ-MOK-040's additivity claim from inside: across the declared seeds and densities the
+        shared stream is where it was, and the assignment does not differ between two seeds.
+    unittests :: simulation::tests::the_reported_record_carries_the_name_the_agent_holds
+        The tick-0 record's `name` is the value the agent holds, not a second lookup.
+    unittests :: simulation::tests::a_name_is_the_same_value_at_both_ends_of_a_run
+        Under all three policies, over a thousand ticks, no name moves, and a name a dead subject
+        still holds is one of the twelve.
+
+Engine, public tier — `mokiterions-core/tests/naming.rs`, three:
+
+    tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order
+    tests/naming.rs :: the_initialization_record_keeps_the_name_first_and_the_trait_last
+    tests/naming.rs :: a_name_is_reported_once_and_on_no_other_record
+
+        All three are writable through the engine's public interface with their assertions
+        unchanged, so SPEC-MOK-002 rule 8 places them outside the crate. The file is a new
+        public-tier target, admitted by that rule's closing sentence exactly as `tests/decisions.rs`
+        was, and it obliges no entry in the rule's initial-arrangement table.
+
+Observer, internal tier — two:
+
+    unittests :: render::tests::an_entry_carries_the_name_before_the_identifier_and_takes_six_columns
+        The entry's column arithmetic, asserted through the private `entry_lines`: the name occupies
+        six columns at every admissible length, the identifier still starts at column six, line two
+        is unchanged whatever the name is, and an absent name leaves the field blank rather than
+        borrowing the identifier or a placeholder.
+    unittests :: verification::a_subject_whose_record_was_never_ingested_is_presented_without_a_name
+        REQ-MOK-041's provenance claim in its negative form. It needs a subject the observer holds
+        and was never told the name of, so it needs the state hook, which is what places it inside
+        the crate under SPEC-MOK-004 rule 8.
+
+Observer, public tier — `mokiterions-tui/tests/verification.rs`, three:
+
+    tests/verification.rs :: every_pane_identifying_a_mokiterion_presents_its_own_reported_name
+    tests/verification.rs :: every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms
+    tests/verification.rs :: the_inspector_identifies_a_dead_subject_by_name_and_identifier
+
+        All three read the expected name from the engine's own records through the already-public
+        `Observer::events`, so none of them needs `name_of` and none of them is a reason to widen
+        it. That is what keeps them in this tier and the interface at 94 items.
+
+
+Per-target counts after the change
+----------------------------------
+
+    tests/authority.rs        4        tests/options.rs          8
+    tests/cli.rs             13        tests/process.rs          6
+    tests/decisions.rs        1        tests/render.rs          10
+    tests/density.rs          2        tests/spatial.rs          7
+    tests/export.rs           7        tests/state.rs           21
+    tests/layout.rs          10        tests/termination.rs      4
+    tests/naming.rs           3        tests/verification.rs    19
+                                       tests/viability.rs        2
+    unittests                88   =  engine lib 54 + observer lib 26 + observer bin 8
+
+                                                                     TOTAL   205
+
+`unittests` is `census.py`'s qualifier for every library and binary target, so the four unit targets
+collapse into one row there. Split by package, the figures SPEC-MOK-004 rule 11 records as amended
+are: engine 85 (54 internal, 31 public), observer 120 (34 internal, 86 public), workspace 205.
+
+Three of the twelve additions were written after VER-MOK-010's coverage matrix was read back
+against the implementation and three rows were found to have no case:
+`a_name_is_the_same_value_at_both_ends_of_a_run`,
+`a_subject_whose_record_was_never_ingested_is_presented_without_a_name` and the population clause
+added to `the_names_are_the_specified_twelve`. They are recorded here as additions like the others;
+`manual-assessment.md` records that the matrix, not the implementation, found them.
+
+
+A note on two test bodies that changed without changing the census
+------------------------------------------------------------------
+
+`mokiterions-tui/tests/spatial.rs::glyphs_are_the_assigned_ones` was rewritten to hold no engine
+name, and two pre-existing inline tests in `mokiterions-tui/src/render.rs` gained a stand-in name as
+an argument, because VER-MOK-010's static row extends to test fixtures. Neither change renames a test
+or adds one, so neither appears
+in this reconciliation; `static-checks.txt` item 1 records what changed and why the
+assertions are not weaker for it.

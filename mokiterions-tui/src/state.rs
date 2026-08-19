@@ -158,6 +158,11 @@ pub struct Observer {
     /// Offset of the highlighted record from the newest presented record.
     log_cursor: usize,
     deaths: Vec<Death>,
+    /// The name the engine reported for each identifier, read from its own `agent_initialized`
+    /// record and from nothing else. `REQ-MOK-041` admits no name table, no fallback and no
+    /// derivation from an identifier here: an identifier absent from this map has no name to
+    /// present, which is why the map is consulted rather than a name being constructed.
+    names: BTreeMap<String, String>,
     latest_survival: BTreeMap<String, (u8, u8)>,
     export_path: Option<String>,
     notice: Option<String>,
@@ -190,6 +195,7 @@ impl Observer {
             events: EventBuffer::new(),
             log_cursor: 0,
             deaths: Vec::new(),
+            names: BTreeMap::new(),
             latest_survival: BTreeMap::new(),
             export_path: options.export_path,
             notice: None,
@@ -218,6 +224,12 @@ impl Observer {
     fn ingest(&mut self, events: Vec<Event>) {
         for event in events {
             match &event.detail {
+                // `REQ-MOK-041`: the presented name is the one the engine reported, taken from
+                // the record it reported it in. The observer's own construction ingests these
+                // before the first frame, so no pane is ever drawn with the map unpopulated.
+                EventDetail::AgentInitialized { name, .. } => {
+                    self.names.insert(event.subject.clone(), name.clone());
+                }
                 EventDetail::SurvivalChanged {
                     satiety, energy, ..
                 } => {
@@ -322,6 +334,22 @@ impl Observer {
     #[allow(dead_code)]
     pub fn deaths(&self) -> &[Death] {
         &self.deaths
+    }
+
+    /// The name the engine reported for this identifier, or `None` if it reported none.
+    ///
+    /// `None` is unreachable in a run this observer initialized — `SPEC-MOK-001` rule 1 names
+    /// every Mokiterion before tick 1 — and it is returned rather than filled in because
+    /// `SPEC-MOK-003` rule 10.7 makes an uncomputed value absent. It is deliberately not the
+    /// identifier: presenting an identifier as a name would be the derivation `REQ-MOK-041`
+    /// forbids.
+    ///
+    /// **`pub(crate)` and not `pub`**, so `SPEC-MOK-004` rule 6's interface does not grow. Its only
+    /// caller is the rendering module of this same crate; no host outside it needs the map, because
+    /// the names are in the records `REQ-MOK-022` already retains. A test is never a reason to
+    /// widen this, which rule 6's *Growth* clause states and rule 7 prohibits.
+    pub(crate) fn name_of(&self, id: &str) -> Option<&str> {
+        self.names.get(id).map(String::as_str)
     }
 
     pub fn death_of(&self, id: &str) -> Option<&Death> {

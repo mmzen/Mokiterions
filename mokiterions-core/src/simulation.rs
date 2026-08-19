@@ -390,6 +390,10 @@ struct Food {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Mokiterion {
     id: String,
+    /// `SPEC-MOK-001`'s *Name*: fixed for the run and identical in every run, assigned by table
+    /// lookup on the identifier's number. Borrowed from [`NAMES`] rather than owned because no
+    /// name is ever constructed, edited or freed.
+    name: &'static str,
     position: Coordinate,
     health: u8,
     satiety: u8,
@@ -401,6 +405,29 @@ struct Mokiterion {
     /// initialization and never written again. Only the trait-aware source reads it.
     waste_tolerance: u8,
     alive: bool,
+}
+
+/// The twelve names of `SPEC-MOK-001`'s *Name*, in identifier order: index `n - 1` is `Mn`'s.
+///
+/// The table is the product owner's decision, recorded in `WO-MOK-010`, and this array is the
+/// whole of it. The specification fixes three properties this literal satisfies by inspection and
+/// [`the_names_are_the_specified_twelve`](tests::the_names_are_the_specified_twelve) asserts: the
+/// names are pairwise distinct, their first characters are pairwise distinct, and every name is
+/// one to five ASCII letters. `the_names_are_the_specified_twelve` asserts all three, so a later
+/// edit to this literal cannot quietly break one of them.
+const NAMES: [&str; 12] = [
+    "Zug", "Krul", "Quib", "Sput", "Trok", "Womp", "Hozz", "Nurb", "Vonk", "Gorm", "Xob", "Drix",
+];
+
+/// The name of the Mokiterion numbered `number`, which must be in `1..=12`.
+///
+/// **This performs no draw.** It reads neither the seed nor the configuration and touches no
+/// generator, which is why naming leaves every run predating it byte-identical apart from the one
+/// field added to the `agent_initialized` record. It is a table lookup, and `SPEC-MOK-001`'s *Time
+/// and entropy* records that it is not an exception to the single shared stream because it is not
+/// a draw at all.
+fn name_of(number: u8) -> &'static str {
+    NAMES[usize::from(number) - 1]
 }
 
 /// The inclusive upper bound of the `waste_tolerance` range, from `SPEC-MOK-001`'s *Behavioral
@@ -1009,6 +1036,11 @@ pub enum EventDetail {
         territory: Territory,
     },
     AgentInitialized {
+        /// Reported once, here, and on no other record kind, because the name cannot change
+        /// during a run. First in the detail list, which `SPEC-MOK-001`'s *Data and interface
+        /// contracts* fixes: two test suites parse this record positionally, from the front for
+        /// the count of initialized Mokiterions and from the back for `waste_tolerance`.
+        name: String,
         position: Coordinate,
         territory: Territory,
         health: u8,
@@ -1106,6 +1138,7 @@ impl fmt::Display for EventDetail {
                 "class:{class},position:{position},territory:{territory}"
             ),
             Self::AgentInitialized {
+                name,
                 position,
                 territory,
                 health,
@@ -1115,7 +1148,7 @@ impl fmt::Display for EventDetail {
                 waste_tolerance,
             } => write!(
                 formatter,
-                "position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy},fear:{fear},waste_tolerance:{waste_tolerance}"
+                "name:{name},position:{position},territory:{territory},health:{health},satiety:{satiety},energy:{energy},fear:{fear},waste_tolerance:{waste_tolerance}"
             ),
             Self::DecisionSourceSelected { source } => write!(formatter, "source:{source}"),
             Self::SurvivalChanged {
@@ -1357,6 +1390,10 @@ impl Simulation {
             occupied_agent_positions.push(position);
             agents.push(Mokiterion {
                 id: format!("M{number:02}"),
+                // Rule 1 assigns the name at the point the agent is created, by table lookup on
+                // the identifier's number. It draws nothing, so it cannot move the placement
+                // draws above and every run predating naming is unchanged.
+                name: name_of(number),
                 position,
                 health: ATTRIBUTE_MAX,
                 satiety: ATTRIBUTE_MAX,
@@ -1616,6 +1653,7 @@ impl Simulation {
                 0,
                 agent.id.clone(),
                 EventDetail::AgentInitialized {
+                    name: agent.name.to_string(),
                     position: agent.position,
                     territory: agent.position.territory(),
                     health: agent.health,
@@ -3965,5 +4003,178 @@ mod tests {
                 1
             );
         }
+    }
+
+    // ---- WO-MOK-010: the name ------------------------------------------------------------
+
+    /// `REQ-MOK-040`: the table's domain and its two distinctness properties.
+    ///
+    /// The names themselves are the product owner's decision and are asserted as the literal they
+    /// are, so an edit to [`NAMES`] fails here rather than silently changing what every run
+    /// reports. The properties are asserted separately from the literal, because it is the
+    /// properties the observer's glyph assignment and the roster's column budget depend on.
+    #[test]
+    fn the_names_are_the_specified_twelve() {
+        const SPECIFIED: [&str; 12] = [
+            "Zug", "Krul", "Quib", "Sput", "Trok", "Womp", "Hozz", "Nurb", "Vonk", "Gorm", "Xob",
+            "Drix",
+        ];
+        assert_eq!(NAMES, SPECIFIED);
+
+        // Total on `1..=12` and injective: every identifier gets a name and no two share one.
+        let assigned: Vec<&str> = (1..=12u8).map(name_of).collect();
+        assert_eq!(assigned, SPECIFIED.to_vec());
+        let distinct: std::collections::BTreeSet<&str> = assigned.iter().copied().collect();
+        assert_eq!(distinct.len(), 12, "two Mokiterions share a name");
+
+        // The first characters are distinct, which is what `SPEC-MOK-003` rule 2's glyph
+        // assignment rests on and what makes twelve glyphs tell twelve subjects apart.
+        let initials: std::collections::BTreeSet<char> = assigned
+            .iter()
+            .map(|name| name.chars().next().expect("no name is empty"))
+            .collect();
+        assert_eq!(initials.len(), 12, "two names share a first character");
+
+        for name in assigned {
+            assert!(
+                (1..=5).contains(&name.len()),
+                "{name} is outside the one-to-five character bound"
+            );
+            assert!(
+                name.chars()
+                    .all(|character| character.is_ascii_alphabetic()),
+                "{name} carries a character outside the ASCII letters"
+            );
+            // A name is not an identifier: nothing that reads one can be satisfied by the other.
+            assert!(
+                !(1..=12u8).any(|number| format!("M{number:02}") == name),
+                "{name} is also an identifier"
+            );
+        }
+
+        // The table holds exactly as many entries as a run creates Mokiterions. The population is
+        // read from a run rather than restated as a literal, because the engine states it as the
+        // range the initialization loop walks and has no constant to name: an edit that created a
+        // thirteenth Mokiterion would panic in `name_of`, and one that added a thirteenth name
+        // without a Mokiterion to hold it would fail here.
+        let simulation = Simulation::new(individual_config(42, 1, false)).unwrap();
+        assert_eq!(NAMES.len(), simulation.agents.len());
+    }
+
+    /// `REQ-MOK-040`: a name is the same value at both ends of a run, including for a Mokiterion
+    /// that died during it.
+    ///
+    /// That no second report is emitted is `tests/naming.rs`'s subject. Immutability is this tier's,
+    /// because it is a claim about the value the engine holds rather than about what it printed: the
+    /// field has one writer, at initialization, and a run that wrote it again would satisfy every
+    /// public-tier assertion here and fail this one.
+    #[test]
+    fn a_name_is_the_same_value_at_both_ends_of_a_run() {
+        for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+            let mut simulation = Simulation::new(Config {
+                policy,
+                ..individual_config(42, 1_000, true)
+            })
+            .unwrap();
+            let before: Vec<(String, &str)> = simulation
+                .agents
+                .iter()
+                .map(|agent| (agent.id.clone(), agent.name))
+                .collect();
+
+            let mut sink = Vec::new();
+            simulation.run(&mut sink).expect("the run completes");
+
+            let after: Vec<(String, &str)> = simulation
+                .agents
+                .iter()
+                .map(|agent| (agent.id.clone(), agent.name))
+                .collect();
+            assert_eq!(before, after, "a name moved during a {policy} run");
+
+            // Death does not release a name: the dead keep theirs, which is what lets the observer
+            // go on naming a subject it can no longer see.
+            let dead: Vec<&str> = simulation
+                .agents
+                .iter()
+                .filter(|agent| !agent.alive)
+                .map(|agent| agent.name)
+                .collect();
+            for name in dead {
+                assert!(NAMES.contains(&name));
+            }
+        }
+    }
+
+    /// `REQ-MOK-040`: naming performs no draw, and reads neither the seed nor the configuration.
+    ///
+    /// The recorded stream positions are [`INITIALIZATION_DRAWS`], the same expectations
+    /// `VER-MOK-007` oracle 2 pinned before naming existed. A name obtained by drawing — from the
+    /// shared stream or from a side generator seeded by the run — would move them, or would make
+    /// the assignment differ between two seeds.
+    #[test]
+    fn naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration() {
+        let reference: Vec<&str> = (1..=12u8).map(name_of).collect();
+
+        for (density, counts) in INITIALIZATION_DRAWS {
+            for (index, seed) in DECLARED_SEEDS.into_iter().enumerate() {
+                for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+                    let simulation = Simulation::new(Config {
+                        density: Density::parse(density).unwrap(),
+                        policy,
+                        ..individual_config(seed, 1, false)
+                    })
+                    .unwrap();
+
+                    // The stream is exactly where it was before naming was added.
+                    assert_eq!(
+                        shared_stream_draws(&simulation),
+                        counts[index],
+                        "naming moved the shared stream at seed {seed}, density {density}%"
+                    );
+
+                    // The same twelve names, in the same order, whatever the run is.
+                    let names: Vec<&str> =
+                        simulation.agents.iter().map(|agent| agent.name).collect();
+                    assert_eq!(
+                        names, reference,
+                        "the assignment changed at seed {seed}, density {density}%"
+                    );
+                    // And each is the one belonging to its own identifier.
+                    for (number, agent) in (1..=12u8).zip(&simulation.agents) {
+                        assert_eq!(agent.id, format!("M{number:02}"));
+                        assert_eq!(agent.name, name_of(number));
+                    }
+                }
+            }
+        }
+    }
+
+    /// `REQ-MOK-040`: the record the engine writes carries the name it assigned, so the assignment
+    /// and the report cannot drift apart.
+    ///
+    /// Only the *link* is asserted here, from a private field to a public record. What the record's
+    /// text is, that the name is reported once and nowhere else, and that `waste_tolerance` is
+    /// still last, are all writable through rule 5's interface and are therefore
+    /// `tests/naming.rs`'s under rule 7's placement rule.
+    #[test]
+    fn the_reported_record_carries_the_name_the_agent_holds() {
+        let simulation = Simulation::new(individual_config(42, 1, false)).unwrap();
+        let reported: Vec<String> = simulation
+            .initialization_events()
+            .iter()
+            .filter_map(|event| match &event.detail {
+                EventDetail::AgentInitialized { name, .. } => Some(name.clone()),
+                _ => None,
+            })
+            .collect();
+
+        let held: Vec<String> = simulation
+            .agents
+            .iter()
+            .map(|agent| agent.name.to_string())
+            .collect();
+        assert_eq!(reported, held);
+        assert_eq!(reported.len(), 12);
     }
 }
