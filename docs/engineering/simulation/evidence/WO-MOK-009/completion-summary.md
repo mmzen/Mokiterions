@@ -32,7 +32,7 @@ because a status transition edits a field.
 | `scripts/test_check_release_authorization.py` | 721 | 48 scenarios |
 | `scripts/test_check_release_reachability.py` | 265 | 22 scenarios |
 | `rust-toolchain.toml` | 37 | the rule 9 compiler declaration, `channel = "1.97.1"` with `rustfmt` and `clippy` |
-| `docs/RELEASE_RUNBOOK.md` | 422 | the rule 14 human sequence, outside the governed artifact root |
+| `docs/RELEASE_RUNBOOK.md` | 425 | the rule 14 human sequence, outside the governed artifact root |
 
 ### Governed artifacts — new
 
@@ -49,12 +49,13 @@ owner's 2026-08-19 approval, and `WO-MOK-008` alone is still `draft`.
 
 ### Evidence — this work order
 
-Sixteen records and a directory index, listed in `README.md`. Four were written after the captures, as the
-owner directed each act: `commit-binding.md`, which names the commit; `release-artifact-types.md`, which
-discharges half of this work order's fourth approval precondition; `approval-and-transition.md`, which
-records the approvals and the ten status transitions; and `snapshot-reproducibility.md`, which records what
-`VREC-MOK-007`'s snapshot field is reproducible from, because the first attempt to recompute it from the same
-commit did not match.
+Seventeen records and a directory index, listed in `README.md`. Five were written after the captures:
+`commit-binding.md`, which names the commit; `release-artifact-types.md`, which discharges half of this work
+order's fourth approval precondition; `approval-and-transition.md`, which records the approvals and the ten
+status transitions; `snapshot-reproducibility.md`, which records what `VREC-MOK-008`'s snapshot field is
+reproducible from, because the first attempt to recompute it from the same commit did not match; and
+`id-collision.md`, which records why that record is `VREC-MOK-008` and not `VREC-MOK-007`. The owner directed
+the first four; the fifth records a correction to this work order's own output.
 
 ### Not this work order
 
@@ -174,7 +175,7 @@ Under the amended wording C5 is **observed**, and the witness is the transcript 
 `compliance-rehearsal.md` C5. The scenario totals above move accordingly: 47 observed, 3 rehearsed, 15 not
 performed, 0 unexercisable.
 
-## Seven findings a reader should not have to discover
+## Eight findings a reader should not have to discover
 
 1. **`WO-MOK-001.md` was modified, outside this work order's declared change surface.** It gained the
    `[assurance]` table the harness's review-phase preflight now requires. Without it,
@@ -232,6 +233,18 @@ performed, 0 unexercisable.
    rule 14 requires coverage of the seven acts and an order, not that order**, so neither the runbook nor the
    rule was changed. `candidate-conformance.md`, rule 14.
 
+8. **The verification record was created under an ID `master` already owned, and had to be renumbered.**
+   `master` moved during this work: pull request #19 merged a **`verified`** `VREC-MOK-007` verifying
+   `WO-MOK-007`. This branch created a different record at the same path, which the push surfaced as the
+   pull request's only merge conflict — an add/add on that one file. It is now `VREC-MOK-008`, free on both
+   sides, with an ID census in `id-collision.md` confirming it is the only collision among 69 shared IDs.
+   **This work order's own runbook prescribes the check that would have caught it** — a `git ls-tree` against
+   `origin/master` — and predicted the claimant by name: *"the in-flight `WO-MOK-007` will most likely claim
+   `007`"*. The instruction was not followed. The sentence in `approval-and-transition.md` that called the ID
+   *"the next free one in the sequence"* is corrected there rather than deleted. No measurement moved; three
+   illustrative references to the old ID remain, two of them inside now-approved artifacts and therefore left
+   for their owners to amend.
+
 ## Harness state at the end of the work
 
 Re-run with the pinned `0.4.0` wheel after the last evidence file was written, again after the first four
@@ -285,12 +298,12 @@ as authorizing them.
 The changeset was committed as `17be4ba` and opened as pull request #20, both recorded in
 `commit-binding.md`. The owner then approved the chain and authorized the work order's transition, recorded
 in `approval-and-transition.md` and in `WO-MOK-009`'s own *Approval record*, which lets the fourth act
-happen: `capture-verification` had refused while the work order was `draft`, and `VREC-MOK-007` is now
+happen: `capture-verification` had refused while the work order was `draft`, and `VREC-MOK-008` is now
 prepared and **`ready`**. Fifth, the technical owner confirmed the architecture reading that the fourth
 act's records had flagged, which closes row 1 above by decision rather than by construal. Sixth, the owner
 authorized carrying the unpushed governance commits to `origin`, which updates pull request #20 and turns
 the review-preflight failure recorded in `approval-and-transition.md` into a pass.
 
-Making `VREC-MOK-007` `verified` is the accountable assurance owner's act and was not taken. Merging pull
+Making `VREC-MOK-008` `verified` is the accountable assurance owner's act and was not taken. Merging pull
 request #20 was not instructed and was not done — a push is not a merge, and it authorizes nothing that
 rule 13 reserves.

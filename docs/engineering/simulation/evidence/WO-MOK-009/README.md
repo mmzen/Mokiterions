@@ -94,10 +94,14 @@ in `compliance-rehearsal.md` C1.
   deliberately left `draft`, the gates and the rule 7.4 preflight loop on the transitioned tree, the one
   reading of the approval that was put back to the technical owner and confirmed the same day, and the two
   claims elsewhere in this directory that the transition makes stale.
-- `snapshot-reproducibility.md` — what `VREC-MOK-007`'s `artifact_snapshot_sha256` is reproducible from,
+- `snapshot-reproducibility.md` — what `VREC-MOK-008`'s `artifact_snapshot_sha256` is reproducible from,
   measured across five checkouts of one commit: not the line endings, but the name of the directory the
   repository is checked out into. Records why the committed record was re-prepared in a clone named
   `Mokiterions`.
+- `id-collision.md` — why the verification record is `VREC-MOK-008` and not `VREC-MOK-007`: `master` moved
+  during this work and pull request #19 merged a `verified` record under that ID. Holds the add/add conflict
+  the push surfaced, an ID census across both branches showing this is the only collision, the sentence in
+  `approval-and-transition.md` it corrects, and the three references that are now misleading.
 - `release-artifact-types.md` — `WO-MOK-009`'s approval precondition 4, half discharged: both the release
   record and the release contract are creatable, with the prefixes and the two nearly identical directory
   names the harness enforces. `prepare-release` needs a verified record as input and so cannot be exercised
@@ -128,7 +132,8 @@ in `compliance-rehearsal.md` C1.
   authorized the transition**, which the implementation agent recorded; nine artifacts are now `approved`
   and `WO-MOK-009` is `implemented`. `approval-and-transition.md` holds the detail, including the one
   reading in it, which was put back to the technical owner and confirmed on 2026-08-19 rather than left as
-  a footnote. `VREC-MOK-007` is prepared and `ready`;
+  a footnote. `VREC-MOK-008` is prepared and `ready` — first prepared as `VREC-MOK-007` and renumbered
+  because `master` already held that ID, which `id-collision.md` records;
   `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners, so it stays `ready`
   here. `WO-MOK-008` is untouched and still `draft`. `a5-refusal-ladder.md` records that the real graph
   holds no release record, which is a fact about the repository rather than something to fix here.

@@ -37,9 +37,11 @@ Both types are creatable. Three things a reader should take from it:
 2. **The two directories differ by one letter, and it is not a typo.** The record lands under
    `simulation/releases/`, plural; the contract under `simulation/release/`, singular. Anyone reading a path
    in a hurry will get this wrong.
-3. **`docs/RELEASE_RUNBOOK.md` already names both correctly** — Phase E line 232 for
-   `docs/engineering/simulation/release/REL-MOK-001.md`, Phase F line 272 for
-   `docs/engineering/simulation/releases/RLS-MOK-001.md`, and both again in its closing file table. This
+3. **`docs/RELEASE_RUNBOOK.md` already names both correctly** — Phase E line 235 for
+   `docs/engineering/simulation/release/REL-MOK-001.md`, Phase F line 275 for
+   `docs/engineering/simulation/releases/RLS-MOK-001.md`, and both again in its closing file table. Both
+   citations were 232 and 272 when this was captured; `id-collision.md` added three lines to Phase C above
+   them and the numbers here follow the file rather than the capture. This
    measurement confirms the runbook rather than correcting it, which is the outcome worth recording: the
    procedure an operator will follow was written against paths that turn out to be right.
 

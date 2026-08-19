@@ -1,8 +1,10 @@
 # What `artifact_snapshot_sha256` is reproducible from
 
-Measured 2026-08-19 while preparing `VREC-MOK-007`, from the pinned `se-harness==0.4.0` wheel. It is here
-because a verification record's snapshot field is only worth having if a later reader can recompute it, and
-the first attempt to recompute it produced a different value from the same commit.
+Measured 2026-08-19 while preparing the verification record for `WO-MOK-009` — numbered `VREC-MOK-007` at the
+time and renumbered to `VREC-MOK-008` after the push, for the reason `id-collision.md` records — from the pinned
+`se-harness==0.4.0` wheel. It is here because a verification record's snapshot field is only worth having if a
+later reader can recompute it, and the first attempt to recompute it produced a different value from the same
+commit.
 
 ## What the field is
 
@@ -55,9 +57,9 @@ The dashboard records the repository's *directory name* as the project name, and
 dashboard. Nothing else in 170 KB differs. Within one checkout the value is deterministic: two consecutive
 runs in the same clone agree, and it does not depend on the record's output path.
 
-## Why this changed how `VREC-MOK-007` was prepared
+## Why this changed how the record was prepared
 
-`VREC-MOK-007` was first captured in the linked worktree this work was done in, whose directory is named
+The record was first captured in the linked worktree this work was done in, whose directory is named
 `Mokiterions-release-ci`. That yields `579dfff…`, which is correct, deterministic, and **not** what an
 assurance owner checking the record would compute: a plain `git clone` of this repository produces a
 directory named `Mokiterions`, and every one of `VREC-MOK-001` through `VREC-MOK-006` was captured in a
@@ -73,8 +75,8 @@ commit rather than of the checkout.
 
 **The order of the two commits is why this file's past tense is accurate.** `docs/engineering/WORKFLOW.md`
 line 22 forbids a record from containing the hash of its own commit, so this file is committed first and the
-re-preparation is performed against the commit that contains it; `VREC-MOK-007` then arrives in the next
-commit, naming that hash. A reader at the earlier of the two commits will find this record and no
+re-preparation is performed against a commit that contains it; the record then arrives in a later commit,
+naming that hash. A reader at the earlier of the two commits will find this record and no
 verification record, which is the same shape `approval-and-transition.md` describes for its own commit.
 
 To recompute it: clone this repository so the working directory is named `Mokiterions`, check out the commit
@@ -92,8 +94,8 @@ It is a property of a managed provenance field that is easy to trip over and exp
 fact, and the useful thing to record is what the field is reproducible *from*: the commit, plus the name of
 the directory it is checked out into.
 
-The six existing records are unaffected in substance — they were captured in a checkout named `Mokiterions`
-and are reproducible by the obvious check. This record makes `VREC-MOK-007` the same.
+The six existing records on this branch are unaffected in substance — they were captured in a checkout named
+`Mokiterions` and are reproducible by the obvious check. This record makes `VREC-MOK-008` the same.
 
 This record takes the directory to seventeen files — sixteen records and the index. `approval-and-transition.md`'s
 closing count of sixteen was correct when it was written.

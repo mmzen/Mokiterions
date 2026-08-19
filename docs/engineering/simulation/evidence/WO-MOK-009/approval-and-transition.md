@@ -43,8 +43,9 @@ release.
   it. Its review preflight consequently still fails, which is correct: `REQ-MOK-036` requires review preflight to
   pass for every **released** work order, and a draft defect report is not in any release payload.
 - **No verification record was transitioned to `verified`.** `capture-verification` emits `ready`, and
-  `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners. `VREC-MOK-007` is prepared from
-  the revision this record is committed in and carries `status = "ready"`.
+  `DECISION_RIGHTS.md:14` reserves `verified` and `released` to accountable owners. `VREC-MOK-008` is prepared from a
+  later revision of this branch and carries `status = "ready"`. It was first prepared as `VREC-MOK-007` and
+  renumbered; `id-collision.md` records why.
 - **No tag, no release record, no release contract, no merge, no publication.** The four remain what
   `a5-refusal-ladder.md` shows them to be: reserved acts that no amount of approved governance substitutes for.
 
@@ -129,19 +130,25 @@ the pull-request runs.
    constructed inside the clone. A re-run today would clone a graph containing the approved chain and reach the same
    verdicts, because rule 4 reads release records and the work orders a release record names, and there is still no
    release record.
-2. **`VREC-MOK-007` is now two different things in this directory.** The ladder's rung-3 fixture invents a
-   *hypothetical aggregate* record under that ID, covering `WO-MOK-001` through `WO-MOK-006` at one candidate commit,
-   to show that a verified aggregate still does not authorize a release. The real `VREC-MOK-007` prepared from this
-   revision verifies `WO-MOK-009` alone. The ID is the next free one in the sequence and skipping it to avoid the
-   collision would leave a gap that is harder to explain than the collision itself. When a release is eventually
-   prepared, the aggregate record it needs will carry a later ID.
+2. **`VREC-MOK-007` was the wrong ID, and the reasoning below it was wrong when it was written.** What this item
+   originally said was that the ladder's rung-3 fixture invents a *hypothetical aggregate* record under that ID,
+   covering `WO-MOK-001` through `WO-MOK-006`, that the real record prepared from this revision verifies
+   `WO-MOK-009` alone, and that **"the ID is the next free one in the sequence and skipping it to avoid the
+   collision would leave a gap that is harder to explain than the collision itself."** The first two clauses hold.
+   The third does not: the ID was already taken on `master` by a `verified` record for `WO-MOK-007`, merged as pull
+   request #19 before this was written, and the sentence weighed a collision with a fixture in this directory while
+   the real one was with the remote. The record was renumbered to **`VREC-MOK-008`**, which is free on both sides;
+   `id-collision.md` holds the measurement, the ID census across both branches, and the three remaining references
+   that are now misleading. The correct check is the `git ls-tree` against `origin/master` that this work order's own
+   `docs/RELEASE_RUNBOOK.md` prescribes, and which was not run.
 
 ## What this record is not
 
 It is not the verification record, and it does not stand in for one. `docs/engineering/WORKFLOW.md` line 22 states
-that *"A record cannot contain the hash of its own commit"*, so `VREC-MOK-007` is captured from the commit that
-contains this file and committed separately afterwards. It will be `ready`: prepared provenance awaiting the
-accountable assurance owner, who is the only party that may make it `verified`.
+that *"A record cannot contain the hash of its own commit"*, so the record is captured from a commit that contains
+this file and committed separately afterwards. It is `ready`: prepared provenance awaiting the accountable assurance
+owner, who is the only party that may make it `verified`. It carries the ID `VREC-MOK-008` rather than the
+`VREC-MOK-007` this record originally named — see the corrected item 2 above.
 
 This record takes the directory to sixteen files — fifteen records and the index. `commit-binding.md`'s closing count
 of fifteen was correct when it was written.

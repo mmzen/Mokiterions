@@ -175,13 +175,16 @@ enforces it (`prepare_release`) and so does the gate. So an aggregate release ne
 verification record captured at the final candidate commit. The six existing records are not
 edited and not replaced; they remain the record of their own work.
 
-Pick the next free record ID. `VREC-MOK-001` through `006` are taken, and the in-flight
-`WO-MOK-007` will most likely claim `007`:
+Pick the next free record ID, and pick it from `origin/master` rather than from the branch you are on.
+`VREC-MOK-001` through `007` are taken: `007` was claimed by `WO-MOK-007` while `WO-MOK-009` was in flight,
+which is the case this step exists for, and skipping the check once already produced an add/add merge
+conflict — `docs/engineering/simulation/evidence/WO-MOK-009/id-collision.md` records it. Run the query, then
+set the variable from what it returns:
 
 ```bash
 git ls-tree -r --name-only origin/master \
   -- docs/engineering/simulation/verification-records/ | sort
-VREC=VREC-MOK-007      # adjust to the next genuinely free ID
+VREC=VREC-MOK-0NN      # the next ID the command above does not list
 ```
 
 With `HEAD` at the candidate commit and the worktree clean:
