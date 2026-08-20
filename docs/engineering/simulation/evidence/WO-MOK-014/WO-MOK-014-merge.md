@@ -219,17 +219,30 @@ interpreter. Every command is offline.
 | Python test suite | 126 | **126** | unchanged; neither side's conflict touches a `scripts/` file |
 | `check_declared_dependencies.py` | PASS | **PASS** | "Every declared set matches its resolved graph. 8.4a-8.4d pass" |
 | `harnessctl validate` | PASS | **PASS**, 114 artifacts, E0, W0 | |
-| `harnessctl dashboard` | 107 artifacts, 357 relations | **114 artifacts, 396 relations** | snapshot `da19c004092b4020…` without this file, `348251422870edae…` with it |
+| `harnessctl dashboard` | 107 artifacts, 357 relations | **114 artifacts, 396 relations** | snapshot of commit `9599c0a`: `b3470146ac4facaa…` as it stands, `5011aeb64648174e…` with this file held out. Corrected — see below |
 | `harnessctl inspect` | 20 findings, 7 warning, 13 info | **24 findings, 10 warning, 14 info** | `error` 0, `decision_required` 0 |
 | `harnessctl doctor` | all PASS | **all PASS** | |
 | `harnessctl preflight --work-order WO-MOK-014` | resolves | **resolves**, `REQ-MOK-050` | both `--phase start` and `--phase review` |
 
 **The dashboard snapshot covers retained evidence**, so a hash recorded inside the packet it hashes cannot be stable:
 writing the figure changes the figure. Both measurements are therefore given, taken by moving this file aside and back —
-`da19c004092b4020264f583b4a992838d16d571e5214127b657e862d6aa2168f` with everything else in the merge commit present and
-this file absent, and `348251422870edae1b5b178c756371067b9fcded72fc5021e0edd12536dffe19` with the file as it stood
-before this paragraph was added. Neither is a declared value: no artifact declares a dashboard snapshot, and the
-verification record that will bind the merge commit must take its own.
+`b3470146ac4facaa77b6863a672c7ee04304c7de973f99d084183309a8b4b912` for commit `9599c0a` exactly as it stands, this file
+present, and `5011aeb64648174ee64865737b905dde69d0d7ca7fefadf407cdc7874d2ef8ba` for the same commit with this file held
+out of the tree while the dashboard runs. Neither is a declared value: no artifact declares a dashboard snapshot, and
+the verification record that binds the merge commit takes its own.
+
+**Correction, 2026-08-20, in the commit that adds `merge/` beside this file.** This paragraph and the row above first
+recorded `da19c004092b4020…` and `348251422870edae…`. **Both were measured while `HEAD` was still `4a32a95`**, on the
+resolved worktree before the merge was committed, so neither is a figure of `9599c0a` — they are figures of an
+uncommitted tree. That is precisely the error `VREC-MOK-014`'s *The snapshot figures* section documents at length and
+whose cause it states: `build_snapshot` writes `git rev-parse HEAD` into the hashed document in 25 places, so
+*"a digest measured in a working tree before that tree is committed therefore cannot equal the digest of the commit that
+tree becomes"*. Recording the pair here and then repeating the mistake one file later is a lapse, not a discovery, and
+it is recorded rather than quietly overwritten. The two figures above replace them and were measured in a clean detached
+worktree at `9599c0a` whose leaf directory name equals this repository's, twice, with the held-out file restored in
+between and the first figure reproducing exactly; `sha256sum target/harness-dashboard/dashboard-data.json` equals the
+`Snapshot:` line the dashboard prints, at 114 artifacts, 396 relations, 0 errors and 10 warnings in both runs. The two
+withdrawn figures are figures of no commit and nothing binds them.
 
 The test total is `cargo test`'s own per-target output, not a sum taken on trust:
 
@@ -306,9 +319,26 @@ here; the future `VER-MOK-005` and `VER-MOK-008` work order must use the right-h
 | `SPEC-MOK-003` | `:794`, `:800` | **`:916`, `:922`** |
 | `SPEC-MOK-004` | `:25` | **`:26`** |
 
-Unmoved, and verified so rather than assumed: `VER-MOK-008:169`, `ARCH-MOK-001:48` and `:139`, `SPEC-MOK-002:24`,
-`ADR-MOK-006:77` and `:287`, and `WO-MOK-014:87`, `:118`, `:303` and `:329`. The packet cites no `.rs` line coordinate,
-so `master`'s six source and test files move nothing.
+Unmoved **by the merge**, and verified so rather than assumed: `VER-MOK-008:169`, `ARCH-MOK-001:48` and `:139`,
+`SPEC-MOK-002:24`, `ADR-MOK-006:77` and `:287`, and `WO-MOK-014:87`, `:118`, `:303` and `:329`. The packet cites no
+`.rs` line coordinate, so `master`'s six source and test files move nothing.
+
+**Correction, 2026-08-20, same commit as the one above.** *Unmoved* was the wrong word for two of those ten. The merge
+did not move them — that much is measured and stands — but two were already wrong before the merge ran, so a reader who
+follows them lands on the wrong line and the sentence above is the kind of true statement that misleads:
+
+| citation, as `WO-MOK-014-amendments.md` writes it | true coordinate at `9599c0a` | the commit that moved it |
+|---|---|---|
+| `ADR-MOK-006:77` | **`:84`** | `4a32a95`, this branch's renumbering, 7 lines added to *Status* above the note |
+| `WO-MOK-014:87` | **`:93`** | `65ac88b`, the narrowing of the declared requirement set, 51 lines added above the note |
+
+Traced commit by commit: the ADR's second dated *Status* note sat at `:77` from `5e45d95` through `3c3c2e4` and moved
+at `4a32a95`; the work order's *Lifecycle* note sat at `:87` at `5e45d95` and `f40b711` and moved at `65ac88b`. **The
+second was therefore already stale at `65ac88b`, the candidate `VREC-MOK-014` is verified against.** Neither file that
+carries the stale number is edited — `WO-MOK-014-amendments.md` is in that record's `evidence_paths` and the record is
+`verified` — on the precedent `evidence/WO-MOK-012/amendment-ratifications.md` states for `VREC-MOK-005`. The
+amendments themselves are present, approved and unchanged; `merge/amendments.md` re-derives all twenty-one cited
+coordinates and this table is its result.
 
 ## Both chains after the merge
 
@@ -322,6 +352,14 @@ check that the two chains coexist rather than collide.
 - **A verification record bound to the merge commit is owed.** `VREC-MOK-014` binds `65ac88b`, before the merge and
   before the rename landed, and its snapshot hash reproduces only there. Nothing in this file substitutes for that
   record, and no verification decision is taken here.
+  **Later fact, 2026-08-20, in the commit that adds `merge/` beside this file.** The repository owner directed that the
+  record be created, and it is `VREC-MOK-015`, bound to candidate `9599c0a` with
+  `artifact_snapshot_sha256 = b3470146ac4facaa…`. It is committed at `status = "ready"`: creating a candidate is the
+  implementation act, and moving it to `verified` is the accountable assurance owner's, which is why this sentence is
+  corrected to name the record rather than deleted. `VREC-MOK-015` does not supersede `VREC-MOK-014` and cannot —
+  `VERIFICATION_RECORD.template.md` lets a governance decision move only a `ready` record to `superseded`, and
+  `VREC-MOK-014` is `verified`. It stays bound to `65ac88b`. The precedent is
+  `evidence/WO-MOK-011/merge/README.md`: *"a record for the merge is a new record."*
 - **Nine statements in retained evidence and in `VREC-MOK-014` remain false**, listed above and left as written by
   design, including `WO-MOK-014-completion-summary.md:367-368`'s byte-identity claim against `ff3a155`.
 - **`docs/ROADMAP.md` still records no entry for this chain.** The note added here corrects `master`'s two paragraphs

@@ -1,0 +1,15 @@
+# WO-MOK-014: resolved feature sets, against SPEC-MOK-003's declaration
+
+x86_64-pc-windows-msvc:
+  crossterm v0.29.0|bracketed-paste,default,derive-more,events,windows
+  ratatui v0.30.2|crossterm,layout-cache,std,underline-color
+x86_64-unknown-linux-gnu:
+  crossterm v0.29.0|bracketed-paste,default,derive-more,events,windows
+  mio v1.2.2|default,log,net,os-ext,os-poll
+  ratatui v0.30.2|crossterm,layout-cache,std,underline-color
+  signal-hook-mio v0.2.5|mio-1_0,support-v1_0
+aarch64-apple-darwin:
+  crossterm v0.29.0|bracketed-paste,default,derive-more,events,windows
+  mio v1.2.2|default,log,net,os-ext,os-poll
+  ratatui v0.30.2|crossterm,layout-cache,std,underline-color
+  signal-hook-mio v0.2.5|mio-1_0,support-v1_0

@@ -1,0 +1,43 @@
+# WO-MOK-014: the figures a reader might confuse, each with the question it answers
+
+"How many crates does a build of the observer compile on this target?"
+  observer, external crates on x86_64-pc-windows-msvc: 57
+  observer, external crates on x86_64-unknown-linux-gnu: 63
+  observer, external crates on aarch64-apple-darwin: 62
+
+"How many distinct crates across the three targets SPEC-MOK-005 rule 10 builds?"
+  observer, union of the three: 66
+
+"How many could any target reach?" -- not a build of anything, and not the declared set.
+  observer, --target all: 71
+
+"How many packages does the lockfile hold?" -- includes crates no build reaches.
+  cargo metadata --locked packages: 182
+
+Crates present at more than one version, per target (the pair-vs-name difference):
+  x86_64-pc-windows-msvc:
+    hashbrown
+    syn
+      hashbrown v0.16.1
+      hashbrown v0.17.1
+      syn v2.0.119
+      syn v3.0.3
+  x86_64-unknown-linux-gnu:
+    hashbrown
+    syn
+      hashbrown v0.16.1
+      hashbrown v0.17.1
+      syn v2.0.119
+      syn v3.0.3
+  aarch64-apple-darwin:
+    hashbrown
+    syn
+      hashbrown v0.16.1
+      hashbrown v0.17.1
+      syn v2.0.119
+      syn v3.0.3
+
+Engine, crates in the graph at -e normal,build,dev (itself and nothing else):
+  x86_64-pc-windows-msvc: 1
+  x86_64-unknown-linux-gnu: 1
+  aarch64-apple-darwin: 1
