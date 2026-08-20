@@ -280,6 +280,17 @@ the `SPEC-MOK-002` list stated that `Observation` is a public item, which the so
 numeric mechanism that `REQ-MOK-051` leaves open on measurement, so it is two amendments and only the first is written;
 and the rule 21 bullet placed a tie-break in a rule that selects nothing.
 
+**Implementing it found two more, and both are corrections to approved text rather than to this section alone.** Neither
+is a code change: in both cases the implementation already did what the corrected text now states, which is why they
+surfaced only when the code was compared against the specifications item by item rather than read against them.
+`SPEC-MOK-002`'s growth enumeration omitted the `suffered` field appended to the existing public `ActionTrace` payload —
+provision 3 of that list, above — and `SPEC-MOK-001` rule 21's co-located fallback named `avoid` where `avoid` and
+`retreat` share the path, which also falsifies derived consequence 4's parenthetical. Both were put to the repository
+owner on 2026-08-20 with their alternatives and both were approved as corrections in a separate act from the amendment
+act above, each with its own row in the amended specification's amendment record. The pattern worth carrying forward is
+that both defects are **understatements of a closed enumeration**, which is the failure mode an enumeration written from
+the change rather than from the surface produces.
+
 **Eight consequences in the text were derived rather than decided.** None had been put to an owner, because each follows
 from something already decided; but each is a statement a reader will rely on, so each was named here for ratification
 rather than left inside prose. **The owner took the four that were genuinely open on 2026-08-20**, and those four are
@@ -291,10 +302,19 @@ recorded in the table below rather than in this list. All eight are ratified as 
    on those lines. **Decided, not derived** — see the table below.
 3. **The field lists of `attack_resolved`, `threat_resolved` and `surrender_resolved`**, including `target_died`,
    `discarded` and `increase`, each present because the transition it reports would otherwise appear in no record.
-4. **`avoid` against a co-located target moves north**, then east, south, west, rather than being a rejection. Worth a
-   reader's note: rule 26 never reaches this case, because its contact branch covers distance `0` and its perceived
-   branch fires only at distance `2` or more. The clause is defensive completeness for rule 21, which any source's
-   proposal enters.
+4. **`avoid` and `retreat` against a co-located target move north**, then east, south, west, rather than being a
+   rejection.
+
+   **Corrected 2026-08-20, during implementation: this consequence named `avoid` alone and its parenthetical was
+   false.** It read "rule 26 never reaches this case, because its contact branch covers distance `0` and its perceived
+   branch fires only at distance `2` or more", and concluded that the clause is "defensive completeness for rule 21,
+   which any source's proposal enters". The premise holds for `avoid` and the conclusion does not hold at all, because
+   `retreat` shares the same fallback — the two verbs are one move away from the target, differing from `approach` only
+   in sign — and rule 26's **answer** branch proposes `retreat` whenever a defender at `fear` of at least `30` was
+   struck. An attacker strikes from contact, contact includes distance `0`, and nothing obliges it to move afterwards, so
+   a co-located retreat is not a defensive case at all: it is the ordinary one. `SPEC-MOK-001` rule 21 and its rule 6
+   paragraph both named `avoid` alone and are corrected under their own amendment row, on the owner's decision of
+   2026-08-20; the implementation already did what the corrected text states.
 5. **The uniform field name `target`** across all seven targeted variants.
 6. **`fight` carries two preconditions and not one** — contact as well as an unanswered attack in the record. What
    happens when the second cannot be met at the answering turn was open, and is now decided below.
@@ -412,8 +432,14 @@ every suite and retained script that parses the line.
     - **Rule 20, Contact.** The relation, the radius, the living-only condition, and the symmetry-with-ordered-
       registration statement.
     - **Rule 21, Targeted actions.** The seven verbs, each with its precondition; exactly-once application; `approach`,
-      `avoid` and `retreat` as rule 8 moves including the fallback axis and the co-located `avoid` direction; and the
-      closed eleven-kind contract. **Corrected 2026-08-20: the tie-break is not this rule's.** This bullet listed "the
+      `avoid` and `retreat` as rule 8 moves including the fallback axis and the co-located direction taken by **both
+      `avoid` and `retreat`**; and the closed eleven-kind contract. **Corrected 2026-08-20, a second time, during
+      implementation: the co-located fallback is `avoid`'s and `retreat`'s, not `avoid`'s alone.** This bullet, rule 21
+      itself and rule 6's paragraph on the same case all named one verb where two share the path, and the amended rule
+      names both on the owner's decision of that date. `retreat` reaches distance zero on identical terms and is in fact
+      the case rule 26 produces, its answer branch proposing `retreat` for a defender struck from its own cell; see
+      derived consequence 4 above, whose parenthetical asserted the opposite. Nothing about the fallback's behavior
+      changes and the implementation is unchanged. **Corrected 2026-08-20: the tie-break is not this rule's.** This bullet listed "the
       lowest-identifier tie-break" here, and it cannot be here: this rule applies a proposal that already names its
       target, so it selects among no Mokiterions at all. The nearest-then-lowest-identifier tie-break belongs to rule
       26, which chooses; rule 21 states that it does not, so a reader looking for it is sent to the rule that has it.
@@ -440,8 +466,8 @@ every suite and retained script that parses the line.
       entropy discipline as a consequence of the ordering — at most one draw per opportunity, never for a social decision,
       and only through rule 19's own search step — and that the ordering is normative rather than illustrative.
 
-**`SPEC-MOK-002`** — the engine's interface authority. Two provisions, and **an amendment is required here**, unlike
-under `WO-MOK-011`.
+**`SPEC-MOK-002`** — the engine's interface authority. Three provisions, and **an amendment is required here**, unlike
+under `WO-MOK-011`. The third was written on 2026-08-20 after the first two had been approved, and is a separate act.
 
 1. Rule 5's enumeration gains the fourth `Policy` variant, `Action`'s seven target-carrying variants, and the three
    added `EventType` variants with their `EventDetail` payloads. `EventType::ALL` is a `pub const` array whose length is
@@ -462,6 +488,26 @@ under `WO-MOK-011`.
 2. Rule 6 is re-checked and the re-check is recorded, because cross-agent mutation is introduced for the first time. No
    public item may yield a mutable borrow of, or a reference into, authoritative state, in any build configuration
    including test builds. The suffered-attack record must reach a source as owned values on the observation.
+3. **Rule 5's growth table gains a fourth row, and provision 1's enumeration was incomplete without it.** The
+   pre-existing public variant `EventDetail::ActionTrace` gains one field, `suffered: Vec<(String, u8)>`, appended after
+   `fear`. Growth under `CAP-MOK-009` becomes `1 + 7 + 3 + 3 + 1`, and the table's own count moves from three items
+   changing shape to four.
+
+   **Written 2026-08-20, after provisions 1 and 2 were approved, and approved in a separate act.** The gap is worth
+   stating precisely because it is a class of defect and not a slip: provision 1 enumerates added **variants**, and a
+   field appended to a public variant that already existed is the one form of growth that such an enumeration does not
+   catch. `SPEC-MOK-001` rule 7 obliges the trace line to report the suffered-attack record and its provision 6 fixes
+   the line's shape — but a behavior authority cannot admit an item to the interface `SPEC-MOK-002` rule 5 closes, and
+   the implementation's own comment at `mokiterions-core/src/simulation.rs:1425` cites that enumeration as its reason for
+   choosing the field's form. The field was written in the form the enumeration required and the enumeration did not
+   record it.
+
+   The form is part of the provision. The field is a `Vec` of **pairs of a `String` and a `u8`**, not of the engine's
+   private `SufferedAttack`, so no type is added, rule 6's ten private names are untouched, and rule 6 needs no further
+   re-check: both halves of a pair are already public values — an identifier is what `AgentSnapshot` carries, a damage is
+   what `AttackResolved` carries — and a pair of copies grants no path into engine-owned state, which is what provision
+   2's re-check establishes for the three event payloads on the same ground. **The implementation is unchanged by this
+   provision.** `VER-MOK-012`'s interface-growth check is re-run against four rows rather than three.
 
 **`SPEC-MOK-003`** — the observer. Three provisions.
 
@@ -516,7 +562,7 @@ all, and that nothing reads a population aggregate.
   `REQ-MOK-049`'s floor and lethality bound and `REQ-MOK-051`'s ceiling.
 - The read enumeration `REQ-MOK-050` requires, covering every behavior-governing rule, every source and every validation
   path, including the ones that already exist.
-- The thirteen `SPEC-MOK-001`, two `SPEC-MOK-002` and three `SPEC-MOK-003` provisions above, and the three requirement
+- The thirteen `SPEC-MOK-001`, three `SPEC-MOK-002` and three `SPEC-MOK-003` provisions above, and the three requirement
   amendments, each written as its owner has approved it, each with an amendment-record row.
 - Every check, measurement and manual assessment `VER-MOK-012` requires, and the evidence it retains.
 - Updating `SIMULATION_RULES.md`, including the four §16 entries this change retires and the §14 worked example.
@@ -786,7 +832,7 @@ The completion summary records, in this order:
 12. the observer's authority rows and rendered-frame evidence;
 13. the census reconciliation, with every updated test named and its assertion count before and after;
 14. the four gates' output;
-15. the amendment records — thirteen `SPEC-MOK-001` provisions, two `SPEC-MOK-002`, three `SPEC-MOK-003`, and the three
+15. the amendment records — thirteen `SPEC-MOK-001` provisions, three `SPEC-MOK-002`, three `SPEC-MOK-003`, and the three
     requirement amendments — each row quoted, with the approval each carries;
 16. the eleven manual assessments, or an explicit statement of which are outstanding and who owes them;
 17. residual uncertainty, including everything under *Stop and escalate conditions* that remains open, and the statement
