@@ -57,9 +57,9 @@ recorded in this requirement's own amendment record. What is **not** provisional
 seed, at the default density.
 
 It has already moved once, from six to five, before any measurement. That move carries **no amendment-record row**, and
-deliberately: this requirement is still `draft`, so changing its floor is an edit to an unapproved obligation rather than
-an amendment to an approved one. The amendment record begins at approval, and every later movement of this floor belongs
-in it.
+deliberately: this requirement is still `draft`, so the change was an edit to an unapproved obligation rather than an
+amendment to an approved one. The amendment record begins at the approval this requirement is given, and every movement
+of this floor after that belongs in that record.
 
 **One thing this requirement must not become.** A survivor floor is a population aggregate. It is read by the
 *verification* path and by nothing inside the simulation — no rule, no source and no validation of a proposal may consult

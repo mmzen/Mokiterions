@@ -35,7 +35,21 @@ the assurance owner for `REQ-MOK-050` — and on `VER-MOK-012` being approved by
 held by the repository owner, which means every approval is a separate act by the same person and **none is implied by
 any other**.
 
-Nothing in this chain is approved at the time of writing. Every artifact in it, including this one, is `draft`.
+**The repository owner validated this chain and authorized its transition on 2026-08-20, and the transition could not be
+completed.** `INT-MOK-009` and `CAP-MOK-009` moved to `approved` on that authorization, nothing being outstanding above
+them. The ten requirements, `VER-MOK-012` and this work order did not, for a reason the harness states and this packet
+had not accounted for: `validate` rejects an `approved` requirement that no active specification `specifies` — ten
+`E007` errors, one per requirement — and `preflight --phase start` refuses the same chain under `W016`, "specification
+coverage is missing". `docs/engineering/WORKFLOW.md` step 3 puts specification before the work-order approval of step 4,
+and `SPEC-MOK-001`'s amendment record shows the practice: the individuality amendment was approved **together with**
+`REQ-MOK-031` through `REQ-MOK-034`, `VER-MOK-010` and `WO-MOK-010`, in one act on 2026-08-19.
+
+**The specification amendments below are therefore an approval precondition of this work order and not a task inside
+it.** The ten requirements are approved with them or not at all, and the drafting order this packet used — requirements
+and work order first, amendment text under the work order — was wrong in exactly that respect. What the owner's
+validation covers is the text as it stood, and nothing else: the three decisions under *Decisions outstanding* below
+were **not** supplied with it, and each is now a stop condition on the amendment text rather than on the code, because
+the amendment is what this chain needs next. An approval is not a licence to choose them.
 
 **An architecture review is required and is not waived; its form is decided.** No active architecture carries an
 `addresses` edge to any requirement in this chain: `ARCH-MOK-001` addresses `REQ-MOK-004`, `008`, `009`, `010` and `016`,
@@ -156,8 +170,8 @@ that would reintroduce it.
 population and the draft argued from that; five sits exactly on the line that argument drew. The obligation is therefore
 weaker than its own rationale, it stands as the owner's decision rather than as a figure derived from the world's
 arithmetic, and the ratification at `VER-MOK-012` assessment 4 is where that is settled against a measured curve. Because
-`REQ-MOK-049` is still `draft`, the move carries no amendment-record row: it is an edit to an unapproved obligation, and
-the amendment record begins at approval.
+`REQ-MOK-049` is still `draft`, the move carries no amendment-record row: it was an edit to an unapproved obligation.
+Every movement after the approval it is given is an amendment and belongs in its record.
 
 ### Decisions outstanding before this work order can be approved
 
@@ -190,6 +204,13 @@ This work order depends on amendments to three approved specifications and three
 here in full, and each requires its accountable owner's separate act: approving this work order does not approve them.
 The implementation agent writes the amended text and records in each amendment record that it did so; it does not decide
 the substance.
+
+**The `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` amendments come first, before this work order is approved.**
+Each of them adds the requirements of this chain to its `specifies` relation, which is what makes those requirements
+approvable at all — `validate`'s `E007` and `preflight`'s `W016`, recorded above. So the text below is written, then
+approved together with `REQ-MOK-042` through `REQ-MOK-051`, `VER-MOK-012` and this work order in one act, and only then
+does implementation begin. The three requirement amendments in this section are not subject to that ordering; they
+amend requirements that are already active and may be approved with the rest.
 
 **`SPEC-MOK-001`** — the behavior authority. Thirteen provisions, of which seven are appended rules.
 

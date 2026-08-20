@@ -2,7 +2,7 @@
 id = "CAP-MOK-009"
 type = "capability"
 title = "Social encounter and conflict: a targeted action contract, a defender's own response, and a source that reads fear"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
