@@ -241,6 +241,35 @@ The three requirement amendments in this section do not share that ordering, and
 be amended in that act at all: re-measuring them requires the change to exist, so they are measured under this work order
 and amended afterwards only if the measurement moves them, each on its owner's separate act.
 
+#### The text was written on 2026-08-20, and what writing it exposed
+
+The amended text of `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `REQ-MOK-005` and `REQ-MOK-034` now exists in those
+artifacts, each carrying an amendment-record row marked **OUTSTANDING** and pointing here. Every `status` field is
+unchanged; nothing below has been approved by anyone.
+
+Writing it found four defects in this section, and each is corrected in place above rather than silently: provision 1 of
+the `SPEC-MOK-002` list stated that `Observation` is a public item, which the source contradicts; provision 6 of the
+`SPEC-MOK-001` list omitted the `action_trace` line's shape, which provision 11's decision requires; provision 9 named a
+numeric mechanism that `REQ-MOK-051` leaves open on measurement, so it is two amendments and only the first is written;
+and the rule 21 bullet placed a tie-break in a rule that selects nothing.
+
+**Eight consequences in the text were derived rather than decided, and they need the owner's ratification with it.**
+None was put to an owner, because each follows from something already decided; but each is a statement a reader will
+rely on, so each is named here rather than left inside prose:
+
+1. **The `suffered` field is present only when the record is non-empty.** Forced: an unconditional field changes every
+   `baseline --trace-actions` line and `CAP-MOK-009` excludes that.
+2. **A targeted proposal renders as `proposal:<verb>:<target-id>`** inside the existing field, on the `position:<x:y>`
+   precedent, so the trace line's field count does not change.
+3. **The field lists of `attack_resolved`, `threat_resolved` and `surrender_resolved`**, including `target_died`,
+   `discarded` and `increase`, each present because the transition it reports would otherwise appear in no record.
+4. **`avoid` against a co-located target moves north**, then east, south, west, rather than being a rejection.
+5. **The uniform field name `target`** across all seven targeted variants.
+6. **`fight` carries two preconditions and not one** — contact as well as an unanswered attack in the record.
+7. **`agent_died` gains no cause detail**; `attack_resolved`'s `target_died` makes a combat death recoverable without
+   changing a released event's shape.
+8. **`REQ-MOK-051`'s numeric form is deferred to a second amendment**, per the correction above.
+
 **`SPEC-MOK-001`** — the behavior authority. Thirteen provisions, of which seven are appended rules.
 
 1. *Scope*. No longer excludes social interaction between Mokiterions, and names `CAP-MOK-009`. The exclusion of
@@ -266,6 +295,16 @@ and amended afterwards only if the measurement moves them, each on its owner's s
    a transition not carried on the event would appear in no record. It must also state why `approach`, `avoid` and
    `retreat` add no type: each mutates only the actor and resolves as a rule 8 move, so rule 7's trace already carries
    every transition they cause, and a type that reported nothing new would be interface growth for nothing.
+
+   **Corrected 2026-08-20 while the text was written: this provision also fixes the `action_trace` line's shape, which
+   the enumeration above omitted.** The omission was not cosmetic. Provision 11 decides that the trace line reports the
+   suffered-attack record, and a line cannot report a field whose position and rendering are unfixed; this provision is
+   where every other record kind's field order is fixed, so it is where this one belongs. Two shapes are fixed here.
+   Targeted proposals render their target inside the existing `proposal` field as `<verb>:<target-id>`, on the
+   inner-colon precedent `position:<x:y>` already sets, so the field count does not change. The suffered-attack record
+   is appended after `fear` as a `suffered` field that is **present only when the record is non-empty** — which is
+   derived, not chosen: an unconditional field would change every `baseline --trace-actions` line, and `CAP-MOK-009`
+   excludes that outright. Provision 11 keeps the semantics, which is when the field is read relative to the clearing.
 7. Rule 3, *Observation*. The sentence "`fear` is deliberately **not** carried: no rule and no decision source reads it"
    is **replaced**, not deleted: the observation carries `fear` and the suffered-attack record, and the amendment states
    which requirement obliges the reader that makes them non-inert — `REQ-MOK-045` for the fields and `REQ-MOK-048` for
@@ -277,11 +316,25 @@ and amended afterwards only if the measurement moves them, each on its owner's s
    `fear` is not" **breaks the moment `fear` is carried** and is replaced by the reason that stands on its own: no
    decision source reads a name, and `REQ-MOK-041` obliges that nothing does. This is a correction of a justification,
    not of an obligation; the name stays off the observation.
-9. Rule 5, *Reference decision*, and rule 19, *Trait-aware decision*. The waste condition is corrected under
-   `REQ-MOK-051` — rule 5's `satiety + restoration <= 100` and rule 19's tolerant `S + R - 100 <= T * R / 100` — and rule
-   5's accumulation paragraph is amended: its "addressing it is out of scope for this revision" and its "**No obligation
-   is stated on the result in either direction**" are both replaced by a reference to `REQ-MOK-051`'s stated ceiling. The
-   measured 45 of 61 figure is **retained** in the amendment record as the state this correction ends.
+9. Rule 5, *Reference decision*, and rule 19, *Trait-aware decision*. Rule 5's accumulation paragraph is amended: its
+   "addressing it is out of scope for this revision" and its "**No obligation is stated on the result in either
+   direction**" are both replaced by a reference to `REQ-MOK-051`'s stated ceiling, and both are retracted rather than
+   dropped. The measured 45 of 61 figure is **retained** in the amendment record as the state this correction ends.
+
+   **Corrected 2026-08-20 while the text was written: this provision is two amendments and not one, and only the first
+   is written now.** As stated above it named the numeric form of the corrected condition — rule 5's
+   `satiety + restoration <= 100` and a tolerant `S + R - 100 <= T * R / 100` in rule 19 — as though the mechanism were
+   settled. It is not: `REQ-MOK-051`'s *Open decisions* leaves the mechanism to the technical owner **on measurement**,
+   because which relaxation reaches the ceiling is not knowable before the ceiling is measured against. What this
+   amendment therefore writes is the obligation and the surface: rule 5's paragraph states the ceiling, and rule 5's
+   condition and rule 19's tolerance test are named as the only two places the correction may be made. The numeric form
+   is a **second amendment to this specification, taken later on the measured evidence**, and rule 5's paragraph names
+   it as the one to make. The precedent is this specification's own 2026-08-19 *Behavioral trait* amendment, where an
+   approved rule named in advance the amendment measurement would require. Rule 19 additionally records a hazard the
+   later amendment must answer: its first clause is literally `S + R <= 100`, which is rule 5's condition as it stands
+   today, so relaxing rule 5 alone would silently break rule 19's stated `T = 0` identity, its `waste_tolerance` `0`
+   acceptance example, and any test asserting them. Each is named there, to be retracted explicitly or preserved
+   explicitly.
 10. Rule 6, *Validation*. Extended to targeted proposals: the engine validates against the target's authoritative state
     as well as the actor's, a rejected targeted proposal consumes the opportunity and mutates **neither** Mokiterion, and
     validation never consults the observation the source read. **This rule becomes the complete statement of what may be
@@ -308,9 +361,12 @@ and amended afterwards only if the measurement moves them, each on its owner's s
 
     - **Rule 20, Contact.** The relation, the radius, the living-only condition, and the symmetry-with-ordered-
       registration statement.
-    - **Rule 21, Targeted actions.** The seven verbs, each with its precondition; exactly-once application; `approach`
-      and `avoid` as rule 8 moves including the fallback axis and the co-located `avoid` direction; the lowest-identifier
-      tie-break; and the closed eleven-kind contract.
+    - **Rule 21, Targeted actions.** The seven verbs, each with its precondition; exactly-once application; `approach`,
+      `avoid` and `retreat` as rule 8 moves including the fallback axis and the co-located `avoid` direction; and the
+      closed eleven-kind contract. **Corrected 2026-08-20: the tie-break is not this rule's.** This bullet listed "the
+      lowest-identifier tie-break" here, and it cannot be here: this rule applies a proposal that already names its
+      target, so it selects among no Mokiterions at all. The nearest-then-lowest-identifier tie-break belongs to rule
+      26, which chooses; rule 21 states that it does not, so a reader looking for it is sent to the rule that has it.
     - **Rule 22, Combat resolution.** Damage is `10 + (striker.energy + striker.health) / 10`, the division truncating
       toward zero, giving the range `10..=30`; the striker pays a flat `5` `energy`; both applied with saturating
       arithmetic. The rule states that no resolution deals `0` — satisfied by the constant term rather than by a clamp —
@@ -337,11 +393,22 @@ and amended afterwards only if the measurement moves them, each on its owner's s
 **`SPEC-MOK-002`** — the engine's interface authority. Two provisions, and **an amendment is required here**, unlike
 under `WO-MOK-011`.
 
-1. Rule 5's enumeration gains the fourth `Policy` variant, the three added `EventType` variants and their `EventDetail`
-   variants, and the observation's two new fields. `Observation` is a public item and two fields on it are interface
-   growth; `EventType::ALL` is a `pub const` array whose length is part of the public surface and moves from `12` to
-   `15`. The enumeration records what the interface does **not** gain, and why: no verb reaches the valid-proposal list,
-   so `Observation`'s existing fields keep their types and `Action`'s seven new variants are the whole of that growth.
+1. Rule 5's enumeration gains the fourth `Policy` variant, `Action`'s seven target-carrying variants, and the three
+   added `EventType` variants with their `EventDetail` payloads. `EventType::ALL` is a `pub const` array whose length is
+   part of the public surface and moves from `12` to `15`. The enumeration records what the interface does **not** gain,
+   and why: no verb reaches the valid-proposal list, so the observation's existing fields keep their types and `Action`'s
+   seven new variants are the whole of that growth.
+
+   **Corrected 2026-08-20 against the source: this provision stated a fact about the engine that does not hold.** It
+   read "`Observation` is a public item and two fields on it are interface growth", and both halves are false.
+   `mokiterions-core/src/simulation.rs:500` declares `struct Observation {` with no `pub`, and rule 6 of this same
+   specification lists `Observation` among the ten names that "stay prohibited and stay private". So the observation's
+   two new fields are **not** interface growth, and the amended text says so. The distinction is load-bearing rather
+   than pedantic: what makes a field addition here safe is precisely that no consumer outside the engine can name the
+   type, which is why the same rule 6 can require the suffered-attack record to reach a source as owned values without
+   that requirement touching the public surface at all. Stating it the other way would have obliged an interface-growth
+   justification for a private struct and understated the one genuine growth, `EventType::ALL`'s length. `VER-MOK-012`'s
+   interface-growth check is re-checked against this correction in the same act.
 2. Rule 6 is re-checked and the re-check is recorded, because cross-agent mutation is introduced for the first time. No
    public item may yield a mutable borrow of, or a reference into, authoritative state, in any build configuration
    including test builds. The suffered-attack record must reach a source as owned values on the observation.

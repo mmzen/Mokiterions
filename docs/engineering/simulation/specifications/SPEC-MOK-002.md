@@ -5,10 +5,21 @@ title = "Crate targets, public interface, and test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
-specifies = ["REQ-MOK-016", "REQ-MOK-017", "REQ-MOK-032", "REQ-MOK-033"]
+specifies = [
+  "REQ-MOK-016",
+  "REQ-MOK-017",
+  "REQ-MOK-032",
+  "REQ-MOK-033",
+  "REQ-MOK-043",
+  "REQ-MOK-044",
+  "REQ-MOK-045",
+  "REQ-MOK-046",
+  "REQ-MOK-047",
+  "REQ-MOK-048",
+]
 +++
 
 # Specification: Crate targets, public interface, and test placement
@@ -21,6 +32,7 @@ specifies = ["REQ-MOK-016", "REQ-MOK-017", "REQ-MOK-032", "REQ-MOK-033"]
 | 2026-08-18 | Four provisions amended so that the terminal observer of `SPEC-MOK-003` can be conformed to. **Rule 1**: "no second package, no workspace" narrowed to a workspace of exactly two packages, on the approved requirement `REQ-MOK-026` that the clause reserved the exception for. **Rule 3**: the clause freezing `src/cli.rs` and `src/simulation.rs` scoped to the `WO-MOK-003` restructuring it was written for, so that an approved requirement may add code to them. **Rule 5**: the closed enumeration grown by the read-only observation surface, under rule 5's own growth clause. **Rule 6**: the prohibition narrowed from five named value types to the capability it was written to deny. Nothing about mutation, dependency direction, determinism or observable behavior is relaxed, and the engine package's dependency table stays empty. | **OUTSTANDING.** Requires the technical owner. All four are approval preconditions of `WO-MOK-005`, alongside the 2026-08-18 amendment to `ARCH-MOK-001`. None could have been part of the 2026-08-17 approval of the observer chain: this specification was not on that branch when the approval was given, and it reached `master` afterwards. |
 | 2026-08-18 | Every root-relative path re-based on `mokiterions-core/`, the engine package's own directory, and rule 1's "unchanged in source location" clause corrected. Stated once in *Scope* under **Paths** and at rule 1, so that no rule's substance is restated and none is re-opened. The two target paths in rule 1's table, the file list in *Inputs*, the rule 3 and rule 4 file names, rule 5's `grep` check, rule 8's file table and rule 9's locations all move by prefix alone. No file is renamed, no rule changes what it requires, no target, target name, target kind or package name changes, and the engine package's dependency table stays empty. `REQ-MOK-030` is the approved requirement; `SPEC-MOK-004` rules 1 to 3 fix the layout and `ADR-MOK-004` decides it. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-003`, which binds this specification's 2026-08-17 content to `WO-MOK-003`'s commit, is not edited: the paths it names were correct at its commit and this row records why they differ afterwards. The 2026-08-18 row above is untouched and remains **OUTSTANDING**. |
 | 2026-08-19 | Rule 5's enumeration amended in two entries, under `REQ-MOK-032` and `REQ-MOK-033`. `simulation::Policy` gains a third variant, `Individual`; `Default` is unchanged and still resolves to `Reference`. `simulation::AgentSnapshot` carries four `u8` attributes rather than three, the fourth being `fear`. Its justification holds unchanged, because `REQ-MOK-032` requires `fear` in the event stream as well. Rule 6 is **not** amended and was re-checked instead: the added field carries a value, so no public item yields a mutable borrow of or a reference into authoritative state, and the trait-aware source and the `Observation` it consumes stay private, keeping the `ADR-MOK-001` trust boundary where it is. `waste_tolerance` deliberately does **not** join the snapshot: no approved requirement needs the observer to render it, and rule 5 holds the interface to what approved requirements need. It reaches the observer through the event log, which `REQ-MOK-022` already retains. Public interface growth is therefore exactly two items. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `WO-MOK-010`. The implementation agent wrote the text and did not decide the substance. **The two rows above this one, dated 2026-08-18, remain OUTSTANDING and are untouched**: they belong to `WO-MOK-005` and are awaiting the same owner's separate act. `VREC-MOK-003`, which binds this specification, is not edited. |
+| 2026-08-20 | Rule 5's enumeration amended and rule 6 re-checked, under `CAP-MOK-009`, and the frontmatter's `specifies` gains `REQ-MOK-043` through `REQ-MOK-048`. `simulation::Policy` gains a fourth variant, `Social`; `simulation::Action` gains seven target-carrying variants; `simulation::EventType` gains `AttackResolved`, `ThreatResolved` and `SurrenderResolved` with their three `EventDetail` payloads, and `EventType::ALL`'s length moves from `12` to `15`, which is public-surface growth because that array is a `pub const`. A growth table states each figure and a paragraph states what does **not** grow: no verb reaches rule 3's valid-proposal list, so the observation's existing fields keep their types. **The observation's two new fields are not interface growth**, because `Observation` is declared without `pub` at `mokiterions-core/src/simulation.rs:500` and rule 6 lists it among the ten names that stay private; the distinction is load-bearing, and it is the one place `WO-MOK-012` stated the opposite, which is corrected there. Rule 6 is re-checked and recorded as **not amended**, cross-agent mutation being introduced for the first time: a target is an identifier and not a reference, the mutation is entirely inside the engine, the three event types carry copies of printed values, all ten prohibited names stay private, and no `pub(crate)` is widened. | **OUTSTANDING.** Requires the technical owner. This amendment is an **approval precondition of `WO-MOK-012`, and not a task inside it.** Its `specifies` relation is what makes `REQ-MOK-042` through `REQ-MOK-051` approvable at all: without it `validate` raises `E007` on every one of the ten and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. So this text is approved together with those ten requirements, `VER-MOK-012` and the work order in one act, and only then does implementation begin. It is stated in full in `WO-MOK-012`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Where the text derives a consequence no owner was asked about, the work order names it there for ratification in the same act. |
 
 ## Scope
 
@@ -156,7 +168,7 @@ The library target's public interface is exactly the union of the three lists be
 | `cli::parse` | function returning `Result<Command, String>` |
 | `simulation::Config` | struct with public fields `seed`, `tick_limit`, `policy`, `density`, `trace_actions` |
 | `simulation::Density` | value type with associated constant `DEFAULT` and function `parse` |
-| `simulation::Policy` | enum with variants `Baseline`, `Reference` and `Individual`, with `parse` and `Default` |
+| `simulation::Policy` | enum with variants `Baseline`, `Reference`, `Individual` and `Social`, with `parse` and `Default` |
 | `simulation::RunSummary` | opaque value type; its fields stay private |
 | `simulation::Simulation::new` | `Config` in, `Result<Simulation, String>` out |
 | `simulation::Simulation::run` | `&mut self` and a writer in, `io::Result<RunSummary>` out |
@@ -196,7 +208,7 @@ every item below; this list is the enumeration that closes the interface, and th
 | `simulation::TickOutcome` | struct of `Vec<Event>`, `bool` and `Option<TerminationReason>` | What one tick emitted, owned |
 | `simulation::Event` | struct with public `tick`, `subject`, `detail`, and `event_type` | One already-emitted line as a value; not the event log, and no path to it |
 | `simulation::EventDetail` | enum with `event_type` | The per-event payload the text stream already formats |
-| `simulation::EventType` | enum with `ALL: [Self; 12]` and `as_str` | The closed set of emitted kinds, so a host can filter by kind without parsing text |
+| `simulation::EventType` | enum with `ALL: [Self; 15]` and `as_str` | The closed set of emitted kinds, so a host can filter by kind without parsing text |
 | `simulation::DecisionOutcome` | enum carrying a rejection ground | Already printed on a trace line |
 | `simulation::RegenerationSkipReason` | enum | Already printed in a regeneration event |
 | `simulation::Coordinate` | struct with public `x` and `y`, both `u8` | A position already printed in the event stream; two bytes by value |
@@ -208,6 +220,31 @@ every item below; this list is the enumeration that closes the interface, and th
 Every item is a value, a pure function of a value, or an accessor returning a copy, exactly as `ADR-MOK-002` requires
 of an admission. Five of the type names — `Coordinate`, `Territory`, `Direction`, `FoodClass` and `Action` — are named
 by rule 6 as it was written; rule 6's 2026-08-18 amendment is what admits them, and it admits them as values only.
+
+**Amended 2026-08-20 under `CAP-MOK-009`, and the growth is enumerated item by item so that it can be checked rather
+than described.** Three items on the lists above change shape and no item is added or removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::Policy` | one variant, `Social`. `Default` is unchanged and still resolves to `Reference` | 1 |
+| `simulation::Action` | seven variants — `Attack`, `Threaten`, `Fight`, `Retreat`, `Surrender`, `Approach`, `Avoid` — each carrying one target field holding an agent identifier | 7 |
+| `simulation::EventType` | three variants — `AttackResolved`, `ThreatResolved`, `SurrenderResolved` — so `ALL` goes from twelve entries to fifteen, together with the three `EventDetail` payloads that carry their fixed field lists | 3 + 3 |
+
+**What does not grow is part of the enumeration.** `AgentSnapshot` still carries a `String`, a `Coordinate`, a
+`Territory`, four `u8` attributes and an `Option<Action>`: no fifth attribute exists, the suffered-attack record is not
+an attribute, and no approved requirement needs the observer to render it. `DecisionSnapshot` is unchanged in shape and
+carries the seven new verbs through the `Action` it already holds. `WorldSnapshot`, `TerritorySnapshot`,
+`ResourceSnapshot`, `TickOutcome`, `Event`, `DecisionOutcome`, `RegenerationSkipReason`, `Coordinate`, `Territory`,
+`Direction` and `FoodClass` are untouched, as are all nine items of the first list beyond `Policy` and all five
+authorized additions. No accessor is added, no method is added, and the two `&mut self` methods stay exactly two, so
+rule 5's `grep` check is unchanged.
+
+**The observation's two new fields are not interface growth, and the distinction is load-bearing.** The observer's own
+`fear` and its suffered-attack record are fields on `Observation`, which rule 6 keeps private and names among the ten
+types that stay private. They are counted in this amendment's accounting because `REQ-MOK-045` obliges that they be, not
+because anything about them becomes public: a host cannot construct an `Observation`, cannot receive one, and cannot
+read either field. The same is true of the fourth decision source itself, which is an implementation of the private
+`DecisionSource` trait.
 
 **Mutating methods on the interface: exactly two, and both are simulation steps.** `advance_tick`, added by this list,
 and `Simulation::run`, already in the first list, are the only `pub fn` items in the library target taking `&mut self`.
@@ -259,6 +296,28 @@ host that watches, not for one that decides.
 This rule remains the security-relevant rule of this specification, and `REQ-MOK-004` and `ADR-MOK-001` are preserved
 exactly. Narrowing it makes it checkable by a property of the public surface rather than by a list that must be
 maintained as types are renamed.
+
+**Re-checked 2026-08-20 under `CAP-MOK-009` and not amended, because that initiative introduces the one thing this rule
+had never had to consider: an action by one Mokiterion that mutates another.** The re-check is recorded rather than
+assumed, because "no public item hands out a path to engine-owned state" is a claim about a surface whose meaning
+changes when the engine gains cross-agent mutation.
+
+- **A target is an identifier, not a reference.** The seven added `Action` variants each carry an agent identifier by
+  value. `Action` is public as a value under this rule's 2026-08-18 narrowing, and a public value carrying the string
+  `M03` grants no more reach than the `AgentSnapshot` that already carries it. There is no `&mut Mokiterion`, no index
+  into the agent collection, and no callback through which one could be obtained.
+- **Cross-agent mutation happens entirely inside the engine.** Rules 22 to 24 of `SPEC-MOK-001` resolve against
+  authoritative state the engine owns, reached from the tick loop and not from anything a caller holds. A source
+  proposes an identifier; the engine looks it up. That the source cannot reach its target is precisely why the
+  `Observation` and `DecisionSource` prohibitions below stay where they are.
+- **The three added `EventType` variants and their details are copies of what the text stream prints**, on the same
+  ground the twelve existing ones are admissible, and they carry a second Mokiterion's transitions as numbers rather
+  than as any path to it.
+- **The ten prohibited type names are unchanged and all ten stay private**, including `Observation` with its two new
+  fields and `DecisionSource` with its fourth implementation. The `ADR-MOK-001` trust boundary is where it was: the
+  observation surface is for a host that watches, not for one that decides — and now not for one that fights either.
+- **No `pub(crate)` item is widened** and no new mutating method exists, so the two-method `grep` check in rule 5 is
+  still the whole of the mutation surface.
 
 ### 7. Tiers and the placement rule
 

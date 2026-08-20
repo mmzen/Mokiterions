@@ -5,7 +5,7 @@ title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
 specifies = [
@@ -20,6 +20,11 @@ specifies = [
   "REQ-MOK-027",
   "REQ-MOK-032",
   "REQ-MOK-041",
+  "REQ-MOK-043",
+  "REQ-MOK-044",
+  "REQ-MOK-046",
+  "REQ-MOK-047",
+  "REQ-MOK-048",
 ]
 +++
 
@@ -54,6 +59,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-19 | **No rule changed. This row records the reconciliation of the rule 5 and rule 4 rows above, which were written independently and met in a merge.** `WO-MOK-005`'s rule 5 amendment and `WO-MOK-010`'s rule 4 amendment were approved on the same date by the same owner against different trees, and both are retained above verbatim: neither owner act is edited, summarised, or folded into the other. They occupy disjoint text and do not contradict each other in substance — rule 4 fixes the form of a roster entry, rule 5 fixes which viewports present the roster pane and how wide it is. **The one figure spanning them holds unchanged**: rule 5 gives the roster `47` columns wherever it is present, before and after its amendment, so rule 4's 45-column interior, its `bar_width(interior) = min(20, (interior - 35) / 4)` and the two-cell bars that follow are untouched, and rule 4's 47-column two-line threshold is met at every viewport presenting the pane at all. **What the merge changes is not a rule but a set**: rule 5's derived table now presents the roster at eight of its nine declared viewports rather than four, `100 × 30` among them, so any measurement of *which viewports present the roster* taken against the withdrawn tier table describes a table this document no longer contains. `WO-MOK-010`'s oracle 4 frame capture and its `the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it` test were both taken that way. The test is corrected in the merge commit against rule 5 as amended; the capture is **OUTSTANDING** re-derivation under `WO-MOK-010`. | Recorded by the implementation agent as a statement of fact about two approved amendments it holds no authority over. No provision of this specification is added, removed, or reworded by this row. The re-derivation it names belongs to `WO-MOK-010` and is the assurance owner's to accept once taken. **It was taken on 2026-08-19**: the frame capture was re-derived against rule 5 as amended and reads 996 bar rows over the 85 of 157 probed frames that draw a roster, with zero discrepancies, in `evidence/WO-MOK-010/observer/roster-frames.txt` with the method recorded in `evidence/WO-MOK-010/renumbering.md`. The **OUTSTANDING** re-derivation this row names is therefore discharged, and `VREC-MOK-010` binds it. This row still changes no provision and still ratifies nothing. |
 | 2026-08-19 | **Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with the bands of clause 7.** The two clauses were approved on the same date by the same owner against different trees, and each is retained above verbatim. They meet at exactly one point: clause 5 makes the bar row four gauges and clause 7 bands "each of the three bars", which leaves the fourth gauge unstated. **The banded set is now named rather than counted**: the band applies to health, satiety and energy, and `fear` renders as a bar and a numeric value with no colour at all. The reason is stated in the clause rather than left to be inferred — the three bands are a survival scale on which a high value is a good one, and `fear` inverts that, so a banded `fear 100` would read green while naming the worst state that attribute has. **The collapsed one-line form's count is corrected from three numeric values to four**, which clause 5 had already changed; it remains unstyled and takes no band, so that provision's substance is untouched. Nothing else in either clause changes: no boundary, no colour, no glyph, no character of the entry, no bar width, and no band for health, satiety or energy either gains or loses. Rule 2.5 still holds for the same reason it held before, and holds a fortiori for `fear`, which now carries no colour to be the sole carrier of anything. | **Decided 2026-08-19 by the repository owner acting as technical owner**, on the choice put to them once the collision was found: band `fear` on the same three-band scale, give it a second and opposite scale of its own, or leave it unbanded. The owner chose unbanded, on the reasoning that the scale is a survival scale and `fear`, whose direction inverts, does not borrow it; a second opposite scale was declined because it would put two contradictory colour meanings on one row. The implementation agent found the collision, put the choice, wrote this text and the amended clause, and decided none of the substance. **The wording is the agent's and was OUTSTANDING for the owner's ratification until 2026-08-19, when the repository owner, acting as technical owner, ratified it in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`; the decision it records never needed one.** `VREC-MOK-010` is a `ready` candidate bound to a commit that predates this row and is re-captured against the merge, not edited. |
 | 2026-08-19 | Four provisions amended under `REQ-MOK-041`, so the observer presents the name `REQ-MOK-040` makes the engine report. **Rule 2's glyph tables**: the detail table's `M01`–`M09 → 1`–`9` and `M10`–`M12 → A, B, C` rows are replaced by the name's first character uppercased, with `?` for a subject whose name was not received, and the overview layer table's "the identifier's last character" becomes "the name's first character" — the two zooms derive one glyph and had drifted, since the withdrawn overview rule gave `M10` a `0` where the detail table gave it an `A`. The twelve resulting glyphs `Z K Q S T W H N V G X D` are stated, resting on `SPEC-MOK-001`'s twelve pairwise-distinct first characters, which is what rule 2.5 needs and what the identifier-derived assignment had by construction. **The anticipation is retained rather than deleted**: the withdrawn table and the sentence promising that "when agent naming is introduced by a later phase, the glyph becomes the name's first character and this table is amended" are quoted in place, because they are why the old assignment was correct while no name existed. **Rule 4**: the entry mockup and prose carry the name first, then the identifier, in the two-line form and in the collapsed one-line form, and the addition to the identifier rather than replacement of it is stated with its reason — the identifier is the join key into the log, the export and every retained stream. **Line two is measured to be untouched**: the name occupies six columns of line one only, so the bar row's five leading columns, its 35-column overhead and `bar_width(interior) = min(20, (interior - 35) / 4)` are unchanged and the reference roster's two-cell bars stand; line one's fixed fields total 28 columns of a 45-column interior, so nothing truncates. **Rule 10**: the presented-value list gains the name, before the identifier and for a dead subject as well as a living one, under rule 10.6's retained selection; item 7 loses `name`, because the engine now reports one, and the item's principle is restated as the reason the presented name must be the engine's own — a name derived from an identifier or filled in as a placeholder would be a value the engine did not compute. **Nothing else changes**: no pane threshold, no floor, no layout figure, no key binding, no export form, no authority mapping row, no snapshot field, no interface item, and no obligation that layout be a pure function of viewport size. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011` and `WO-MOK-011`. The twelve names are the product owner's decision of the same date; the decision that the name is presented in addition to the identifier and precedes it, and that the observer sources it from the retained event stream rather than from a new engine interface item, are the technical owner's, recorded in `WO-MOK-011`. The implementation agent wrote the text and did not decide the substance; rule 2's glyph assignments are withheld from it by `WO-MOK-005`'s decision envelope. **The 2026-08-18 row marked OUTSTANDING above is untouched**, as are the four rows above it that `WO-MOK-010` and its merges left: rule 4's clause 5, its clause 7, the row reconciling clause 5 with `WO-MOK-005`'s rule 5, and the row reconciling clause 7 with clause 5. **Clause 7 and this row do not meet**: the bands colour cells on line two and this row adds the name to line one, so the banded set, its three boundaries, the unbanded `fear`, the 35-column bar overhead and `bar_width` are neither read nor written here, and the frame re-derivation the reconciliation row records as discharged is not reopened by a name. This sentence is the one part of this row the merge rewrote, and it changes no provision. |
+| 2026-08-20 | Three provisions amended under `CAP-MOK-009`, and the frontmatter's `specifies` gains `REQ-MOK-043`, `REQ-MOK-044`, `REQ-MOK-046`, `REQ-MOK-047` and `REQ-MOK-048`. **Rule 11's** authority table gains three rows, one per added event type — `attack_resolved` to `REQ-MOK-044`, `threat_resolved` to `REQ-MOK-046`, `surrender_resolved` to `REQ-MOK-047` — and `decision_source_selected` gains `REQ-MOK-048` for its fourth value; **`REQ-MOK-043` takes no row**, because the three verbs it authorizes that emit no new type are reported by `action_trace`, whose row already maps to `REQ-MOK-012`. **Rule 4's** roster and **rule 10's** inspector present a targeted action's subject as well as its verb — `attack M03`, by identifier and never by name, whose widest rendering under this amendment is `surrender M12` at thirteen columns, inside the seventeen the reference roster's 45-column interior leaves. **Rule 4 clause 5's** refusal of inert values is unchanged and is now satisfied differently for `fear`, which has a reader; the clause cited `fear` as its precedent, so the ground for filling its slot is now stronger than computation alone. No pane geometry, key binding, export format, snapshot contract or figure changes, no gauge is added, and the observer stays read-only. | **OUTSTANDING.** Requires the technical owner. This amendment is an **approval precondition of `WO-MOK-012`, and not a task inside it.** Its `specifies` relation is what makes `REQ-MOK-042` through `REQ-MOK-051` approvable at all: without it `validate` raises `E007` on every one of the ten and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. So this text is approved together with those ten requirements, `VER-MOK-012` and the work order in one act, and only then does implementation begin. It is stated in full in `WO-MOK-012`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Where the text derives a consequence no owner was asked about, the work order names it there for ratification in the same act. |
 
 ## Actors and external systems
 
@@ -256,6 +262,19 @@ recently completed tick, in that order. Line two carries health, satiety, energy
 of at most twenty cells and a numeric value. Below 47 columns each entry collapses to one line carrying the name, the
 identifier, territory and the four numeric values without bars.
 
+**Amended 2026-08-20 under `REQ-MOK-043`: the applied action carries its subject as well as its verb.** The action field
+already renders an object where the action has one — `eat F0058` names the resource — and a targeted action names the
+Mokiterion it was applied to, as `attack M03`, `threaten M07`, `surrender M02` and so on for all seven verbs. A field
+rendering `attack` alone would leave the roster unable to distinguish the two facts an operator most wants from it, which
+Mokiterion struck and which was struck, and the pane presents acting order precisely so that those can be read against
+each other. The identifier is used rather than the name, because this field is a join key into the log pane and the
+export, on the same ground the entry's own identifier is carried beside its name. The four core verbs render exactly as
+they render today, and the field's width behaviour is unchanged: it is the last field on line one and it truncates before
+any other field loses a column. Nothing truncates at the reference size. Identifiers are `M01` through `M12`, three
+characters, so the widest rendering this amendment admits is `surrender M12` at thirteen columns, inside the seventeen
+line one's fixed fields leave at the reference roster's 45-column interior. The collapsed one-line form below 47 columns
+carries no action field and is untouched.
+
 **The name is presented in addition to the identifier, not instead of it, and it precedes it.** The identifier is the
 join key into the log pane, the export and every retained stream, so an operator cross-referencing a roster row
 against an engine record must not have to translate. The name is first because it is what the operator reads to tell
@@ -285,6 +304,16 @@ bounds a name at five characters, which the six-column field holds with its sepa
    no dash and no zero" because "an inert `fear 0` would be a claim the engine cannot support". That reasoning is
    retained here rather than deleted: it is what made an empty slot correct while the engine computed three
    attributes, and it is the condition this amendment satisfies rather than waives.
+
+   **Amended 2026-08-20: the ground for filling the slot is now stronger than computation, and the refusal is recorded
+   as satisfied a second way rather than restated.** The 2026-08-19 amendment rested on `fear` being computed and
+   reported, against the earlier position that an inert `fear 0` "would be a claim the engine cannot support". Under
+   `CAP-MOK-009` `fear` is not inert in any sense: `SPEC-MOK-001` rule 26's decision source reads it at every decision
+   opportunity and rule 23's threat writes it, so the gauge presents a value that changes what a Mokiterion does and
+   not only one the engine happens to compute. Nothing about the rendering changes — no band under clause 7, the same
+   bar, the same zero case under clause 4, the same arithmetic — and no other gauge is added: the suffered-attack record
+   is transient state and not an attribute, `SPEC-MOK-002` rule 5 keeps it off `AgentSnapshot`, and this row carries
+   four gauges as it does today.
 
    **The bar width follows from the fourth gauge, and the consequence is stated rather than left to be discovered.**
    The row is five leading columns, then four groups of label, space, bar, space and a three-column value, separated
@@ -484,6 +513,15 @@ completed tick: the proposed action with its target where it has one, the engine
 engine's stated ground on rejection, and the action applied. The name is presented with the identifier, before it, and
 for a dead subject as well as a living one, so rule 10.6's retained selection is identified the same way throughout.
 
+**Amended 2026-08-20 under `REQ-MOK-043`: a target may be a Mokiterion.** This rule already presents "the proposed action
+with its target where it has one", and that clause is unchanged in wording because it was always general. What is stated
+is what it now ranges over: a target is a resource identifier for `eat` and a Mokiterion identifier for each of the seven
+targeted verbs, presented as the engine reports it and never translated to a name — the name is presented for the
+*subject*, which is this pane's own selection, and translating a target as well would put two naming conventions on one
+record. A rejection's stated ground is the engine's own, so a proposal rejected on contact, on perception or on an empty
+suffered-attack record reads as `SPEC-MOK-001` rule 6 named it, and clause 2 governs it as an expected outcome of the
+authority boundary exactly as it governs every other rejection.
+
 1. Accepted and rejected are distinguished by an explicit word and by symbol, not by colour alone.
 2. A rejection is presented as an expected outcome of the authority boundary, never as a program fault or warning.
 3. The proposal and the outcome presented are always from the same tick. Presenting a proposal from one tick beside
@@ -511,6 +549,14 @@ for a dead subject as well as a living one, so rule 10.6's retained selection is
    through the retained event log. Presenting either in this pane is a later decision, and either would need this
    rule's presented-value list amended first.
 
+   Re-checked 2026-08-20 under `CAP-MOK-009` and unchanged. Both reasons still hold: rule 4 still presents `fear` for
+   every living Mokiterion including the selected one, and `waste_tolerance` is still off `AgentSnapshot`. Two values
+   this initiative introduces join the list of things this pane does not present, and for the first reason rather than
+   the second: the suffered-attack record and the count of attacks a Mokiterion has suffered are carried by
+   `SPEC-MOK-001`'s `attack_resolved` events, which the log pane presents and the export retains, and neither reaches
+   `AgentSnapshot` because neither is an attribute. Neither is added to the list this item names, because the engine does
+   compute both — naming them here would repeat the error the 2026-08-19 amendment corrected.
+
 ### Rule 11 — Authority mapping
 
 The observer carries a static, exhaustive mapping from event type to the identifier of the requirement that
@@ -521,18 +567,30 @@ authorizes the behavior the event reports. The `t` control presents it for the h
 | `world_initialized` | `REQ-MOK-001` |
 | `food_initialized` | `REQ-MOK-001` |
 | `agent_initialized` | `REQ-MOK-002` |
-| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference`, `REQ-MOK-033` when `individual` |
+| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference`, `REQ-MOK-033` when `individual`, `REQ-MOK-048` when `social` |
 | `survival_changed` | `REQ-MOK-003` |
 | `agent_died` | `REQ-MOK-003` |
 | `food_consumed` | `REQ-MOK-006` |
 | `food_regenerated` | `REQ-MOK-007` |
 | `food_regeneration_skipped` | `REQ-MOK-007` |
 | `territory_crossed` | `REQ-MOK-005` |
+| `attack_resolved` | `REQ-MOK-044` |
+| `threat_resolved` | `REQ-MOK-046` |
+| `surrender_resolved` | `REQ-MOK-047` |
 | `simulation_ended` | `REQ-MOK-011` |
 | `action_trace` | `REQ-MOK-012` |
 
 The inspector's proposal-and-outcome presentation maps to `REQ-MOK-004`, and perceived-entity information maps to
 `REQ-MOK-013`.
+
+**Amended 2026-08-20: three rows added, and `REQ-MOK-043` takes none.** The table maps event types, and `REQ-MOK-043`
+authorizes seven verbs while adding no event type of its own — `approach`, `avoid` and `retreat` resolve as
+`SPEC-MOK-001` rule 8 moves and emit only what a move emits, and `attack`, `threaten`, `fight` and `surrender` emit the
+three types above. So the requirement that opens the action contract appears in no row, and that is correct rather than
+an omission: an entry for it would have no event type to key on, and clause 2's exhaustiveness runs from the event side.
+Where an operator asks what authorizes a `retreat` they are asking about a `territory_crossed` or an `action_trace`, and
+those rows already answer. `attack_resolved` maps to `REQ-MOK-044` for `attack` and for `fight` alike, because both
+invoke one resolution.
 
 1. The mapping names identifiers only. It never restates requirement text, which could drift from the artifact that
    holds it.

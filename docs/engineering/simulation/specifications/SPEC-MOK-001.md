@@ -5,7 +5,7 @@ title = "Minimum simulation foundation behavior"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-11"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
 specifies = [
@@ -30,6 +30,16 @@ specifies = [
   "REQ-MOK-033",
   "REQ-MOK-034",
   "REQ-MOK-040",
+  "REQ-MOK-042",
+  "REQ-MOK-043",
+  "REQ-MOK-044",
+  "REQ-MOK-045",
+  "REQ-MOK-046",
+  "REQ-MOK-047",
+  "REQ-MOK-048",
+  "REQ-MOK-049",
+  "REQ-MOK-050",
+  "REQ-MOK-051",
 ]
 +++
 
@@ -37,9 +47,11 @@ specifies = [
 
 ## Scope
 
-This specification defines the smallest local, in-memory, text-only Mokiterions simulation. It fixes the world layout, initial state, tick order, survival values, core actions, food behavior, bounded perception, per-Mokiterion identity and behavioral variation, deterministic decision sources, output, and termination needed to implement `CAP-MOK-001`, `CAP-MOK-002`, `CAP-MOK-006`, and `CAP-MOK-008`.
+This specification defines the smallest local, in-memory, text-only Mokiterions simulation. It fixes the world layout, initial state, tick order, survival values, core actions, food behavior, bounded perception, per-Mokiterion identity and behavioral variation, deterministic decision sources, contact and conflict between Mokiterions, output, and termination needed to implement `CAP-MOK-001`, `CAP-MOK-002`, `CAP-MOK-006`, `CAP-MOK-008`, and `CAP-MOK-009`.
 
-It does not define OpenAI integration, combat, social behavior, persistence, structured output, or a user interface. It defines one behavioral trait and the `fear` attribute, but no rule reads `fear`: threat response, retreat, surrender and encounter memory remain undefined.
+It does not define OpenAI integration, persistence, structured output, or a user interface. It defines one behavioral trait, the `fear` attribute, a decision source that reads it, and the seven targeted actions `approach`, `avoid`, `threaten`, `attack`, `fight`, `retreat` and `surrender`.
+
+What remains undefined here is a boundary of `CAP-MOK-009` rather than of this specification, and is stated as that capability's exclusion rather than as a gap: cooperation, sharing, grouping, alliance, reputation, mating and kinship; territorial defence, `y=63/64` still labelling state and nothing more; any memory of an encounter surviving past the remembering Mokiterion's own next decision opportunity; and any perception of another Mokiterion's `health`, `energy` or `waste_tolerance`, so that no Mokiterion reads another's strength before acting on it.
 
 This is the single behavior contract for the simulation core. It is amended in place rather than superseded, so that no two active specifications state conflicting survival or resource values.
 
@@ -57,6 +69,7 @@ This is the single behavior contract for the simulation core. It is amended in p
 | 2026-08-19 | Narrowed the `waste_tolerance` range from `0..=100` to `0..=40` in *Behavioral trait*, and with it the bounded selection the derivation takes. Rule 19's upper-bound note now reads the bound as `T = 40`, giving `S + R - 100 <= 2R/5`, and records that no reachable tolerance accepts restoration that is entirely clipped. The two *Acceptance examples* that cited the unreachable tolerances `60` and `58` are replaced by a medium-class pair at `34` and `33`, which also fixes the division as truncating, and a high-class pair at `40` and `39` at the bound. **No other provision changed: the derivation, the salt, the tolerant test's form, rule 19's case order, the `fear` provisions and rule 5 are all untouched, and the baseline and reference sources remain byte-identically unchanged.** | Approved 2026-08-19 by the repository owner acting as technical owner, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-010/escalation.md`, in correction of `REQ-MOK-034`'s survivor floor missed on three of five declared seeds under `WO-MOK-010` stop condition 6. The first form of *Behavioral trait* named this amendment as the one to make on that evidence. The owner chose narrowing the range over amending the floor; the implementation agent measured the sweep, recommended the bound and wrote the amended text, and did not decide the substance. `REQ-MOK-031`, `REQ-MOK-033` and `REQ-MOK-034` need no amendment, each having delegated the range to this specification. |
 | 2026-08-19 | Corrected the *Help output* sentence this work order's first amendment added. It read "The explanatory prose on the decision sources describes all three, and states which one is the default", which contradicted the same section's *Every default stated in the options block* paragraph — approved 2026-08-17 — under which each default is stated once and the prose is where the removed copy lived. The sentence now states that the prose describes all three sources and states neither a default nor a value constraint. **The three-source description is retained; only the default clause is withdrawn.** No behavior changed, and the implementation was already on the corrected side of the contradiction. | **Ratified 2026-08-19 by the repository owner acting as technical owner**, in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`. It was **OUTSTANDING** until that act: written by the implementation agent under `WO-MOK-010` on 2026-08-19 and approved by nobody, being a correction to text the technical owner had approved on the same date. The defect was found by reading the amended section against the inherited test `cli::each_declared_default_is_stated_once`, which asserts that the explanatory prose contains no default at all; satisfying the withdrawn clause would have required relaxing an assertion `VREC-MOK-004` binds, which `WO-MOK-010` forbids. Recorded in `evidence/WO-MOK-010/completion-summary.md` §13 and checked in `evidence/WO-MOK-010/amendment-approvals.md`. |
 | 2026-08-19 | Naming, under `CAP-MOK-008`. Five provisions. *Scope* names `CAP-MOK-008` and per-Mokiterion identity. *State model / Mokiterion* gains the name. A new *Name* subsection fixes the twelve names and their assignment to `M01` through `M12`, the character and length domain, the pairwise distinctness of the names and of their twelve first characters, and the three load-bearing properties: the assignment reads neither the seed nor the configuration, naming performs no draw against any generator, and nothing in the engine reads a name. It also records that a name is not carried on the rule 3 observation, for the reason `fear` is not. *Time and entropy* records that naming is not an exception to the single shared stream because it is not a draw at all. *Data and interface contracts* puts `name` first in the `agent_initialized` details, before `position`, reports it once and on no other record kind, and states that both the name's leading position and `waste_tolerance`'s trailing position are fixed because two test suites parse that record positionally. Rule 1 places the assignment at agent creation. **No other provision changed: no rule, no decision source, no constant, no floor, no attribute, no ordering and no exit code is touched, and every run's outcome and entropy sequence are unchanged.** | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011` and `WO-MOK-011`. The twelve names and their assignment are the product owner's decision of the same date, recorded in `WO-MOK-011`; the name's position in the record and the decision that the observer sources it from the retained event stream rather than from a new public interface item are the technical owner's decisions of the same date, recorded there too. The implementation agent wrote the amended text under `WO-MOK-011` and did not decide the substance. |
+| 2026-08-20 | Contact, conflict and society, under `CAP-MOK-009`. Thirteen provisions amended, of which seven are appended rules, and the frontmatter's `specifies` gains `REQ-MOK-042` through `REQ-MOK-051`. *Scope* names `CAP-MOK-009` and no longer excludes interaction between Mokiterions; cooperation, memory of encounters and perceived relative strength stay excluded, restated as boundaries of this capability rather than of this document. *Actors*, *Inputs* and *Help output* name a fourth decision source, `social`, with `reference` still the default. *State model / Mokiterion* gains **no attribute** and one item of transient state, the record of attacks suffered since that Mokiterion's previous decision opportunity; a new *Contact* subsection fixes the contact relation at Chebyshev distance `1` between living Mokiterions, recomputed from positions and never stored. *Name*'s justification for a name's absence from the observation is replaced, because it rested on `fear`'s absence and that no longer holds; the name stays off the observation. *Time and entropy* and the *Behavioral rules* preamble state each appended rule's position in tick order, in an eight-row table, since rule order stopped matching tick order at rule 19. Rule 3 carries `fear` and the suffered-attack record and its valid-proposal list is **untouched**, so rule 6 becomes the complete statement of what may be proposed. *Data and interface contracts* fixes the eleven-kind action contract, the three added event types with their field lists, and the `action_trace` line's conditional `suffered` field. Rule 6 extends validation to targeted proposals against the target's authoritative state, rule 7 fixes the trace-before-clearing order, rule 12's closing "No rule reads `fear`" is **inverted** and the composition of its two writers stated, and rule 13 states that combat death uses its existing path, event and finality. **Rules 20 to 26 are appended after rule 19 and not inserted**, on `WO-MOK-010`'s precedent and for its stated reason: contact, targeted actions, combat resolution, threat, surrender, the suffered-attack window, and the `social` source with its five ordered branches. Rule 5's accumulation paragraph and rule 19's tolerance test now state `REQ-MOK-051`'s ceiling as an obligation where they stated none, and name the two places the correction may be made; **the numeric form of the corrected waste condition is a second, later amendment**, named here as the one to make, on the 2026-08-19 *Behavioral trait* precedent where an approved rule named in advance the amendment to make on measurement. The measured 45 of 61 figure is **retained** as the state that obligation ends. | **OUTSTANDING.** Requires the technical owner. This amendment is an **approval precondition of `WO-MOK-012`, and not a task inside it.** Its `specifies` relation is what makes `REQ-MOK-042` through `REQ-MOK-051` approvable at all: without it `validate` raises `E007` on every one of the ten and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. So this text is approved together with those ten requirements, `VER-MOK-012` and the work order in one act, and only then does implementation begin. It is stated in full in `WO-MOK-012`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Where the text derives a consequence no owner was asked about, the work order names it there for ratification in the same act. |
 
 The released implementation at commit `09c4e1a` conforms to the 2026-08-11 content. `VREC-MOK-001` remains the
 commit-bound record of that earlier content.
@@ -78,7 +91,7 @@ eight. It also removes a false statement that the second amendment left standing
 ## Actors and external systems
 
 - The operator starts the process, selects a decision source, and reads standard output and standard error.
-- A decision source proposes actions from bounded observations. Three exist: the random baseline source, the food-seeking reference source, and the trait-aware individual source.
+- A decision source proposes actions from bounded observations. Four exist: the random baseline source, the food-seeking reference source, the trait-aware individual source, and the social source of rule 26, which is the only one that reads `fear` and the only one that proposes any targeted action.
 - The simulation engine is the only authority that changes world state.
 - There are no external systems or network calls.
 
@@ -88,13 +101,13 @@ The binary accepts:
 
 ```text
 Mokiterions [--seed <u64>] [--ticks <u64>]
-            [--policy <baseline|reference|individual>]
+            [--policy <baseline|reference|individual|social>]
             [--density <percent>] [--trace-actions]
 ```
 
 - `--seed` defaults to `0`.
 - `--ticks` defaults to `100` and must be greater than zero.
-- `--policy` selects the decision source and defaults to `reference`. Only `baseline`, `reference`, and `individual` are valid values. `individual` selects the trait-aware source of rule 19, which reads each Mokiterion's `waste_tolerance`; it is not the default, and whether it should become the default is deferred to a later governed decision under `REQ-MOK-033`.
+- `--policy` selects the decision source and defaults to `reference`. Only `baseline`, `reference`, `individual`, and `social` are valid values. `individual` selects the trait-aware source of rule 19, which reads each Mokiterion's `waste_tolerance`; it is not the default, and whether it should become the default is deferred to a later governed decision under `REQ-MOK-033`. `social` selects the source of rule 26, which reads `fear` and the suffered-attack record and is the only source that proposes a targeted action; it is not the default, and it is not proposed as one, because the survivor floor `REQ-MOK-049` states for it is three below the floor `REQ-MOK-014` states for the default.
 - `--density` selects the resource density as a percentage of a territory's cells and defaults to `0.75`. It accepts a decimal value with at most two decimal places, so the smallest representable step is `0.01`. It must resolve to at least one resource per territory and must not exceed `100`.
 - `--trace-actions` accepts no value, defaults to disabled, and enables one detailed action trace for every living-agent decision opportunity.
 - Options may appear in any order and may appear at most once.
@@ -111,7 +124,7 @@ The usage text contains, in order: the synopsis block above; an options block; a
 in any order and at most once; and the explanatory prose on the decision sources and on what `--density` binds
 together.
 
-The explanatory prose on the decision sources describes all three. It states no default and no value constraint:
+The explanatory prose on the decision sources describes all four. It states no default and no value constraint:
 the options block below states each of those once, and the prose is where an earlier copy of them lived. The
 options block contains one entry for each option the program accepts — `--seed`, `--ticks`, `--policy`,
 `--density`, `--trace-actions`, and `--help`, in that order. Each entry states the option, its value placeholder
@@ -122,7 +135,7 @@ hand. Each entry additionally states:
 |---|---|---|
 | `--seed` | `0` | none |
 | `--ticks` | `100` | must be greater than zero |
-| `--policy` | `reference` | only `baseline`, `reference`, and `individual` are valid, which the value placeholder states |
+| `--policy` | `reference` | only `baseline`, `reference`, `individual`, and `social` are valid, which the value placeholder states |
 | `--density` | `0.75` | at most two decimal places |
 | `--trace-actions` | no value; the entry states that tracing is off unless the option is given | none |
 | `--help` | none | none |
@@ -169,7 +182,17 @@ Each Mokiterion contains:
 
 `health`, `satiety`, and `energy` start at `100`; `fear` starts at `0`, so no Mokiterion begins afraid. `M01` through `M06` start in territory A and `M07` through `M12` start in territory B. Initial coordinates are selected without duplicate agent positions using seeded entropy.
 
-Multiple agents may occupy the same coordinate after initialization. Agents do not block movement. An agent and a food resource may share a coordinate.
+Multiple agents may occupy the same coordinate after initialization. Agents do not block movement. An agent and a food resource may share a coordinate. Neither statement is changed by contact: two Mokiterions in contact still do not block each other and may still stand on one cell.
+
+Each Mokiterion additionally holds one item of **transient state**, the record of attacks suffered since its own previous decision opportunity. It is listed apart from the attributes above because it is not one of them:
+
+- **It is not a bounded `0..=100` attribute and is not reported as one.** No `agent_initialized` or `survival_changed` field carries it, it has no maximum in that range, and it is not subject to saturating arithmetic. It is a list of what happened, not a level.
+- **It is per-Mokiterion and never per-pair.** Nothing in this specification stores a relationship between two Mokiterions. The record belongs to the Mokiterion that suffered the attacks and names the attackers; there is no matching record on any attacker, and no structure keyed by a pair.
+- **It opens when an attack lands and closes at the sufferer's own next decision opportunity**, which is rule 25's subject. It is cleared then whether or not the Mokiterion answered, and whether or not it was still alive to answer.
+- **It starts empty at initialization**, so nothing about it depends on the seed, and it holds nothing at all under `baseline`, `reference` or `individual`, none of which can attack.
+- It carries, for each attack, the attacking Mokiterion's identifier and the damage that attack dealt. Its ordering is the order the attacks landed, which is rule 2's ascending-identifier order among the attackers.
+
+It is transient in the strict sense: no state derived from it survives the opportunity that clears it, so this specification defines no encounter memory. That exclusion is `CAP-MOK-009`'s and *Scope* states it.
 
 ### Name
 
@@ -212,8 +235,14 @@ that nothing in the engine reads.
   reorder acting order and move every outcome, so the absence of a reader is a specified property and not an accident of
   the current implementation.
 
-A name is not carried on the observation of rule 3, for the same reason `fear` is not: no decision source reads it, and a
-value carried where nothing reads it is an inert field. It reaches an observer through the reported record instead.
+A name is not carried on the observation of rule 3, because no decision source reads it and a value carried where nothing
+reads it is an inert field. It reaches an observer through the reported record instead.
+
+**This reason once ran through `fear` and no longer can.** The sentence above read "for the same reason `fear` is not",
+which held while rule 12's closing sentence held; rule 12 now has a reader and rule 3 carries `fear`, so the shared
+reason is gone and the name's own reason has to stand alone. It does: `REQ-MOK-041` obliges that nothing reads a name,
+and the absence of a reader here is therefore an obligation rather than a stage this specification has not reached yet.
+The name stays off the observation, and what changed is the argument for it and not the obligation.
 
 The names are invented rather than borrowed from any living language's given-name stock. Which twelve words they are, and
 which identifier each belongs to, is a product decision recorded in `WO-MOK-011`; it is not an implementation choice and
@@ -317,24 +346,58 @@ with runs under the same decision source.
 - Perception does not stop at a territory boundary and is not blocked by other Mokiterions.
 - Perception is read-only, consumes no entropy, and mutates nothing.
 
+### Contact
+
+- The contact radius is `1` cell. Two Mokiterions are **in contact** when both are living and the Chebyshev distance between their coordinates is at most `1`.
+- The distance is the same Chebyshev distance *Perception* defines, computed by the same rule. Contact adds a radius constant and no second notion of distance, so a cell diagonally adjacent is in contact exactly as an orthogonally adjacent one is, and two Mokiterions sharing a coordinate are in contact at distance `0`.
+- **Contact is recomputed from current positions and never stored.** No field on a Mokiterion, no collection in the world and no entry on an observation records that two Mokiterions are in contact. It is a predicate over two positions, evaluated when a rule asks.
+- **Contact is symmetric; acting on it is not.** If `M03` is in contact with `M09` then `M09` is in contact with `M03`, because the distance is. What is asymmetric is when each of them may act on the fact, which rule 2's ascending-identifier order fixes and rule 25 states the consequence of.
+- Contact requires both Mokiterions living, so a Mokiterion is never in contact with a dead one and never with itself.
+- Contact does not stop at a territory boundary. Two Mokiterions one cell apart across `y=63/64` are in contact, in different territories, and this specification states no consequence of the boundary for them.
+- Evaluating contact is read-only, consumes no entropy, and mutates nothing.
+
 ### Time and entropy
 
 - Time is an integer tick beginning at `0`; agent processing begins on tick `1`.
-- One explicit SplitMix64 pseudo-random stream, seeded from `--seed`, supplies all initialization, decision-source, and regeneration entropy. Trait derivation is the one exception and lies outside it: *Behavioral trait* fixes a generator of its own that leaves this stream's state unmoved. Naming is not an exception because it is not a draw at all: *Name* is a table lookup and consumes from no generator. The three decision sources consume from this stream at different rates, so a run under one source is comparable only with runs under the same source.
+- One explicit SplitMix64 pseudo-random stream, seeded from `--seed`, supplies all initialization, decision-source, and regeneration entropy. Trait derivation is the one exception and lies outside it: *Behavioral trait* fixes a generator of its own that leaves this stream's state unmoved. Naming is not an exception because it is not a draw at all: *Name* is a table lookup and consumes from no generator. The four decision sources consume from this stream at different rates, so a run under one source is comparable only with runs under the same source.
+- **No resolution of a targeted action draws from this stream or from any other generator.** Contact, damage, the threat's `fear` increase, the surrender transfer and every targeted move are computed from current state by integer arithmetic, so the stream's position after a tick is a function of the decisions taken and never of the encounters resolved. The social source of rule 26 takes at most one draw per opportunity, never for a social branch, and only through rule 19's own search step; rule 26 states that discipline as a consequence of its branch order.
 - Random selection uses a stable candidate order and an unbiased bounded selection method.
 
 ## Behavioral rules
 
-Rules 1 through 18 are stated in tick order. **Rule 19 is not**: it specifies a third decision source and belongs
-beside rule 5, but it is appended so that rules 1 through 18 keep the numbers the specifications, the verification
-contracts, the verification records, the retained evidence and the source comments already cite. Inserting it beside
-rule 5 would have renumbered thirteen rules and invalidated every one of those citations. The cost is that rule order
-stops matching tick order for exactly one rule, which this paragraph exists to state rather than leave to be
-discovered.
+Rules 1 through 18 are stated in tick order. **Rules 19 through 26 are not**, and each is appended for the same reason:
+rules 1 through 18 keep the numbers the specifications, the verification contracts, the verification records, the
+retained evidence and the source comments already cite. Inserting rule 19 beside rule 5 would have renumbered thirteen
+rules and invalidated every one of those citations; inserting seven more would have renumbered them again. The cost is
+that rule order stops matching tick order for eight rules, which this paragraph exists to state rather than leave to be
+discovered, and each one's position in tick order is stated here:
+
+| Rule | Subject | Position in tick order |
+|---|---|---|
+| 19 | Trait-aware decision | Rule 5's position: a decision, taken between rule 3's observation and rule 6's validation |
+| 20 | Contact | No position. It is a predicate over two positions, evaluated whenever a rule asks, and it never runs on its own |
+| 21 | Targeted actions | Rule 8's through rule 11's position: the application of a validated proposal, after rule 6 and before rule 7 |
+| 22 | Combat resolution | Inside rule 21, when the applied action is `attack` or `fight` |
+| 23 | Threat | Inside rule 21, when the applied action is `threaten` |
+| 24 | Surrender | Inside rule 21, when the applied action is `surrender` |
+| 25 | The suffered-attack window | Twice: it opens inside rule 22, at the attacker's turn; it closes at the sufferer's own turn, after rule 7's trace line and before rule 12 |
+| 26 | The social decision source | Rule 5's position, as rule 19 |
+
+Two consequences of the table are worth stating plainly. **Rule 21 and everything under it run inside one Mokiterion's
+turn**, so a Mokiterion acted on by a lower-identified one has its state changed between its own rule 3 observation of
+the previous tick and its own next one. And **rule 25's two halves are the only place in this specification where one
+rule's effects are separated by another Mokiterion's whole cycle**, which is what makes the response a deferred proposal
+rather than a resolution.
 
 1. **Initialization order.** Create the entropy stream, world, initial food, and agents in that order. Each agent's name is assigned as *Name* specifies at the point that agent is created, by table lookup on its identifier's number, drawing nothing. Each agent's `waste_tolerance` is derived as *Behavioral trait* specifies at the point that agent is created, from the seed and its identifier; because the derivation uses a generator of its own, it cannot move the shared stream's draw sequence and the placement draws are unaffected. Emit initialization events only after the complete initial state is valid, then emit the selected decision source exactly once before tick processing begins.
 2. **Tick start.** Increment the tick once, then consider living agents in ascending identifier order.
-3. **Observation.** For each considered agent, the engine creates a read-only observation containing tick, identity, position, territory, health, satiety, energy, `waste_tolerance`, co-located food, perceived food, perceived Mokiterions, valid cardinal moves, and the complete list of currently valid core action proposals. The trait is carried on the observation so that a decision source can read the acting Mokiterion's trait without reaching into authoritative state. `fear` is deliberately **not** carried: no rule and no decision source reads it.
+3. **Observation.** For each considered agent, the engine creates a read-only observation containing tick, identity, position, territory, health, satiety, energy, `fear`, `waste_tolerance`, the suffered-attack record, co-located food, perceived food, perceived Mokiterions, valid cardinal moves, and the complete list of currently valid core action proposals. The trait is carried on the observation so that a decision source can read the acting Mokiterion's trait without reaching into authoritative state.
+
+   **`fear` and the suffered-attack record are carried, and this replaces the refusal that stood here for two revisions.** The withheld form read "`fear` is deliberately **not** carried: no rule and no decision source reads it", and it was correct for as long as that was true. `REQ-MOK-045` now obliges both fields to be on the observation and `REQ-MOK-048` obliges the reader that makes them non-inert: the social source of rule 26 branches on `fear` and answers from the record. Neither field is inert and neither is carried speculatively. The `fear` carried is the value standing at the start of this agent's opportunity, which is the value after the previous tick's rule 12 update plus any threat applied by an earlier-acting Mokiterion in this tick; rule 26 states where it comes from and rule 23 states what may have moved it.
+
+   **The list of currently valid proposals is unchanged, and no targeted action ever appears in it.** It enumerates the core proposals of `REQ-MOK-005` — `wait`, `sleep`, `eat` for each co-located resource, and the valid cardinal moves — exactly as it did before this revision. The consequence is specified rather than incidental: **this rule no longer enumerates everything a decision source may legitimately propose.** A source may propose any of rule 21's seven targeted actions without that action appearing in this list, and such a proposal is not thereby invalid; rule 6 is the complete statement of what may be proposed and is the only place a targeted proposal is judged. A reader who takes this list as the whole contract will be wrong about the social source.
+
+   The reason the list is not extended is that extending it would move a decision source that has nothing to do with this change. Rule 4's baseline consumes one entropy selection over the length of this list, so a longer list moves that selection, and every run ever recorded under `baseline` would diverge. `REQ-MOK-051` holds those runs byte-identical and `CAP-MOK-009` excludes any change to what `baseline` proposes. Making the list's growth conditional on the selected policy was considered and declined, because it would make this rule's output a function of the configuration rather than of world state; `WO-MOK-012` records that decision.
 
    Perceived food lists every resource within the perception radius, including co-located resources, each with identifier, class, relative direction, and distance, ordered by ascending distance and then by identifier. Perceived Mokiterions lists every other living Mokiterion within the radius, each with identifier, relative direction, and distance, ordered by ascending distance and then by identifier. The observer never appears in its own perceived-Mokiterion list, and dead Mokiterions never appear. Co-located food remains reported separately and unchanged.
 4. **Baseline decision.** Candidate proposals use this stable order: `wait`; `sleep` when energy is below `100`; `eat` for each co-located resource in identifier order; and valid `move` actions ordered north, east, south, west. The baseline consumes one entropy selection and returns one candidate.
@@ -355,11 +418,41 @@ discovered.
 
    The second form applied the non-waste test to case 1 only, and it produced a stable two-cell oscillation: a Mokiterion standing on a resource it declined stepped off under case 3, immediately perceived that same resource as the nearest resource at a distance greater than zero, and stepped back. **An earlier revision of this specification claimed that correcting case 1 removed this effect. That claim was false and is retracted.** For high-class resources the non-waste condition is satisfied only at satiety of at most `50`, numerically identical to the threshold it replaced, so the richest third of the resource table oscillated exactly as before — measured at 35.7% of agent-ticks against the 12.2% an unbiased cardinal walk produces on the same world. Extending the test to case 3 removes the cause rather than the symptom, because the resource just left is excluded from targeting for exactly as long as it would be declined. The measured residual is 10.6%, below the random-walk rate.
 
-   One consequence of the corrected rule is specified rather than accidental. A high-class resource restores `50` satiety, so it is both eatable and approachable only at satiety of at most `50`. High-class resources are therefore consumed less often than low or medium and accumulate against the territory capacity that density fixes: measurement at the default density puts high class at 45 of 61 resources in a territory by tick 1,000, against a balanced initial third. This is accepted at the 1,000-tick horizon `REQ-MOK-014` states, where the corrected rule raises the measured worst case from three survivors to eight. It is recorded as a known long-horizon effect rather than a defect, and addressing it is out of scope for this revision. Rule 19's per-Mokiterion tolerance is expected to reduce this accumulation, because twelve tolerances replace one shared threshold; `REQ-MOK-034` and `VER-MOK-010` measure the effect at the 1,000-tick and 10,000-tick horizons under that source. **No obligation is stated on the result in either direction, and the reference source's own behavior is unchanged.**
+   One consequence of the corrected rule is specified rather than accidental. A high-class resource restores `50` satiety, so it is both eatable and approachable only at satiety of at most `50`. High-class resources are therefore consumed less often than low or medium and accumulate against the territory capacity that density fixes: measurement at the default density puts high class at 45 of 61 resources in a territory by tick 1,000, against a balanced initial third. That measurement was accepted at the 1,000-tick horizon `REQ-MOK-014` states, where the corrected rule raises the measured worst case from three survivors to eight, and it was recorded as a known long-horizon effect rather than a defect while addressing it stayed out of scope. **It is no longer out of scope, and an obligation is now stated where this paragraph previously stated none.** `REQ-MOK-051` states it: at tick 1,000, at the default density, under the reference source, the trait-aware source of rule 19 and the social source of rule 26, **no calorie class holds more than half of any territory's standing resources**, on every declared verification seed. The 45 of 61 is the state that obligation ends. It is a ceiling and not a floor: real drift away from the balanced initial third stays permitted, and a source that prefers calories should still leave more high class standing than low. Rule 19's per-Mokiterion tolerance was expected to reduce this accumulation, because twelve tolerances replace one shared threshold, and `REQ-MOK-034` and `VER-MOK-010` measured the effect at the 1,000-tick and 10,000-tick horizons under that source; the obligation is nonetheless stated on the composition itself rather than on that source's contribution to it, because a ceiling met under one of three sources is not a property of the world.
+
+   **Where the correction is made, and where it may not be.** The condition that produces the accumulation is the non-waste test of case 1 and case 3 above, and rule 19's tolerant form of it. Those two are the reference source's and the trait-aware source's proposal logic, and relaxing either changes what those two sources choose while leaving `baseline` untouched, because rule 4's candidate list offers `eat` for each co-located resource under no waste condition at all and no relaxation of a waste condition can reach it. The correction is therefore made in this rule's condition, in rule 19's tolerant test, or in both. It is **not** made in rule 16's uniform class selection, in rule 15's regeneration amount, in rule 9's eat effect, or in the food table's restoration values: each of those is world behavior under every policy, so each would change what a `baseline` run does and diverge every capture taken before it, and rule 16's would additionally move the shared stream's consumption. This is the surface `REQ-MOK-051` permits, and it is stated here because an amendment to this paragraph is what bounds the amendment that follows it.
+
+   **The sentence this paragraph used to close with is retracted rather than dropped.** It read "No obligation is stated on the result in either direction, and the reference source's own behavior is unchanged." Both halves are now false: the obligation above is stated, and this source's own behavior moves, which is the divergence `REQ-MOK-051` requires attributed to this correction and to nothing else. What survives unchanged is `baseline`, and only `baseline`.
+
+   **The numeric form of the corrected condition is a later amendment to this specification, and this paragraph names it as the one to make.** Which of the two permitted mechanisms is used, and by how much, is decided on measurement under `WO-MOK-012`: the ceiling is fixed in advance and the relaxation that reaches it is not, and a figure written here ahead of the sweep would be a guess this specification would then have to defend against its own evidence. This is the precedent *Behavioral trait* set on 2026-08-19, where its first form named the narrowing to make on `VER-MOK-010`'s evidence and the measured amendment followed. Until that amendment lands, case 1 and case 3 apply `S + R <= 100` exactly as written above, rule 19 applies its tolerant test exactly as written there, and the two obligations the relaxation is held against are `REQ-MOK-014`'s survivor floor of eight of twelve under this source and `REQ-MOK-034`'s under rule 19's: a correction that meets the ceiling by starving the population is not a correction.
 
    Because cardinal movement costs one tick per cell on either axis, the axis rule in case 3 changes the shape of an approach path but never its total cost.
 6. **Validation.** The engine validates the returned proposal against current authoritative state. A rejected proposal consumes the action opportunity, produces a rejection result, and causes no action-specific mutation.
-7. **Optional action trace.** When `--trace-actions` is enabled, emit exactly one `action_trace` line after validation and any valid action-specific mutation, but before survival decay. The line contains the tick, agent identifier, proposed action, `accepted` or `rejected` status, result or rejection reason, position, territory, health, satiety, energy, and `fear`. Because this rule places the trace before survival decay, every attribute it reports is the pre-decay value, and `fear` is therefore the value held **before** rule 12's update for this tick. The trace and the `survival_changed` line for one tick disagree by one step for `fear` exactly as they already do for satiety and energy. When the flag is disabled, emit no `action_trace` lines. Trace configuration never changes entropy consumption or simulation state.
+
+   **For a targeted proposal the engine validates against the target's authoritative state as well as the actor's**, and a rejected targeted proposal mutates **neither** Mokiterion. The absence of mutation is an obligation about two agents rather than one, which is a strengthening of this rule and not a relaxation of it.
+
+   **This rule is the complete statement of what may be proposed.** Rule 3's list of currently valid proposals does not carry targeted actions and is not the gate: a verb absent from that list is not thereby invalid, and a verb present in it is not thereby applied. Validation is this rule's judgement alone, taken against authoritative state at the moment of application, and it never consults the observation the source read. A source cannot widen what it may do by what it was shown, and cannot narrow it either.
+
+   Every targeted proposal is checked in this order, and the first unmet condition is the rejection reason:
+
+   1. the target exists, lives, and is not the actor — for all seven verbs;
+   2. the target is perceived, at a Chebyshev distance of at most the perception radius of `16` — for `approach` and `avoid`;
+   3. the target is in contact, at a Chebyshev distance of at most `1` — for `threaten`, `attack` and `fight`;
+   4. the target is named in the actor's suffered-attack record — for `fight`, `retreat` and `surrender`;
+   5. the resulting move is a valid cardinal move under rule 8 — for `approach`, `avoid` and `retreat`.
+
+   **`fight` carries two preconditions and not one.** It answers an unanswered attack, so condition 4 applies; it is also a strike, resolving through the same function `attack` resolves through, so condition 3 applies as well. An attacker that struck and then stepped out of contact cannot be fought, and the rejection names contact. `retreat` and `surrender` require no contact: retreating from an attacker that has moved away is a move away from a known position, and a surrender is a transfer rather than a reach.
+
+   **`avoid` against a co-located target is not a rejection.** "Away from distance zero" has no direction, and rejecting it would make co-location an inescapable state; the appended rule for `avoid` fixes the direction taken.
+
+   Where a targeted move's preferred axis is invalid the other axis is used, on rule 5 case 3's precedent, and where both are invalid the proposal is rejected as an invalid move — rule 8's existing reason, reached by a targeted verb.
+7. **Optional action trace.** When `--trace-actions` is enabled, emit exactly one `action_trace` line after validation and any valid action-specific mutation, but before survival decay. The line contains the tick, agent identifier, proposed action, `accepted` or `rejected` status, result or rejection reason, position, territory, health, satiety, energy, `fear`, and — only where it is non-empty — the suffered-attack record. Because this rule places the trace before survival decay, every attribute it reports is the pre-decay value, and `fear` is therefore the value held **before** rule 12's update for this tick. The trace and the `survival_changed` line for one tick disagree by one step for `fear` exactly as they already do for satiety and energy. When the flag is disabled, emit no `action_trace` lines. Trace configuration never changes entropy consumption or simulation state.
+
+   **Targeted actions are traced on the same terms as core ones**: one line per decision opportunity, after validation and any valid mutation, before survival decay, whether the proposal was applied or rejected. A targeted proposal names its target in the `proposal` field, as *Data and interface contracts* fixes.
+
+   **The line also reports the suffered-attack record, and it reports it before the record is cleared.** This is this rule's existing principle applied once more rather than a second convention beside it: the same rule already fixes that the traced `fear` is the value held before rule 12's update, so the traced record is likewise the record the source read. Clearing first would empty the field on exactly the lines it exists to explain — every line where an answer was proposed, and every line where a Mokiterion carrying an unanswered attack proposed something else instead. The alternative was declined for that reason, and it was a real alternative: `position`, `territory`, `health`, `satiety` and `energy` on this line are all read *after* the action applies, so clearing first would have been the uniform choice.
+
+   **The record's clearing is positioned identically whether or not the flag is set.** The record closes when the opportunity is taken, under `REQ-MOK-045`, and that point does not move with trace configuration; the trace reads the record on its way past. A clearing placed *after* an emission that only sometimes happens would make `--trace-actions` change simulation state, which the sentence above forbids and which no evidence taken with the flag off would catch.
 8. **Move.** A valid move changes one coordinate by one cell in a cardinal direction. Crossing `y=63/64` updates the derived territory and emits a crossing event. Movement has no additional energy cost in this foundation.
 9. **Eat.** A valid eat selects one co-located resource by identifier, removes it, and restores the class values in the food table. Attribute values are capped at `100`.
 10. **Sleep.** Sleep restores `20` energy, capped at `100`, before survival decay. It does not move the agent or consume food.
@@ -368,8 +461,18 @@ discovered.
 
     **The driver adds no distance constant.** It is rule 3's own list — non-empty or empty — and rule 3's list is bounded by the perception radius of `16`. A narrower threshold was considered and rejected on arithmetic: with twelve Mokiterions on a 128×128 grid the expected number of others inside a Chebyshev box of radius `r` is `11 * (2r+1)^2 / 16384`, which is about `0.73` at radius `16`, `0.19` at `8`, and `0.05` at `4`. A four-cell threshold would hold `fear` at `0` on roughly nineteen agent-ticks in twenty, making it verifiable only through constructed states — the inert attribute `SPEC-MOK-003` rule 4.5 refused, reached by a different route. Reusing the radius removes a constant instead of adding one. `REQ-MOK-032` records the arithmetic.
 
-    Rule 3's list is what one agent perceived at its own decision opportunity, so the within-tick asymmetry rule 2 establishes applies here too: two mutually adjacent Mokiterions may not both register the encounter on the same tick, because the earlier one observed the later one's position before it moved. Territory boundaries do not attenuate the driver, since perception already crosses `y=63/64`. **No rule reads `fear`.** It is computed, bounded, reported and otherwise inert; a consumer is a later governed change.
+    Rule 3's list is what one agent perceived at its own decision opportunity, so the within-tick asymmetry rule 2 establishes applies here too: two mutually adjacent Mokiterions may not both register the encounter on the same tick, because the earlier one observed the later one's position before it moved. Territory boundaries do not attenuate the driver, since perception already crosses `y=63/64`.
+
+    **`fear` is read.** For two phases this paragraph closed "**No rule reads `fear`.** It is computed, bounded, reported and otherwise inert; a consumer is a later governed change" — and named the change that would invert it. This is that change. The source of rule 26 reads `fear` at every decision opportunity under `--policy social`, obliged by `REQ-MOK-048`, and rule 23's threat writes another Mokiterion's `fear`, obliged by `REQ-MOK-046`. `fear` is no longer inert, and this rule is no longer the whole of its life. **This rule's own computation is unchanged**: the same `+10` when rule 3's perceived-Mokiterion list is non-empty and `-5` when it is empty, the same driver, the same saturation, the same single observation read, the same absence of any entropy draw.
+
+    **`fear` now has two writers within one tick, and their composition is stated rather than left to be derived.** A Mokiterion's `fear` may be raised by `30` under rule 23 at a threatener's turn and moved by `10` or `5` under this rule at its own turn, in whichever order rule 2's ascending identifier order produces. Both writes saturate within `0..=100`, neither is suppressed, and neither is deferred: there is no accumulation of pending `fear`, and no write is skipped because another happened first. A Mokiterion threatened twice and perceiving somebody rises by `30`, `30` and `10` in one tick, saturating at `100` if it gets there.
+
+    **Which value a source reads follows from that, and rule 26 states it where a reader will need it.** This rule writes at the acting Mokiterion's own turn, after its action; rule 3 builds the observation at that same turn, before it. So the `fear` a source reads is the value standing after the *previous* tick's write under this rule, plus any threat applied to it by an earlier-acting Mokiterion in the current tick. Every threshold in rule 26 is sensitive to that position, which is why it is written down twice rather than derived once.
 13. **Death.** When health becomes zero, mark the agent dead and emit one death event. Dead agents receive no later observations, decisions, actions, traces, or survival updates.
+
+    **`health` may now reach zero through rule 22's damage as well as through rule 12's decay, and such a death uses this path, this event and this finality.** Death stays one concept: there is no second death, no combat-specific event, and no difference in what a dead Mokiterion is. What differs is only when it happens — rule 22 resolves inside another Mokiterion's turn, so a Mokiterion may die at a point in the tick where it has not yet acted, and it then receives no opportunity that tick or ever. Its suffered-attack record dies with it, unread. That a given death was combat's is recoverable from the stream through `attack_resolved`'s `target_died` field, which is why this event gains no cause detail.
+
+    A dead Mokiterion is also no longer a valid target: rule 6's first condition rejects every targeted proposal naming it, including a `fight` answering the attack it made while it lived.
 14. **Regeneration timing.** After all scheduled agents are processed, each territory receives one regeneration opportunity on ticks divisible by `10`.
 15. **Regeneration condition.** A territory holding at least one resource and fewer than its capacity adds `2` resources, or fewer when fewer free capacity slots remain. A territory with zero resources adds none and emits a skipped-regeneration event, so permanent local depletion remains reachable at every density. A territory already at capacity adds none and emits a skipped-regeneration event.
 16. **Regeneration selection.** Each new class is selected uniformly from low, medium, and high. Each coordinate is selected from currently food-free coordinates in that territory, evaluated after any resource added earlier in the same opportunity. All selections use the shared entropy stream, first class then coordinate, for each added resource in turn.
@@ -388,9 +491,114 @@ discovered.
 
     At `T = 0` the second clause requires `S + R - 100 <= 0`, which is rule 5's non-waste test, so **this source is proposal-identical to rule 5 for every observation at tolerance zero**. At the range's upper bound of `T = 40` the second clause reads `S + R - 100 <= 2R/5`, so a high-class resource is eaten up to satiety `70`, a medium-class one up to `82` and a low-class one up to `91`. No reachable tolerance accepts restoration that is entirely clipped; the first form of *Behavioral trait* permitted that at `T = 100` and the narrowing recorded there removed it. For a high-class resource restoring `50` the test admits satiety up to `50 + T/2`.
 
+    **This test is one of the two places `REQ-MOK-051`'s correction may be made**, the other being rule 5's non-waste condition, and rule 5's accumulation paragraph states the obligation, the permitted surface and the reason the surface stops there. Which mechanism is used — relaxing rule 5's condition, raising the tolerance floor this test evaluates against, or both — is decided on measurement under `WO-MOK-012` and written into this rule and rule 5 by the amendment that paragraph names. Two things about that amendment are fixed here rather than left to it.
+
+    **A tolerance floor belongs to this test and not to the trait's range.** `REQ-MOK-051` permits the correction in rule 5's condition and in this rule's tolerant form, and in nothing else; *Behavioral trait*'s range of `0..=40` and its derivation are outside that permission. So a floor, if it is chosen, raises the tolerance this test evaluates against and leaves the derived value, its range and its reported `waste_tolerance` alone. A Mokiterion's reported trait therefore continues to mean what it means today.
+
+    **The `T = 0` identity is not automatically preserved, and the amendment must say what becomes of it.** The identity above holds because this test's first clause is `S + R <= 100`, which is rule 5's condition as that rule is written today. Relaxing rule 5's condition alone breaks the identity unless this clause is restated as rule 5's condition rather than as that literal inequality; introducing a floor breaks it by making tolerance zero unreachable in the test. Either outcome is permitted and neither may be silent: the amendment states whether the identity survives, and if it does not, it retracts the sentence above, the `waste_tolerance` `0` entry in *Acceptance examples*, and any test asserting them, naming each.
+
     Only the search step of case 4 consumes entropy. Cases 1 through 3 consume none. The source never proposes `wait`: a blind Mokiterion searches rather than stands still. Because the tolerance decides how often case 4 is reached, this source consumes the shared stream at a rate of its own, so runs under it are comparable only with runs under it, at the same seed and density.
 
     A proposal from this source is validated under rule 6 with no relaxation. Reading the trait grants the source no authority: it proposes, and the engine decides.
+20. **Contact.** Two living Mokiterions are in contact when the Chebyshev distance between their positions is `1` or less, computed by the same distance rule 3's perception uses. The contact radius is `1`, and contact includes co-location at distance `0`. This rule states a relation and occupies no position in tick order: it is a predicate rules 21 and 26 evaluate, recomputed from current positions at the moment it is asked and never stored.
+
+    Contact holds between living Mokiterions only. A dead Mokiterion is in contact with nothing, and contact ends the moment either party dies with no event of its own, because there is no contact state to leave.
+
+    **Contact is symmetric and acting on it is not.** If A is in contact with B then B is in contact with A, but rule 2 gives each Mokiterion its whole cycle in its own turn, so the two evaluate the relation at different points and may not both act on the same configuration: the earlier-acting Mokiterion evaluates contact against the later one's position before it has moved. This is the asymmetry rule 12 records for the `fear` driver, reached through position instead of perception.
+
+    Contact crosses `y=63/64`. Two Mokiterions in different territories at Chebyshev distance `1` are in contact, on the same ground perception already crosses the boundary: a territory label states state and nothing more.
+
+    Contact reads positions and consumes no entropy. Mokiterions still do not block movement and may still share a coordinate; this rule adds no occupancy rule and no collision.
+21. **Targeted actions.** In tick order this rule occupies the position of rules 8 to 11: a targeted action is applied at the acting Mokiterion's own opportunity, after rule 6's validation and before rule 7's trace. There are seven verbs, each with its own precondition, checked in the order rule 6 fixes:
+
+    | Verb | Precondition beyond a living target that is not the actor | Effect |
+    |---|---|---|
+    | `approach` | the target is perceived | one cell toward it, as a rule 8 move |
+    | `avoid` | the target is perceived | one cell away from it, as a rule 8 move |
+    | `threaten` | the target is in contact | rule 23 |
+    | `attack` | the target is in contact | rule 22 |
+    | `fight` | the target is in contact **and** named in the actor's suffered-attack record | rule 22 |
+    | `retreat` | the target is named in the actor's suffered-attack record | one cell away from it, as a rule 8 move |
+    | `surrender` | the target is named in the actor's suffered-attack record | rule 24 |
+
+    **A valid targeted action applies exactly once**, during the current tick, at the acting Mokiterion's own opportunity. None applies twice, none applies to a second target, and none defers its effect to a later tick. One opportunity yields one action, targeted or not.
+
+    **`approach`, `avoid` and `retreat` are rule 8 moves and nothing more**: one cell, one cardinal axis, no additional energy cost, and a crossing of `y=63/64` updates the derived territory and emits its event exactly as any move does. `approach` moves on the horizontal axis while the target's direction has an easterly or westerly component and otherwise on the vertical axis, using the other axis when the preferred one is invalid — rule 5 case 3's axis rule, unchanged. `avoid` and `retreat` use the same axis choice in the opposite direction. This is why they add no event type: each mutates only the actor, and rule 7's trace and rule 8's crossing event already carry everything they change.
+
+    **`avoid` against a co-located target moves north, and where north is invalid, east, then south, then west.** Distance zero has no direction to move away from, and rejecting the proposal would make co-location an inescapable state. The order is rule 5 case 4's own cardinal order, reused so that this case introduces no new ordering, and it consumes no entropy: it is the first valid direction in a fixed order rather than a selection among them.
+
+    **No selection among Mokiterions happens in this rule.** A proposal arrives naming exactly one target, so the nearest-then-lowest-identifier tie-break that chooses between candidate Mokiterions belongs to rule 26, which chooses, and not to this rule, which applies.
+
+    **The action contract is closed at eleven kinds.** `wait`, `sleep`, `eat`, `move` and these seven are all a source may propose and all the engine will apply. Nothing here admits a composite action, an action naming two targets, or an action spanning ticks.
+22. **Combat resolution.** One resolution, invoked by `attack` and by `fight` alike. The striker is the acting Mokiterion; the target is the Mokiterion its proposal names.
+
+    **Damage is `10 + (striker.energy + striker.health) / 10`**, the division truncating toward zero, evaluated at the moment of resolution from the striker's `energy` and `health` at that moment and from nothing else — not the target's attributes, not the tick, not either identifier, not any trait, not any population aggregate. Both terms are bounded by `ATTRIBUTE_MAX`, so the range is `10..=30`. Integer arithmetic only, in a width no intermediate overflows.
+
+    Damage derived from the striker's own condition is what makes a weakened Mokiterion a weaker attacker without any Mokiterion reading another's strength — `CAP-MOK-009`'s exclusion of perceived relative strength, held from the other side.
+
+    **The target's `health` falls by that amount, saturating at zero. The striker pays a flat `5` `energy`, saturating at zero**, whether or not the target dies. Both use the saturating arithmetic rule 12 uses; neither wraps, and neither is clamped by any other attribute.
+
+    **No resolution deals `0`.** The constant term is `10`, so the minimum is `10` and the bound holds by construction rather than by a clamp. It is stated because a resolution removing nothing would be indistinguishable in the stream from a rejection, and it constrains any later amendment to the function.
+
+    The strike costs `5` because an attack that were free would dominate every alternative for every source that has it. `5` is a cost rather than a deterrent; the deterrent is the source's own ordering.
+
+    **No entropy is drawn** by validation, damage computation, cost application, or death handling.
+
+    Where the target's `health` reaches zero it is dead at that moment, through rule 13's path and event. Where the striker's `energy` reaches zero it does not die of that: rule 12's decay is what converts a zero attribute into `health` loss, at the striker's own turn, exactly as it does today.
+
+    The resolution emits one `attack_resolved` line carrying both parties' transitions, as *Data and interface contracts* fixes. That line does not distinguish `attack` from `fight`, and it is not meant to: the two are one resolution. A reader tells them apart by the pairing — a `fight` names as its target a Mokiterion that struck the subject earlier — and directly from rule 7's trace, whose `proposal` field carries the verb.
+23. **Threat.** The target's `fear` rises by `30`, saturating at `ATTRIBUTE_MAX`. The amount is a specification constant of its own, standing beside rule 12's `FEAR_INCREASE` of `10` and `FEAR_DECREASE` of `5` rather than being derived as a multiple of either, and it is derived from neither Mokiterion's attributes: a threat is a threat regardless of who makes it, because deriving its force from the threatener's condition would be a reading of relative strength arriving by the back door.
+
+    **Nothing else changes.** Not the target's `health`, `satiety`, `energy` or position; not the threatener's anything. No damage, no energy cost, no satiety transfer, no movement, no death. The only thing a threat costs its maker is the opportunity it spends.
+
+    **A threat opens no suffered-attack window.** A threatened Mokiterion has not been attacked, so it may not `fight`, `retreat` or `surrender` in answer. It may propose `attack`, `avoid` or anything else its source chooses on the ordinary preconditions. A threat provokes by changing `fear`, not by unlocking verbs — and `30` is exactly the step that moves rule 26's own branches, which is the mechanism by which a threat changes what another Mokiterion decides.
+
+    Rule 12's write is unaffected and still applies to every living Mokiterion at its own opportunity. The composition of the two writers within one tick is stated in rule 12.
+
+    The resolution emits one `threat_resolved` line carrying the increase applied and the target's resulting `fear`.
+24. **Surrender.** The surrendering Mokiterion forfeits `satiety / 2` of its own `satiety`, the division truncating toward zero, evaluated at the moment of resolution and derived only from its own `satiety` — not from the recipient's attributes, not from the damage suffered, not from either identifier, not from any trait.
+
+    **Its `satiety` falls by that amount, saturating at zero; the recipient's rises by the same amount, saturating at `ATTRIBUTE_MAX`, and any excess is destroyed.** The excess is not returned, not banked, and not converted into another attribute. `surrender_resolved` reports the discarded amount so that a run's own output shows where non-conservation occurred rather than leaving it to be inferred.
+
+    Half of what is held can never exceed what is held, so the saturation at zero constrains a later amendment to the proportion rather than any case reachable under this one. **A surrender below `satiety` `2` transfers `0` and still succeeds**: a Mokiterion with nothing to give gives nothing, and it has still declined to fight.
+
+    **No damage is dealt to either party**, no `energy` is paid by either, neither moves, and **no `fear` is written in either direction**. Rule 23 is the only rule besides rule 12 that writes `fear`.
+
+    The suffered-attack window closes as it does for any answer, under rule 25. A Mokiterion that surrenders may not also `fight` or `retreat` that attack.
+
+    **Death by starvation remains rule 12's.** A surrender may reduce a `satiety` to zero, and a Mokiterion that then dies dies through the survival path, with that event and that cause. A surrender is not itself a cause of death.
+25. **The suffered-attack window.** This rule occupies two positions in tick order. It **opens** inside rule 22, when damage resolves against a Mokiterion, and it **closes** at that Mokiterion's own next decision opportunity, after rule 7's trace and before rule 12's decay.
+
+    **What it carries**: for each attack that has landed since that Mokiterion's previous decision opportunity, the striking Mokiterion's identifier and the damage dealt, in the order the attacks resolved. Where a Mokiterion has been struck more than once in the window, all are carried.
+
+    **It is transient per-Mokiterion state and not an attribute.** It is not bounded in `0..=100`, it is not reported in `agent_initialized` or `survival_changed`, it hangs off the Mokiterion that suffered the attacks, and no structure indexed by pairs of Mokiterions exists. It starts empty and, under `baseline`, `reference` and `individual`, stays empty for the whole run, because no targeted verb is proposed under those sources.
+
+    **It closes when the opportunity is taken, not when it is used.** After a Mokiterion's source has been consulted and its proposal applied or rejected, the record is cleared — whether it answered, proposed something else, or had its proposal rejected. Each Mokiterion gets exactly one opportunity to answer any given attack, and a Mokiterion struck twice may answer one attacker while the window closes on both, because one opportunity yields one action. Whether that discards a meaningful number of encounters is measurement's to report and not this rule's to prevent.
+
+    **The latency this produces is asymmetric and is stated rather than corrected.** Rule 2 runs each Mokiterion's whole cycle in its own turn, in ascending identifier order. A Mokiterion struck by a *lower*-identified one reaches its own opportunity later in the same tick and answers with zero ticks of latency; one struck by a *higher*-identified one has already acted and answers on the next tick. This is the within-tick asymmetry rule 12 records for the `fear` driver and rule 20 records for contact, and it is one of the two inputs to the identifier advantage `VER-MOK-012` bounds.
+
+    **Nothing else reads the record.** It is not an input to damage, not to contact, not to survival decay, and not to any source but rule 26's. It is not reported as an attribute. A Mokiterion that dies of an attack never reads it, and the record dies with it.
+26. **The `social` decision source.** Selected by `--policy social`. This rule is appended rather than placed beside rule 5, for the reason the *Behavioral rules* preamble states; in tick order it occupies rule 5's position. It reads the acting Mokiterion's own `fear` and its suffered-attack record, both carried on the rule 3 observation, and returns the **first** applicable branch:
+
+    1. **An unanswered attack is answered.** Where the suffered-attack record is non-empty, answer the **first** attack in it — the record is in resolution order, so this is deterministic — choosing by the actor's own `fear`: `surrender` at `60` or above, `retreat` at `30` or above, and `fight` below `30`.
+    2. **Survival comes before society.** Where rule 19's case 1 or case 2 applies — a co-located resource passing the tolerant test, or `energy` below `20` — propose exactly what rule 19 proposes, which is `eat` or `sleep`.
+    3. **A Mokiterion in contact is engaged.** Where a living Mokiterion is in contact under rule 20, propose `attack` while the actor's own `fear` is below `30` and `threaten` otherwise, against the nearest such Mokiterion, breaking ties by lowest identifier.
+    4. **A Mokiterion merely perceived is closed on or avoided.** Where a living Mokiterion is perceived at a distance of `2` or more, propose `approach` while the actor's own `fear` is below `30` and `avoid` otherwise, on the same tie-break.
+    5. **Otherwise rule 19 decides.** Propose exactly what rule 19 proposes, which at this point is its case 3 seek-move or its case 4 search step.
+
+    **The ordering is normative rather than illustrative.** An implementation may not reorder the branches, and may not test branch 2 by delegating to rule 19 and inspecting the result: rule 19's case 4 takes an entropy selection, so a delegation reaching it would consume a draw this source then discarded whenever a later branch fired, silently moving the shared stream for a decision that was never used.
+
+    **Three constants and no more**: the answer thresholds `60` and `30`, and the engagement threshold `30`. This source introduces no survival constant of its own. Branch 2's condition is rule 19's own cases 1 and 2, and branches 2 and 5 delegate to rule 19 rather than restating it, so a Mokiterion under this source that never meets another behaves exactly as it would under `--policy individual`, trait and all.
+
+    The three thresholds compose with rule 23 by design. A threat adds `30`, so one threat moves a calm Mokiterion from branch 3's `attack` to its `threaten` and from branch 4's `approach` to its `avoid`; two threats, or a threat and a perception, reach `60` and make a defender surrender rather than fight.
+
+    **Where in the tick the `fear` it reads comes from.** Rule 3 builds the observation at the acting Mokiterion's own turn, and rule 12 writes `fear` at that same turn, after the action. So the value this source reads is the one standing after the previous tick's rule 12 write, plus any threat applied to it by an earlier-acting Mokiterion in the current tick. Every threshold above is sensitive to that position, and it is written here so that a reader need not derive it from rule ordering.
+
+    **The entropy discipline is a consequence of the ordering rather than a rule beside it.** Branches 1, 3 and 4 return without a draw. Branch 2 returns `eat` or `sleep`, which rule 19 reaches without a draw. Only branch 5 can draw, and it draws exactly what rule 19 draws: at most one selection, from the single shared stream, in rule 19's own order. So this source takes **at most one draw per opportunity and never for a social decision**.
+
+    Because branches 3 and 4 pre-empt rule 19's cases 3 and 4, a run under this source consumes **fewer** draws than a run under `--policy individual` on the same seed, and diverges from it at the first opportunity where a Mokiterion is perceived. That is different world evolution rather than a changed draw discipline. The equality that does hold is stated per observation: where no living Mokiterion is perceived and the suffered-attack record is empty, this source and rule 19's propose the identical action.
+
+    A proposal from this source is validated under rule 6 with no relaxation. Reading `fear` and the suffered-attack record grants the source no authority: it proposes, and the engine decides.
 
 ## Error and recovery behavior
 
@@ -408,14 +616,25 @@ The decision boundary exposes only:
 Observation -> ProposedAction
 ```
 
-`Observation` contains copied or immutable values, including the acting Mokiterion's `waste_tolerance` and the perceived resources and perceived Mokiterions of rule 3. A perceived entry carries an identifier, a relative direction, a distance, and, for a resource, its calorie class. It carries no reference to the entity it describes, so a decision source can read a perceived entity but cannot reach it. `ProposedAction` is one of:
+`Observation` contains copied or immutable values, including the acting Mokiterion's own `fear`, its `waste_tolerance`, the record of attacks it has suffered since its previous decision opportunity, and the perceived resources and perceived Mokiterions of rule 3. A perceived entry carries an identifier, a relative direction, a distance, and, for a resource, its calorie class. It carries no reference to the entity it describes, so a decision source can read a perceived entity but cannot reach it. An entry in the suffered-attack record carries the striking Mokiterion's identifier and the damage it dealt, in the order the attacks resolved, and nothing further: it records what happened to the observer rather than the condition of whoever did it, which is how a defender answers without any Mokiterion reading another's strength. **The observation gains those two items and nothing else.** Its list of currently valid proposals is unchanged and never carries a targeted action, for the reason rule 3 states.
+
+`ProposedAction` is one of:
 
 ```text
 Wait
 Sleep
 Eat { food_id }
 Move { direction: North | East | South | West }
+Attack { target }
+Threaten { target }
+Fight { target }
+Retreat { target }
+Surrender { target }
+Approach { target }
+Avoid { target }
 ```
+
+The seven targeted forms all name the other Mokiterion in one field called `target`, and the uniformity is deliberate. `retreat` retreats *from* its target and `surrender` surrenders *to* its target, so two directional field names were available; one name was chosen because rule 6 checks the same three things about the named Mokiterion in all seven cases — that it exists, that it lives, and that it is not the actor — and a contract that spelled the same referent three ways would invite a validation path per spelling. A `target` is a Mokiterion identifier and never a reference: naming one grants a source no more reach than perceiving one does.
 
 The decision source never receives a mutable world, agent, resource collection, event log, or engine handle.
 
@@ -425,7 +644,9 @@ Event lines use stable key-value fields in this order:
 tick=<number> subject=<identifier> event=<event-type> result=<stable-details>
 ```
 
-Stable core event types are `world_initialized`, `food_initialized`, `agent_initialized`, `decision_source_selected`, `food_consumed`, `food_regenerated`, `food_regeneration_skipped`, `territory_crossed`, `survival_changed`, `agent_died`, and `simulation_ended`. Optional per-action lines use `action_trace`. The details of `decision_source_selected` name the active source as `baseline`, `reference`, or `individual`.
+Stable core event types are `world_initialized`, `food_initialized`, `agent_initialized`, `decision_source_selected`, `food_consumed`, `food_regenerated`, `food_regeneration_skipped`, `territory_crossed`, `attack_resolved`, `threat_resolved`, `surrender_resolved`, `survival_changed`, `agent_died`, and `simulation_ended`. Optional per-action lines use `action_trace`. The details of `decision_source_selected` name the active source as `baseline`, `reference`, `individual`, or `social`.
+
+**The vocabulary gains three types and no more, and the count is a consequence of one rule rather than of one type per verb.** A new type exists where a resolution moves a *second* Mokiterion's state, because that is the transition no other record can carry. `attack_resolved` is shared by `attack` and `fight`, which are one resolution invoked by either party; `threat_resolved` and `surrender_resolved` take one each. `approach`, `avoid` and `retreat` take none: each mutates only the actor and resolves as a rule 8 move, so rule 7's trace already reports every transition they cause and rule 8's crossing event still fires where they cross `y=63/64`. A type reporting nothing a record already carries would be interface growth for nothing. Seven types, one per verb, and a single `encounter_resolved` carrying the verb in its detail were both considered and declined.
 
 Three record kinds carry the attributes, and their stable details are fixed in this order:
 
@@ -443,11 +664,35 @@ changing assertions that `VREC-MOK-005` and `VREC-MOK-007` bind, which `WO-MOK-0
 identity at the head of the record, where a reader looks for it. A later field is appended after `waste_tolerance` only
 by an amendment that states what it does to those parsers.
 
+Three resolution record kinds carry a second Mokiterion's transitions, and their stable details are fixed in this order:
+
+```text
+tick=<number> subject=<striker-id> event=attack_resolved result=target:<mokiterion-id>,damage:<number>,target_health:<a>-><b>,striker_energy:<a>-><b>,target_died:<yes|no>
+tick=<number> subject=<threatener-id> event=threat_resolved result=target:<mokiterion-id>,increase:<number>,target_fear:<a>-><b>
+tick=<number> subject=<surrendering-id> event=surrender_resolved result=recipient:<mokiterion-id>,transferred:<number>,discarded:<number>,subject_satiety:<a>-><b>,recipient_satiety:<a>-><b>
+```
+
+The subject of each is the Mokiterion at whose opportunity the resolution happened, which for `attack_resolved` is the striker whether it proposed `attack` or `fight`. Each uses the `<a>-><b>` transition form `survival_changed` already uses, rather than a second notation for the same idea.
+
+**Each of these records carries the transitions the resolution caused, in both directions, and that is an obligation rather than a convenience.** Rule 2 runs each Mokiterion's whole cycle inside its own turn. A Mokiterion acted on by a lower-identified one has not yet emitted its `survival_changed` line for the tick, and one acted on by a higher-identified one already has, so a transition inflicted on a target is a change that would otherwise appear in no record on the tick it happened. Carrying it here makes the stream complete in both directions and keeps it reconstructible without knowing turn order.
+
+Three further details are fixed for the same reason: `target_died` reports the death this strike caused, so that death by combat is distinguishable in the stream from death by starvation or exhaustion without adding a cause field to `agent_died`; `discarded` reports satiety a surrender transferred into a full recipient and lost, so that a run's own output shows where non-conservation occurred rather than leaving it to be inferred; and `increase` reports a threat's applied amount alongside the resulting `fear`, because saturation at `100` makes the applied amount unrecoverable from the transition alone.
+
+**None of the three ever appears under `baseline`, `reference` or `individual`**, because no targeted verb is proposed under those sources. That is why adding them to the vocabulary leaves every capture taken before this amendment byte-identical.
+
 An action trace uses the same leading fields and stable details in this order:
 
 ```text
-tick=<number> subject=<mokiterion-id> event=action_trace result=proposal:<action>,status:<accepted|rejected>,detail:<result-or-reason>,position:<x:y>,territory:<A|B>,health:<number>,satiety:<number>,energy:<number>,fear:<number>
+tick=<number> subject=<mokiterion-id> event=action_trace result=proposal:<action>,status:<accepted|rejected>,detail:<result-or-reason>,position:<x:y>,territory:<A|B>,health:<number>,satiety:<number>,energy:<number>,fear:<number>[,suffered:<attacker-id>:<damage>[;<attacker-id>:<damage>]...]
 ```
+
+**A targeted proposal renders its target inside the `proposal` field**, as `<verb>:<target-id>` — `proposal:attack:M03` — on the inner-colon precedent `position:<x:y>` already sets. A trace line that named the verb alone would leave the one fact that distinguishes two otherwise identical opportunities out of the record, and rejections in particular are unreadable without it: `status:rejected` with `detail:target not in contact` says nothing about which Mokiterion was out of contact. The four core verbs render exactly as they render today, so no line in any existing capture changes.
+
+**The `suffered` field is appended after `fear`, and it is present only when the suffered-attack record is non-empty.** The conditional presence is forced rather than chosen. Every other detail on every record kind is unconditional, but a field appended unconditionally here would change every `action_trace` line of every run, including every `baseline` run with `--trace-actions` — and `CAP-MOK-009` holds `baseline` byte-identical against its pre-change capture, which no amendment in this initiative may spend. Under `baseline`, `reference` and `individual` no attack is ever proposed, so no record is ever non-empty and the field never appears; under `social` it appears on exactly the lines it explains. The entries are the record's own, in the order the attacks resolved, so the field is ordered and not a collection formatted arbitrarily.
+
+`suffered` reports the record as the source read it, before it is cleared: rule 7 fixes that order and states why. It is therefore the second field on this line whose value predates the action rather than following it, alongside `fear`, and the two are read at the same point for the same reason.
+
+**Appending `suffered` after `fear` touches no parser bound by evidence, and that is checked rather than assumed.** The positional obligation this section records is on `agent_initialized` — one suite asserts `fear` and `waste_tolerance` as an adjacent pair, another reads the trait by splitting on that record's final field — and this amendment does not touch `agent_initialized` at all. On the `action_trace` line the appended field is last, is absent on every line those parsers see today, and is separated by the same comma every other detail uses. Any suite that parses this line positionally must be named in the evidence for this amendment with its assertion count before and after, and none may have an assertion relaxed, widened or removed to accommodate the field.
 
 The final line begins with `summary` and reports fields in the order defined by rule 18. Stable details must not contain wall-clock timestamps, absolute paths, pointer values, or unordered collection formatting.
 

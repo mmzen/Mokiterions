@@ -221,7 +221,7 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-048` | automated-test | **`baseline` is byte-identical, unprojected** (oracle 1) | All 30 `baseline` cells identical byte for byte with identical exit codes, with no projection applied |
 | `REQ-MOK-048` | automated-test | `reference` and `individual` diverge only as accounted (oracle 1) | Each of the 60 cells' divergence is characterized to `REQ-MOK-051`'s corrected condition by first diverging tick, first diverging record and the decision that changed |
 | `REQ-MOK-048` | static-analysis | The source reads its observation and nothing else | No handle to authoritative state, no state between opportunities, no population aggregate; traits reach it as they reach `individual`, through the side generator |
-| `REQ-MOK-048` | static-analysis | Interface growth is counted | One `Policy` variant, seven `Action` variants, three `EventType` variants and their details, and the observation's two fields, enumerated against `SPEC-MOK-002` rule 5 and approved in its amendment. The observation's valid-proposal list is checked to have **not** grown, since growing it would move `baseline`'s draw |
+| `REQ-MOK-048` | static-analysis | Interface growth is counted | One `Policy` variant, seven `Action` variants, and three `EventType` variants with their details, enumerated against `SPEC-MOK-002` rule 5 and approved in its amendment. Corrected 2026-08-20: the observation's two fields were listed here and are **not** interface growth, because `Observation` is private — see *Static and architecture checks*. The observation's valid-proposal list is checked to have **not** grown, since growing it would move `baseline`'s draw |
 | `REQ-MOK-049` | automated-test | **Survivor floor** (oracle 4) | At least five of twelve living at tick 1,000, at the default density, under the `social` source, on every declared seed. Five, not six: the product owner lowered it on 2026-08-20 against the decided damage function, and `REQ-MOK-049` records what the move cost |
 | `REQ-MOK-049` | automated-test | **Lethality** (oracle 4) | At least one death attributable to combat on every declared seed, counted from the stream |
 | `REQ-MOK-049` | automated-test | Both bounds on each seed (oracle 4) | No seed satisfies one bound by failing the other; the per-seed table is retained |
@@ -345,9 +345,18 @@ chosen to make this row pass would no longer be comparable with `REQ-MOK-014`'s 
   set, with nothing added.
 - No new package, no new target, no build script, and no change to any package, library or binary name.
 - **The engine's public interface growth is enumerated and matches the approved `SPEC-MOK-002` amendment item for item**
-  — one `Policy` variant, seven `Action` variants, three `EventType` variants and their three details, and the
-  observation's two new fields — and nothing else grows. `EventType::ALL` goes from twelve entries to fifteen, and the
-  observation's valid-proposal list keeps its type, because it does not grow.
+  — one `Policy` variant, seven `Action` variants, and three `EventType` variants with their three details — and nothing
+  else grows. `EventType::ALL` goes from twelve entries to fifteen, and the observation's valid-proposal list keeps its
+  type, because it does not grow.
+
+  **Re-checked 2026-08-20 and corrected: the observation's two new fields are not part of this count.** They were listed
+  here, and listing them was wrong for the reason `WO-MOK-012` records against its own `SPEC-MOK-002` provision 1:
+  `mokiterions-core/src/simulation.rs:500` declares `struct Observation {` with no `pub`, and `SPEC-MOK-002` rule 6 lists
+  `Observation` among the ten names that stay private. A field added to a private type is not public-surface growth, and
+  a check that counted it would be asserting against a specification amendment that does not claim it. The fields are
+  not thereby unverified: `REQ-MOK-045`'s rows above check that each is carried, that `fear` is read, that no foreign
+  attribute or aggregate rides along, and that the observation stays read-only. What this check loses is one item; what
+  it gains is that the count it asserts and the amendment it asserts against are the same list.
 - `EventType::ALL`'s length equals the number of variants, asserted against the variant set rather than against a
   literal, so that a variant added without a table row fails here.
 - No public item yields a mutable borrow of, or a reference into, authoritative state, in any build configuration
