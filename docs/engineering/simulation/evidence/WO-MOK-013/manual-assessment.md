@@ -142,6 +142,19 @@ and passing —
 `tests/render.rs::the_key_binding_hint_is_on_screen_in_the_first_frame_at_every_viewport` asserts it
 at every viewport with no input delivered and at tick zero — and it does not close this row.
 
+> **Later fact, added 2026-08-20 at the verification decision, beside the paragraph above and not in place
+> of it.** On the same day, in a separate instruction — *"i approve VREC-MOK-013, making REQ-MOK-048
+> verified."* — the assurance owner transitioned `VREC-MOK-013` to `verified` and **accepted this
+> requirement's four automated cases in place of this assessment**, taking a fourth course that is not among
+> the three options above. **Nothing in this section is retired by that.** This row is still
+> **OUTSTANDING**, the author is still **none**, `VER-MOK-013` is **not amended** and its *"a necessary
+> condition and not the property"* still governs, and `VER-MOK-013` is **not satisfied** on this count.
+> What changed is what taking the assessment would now do: it would **confirm or contradict** a requirement
+> already recorded as verified rather than verify one for the first time, and a contradiction would be a
+> finding against that decision rather than against any measurement here. The material is unchanged and the
+> route — find an admissible assessor — still stands, still unspent, still available once per assessor.
+> `assurance-decision.md` records what was accepted and what it does not retire.
+
 ## Summary
 
 | # | Assessment | Requirement | Status | Author | Blocking |
@@ -156,3 +169,13 @@ manual assessment — `VER-MOK-013` says so and gives its reason — so it turns
 cases. Any release record covering this chain inherits the one disclosure. None of this blocks the work
 order's implementation, which is what this pack evidences; it blocks the verification of one of three
 requirements, which is a separate commit-bound record and a separate accountable act.
+
+> **Later fact, added 2026-08-20.** That separate accountable act was taken, and it did **not** go the way
+> the paragraph above anticipated. `VREC-MOK-013` is `verified` and records `REQ-MOK-048` as **verified on
+> its four automated cases, accepted by the assurance owner in place of this assessment** — so the record
+> does not disclose the requirement as unverified, and the sentence above describes what the pack expected
+> rather than what happened. **The table's row 2 is unchanged and correct**: the assessment is outstanding,
+> its author is none, and the person it needs is still the blocker. The disclosure a release record inherits
+> is therefore not "one requirement unverified" but "one requirement verified on the necessary condition
+> rather than the property, with the contract's assessment still open" — which is the form
+> `assurance-decision.md` states and the form `VREC-MOK-013`'s *Scope of the transition taken* carries.
