@@ -1,0 +1,262 @@
+1. Rule 22's damage, over its whole domain
+   damage = 10 + (energy + health) / 10, both terms in 0..=100
+
+   damage   energy+health   (energy,health) pairs
+       10      0..=9            55
+       11     10..=19          155
+       12     20..=29          255
+       13     30..=39          355
+       14     40..=49          455
+       15     50..=59          555
+       16     60..=69          655
+       17     70..=79          755
+       18     80..=89          855
+       19     90..=99          955
+       20    100..=109         965
+       21    110..=119         865
+       22    120..=129         765
+       23    130..=139         665
+       24    140..=149         565
+       25    150..=159         465
+       26    160..=169         365
+       27    170..=179         265
+       28    180..=189         165
+       29    190..=199          65
+       30    200..=200           1
+                             10201  = 101 x 101
+
+2. Rule 22's energy cost, over its whole domain
+   energy before   paid   energy after
+   0                  0   0
+   1                  1   0
+   2                  2   0
+   3                  3   0
+   4                  4   0
+   5..=100            5   0..=95
+
+3. Rule 23's increase, over its whole domain
+   fear before   applied   fear after
+   0..=70             30   30..=100
+   71                 29   100
+   72                 28   100
+   73                 27   100
+   74                 26   100
+   75                 25   100
+   76                 24   100
+   77                 23   100
+   78                 22   100
+   79                 21   100
+   80                 20   100
+   81                 19   100
+   82                 18   100
+   83                 17   100
+   84                 16   100
+   85                 15   100
+   86                 14   100
+   87                 13   100
+   88                 12   100
+   89                 11   100
+   90                 10   100
+   91                  9   100
+   92                  8   100
+   93                  7   100
+   94                  6   100
+   95                  5   100
+   96                  4   100
+   97                  3   100
+   98                  2   100
+   99                  1   100
+   100                 0   100
+
+4. Rule 24's forfeit, over its whole domain
+   satiety before   forfeited   satiety after
+   0..=1                    0   0..=1
+   2..=3                    1   1..=2
+   4..=5                    2   2..=3
+   6..=7                    3   3..=4
+   8..=9                    4   4..=5
+   10..=11                  5   5..=6
+   12..=13                  6   6..=7
+   14..=15                  7   7..=8
+   16..=17                  8   8..=9
+   18..=19                  9   9..=10
+   20..=21                 10   10..=11
+   22..=23                 11   11..=12
+   24..=25                 12   12..=13
+   26..=27                 13   13..=14
+   28..=29                 14   14..=15
+   30..=31                 15   15..=16
+   32..=33                 16   16..=17
+   34..=35                 17   17..=18
+   36..=37                 18   18..=19
+   38..=39                 19   19..=20
+   40..=41                 20   20..=21
+   42..=43                 21   21..=22
+   44..=45                 22   22..=23
+   46..=47                 23   23..=24
+   48..=49                 24   24..=25
+   50..=51                 25   25..=26
+   52..=53                 26   26..=27
+   54..=55                 27   27..=28
+   56..=57                 28   28..=29
+   58..=59                 29   29..=30
+   60..=61                 30   30..=31
+   62..=63                 31   31..=32
+   64..=65                 32   32..=33
+   66..=67                 33   33..=34
+   68..=69                 34   34..=35
+   70..=71                 35   35..=36
+   72..=73                 36   36..=37
+   74..=75                 37   37..=38
+   76..=77                 38   38..=39
+   78..=79                 39   39..=40
+   80..=81                 40   40..=41
+   82..=83                 41   41..=42
+   84..=85                 42   42..=43
+   86..=87                 43   43..=44
+   88..=89                 44   44..=45
+   90..=91                 45   45..=46
+   92..=93                 46   46..=47
+   94..=95                 47   47..=48
+   96..=97                 48   48..=49
+   98..=99                 49   49..=50
+   100                     50   50
+
+5. Rule 24's second dimension: where a forfeit starts being destroyed
+   forfeit   from satiety   whole while recipient <=   largest discard
+         0              0                        100                 0
+         1              2                         99                 1
+         2              4                         98                 2
+         3              6                         97                 3
+         4              8                         96                 4
+         5             10                         95                 5
+         6             12                         94                 6
+         7             14                         93                 7
+         8             16                         92                 8
+         9             18                         91                 9
+        10             20                         90                10
+        11             22                         89                11
+        12             24                         88                12
+        13             26                         87                13
+        14             28                         86                14
+        15             30                         85                15
+        16             32                         84                16
+        17             34                         83                17
+        18             36                         82                18
+        19             38                         81                19
+        20             40                         80                20
+        21             42                         79                21
+        22             44                         78                22
+        23             46                         77                23
+        24             48                         76                24
+        25             50                         75                25
+        26             52                         74                26
+        27             54                         73                27
+        28             56                         72                28
+        29             58                         71                29
+        30             60                         70                30
+        31             62                         69                31
+        32             64                         68                32
+        33             66                         67                33
+        34             68                         66                34
+        35             70                         65                35
+        36             72                         64                36
+        37             74                         63                37
+        38             76                         62                38
+        39             78                         61                39
+        40             80                         60                40
+        41             82                         59                41
+        42             84                         58                42
+        43             86                         57                43
+        44             88                         56                44
+        45             90                         55                45
+        46             92                         54                46
+        47             94                         53                47
+        48             96                         52                48
+        49             98                         51                49
+        50            100                         50                50
+
+6. The retained constructed-state rows: paper value against the value the engine produced
+   rule 22, strike_damage_is_the_strikers_own_condition_and_the_cost_is_flat
+     energy  health   paper   engine   contradicted by
+          0       1      10       10   damage-base
+          0       9      10       10   damage-base damage-divisor
+          0      10      11       11   damage-base
+          5       5      11       11   damage-base
+         50      50      20       20   damage-base damage-divisor
+          0     100      20       20   damage-base damage-divisor
+        100       1      20       20   damage-base damage-divisor
+         99     100      29       29   damage-base damage-divisor
+        100     100      30       30   damage-base damage-divisor
+   rule 23, a_threat_moves_the_targets_fear_and_nothing_else
+     fear    applied  paper   engine   contradicted by
+          0       30      30       30   threat-constant
+         69       30      99       99   threat-constant
+         70       30     100      100   threat-constant saturation
+         85       15     100      100   saturation
+        100        0     100      100   saturation
+   rule 24, a_surrender_forfeits_half_its_own_satiety_and_discards_what_does_not_fit
+     satiety  recipient   paper t/d   engine t/d   contradicted by
+          80         30     40/0        40/0       forfeit-divisor
+          20         50     10/0        10/0       forfeit-divisor
+          81         30     40/0        40/0       forfeit-divisor
+         100         50     50/0        50/0       forfeit-divisor saturation
+         100         90     10/40       10/40      forfeit-divisor saturation
+         100        100      0/50        0/50      forfeit-divisor saturation
+           3         50      1/0         1/0       --
+           2         50      1/0         1/0       forfeit-divisor
+           1         50      0/0         0/0       --
+           0         50      0/0         0/0       --
+
+7. The released capture checked against tables 1 to 5: 30 streams
+   attack_resolved        312
+   surrender_resolved     190
+   threat_resolved       1240
+   checked               1742
+   in error                 0
+   failing checks           0
+
+8. Which table rows the runs reach
+   damage dealt, by value:
+      17 x2
+      18 x4
+      19 x6
+      20 x14
+      21 x4
+      22 x12
+      23 x34
+      24 x12
+      25 x40
+      26 x50
+      27 x14
+      28 x54
+      29 x64
+      30 x2
+   energy actually paid, by value:
+       5 x312
+   threat target fear before, distinct values: 1
+     saturating rows reached (fear before > 70): 1240
+   surrender subject satiety before, distinct values: 25
+     below 2, transferring nothing: 0
+   discarded, by value:
+       0 x10
+       5 x2
+       7 x2
+      10 x32
+      11 x4
+      15 x4
+      16 x2
+      20 x4
+      21 x16
+      22 x44
+      31 x2
+      35 x10
+      36 x4
+      37 x4
+      38 x10
+      39 x16
+      40 x12
+      41 x10
+      42 x2
+
+RESULT: PASS -- 24 of 24 retained rows and 1742 of 1742 released resolutions agree with the tables

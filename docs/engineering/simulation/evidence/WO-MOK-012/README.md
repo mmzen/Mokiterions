@@ -9,7 +9,7 @@
 | Candidate commits | **two, and the difference matters.** `7c4aef3967406c05d80da963695898b77f5329e9` — the 90-cell three-source matrix and the first test log. `59d61b915630fd55f04bcdbb346aa22cdbfdfff6` — the 30 `social` cells and the amended suite, after the `REQ-MOK-048` amendment. `post/COMMIT.txt` holds the first; `post/capture-state.txt` §5 relates the two and measures the ninety cells as **unchanged** at the second, which is why they were not retaken |
 | Branch | `feature/phase-3-definition` |
 | Date opened | 2026-08-20 |
-| Packet size | 132 files, 2,345,063 bytes |
+| Packet size | 135 files, 2,416,364 bytes |
 
 **This packet is incomplete, and one requirement it measures is deliberately unimplemented.** Both are
 stated here so that neither can be mistaken for anything else:
@@ -18,7 +18,7 @@ stated here so that neither can be mistaken for anything else:
   what keeps `WO-MOK-012` out of `implemented`, it is why `post/byte-identity.txt` reads
   `RESULT: MIXED` — the 60-cell divergence that oracle 1 asks to be characterized does not exist to be
   characterized — and it is recorded rather than worked around.
-- **Seven of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
+- **Six of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
   file marks every one. Nothing is held back any more: the direction of 2026-08-20 that held the
   decision-dependent items until the `REQ-MOK-048` amendment was measured has been discharged — the
   amendment landed, and `post/runs.md`, `post/branches.md` and `identifier.md` are those items. What
@@ -56,10 +56,11 @@ would forfeit the oracle rather than satisfy it.
 | 10 | `post/gates.txt` | the four gate commands with their exit codes, and the `allow`-attribute, manifest, target and test-independence enumerations of the same contract section |
 | 11 | `post/interface.txt` | the public surface enumerated at both commits, 186 entries, diffed against the amended rule 5's four growth rows — 15 declared, 15 measured — with rule 6's ten prohibited names checked and one wording defect in the spec recorded |
 | 12 | `post/observer.md` | rule 11's fifteen rows against the code item for item, the compiler as what makes the mapping total, the five tests that run, and **five reverted one-line mutations** — three that fail, one of them at compile time, and two that pass and so bound what nothing checks |
-| 13 | `baseline/capture-state.txt` | the baseline capture's provenance, on the same four columns — `RESULT: PASS` |
-| 14 | `baseline/pre-manifest.txt` | the 90-cell matrix by per-cell SHA-256, bytes, lines and exit code |
-| 15 | `baseline/cross-check.txt` | two free agreements with `WO-MOK-011`'s measurements — 90 of 90 cells, 212 of 212 test names — `RESULT: PASS` |
-| 16 | `baseline/census.txt` | the seven targeted verbs and both new `action_trace` fields at **zero occurrences in 110 MB**, which is this change's absence claim measured on the pre-change side |
+| 13 | `post/resolution-tables.md` | rules 22, 23 and 24 tabulated over their **whole domains** — 10,201 pairs collapsed onto 21 damage values, 101 fear values, 101 satiety values — with the paper column transcribed from the rules by a reader that never opens `simulation.rs`, the 24 retained test rows and 1,742 released resolutions as the engine's two columns, and **eleven controls**: six in the reader and five in the engine |
+| 14 | `baseline/capture-state.txt` | the baseline capture's provenance, on the same four columns — `RESULT: PASS` |
+| 15 | `baseline/pre-manifest.txt` | the 90-cell matrix by per-cell SHA-256, bytes, lines and exit code |
+| 16 | `baseline/cross-check.txt` | two free agreements with `WO-MOK-011`'s measurements — 90 of 90 cells, 212 of 212 test names — `RESULT: PASS` |
+| 17 | `baseline/census.txt` | the seven targeted verbs and both new `action_trace` fields at **zero occurrences in 110 MB**, which is this change's absence claim measured on the pre-change side |
 
 ---
 
@@ -123,6 +124,8 @@ holds it. Every path either names is relative to this directory, as `post/byte-i
 | `runs.md` | whole runs under `social`: trace parity, outcomes and deaths by cause, every verb proposed and applied, rejections by reason, encounters per seed |
 | `branches.md` | rule 26's six branches, the answer branch's three choices, strikes per encounter, and rules 23 and 24 at their boundaries |
 | `runs.txt` | the reader's own output over the thirty streams, 151 lines, retained whole. Every table in `runs.md` and `branches.md` is transcribed from it |
+| `resolution-tables.md` | rules 22, 23 and 24 over their whole domains, the retention clause's three columns kept apart, and eleven controls. Carries the two readings the passing run does not show: rule 22's magnitudes are contradicted **only** by the retained rows and its flat cost **only** by the released stream, and the damage values `12` through `16` have a paper column and no engine column at all |
+| `resolutions.txt` | the reader's own output, 262 lines, retained whole: the five exhaustive tables, the 24 retained rows with the controls that contradict each, the 1,742-line check and the coverage counts. Every table in `resolution-tables.md` is transcribed from it |
 | `test-run.txt` | the `cargo test --locked --workspace --no-fail-fast` log at `7c4aef3`: 249 names, 246 passing, **3 failing**, exit `101` |
 | `test-census.txt` | that log as 249 target-qualified names with each outcome, sorted |
 | `test-run-amended.txt` | the same invocation after the amendment: 250 names, **250 passing**, exit `0` |
@@ -153,6 +156,7 @@ table of which section reads which.
 | `identifier.py` | the 1,000-seed sweep and every table in `identifier.md`. `sweep` writes `identifier-sweep.json`; `tables` reads it back, so the tables are re-derivable in a second and the sweep is run once |
 | `regions.py` | the reader behind `post/world-rules-unchanged.txt`. Lifts named regions of `simulation.rs` out by anchor line rather than by line number, so one region table serves both commits, and compares the raw extracted bytes with no normalization. Carries a per-region expectation and **exits non-zero if any region fails it**, controls included |
 | `interface.py` | the reader behind `post/interface.txt`. **Discovers the public items rather than listing them**, so the enumeration cannot omit one, and drops bodies, match arms, comments and constant values so that two commits' surfaces can be diffed. Imports its brace counter from `regions.py` rather than copying it, so the two readers cannot disagree about where an item ends, and it stops rather than guessing on a shape it does not handle |
+| `resolutions.py` | the reader behind `post/resolution-tables.md`. Builds rules 22, 23 and 24's tables by **enumerating each function's whole domain**, so a boundary case is the first or last row of an interval rather than something to remember; transcribes the four functions from the rules and **never imports, parses or opens `simulation.rs`**, because an oracle that read the implementation would agree with it by construction. Checks every released resolution against the tables, exits non-zero on any disagreement, on a line shape it does not recognize, or on a capture holding no resolution at all, and carries `--control` for each of the six terms |
 | `runs.py` | the reader behind `post/runs.md` and `post/branches.md`. Replays the released stream to classify all six branches of rule 26 — branch 3 and branch 6 both render as `move:<direction>`, so they cannot be counted off the trace lines — and **exits non-zero if any of its thirteen checks fires**. It is the one script here that can fail |
 
 `runs.py` is a reader and not an instrument, and that is deliberate. The obvious way to count branches is
@@ -198,7 +202,7 @@ generalized, so that both manifests are produced by one reader.
 | the post-change 90-cell capture, with `baseline` compared byte for byte and the other 60 cells' divergence characterized | **held, and one clause is unwritable** — `post/post-manifest.txt` and `post/byte-identity.txt`. `baseline` is identical on 30 of 30, unprojected. The 60-cell divergence **does not exist**, because `REQ-MOK-051` is unimplemented under the approved deferral, so there is nothing to characterize and the requirement is recorded as outstanding in `escalation.md` |
 | the new 30-cell capture under the `social` source, with exit codes | **held** — `capture-social.sh` and `post/social-manifest.txt`, 30 cells at `59d61b9`, every cell exiting `0`. The provisional label is withdrawn: the amendment that moved all thirty has landed |
 | the captured exit code of every cell, both sides | **held** — a column of every manifest; every one of the 210 cells exits `0` |
-| the constructed-state resolution tables for damage, energy cost, threat increase and forfeit, with every boundary case | **owed** — `resolution-tables.md` |
+| the constructed-state resolution tables for damage, energy cost, threat increase and forfeit, with every boundary case | **held** — `post/resolution-tables.md`, from `analysis/resolutions.py` at exit `0`: 24 of 24 retained rows and 1,742 of 1,742 released resolutions agree with the tables. The clause's three columns have three sources and are kept apart: the paper column is transcribed from rules 22, 23 and 24 by a reader that never opens `simulation.rs`, the constructed-state column is the three retained tests' own literals, and the released column is every resolution line of the thirty `social` cells. "Every boundary case" is discharged by **enumeration rather than selection** — each function's domain is bounded in `0..=100`, so the tables are the whole domain collapsed onto its 21, 6, 32 and 51 distinct outputs, and a boundary is the first or last row of an interval. Eleven controls: the reader's six perturb one term each and their **split is the finding** — rule 22's base and divisor are contradicted by 9 and 6 retained rows and by **none** of the 1,742 released lines, while its flat `5` is contradicted by **no** retained row and by all 312 attack lines, so the two halves of the engine column cover disjoint parts of one rule. The engine's five each mutate one line and were reverted; two of them measure that `STRIKE_BASE_DAMAGE` is guarded asymmetrically by a `debug_assert!` that moves with it, and that the suite's true oracle coverage of it is 7 tests and not the 23 the upward mutation appears to show |
 | the shared stream's recorded state either side of every resolution kind | **owed** — `entropy.txt` |
 | per-seed tables of survivors, deaths by cause, encounters, each verb proposed and applied, and rejections by reason — on failing seeds too | **held** — `post/runs.md`, from `post/runs.txt`. The four extinction cells are recorded, not excluded |
 | the per-observation comparison of `social` against `individual` where no living Mokiterion is perceived and no attack is unanswered | **owed** — `delegation.md` |
@@ -218,7 +222,7 @@ generalized, so that both manifests are produced by one reader.
 | the eleven manual assessments, each with its accountable role and date | **owed, and not the implementation's to write** — `manual-assessment.md` will hold the prepared records and the measured evidence each assessment is taken against; the assessments themselves are the owner's acts |
 | the amendment-approval check of oracle 7, with the recorded state of the `VREC-MOK-005` gate | **owed** — `amendment-approvals.md` |
 
-**Seven items remain: six wholly unwritten and one held in part.** Nothing is held back any more.
+**Six items remain: five wholly unwritten and one held in part.** Nothing is held back any more.
 The direction of 2026-08-20 — that the decision-dependent items wait until the `REQ-MOK-048` amendment
 was measured, since the amendment moved all of them — has been discharged: the amendment landed, the
 thirty `social` cells were retaken at it, and the four items that were waiting on it are `post/runs.md`,
