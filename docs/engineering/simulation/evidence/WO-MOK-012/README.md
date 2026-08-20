@@ -9,7 +9,7 @@
 | Candidate commits | **two, and the difference matters.** `7c4aef3967406c05d80da963695898b77f5329e9` — the 90-cell three-source matrix and the first test log. `59d61b915630fd55f04bcdbb346aa22cdbfdfff6` — the 30 `social` cells and the amended suite, after the `REQ-MOK-048` amendment. `post/COMMIT.txt` holds the first; `post/capture-state.txt` §5 relates the two and measures the ninety cells as **unchanged** at the second, which is why they were not retaken |
 | Branch | `feature/phase-3-definition` |
 | Date opened | 2026-08-20 |
-| Packet size | 127 files, 2,245,184 bytes |
+| Packet size | 129 files, 2,272,704 bytes |
 
 **This packet is incomplete, and one requirement it measures is deliberately unimplemented.** Both are
 stated here so that neither can be mistaken for anything else:
@@ -18,7 +18,7 @@ stated here so that neither can be mistaken for anything else:
   what keeps `WO-MOK-012` out of `implemented`, it is why `post/byte-identity.txt` reads
   `RESULT: MIXED` — the 60-cell divergence that oracle 1 asks to be characterized does not exist to be
   characterized — and it is recorded rather than worked around.
-- **Ten of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
+- **Nine of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
   file marks every one. Nothing is held back any more: the direction of 2026-08-20 that held the
   decision-dependent items until the `REQ-MOK-048` amendment was measured has been discharged — the
   amendment landed, and `post/runs.md`, `post/branches.md` and `identifier.md` are those items. What
@@ -125,6 +125,7 @@ holds it. Every path either names is relative to this directory, as `post/byte-i
 | `test-census-amended.txt` | that log as 250 names, produced by the same reader |
 | `test-census-reconciliation.md` | row 248 discharged name by name across both candidates: three renames, one of them proved verbatim by digest, and §8 relating the two log pairs |
 | `reads.md` | the `REQ-MOK-050` enumeration and the `fear`-writer enumeration; verdict **met** |
+| `world-rules-unchanged.txt` | `REQ-MOK-051`'s permitted-and-forbidden constraint measured both ways: 21 named regions of `simulation.rs` compared line for line against the baseline commit, 3 controls, and §4 on why the two permitted regions are unchanged too |
 | `gates.txt` | the four gate commands recorded with their exit codes — `fmt`, `clippy` from a cleaned target directory, `tree`, and `cargo test`'s three logs by reference — with the `allow`-attribute, manifest, target and test-independence enumerations of the same contract section |
 
 `--no-fail-fast` is on both candidate invocations and was not on the baseline's, for a reason
@@ -144,6 +145,7 @@ table of which section reads which.
 | `census.py` | `WO-MOK-011`'s census script, a byte-identical copy (`sha256 7d355454…`), so the two work orders' censuses are read by the same reader |
 | `test-census.py` | turns one `cargo test` log into a target-qualified census. Validated against the side it did not write: run over `baseline/test-run.txt` it reproduces the hand-written `baseline/test-census.txt` line for line. **Records each outcome rather than filtering**, so a case that stopped passing cannot be lost by omission |
 | `identifier.py` | the 1,000-seed sweep and every table in `identifier.md`. `sweep` writes `identifier-sweep.json`; `tables` reads it back, so the tables are re-derivable in a second and the sweep is run once |
+| `regions.py` | the reader behind `post/world-rules-unchanged.txt`. Lifts named regions of `simulation.rs` out by anchor line rather than by line number, so one region table serves both commits, and compares the raw extracted bytes with no normalization. Carries a per-region expectation and **exits non-zero if any region fails it**, controls included |
 | `runs.py` | the reader behind `post/runs.md` and `post/branches.md`. Replays the released stream to classify all six branches of rule 26 — branch 3 and branch 6 both render as `move:<direction>`, so they cannot be counted off the trace lines — and **exits non-zero if any of its thirteen checks fires**. It is the one script here that can fail |
 
 `runs.py` is a reader and not an instrument, and that is deliberate. The obvious way to count branches is
@@ -198,7 +200,7 @@ generalized, so that both manifests are produced by one reader.
 | the per-identifier series, rank correlations and band evaluation | **held** — `identifier.md` and `identifier-sweep.json`, as oracle 5 was amended: the tripwire on the declared five, the turn-position bound at `1.082` against `1.25` on the declared 200, and both correlations recorded and bounding nothing |
 | the identifier-exchange comparison for the constructed encounter | **held** — `identifier.md` §6 |
 | rule 18's final summary per seed under each of the four sources, at both commits | **half held** — three sources at the baseline commit, in `baseline/summary.txt`. The `social` side and the composition ratio are owed — `composition.md` |
-| the line-for-line comparison showing rule 4, rule 9's eat effect, the food table and rules 14 to 16 unchanged | **owed** — `world-rules-unchanged.txt` |
+| the line-for-line comparison showing rule 4, rule 9's eat effect, the food table and rules 14 to 16 unchanged | **held** — `post/world-rules-unchanged.txt`, from `analysis/regions.py` at exit `0`: 21 named regions byte-identical across the two commits and 3 controls measured as changed, so the run distinguishes a region that moved intact from one the extractor failed to track. The thirteen forbidden regions are unchanged because the constraint holds; the eight permitted ones are unchanged because `REQ-MOK-051` is unimplemented, and §4 says which is which rather than reporting one clean result |
 | the enumeration of reads per rule, source and validation path | **held** — `post/reads.md` §§2, 4 and 6, with §5's seven readers of a set and the reason each is outside the obligation. Verdict: `REQ-MOK-050` met |
 | the enumeration of `fear`'s writers and of every path writing a second Mokiterion's state | **held** — `post/reads.md` §7: two `fear` writers, five paths writing a second Mokiterion, three functions |
 | the engine public-interface enumeration at both commits, against the approved `SPEC-MOK-002` amendment | **owed** — `interface.txt`, and it is checked against **four** growth rows, not three: that amendment gained a row on 2026-08-20 for the `suffered` field on the existing public `ActionTrace` payload, which its first three rows had omitted |
@@ -209,7 +211,7 @@ generalized, so that both manifests are produced by one reader.
 | the eleven manual assessments, each with its accountable role and date | **owed, and not the implementation's to write** — `manual-assessment.md` will hold the prepared records and the measured evidence each assessment is taken against; the assessments themselves are the owner's acts |
 | the amendment-approval check of oracle 7, with the recorded state of the `VREC-MOK-005` gate | **owed** — `amendment-approvals.md` |
 
-**Ten items remain: nine wholly unwritten and one held in part.** Nothing is held back any more.
+**Nine items remain: eight wholly unwritten and one held in part.** Nothing is held back any more.
 The direction of 2026-08-20 — that the decision-dependent items wait until the `REQ-MOK-048` amendment
 was measured, since the amendment moved all of them — has been discharged: the amendment landed, the
 thirty `social` cells were retaken at it, and the four items that were waiting on it are `post/runs.md`,

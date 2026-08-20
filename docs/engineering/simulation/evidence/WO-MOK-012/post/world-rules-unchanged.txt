@@ -1,0 +1,216 @@
+VER-MOK-012, REQ-MOK-051: the world rules the correction may not touch, compared line for line
+==============================================================================================
+
+Work order   WO-MOK-012 (Phase 3.1, encounters)
+Retains      "the line-for-line comparison showing rule 4, rule 9's eat effect, the food table and
+             rules 14 to 16 unchanged"
+Matrix row   REQ-MOK-051, static-analysis, "The correction is where it is permitted to be"
+Baseline     39662d13abd08e3410648d1c59ad38384f8ad2d2   (baseline/COMMIT.txt)
+Candidate    1b06d851cf4438c87acf1cb8aa11d749a7d7efce   (feature/phase-3-definition)
+Reader       analysis/regions.py, exit 0
+Date         2026-08-20
+
+REQ-MOK-051 fixes where its correction may be made and where it may not, and calls that constraint
+"the load-bearing part of this requirement, because it is what keeps INT-MOK-009's promise that
+baseline reproduces byte-identically." The permitted place is the waste condition of the two proposing
+sources -- rule 5's `satiety + restoration <= 100` and rule 19's tolerant `S + R - 100 <= T * R / 100`.
+The forbidden places are rule 16's uniform class selection, rule 15's regeneration amount, rule 9's
+eat effect and the food table's restoration values, each because it is world behaviour under every
+policy and would therefore move a `baseline` run.
+
+**This file measures both lists, and both are unchanged.** The forbidden four are unchanged because the
+constraint holds. The permitted two are unchanged because REQ-MOK-051 is unimplemented under the product
+owner's approved deferral of 2026-08-20, so the correction that was licensed to touch them has not been
+written. Section 4 says so plainly rather than presenting the second result as a virtue.
+
+
+1. Why a diff of the file cannot answer this
+---------------------------------------------
+
+mokiterions-core/src/simulation.rs goes from 4,180 lines to 6,865 between the two commits. Every region
+named above therefore moves, some by hundreds of lines:
+
+    rule 9's eat effect      1901-1944  ->  2322-2365
+    rule 15's regeneration   2036-2096  ->  2873-2933
+    the food table            337-381   ->   397-441
+    rule 4's source           716-732   ->   897-913
+
+    $ git diff --stat 39662d13..1b06d851 -- mokiterions-core/src/simulation.rs
+     mokiterions-core/src/simulation.rs | 2999 +++++++++++++++++++++++++++++++++--
+     1 file changed, 2842 insertions(+), 157 deletions(-)
+
+A whole-file diff reports that movement. It cannot state that a region is unchanged, because a region
+that moved intact and a region that moved and was edited look the same in a diff that has to realign
+2,842 inserted lines around them. So the comparison is done the other way round: each region is lifted
+out by name at both commits and the two extracts are compared as text.
+
+analysis/regions.py is that reader, retained here. A region is named by the exact source line that opens
+it -- never by a line number, so one region table serves both commits -- and is taken as the
+brace-balanced item from that line, or as the span between two such lines. **The comparison is on the
+raw extracted bytes**: no comment stripping, no whitespace folding, no reformatting. That is the
+strongest reading of "line for line", and the only one that needs no argument about what a
+normalization discarded.
+
+The reader carries an expectation per region and exits non-zero if any region fails it. Three regions
+this work order does change are in the table as controls, expected to differ. Without them a run
+reporting "same" everywhere would be worth nothing, because a broken extractor reports that too.
+
+    $ git show 39662d13:mokiterions-core/src/simulation.rs > base.rs
+    $ git show 1b06d851:mokiterions-core/src/simulation.rs > head.rs
+    $ python analysis/regions.py base.rs head.rs
+    exit 0
+
+
+2. The result
+--------------
+
+Twenty-four regions. Twenty-one required unchanged and unchanged; three controls required changed and
+changed. The digest is of the candidate extract; identical digests either side is what "same" reports.
+
+    region                                                  old lines    new lines   bytes     sha256  verdict
+    rule 4: BaselineDecisionSource                            716-716      897-897      31 e31a88e71d  same
+    rule 4: its DecisionSource impl                           718-732      899-913     470 2374799280  same
+    food table: FoodClass                                     337-341      397-401      54 b2fb76d4e0  same
+    food table: impl FoodClass                                343-371      403-431     692 d363348e7f  same
+    food table: Display for FoodClass                         373-381      433-441     311 aa24e9f259  same
+    food table: the Food record                               384-388      444-448      80 4402ab313b  same
+    rule 9 eat effect: the Action::Eat arm                  1901-1944    2322-2365    1911 352b9a12b6  same
+    rules 14 to 16: constants                                     7-8          7-8      76 188266ca97  same
+    rules 14 to 16: RegenerationSkipReason                    943-948    1252-1257     224 0a84ec29df  same
+    rules 14 to 16: Display for RegenerationSkipReason        950-957    1259-1266     283 e0267a1d2b  same
+    rules 14 to 16: the regeneration call site              1750-1754    2195-2199     189 28e5b89b39  same
+    rules 14 to 16: regenerate_food                         2036-2096    2873-2933    2179 67c70faec5  same
+    rules 14 to 16: food_counts                             2118-2128    2955-2965     314 85e7070fde  same
+    rule 5 waste condition: fits                              564-566      723-725     138 f263c8bc68  same
+    rule 5 waste condition: best_fitting_co_located_food      570-581      729-740     442 1d4d2a0850  same
+    rule 5 waste condition: best_fitting_distant_food         587-598      746-757     487 7896739ca0  same
+    rule 19 waste condition: WASTE_TOLERANCE_MAX              445-445      532-532      36 dc9a02e26b  same
+    rule 19 waste condition: derive_waste_tolerance           456-459      543-546     222 08109fc1c7  same
+    rule 19 waste condition: fits_within_tolerance            614-622      773-781     393 b5965047f8  same
+    rule 19 waste condition: best_tolerated_co_located_food   626-637      785-796     461 d6c42fa894  same
+    rule 19 waste condition: best_tolerated_distant_food      642-653      801-812     506 d1741c3cca  same
+    control: Action                                           462-467      557-569     328 79e6475dd7  differs
+    control: EventType                                        965-978    1280-1296     343 3cf41f7fd9  differs
+    control: IndividualDecisionSource impl                    798-846    1062-1072     392 cd3a4656c3  differs
+
+    21 regions required unchanged, 3 controls required changed
+    regions not meeting their expectation: 0
+
+The three controls are worth one line each, because what they show is that the extractor tracks a region
+through an edit rather than through a move. `Action` gains the seven targeted variants, 6 lines to 13.
+`EventType` gains three, 14 to 17. `IndividualDecisionSource`'s impl goes the other way, 49 lines to 11:
+its body moved out into the free functions rule 26's branches 2, 3 and 6 delegate to, which is the
+"unchanged and gains no parameter" arrangement VER-MOK-012's REQ-MOK-048 row asks for.
+
+
+3. The thirteen forbidden regions, and what each rule being unchanged buys
+--------------------------------------------------------------------------
+
+**The food table's restoration values.** `FoodClass`, its `restoration` and `calorie_rank` tables, its
+display and the `Food` record: four regions, 1,137 bytes, all identical.
+
+    fn restoration(self) -> (u8, u8) {
+        match self {
+            Self::Low => (15, 5),
+            Self::Medium => (30, 10),
+            Self::High => (50, 20),
+        }
+    }
+
+Those six numbers are what REQ-MOK-051's own rationale identifies as the mechanism it wants to correct:
+a high-class resource restores 50, so the non-waste condition makes it eatable only at satiety of at
+most 50, and what is passed over stays standing. Moving any of them would have been the direct fix and
+is exactly what the requirement forbids, because rule 9 applies them under every policy.
+
+**Rule 9's eat effect.** One region, the whole `Action::Eat` arm of `apply_action`, 44 lines and 1,911
+bytes, identical. It removes the resource, reads `restoration()`, saturates each attribute and clips at
+`ATTRIBUTE_MAX`, and emits `FoodConsumed` with both before-and-after pairs. Every byte of that is shared
+by all four sources.
+
+**Rule 15's regeneration amount and rule 16's class selection.** `regenerate_food` is one 61-line
+function holding both, 2,179 bytes, identical, together with `REGENERATION_INTERVAL = 10` and
+`REGENERATION_YIELD = 2`, `RegenerationSkipReason` and its display, and `food_counts`.
+
+Rule 16 is the region with the widest blast radius and the reason is not composition at all:
+"[it] would additionally risk moving the shared entropy stream's consumption, which diverges
+everything." One extra or missing draw in a regeneration opportunity shifts every later draw in the run,
+so a change there would diverge all 90 baseline cells and every capture any earlier work order retained.
+That it is byte-identical is what post/byte-identity.txt's 30 of 30 `baseline` cells rest on.
+
+**Rule 14's timing.** Rule 14 is a timing rule, so the call site is in the table and not only the
+function it calls:
+
+        if self.tick.is_multiple_of(REGENERATION_INTERVAL) {
+            for territory in Territory::ALL {
+                self.regenerate_food(output, territory)?;
+            }
+        }
+
+Five lines, 189 bytes, identical, and still positioned after the loop over scheduled agents. This is the
+one region where a change was a live risk rather than a hypothetical: the lines immediately above it did
+move, because rule 25's clearing of the suffered-attack record was inserted inside the agent loop. A
+clearing placed a few lines lower would have landed between the loop and this block and changed nothing
+here; a regeneration call moved a few lines higher would have run before the last agent's survival decay
+and changed every tick divisible by ten. The block did not move relative to the loop, and comparing the
+call site rather than only `regenerate_food` is what establishes that.
+
+**Rule 4, which the requirement does not name but its argument depends on.** REQ-MOK-051 permits the
+correction in the two waste conditions precisely because "rule 4's candidate list offers `eat` for each
+co-located resource with no waste condition at all, so no relaxation of a waste condition can reach it."
+That argument is only sound while rule 4 has no waste condition. `BaselineDecisionSource` and its
+`DecisionSource` impl are in the table for that reason, 501 bytes across two regions, identical.
+
+
+4. The two permitted waste conditions are also unchanged, and that is the deferral
+----------------------------------------------------------------------------------
+
+Rule 5's waste condition and rule 19's tolerant form are where REQ-MOK-051 licenses the correction.
+Eight regions cover them -- the two predicates, the four selectors that apply them, `WASTE_TOLERANCE_MAX`
+and `derive_waste_tolerance` -- and every one is byte-identical to the baseline.
+
+    fn fits(&self, food: &PerceivedFood) -> bool {
+        self.satiety.saturating_add(food.class.restoration().0) <= ATTRIBUTE_MAX
+    }
+
+    fn fits_within_tolerance(&self, food: &PerceivedFood) -> bool {
+        let restored = u16::from(food.class.restoration().0);
+        let resulting = u16::from(self.satiety) + restored;
+        let maximum = u16::from(ATTRIBUTE_MAX);
+        if resulting <= maximum {
+            return true;
+        }
+        resulting - maximum <= u16::from(self.waste_tolerance) * restored / 100
+    }
+
+Both are the pre-change predicates exactly. **REQ-MOK-051 is unimplemented**, under the product owner's
+approved deferral of 2026-08-20, recorded in escalation.md and in WO-MOK-012 at line 128. So this half
+of the table is not evidence that the correction was confined; it is evidence that the correction was
+not made. The requirement's ceiling fails in 14 of the 15 measured cells, escalation.md records that,
+and composition.md is where the measurement is owed.
+
+Stating it this way matters because the two halves of this file would otherwise read as one clean
+result. The matrix row this file serves has two clauses -- "the change touches rule 5's and rule 19's
+waste condition only" and "rule 4, rule 9's eat effect, the food table and rules 14 to 16 are
+unchanged" -- and only the second is discharged here. The first is vacuously true at this commit, and a
+vacuous truth recorded as a pass is the kind of thing this packet exists to prevent. When the deferred
+amendment lands, the same reader re-run over the new commit will show some of the eight permitted regions
+differing and all thirteen forbidden ones unchanged, and that run is the one that discharges the row.
+
+
+5. What this file does not establish
+-------------------------------------
+
+- Nothing here is a verification verdict. VER-MOK-012 is the contract, VREC-MOK-012 the record.
+- The region table is a list, and a list can omit. What bounds the omission is not this file but
+  post/byte-identity.txt: all 30 `baseline` cells are byte-identical across the two commits,
+  unprojected, so no world rule reachable under `baseline` moved -- whether or not it is named here.
+  This file localizes that result to named rules; it does not carry it.
+- Byte identity of a region is not behavioural identity of the rule. A caller could pass different
+  arguments to an unchanged function. For rule 9 and rules 14 to 16 the callers are in the same tick
+  loop and reached under every policy, which is what the `baseline` cells cover; for rule 4 the source
+  is selected by `--policy baseline` and nothing else calls it.
+- The 14-of-15 composition failure is stated here as context and is measured elsewhere. This file
+  measures source text, not runs.
+- `analysis/regions.py` counts braces outside string and character literals rather than parsing Rust.
+  It is sound for the regions in its table, all of which are ordinary items, and it stops rather than
+  guessing when an anchor matches no line or more than one.
