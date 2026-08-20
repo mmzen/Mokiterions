@@ -2,7 +2,7 @@
 id = "VER-MOK-013"
 type = "verification"
 title = "Legibility verification: a gauge that resolves, a control the operator can find, and a notice that names the remedy"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -13,13 +13,23 @@ verifies = ["REQ-MOK-047", "REQ-MOK-048", "REQ-MOK-049"]
 
 # Verification Contract: a gauge that resolves, a control the operator can find, and a notice that names the remedy
 
+## Amendment record
+
+The form is `VER-MOK-005`'s, which is `SPEC-MOK-003`'s: a change to an approved assurance artifact is recorded where a
+reader looks for it rather than inferred from a diff.
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-20 | **One figure in *Independence* corrected. No case, property, invariant, static check, scenario, manual assessment or retained-evidence item changes.** The section said "`VER-MOK-005` holds 40 automated cases over the roster, the layout and the header". **The figure was unsupported and the grouping corresponded to no countable set.** `VER-MOK-005` held **87** automated cases at `ff3a155` across its nine requirements, and the three its adverse assessments bear on carry **31** of them — 8 under `REQ-MOK-020`, 11 under `REQ-MOK-023` and 12 under `REQ-MOK-024`. "The header" is not a subject that contract groups cases by: the announcement this chain fixes is a `SPEC-MOK-003` rule 5 provision verified under `REQ-MOK-024`, and rule 8's provenance line, verified under `REQ-MOK-027`, is the footer. The corrected sentence states the measured figures with the requirement each belongs to. **The point the section makes is unchanged**, and it is the point that matters here: a suite of that size passed while three presentation defects stood. | Corrected by the implementation agent as an arithmetic error in its own text, in the same session as and immediately after the assurance owner's approval of this contract. **No obligation of this contract is created, removed or reworded, and no owner decision is restated**: the figure sits in prose describing another artifact and no case depends on it. The precedent for an agent correcting a statement of fact in an approved artifact without an owner act is `SPEC-MOK-003`'s 2026-08-18 row, which is marked as the agent's and leaves the substance to the owner. The owner is told of the correction in the same session rather than left to find it. |
+
 ## Independence
 
 **This contract has to answer for its own predecessor.** All three requirements it verifies exist because a person ran
-the observer and reported what an automated suite had passed. `VER-MOK-005` holds 40 automated cases over the roster,
-the layout and the header; every one passed at `ff3a155`; and at that commit the survival gauges were two cells wide,
-the `?` key appeared nowhere on screen, and the hidden-pane notice named the wrong remedy in unstyled text. The suite
-was not wrong. It asserted what it had been told to assert.
+the observer and reported what an automated suite had passed. `VER-MOK-005` held **87** automated cases at `ff3a155`,
+**31** of them over the three requirements those findings bear on — 8 on the roster's survival presentation
+(`REQ-MOK-020`), 11 on keyboard control (`REQ-MOK-023`) and 12 on layout degradation (`REQ-MOK-024`). Every one passed.
+And at that commit the survival gauges were two cells wide, the `?` key appeared nowhere on screen, and the hidden-pane
+notice named the wrong remedy in unstyled text. The suite was not wrong. It asserted what it had been told to assert.
 
 Two consequences are built into this contract rather than left as good intentions.
 
@@ -197,9 +207,18 @@ Retained under `evidence/WO-MOK-013/`:
   does not depend on the outcome** — its cases assert the log's row count and the roster's entry count against whatever
   the amended rule 5 fixes, not against four or six — but an assurance owner approving it should know that one input to
   the decision it descends from was restated.
-- **One row of the predecessor contract could not have caught the defect this chain exists to fix.** `VER-MOK-005`'s
-  `REQ-MOK-020` fill row specifies `round(value / 5)` of a twenty-cell bar, and the roster's fixed 47-column pane cannot
-  produce a bar wider than two. The row was unsatisfiable when it was approved, which `WO-MOK-013` measures and reports
-  to the assurance owner. **It is named here because it is the reason this contract asserts a property rather than a
-  width**, and because if that row is amended rather than withdrawn, the two contracts will both hold obligations on the
-  same fill arithmetic and they must not disagree.
+- **One row of the predecessor contract could not have caught the defect this chain exists to fix, and it has been
+  withdrawn.** `VER-MOK-005`'s `REQ-MOK-020` fill row specified `round(value / 5)` of a twenty-cell bar, and the roster's
+  fixed 47-column pane cannot produce a bar wider than two. **The assurance owner withdrew it on 2026-08-20** in favour
+  of this contract's ten-point cases, so the obligation it was reaching for now lives here and nowhere else. That is a
+  responsibility rather than a convenience: **if this contract's ten-point cases are weakened or dropped, no contract in
+  the repository holds an obligation on fill granularity.** The row's snapshot clause is not inherited from it — it is
+  held independently by `VER-MOK-005`'s *Presentation faithfulness* invariant and restated in the matrix above.
+- **Two further rows of that contract were stale, and both have been amended.** Its "Reserved space carries no value"
+  and "Collapse below 47 columns" rows described the three-gauge roster that rule 4 replaced on 2026-08-19 — the first
+  asserting the absence of the very `fear` gauge rule 4 now requires be present, so that conforming to rule 4 and
+  passing that row had become mutually exclusive. **The assurance owner amended both to the form rule 4 fixes on
+  2026-08-20**, in the same session as the approval of this contract, and `VER-MOK-005`'s amendment record carries the
+  measurement and the reasoning. Nothing in this contract depended on either row. They are named here because **the
+  pattern is the one this contract's *Independence* section is written against**: an amendment moved a rendering, the
+  cases asserting the old rendering were not swept, and three rows of one requirement went stale from that single cause.

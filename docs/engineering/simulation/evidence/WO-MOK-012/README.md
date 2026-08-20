@@ -7,8 +7,11 @@ blocked behind. This directory is its retained evidence.
 `mokiterions-tui/` is modified, and `completion-summary.md` records the diff check that establishes it. The three
 adverse observations the assessment pass produced are recorded here and **fixed by a later chain**, by decision 12.
 
-**That chain is now drafted.** `WO-MOK-013`, `VER-MOK-013` and `REQ-MOK-047` through `REQ-MOK-049` implement decisions 13
-to 15, all `draft` and awaiting approval. Three facts found while authoring it bear on this directory.
+**That chain is now drafted and largely approved.** `WO-MOK-013`, `VER-MOK-013` and `REQ-MOK-047` through `REQ-MOK-049`
+implement decisions 13 to 15. The three requirements and the verification contract were **approved on 2026-08-20**, and
+the six `SPEC-MOK-003` amendments the work order needs were **ratified the same day, each put as its own question**;
+`WO-MOK-013` itself remains `draft`, awaiting approval as a bounded scope. Three facts found while authoring it bear on
+this directory.
 
 **Decision 13 has been superseded in its route, by the product owner, on 2026-08-20.** As recorded in
 `closing-review.md`, decision 13 accepted showing ten of twelve roster entries at the reference viewport. Authoring the
@@ -24,11 +27,19 @@ viewport, so its interior is 45 and `bar_width` yields **2**; twenty cells would
 `WO-MOK-010` the same interior yielded 6, which `frames.txt` in `assessment-material/` shows. **The row was unsatisfiable
 on the day it was approved, and it is the one row of that contract whose subject is the gauge's resolution** — so the
 contract's own check on fill granularity could not have caught the two-cell gauge this chain exists to fix.
-`WO-MOK-013`'s *Required `VER-MOK-005` amendment* carries the measurement and the options; the disposition is the
-assurance owner's and is not taken.
+**The assurance owner withdrew that row on 2026-08-20**, in favour of `VER-MOK-013`'s obligation that a ten-point value
+step change the filled-cell count — a property that holds at every width rather than a figure pinned to one that never
+occurs. `VER-MOK-005`'s amendment record carries the act, the measurement, and why nothing became unverified. **A sweep
+prompted by that finding turned up two more stale rows** in the same requirement — the reserved fourth-slot row and the
+collapsed-form row, both describing the three-gauge roster rule 4 replaced on 2026-08-19. **The assurance owner amended
+both to the true form on 2026-08-20**, the fourth-slot row having asserted the absence of the very gauge rule 4 requires
+be present. All three rows have one cause: an amendment moved a rendering and this contract was not swept for the cases
+asserting the old one. `VER-MOK-005` now holds 86 automated cases against the 87 it held at `ff3a155`.
 
-**The identifier collision** is in `identifier-collision.md` and is unresolved. It was put to the owner in the same turn
-as the decision above and was not answered, so nothing here treats it as settled.
+**The identifier collision** is in `identifier-collision.md`, and the repository owner resolved it on 2026-08-20 by
+**deferring it to the merge**: neither side renumbers now, and whichever of the two branches reaches `master` second
+renumbers before it lands. That note carries the decision, the measured cost of renumbering this side, and the three
+obligations deferral leaves behind.
 
 ## The files
 

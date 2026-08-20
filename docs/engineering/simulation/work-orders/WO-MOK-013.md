@@ -29,17 +29,23 @@ completed change and the retained evidence. Verification and release require sep
 Commit-bound verification is classified `required` above. `VREC-MOK-013` is the record that binds it, and it does not
 exist yet.
 
-**The decision that blocked approval has been taken.** It was the choice between amending `REQ-MOK-020` and holding the
-log at six rows; the product owner chose the latter on 2026-08-20, recorded as decision 1 in *Decision record* below.
-Approval is no longer blocked by it. Nothing else about approval is settled: this work order is `draft`, no requirement
-it implements is approved, and `VER-MOK-013` is `draft`.
+**The decision that blocked approval has been taken, and confirmed on a corrected cost figure.** It was the choice
+between amending `REQ-MOK-020` and holding the log at six rows; the product owner chose the latter on 2026-08-20 and
+stood by it when the cost was restated, recorded as decisions 1 and 2 in *Decision record* below.
 
-**No amendment row in this chain is to be left `OUTSTANDING`.** Every specification amendment this work order needs is
-stated below, in advance, in the terms the accountable owner must decide it in. The eleven provisions ratified on
-2026-08-20 under `WO-MOK-012` were all drafted by implementation agents and left unratified for one or two days, and
-`WO-MOK-005` records of five of them that it "is not verifiable until they are given or the scope is changed to avoid
-needing them". That is the failure mode this section exists to prevent, and it is prevented by obtaining the
-ratifications at approval rather than writing them afterwards.
+**The three requirements this work order implements are `approved`** as of 2026-08-20, in three separate product-owner
+acts recorded as decisions 5, 6 and 7. `SPEC-MOK-003` declares coverage of all three (decision 8) and `VER-MOK-013` is
+`approved` (decision 9), so the validator holds at PASS with the three requirements active. **The six `SPEC-MOK-003`
+amendments are all ratified**, each put as its own question, as decisions 12 to 17. **What remains before implementation
+can begin is this work order's own approval as a bounded scope.** It is `draft`.
+
+**No amendment row in this chain is to be left `OUTSTANDING`, and none is.** Every specification amendment this work order
+needs is stated below, in advance, in the terms the accountable owner had to decide it in, and every one was decided
+before approval of the work order rather than after implementation. The eleven provisions ratified on 2026-08-20 under
+`WO-MOK-012` were all drafted by implementation agents and left unratified for one or two days, and `WO-MOK-005` records
+of five of them that it "is not verifiable until they are given or the scope is changed to avoid needing them". That is
+the failure mode this section exists to prevent, and obtaining the ratifications ahead of approval is how it is
+prevented.
 
 ## Objective
 
@@ -68,13 +74,16 @@ the observer where it is.
    to the key alone at the floor, satisfying `REQ-MOK-048`.
 3. **The announcement's content and styling**, so it states the axis, the threshold value and the overlay key with
    emphasis, satisfying `REQ-MOK-049`. The threshold is read from the layout rather than restated.
-4. **The `SPEC-MOK-003` amendments** the three require, enumerated below, each put to the technical owner at approval.
+4. **The `SPEC-MOK-003` amendments** the three require, enumerated below, each put to the technical owner as its own
+   question and all six ratified on 2026-08-20 as decisions 12 to 17. Applying the ratified text is in this scope.
 5. **The `SPEC-MOK-004` figure corrections** the added tests force — rule 11's test totals, arrival by arrival.
 6. **The log's row count**, held at `6` wherever the log is present, per decision 1. This is what keeps `REQ-MOK-020`
    intact and it is the whole of what that decision changes.
 7. **The `VER-MOK-005` matrix rows this chain makes false or stale** — three from decision 1 and one in its wording from
-   `REQ-MOK-047`. An assurance-owner act on an approved contract, enumerated below. A fifth row is a pre-existing defect
-   this chain surfaced; it is reported below and its disposition is not in this scope.
+   `REQ-MOK-047`, plus a sixth location outside the matrix. An assurance-owner act on an approved contract, enumerated
+   below and taken once the implementation lands rather than now. **Three further rows were pre-existing defects this
+   chain surfaced, and all three are already settled**: one withdrawn by decision 4 and two amended by decision 10, taken
+   before any implementation because each was false at `ff3a155` rather than made false by this work order.
 8. **The evidence `VER-MOK-013` contracts**, under `evidence/WO-MOK-013/`.
 9. **A roadmap entry** for this chain.
 
@@ -106,13 +115,19 @@ the observer where it is.
 ## Authorized decision envelope
 
 The implementation may decide the exact wording of the hint and the announcement within what the amended rule 5 admits;
-the abbreviation ladder between long and short forms; the concrete style used for emphasis, provided every distinction
-survives the `(symbol, modifier)` projection under rule 2.5; the internal names of constants and helpers; and the
-placement of new tests between the tiers `SPEC-MOK-004` rules 8 to 10 fix.
+the concrete short forms each rung of the abbreviation ladder uses, such as which character stands for a pane and what
+separates the parts; the concrete style used for emphasis, provided every distinction survives the `(symbol, modifier)`
+projection under rule 2.5; the internal names of constants and helpers; and the placement of new tests between the tiers
+`SPEC-MOK-004` rules 8 to 10 fix.
 
 It may not decide any threshold, any figure rule 5 derives, any band boundary, any key binding, or the ten-point
-granularity of `REQ-MOK-047`. `WO-MOK-005`'s envelope withholds rule 5's thresholds and rule 2's glyphs from the
-implementation and that withholding carries here.
+granularity of `REQ-MOK-047`. **Nor may it decide the abbreviation ladder's order of loss**, which decision 16 fixed in
+rule 5: the joining words go first, then the pane's full name, then the overlay key, and the axis and threshold value are
+never dropped while any part of the notice is drawn. **This is a narrowing of an earlier draft of this envelope**, which
+granted the implementation "the abbreviation ladder" outright; the ratified amendment 5 fixes its order, so the grant is
+reduced to the short forms within that order. The gauge order across the two bar lines is likewise decision 14's and not
+the implementation's. `WO-MOK-005`'s envelope withholds rule 5's thresholds and rule 2's glyphs from the implementation
+and that withholding carries here.
 
 ## Decision record
 
@@ -235,6 +250,228 @@ nothing in this chain claims it does.
 "a defect, not a spare", so the fit is safe today. A later phase raising the population above twelve breaks this
 arrangement at the reference viewport, and it breaks it by hiding entries rather than by failing to build.
 
+### Decision 2 — option B stands on the corrected cost figure — product owner, 2026-08-20
+
+**Decision 1 is confirmed and not re-opened.** The corrected cost — four visible events instead of eight, not six
+instead of ten — was put to the product owner explicitly as a ground for re-opening, together with a fact measured after
+decision 1 was taken:
+
+| Log rows at `160 × 48` | Roster interior | Entries of 3 lines |
+|---|---|---|
+| 4 | 38 | 12 |
+| 5 | 37 | 12 |
+| **6** | **36** | **12** |
+| 7 | 35 | 11 |
+| 8 | 34 | 11 |
+| 10 | 32 | 10 |
+
+**Six rows is the maximum log height at which twelve entries fit**, since the interior is `42 − log` rows and twelve
+entries need 36. Seven rows already drops an entry. **There is no intermediate compromise between option A and option B**,
+which was not established when decision 1 was taken and is what makes option B the only arrangement satisfying
+`REQ-MOK-047` and `REQ-MOK-020` together at a 47-column roster. The product owner was shown a third route as well —
+reopening the 89-column roster widening declined on 2026-08-19, which satisfies both requirements *and* keeps the ten-row
+log — and declined it. Its price is measured: the view pane falls to a 25-cell interior addressing 50 of 128 world
+columns, so the reference viewport would stop presenting the whole world, which `REQ-MOK-019` obliges.
+
+### Decision 3 — the `WO-MOK-012` collision is left to the merge — engineering owner, 2026-08-20
+
+**Neither side renumbers now.** Both work orders keep the identifier `WO-MOK-012` on their own branches, and the conflict
+is resolved by whichever of the two merges to `master` second. The measurement put to the owner, taken in this clone:
+
+| | |
+|---|---|
+| Occurrences of `WO-MOK-012` here | **98**, across **21** files |
+| Evidence directory to rename | `evidence/WO-MOK-012/`, **22** files |
+| Occurrences inside verbatim owner instructions | **8** — 7 in `assurance-decision.md`, 1 in `closing-review.md` |
+
+The last row is why renumbering this side is not free: *"i approve WO-MOK-012"* is a quoted instruction, and after a
+renumber it names a different work order, so those eight take an annotation rather than a rewrite.
+
+**What this decision obliges, so that deferral is not the same as forgetting.** The conflict is not removed and its cost
+is not reduced — it grows, because whichever branch merges second renumbers against a `master` that by then cites the
+identifier as well as against its own tree. The obligations are: the second merge renumbers before it lands; the
+renumbering side is whichever merges second, not whichever is easier at the time; and `evidence/WO-MOK-012/` is a
+directory rename, not a text substitution. `evidence/WO-MOK-012/identifier-collision.md` carries the full measurement and
+now carries this decision.
+
+### Decision 4 — `VER-MOK-005`'s unsatisfiable fill row is withdrawn — assurance owner, 2026-08-20
+
+The row read "Each bar's filled cell count equals `round(value / 5)` of its twenty cells, and the numeric value matches
+the snapshot." Twenty cells is a width a 47-column roster cannot produce, before or after `WO-MOK-010`. **It is withdrawn
+rather than corrected**, in favour of this chain's ten-point property, which holds at every width. `VER-MOK-005`'s
+amendment record carries the measurement, the reason, and why nothing becomes unverified: the row's snapshot clause is
+carried by that contract's own *Presentation faithfulness* invariant.
+
+**This amendment is applied now rather than at completion, and the distinction matters.** The row was false at `ff3a155`,
+so withdrawing it makes the contract truer immediately. The other four affected rows are false only *after* the
+implementation lands, so amending them now would make an approved contract describe a tree that does not exist. They wait
+for the work; this one did not.
+
+### Decisions 5, 6 and 7 — the three requirements are approved — product owner, 2026-08-20
+
+`REQ-MOK-047`, `REQ-MOK-048` and `REQ-MOK-049` are each transitioned from `draft` to `approved`. **Each was put as its
+own question against its own statement and each is its own act**; the three were answered in one turn and that is not one
+approval covering three. `REQ-MOK-049`'s approval was given on the corrected reading — that rule 5's Announcement
+obligation exists and the implementation conforms to it, and that the two real defects are the wrong remedy and the
+absence of emphasis, rather than a missing notice.
+
+**What this does and does not unblock.** The requirements this work order implements are now approved, so the chain is no
+longer waiting on product authority. It is still waiting on: approval of this work order, approval of `VER-MOK-013`, and
+the six `SPEC-MOK-003` ratifications enumerated below. None of those is given. **This paragraph states the position as it
+stood at these three approvals**; one of the three was given later in the same session, at decision 9.
+
+### Decision 8 — `SPEC-MOK-003` declares coverage of the three requirements — technical owner, 2026-08-20
+
+The three approvals took the validator from PASS to **FAIL with six errors**: `E007` and `E008` for each requirement — no
+active specification coverage, no active verification coverage. A requirement at `draft` needs neither; one at `approved`
+needs both, because `ACTIVE_COVERAGE_STATUSES` in `scripts/validate_engineering_artifacts.py` counts `approved` among the
+statuses that oblige coverage. **The condition was foreseeable before the approvals were put and was not put with them.**
+That is recorded here rather than omitted: the agent should have stated it in the same question, so that approving three
+requirements and the two consequential acts it forces were one decision instead of three.
+
+The technical owner's act is that `SPEC-MOK-003`'s `specifies` relation gains `REQ-MOK-047`, `REQ-MOK-048` and
+`REQ-MOK-049`. The alternative put was to hold the three requirements at `draft` until the six amendments below are
+ratified, which would have kept the tree passing at the price of leaving the product owner's approval unrecorded in the
+artifacts. The owner chose to declare coverage now.
+
+**What the declaration does not do.** It does not make rules 4 and 5 satisfy the three requirements. The text as it stands
+does not, and changing that is what this work order is for. `SPEC-MOK-003`'s amendment record carries the row and says so
+in terms: what it declares is accountability, not discharge.
+
+### Decision 9 — `VER-MOK-013` is approved — assurance owner, 2026-08-20
+
+`VER-MOK-013` is transitioned from `draft` to `approved`, which is what clears `E008` for all three requirements. It was
+approved as it stood, including its own statement that no case it holds can verify whether the trade decision 1 takes was
+the right one.
+
+**One correction was made to it afterwards, by the agent and not by the owner.** Its *Independence* section said
+`VER-MOK-005` "holds 40 automated cases over the roster, the layout and the header". The figure was the agent's and was
+unsupported. Measured: **87** automated cases at `ff3a155`, **31** of them under the three requirements the adverse
+assessments bear on — 8 under `REQ-MOK-020`, 11 under `REQ-MOK-023`, 12 under `REQ-MOK-024` — and "the header" is not a
+grouping that contract uses, the announcement being a rule 5 provision verified under `REQ-MOK-024`. The sentence now
+states the measured figures with their requirements, and `VER-MOK-013` carries an amendment record holding the
+correction. No case, property, invariant, check or scenario changed, and the section's point — that a suite of that size
+passed while three presentation defects stood — is unaffected.
+
+### Decision 10 — the two stale `VER-MOK-005` rows are amended to the true form — assurance owner, 2026-08-20
+
+Both `REQ-MOK-020` rows the sweep found are amended, rather than withdrawn or left standing with the defect recorded.
+*Reserved space carries no value* becomes an obligation that the fourth position present `fear` in the form of the other
+three — a label, a proportional bar and a numeric value — with a zero rendering as `0` and an empty bar rather than as an
+absence, and carrying no survival band. *Collapse below 47 columns* has its count corrected from three numeric values to
+four. **Withdrawal was declined because both properties are satisfiable and worth holding**, which is what distinguishes
+them from decision 4's row: that one specified a width the layout cannot produce at any viewport, and these two specify a
+roster that existed until 2026-08-19.
+
+**One gap is named rather than filled.** Rule 4 clause 7's provision that the collapsed one-line form takes no band has no
+case in `VER-MOK-005`, before this amendment or after it. This work order does not add one; the absence is stated in that
+contract's amendment record so that it is a recorded fact rather than coverage a reader infers from the row beside it.
+
+### Decision 11 — the six `SPEC-MOK-003` amendments are put one at a time — technical owner, 2026-08-20
+
+Each of the six amendments enumerated below is put as its own question, with its provisions enumerated, in this session —
+rather than as one ratification covering all six, or as a ratification folded into this work order's approval. **No
+amendment may be left OUTSTANDING**, which is the discipline this work order holds itself to and for which the three
+OUTSTANDING rows in `SPEC-MOK-003`'s own amendment record are the argument.
+
+**What remains open after decisions 8 to 11.** Approval of this work order itself, and the six ratifications. Product
+authority over the three requirements, assurance authority over both verification contracts, and the question of which
+specification is answerable for the three requirements are all settled.
+
+### Decisions 12 to 17 — the six required `SPEC-MOK-003` amendments — technical owner, 2026-08-20
+
+Each was put as its own question with its provisions enumerated, in the order the *Required `SPEC-MOK-003` amendments*
+section lists them, and each answer is its own act rather than one answer covering six. **A ratification here authorizes
+an amendment; it does not apply it.** The text of rules 4 and 5 changes when the implementation lands, and each amendment
+record row written into `SPEC-MOK-003` then cites the decision below that authorized it. None is left **OUTSTANDING**.
+
+**Decision 12 — amendment 1, rule 4's bar row: ratified as enumerated.** Two gauges on each of two lines, a three-line
+entry, the row overhead from `5 + 4 × 6 + 3 × 2 = 35` to `5 + 2 × 6 + 1 × 2 = 19`, `bar_width(interior)` from
+`min(20, (interior - 35) / 4)` to `min(20, (interior - 19) / 2)`, and the reference roster's bars from **2** cells to
+**13**, which `2 × (13 + 6) + 5 + 2 = 45` fills exactly with no slack. The 2026-08-19 reasoning that accepted the
+narrowing to two is retained in place. **The owner was told that the two-per-line arrangement was the agent's draft and
+not a prior decision of theirs, so this ratification is where it is decided**, and was shown that it is forced rather
+than chosen: four per line yields the two-cell bar `REQ-MOK-047` rejects, one per line yields a five-line entry needing
+60 of the 36 available interior rows and breaks `REQ-MOK-020`, and three-then-one puts two different bar widths in one
+entry, which makes the bars incomparable. The agent measured the alternatives, wrote the text, and decided none of the
+substance.
+
+**Decision 13 — amendment 2, rule 4 item 1 and the collapsed form: ratified as enumerated.** Item 1's arithmetic moves
+from `12 × 2 = 24` lines to `12 × 3 = 36` lines plus the pane border, and item 1 now **states that the reference viewport
+provides exactly 36 interior rows and no more**, making rule 4's twelve-entry claim visibly dependent on rule 5's six-row
+log. The collapsed one-line form below 47 columns is untouched, and `REQ-MOK-020`'s no-scroll obligation remains an
+obligation at the reference size with rule 5 stating what happens below it. **The owner was shown that the second
+provision is new text rather than a number change** — it adds a coupling between rules 4 and 5 that is written nowhere
+today — and was offered the alternative of updating the arithmetic alone. They chose to state the exactness, on the
+ground put to them: an exact fit not documented as exact is what a later log change breaks silently. The agent measured
+the fit, put the choice, and decided none of the substance.
+
+**Decision 14 — amendment 3, rule 4 clauses 5 and 7 on the three-line entry: ratified as enumerated, with the gauge order
+fixed.** All four gauges survive, two per bar line, each line taking the 5-column indent amendment 1's overhead of 19
+already accounts for. The three bands still apply to `health`, `satiety` and `energy` as whole gauges; `fear` still takes
+none, for the reason the 2026-08-19 reconciliation gives; clause 4's zero rendering is unchanged; clause 6's
+reversed-video selection composes with the bands across three lines instead of two; and rule 2.5 needs no amendment
+because the numeric value and the proportional fill still carry the level without colour. **The order across the two bar
+lines was open and is fixed here**: `health` and `satiety` on the first bar line, `energy` and `fear` on the second. The
+alternative put was pairing `satiety` with `energy`, the two attributes `SPEC-MOK-001` decays each tick; the owner chose
+to preserve the existing left-to-right order so that the evidence captures stay comparable. The agent found that "two per
+line" left the order unstated, put the choice, and decided none of the substance.
+
+**Decision 15 — amendment 4, the header's admitted content: ratified, with the hint admitted as a distinct affordance
+rather than as a sixth condition.** The *Observability* bullet's five admitted conditions stay a closed list, unchanged
+item for item, and the bullet gains a second clause admitting exactly one **permanent affordance**: the key that opens
+the key-binding overlay, present from the first frame, in every run state, with no operator action, at every viewport the
+observer draws at all including the floor `34 × 22`. It displaces nothing — rule 5's Announcement obligation and rule 8's
+provenance footer are both present in full alongside it, which `VER-MOK-013` holds a case for — and nothing else in
+*Observability* changes. **The owner was shown that this work order had drafted it as "a sixth admitted item"** and that
+writing it that way would classify a permanent affordance as an "observer condition", which is false in kind and empties
+the word of meaning. They chose the distinct clause. The agent found the misclassification, put the choice, and decided
+none of the substance.
+
+**`REQ-MOK-048` describes this amendment in its pre-ratification form and is not edited.** Its *Open decisions* section
+calls it "the amendment adding a sixth admitted item", which this decision supersedes. The requirement is left as it
+stands because that sentence carries no provision — its substance is that the amendment is a technical-owner act and not
+a product decision, which is unchanged and still true — and because it points at this work order as the place the
+amendment is stated, which is where the ratified form now lives. Editing an approved requirement to restate another
+artifact's amendment would be a change with no obligation behind it.
+
+**Decision 16 — amendment 5, rule 5's Announcement obligation: ratified, with the threshold surviving last.** For each
+excluded pane the notice states the pane, the **axis** that excludes it and the **threshold value** at which it returns,
+where today it states only the pane; the value is read from the layout's own thresholds rather than restated in the
+presentation layer, which `VER-MOK-013` enforces by refusing any case that fixes a literal `140`; the overlay key is still
+named; and the notice carries emphasis distinguishing it from the optional header segments on the same line while staying
+legible with all colour removed, so rule 2.5 is unchanged and the emphasis cannot be colour alone. The roster title's
+hidden-entry count and the view title's world range do not change.
+
+**The abbreviation ladder is fixed as an order of loss rather than as exact strings**: the joining words go first, then the
+pane's full name in favour of its initial, then the overlay key. **The axis and the threshold value are last and are never
+dropped while any part of the notice is drawn.** That last clause was the substantive choice, and it was put as one: at
+`34 × 22` all three panes are excluded and 34 columns cannot hold three notices carrying both remedies plus the hint, so
+one remedy has to go. The owner chose to keep the threshold, on the ground put to them — **decision 15 makes the keys
+redundant and the threshold irreplaceable**, since `?` is now permanently on screen and every overlay key is one keystroke
+behind it, while the threshold value appears nowhere else in the observer. The alternative, keeping the key and dropping
+the axis and value, was put and declined. The agent measured the header budget at the floor, put the choice, and decided
+none of the substance.
+
+**Decision 17 — amendment 6, rule 5's log row count: ratified as enumerated.** All six located edits stand: the pane
+table's log row becomes `6` unconditionally; the derived table's `160 × 48` row becomes log `6` with canvas `67 × 36` and
+an unchanged *Overview presents* column, `36 ≥ 32` satisfying the whole-world condition, and no other derived row moves;
+the non-monotone trade "Crossing `H = 48` at `W ≥ 140` grows the log from 6 rows to 10" is withdrawn; the vertical
+fidelity sentence loses its ten-row clause and becomes unconditional; the reference-viewport example becomes a six-row
+log, a `67 × 36` canvas and **4** records; and the amendment record row states that the ten-row log was **traded rather
+than found wrong**, retaining rule 5's own reason for admitting a log at all. The presence threshold `H ≥ 38` does not
+move, so no pane's presence changes at any viewport and monotonicity is not reached.
+
+**The cost was restated to the owner in the corrected unit before they answered** — the reference viewport shows **4**
+recent events where it showed **8** — so this ratification is taken on the figure decision 2 corrected and not on the one
+decision 1 was first put with. **On sub-item 3 the agent departed from this repository's usual practice and said so**:
+withdrawn reasoning is normally retained in place, and here it is not, because the list it sits in is a live enumeration
+of what the layout currently does and a withdrawn trade does not belong in it. Sub-item 6 is where that reasoning is
+retained. The agent located the six edits, measured each figure, and decided none of the substance.
+
+**All six amendments are ratified and none is OUTSTANDING.** What remains open on this chain is the approval of this work
+order itself.
+
 ## Constraints
 
 - **No engine change, and no perturbation.** The text stream, the event stream and the entropy state of a run must be
@@ -312,7 +549,7 @@ rule that a capture is re-run rather than corrected. What decision 1 does to `VR
 describe a superseded layout, which is a further instance of the staleness that record already discloses and is not a
 change to it.
 
-### Required `SPEC-MOK-003` amendments — technical owner, at approval
+### Required `SPEC-MOK-003` amendments — technical owner, all six ratified 2026-08-20
 
 1. **Rule 4, the bar row.** The mockup, the prose and the arithmetic move from four gauges on one line to two gauges on
    each of two lines, and the entry from two lines to three. `bar_width(interior) = min(20, (interior - 35) / 4)` becomes
@@ -321,17 +558,33 @@ change to it.
    retained in place rather than deleted, because it is what made two correct for a phase, and this amendment records
    that it was accepted as a narrowing and turned out to be a loss of the quantity.
 2. **Rule 4, item 1 and the collapsed form.** Item 1's "Twelve living entries in the two-line form require 24 lines"
-   becomes the three-line arithmetic. The collapsed one-line form below 47 columns is untouched — it has no bars, takes
-   no band, and its four numeric values carry the level directly.
+   becomes the three-line arithmetic, `12 × 3 = 36` lines plus the pane border. **Item 1 also states that the reference
+   viewport provides exactly 36 interior rows and no more**, which makes rule 4's twelve-entry claim visibly dependent on
+   rule 5's six-row log so that a seventh log row fails a stated provision rather than costing an entry silently. The
+   collapsed one-line form below 47 columns is untouched — it has no bars, takes no band, and its four numeric values
+   carry the level directly.
 3. **Rule 4, clause 5 and clause 7.** Carried onto the new row unchanged. The three bands still apply to health,
    satiety and energy as whole gauges, `fear` still takes none, clause 4's zero rendering is unchanged, and clause 6's
-   reversed-video selection still composes with the band across three lines instead of two.
+   reversed-video selection still composes with the band across three lines instead of two. **The order across the two bar
+   lines is fixed**: `health` and `satiety` on the first, `energy` and `fear` on the second, preserving the existing
+   left-to-right order so the evidence captures stay comparable. Each bar line takes the same 5-column indent that
+   amendment 1's overhead of 19 accounts for.
 4. **Rule 5, the header's admitted content.** The *Observability* section's closed list — draw failures, input failures,
-   export outcomes, panes available only as overlays, hidden roster entries — gains the key-binding hint as a sixth
-   admitted item, permanent rather than conditional, which is what makes it different in kind from the other five.
-5. **Rule 5, the Announcement obligation.** The notice states the axis and the threshold value at which each excluded
-   pane returns, in addition to the overlay key, and carries visual emphasis. The abbreviation ladder is fixed here, and
-   so is which of the two remedies survives last at the narrowest viewports.
+   export outcomes, panes available only as overlays, hidden roster entries — is unchanged item for item and stays closed.
+   The bullet **gains a second clause admitting exactly one permanent affordance**: the key opening the key-binding
+   overlay, present from the first frame, in every run state, with no operator action, at every viewport the observer
+   draws at all including the floor. It is admitted as different in kind from the five rather than as a sixth condition,
+   because the five appear when they occur and this appears always. It displaces neither the Announcement obligation nor
+   rule 8's footer.
+5. **Rule 5, the Announcement obligation.** For each excluded pane the notice states the pane, the **axis** that excludes
+   it and the **threshold value** at which it returns, in addition to the overlay key, and carries visual emphasis
+   distinguishing it from the optional header segments on the same line while remaining legible with all colour removed.
+   The value is read from the layout's own thresholds and not restated in the presentation layer. **The abbreviation
+   ladder is fixed as an order of loss rather than as exact strings**: the joining words go first, then the pane's full
+   name in favour of its initial, then the overlay key; the axis and the threshold value are last and are never dropped
+   while any part of the notice is drawn. **The remedy that survives last is therefore enlarging the terminal**, the
+   overlay keys being reachable through the permanently visible hint of amendment 4. The roster title's hidden-entry count
+   and the view title's world range do not change.
 6. **Rule 5, the log's row count.** Per decision 1: the log is `6` rows wherever it is present, and the growth to `10`
    at `W ≥ 140` and `H ≥ 48` is withdrawn. The presence threshold `H ≥ 38` does not change. Six consequential edits,
    each located and each within rule 5 except the last:
@@ -364,10 +617,15 @@ change to it.
       records that the reference viewport now shows less of that stream in exchange for an approved requirement it could
       not otherwise keep.
 
-Each is put to the technical owner as its own question, enumerating its provisions, at approval. A single answer
-covering all six would be an approval by implication of five.
+**All six were put to the technical owner as their own questions, with provisions enumerated, and all six are ratified**
+as decisions 12 to 17 of 2026-08-20, ahead of this work order's own approval rather than folded into it. A single answer
+covering all six would have been an approval by implication of five. Three of the six were settled on a provision the
+owner had not previously been shown — the two-per-line arrangement, the gauge order across the two bar lines, and which
+remedy survives last at the narrowest viewports — and each is recorded in its decision with the alternative that was put
+beside it. **A ratification authorizes an amendment and does not apply it**: the six edits are made to `SPEC-MOK-003` when
+the implementation lands, each amendment record row citing its decision.
 
-### Required `VER-MOK-005` amendment — assurance owner, at approval
+### Required `VER-MOK-005` amendment — assurance owner, when the implementation lands
 
 `VER-MOK-005` is an **approved** verification contract and this is the second amendment to it in two days, the first
 being the eleven provisions ratified under `WO-MOK-012`. **Five of its matrix rows are affected, by three different
@@ -376,24 +634,30 @@ causes**, and the causes are separated because they call for different acts. Eac
 
 **Three rows decision 1 makes false.**
 
-| Row | Requirement | Pass condition as written | What decision 1 makes of it |
+Rows are identified by their *Case/evidence* label rather than by line number. **Line numbers in that file have already
+shifted twice while this work order was being drafted** — once when its amendment record gained a row and once when
+decision 4 removed a matrix row — so a line anchor here would be wrong by the time it is read. The labels are unique
+within the matrix.
+
+| Case/evidence label | Requirement | Pass condition as written | What decision 1 makes of it |
 |---|---|---|---|
-| Line 79 | `REQ-MOK-019` | "At `160 × 48` the canvas interior is 67 × 32 cells; every living Mokiterion and every standing resource is represented; no entity is omitted" | The figure becomes `67 × 36`. The rest of the row is unaffected: the whole-world claim holds a fortiori on a taller canvas |
-| Line 130 | `REQ-MOK-024` | "The log occupies 10 rows when `W ≥ 140` and `H ≥ 48`, and 6 rows wherever else it is present" | The condition loses its ten-row clause and becomes 6 rows wherever the log is present. The case does not disappear — a constant is still a pass condition, and the presence threshold `H ≥ 38` it composes with does not move |
-| Line 132 | `REQ-MOK-024` | "Interiors are 67 × 32, 67 × 32, 67 × 28, 47 × 32, 47 × 31, 71 × 36, 71 × 24, 51 × 24, and 32 × 16 respectively" | The **first** figure becomes `67 × 36`. The other eight are unchanged, and each was checked against the derived table rather than assumed |
+| "Whole world at the reference viewport" | `REQ-MOK-019` | "At `160 × 48` the canvas interior is 67 × 32 cells; every living Mokiterion and every standing resource is represented; no entity is omitted" | The figure becomes `67 × 36`. The rest of the row is unaffected: the whole-world claim holds a fortiori on a taller canvas |
+| "Log height at every declared viewport" | `REQ-MOK-024` | "The log occupies 10 rows when `W ≥ 140` and `H ≥ 48`, and 6 rows wherever else it is present" | The condition loses its ten-row clause and becomes 6 rows wherever the log is present. The case does not disappear — a constant is still a pass condition, and the presence threshold `H ≥ 38` it composes with does not move |
+| "Canvas interior at every declared viewport" | `REQ-MOK-024` | "Interiors are 67 × 32, 67 × 32, 67 × 28, 47 × 32, 47 × 31, 71 × 36, 71 × 24, 51 × 24, and 32 × 16 respectively" | The **first** figure becomes `67 × 36`. The other eight are unchanged, and each was checked against the derived table rather than assumed |
 
 **One row `REQ-MOK-047` makes stale in its wording only.**
 
-Line 90, `REQ-MOK-020`: "At `160 × 48` all twelve two-line entries are present in the roster pane; none is hidden." **The
+"Twelve entries without scrolling at the reference viewport", `REQ-MOK-020`: "At `160 × 48` all twelve two-line entries
+are present in the roster pane; none is hidden." **The
 pass condition holds and is the one decision 1 was taken to preserve.** Only the words *two-line* are stale, since the
 entry becomes three lines under amendment 2. The count, the viewport and the none-hidden obligation are untouched, and
 `VER-MOK-013` adds a case asserting the same property so it is checked by both contracts.
 
 **One row that is a pre-existing defect, surfaced by this chain and not caused by it.**
 
-Line 92, `REQ-MOK-020`: "Each bar's filled cell count equals `round(value / 5)` of its twenty cells, and the numeric
-value matches the snapshot." **This pass condition has never been satisfiable at any viewport, and it is not this work
-order that broke it.** Measured at `ff3a155`:
+"Bars and numerics agree", `REQ-MOK-020`: "Each bar's filled cell count equals `round(value / 5)` of its twenty cells,
+and the numeric value matches the snapshot." **This pass condition has never been satisfiable at any viewport, and it is
+not this work order that broke it.** Measured at `ff3a155`:
 
 - The roster pane is `47` columns at every viewport presenting it, so its interior is `45`. `bar_width(interior) =
   min(20, (interior - 35) / 4)` gives **2**. Twenty cells would need a `115`-column interior, which rule 5's fixed
@@ -408,11 +672,48 @@ written against a bar width the layout cannot produce**, so the contract's own c
 caught a two-cell gauge. `REQ-MOK-047` replaces the obligation with a property — a ten-point step moves the fill — that
 holds at every width rather than at one that does not occur.
 
-**Its disposition is the assurance owner's and is not decided here.** The options are to amend the row to the
-implementation's arithmetic at the width the layout actually produces, or to withdraw it in favour of `VER-MOK-013`'s
-ten-point cases, which cover the same ground without naming a width. `VREC-MOK-005` is `ready` rather than `verified`, so
-no verified record asserts this row passed; that is a mitigation and not a reason to leave it. **This is a finding to
-report, and it is reported rather than repaired quietly.**
+**Disposed by decision 4: the row is withdrawn, and the amendment is already applied.** The assurance owner chose
+withdrawal over correction on 2026-08-20, and `VER-MOK-005`'s amendment record carries it. Nothing becomes unverified —
+the row's snapshot clause is held independently by that contract's *Presentation faithfulness* invariant.
+
+**How the row survived is recorded, because it is the more useful half of the finding.**
+`evidence/WO-MOK-005/requirement-to-test-mapping.md` maps it to `the_bar_row_reproduces_the_specified_form`, which
+asserts an exact rendered line for health 100, satiety 81 and energy 72. **A test asserting one example never exercises
+the rule the contract states**, so the contract and its test agreed on a rendering while disagreeing on the arithmetic,
+and nothing failed. That is the mechanism this chain's contract is written against: `VER-MOK-013` asserts properties over
+ranges, not renderings at named values.
+
+**Two further stale rows, found by sweeping rather than one at a time. Both amended by decision 10.**
+
+Sweeping `VER-MOK-005`'s roster rows against the implementation — after finding line 92 by inspection — turned up two
+more, both from the same cause and neither caused by this chain:
+
+| Case/evidence label | Pass condition as written | Why it is false at `ff3a155` |
+|---|---|---|
+| "Reserved space carries no value" | "The reserved fourth bar position contains no label, no dash and no zero" | Rule 4 clause 5 as amended 2026-08-19 **fills** that slot with a computed `fear` gauge. `render.rs:523` states it; the mapped test was updated and the row was not |
+| "Collapse below 47 columns" | "Below 47 columns each entry is one line with the **three** numeric values and no bars" | Clause 7 as amended 2026-08-19 corrected the collapsed form's count to **four**. `render.rs:515` formats `health, satiety, energy, fear` |
+
+**One cause: the 2026-08-19 rule 4 amendment moved the roster from three gauges to four and `VER-MOK-005` was not
+swept for consequences.** Line 92 was a third instance. The 2026-08-20 amendment to that contract caught the *manual
+assessment* that referenced the reserved slot — its record says "the slot is no longer reserved, because rule 4 as
+amended on 2026-08-19 presents a computed `fear` there" — and did not catch the *automated row* asserting the same
+withdrawn property two sections away. Fixing an assessment and leaving its automated counterpart is the failure this
+entry exists to make visible.
+
+**Their disposition was put separately and is decision 10.** They were not folded into the amendment above, because
+decision 4 was taken on line 92 and an owner decision does not extend by analogy to rows the owner was not shown. Shown
+both, the assurance owner **amended them to the form rule 4 fixes** rather than withdrawing them: unlike line 92 they
+specify properties an implementation can satisfy, and the "Reserved space carries no value" row had reached the point
+where conforming to rule 4 and passing it were mutually exclusive. Neither amendment waits for the implementation — both
+describe the roster as it already is at `ff3a155`, which is what separates them from the five locations above that decision
+1 makes false only once the log narrows.
+
+### A sixth `VER-MOK-005` location, outside the matrix
+
+The *Invariants* section's **canvas-area monotonicity** bullet names "the taller log at `H = 48`" among the declared
+trades of canvas area for a pane. Decision 1 withdraws that trade, so the clause becomes false when the implementation
+lands and is amended with the other four rather than now. It is listed because a sweep of the matrix alone would have
+missed it — the figure decision 1 moves appears in prose as well as in a table.
 
 **Two rows that look affected and are not**, stated so they are not amended without cause. The `REQ-MOK-024`
 **monotonicity** row is untouched, because no pane's presence changes at any viewport. The `REQ-MOK-024` **whole-world
@@ -468,18 +769,27 @@ Stop and report rather than deciding:
    `REQ-MOK-020` turned out to be. The instruction is to measure the collision, state it with its arithmetic, and stop —
    not to pick the reading that lets the work proceed. **This condition has fired once already, before approval**: the
    `VER-MOK-005` line 92 defect above was measured, stated with its arithmetic and left to the assurance owner rather
-   than corrected in passing. It is the pattern the condition asks for, and it is recorded here as one.
+   than corrected in passing. It is the pattern the condition asks for, and it is recorded here as one. **The owner
+   answered it** — decision 4 withdrew that row and decision 10 amended the two the sweep it prompted found — which is
+   what the condition is for: the stop produced a decision, not a delay.
 3. **Any figure in `SPEC-MOK-004` rule 6 moving.** The public interface is not expected to change. If it does, the
    change has left its scope.
 4. **Any movement in the text stream, the event stream or the entropy state.** Non-perturbation is the property the
    whole observer rests on.
 5. **A monotonicity violation at any viewport**, which is how the `160 × 40` missing roster reached the owner as a
    blocking defect on 2026-08-19.
-6. **Any viewport above the floor that cannot carry both the announcement and the hint** in the form the amended rule 5
-   fixes. This is a specification question and the amendment must answer it rather than the implementation choosing.
+6. **Any viewport the observer draws at all that cannot carry the announcement and the hint even at the last rung of the
+   ladder** — that is, with the joining words, the pane names and the overlay keys already shed, leaving each excluded
+   pane's axis and threshold value plus the hint. Decision 16 answered the specification question this condition was
+   originally written for, by fixing the order of loss; what remains is arithmetic. If the shortest admissible form does
+   not fit at some viewport, rule 5 is short a rung and the amendment is incomplete, which is the technical owner's to
+   settle and not the implementation's. The floor `34 × 22` with all three panes excluded is the binding case.
 7. **A test whose assertion cannot survive**, as opposed to a test whose name or expected arithmetic changes.
-8. **The `WO-MOK-012` identifier collision**, recorded in `evidence/WO-MOK-012/identifier-collision.md`, if it is
-   resolved in a way that renumbers artifacts this work order cites.
+8. **The `WO-MOK-012` identifier collision**, recorded in `evidence/WO-MOK-012/identifier-collision.md`. Decision 3
+   defers it to the merge, so it does not block this work order and **this condition does not fire during
+   implementation**. It fires at the merge: if this branch is the second of the two to reach `master`, renumbering
+   happens before the merge lands and every citation in this work order and its evidence moves with it. Reaching the
+   merge without having renumbered is the escalation.
 
 ## Completion report format
 

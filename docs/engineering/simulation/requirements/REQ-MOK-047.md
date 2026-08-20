@@ -2,7 +2,7 @@
 id = "REQ-MOK-047"
 type = "requirement"
 title = "Render a survival gauge at a width that resolves the value it presents"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

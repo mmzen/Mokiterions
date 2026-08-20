@@ -72,9 +72,41 @@ decisions taken the same day; renumbering the other touches a branch belonging t
 was told to stay out of. Both are the owner's to direct. The three sibling clones in the parent directory were not
 read, not modified, and not fetched into.
 
+## The resolution — decided 2026-08-20 by the repository owner acting as engineering owner
+
+**Neither side renumbers now. The conflict is resolved by whichever of the two branches merges to `master` second.**
+
+The owner was shown three routes with this clone's renumbering cost measured: renumber here, direct the other agent to
+renumber theirs, or defer to the merge. They chose deferral.
+
+| The measured cost of renumbering this side | |
+|---|---|
+| Occurrences of `WO-MOK-012` | **98**, across **21** files |
+| Directory to rename | `evidence/WO-MOK-012/`, **22** files |
+| Occurrences inside verbatim owner instructions | **8** — 7 in `assurance-decision.md`, 1 in `closing-review.md` |
+
+That last row is the one that made this more than a substitution. *"i approve WO-MOK-012"* is a quoted instruction; after
+a renumber it names a different work order, so those eight would take an annotation rather than a rewrite.
+
+**What deferral obliges, so that it is not mistaken for closure.** The conflict is not removed and its cost is not
+reduced — it grows, because whichever branch merges second renumbers against a `master` that by then cites the identifier
+too, in addition to its own tree. Three obligations follow:
+
+1. **The second branch to reach `master` renumbers before it lands.** Not whichever is easier at the time; whichever is
+   second.
+2. **`evidence/WO-MOK-012/` is a directory rename**, not a text substitution, and the eight quoted instructions take
+   annotations that preserve what the owner actually wrote.
+3. **The eight quoted instructions are the reason this side is the more expensive one to move.** If this branch merges
+   first, the cost falls on a `draft` nobody approved, which is the cheaper outcome — and that is a consequence of merge
+   order, not a plan.
+
+`WO-MOK-013` stop-and-escalate condition 8 carries this: the condition does not fire during implementation and does fire
+at the merge.
+
 ## What this note does not resolve
 
-- **Which artifact renumbers.** Undecided. It is the owner's call, and it is a call about two branches rather than one.
+- **Which artifact renumbers**, in the sense of naming one today. Decision 3 names a *rule* — the second to merge — and
+  not a side. Which side that turns out to be is not yet determined, because neither branch has a merge date.
 - **Whether `REQ-MOK-042`–`REQ-MOK-046`, `VER-MOK-012`, `SPEC-MOK-006`, `ADR-MOK-005`, `INT-MOK-009` and `CAP-MOK-009`
   stand.** Nothing here contests them. They collide with nothing and this chain avoided them.
 - **The Phase 4a packet's substance.** Not reviewed. It was read only far enough to establish that its `WO-MOK-012` is a

@@ -2,7 +2,7 @@
 id = "REQ-MOK-049"
 type = "requirement"
 title = "State the enlargement that restores an excluded pane, not only the key that borrows it"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

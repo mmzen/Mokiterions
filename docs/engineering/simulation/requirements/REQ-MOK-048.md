@@ -2,7 +2,7 @@
 id = "REQ-MOK-048"
 type = "requirement"
 title = "Advertise the route to the control documentation on screen"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
