@@ -1,0 +1,96 @@
+# WO-MOK-013, VER-MOK-013 oracle 3: replay output is unchanged by this work order
+#
+# What had to be shown, and why it is the load-bearing measurement
+# ---------------------------------------------------------------------------------------------
+# This work order replaces a prohibition with a comparison. Nothing it touches is compiled: the
+# amended files are governed artifacts, two workflow files, a Python program, its tests and five
+# comments. If that is true then a replay of the engine produces the same bytes it produced
+# before, and if it is not true then this is the measurement that says so. The engine's declared
+# set is empty and its resolved graph is one crate on all three targets, so there is no route by
+# which a dependency change could reach a replay either; the capture is what turns that argument
+# into a fact.
+#
+# REQ-MOK-009 rests on byte-identical replay, and VER-MOK-002 declares the five seeds.
+#
+# Toolchain: cargo 1.97.1, the version rust-toolchain.toml pins, which is also the version the
+# WO-MOK-011 evidence was produced with. A different compiler would make a mismatch here
+# ambiguous; the same one makes it attributable.
+#
+# Commands
+# ---------------------------------------------------------------------------------------------
+#   cargo build --release --locked --offline -p Mokiterions
+#   bash docs/engineering/simulation/evidence/WO-MOK-011/capture.sh "$dir/A"
+#   bash docs/engineering/simulation/evidence/WO-MOK-011/capture.sh "$dir/B"
+#
+# The capture script is WO-MOK-011's, retained and unmodified. This work order deliberately did
+# not write its own: the baseline being compared against is that script's output, so a script
+# written today would compare a capture to itself through a new instrument. The matrix it walks
+# is 5 seeds x 3 policies x 3 densities x 2 trace modes at 1,000 ticks = 90 cells, with the exit
+# code recorded beside each stream because VER-MOK-011 compares those too.
+#
+# Each cell was then hashed as the raw stdout stream, with sha256sum, and paired with its exit
+# code, giving one line per cell sorted by cell name. Note that `bash` tooling was used
+# throughout rather than Python: on this host /tmp resolves under AppData\Local\Temp for the
+# shell and as C:\tmp for a native Python process, so a mixed pipeline would have written and
+# read two different directories.
+#
+# The retained baseline was reduced to the same shape for comparison:
+#
+#   awk 'NF>=6 && $1 !~ /^#/ {print $1, $2, $6}' \
+#       docs/engineering/simulation/evidence/WO-MOK-011/post/post-manifest.txt | sort
+#
+# Column 2 is sha256(raw) and column 6 is the exit code. The projected hash, byte count and line
+# count that manifest also carries are not compared here: the raw hash subsumes them, and a raw
+# hash that matches while a byte count does not is not a state this comparison can reach.
+#
+# Results
+# ---------------------------------------------------------------------------------------------
+# cells captured, run A: 90
+# cells captured, run B: 90
+#
+#   run A == run B                        all 90 cells, raw hash and exit code
+#   run A == WO-MOK-011 retained post      all 90 cells, raw hash and exit code
+#
+# The first line is determinism within this checkout: the same binary run twice produces the same
+# bytes, which is SPEC-MOK-001's requirement and the precondition for the second line meaning
+# anything. The second is the one this work order owed: the candidate tree replays byte-identically
+# to the tree WO-MOK-011 left behind.
+#
+# VER-MOK-013 names four cells specifically, seed 123 with trace off, and they are quoted here so
+# a reader does not have to take the aggregate on trust:
+#
+#   seed123-baseline-d0.75-traceoff   fcd03d6f2ae68bb67eed68721e35f91e1ed641901b2732a70c2e81026ae1cdc2  exit 0
+#   seed123-baseline-d1.50-traceoff   44a448a16b782f6166374974cdcc13fc1ceeca7496243c3267fb20767b0324a3  exit 0
+#   seed123-reference-d0.75-traceoff  cebe44c44460c0e20d6ab1fde695dfd1e2bd6f96df72504f57f5f8eace09dbbf  exit 0
+#   seed123-reference-d1.50-traceoff  9621f5f8f8f127f39d2239aed5d3ed04c2ea768a15e41caea305506dbdb00548  exit 0
+#
+# All 90 lines are in WO-MOK-013-determinism-manifest.txt. The comparison was made over all 90,
+# not over these four: the four are what the verification contract declared, and the wider
+# comparison is retained because it was free once the capture had run and because a change that
+# moved one cell while leaving these four alone would otherwise have passed.
+#
+# Which baseline, and why not the one the contract first named
+# ---------------------------------------------------------------------------------------------
+# VER-MOK-013 was drafted naming VREC-MOK-002's replay figures as the baseline. It is not the
+# baseline used, and the contract records the substitution and this reason:
+#
+#   VREC-MOK-002's hashes were taken on 2026-08-17 at commit
+#   68163ac452619e2f8d5a05ed3a73d42b920ba5f6. Master has moved since: WO-MOK-010 added the
+#   `fear` trait and WO-MOK-011 added the `name:` field to the text record. Both change the
+#   bytes of every replay by design and both were verified as doing so. Comparing this
+#   candidate against those hashes would report a mismatch on all 90 cells and the mismatch
+#   would be those two approved changes, not this one -- an oracle that fails for a reason the
+#   tree is entitled to.
+#
+# The baseline used instead is WO-MOK-011's retained post-change capture,
+# evidence/WO-MOK-011/post/post-manifest.txt, which is the most recent capture of master's
+# behavior and describes the tree this branch was cut from. It is retained in the repository, so
+# the comparison above is reproducible by anyone with this checkout and no network.
+#
+# What this does not show
+# ---------------------------------------------------------------------------------------------
+# It does not show that the observer is unchanged: the observer has no replay contract, its
+# output is a terminal rendering, and VER-MOK-013 does not claim one. It does not show that no
+# dependency moved -- WO-MOK-013-check-run.txt is the measurement for that. And it does not
+# discharge VREC-MOK-002, which stays bound to the commit and content it was written for and is
+# not edited by this work order.

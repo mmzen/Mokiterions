@@ -5,7 +5,7 @@ title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
 specifies = [
@@ -20,6 +20,7 @@ specifies = [
   "REQ-MOK-027",
   "REQ-MOK-032",
   "REQ-MOK-041",
+  "REQ-MOK-047",
 ]
 +++
 
@@ -54,6 +55,8 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-19 | **No rule changed. This row records the reconciliation of the rule 5 and rule 4 rows above, which were written independently and met in a merge.** `WO-MOK-005`'s rule 5 amendment and `WO-MOK-010`'s rule 4 amendment were approved on the same date by the same owner against different trees, and both are retained above verbatim: neither owner act is edited, summarised, or folded into the other. They occupy disjoint text and do not contradict each other in substance — rule 4 fixes the form of a roster entry, rule 5 fixes which viewports present the roster pane and how wide it is. **The one figure spanning them holds unchanged**: rule 5 gives the roster `47` columns wherever it is present, before and after its amendment, so rule 4's 45-column interior, its `bar_width(interior) = min(20, (interior - 35) / 4)` and the two-cell bars that follow are untouched, and rule 4's 47-column two-line threshold is met at every viewport presenting the pane at all. **What the merge changes is not a rule but a set**: rule 5's derived table now presents the roster at eight of its nine declared viewports rather than four, `100 × 30` among them, so any measurement of *which viewports present the roster* taken against the withdrawn tier table describes a table this document no longer contains. `WO-MOK-010`'s oracle 4 frame capture and its `the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it` test were both taken that way. The test is corrected in the merge commit against rule 5 as amended; the capture is **OUTSTANDING** re-derivation under `WO-MOK-010`. | Recorded by the implementation agent as a statement of fact about two approved amendments it holds no authority over. No provision of this specification is added, removed, or reworded by this row. The re-derivation it names belongs to `WO-MOK-010` and is the assurance owner's to accept once taken. **It was taken on 2026-08-19**: the frame capture was re-derived against rule 5 as amended and reads 996 bar rows over the 85 of 157 probed frames that draw a roster, with zero discrepancies, in `evidence/WO-MOK-010/observer/roster-frames.txt` with the method recorded in `evidence/WO-MOK-010/renumbering.md`. The **OUTSTANDING** re-derivation this row names is therefore discharged, and `VREC-MOK-010` binds it. This row still changes no provision and still ratifies nothing. |
 | 2026-08-19 | **Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with the bands of clause 7.** The two clauses were approved on the same date by the same owner against different trees, and each is retained above verbatim. They meet at exactly one point: clause 5 makes the bar row four gauges and clause 7 bands "each of the three bars", which leaves the fourth gauge unstated. **The banded set is now named rather than counted**: the band applies to health, satiety and energy, and `fear` renders as a bar and a numeric value with no colour at all. The reason is stated in the clause rather than left to be inferred — the three bands are a survival scale on which a high value is a good one, and `fear` inverts that, so a banded `fear 100` would read green while naming the worst state that attribute has. **The collapsed one-line form's count is corrected from three numeric values to four**, which clause 5 had already changed; it remains unstyled and takes no band, so that provision's substance is untouched. Nothing else in either clause changes: no boundary, no colour, no glyph, no character of the entry, no bar width, and no band for health, satiety or energy either gains or loses. Rule 2.5 still holds for the same reason it held before, and holds a fortiori for `fear`, which now carries no colour to be the sole carrier of anything. | **Decided 2026-08-19 by the repository owner acting as technical owner**, on the choice put to them once the collision was found: band `fear` on the same three-band scale, give it a second and opposite scale of its own, or leave it unbanded. The owner chose unbanded, on the reasoning that the scale is a survival scale and `fear`, whose direction inverts, does not borrow it; a second opposite scale was declined because it would put two contradictory colour meanings on one row. The implementation agent found the collision, put the choice, wrote this text and the amended clause, and decided none of the substance. **The wording is the agent's and was OUTSTANDING for the owner's ratification until 2026-08-19, when the repository owner, acting as technical owner, ratified it in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`; the decision it records never needed one.** `VREC-MOK-010` is a `ready` candidate bound to a commit that predates this row and is re-captured against the merge, not edited. |
 | 2026-08-19 | Four provisions amended under `REQ-MOK-041`, so the observer presents the name `REQ-MOK-040` makes the engine report. **Rule 2's glyph tables**: the detail table's `M01`–`M09 → 1`–`9` and `M10`–`M12 → A, B, C` rows are replaced by the name's first character uppercased, with `?` for a subject whose name was not received, and the overview layer table's "the identifier's last character" becomes "the name's first character" — the two zooms derive one glyph and had drifted, since the withdrawn overview rule gave `M10` a `0` where the detail table gave it an `A`. The twelve resulting glyphs `Z K Q S T W H N V G X D` are stated, resting on `SPEC-MOK-001`'s twelve pairwise-distinct first characters, which is what rule 2.5 needs and what the identifier-derived assignment had by construction. **The anticipation is retained rather than deleted**: the withdrawn table and the sentence promising that "when agent naming is introduced by a later phase, the glyph becomes the name's first character and this table is amended" are quoted in place, because they are why the old assignment was correct while no name existed. **Rule 4**: the entry mockup and prose carry the name first, then the identifier, in the two-line form and in the collapsed one-line form, and the addition to the identifier rather than replacement of it is stated with its reason — the identifier is the join key into the log, the export and every retained stream. **Line two is measured to be untouched**: the name occupies six columns of line one only, so the bar row's five leading columns, its 35-column overhead and `bar_width(interior) = min(20, (interior - 35) / 4)` are unchanged and the reference roster's two-cell bars stand; line one's fixed fields total 28 columns of a 45-column interior, so nothing truncates. **Rule 10**: the presented-value list gains the name, before the identifier and for a dead subject as well as a living one, under rule 10.6's retained selection; item 7 loses `name`, because the engine now reports one, and the item's principle is restated as the reason the presented name must be the engine's own — a name derived from an identifier or filled in as a placeholder would be a value the engine did not compute. **Nothing else changes**: no pane threshold, no floor, no layout figure, no key binding, no export form, no authority mapping row, no snapshot field, no interface item, and no obligation that layout be a pure function of viewport size. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011` and `WO-MOK-011`. The twelve names are the product owner's decision of the same date; the decision that the name is presented in addition to the identifier and precedes it, and that the observer sources it from the retained event stream rather than from a new engine interface item, are the technical owner's, recorded in `WO-MOK-011`. The implementation agent wrote the text and did not decide the substance; rule 2's glyph assignments are withheld from it by `WO-MOK-005`'s decision envelope. **The 2026-08-18 row marked OUTSTANDING above is untouched**, as are the four rows above it that `WO-MOK-010` and its merges left: rule 4's clause 5, its clause 7, the row reconciling clause 5 with `WO-MOK-005`'s rule 5, and the row reconciling clause 7 with clause 5. **Clause 7 and this row do not meet**: the bands colour cells on line two and this row adds the name to line one, so the banded set, its three boundaries, the unbanded `fear`, the 35-column bar overhead and `bar_width` are neither read nor written here, and the frame re-derivation the reconciliation row records as discharged is not reopened by a name. This sentence is the one part of this row the merge rewrote, and it changes no provision. |
+| 2026-08-20 | **The engine's empty-dependency-set premise withdrawn from this specification's four restatements of it, and the observer's declared set added**, decided by `ADR-MOK-006`. *Actors and external systems*: `ratatui`'s version, its three features, the **57**-crate figure, the `serde`-off clause and the confinement to the observer component are all **unchanged**; the implication that `ratatui` is the observer's *only* dependency is replaced by a pointer to the new *Declared dependency set*, where being the only entry is a fact about the declaration. **New section, *Declared dependency set***: the `ratatui` entry with version, features, build-script status and admitting authority; the resolved-graph figures re-measured on 2026-08-20 in this checkout; and, per `ADR-MOK-006` decision 13, the crates carrying a build script recorded by name. *Component layout* clause 1 takes the declared-set form and its sharing clause survives as a declaration requirement; clause 5's `cargo tree` demonstration now names `REQ-MOK-047`'s comparison, which is a **reach beyond the amendments `ADR-MOK-006` enumerated** and is disclosed here for that reason — `REQ-MOK-026`'s statement no longer carries "with no external dependency", so the clause cited an obligation that had moved. The *Security and privacy properties* surface sentence and the two *Compatibility and migration* restatements are amended in place, the historical ones left standing as records of what earlier amendments did. *Explicitly unspecified decisions* is **extended**: the prohibition on choosing the dependency, its version and its feature set now reaches every crate in either package's declared set and whether a crate is admitted at all. **The declared-set figures differ from the ADR's in four ways, all found by the re-measurement the ADR required.** The ADR enumerated eight build-script crates including `syn`; `syn` is not among them, because `syn 1.0.109` carries a build script but is unreachable from this package at any edge kind, including `--target all`, and the reachable `syn 2.0.119` and `3.0.3` carry none. Where the ADR's eight came from cannot be reconstructed — the lockfile holds 29 packages carrying a build script, this package reaches 12 at `--target all` and 10 across the three built targets — while this table is read off the resolved graph on one target, which is what `REQ-MOK-047` requires and what a build executes. And there is **no single count**: the resolved graph is target-dependent, which nothing in this repository had written down. It is 57 external crates on `x86_64-pc-windows-msvc`, 63 on `x86_64-unknown-linux-gnu` and 62 on `aarch64-apple-darwin` — the three targets `SPEC-MOK-005` rule 10 builds — with 7, 9 and 9 build-script crates respectively and 10 in union. The **57** this specification has always stated is the Windows figure, unchanged and re-measured; the *Actors and external systems* clause and the *Security and privacy properties* bullet now say so. And third: the resolved feature set carries `std`, implied by the declared three, requested by no manifest and named in no earlier statement in this repository. The three features and the `serde`-off clause were a correct description of the *manifest* and one feature short as a description of the *resolved* set, which is what rule 8.4b compares, so the *Features* cell now separates what the manifest declares from what the resolver adds and `SPEC-MOK-002` rule 13 fixes how a checking program reads the distinction. And fourth, the finding that matters most: **the by-name scan of rule 8.4d hits this package's own graph on Linux and macOS.** `mio 1.2.2` is reached through `crossterm`'s event polling with its `net` feature enabled, which compiles in TCP and UDP socket types, and `signal-hook-mio 0.2.5` matches the same token. Neither is a declared entry, neither is new — both were in the graph before `ADR-MOK-006`, and `ADR-MOK-003` accepted that graph on 2026-08-17 — and neither was written down anywhere until the check was implemented. **A term list omitting `mio` would have made the scan pass by construction**, so instead rule 8.4d gains the disclosure mechanism it needed to have: a transitive prohibited-class name refuses until the declaring specification records it and the technical owner judges it. The new *Disclosed transitive capabilities* table records both crates with the chain, the feature and what the observer does not do with them, and both assessments are **OUTSTANDING** — an implementation agent may measure a transitive capability and may not accept one. The *Security and privacy properties* bullet asserting no network access is amended for the same reason and is **a reach beyond the amendments `ADR-MOK-006` enumerated**, disclosed here: it read as a statement about the whole graph, and what holds is a statement about behavior. Because of this, the mechanical equality `REQ-MOK-047` requires is stated over the **direct declared entries**, with the transitive graph held by `--locked`, by the build-script table and by the by-name scan: enumerating 66 transitive crates across three targets in prose would be a figure nobody could keep true, and the section says that rather than claiming an equality it cannot check. No rule about the observer's behavior, presentation, key bindings, export, snapshot contract or non-perturbation changes, and no presentation figure changes. **`REQ-MOK-047` joins `specifies`**, which `ADR-MOK-006` did not enumerate and which is disclosed here for that reason: this specification holds the observer package's half of the declaration that requirement is about, and `ARCH-MOK-002` names the requirement in `addresses` while conforming to this specification, so without the relation the new section would answer to an obligation this document did not claim to carry. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment in full. Written under `WO-MOK-013`; the implementation agent wrote the text and measured the figures, and decided neither. It chose no crate, no version and no feature set: `ratatui` and its three features are `ADR-MOK-003`'s choice, restated here rather than made here. **The 2026-08-18 row above stays OUTSTANDING and was not touched.** `VREC-MOK-005`, which binds this specification, is not edited. |
+| 2026-08-20 | **The two disclosed transitive capabilities are accepted**, closing `VER-MOK-013` manual assessment 6, which the row above recorded as OUTSTANDING because an implementation agent may measure a transitive capability and may not accept one. Both *Assessment* cells of the *Disclosed transitive capabilities* table now record the acceptance and its three grounds — `ADR-MOK-006` decision 4 prohibits **admitting** a crate in a prohibited class and neither crate is admitted, both arrive transitively inside a graph `ADR-MOK-003` accepted on 2026-08-17, and no observer behavior uses the socket types `net` compiles in — together with the limit that what is accepted is a compiled and uncalled capability and that the acceptance is void if a behavior ever calls it. The *Security and privacy properties* network bullet carries the same judgement in one sentence. **No crate, version, feature, target, count or chain changes**: the graph is exactly what the row above measured, and what changes is that a judgement it left owed has been made. `scripts/check_declared_dependencies.py` prints `disclosed and accepted` where it printed `disclosed and OUTSTANDING`, and prints the row either way — an acceptance that removed the line would be indistinguishable from the disclosure never having existed. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, who is the role `VER-MOK-013` manual assessment 6 names, recorded in session under `WO-MOK-013` after the owner was shown the measured chain, the activating feature and the four bases the contract enumerates. The implementation agent wrote the text and did not make the judgement. **The 2026-08-18 row above stays OUTSTANDING and was not touched.** |
 
 ## Actors and external systems
 
@@ -65,7 +68,15 @@ This specification adds no simulation behavior and no simulation state.
 - **Terminal user-interface library.** `ratatui` version `0.30.2` with `default-features = false` and features
   `crossterm`, `layout-cache`, `underline-color`. This resolves to a measured surface of **57 crates** including
   itself, and it is a dependency of the observer component alone. The `serde` feature is off, and no feature enabling
-  networking, an asynchronous runtime, or serialization is enabled.
+  networking, an asynchronous runtime, or serialization is enabled. **Amended 2026-08-20.** The version, the three
+  features, the 57-crate figure and the `serde` clause are unchanged, and so is the confinement to the observer
+  component. What is withdrawn is the implication that this is the observer's *only* dependency: `ADR-MOK-006` admits
+  third-party crates in both packages against a declared set, and this specification's *Declared dependency set*
+  section is the observer's. `ratatui` is its only entry as this amendment lands, which is now a fact about the
+  declaration rather than a rule. The re-measurement also records what the 57 always was and never said: a
+  **per-target** figure, measured for `x86_64-pc-windows-msvc`. The same graph is 63 crates on
+  `x86_64-unknown-linux-gnu` and 62 on `aarch64-apple-darwin`, the other two targets `SPEC-MOK-005` rule 10 builds.
+  The declared set is target-independent; its resolved consequence is not.
 - **Filesystem.** Written to exactly once per operator-requested export, at an operator-supplied or default path.
   Never read from.
 
@@ -644,13 +655,17 @@ mokiterions-core/
   src/
   tests/
 mokiterions-tui/
-  Cargo.toml               # package mokiterions-tui; the only ratatui dependency
+  Cargo.toml               # package mokiterions-tui; holds the observer's declared dependency set
   src/
   tests/
 ```
 
-1. The engine package's external dependency set is empty and admits no exception, including a dependency shared with
-   the observer.
+1. The engine package's external dependency set is exactly what `SPEC-MOK-002` rule 13 declares for it, at the
+   declared versions and the declared feature sets. A crate shared with the observer is admissible only as a declared
+   entry of both packages' sets. **Amended 2026-08-20.** This clause read "is empty and admits no exception, including
+   a dependency shared with the observer". `ADR-MOK-006` withdrew the empty-set rule; the engine's declared set is
+   empty as this amendment lands, so nothing about its manifest changes, and the sharing clause survives as a
+   declaration requirement in both packages rather than as a prohibition in one.
 2. The observer package depends on the engine package by path, as
    `Mokiterions = { path = "../mokiterions-core" }`.
 3. The engine's sources move as a directory and are not otherwise touched, so the `REQ-MOK-010` text stream does not
@@ -663,18 +678,160 @@ mokiterions-tui/
    `Mokiterions`, `mokiterions` and `Mokiterions`. The observer package and its binary are both named
    `mokiterions-tui`. The observer reaches the engine as `use mokiterions::…`.
 5. `cargo test` at the workspace root runs both packages' tests. `cargo tree -p Mokiterions` demonstrates the
-   empty set required by `REQ-MOK-026`.
+   comparison `REQ-MOK-047` requires: the engine's resolved set equals what `SPEC-MOK-002` rule 13 declares for it,
+   which is empty today, so the command prints one crate. *(Amended 2026-08-20. The clause read "demonstrates the
+   empty set required by `REQ-MOK-026`"; `REQ-MOK-026`'s statement no longer carries "with no external dependency",
+   and the obligation it pointed at is now `REQ-MOK-047`'s set comparison. The observable result is the same today.)*
+
+## Declared dependency set
+
+**Added 2026-08-20 under `ADR-MOK-006`.** This is the observer package's declared set, in the same shape as the
+engine's, which is `SPEC-MOK-002` rule 13. The engine's sits inside that specification's numbered rules because those
+rules are about the package's own compile-time shape; this one is a section of its own because this specification's
+numbered rules are presentation rules. They are the same provision, and `REQ-MOK-047` is what both answer to.
+
+| Crate | Version | Features | Build script | Admitted by |
+|---|---|---|---|---|
+| `ratatui` | `0.30.2` | `default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. `std` is implied by those and is not declared in the manifest. `serde` is off, and no feature enabling networking, an asynchronous runtime or serialization is on. | no | `ADR-MOK-003`, and this specification's 2026-08-17 original content. |
+
+**The declared features and the resolved features differ by one implied feature.** The manifest declares three and
+turns the defaults off. The resolved set is `crossterm`, `layout-cache`, `std` and `underline-color`, identical on all
+three targets, measured 2026-08-20 with
+`cargo tree -p mokiterions-tui -e normal --locked --offline --target <triple> -f "{p}|{f}"`: `std` is activated by the
+declared features rather than requested by the manifest, and `default` is absent, as `default-features = false`
+requires. The *Features* cell records `std` as implied for that reason, and `SPEC-MOK-002` rule 13 fixes how the cell is
+read, so `SPEC-MOK-005` rule 8.4b compares the resolved set against the declared features **together with** the implied
+ones and refuses anything else — which is what makes a feature arriving by unification a mismatch rather than a
+plausible implication. Nothing about the crate, its version or the manifest changes here; what changes is that the
+declaration now says which of its features the manifest asks for and which the resolver adds.
+
+**One entry, and one path dependency that is not an entry.** `Mokiterions = { path = "../mokiterions-core" }` is a
+workspace member reached by path, not an external crate, and *Component layout* clause 2 governs it. Every other crate
+in the observer's resolved graph is reached transitively through `ratatui`.
+
+**The resolved graph is target-dependent, and this is the first place that is written down.** Measured 2026-08-20 in
+this checkout under `cargo 1.97.1 (c980f4866 2026-06-30)` with
+`cargo tree -p mokiterions-tui -e normal --locked --offline --target <triple> --prefix none --no-dedupe`, counting
+distinct crates and excluding both workspace packages:
+
+| Target | External crates | Build-script crates |
+|---|---|---|
+| `x86_64-pc-windows-msvc` | **57** | 7 |
+| `x86_64-unknown-linux-gnu` | **63** | 9 |
+| `aarch64-apple-darwin` | **62** | 9 |
+| union of the three | **66** | 10 |
+
+Those are the three targets `SPEC-MOK-005` rule 10 builds, so they are the three the comparison covers. The **57** of
+*Actors and external systems* is the Windows figure, which is the host this repository is developed on; it is unchanged
+and re-measured, and it was always a per-target figure without saying so. The Linux graph adds `errno`, `libc`,
+`linux-raw-sys`, `log`, `mio`, `rustix`, `signal-hook`, `signal-hook-mio` and `signal-hook-registry` and drops
+`crossterm_winapi`, `winapi` and `windows-link`; macOS is the Linux set without `linux-raw-sys`. `--target all` reaches
+**71** external crates, and `cargo metadata --locked` reports **182** packages, which is the whole lockfile across every
+target and every member. `SPEC-MOK-005` rule 8.4 states which of those numbers the check reads and why, since reading
+the lockfile would pass a graph this specification does not describe.
+
+**What is declared and what is measured are not the same list.** The table above this one is the declaration: one
+direct entry, `ratatui`, with its version and its features, and it is target-independent. The figures here are the
+resolved consequence of that one entry on each target. `REQ-MOK-047`'s set equality binds the declaration — a direct
+dependency in either manifest that is not a declared entry, or a declared entry absent from the manifest, is a
+mismatch — while the transitive graph is held in place by three other things: `--locked`, so it cannot drift without a
+lockfile change; the build-script table below, which changes if a crate gains or loses one; and the by-name scan for
+prohibited capability classes. Enumerating 66 transitive crates across three targets in prose would be a figure nobody
+could keep true, and `SPEC-MOK-005` rule 8.4 says as much rather than pretending to an equality it cannot check.
+
+**Build scripts, per `ADR-MOK-006` decision 13.** These crates in the resolved graph carry a `build.rs` and therefore
+execute code at build time. The target column is which of the three release targets reaches them:
+
+| Crate | Version | Targets |
+|---|---|---|
+| `instability` | `0.3.13` | all three |
+| `libc` | `0.2.189` | Linux, macOS |
+| `parking_lot_core` | `0.9.12` | all three |
+| `proc-macro2` | `1.0.107` | all three |
+| `quote` | `1.0.47` | all three |
+| `rustix` | `1.1.4` | Linux, macOS |
+| `rustversion` | `1.0.23` | all three |
+| `signal-hook` | `0.3.18` | Linux, macOS |
+| `thiserror` | `2.0.20` | all three |
+| `winapi` | `0.3.9` | Windows |
+
+Seven on Windows, nine on Linux, nine on macOS, ten in union. The set is disclosed so the build-time code-execution
+surface is enumerated rather than discovered. A crate that acquires or loses a build script is a mismatch against this
+table, not an unremarked change. Adding `-e normal,build` reaches two further crates on every target,
+`rustc_version 0.4.1` and `semver 1.0.28`, and neither carries a build script, so this table is the whole surface at
+either edge kind.
+
+**`ADR-MOK-006` enumerated eight crates here, including `syn`, and the re-measurement contradicts it twice.** The ADR
+required these figures to be re-measured when this amendment was written rather than copied from it, and this is what
+the re-measurement found. First, `syn` is not among them: `syn 1.0.109` does carry a build script and is in
+`Cargo.lock`, but it is unreachable from this package at any edge kind, including `--target all`, so
+`cargo tree -i syn@1.0.109` has nothing to invert; the two versions the observer does resolve, `2.0.119` and `3.0.3`,
+carry none. `thiserror 1.0.69` sits in the lockfile on the same footing, while the reachable `thiserror 2.0.20` is in
+the table. Where the ADR's eight came from cannot be reconstructed, and this row said "read off the lockfile" before
+the counting was finished: `Cargo.lock` holds 29 packages carrying a build script, this package reaches 12 of them at
+`--target all` and 10 across the three targets `SPEC-MOK-005` rule 10 builds, so eight is none of the readings
+available. This table is read off the resolved graph on one target, which is what `REQ-MOK-047` requires and what a
+build actually executes. Second, there is no single number: the count is 7, 9, 9 and
+10 depending on the target, and a single figure would be wrong on two of the three platforms the release builds.
+Nothing about the crate set changed between the two measurements — only which question was asked of it.
+`evidence/WO-MOK-013/WO-MOK-013-build-scripts.txt` holds the four counts with their crates named, and the 17 scripted
+lockfile packages no build of either package reaches.
+
+**A third re-measurement finding, smaller than the other two.** The resolved feature set carries `std`, which the
+manifest does not declare and no earlier statement in this repository mentioned. The three features and the `serde`-off
+clause were correct as a description of the *manifest*; read as a description of the *resolved* set they were one
+feature short, and rule 8.4b is a comparison against the resolved set. The cell now separates the declared features
+from the implied one instead of leaving a checking program to decide which of the two the sentence meant.
+
+**Disclosed transitive capabilities, per `SPEC-MOK-005` rule 8.4d.** The by-name scan refuses on a crate whose name
+places it in a class `ADR-MOK-006` decision 4 prohibits. Two crates in this package's Unix graph are in that position.
+They are not declared entries — decision 4 makes such a crate inadmissible outright — and they arrive with `ratatui`,
+whose graph `ADR-MOK-003` accepted on 2026-08-17. They are recorded here so the scan has a disclosure to read rather
+than a term list trimmed until it passed:
+
+| Crate | Version | Targets | Reached by | Capability | Assessment |
+|---|---|---|---|---|---|
+| `mio` | `1.2.2` | `x86_64-unknown-linux-gnu`, `aarch64-apple-darwin` | `ratatui` → `ratatui-crossterm` → `crossterm` (feature `events`), and `crossterm` → `signal-hook-mio` | Non-blocking I/O poll. Resolves with features `default`, `log`, `net`, `os-ext`, `os-poll`; **`net` compiles in TCP and UDP socket types**. The observer opens no socket, binds no port and resolves no name: it uses the poll to wait for terminal input and signals, which is `crossterm`'s use of it, and `REQ-MOK-024`'s non-perturbation and the read-only observation surface are unaffected. | **Accepted 2026-08-20** by the repository owner acting as accountable technical owner, as `VER-MOK-013` manual assessment 6, on three grounds. `ADR-MOK-006` decision 4 prohibits **admitting** a crate in this class, and this crate is not admitted: it arrives transitively inside a graph `ADR-MOK-003` accepted on 2026-08-17. No observer behavior uses the socket types `net` compiles in. And the capability is disclosed here rather than filtered out of the scan, so the acceptance is auditable. **What is accepted is a compiled and uncalled capability, not network access.** If any behavior of either package ever uses it, this row is void and `REQ-MOK-026`'s prohibition applies with nothing further required. |
+| `signal-hook-mio` | `0.2.5` | `x86_64-unknown-linux-gnu`, `aarch64-apple-darwin` | `ratatui` → `ratatui-crossterm` → `crossterm` | None of its own. It adapts `signal-hook` to `mio`'s poll and carries no socket type; it is listed because the scan matches the `mio` token in its name and a scan whose hits are silently filtered is not a scan. | **Accepted 2026-08-20** on the same grounds and by the same role. It carries no socket type of its own; it is disclosed because the scan matches the `mio` token in its name, and a hit that is silently filtered is not a hit. |
+
+Neither crate is present on `x86_64-pc-windows-msvc`, where `crossterm` reaches the console through `winapi` instead.
+Nothing here is new in the graph: both crates were in it before `ADR-MOK-006`, on the same two targets, and what is new
+is that a check now looks and the answer is written down. The scan is by name, so this table is what the scan can see
+and not what the graph can do — `VER-MOK-013`'s manual assessment 3 is the review that stands behind the rest.
+
+**Adding a row is a decision, not an implementation act.** `SPEC-MOK-002` rule 13 states the five checks — the
+`ADR-MOK-006` decision 1 criteria, approval by the technical owner recorded in the *Admitted by* cell, the decision 4
+envelope, the decision 11 reservation of simulation semantics, and the decision 6 determinism check — and they apply
+here without alteration, with one difference in what is admissible: a user-interface crate is admissible in this
+package, because this is the package `REQ-MOK-026` confines the user interface to. Every other prohibition binds both
+packages equally. There is no crate-count ceiling and no numeric threshold for excessive dependency debt, by
+`ADR-MOK-006` decision 10, so an addition here is a judgement the technical owner records and not an arithmetic result.
 
 ## Security and privacy properties
 
 - No network access, no credential, no model provider, no asynchronous runtime, no database in either component.
+  **Amended 2026-08-20.** The property is unchanged and is a property of behavior: neither component opens a socket,
+  binds a port, resolves a name, reads a credential, spawns a runtime task or touches a database. What the 2026-08-20
+  measurement added is that on Linux and macOS the observer's graph *compiles in* TCP and UDP socket types, through
+  `mio` with its `net` feature, which `crossterm` reaches to poll terminal input. A capability that is compiled in and
+  never called is not network access, and it is not nothing either; the *Declared dependency set* discloses it, and
+  `VER-MOK-013` manual assessment 6 is where the technical owner judges it. This bullet is amended rather than left
+  standing because it read as a statement about the whole graph and it is a statement about behavior.
+  **Judged 2026-08-20**, by the technical owner, and accepted: the prohibition of `ADR-MOK-006` decision 4 is on
+  admitting such a crate, this one arrives transitively inside a graph `ADR-MOK-003` accepted, and no behavior uses it.
+  The acceptance covers a compiled and uncalled capability and is void the moment a behavior calls it.
 - The filesystem is written once per requested export and never read.
 - An operator-supplied export path is data. It is never interpreted as code and never used to read.
 - No credential, secret, environment variable, absolute path or wall-clock value appears in a frame or an export.
 - The observer receives no mutable handle to world, agent, resource or event-log state, and offers the operator no
   control that mutates the world.
 - The observer's dependency surface is 57 crates and is confined to the observer package, so it cannot reach the
-  engine. Whether that surface is acceptable is decided by `ADR-MOK-003`, not here.
+  engine. Whether that surface is acceptable is decided by `ADR-MOK-003`, not here. **Amended 2026-08-20.** The figure
+  and the confinement are unchanged and re-measured. What changes is where the surface is written down: it is the
+  *Declared dependency set* above, compared against the resolved graph in both directions, rather than a number quoted
+  in a sentence. Whether an *addition* to it is acceptable is decided by `ADR-MOK-006`'s criteria, still not here. The
+  57 is the `x86_64-pc-windows-msvc` figure; the surface is 63 crates on Linux and 62 on macOS, and the confinement to
+  the observer package — the property this bullet is actually about — holds on all three.
 
 ## Performance and capacity
 
@@ -714,7 +871,10 @@ mokiterions-tui/
   - **Rule 1** admits "no third target, no second package, no workspace". `REQ-MOK-026` requires a second package,
     and it is the approved requirement that rule 1 and `ARCH-MOK-001`'s prohibited-pattern list both reserve the
     exception for. The amendment permits a workspace of exactly two packages and keeps every other clause of rule 1,
-    including the empty dependency table for the engine package.
+    including the empty dependency table for the engine package. *(Amended 2026-08-20. That is what the 2026-08-18
+    amendment did, and this sentence is left standing as the record of it. Rule 1's empty dependency table was
+    withdrawn afterwards by `ADR-MOK-006`, so what holds its place now is rule 13's declared set for the engine
+    package — empty today, and by declaration rather than by rule.)*
   - **Rule 3** states that `src/cli.rs` and `src/simulation.rs` "keep their current contents apart from the visibility
     changes rule 5 authorizes and the test relocations rules 7 to 9 require". The observation surface is new code in
     `src/simulation.rs`, not a visibility change, so as written the clause forbids it — and read as a standing rule it
@@ -735,7 +895,10 @@ mokiterions-tui/
   Each amendment is the technical owner's act, and `WO-MOK-005` makes all four an approval precondition, exactly as
   `SPEC-MOK-002` itself did for the `ARCH-MOK-001` and `SPEC-MOK-001` amendments that it required.
 - `Cargo.toml` and `Cargo.lock` change from an empty dependency set to a workspace with a 57-crate observer surface.
-  This is the change `ADR-MOK-003` decides and `ARCH-MOK-001` must be amended to permit.
+  This is the change `ADR-MOK-003` decides and `ARCH-MOK-001` must be amended to permit. *(Amended 2026-08-20. The
+  transition this sentence describes happened and is unchanged. Its starting point is no longer the repository's rule:
+  `ADR-MOK-006` replaced the empty-set premise with a per-package declared set, so a later change of the same kind is
+  measured against the *Declared dependency set* sections rather than against emptiness.)*
 - When a later phase adds an attribute the observer reserves space for, this specification is amended to define its
   presentation. Nothing here presents such a value before then.
 
@@ -811,6 +974,12 @@ That grant is withdrawn as to organization: `REQ-MOK-029` and `SPEC-MOK-004` rul
 tiers, where each lives, and how a test is assigned to one. The implementation still chooses fixtures and helpers
 inside a tier. The grant was taken in good faith and is why all 109 observer tests were in one tier; withdrawing it
 is what makes the placement rule binding rather than advisory.
+
+**Amended 2026-08-20 for `ADR-MOK-006`.** The prohibition below on choosing "the dependency, its version or its feature
+set" is **extended, not narrowed**: it reaches every crate in either package's declared set, each entry's version, each
+entry's feature set, and whether a crate is admitted at all. Admission is the technical owner's act, recorded as an
+amendment row against the declaring specification, and an implementation agent may propose a crate and may not decide
+one. `ADR-MOK-006` admitting third-party crates in principle grants the implementation nothing in particular.
 
 The implementation may not choose: the dependency, its version or its feature set; the package layout or dependency
 direction; the observer's target shape or its test-tier placement; the coordinate mapping or orientation; the fidelity

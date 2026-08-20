@@ -5,7 +5,7 @@ title = "Two-package split with a terminal observer over a read-only engine surf
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-20"
 
 [relations]
 decides = ["ARCH-MOK-002", "ARCH-MOK-001"]
@@ -25,6 +25,29 @@ the merge with `master` exposed. `SPEC-MOK-002` requires **four** amendments rat
 `src/simulation.rs`'s contents against anything but a visibility change, and the observation surface is new code in
 that file. And the two `ADR-MOK-002` statements this decision narrows are now named rather than left implicit. No
 option was re-weighed and no consequence changed.
+
+**Note dated 2026-08-20. Two statements of this ADR are reversed by `ADR-MOK-006`.** They are reversed rather than
+narrowed, and this note says so rather than calling it a refinement:
+
+1. **Decision 4 is reversed in full.** *"Keep the engine package's external dependency set empty, with no exception,
+   including a dependency shared with the observer."* The engine package's set is now exactly what `SPEC-MOK-002`
+   declares for it, third-party crates are admissible in it on the criteria `ADR-MOK-006` decision 1 quotes, and a
+   crate shared with the observer is admissible as a declared entry of both. The set is empty as this note is written,
+   which is now a fact about the current declaration rather than a rule.
+2. **The word *"only"* in decision 5 is reversed.** `ratatui`'s version `0.30.2`, its `default-features = false`, its
+   three features `crossterm`, `layout-cache` and `underline-color`, the measured **57-crate** surface, the `serde`
+   feature staying off and the prohibition on any feature enabling networking, an asynchronous runtime or serialization
+   are all **untouched**. What changes is that `ratatui` is no longer the observer's *only* permitted external
+   dependency: it is the first entry in that package's declared set, and further entries are admitted the same way it
+   was — by amendment, approved by the technical owner.
+
+**Everything else this ADR decides stands**, including the two-package split with no third package and no service
+(decision 1), the engine staying at the repository root (decision 2), the read-only observation surface with exactly
+one mutating operation (decision 3), the confinement of every user-interface dependency to the observer (decision 6),
+the observer holding no engine handle and no mutable state (decision 7), wall-clock time confined to scheduling
+(decision 8) and the in-memory rendering assertions. **This ADR is not superseded**, on the precedent of its own
+treatment of `ADR-MOK-002`: a decision that reverses two statements of another records which ones and leaves the rest
+accepted where they are.
 
 ## Context
 

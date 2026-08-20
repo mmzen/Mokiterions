@@ -1,0 +1,63 @@
+# WO-MOK-013: the by-name scan of SPEC-MOK-005 rule 8.4d, before disclosure
+#
+# The terms are read out of the checking program, so this file cannot disagree with what
+# actually ran. They were written from the prohibitions ADR-MOK-006 decision 4 preserved,
+# not from the present graph: a term list derived from the graph would pass by construction.
+# The hits below are what the scan sees BEFORE SPEC-MOK-003's disclosure table is consulted.
+
+Prohibited capability classes and their terms:
+  network access (38 terms)
+    reqwest, hyper, curl, ureq, isahc, surf, attohttpc, http, h2, h3, quinn, rustls, openssl, tls, native, tungstenite, websocket, ws, socket2, mio, tokio, smoltcp, trust, hickory, dns, resolv, url, ipnet, net, grpc, tonic, prost, zmq, nats, mqtt, smtp, ftp, ssh
+  asynchronous runtime (11 terms)
+    tokio, async, smol, futures, executor, rayon, threadpool, actix, monoio, glommio, compio
+  database (21 terms)
+    sqlite, rusqlite, libsqlite3, postgres, pg, mysql, mariadb, mongodb, redis, diesel, sqlx, seaorm, sled, redb, rocksdb, leveldb, duckdb, surrealdb, tikv, lmdb, heed
+  model provider (15 terms)
+    openai, anthropic, claude, gpt, llm, llama, ollama, langchain, tiktoken, huggingface, candle, onnx, torch, tensorflow, genai
+  credential handling (12 terms)
+    keyring, secret, secrets, credential, credentials, vault, oauth, oauth2, jwt, jsonwebtoken, sasl, kerberos
+  plugin system or dependency injection (7 terms)
+    libloading, dlopen, inventory, shaku, waiter, teloc, di
+
+User-interface terms, scanned against the engine's graph only (22):
+    ratatui, crossterm, termion, tui, ncurses, pancurses, cursive, egui, iced, winit, gtk, qt, sdl2, druid, slint, dioxus, tauri, wgpu, web, yew, leptos, bevy
+
+Raw hits, per package and target:
+  mokiterions-tui on x86_64-unknown-linux-gnu: mio 1.2.2 -- network access
+  mokiterions-tui on x86_64-unknown-linux-gnu: signal-hook-mio 0.2.5 -- network access
+  mokiterions-tui on aarch64-apple-darwin: mio 1.2.2 -- network access
+  mokiterions-tui on aarch64-apple-darwin: signal-hook-mio 0.2.5 -- network access
+
+Why signal-hook-mio matches: name_tokens splits on - and _, so
+  signal-hook-mio -> ['hook', 'mio', 'signal', 'signal-hook-mio']
+  and the token `mio` is in the network-access list. Substring matching was not used;
+  token matching was, and the near misses below are the reason.
+
+Near misses: a crate whose name contains a term as a substring but not as a token.
+  ratatui: contains tui
+  ratatui-core: contains tui
+  ratatui-crossterm: contains tui
+  ratatui-widgets: contains tui
+  windows-link: contains ws
+
+Positive control: the same token rule applied to names it must and must not catch.
+A refusal here would be the scan working; a silence on the first four would be the bug
+the near-miss list above raises, since none of them is the literal term `ratatui`.
+  ratatui: user interface HIT; prohibited classes none
+  ratatui-core: user interface HIT; prohibited classes none
+  ratatui-widgets: user interface HIT; prohibited classes none
+  ratatui-crossterm: user interface HIT; prohibited classes none
+  windows-link: user interface no; prohibited classes none
+  tokio: user interface no; prohibited classes asynchronous runtime, network access
+  signal-hook: user interface no; prohibited classes none
+  windows-sys: user interface no; prohibited classes none
+
+SPEC-MOK-003's disclosure table, as the checking program reads it:
+  mio 1.2.2 on Linux, macOS -- Non-blocking I/O poll. Resolves with features `default`, `log`, `net`, `os-ext`, `os-poll`; **`net` compiles in TCP and UDP socket types**. The observer opens no socket, binds no port and resolves no name: it uses the poll to wait for terminal input and signals, which is `crossterm`'s use of it, and `REQ-MOK-024`'s non-perturbation and the read-only observation surface are unaffected. -- assessment accepted
+      assessment as SPEC-MOK-003 states it: **Accepted 2026-08-20** by the repository owner acting as accountable technical owner, as `VER-MOK-013` manual assessment 6, on three grounds. `ADR-MOK-006` decision 4 prohibits **admitting** a crate in this class, and this crate is not admitted: it arrives transitively inside a graph `ADR-MOK-003` accepted on 2026-08-17. No observer behavior uses the socket types `net` compiles in. And the capability is disclosed here rather than filtered out of the scan, so the acceptance is auditable. **What is accepted is a compiled and uncalled capability, not network access.** If any behavior of either package ever uses it, this row is void and `REQ-MOK-026`'s prohibition applies with nothing further required.
+  signal-hook-mio 0.2.5 on Linux, macOS -- None of its own. It adapts `signal-hook` to `mio`'s poll and carries no socket type; it is listed because the scan matches the `mio` token in its name and a scan whose hits are silently filtered is not a scan. -- assessment accepted
+      assessment as SPEC-MOK-003 states it: **Accepted 2026-08-20** on the same grounds and by the same role. It carries no socket type of its own; it is disclosed because the scan matches the `mio` token in its name, and a hit that is silently filtered is not a hit.
+
+Residue after disclosure: the run in WO-MOK-013-check-run.txt refuses on nothing, so every
+raw hit above is a disclosed row and no hit is unaccounted for. A disclosure matching no hit
+would refuse as well, which is what keeps the table from outliving the graph.

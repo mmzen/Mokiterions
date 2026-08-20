@@ -5,7 +5,7 @@ title = "Package directories, observer targets, and observer test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-18"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
 specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
@@ -22,6 +22,7 @@ specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
 | 2026-08-19 | **Recorded test-count figures corrected for `WO-MOK-010` and for `master`'s `WO-MOK-007`, both of which added tests without correcting them.** Rule 11 states the obligation this row discharges: "a work order that adds a test corrects these figures here, and one that loses a test has a defect". The figures are measured on the merge of `master` at `7a2b502` into this branch, which is the first tree in which both sets of additions exist; neither work order's figures are statable without the other's, and correcting only one would leave the rule stating a number no tree runs. **Rule 9**: `tests/options.rs` rises from 7 to **8** and `tests/render.rs` from 8 to **12**, so the public tier rises from 80 to **85**. Five tests arrive, three from this work order and two from `WO-MOK-007`, each named below with the obligation it carries, and none departs. **Rule 10**: `mokiterions-tui/src/render.rs` rises from 12 tests to **17** and the internal tier from 32 to **37**, all five arrivals `WO-MOK-007`'s bands. The same row's item count rises from 39 private items to **47** — 30 functions and 17 constants — because `WO-MOK-007` adds one function and five constants and this work order adds two functions, none of them public. The five internal tests that use a hook are still the same five: neither work order adds one that does. **Rule 11**: the observer's executed total rises from 112 to **122**, the engine's from 60 to **78**, and the workspace's from 172 to **200**. Of the 28 the workspace gains, 21 are `WO-MOK-010`'s — 18 engine and 3 observer — and 7 are `WO-MOK-007`'s, 5 internal and 2 public. The engine's 18 are 13 internal and 5 public under `SPEC-MOK-002` rules 5 and 7, which state no figure of their own, and the split is recorded here only because the workspace total is stated here and is otherwise not reproducible. Nothing else changes — no target, target name, path, package name, tier boundary, hook or prohibition, and no item's visibility. The interface of rule 6 is untouched at 94, measured rather than assumed: neither work order adds a public item to the observer, and `WO-MOK-007`'s band constants and its `band` function are private to `render.rs`. | **Ratified 2026-08-19 by the repository owner acting as technical owner**, in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`, on the reading that neither half of the correction is statable without the other. It was **OUTSTANDING** until that act. This is a defect in two work orders' conformance rather than in this specification, and the second of them is not this branch's to answer for: `WO-MOK-007` reached `master` with seven tests added and rules 9, 10 and 11 left as they were. The implementation agent found both by measuring the merged tree against this rule, wrote this text, and decides none of it. Records bound to commits are not re-opened: `VREC-MOK-006` measured 97 items and 169 tests and both were correct at its commit, and `VREC-MOK-007` is verified at `dfab77b` against the tree it was taken on. `VREC-MOK-010` measured 190 and is bound to a commit that predates this correction and the merge; it is re-captured, not edited. |
 | 2026-08-19 | **Rule 11's pointer to `WO-MOK-010`'s census corrected to the recapture the row above foretold.** That row closes "`VREC-MOK-010` measured 190 and is bound to a commit that predates this correction and the merge; it is re-captured, not edited", and the same was true of the census itself: rule 11's last paragraph said it "was captured at `4f32a9f` and reaches 190 rather than 200; that census is a capture and is re-taken against the merge rather than edited". It has since been re-taken, from a clean worktree at `master`'s tip `7a2b502`, and reads **179 before, 200 after** with `master`'s ten arrivals on its before side. The paragraph now says so, and keeps the superseded 190 on the record rather than deleting it. **No provision of this specification is added, removed or reworded, and no figure changes**: the observer's 122, the engine's 78 and the workspace's 200 are the row above's and are unmoved, as are the 21 additions and 0 removals; only the sentence saying where and against which tree they are reconciled is brought up to date. | Recorded by the implementation agent as a statement of fact about retained evidence, under rule 11's own instruction that a work order which adds a test corrects these figures here. It carries no ratification of its own because it changes nothing that requires one; the correction it points at is the row above, which was **OUTSTANDING** when this row was written and which the technical owner ratified on 2026-08-19 in the closing review of `WO-MOK-010`. |
 | 2026-08-19 | **Recorded test-count figures corrected for `WO-MOK-011`, which adds twelve tests for `REQ-MOK-040` and `REQ-MOK-041`.** Rule 11 states the obligation this row discharges: "a work order that adds a test corrects these figures here, and one that loses a test has a defect". **Rule 9**: `tests/verification.rs` rises from 16 to **19**, so the public tier rises from 85 to **88**; the three arrivals are named with the obligation each carries, none departs, and the file's subject line is deliberately not extended, because the name is a presented value from the moment `SPEC-MOK-003` rule 10 as amended lists it as one. It is also recorded there that all three read the expected name from the engine's own records through the already-public `Observer::events`, which is what keeps them in this tier. **Rule 10**: `src/render.rs` rises from 17 to **18**, `src/verification.rs` from 8 to **9**, and the internal tier from 37 to **39**; the two arrivals are the entry's column arithmetic asserted through the private `entry_lines`, and `REQ-MOK-041`'s provenance claim in its negative form, which needs a subject the observer holds and was never told the name of and therefore needs the state hook. `src/render.rs`'s private and public item counts are unchanged, because `entry_lines` gains a parameter and no item is added or removed, and `src/verification.rs` still declares no item at all. **Rule 11**: the observer's executed total rises from 122 to **127**, the engine's from 78 to **85**, and the workspace's from 200 to **212**, with the twelve arrivals attributed to the five targets that run them and the engine's 54-internal, 31-public split recorded because 212 is otherwise not reproducible. `mokiterions-core/tests/naming.rs` is recorded as a new engine public-tier target, admitted by `SPEC-MOK-002` rule 8's closing sentence without obliging that rule's initial-arrangement table, which `tests/decisions.rs` already joined the same way. **Rule 6 is unchanged at 94 items, 118 `pub` lines and 24 public fields**, measured rather than assumed: `Observer::name_of` is `pub(crate)` and `spatial::agent_glyph` keeps the `&str` parameter and `char` return it already had, so this work order adds no member of the interface and changes no member's shape. Nothing else changes — no target name, path, package name, tier boundary, hook or prohibition, and no item's visibility widens. **Every figure in this row is measured on the merge of `master` at `2157f77`, which is the first tree in which both this work order's tests and `master`'s survival bands exist**; the row as approved carried the figures of the unmerged branch — 86 in rule 9, 34 in rule 10 and 205 in rule 11 — and those describe a tree that no longer exists. The merge adds no test and removes none: it gives six inherited internal-tier call sites in `src/render.rs` and one public-tier row locator in `tests/render.rs` the name argument, corrects one expected string for the six-column field, and adds `NAME_COLUMNS` to `tests/render.rs`, so `tests/render.rs` stays at 12 and `src/render.rs`'s five band tests stay in rule 10's table. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011`, `WO-MOK-011` and the same-day amendments to `SPEC-MOK-001` and `SPEC-MOK-003`. Every figure in this row is a measured outcome rather than a decision: the counts are `cargo test`'s per-target output and the interface figures are the enumeration retained as `WO-MOK-011` evidence. The two decisions the figures reflect — that the observer's name accessor stays `pub(crate)`, and that the entry test is placed in the internal tier rather than reached by widening a public item — are the technical owner's of the same date and are recorded in `WO-MOK-011`. The implementation agent measured, wrote this text and decided none of it. **No row above is touched by this one**, and no record bound to a commit is re-opened. **The figures were re-measured when this branch merged `master` at `2157f77`, after that approval.** The approval covers the amendment's substance, and every figure in it is a measured outcome rather than a decision — the counts are `cargo test`'s per-target output on the merged tree and the interface figures are `analysis/interface.py`'s enumeration of it — but the numbers are this merge's measurement and not the ones the owner read. The re-measurement is recorded in `evidence/WO-MOK-011/merge/`. |
+| 2026-08-20 | **Rule 2's `[workspace.dependencies]` prohibition reversed into the rule that governs a shared crate**, decided by `ADR-MOK-006`. An entry is admissible there when, and only when, the crate is a declared entry of **both** packages' sets, each member inheriting it with `workspace = true`; the table holds no entry today because neither declared set does. Every other table rule 2 declares none of stays — a virtual manifest has no targets and no dependencies of its own. **The *Counterexample* that rejected exactly this is replaced** by one that still bites: a `[workspace.dependencies]` entry for a crate that is not in both declared sets, which is how an undeclared dependency enters a workspace without either package's manifest naming it. Rule 3's two empty-table clauses — *"including the empty dependency table"* and *"the dependency and dev-dependency tables stay empty with no exception"* — take the declared-set form; **the second of those is a reach beyond the amendments `ADR-MOK-006` enumerated** and is disclosed here for that reason, as is rule 7's last bullet, rule 14's `cargo tree -p Mokiterions` row, and the *Compatibility and migration* bullet asserting `ARCH-MOK-001` needs no amendment. **Rule 7's bullet** is kept as the completed fact it was — the relocation introduced no table — and, as a standing rule, now admits an entry only as a declared entry under `ADR-MOK-006`, while **a build script in either of this repository's own packages stays prohibited outright** by `SPEC-MOK-002` rule 1. The two historical bullets are left standing as records of what the relocation did, with a dated note that a later ADR moved what they cite. **Re-measured at writing time, as `ADR-MOK-006` requires: no figure this specification counts moves.** Neither manifest is edited and no declared set gains an entry, so `cargo tree -p Mokiterions --locked --offline` still prints one crate, the observer still resolves the 57-crate `ratatui` graph plus both packages, the observer's `lib.rs` still declares seven `pub mod` items with `verification` still `#[cfg(test)]`, and every test-count figure rules 9 to 11 record is untouched by a prose-only change. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment in full. Written under `WO-MOK-013`; the implementation agent wrote the text and re-took the measurements, and decided neither. It added no entry to any of the three manifests. The 2026-08-19 row that records a `SPEC-MOK-004` re-measurement after a merge is the precedent for the re-measurement clause above. |
 
 ## Scope
 
@@ -107,9 +108,20 @@ No third package directory, no nested workspace, and no directory holding the so
 ### 2. Workspace manifest
 
 The root `Cargo.toml` declares `[workspace]` with `members = ["mokiterions-core", "mokiterions-tui"]` and
-`resolver = "3"`, and declares no `[package]`, `[lib]`, `[[bin]]`, `[dependencies]` or `[workspace.dependencies]`
-table. The resolver is stated explicitly because a virtual manifest does not inherit a member's edition default, and
-an unstated resolver is both a behavioral difference and a build-time warning.
+`resolver = "3"`, and declares no `[package]`, `[lib]`, `[[bin]]` or `[dependencies]` table. The resolver is stated
+explicitly because a virtual manifest does not inherit a member's edition default, and an unstated resolver is both a
+behavioral difference and a build-time warning.
+
+A `[workspace.dependencies]` table is the form a crate shared by both packages takes, and it is admissible only for
+such a crate: an entry may appear there when, and only when, that crate is a declared entry of **both** packages' sets
+— `SPEC-MOK-002` rule 13 for the engine and `SPEC-MOK-003`'s *Declared dependency set* for the observer — and each
+member then inherits it with `workspace = true`. An entry that is not in both declared sets is a violation, whether it
+is unused by one package or undeclared by it. The table holds no entry today, because neither declared set does.
+
+**Amended 2026-08-20.** `[workspace.dependencies]` was in the list of tables this manifest declares none of.
+`ADR-MOK-006` reverses that: a shared crate is now visible in one place instead of impossible, and a version keyed once
+for both packages is the reason the table exists. Every other entry in the list stays — a virtual manifest has no
+targets and no dependencies of its own, which is what makes it virtual, and that is unchanged.
 
 A `default-members` or a member-level `default-run` key is permitted if, and only if, rule 14's command check shows
 that a form the operator uses no longer resolves without it. It is then the only addition, and the resolution it
@@ -121,14 +133,20 @@ layout; the lock file changes only where a recorded path changes.
 ### 3. Engine package relocation
 
 The engine package's manifest, its `src/` directory and its `tests/` directory move under `mokiterions-core/`. The
-`[package]`, `[lib]`, `[[bin]]` and `[dependencies]` tables move with the manifest unchanged, including the empty
-dependency table and the target paths `src/lib.rs` and `src/main.rs`, which are package-relative and therefore
-already correct.
+`[package]`, `[lib]`, `[[bin]]` and `[dependencies]` tables move with the manifest unchanged, including the dependency
+table — empty then and empty now — and the target paths `src/lib.rs` and `src/main.rs`, which are package-relative and
+therefore already correct.
 
 Every `SPEC-MOK-002` rule continues to bind the engine package with its paths read under `mokiterions-core/`. The
 package name stays `Mokiterions`, the library target stays `mokiterions`, the binary target stays `Mokiterions`, the
-dependency and dev-dependency tables stay empty with no exception, and rules 7 to 10 of that specification remain
-the engine's test-placement contract. This specification states nothing about which tier an engine test is in.
+dependency and dev-dependency tables hold exactly what `SPEC-MOK-002` rule 13 declares for this package and nothing
+else, and rules 7 to 10 of that specification remain the engine's test-placement contract.
+
+**Amended 2026-08-20.** Two clauses of this rule asserted the engine's tables were empty as a rule: *"including the
+empty dependency table"* and *"the dependency and dev-dependency tables stay empty with no exception"*. `ADR-MOK-006`
+withdrew that rule, so both are restated against `SPEC-MOK-002` rule 13, whose table is empty as this amendment lands.
+Nothing about the relocation this rule governs changes, and no table in either manifest is edited: what moved
+unchanged still moved unchanged, and the emptiness is now a measured fact rather than a requirement this rule restates. This specification states nothing about which tier an engine test is in.
 
 The observer package's dependency on the engine becomes `Mokiterions = { path = "../mokiterions-core" }`. It stays a
 path dependency, stays keyed by the engine's package name, and gains no feature and no version requirement. The
@@ -277,7 +295,13 @@ amended and not merely re-measured.
 - No public item of the engine package is added. `SPEC-MOK-002` rule 5 stays closed; this specification adds nothing
   to it and needs nothing from it.
 - No dependency, dev-dependency, feature, build script or workspace dependency table is introduced in either
-  package.
+  package. **Amended 2026-08-20.** This bullet was written as a prohibition on the relocation `REQ-MOK-030` requires,
+  and the relocation introduced none of them: that half is a completed fact and is unchanged. As a standing rule it is
+  now narrower than `ADR-MOK-006` allows, so it reads: a dependency, dev-dependency or workspace dependency entry is
+  introduced only as a declared entry admitted under `ADR-MOK-006` and recorded in the declaring specification's
+  declared set, and a feature is enabled only as part of such an entry. **A build script in either of this
+  repository's own packages stays prohibited outright**, by `SPEC-MOK-002` rule 1, which `ADR-MOK-006` leaves
+  untouched; decision 13 concerns a *dependency's* build script and admits none here.
 
 ### 8. Tiers and the placement rule
 
@@ -525,7 +549,7 @@ and this rule exists because that is the change's one real operator-facing risk.
 | `cargo run -p mokiterions-tui` | runs the observer binary |
 | `cargo build -p Mokiterions` / `cargo build -p mokiterions-tui` | builds that package alone |
 | `cargo test` / `cargo test -p <package>` | rule 11 |
-| `cargo tree -p Mokiterions` | resolves to the engine package alone, which is the check that the layout cost the engine's empty dependency table nothing |
+| `cargo tree -p Mokiterions` | resolves to exactly the set `SPEC-MOK-002` rule 13 declares for the engine package plus the package itself, which is the engine package alone while that set is empty; this is the check that the layout cost the engine's dependency surface nothing *(amended 2026-08-20 from "the engine's empty dependency table"; the required outcome is the same today)* |
 | `cargo tree -p mokiterions-tui` | resolves to the observer, the engine, and the `ratatui` graph fixed by `SPEC-MOK-003` |
 | `cargo fmt` / `cargo clippy --all-targets --all-features -- -D warnings` | pass workspace-wide with no `allow` attribute added and no narrowing of the invocation |
 
@@ -615,7 +639,10 @@ or diagnostic, and the observer's diagnostic report is untouched.
   those it conforms to. `ADR-MOK-004` states the amendments; `WO-MOK-006` makes them an approval precondition.
 - `ARCH-MOK-001` needs no amendment. It names no source path, and every quality attribute and conformance check it
   states about the engine package — one library target, one thin binary target, an empty dependency table — holds
-  unchanged after the move.
+  unchanged after the move. *(Amended 2026-08-20. That was true of this specification's change and stays true of it:
+  the move required nothing of `ARCH-MOK-001`. `ADR-MOK-006` amended that architecture afterwards for an unrelated
+  reason, replacing the empty-dependency-table check with a comparison against the declared set. This bullet is a
+  statement about the relocation, not a claim that the check is still worded that way.)*
 - `REPOSITORY_CONTEXT.md` requires updating in its *Commands* and *Architecture* sections, and in the sentence that
   states the two-tier test convention repository-wide while citing engine-scoped authority for it. That sentence's
   disagreement with the code is what `WO-MOK-005` disclosed; after this specification it is true of both packages,
@@ -656,9 +683,16 @@ same time violates rule 3 and rule 14: `cargo tree -p Mokiterions` would fail, `
 resolve to nothing, and the first line of `USAGE` would change. The directory name and the package name are
 independent, and only the directory moves.
 
-**Counterexample.** Adding `[workspace.dependencies]` to the root manifest so both packages could share a version
-key violates rule 2 and rule 7, and would give the engine package a dependency table that is not empty in
-substance, against `SPEC-MOK-002` rule 1 and `ARCH-MOK-001`.
+**Counterexample.** Adding a `[workspace.dependencies]` entry to the root manifest for a crate that is not a declared
+entry of **both** packages' sets violates rule 2, and the member that inherits it with `workspace = true` violates
+`SPEC-MOK-002` rule 1 or `SPEC-MOK-003`'s *Declared dependency set* as well, because its resolved graph then holds a
+crate its declaration does not. Keying a version once is the table's purpose; keying a version for a crate only one
+package declares, or for a crate neither declares, is how an undeclared dependency enters a workspace without either
+package's manifest naming it. *(Amended 2026-08-20. This counterexample read: adding `[workspace.dependencies]` "so both
+packages could share a version key violates rule 2 and rule 7, and would give the engine package a dependency table
+that is not empty in substance, against `SPEC-MOK-002` rule 1 and `ARCH-MOK-001`." `ADR-MOK-006` reverses exactly that:
+sharing a version key is now the admitted form. The replacement keeps the shape of the old one — a manifest edit that
+looks convenient and defeats a per-package declaration — and still bites.)*
 
 ## Explicitly unspecified decisions
 

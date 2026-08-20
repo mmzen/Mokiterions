@@ -5,10 +5,10 @@ title = "Release authorization, compliance re-establishment, asset provenance an
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-19"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
-specifies = ["REQ-MOK-035", "REQ-MOK-036", "REQ-MOK-037", "REQ-MOK-038", "REQ-MOK-039"]
+specifies = ["REQ-MOK-035", "REQ-MOK-036", "REQ-MOK-037", "REQ-MOK-038", "REQ-MOK-039", "REQ-MOK-047"]
 +++
 
 # Specification: Release authorization, compliance re-establishment, asset provenance and reserved acts
@@ -20,6 +20,8 @@ specifies = ["REQ-MOK-035", "REQ-MOK-036", "REQ-MOK-037", "REQ-MOK-038", "REQ-MO
 | 2026-08-19 | Original content for `REQ-MOK-035` through `REQ-MOK-039`. | Technical owner, 2026-08-19. |
 | 2026-08-19 | Rule 12.5 restated in platform-aware terms: write access is confined to the smallest job containing the attaching step, with the credential reaching that step alone. The original wording ("the attaching step is the only step granted write access") was unsatisfiable as written, because GitHub Actions scopes `permissions` per job and offers no step-level grant. Raised by `WO-MOK-009`'s implementation. | Technical owner, 2026-08-19. |
 | 2026-08-19 | The first conforming example corrected to the release that actually happened: eight work orders rather than six, and `VREC-MOK-009` rather than `VREC-MOK-007`. Written before the release, it guessed the identifiers and guessed wrong — and `VREC-MOK-007` exists, so the example named a real record that has nothing to do with the release. No normative rule changes; the correction is confined to `## Examples and counterexamples`. Raised while executing the release. | Technical owner, 2026-08-19. |
+| 2026-08-20 | **Rule 8.4, the release gate this repository's dependency policy rested on, replaced by the declared-set comparison**, decided by `ADR-MOK-006`. *"The engine package's dependency tree resolves to exactly one crate"* becomes four checks over **both** packages: **8.4a** the direct declared-set comparison in both directions, per package and not for the workspace, with a `[workspace.dependencies]` entry checked against both sets; **8.4b** the feature audit, so a feature enabled by unification rather than declaration is a mismatch; **8.4c** the engine package's offline resolution, build and test from the committed lockfile, which was a side effect of an empty table and is now a check; **8.4d** the by-name scan for network, asynchronous-runtime, database, model-provider and misplaced user-interface crates, stated as **not exhaustive**, so its refusal is conclusive and its pass is not. **8.4d also gains the disclosure mechanism the implementation showed it needed**, which is a reach beyond the amendment `ADR-MOK-006` enumerated and is disclosed here for that reason: a prohibited-class name in a *declared entry* refuses with no exception, while one reached *transitively* refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it. Without the mechanism the check had two possible outcomes and both were wrong — refuse every release over a graph `ADR-MOK-003` already accepted, or carry a term list trimmed until it passed. The observer's Unix graph reaches `mio` with `net` enabled through `crossterm`'s event polling; `SPEC-MOK-003` discloses it and `VER-MOK-013` manual assessment 6 holds it **OUTSTANDING**. The provision now states **what the set is** — the resolved per-package graph at the declared features on each target rule 10 builds, expressly not `Cargo.lock`'s contents — and records the measured **182**-against-**59** gap with the two crates, `syn 1.0.109` and `thiserror 1.0.69`, that sit in the lockfile and resolve into no build of either package, so a later reader cannot simplify the check back into a lockfile read. It also states what 8.4a does **not** compare: the transitive graph is target-dependent (57, 63 and 62 external crates on the three release targets, 66 in union) and is held by `--locked`, by `SPEC-MOK-003`'s build-script table and by 8.4d rather than enumerated. The sentence naming the architectural claim discharged is redirected to `ADR-MOK-006`. **New rule 15** implements decision 12: the same four checks on every pull request, in a repository-owned workflow, carrying these checks **alone** and leaving `cargo fmt`, `cargo clippy` and the test suite where this repository already puts them; the managed `engineering-harness.yml` is **not** the vehicle, because it is SHA-256 locked in `.engineering-harness.lock` and its `governor` job would report an edit as tampering; the workflow is evidence and not authority; and both placements read the same declared sets, so neither can disagree with the other about what is declared. **Rule 11.5 is unchanged and stated as unchanged**: it constrains this repository's own packages, and decision 13 concerns a dependency's build script, which it never spoke to. No other rule changes: the trigger, the authorization gate, the reachability rule, the compiler declaration, asset composition, the provenance statement, the publication boundary, the reserved acts and the human sequence are untouched. **`REQ-MOK-047` joins `specifies`**, which `ADR-MOK-006` did not enumerate and which is disclosed here for that reason: rules 8.4 and 15 are where that requirement's equality is actually checked, in both placements, and a specification carrying a requirement's only check while declaring no coverage of it would leave the check untraceable to the obligation it discharges. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment in full. Written under `WO-MOK-013`; the implementation agent wrote the text, took the measurements and decided neither. **Rule 8.4's own gate refuses until `.github/workflows/release.yml` is changed to match**, which `ADR-MOK-006` states as `REQ-MOK-036`'s scenario working as designed; the workflow is changed in the same commit as this amendment so that no tagged commit sees one without the other. |
+| 2026-08-20 | **No rule changed.** This row corrects one statement of current state in the row above, which said `VER-MOK-013` manual assessment 6 *holds `mio` OUTSTANDING*: the technical owner made that assessment on 2026-08-20 and accepted the two disclosed capabilities, so `SPEC-MOK-003`'s disclosure table now records an acceptance and its grounds. Rule 8.4d is unchanged and is unaffected by which way the judgement went — it requires that a transitive prohibited-class name be disclosed and judged, and both halves are now true of this graph. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, in the same act that recorded the assessment. Written under `WO-MOK-013`. |
 
 ## Scope
 
@@ -253,9 +255,71 @@ from the committed lockfile without updating it.
 **8.3** The test command across the workspace, resolving from the committed lockfile without updating it. No tier is
 skipped, feature-gated, ignored, or dependent on an interactive terminal.
 
-**8.4** The engine package's dependency tree resolves to exactly one crate. This discharges the named architectural
-claim that the engine's dependency table stays empty, with no exception, including a dependency shared with the
-observer.
+**8.4** Each package's dependency surface matches what is declared for it. Four checks, all of them at the authorized
+commit and none of them able to modify a tracked file:
+
+**8.4a Declared-set comparison, both packages, both directions.** Each package's direct dependency and dev-dependency
+entries equal the entries declared for it — `SPEC-MOK-002` rule 13 for the engine package, `SPEC-MOK-003`'s *Declared
+dependency set* for the observer. An entry in a manifest that is not in the declaring specification fails the check,
+and so does a declared entry that is not in the manifest. The comparison is per package and not for the workspace: a
+workspace-wide graph would answer neither package's question. A `[workspace.dependencies]` entry is checked against
+**both** declared sets, per `SPEC-MOK-004` rule 2.
+
+**8.4b Feature audit.** Each entry's enabled feature set equals the declared one, including `default-features = false`
+where declared. A feature enabled by unification rather than by declaration is a mismatch: it is how a capability the
+declaration excludes arrives without an amendment, which is the failure `SPEC-MOK-003`'s `serde`-off clause exists to
+prevent.
+
+**8.4c Offline resolution and test of the engine package.** The engine package resolves, builds and tests from the
+committed lockfile with no package-registry access. This is the *Registry independence* attribute `ARCH-MOK-001`
+states; it was a side effect of an empty table and is now a check, because `ADR-MOK-006` admits dependencies that could
+take it away.
+
+**8.4d By-name prohibition scan.** No crate in either package's resolved graph is a network, asynchronous-runtime,
+database or model-provider crate, and no user-interface crate is in the engine package's graph. The scan is by name and
+is **not exhaustive** over those capability classes — a crate can provide a socket without saying so in its name —
+which is why `VER-MOK-013` retains a review beside it and why this check refusing is conclusive while this check
+passing is not.
+
+**A prohibited-class name in a declared entry refuses with no exception.** `ADR-MOK-006` decision 4 makes such a crate
+inadmissible however stable it is, so there is nothing for the check to weigh.
+
+**A prohibited-class name reached transitively refuses unless the declaring specification discloses it.** A disclosure
+records the crate, its version, the targets that reach it, the chain that reaches it, the feature that activates the
+capability, and what the package does not do with it. Recording one is the technical owner's act, on the same footing as
+adding a declared entry: an implementation agent may measure a transitive capability and may not record it as accepted.
+The asymmetry is decision 4's own — it prohibits *admitting* a crate with a prohibited capability, and a transitive
+crate arrives with the entry that reached it — so the check refuses until the capability is written down and judged,
+rather than refusing a graph an earlier decision already accepted. **This is not hypothetical**: the observer's Unix
+graph reaches `mio` with the `net` feature enabled, through `crossterm`'s event polling, which `SPEC-MOK-003`'s
+declared set now discloses. A term list written so that the graph passes would have been a check designed to pass.
+
+**What the set is, and what it is not.** The set is the **resolved per-package dependency graph** at the declared
+features, on each target `SPEC-MOK-005` rule 10 builds, obtained with `--locked` so nothing resolves that the committed
+lockfile does not already fix. It is expressly **not** `Cargo.lock`'s contents. Measured 2026-08-20 in this checkout
+under `cargo 1.97.1 (c980f4866 2026-06-30)`: `cargo metadata --locked` reports **182** packages, while
+`cargo tree -p mokiterions-tui -e normal --locked --offline` resolves **59** distinct crates on this host and
+`cargo tree -p Mokiterions` resolves **1**. The gap is not slack in the lockfile's favour — `syn 1.0.109` and
+`thiserror 1.0.69` sit in it and are unreachable from either package at any edge kind, including `--target all`, so a
+lockfile read would attribute to a package two crates that resolve into no build of it, one of which carries a build
+script. Reading the lockfile is the simplification this paragraph exists to prevent.
+
+**What 8.4a compares, given that the graph is target-dependent.** The comparison in 8.4a is over each package's
+**direct declared entries**, which are target-independent. The transitive graph is not compared entry by entry: it is
+57 external crates for the observer on `x86_64-pc-windows-msvc`, 63 on `x86_64-unknown-linux-gnu`, 62 on
+`aarch64-apple-darwin` and 66 in union, and an enumeration of those in prose is a figure no amendment discipline could
+keep true. What holds the transitive graph in place instead is `--locked`, the build-script table
+`SPEC-MOK-003`'s declared set records — which changes if any crate gains or loses a `build.rs` — and 8.4d. This is
+stated rather than glossed, because a reader who assumes 8.4a compares 66 crates will believe the check is stronger
+than it is.
+
+This discharges the claim `ADR-MOK-006` makes: that each package's resolved dependency set equals the set declared for
+it, at the declared versions and features, with the trust envelope preserved by 8.4d and by review. *(Amended
+2026-08-20. This provision read: "The engine package's dependency tree resolves to exactly one crate. This discharges
+the named architectural claim that the engine's dependency table stays empty, with no exception, including a dependency
+shared with the observer." `ADR-MOK-006` withdrew that rule; the engine's declared set is empty today, so 8.4a still
+resolves the engine to one crate, and the check now says why that is the answer rather than asserting it as the
+question.)*
 
 **8.5** For each decision policy the engine declares deterministic, two runs with identical arguments produce
 byte-identical output, an identical final state and an identical exit code. A policy whose output legitimately
@@ -342,7 +406,10 @@ without it an archive cannot be traced to the run whose checks established rule 
 records, built from the authorized facts and not from a commit range or a changelog, so the release page and the
 archive agree.
 
-**11.5** Producing the statement adds no dependency to either package and requires no build script.
+**11.5** Producing the statement adds no dependency to either package and requires no build script. *(Unchanged by the
+2026-08-20 amendment, and stated as unchanged. It constrains **this repository's** packages, and `ADR-MOK-006`
+decision 13 concerns a *dependency's* own build script, which this provision never spoke to. A provenance statement
+that needed a crate would put a crate in the release path, which is the thing this provision denies.)*
 
 ### 12. Publication boundary
 
@@ -401,6 +468,32 @@ making the release visible.
 It states that it is operator documentation and not authority, and that where it disagrees with a governed artifact
 the artifact prevails. It names roles, not people. It lives outside the artifact root precisely so that it cannot be
 mistaken for an artifact carrying authority.
+
+### 15. The dependency comparison at pull-request time
+
+**Added 2026-08-20 under `ADR-MOK-006` decision 12.** The release gate is not the only placement of rule 8.4.
+
+**15.1** The four checks of rule 8.4 — 8.4a, 8.4b, 8.4c and 8.4d — run on every pull request, in a workflow this
+repository owns, so that an undeclared crate, an unification-enabled feature or a lockfile update that pulls in a
+prohibited capability fails where it is cheap to fix rather than on release day. A release gate catches the same drift
+after the change has been merged, reviewed and tagged.
+
+**15.2** That workflow carries **these checks alone**. It does not add the formatting check, the lint check or the test
+suite to pull-request CI: this repository puts those at the authorized commit under rule 8 and in retained evidence at
+the candidate commit, and rule 15 changes neither placement. The scope is deliberately narrow, because the reason for
+running at pull-request time is that a dependency graph drifts between commits in a way formatting does not.
+
+**15.3** The managed harness workflow is **not** the vehicle, and this is a constraint rather than a preference. It is
+listed in `.engineering-harness.lock` with a schema-2 SHA-256 lock, `python -m se_harness doctor` verifies it, and its
+`governor` job would report an edit as tampering. A repository-owned workflow is added beside it; the managed file is
+not touched.
+
+**15.4** The workflow is evidence, not authority. It can refuse a merge and it approves nothing. A refusal is a fact
+about a commit; whether a crate belongs in a declared set is `ADR-MOK-006`'s question and the technical owner's answer.
+
+**15.5** Both placements read the same declared sets from the same specifications, so the pull-request check and the
+release gate cannot disagree about what is declared. An implementation that duplicated the declaration would create a
+third source of truth, and the sets in `SPEC-MOK-002` rule 13 and `SPEC-MOK-003` are the only ones.
 
 ## Error and recovery behavior
 

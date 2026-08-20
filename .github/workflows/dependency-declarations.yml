@@ -1,0 +1,108 @@
+# Compare each package's resolved dependency graph against the set its specification declares.
+#
+# This workflow is repository-owned and implements `SPEC-MOK-005` rule 15, which places the four
+# checks of rule 8.4 -- 8.4a, 8.4b, 8.4c and 8.4d -- at pull-request time as well as at the
+# release gate. A dependency graph drifts between commits in a way formatting does not: an
+# undeclared crate, a feature switched on by unification, or a lockfile update that pulls in a
+# prohibited capability all arrive with an ordinary-looking diff. Rule 15.1 wants those to fail
+# where they are cheap to fix rather than on release day.
+#
+# What this workflow deliberately does NOT do:
+#
+#   * add the format, lint or test checks to pull-request CI -- rule 15.2 keeps this scope
+#     narrow. Those live at the authorized commit under rule 8 and in retained evidence at the
+#     candidate commit, and rule 15 changes neither placement.
+#   * touch `engineering-harness.yml` -- rule 15.3. That file is managed, listed in
+#     `.engineering-harness.lock` with a schema-2 SHA-256 lock, verified by
+#     `python -m se_harness doctor`, and its `governor` job would report an edit as tampering.
+#     This workflow is added beside it and the managed file is not modified.
+#   * approve anything -- rule 15.4. It is evidence, not authority. It can refuse a merge and it
+#     approves nothing. Whether a crate belongs in a declared set is `ADR-MOK-006`'s question
+#     and the technical owner's answer, recorded in a specification and not in CI.
+#
+# It runs the same program the release gate runs, `scripts/check_declared_dependencies.py`, which
+# reads the declared sets out of `SPEC-MOK-002` rule 13 and `SPEC-MOK-003` and restates neither.
+# Rule 15.5 is the reason: an implementation that duplicated a declaration would be a third
+# source of truth, and the two placements could then disagree about what is declared while both
+# reported success. Amending a declared set changes this workflow's verdict with no edit here.
+#
+# It fails closed. Every refusal names the fact it could not establish.
+
+name: Dependency declarations
+
+on:
+  # Rule 15.1 says every pull request, and that is the whole trigger list. There is no
+  # `push` trigger, because the release gate already carries rule 8.4 at the commit that
+  # matters, and no `workflow_dispatch`, because a run of this check is only meaningful
+  # against a proposed change.
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A superseded head commit is a stale fact. Cancelling its run is not a shortcut: the answer
+  # would describe a graph nobody is proposing to merge any more.
+  group: dependency-declarations-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  declared-sets:
+    name: Declared sets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # The default for a `pull_request` event is the prospective merge commit, and that is
+        # the right subject: the question is what the dependency graph would be if this landed,
+        # not what it is on a branch that is behind its base. A lockfile change that only
+        # conflicts with the base shows up here and nowhere else.
+
+      - name: Which commit this run is a fact about
+        shell: bash
+        run: |
+          # Rule 15.4: a refusal is a fact about a commit, so the commit is named before any
+          # check runs rather than left for a reader to infer from the event.
+          echo "merge commit    $(git rev-parse HEAD)"
+          echo "pull-request head ${{ github.event.pull_request.head.sha }}"
+          echo "base            ${{ github.event.pull_request.base.ref }} @ ${{ github.event.pull_request.base.sha }}"
+
+      - name: Toolchain, from the repository's pin
+        shell: bash
+        run: |
+          # A log, not a check. `rust-toolchain.toml` selects the version, so the first cargo
+          # invocation installs it; printing it means a resolution difference can be read
+          # against the toolchain that produced it. The pin assertion itself belongs to the
+          # release gate under rule 8, and rule 15.2 keeps this workflow from acquiring it.
+          rustup show active-toolchain
+          cargo --version
+          python3 --version
+
+      - name: Populate the registry cache, the one step allowed to reach a registry
+        run: cargo fetch --locked
+        # `--locked` makes this a download and not a resolution: it fetches what the committed
+        # lockfile already fixed, for every target, and fails rather than choose a version. A
+        # pull request that changes `Cargo.toml` without updating `Cargo.lock` refuses here,
+        # which is the correct place for it to refuse -- the checks below are about a resolved
+        # graph, and there is no resolved graph until the lockfile agrees with the manifests.
+
+      - name: Each package resolves to the set its specification declares
+        run: python3 scripts/check_declared_dependencies.py --root .
+        # 8.4a, both directions, per package and over `[workspace.dependencies]`; 8.4b, the
+        # declared features against the resolved ones on each of rule 10's three targets,
+        # negatives included; 8.4c, the engine building and testing offline from the committed
+        # lockfile; 8.4d, the by-name scan for the capability classes `ADR-MOK-006` decision 4
+        # prohibits, where a declared entry refuses outright and a transitive hit refuses unless
+        # the declaring specification discloses it.
+        #
+        # `--no-engine-build` exists for a local rehearsal and is not passed here: it would skip
+        # 8.4c and print that it had, and a gate that skipped a check would be reporting on
+        # three of the four.
+
+      - name: The check leaves the tree as it found it
+        if: always()
+        shell: bash
+        run: |
+          # A log, not a check -- the program already compares `git status` across its own run
+          # and refuses if the tree moved. This prints the same thing at the job's edge so that
+          # a difference is visible in the transcript rather than inferred from an exit code.
+          git status --porcelain --untracked-files=all
