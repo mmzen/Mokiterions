@@ -1,0 +1,268 @@
+VER-MOK-012 static and architecture checks: the four gate commands, recorded
+============================================================================
+
+Work order   WO-MOK-012 (Phase 3.1, encounters)
+Retains      "cargo fmt, cargo clippy, cargo test and cargo tree -p Mokiterions output"
+Commit       1b06d851cf4438c87acf1cb8aa11d749a7d7efce   (feature/phase-3-definition)
+Toolchain    cargo 1.97.1 (c980f4866 2026-06-30), rustc 1.97.1 (8bab26f4f 2026-07-14),
+             clippy 0.1.97 (8bab26f4f6 2026-07-14), host x86_64-pc-windows-msvc
+Date         2026-08-20
+
+Four commands, each in one invocation, each recorded with its own exit code. The invocations are the
+ones VER-MOK-012's "Static and architecture checks" section declares, character for character, so a
+verifier re-running this file is running the contract's command and not a paraphrase of it. Sections 5
+to 9 carry the adjacent clauses of the same section that are enumerations rather than command output,
+because they are what the four commands do not establish on their own.
+
+`cargo test` is not re-run here. It is retained whole, at three commits, in post/test-run.txt,
+post/test-run-amended.txt and baseline/test-run.txt, and reconciled name by name in
+post/test-census-reconciliation.md. Section 4 states its figures and points at those files rather than
+restating a 377-line log.
+
+
+1. cargo fmt --all -- --check
+------------------------------
+
+    $ cargo fmt --all -- --check
+    (no output)
+    exit 0
+
+Clean. The command prints a diff of what it would change and prints nothing when there is nothing, so
+"no output" is the whole of the result and the exit code is the whole of the verdict.
+
+
+2. cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+--------------------------------------------------------------------------------
+
+Run from a fully cleaned target directory, so that every unit is actually linted rather than reported
+from cache. This matters: the same command against a warm target directory finishes in 1.6 seconds
+having checked nothing, and its exit 0 would then be a statement about the cache.
+
+    $ cargo clean
+         Removed 3699 files, 814.7MiB total
+
+    $ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+       Compiling proc-macro2 v1.0.107
+       Compiling quote v1.0.47
+       Compiling unicode-ident v1.0.24
+        Checking Mokiterions v0.1.0 (mokiterions-core)
+        Checking foldhash v0.2.0
+        Checking cfg-if v1.0.4
+       Compiling rustversion v1.0.23
+        Checking equivalent v1.0.2
+        Checking allocator-api2 v0.2.21
+       Compiling strsim v0.11.1
+       Compiling thiserror v2.0.20
+       Compiling ident_case v1.0.1
+        Checking either v1.17.0
+       Compiling unicode-segmentation v1.13.3
+       Compiling winapi v0.3.9
+       Compiling parking_lot_core v0.9.12
+       Compiling heck v0.5.0
+        Checking bitflags v2.13.1
+        Checking itertools v0.14.0
+        Checking hashbrown v0.17.1
+        Checking hashbrown v0.16.1
+       Compiling convert_case v0.10.0
+        Checking scopeguard v1.2.0
+        Checking windows-link v0.2.1
+        Checking static_assertions v1.1.0
+        Checking unicode-width v0.2.2
+        Checking ryu v1.0.23
+        Checking itoa v1.0.18
+        Checking smallvec v1.15.2
+       Compiling instability v0.3.13
+        Checking lru v0.18.2
+        Checking lock_api v0.4.14
+        Checking critical-section v1.2.0
+       Compiling litrs v1.0.0
+       Compiling indoc v2.0.7
+        Checking line-clipping v0.3.8
+        Checking parking_lot v0.12.5
+        Checking castaway v0.2.4
+       Compiling syn v3.0.3
+       Compiling syn v2.0.119
+       Compiling document-features v0.2.12
+        Checking compact_str v0.9.1
+        Checking unicode-truncate v2.0.1
+        Checking crossterm_winapi v0.9.1
+       Compiling strum_macros v0.28.0
+       Compiling derive_more-impl v2.1.1
+        Checking derive_more v2.1.1
+        Checking crossterm v0.29.0
+       Compiling darling_core v0.24.0
+        Checking strum v0.28.0
+       Compiling thiserror-impl v2.0.20
+        Checking kasuari v0.4.12
+        Checking ratatui-core v0.1.2
+       Compiling darling_macro v0.24.0
+       Compiling darling v0.24.0
+        Checking ratatui-crossterm v0.1.2
+        Checking ratatui-widgets v0.3.2
+        Checking ratatui v0.30.2
+        Checking mokiterions-tui v0.1.0 (mokiterions-tui)
+        Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.28s
+    exit 0
+
+Clean. Not one warning line, on either package, on any target. The absolute paths cargo prints for the
+two workspace members are shortened to their directory names above; nothing else is edited.
+
+Every crate but the two workspace members is a transitive dependency of ratatui, reached through
+mokiterions-tui. None of them is reachable from the engine -- section 3 is that check.
+
+`-D warnings` is the declared lint gate, and it is the only one: neither package declares a crate-level
+lint attribute and neither manifest carries a [lints] table, so the gate lives in this command line and
+nowhere else. That is why the command matters more here than in a repository that pins its lints in the
+manifest, and why the next clause is worth measuring rather than asserting.
+
+**No `allow` attribute was added and no lint was suppressed to accommodate this change.** Three exist in
+the workspace, and all three predate the work order:
+
+    $ grep -rn "allow(" --include=*.rs mokiterions-core mokiterions-tui
+    mokiterions-tui/src/state.rs:108:    #[allow(dead_code)]
+    mokiterions-tui/src/state.rs:294:    #[allow(dead_code)]
+    mokiterions-tui/src/state.rs:334:    #[allow(dead_code)]
+
+    $ git grep -n "allow(" 39662d13abd08e3410648d1c59ad38384f8ad2d2 -- '*.rs'
+    (the same three lines, at the same line numbers, in the same file)
+
+Three at the baseline commit, three at this one, identical. All three are in the observer and none is in
+the engine, so the engine -- which is what this work order changes -- carries no suppression at all.
+
+
+3. cargo tree -p Mokiterions
+-----------------------------
+
+    $ cargo tree -p Mokiterions
+    Mokiterions v0.1.0 (mokiterions-core)
+    exit 0
+
+One line. The engine resolves to itself and to nothing else, which is what SPEC-MOK-002 rule 1 and
+ARCH-MOK-001 as amended require with no exception, and what REQ-MOK-026 is discharged by. A dependency
+shared with mokiterions-tui would appear here, and none does.
+
+The engine's manifest is the source of that, and it is empty by declaration rather than by accident:
+
+    [dependencies]
+                    <- mokiterions-core/Cargo.toml, last line, no entry
+
+There is no [dev-dependencies] table at all, which is the stronger form of the same claim: the 250
+tests of section 4 are written against std and the crate under test, with no test-only crate anywhere.
+
+For contrast, and because VER-MOK-012 asks for the observer's set in the same section:
+
+    $ cargo tree -p mokiterions-tui --depth 1
+    mokiterions-tui v0.1.0 (mokiterions-tui)
+    |-- Mokiterions v0.1.0 (mokiterions-core)
+    `-- ratatui v0.30.2
+
+One path dependency on the engine and ratatui at the pinned 0.30.2, with `default-features = false` and
+exactly the three features SPEC-MOK-003 fixes -- "crossterm", "layout-cache", "underline-color".
+Nothing added. The arrow runs one way, engine to observer, which is the direction ARCH-MOK-001 fixes.
+
+
+4. cargo test at the workspace root
+------------------------------------
+
+Retained whole rather than restated. Its figures, and where each log is:
+
+    baseline/test-run.txt          39662d13   212 names   212 passed   exit 0
+    post/test-run.txt              7c4aef39   249 names   246 passed   exit 101   3 failing
+    post/test-run-amended.txt      13906153   250 names   250 passed   exit 0
+
+The 3 failures at 7c4aef3 are the four unsatisfiable obligations escalation.md records; the amendment
+of 2026-08-20 resolved them, and the amended log is the state of the branch. Both candidate pairs are
+kept, for the reason post/test-census-reconciliation.md section 8 gives.
+
+VER-MOK-012 asks that the one invocation reach "every tier of both packages ... with no feature,
+environment variable, ignore attribute, extra command, terminal or working-directory dependence." Every
+clause of that is measurable, and each is zero or nothing:
+
+    $ grep -rn "#\[ignore" --include=*.rs mokiterions-core mokiterions-tui | wc -l
+    0
+
+    $ grep -rn "cfg(feature" --include=*.rs mokiterions-core mokiterions-tui | wc -l
+    0
+    $ grep -n "^\[features\]" mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml | wc -l
+    0
+
+    $ grep -rn "env::var\|env!(" --include=*.rs mokiterions-core/tests mokiterions-tui/tests
+    (no match)
+
+    $ grep -rn "CARGO_BIN_EXE\|current_dir\|process::Command" --include=*.rs \
+          mokiterions-core/tests mokiterions-tui/tests
+    (no match)
+
+The last two are the load-bearing pair. A CLI test that spawns the built binary would depend on the
+working directory and on the target directory's layout, and mokiterions-core/tests/cli.rs does not: it
+calls `mokiterions::cli::parse` in process, as its own header states, and asserts on the returned
+`Command`. No test in either package starts a process, reads an environment variable or names a path.
+Terminal dependence is excluded by the same fact -- nothing in the tests opens a terminal, and the
+observer's rendering tiers assert against a ratatui test backend rather than a tty.
+
+The 250 names carry the target they ran in, so the "every tier" clause is checkable by reading
+post/test-census-amended.txt rather than by trusting this sentence. Sixteen prefixes appear: the fifteen
+integration targets of section 5 -- seven of the engine, eight of the observer -- and `unittests`, whose
+rows carry the module path and cover four separate unit units:
+
+    unittests :: simulation::…   82   the engine's library
+    unittests :: render::…       18   the observer's library
+    unittests :: verification::…  9   the observer's library
+    unittests :: state::…         4   the observer's library
+    unittests :: tests::…         8   the observer's binary
+
+The engine's binary is the one compilation unit with no unit tier, and it is 19 lines that hold no
+behaviour to test: it locks and buffers the two streams, calls `mokiterions::execute` with the arguments,
+and turns a flush failure into exit 1. Every decision it could have made is in the library, where
+mokiterions-core/tests/cli.rs and the 82 rows above reach it.
+
+
+5. Packages, targets, build scripts and names
+----------------------------------------------
+
+VER-MOK-012: "No new package, no new target, no build script, and no change to any package, library or
+binary name."
+
+    $ git diff --stat 39662d13..1b06d851 -- Cargo.toml Cargo.lock \
+          mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml
+    (no output -- not one of the four files differs)
+
+That single diff settles the package count, both target lists, all six names and the absence of a build
+script at once, because every one of them is declared in those four files and in no other place. The
+lock file is in the check deliberately: an added dependency that a manifest reached by inheritance
+would still move Cargo.lock, and it did not move.
+
+    $ cargo metadata --no-deps
+    Mokiterions      lib mokiterions, bin Mokiterions,
+                     tests: cli decisions density naming process termination viability
+    mokiterions-tui  lib mokiterions_tui, bin mokiterions-tui,
+                     tests: authority export layout options render spatial state verification
+
+    $ find . -name build.rs -not -path './target/*'
+    (no match)
+
+Two packages, four non-test targets, fifteen integration test targets, no build script. The fifteen
+test files are the same fifteen at the baseline commit, by name:
+
+    $ git ls-tree -r --name-only 39662d13 | grep -E '(mokiterions-core|mokiterions-tui)/tests/'
+    $ git ls-tree -r --name-only 1b06d851 | grep -E '(mokiterions-core|mokiterions-tui)/tests/'
+    (identical, fifteen lines each)
+
+So the 39 test cases post/test-census-reconciliation.md counts as added were added to files that
+already existed. Not one new target carries them, which is why the census reconciles by name within
+known targets rather than gaining a target column.
+
+
+6. What this file does not establish
+-------------------------------------
+
+- Nothing here is a verification verdict. VER-MOK-012 is the contract, VREC-MOK-012 the record.
+- The engine's public-interface enumeration against the approved SPEC-MOK-002 amendment is a separate
+  retention item and is not in this file. `cargo tree` bounds what the engine depends on; it says
+  nothing about what the engine exports. interface.txt is where that is owed.
+- The observer authority table's new rows and the EventType::ALL exhaustiveness check are likewise a
+  separate item, owed as observer.md. Section 2's clean clippy run does not stand in for either.
+- clippy at exit 0 is a statement about the lints clippy has, at this toolchain, on this platform. It
+  is recorded with the toolchain version above for that reason.
+- The three `allow(dead_code)` attributes are shown to be unchanged by this work order, not shown to be
+  justified. They belong to the observer and to the work order that wrote them.

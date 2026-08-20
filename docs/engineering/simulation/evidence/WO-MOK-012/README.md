@@ -9,7 +9,7 @@
 | Candidate commits | **two, and the difference matters.** `7c4aef3967406c05d80da963695898b77f5329e9` — the 90-cell three-source matrix and the first test log. `59d61b915630fd55f04bcdbb346aa22cdbfdfff6` — the 30 `social` cells and the amended suite, after the `REQ-MOK-048` amendment. `post/COMMIT.txt` holds the first; `post/capture-state.txt` §5 relates the two and measures the ninety cells as **unchanged** at the second, which is why they were not retaken |
 | Branch | `feature/phase-3-definition` |
 | Date opened | 2026-08-20 |
-| Packet size | 126 files, 2,231,162 bytes |
+| Packet size | 127 files, 2,245,184 bytes |
 
 **This packet is incomplete, and one requirement it measures is deliberately unimplemented.** Both are
 stated here so that neither can be mistaken for anything else:
@@ -18,7 +18,7 @@ stated here so that neither can be mistaken for anything else:
   what keeps `WO-MOK-012` out of `implemented`, it is why `post/byte-identity.txt` reads
   `RESULT: MIXED` — the 60-cell divergence that oracle 1 asks to be characterized does not exist to be
   characterized — and it is recorded rather than worked around.
-- **Eleven of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
+- **Ten of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
   file marks every one. Nothing is held back any more: the direction of 2026-08-20 that held the
   decision-dependent items until the `REQ-MOK-048` amendment was measured has been discharged — the
   amendment landed, and `post/runs.md`, `post/branches.md` and `identifier.md` are those items. What
@@ -125,6 +125,7 @@ holds it. Every path either names is relative to this directory, as `post/byte-i
 | `test-census-amended.txt` | that log as 250 names, produced by the same reader |
 | `test-census-reconciliation.md` | row 248 discharged name by name across both candidates: three renames, one of them proved verbatim by digest, and §8 relating the two log pairs |
 | `reads.md` | the `REQ-MOK-050` enumeration and the `fear`-writer enumeration; verdict **met** |
+| `gates.txt` | the four gate commands recorded with their exit codes — `fmt`, `clippy` from a cleaned target directory, `tree`, and `cargo test`'s three logs by reference — with the `allow`-attribute, manifest, target and test-independence enumerations of the same contract section |
 
 `--no-fail-fast` is on both candidate invocations and was not on the baseline's, for a reason
 `test-census-reconciliation.md` §4 states: without it cargo stops after the first failing target and
@@ -203,12 +204,12 @@ generalized, so that both manifests are produced by one reader.
 | the engine public-interface enumeration at both commits, against the approved `SPEC-MOK-002` amendment | **owed** — `interface.txt`, and it is checked against **four** growth rows, not three: that amendment gained a row on 2026-08-20 for the `suffered` field on the existing public `ActionTrace` payload, which its first three rows had omitted |
 | the observer authority table's new rows and the `EventType::ALL` exhaustiveness check | **owed** — `observer.md` |
 | the post-change test census, reconciled name by name | **held** — two log pairs and one reconciliation: 249 names with 3 failures at `7c4aef3`, 250 names all passing after the amendment, 211 retained from the baseline's 212, 39 added, 0 removed, 0 ignored, 0 non-`ok`, across three renames |
-| `cargo fmt`, `cargo clippy`, `cargo test`, `cargo tree -p Mokiterions` | **half held** — `cargo test` at the baseline and at both candidates. `fmt`, `clippy` and `tree` are owed as recorded output — `gates.txt` |
+| `cargo fmt`, `cargo clippy`, `cargo test`, `cargo tree -p Mokiterions` | **held** — `post/gates.txt`, all four at exit `0`, clippy run from a cleaned target directory so that its exit code is a statement about the code and not about the cache. `cargo test` is retained whole at three commits and referenced rather than restated. The same file carries the section's adjacent enumerations: three `allow` attributes, all pre-existing and all in the observer; the four manifests byte-identical to the baseline's; fifteen test targets unchanged; and zero `#[ignore]`, feature gate, environment read, spawned process or path reference in any test |
 | the 10,000-tick run's completion, composition and survivor figures | **owed** — `long-horizon.md` |
 | the eleven manual assessments, each with its accountable role and date | **owed, and not the implementation's to write** — `manual-assessment.md` will hold the prepared records and the measured evidence each assessment is taken against; the assessments themselves are the owner's acts |
 | the amendment-approval check of oracle 7, with the recorded state of the `VREC-MOK-005` gate | **owed** — `amendment-approvals.md` |
 
-**Eleven items remain: nine wholly unwritten and two held in part.** Nothing is held back any more.
+**Ten items remain: nine wholly unwritten and one held in part.** Nothing is held back any more.
 The direction of 2026-08-20 — that the decision-dependent items wait until the `REQ-MOK-048` amendment
 was measured, since the amendment moved all of them — has been discharged: the amendment landed, the
 thirty `social` cells were retaken at it, and the four items that were waiting on it are `post/runs.md`,
