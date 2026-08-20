@@ -107,7 +107,9 @@ food again. The candidate trades a peaceful matrix for a depopulated one, which 
 foraging behavior fails it as squarely as one where they killed each other".
 
 This is reported rather than worked around. The selection was made on a measurement that did not exist yet,
-which is why it was put with that caveat, and the decision now needs to be remade against the numbers.
+which is why it was put with that caveat, and the decision was remade against the numbers on the same date.
+§6 records what was answered. **The selection stands**, so this section is a measurement of an option that
+was kept, not of one that was withdrawn, and §7 measures the combination the answers actually select.
 
 ## 5. What the requirement's own stated lever does
 
@@ -160,31 +162,101 @@ thresholds is a change to `REQ-MOK-048` and is governed there… and it is not f
 Both need an approved amendment to `REQ-MOK-048` before either is written. That is stop condition 11, and
 this record is not an authorization.
 
-## 6. What the product owner is being asked
+## 6. What the product owner answered
 
-1. **Whether to withdraw the "rescope the fear rise" selection**, on §4's measurement. It recovers lethality
-   and loses habitability, and it costs a Phase 2 amendment to do so.
-2. **Whether to amend `REQ-MOK-048`'s branch order** so that rule 19's case 3 precedes branches 3 and 4 —
-   change A. This is also, independently, a correction of the inconsistency §5 documents between
-   `REQ-MOK-048`'s branch 2 and `REQ-MOK-049`'s account of it, and it is worth deciding on that ground even
-   if the threshold question is answered differently.
-3. **What `ENGAGEMENT_FEAR_THRESHOLD` becomes** — change B. `95` and `100` both satisfy the requirement.
-   `100` is self-describing, since it equals `ATTRIBUTE_MAX`: only a Mokiterion at maximum `fear` declines to
-   engage. `95` is an arbitrary number, and holds four more survivors of margin above the floor at its worst
-   seed (9) than `100` does (6). The band is narrow either way — `90` fails on one seed — and that narrowness
-   is itself a finding: this requirement is met only where the gate is "engage unless saturated", and a value
-   chosen for roundness will not do.
-4. **Whether the floor of five stands**, now that the first curve on which any lethal matrix exists has been
-   measured. `REQ-MOK-049` reserves this: "the evidence is what the product owner ratifies the floor on".
-5. **`REQ-MOK-051`.** Unimplemented, deferred on 2026-08-20 to a second amendment. It is an approved
-   requirement inside this work order's scope and `WO-MOK-012` cannot reach `implemented` while it stands,
-   whichever way 1 to 4 are decided.
+The four questions of §5 were put on 2026-08-20 with the tables above as their framing, and answered the
+same day. The answers are recorded verbatim as selected, before any reading is placed on them.
 
-## 7. What was not done
+| # | Question | Answer selected |
+|---|---|---|
+| 1 | withdraw the "rescope the fear rise" selection? | **"Keep it, and lower the floor"** — rule 12 stays contact-driven, and `REQ-MOK-049`'s survivor floor "drops to one or two to match the world that produces" |
+| 2 | amend `REQ-MOK-048`'s branch order? | **"Amend the branch order"** — rule 19's case 3 moves ahead of branches 3 and 4 |
+| 3 | what `ENGAGEMENT_FEAR_THRESHOLD` becomes | **`95`**, selected against the row recording survivors 9, 10, 9, 9, 11 |
+| 4 | does the floor of five stand? | **"Ratify five as it stands"** — "the floor stays at five of twelve" |
 
-- No implementation adjustment was made to reach any bound. The measurements in §4 and §5 were taken with a
-  throwaway scaffold, behind environment switches, which was reverted before this record was written; the
-  working tree is clean at `7c4aef3` and the suite there is 246 / 3 / 0.
+`REQ-MOK-051` was not re-put; its deferral of 2026-08-20 to a second amendment stands, and `WO-MOK-012`
+cannot reach `implemented` while it does, whichever way the rest is decided.
+
+**Answers 1 and 4 cannot both be written.** Answer 1 lowers the floor to one or two; answer 4 keeps it at
+five. Nothing in the implementation can satisfy both, and no reading reconciles them, so neither has been
+written into an artifact. §7 measures which of them the world can actually support, and §8 puts the
+remaining choice.
+
+## 7. The combination the answers select, measured
+
+Answers 1, 2 and 3 together select **contact-driven rule 12 + food-first branch order + gate `95`**. That
+combination is in none of §5's rows: §5 measured the contact-driven rule only at gate `30`, and measured
+gate `95` only under the perception-driven rule. It was therefore taken before anything was written, on the
+same scaffold, the same five seeds, the same `--policy social --density 0.75 --ticks 1000 --trace-actions`.
+
+The scaffold's fidelity was established first, on two rows already in §5. Re-run with every switch off it
+reproduced the shipped candidate on all four columns — survivors 6, 4, 8, 4, 5, zero combat deaths, zero
+`surrender`, and meals 304, 255, 298, 205, 273, which is §2's meals column to the unit. Re-run at
+contact/food-first/`30` it reproduced that row of §5 exactly: 1, 4, 2, 3, 2 and 10, 8, 9, 9, 10. Both
+controls agreeing is what makes the new rows below comparable to the old ones rather than a second reading.
+
+| Rule 12 | Order | `ENGAGEMENT` | Survivors | Combat deaths | `surrender` applied | Meals | Floor 5 |
+|---|---|---:|---|---|---|---|---|
+| contact | as specified | 95 | 1, 2, 2, 2, 2 | 10, 10, 10, 10, 10 | 0, 2, 1, 0, 3 | 115–153 | ✗ ×5 |
+| contact | food first | 30 | 1, 4, 2, 3, 2 | 10, 8, 9, 9, 10 | 0, 0, 0, 0, 1 | 153–219 | ✗ ×4 |
+| contact | food first | 45 | 2, 3, 4, 2, 4 | 10, 9, 8, 9, 8 | 1, 1, 0, 0, 1 | 182–218 | ✗ ×5 |
+| contact | food first | 50 | 2, 2, 1, 3, 3 | 9, 10, 10, 9, 8 | 1, 1, 0, 0, 2 | 148–189 | ✗ ×5 |
+| **contact** | **food first** | **60** | **4, 3, 3, 4, 3** | **8, 9, 8, 8, 9** | **0, 6, 0, 1, 1** | **194–219** | ✗ ×5 |
+| contact | food first | 70 | 2, 2, 2, 1, 3 | 10, 9, 9, 10, 9 | 0, 4, 6, 4, 3 | 135–227 | ✗ ×5 |
+| contact | food first | 90 | 2, 4, 2, 3, 2 | 10, 8, 10, 9, 9 | 3, 4, 0, 2, 9 | 160–198 | ✗ ×5 |
+| **contact** | **food first** | **95 — selected** | **3, 4, 2, 3, 2** | **9, 8, 10, 9, 10** | **1, 4, 0, 0, 8** | **151–198** | **✗ ×5** |
+| contact | food first | 100 | 2, 4, 2, 3, 2 | 10, 8, 10, 9, 9 | 1, 4, 0, 0, 6 | 131–198 | ✗ ×5 |
+
+Three findings, and the second is the one that decides the matter.
+
+1. **The selected combination meets two of the three obligations.** Lethality holds on all five seeds, and
+   `surrender` applies on three of them, so `VER-MOK-012` oracle 4 — which asks only that each verb apply
+   *somewhere* in the declared matrix — passes. Answer 3's gate is what buys the `surrender`: at gate `30`
+   the same variant applied it on one seed only.
+2. **The survivor floor of five is not reachable under contact-driven rule 12 at any gate value.** The
+   highest count on *any* seed anywhere in the band is `4`. The best worst-seed is `3`, at gate `60` — not at
+   the selected `95`. Answer 4's five is not missed here by a margin that a better gate closes; it is above
+   the whole curve. Answer 1 and answer 4 are therefore not merely inconsistent as text, they are
+   inconsistent as physics.
+3. **Answer 3's value is not the best one on its own branch.** Gate `95` was chosen against the
+   perception-driven row's 9, 10, 9, 9, 11. Carried onto the contact-driven branch it gives 3, 4, 2, 3, 2,
+   while gate `60` gives 4, 3, 3, 4, 3 with lethality and `surrender` still met and meals higher on four
+   seeds. If the contact-driven rule is kept, the gate that goes with it is `60`.
+
+Habitability stays depressed across the whole band: 131–227 meals against 205–304 at the shipped candidate
+and 378–417 under `individual`. That is §3's third consequence surviving change A, because a Mokiterion held
+in lasting contact saturates and `threaten`s rather than walking to food, and change A reorders only the
+branch that fires when *no* company is in contact.
+
+## 8. The one question the answers leave open
+
+Exactly one decision remains, and it is a single choice among three coherent packages. Each is stated with
+what it costs, because two of the three cost an approved Phase 2 requirement and the third costs answer 1.
+
+| | Rule 12 | Gate | Floor | Result | What it costs |
+|---|---|---:|---:|---|---|
+| **A** | perception, **as Phase 2 approved** | 95 | **5** | 9, 10, 9, 9, 11 · 1, 2, 2, 3, 1 · `surrender` 5, 10, 8, 6, 7 | **answer 1 is withdrawn.** No Phase 2 amendment, `WO-MOK-010`'s measured `fear` distribution stands, and answers 2, 3 and 4 are all honored as given |
+| **B** | contact | **60** | **3** | 4, 3, 3, 4, 3 · 8, 9, 8, 8, 9 · `surrender` on 3 seeds | **answer 3's `95` and answer 4's five are both withdrawn.** Amends Phase 2 rule 12, invalidating `WO-MOK-010`'s `fear` distribution; drops the floor from twelve-of-twelve's five to three |
+| **C** | contact | 95 | **2** | 3, 4, 2, 3, 2 · 9, 8, 10, 9, 10 · `surrender` on 3 seeds | **answer 4 is withdrawn**, to the "one or two" answer 1 names. Same Phase 2 cost as B, and a floor two-sixths of the population, on a gate that is not the best on its own branch |
+
+A is the only package that requires no Phase 2 amendment and no floor movement, and the only one where the
+floor `REQ-MOK-049` was written around survives. B is the honest reading of answer 1 if the contact-driven
+rule is wanted for its own sake, and it is the best the contact-driven world can do. C is answer 1, 2 and 3
+taken literally with answer 4 given up.
+
+None of the three is written. `REQ-MOK-049` reserves the floor to the product owner — "the evidence is what
+the product owner ratifies the floor on" — and this record is not an authorization for any of them.
+
+## 9. What was not done
+
+- No implementation adjustment was made to reach any bound. The measurements in §4, §5 and §7 were taken with
+  a throwaway scaffold, behind environment switches, reverted each time before anything was written. §7's
+  scaffold was re-applied a second time on 2026-08-20 and reverted again; the working tree is clean at
+  `7c4aef3` and the suite there is 246 / 3 / 0. Two of §7's nine rows are controls that reproduce rows
+  already in §2 and §5 to the unit, which is how the scaffold is shown not to be the measurement.
+- **No floor, gate or branch order was written into any artifact.** `REQ-MOK-048` and `REQ-MOK-049` stand
+  exactly as approved. §8's three packages are measured, not adopted, and the contradiction between answers 1
+  and 4 was not resolved by choosing on the owner's behalf.
 - No test assertion was relaxed, widened, removed or `#[ignore]`d. The three failing cases fail loudly, print
   their whole table, and name every seed. `post/test-census-reconciliation.md` accounts for the one rename
   name by name.

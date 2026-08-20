@@ -17,8 +17,9 @@ stated here so that neither an incomplete packet nor a failing measurement can b
 anything else:
 
 - **`escalation.md` is the file to read first.** `REQ-MOK-049`'s lethality bound is missed on every
-  declared seed, `surrender` never applies, and three tests fail at the candidate. Work is stopped on
-  four owner decisions, each measured and put with its alternatives.
+  declared seed, `surrender` never applies, and three tests fail at the candidate. Four owner decisions
+  were put, each measured with its alternatives, and answered on 2026-08-20 — but two of the four answers
+  cannot both be written, so work remains stopped on one open choice among three measured packages.
 - **The curve-dependent evidence is deliberately not here.** The product owner directed on 2026-08-20
   that only the decision-independent items be produced now — the byte-identity manifests, the test
   census reconciled name by name, the `REQ-MOK-050` read enumeration and the escalation record — and
@@ -38,7 +39,7 @@ would forfeit the oracle rather than satisfy it.
 
 | # | File | What it establishes |
 |---|---|---|
-| 1 | `escalation.md` | **the four failing obligations, their one cause, and the measurement of every option** — including the option the owner selected, which the measurement refutes |
+| 1 | `escalation.md` | **the four failing obligations, their one cause, and the measurement of every option** — including the option the owner selected, which the measurement refutes, and the seventeen-variant band that shows the ratified floor is unreachable on the branch the owner kept |
 | 2 | `post/byte-identity.txt` | the two clauses of oracle 1: `baseline` identical on 30 of 30 cells unprojected; the 60-cell divergence absent because `REQ-MOK-051` is unimplemented — `RESULT: MIXED` |
 | 3 | `post/capture-state.txt` | the candidate capture's provenance, measured: 90 of 90 cells reproduced from a `git archive` of the candidate commit — `RESULT: PASS` |
 | 4 | `post/test-census-reconciliation.md` | 212 names into 249, name by name: 211 retained, 1 rename proved verbatim by digest, 38 added, 0 removed, 0 ignored |
@@ -58,7 +59,7 @@ would forfeit the oracle rather than satisfy it.
 | File | Contents |
 |---|---|
 | `README.md` | this index |
-| `escalation.md` | the four failing obligations, the cause, the owner's selected option measured and refuted, and the one region of `REQ-MOK-048`'s own lever where both bounds hold |
+| `escalation.md` | the four failing obligations, the cause, the owner's selected option measured and refuted, the one region of `REQ-MOK-048`'s own lever where both bounds hold, the answers of 2026-08-20 recorded as selected, and the one contradiction they leave open with each of its three resolutions measured |
 | `capture.sh` | the harness that produces one 90-cell capture; `WO-MOK-011`'s script with adapted comments, so the two work orders' captures are comparable without a reader diffing the harness |
 | `capture-social.sh` | the 30 `social` cells, in `capture.sh`'s shape unchanged — same loop order, same cell naming, same `.exit` file beside each stream — so the two captures are comparable by the same reader |
 
