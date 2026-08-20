@@ -412,10 +412,27 @@ verification record in this repository carries, and the reason it exists.
   amended requirements keep the text the product owner approved, and the coverage they are owed sits with `VER-MOK-005`
   and `VER-MOK-008`, which stay owed. `WO-MOK-013-review-gate.md` states the cost of that in full, and this record does
   not restate it as settled.
-- **It closes nothing outstanding elsewhere.** `VER-MOK-005` and `VER-MOK-008` stay owed by the owner's decision of
-  2026-08-20 to leave both for a separate change; `W-HEX-003` names them here as it did at `ff3a155`. `VER-MOK-011`'s
-  fifth manual assessment, the four `OUTSTANDING` amendment rows from 2026-08-18 and 2026-08-19, and the verification
-  record owed against an earlier merge commit are neither cleared nor inherited.
+- **It closes nothing outstanding elsewhere, and one item on that list is created here rather than inherited.**
+  `VER-MOK-005` and `VER-MOK-008` stay owed by the owner's decision of 2026-08-20 to leave both for a separate change,
+  refined the same day into a scope, a depth and a timing: those two contracts and `REL-MOK-001`, which gates them;
+  rewording the four sites that assert the withdrawn empty-dependency property — `VER-MOK-005:149`, `:231`, `:234`,
+  `:296` and `VER-MOK-008:169`, the last of which also names a `release.yml` step that `WO-MOK-013` replaced; and a
+  separate work order taken up after pull request #33 merges. The route is measured rather than assumed: reassessing the
+  two contracts alone takes the dashboard from **7 warnings to 8**, because staleness then propagates to `REL-MOK-001`
+  twice and to `WO-MOK-008` once, where reassessing `REL-MOK-001` with them takes it to **6**.
+- **The `W-HEX-003` observations that name those two contracts are this change's own doing.** An earlier version of the
+  bullet above said `W-HEX-003` "names them here as it did at `ff3a155`". That is false, and the evidence this record
+  binds disproves it. `W-HEX-003` reports five observations at `ff3a155` and five here, but the two sets are
+  **disjoint** — `WO-MOK-013-completion-summary.md:87-93` tabulates both, and at `ff3a155` they are
+  `ADR-MOK-001`→`ARCH-MOK-001`, `ARCH-MOK-001`→`SPEC-MOK-001`/`SPEC-MOK-002` and
+  `ARCH-MOK-002`→`SPEC-MOK-003`/`SPEC-MOK-004`, naming neither contract. Ten artifacts moving to 2026-08-20 cleared
+  those five because their sources caught up, and created five because their targets moved ahead of unamended sources.
+  The equal count was the whole trap. `WO-MOK-013-transition.md:184` compares against `84b21b9`, which is on this branch
+  and after the dates moved, so it holds; `WO-MOK-013-review-gate.md:160` claims only that the five are unchanged across
+  the three routes it measured, which is what was measured.
+- **What is genuinely inherited is inherited.** `VER-MOK-011`'s fifth manual assessment, the four `OUTSTANDING`
+  amendment rows from 2026-08-18 and 2026-08-19, and the verification record owed against an earlier merge commit
+  predate this branch. None is cleared here and none is claimed as settled.
 
 ## The one reading this record does not take
 
