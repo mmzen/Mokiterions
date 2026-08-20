@@ -160,3 +160,11 @@ re-running them chooses the layout and should not expect the tools to reproduce 
 the assurance owner against the commit that carries this implementation, and the implementation agent
 neither writes nor approves it. `VER-MOK-011` is not satisfied while manual assessment 5 is
 outstanding — see `manual-assessment.md`.
+
+> **Later fact, added 2026-08-20 without changing anything above.** `VREC-MOK-011` was transitioned from
+> `ready` to `verified` on that date by the repository owner as assurance owner. **It binds `9ddcf83` and
+> not the merged tree**, assessment 5 remains outstanding, and the sentence above about `VER-MOK-011` is
+> unchanged by the transition. `WO-MOK-011` was **not** moved and stays `in_progress`. The re-derivation
+> `merge/README.md` records as owed — oracles 1, 2 and 4 and the mutation control — is still owed, and a
+> record bound to the merge commit is still owed with it. `assurance-decision.md` records the decision,
+> what it accepted and what it left standing.
