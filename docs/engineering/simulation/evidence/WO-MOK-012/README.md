@@ -7,11 +7,13 @@ blocked behind. This directory is its retained evidence.
 `mokiterions-tui/` is modified, and `completion-summary.md` records the diff check that establishes it. The three
 adverse observations the assessment pass produced are recorded here and **fixed by a later chain**, by decision 12.
 
-**That chain is now drafted and largely approved.** `WO-MOK-013`, `VER-MOK-013` and `REQ-MOK-047` through `REQ-MOK-049`
-implement decisions 13 to 15. The three requirements and the verification contract were **approved on 2026-08-20**, and
-the six `SPEC-MOK-003` amendments the work order needs were **ratified the same day, each put as its own question**;
-`WO-MOK-013` itself remains `draft`, awaiting approval as a bounded scope. Three facts found while authoring it bear on
-this directory.
+**That chain is now drafted and approved throughout.** `WO-MOK-013`, `VER-MOK-013` and `REQ-MOK-047` through
+`REQ-MOK-049` implement decisions 13 to 15. The three requirements and the verification contract were **approved on
+2026-08-20**, the six `SPEC-MOK-003` amendments the work order needs were **ratified the same day, each put as its own
+question**, and `WO-MOK-013` itself was **approved as a bounded scope** later that day, recorded as decision 18 of its own
+sequence. **No in-scope item of that chain is implemented**: the approval authorizes the work and asserts nothing about
+it, and the tree remains byte-identical to `ff3a155` under `mokiterions-core/` and `mokiterions-tui/`. Three facts found
+while authoring the chain bear on this directory.
 
 **Decision 13 has been superseded in its route, by the product owner, on 2026-08-20.** As recorded in
 `closing-review.md`, decision 13 accepted showing ten of twelve roster entries at the reference viewport. Authoring the

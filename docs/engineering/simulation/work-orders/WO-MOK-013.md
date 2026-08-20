@@ -2,7 +2,7 @@
 id = "WO-MOK-013"
 type = "work_order"
 title = "Make the observer's survival gauges resolve, its controls discoverable, and its hidden-pane notice actionable"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -22,9 +22,10 @@ verification = ["VER-MOK-013"]
 
 ## Lifecycle
 
-This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope
-below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
-completed change and the retained evidence. Verification and release require separate commit-bound records.
+This work order was a proposal while its status was `draft`. **It is `approved` as of 2026-08-20**, which authorizes the
+scope below and nothing else. Transition to `in_progress` records that implementation has begun. Transition to
+`implemented` requires the completed change and the retained evidence. Verification and release require separate
+commit-bound records.
 
 Commit-bound verification is classified `required` above. `VREC-MOK-013` is the record that binds it, and it does not
 exist yet.
@@ -36,8 +37,15 @@ stood by it when the cost was restated, recorded as decisions 1 and 2 in *Decisi
 **The three requirements this work order implements are `approved`** as of 2026-08-20, in three separate product-owner
 acts recorded as decisions 5, 6 and 7. `SPEC-MOK-003` declares coverage of all three (decision 8) and `VER-MOK-013` is
 `approved` (decision 9), so the validator holds at PASS with the three requirements active. **The six `SPEC-MOK-003`
-amendments are all ratified**, each put as its own question, as decisions 12 to 17. **What remains before implementation
-can begin is this work order's own approval as a bounded scope.** It is `draft`.
+amendments are all ratified**, each put as its own question, as decisions 12 to 17. **The last thing standing between
+the chain and implementation — this work order's own approval as a bounded scope — was given on 2026-08-20**, recorded as
+decision 18.
+
+**Nothing in the chain now waits on an accountable decision, and no in-scope item has been implemented.** At the moment
+of that approval the tree is byte-identical to `ff3a155` under `mokiterions-core/` and `mokiterions-tui/`, `bar_width`
+still divides by four, the six ratified amendment texts are ratified and not applied, `evidence/WO-MOK-013/` does not
+exist and `docs/ROADMAP.md` carries no entry for this chain. The status says who authorized the work, not that it is
+done.
 
 **No amendment row in this chain is to be left `OUTSTANDING`, and none is.** Every specification amendment this work order
 needs is stated below, in advance, in the terms the accountable owner had to decide it in, and every one was decided
@@ -131,13 +139,18 @@ and that withholding carries here.
 
 ## Decision record
 
-One decision has been taken on this work order. It is numbered in this work order's own sequence and does not continue
-`WO-MOK-012`'s closing review, whose seventeen decisions are numbered there; where one of those bears on this work order
-it is cited by its number and its document, as decision 13 is below.
+**Eighteen decisions have been taken on this work order**, all on 2026-08-20. They are numbered in this work order's own
+sequence and do not continue `WO-MOK-012`'s closing review, whose seventeen decisions are numbered there; where one of
+those bears on this work order it is cited by its number and its document, as `WO-MOK-012`'s decision 13 is below. **The
+two sequences collide in their numbers and not in their subjects.**
 
-Nothing else is decided. Approval, the six `SPEC-MOK-003` ratifications, the `VER-MOK-005` amendment, the
-`commit_bound_verification` confirmation and the `WO-MOK-012` identifier collision are all open, and none of them is
-settled by the decision recorded here.
+**This preamble read "One decision has been taken on this work order" until 2026-08-20, and it was stale from decision 2
+onward.** It is corrected rather than left standing, and the correction is the agent's: the sentence states a count and
+carries no obligation, and counting the sections below establishes it. What that paragraph listed as open is now:
+approval given, at decision 18; all six `SPEC-MOK-003` amendments ratified, at decisions 12 to 17; the `VER-MOK-005`
+amendment split into the three rows already applied, at decisions 4 and 10, and the five that wait for the
+implementation; `commit_bound_verification` standing at `required` and not waived; and the `WO-MOK-012` identifier
+collision deferred to the merge, at decision 3.
 
 ### Decision 1 — the log is held at six rows — product owner, 2026-08-20
 
@@ -469,8 +482,48 @@ withdrawn reasoning is normally retained in place, and here it is not, because t
 of what the layout currently does and a withdrawn trade does not belong in it. Sub-item 6 is where that reasoning is
 retained. The agent located the six edits, measured each figure, and decided none of the substance.
 
-**All six amendments are ratified and none is OUTSTANDING.** What remains open on this chain is the approval of this work
-order itself.
+**All six amendments are ratified and none is OUTSTANDING.** The approval that was the last thing open on this chain
+follows.
+
+### Decision 18 — this work order is approved as a bounded scope — engineering owner, 2026-08-20
+
+`WO-MOK-013` is transitioned from `draft` to `approved`. The instruction, verbatim and complete:
+
+> you can mark WO-MOK-013 as implemented as well
+
+**The instruction named `implemented` and the transition taken is to `approved`, because the owner changed the act when
+shown what `implemented` would assert.** The measurement put to them before they answered:
+
+| | |
+|---|---|
+| In-scope items | **9** |
+| In-scope items landed | **0** |
+| `bar_width`, `render.rs:546` | still `(interior − 35) / 4`, and `bar_width(45) == 2` — the defect this chain exists to remove — is asserted by a passing test at `render.rs:1177` |
+| The six ratified amendment texts | ratified, **not applied**; only the `specifies` relation and the amendment-record row landed |
+| `evidence/WO-MOK-013/` | does not exist |
+| `docs/ROADMAP.md` entry | absent |
+| `VREC-MOK-013` | does not exist |
+| Validator at `status = "implemented"` | PASS, 108 artifacts, 0 errors — **the validator does not catch it** |
+| Inspector at `status = "implemented"` | `W-HEX-001` from **3** to **4** observations, plus `assurance_pending → prepare-commit-bound-verification` for this work order |
+
+The last two rows were measured by flipping the status in the working tree, running both scripts and reverting; nothing
+was committed at `implemented`. **The instruction ran into this work order's own *Lifecycle* section** — "Transition to
+`implemented` requires the completed change and the retained evidence" — and the two alternatives put beside approval
+were to mark it `implemented` anyway with the gap stated in the artifact, and to approve and then build all nine items in
+the same session. The owner chose approval alone.
+
+**What this approval authorizes, and what it does not.** It authorizes the nine in-scope items and the *Authorized
+decision envelope* above, and nothing outside them. It does not begin the work: `in_progress` is a separate transition
+and the status stays `approved` until implementation starts. It asserts nothing about what is built. It is not a
+verification, and `VREC-MOK-013` remains the record that binds this work order's assurance classification.
+
+**`commit_bound_verification` stays `required` and was not put for confirmation.** `WO-MOK-012`'s classification was
+`not_required` and was confirmed as its own act, because a waiver has to be decided by the owner who bears it. `required`
+waives nothing and can only over-oblige, so carrying it into the approval imposes the stricter obligation rather than
+assuming a lighter one. Reclassifying it would be a separate engineering-owner act, and none is recorded.
+
+**No other status moved with this one.** `WO-MOK-008`'s draft disposition, `VREC-MOK-005`'s staleness, manual assessment
+7 of `VER-MOK-005` and the eight `W-HEX-003` reassessments were open before this decision and are open after it.
 
 ## Constraints
 
