@@ -13,6 +13,13 @@ verifies = ["REQ-MOK-042", "REQ-MOK-043", "REQ-MOK-044", "REQ-MOK-045", "REQ-MOK
 
 # Verification Contract: Encounter verification
 
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-20 | Original approved content. | Approved 2026-08-20 by the repository owner acting as assurance owner. |
+| 2026-08-20 | **Realigned to `REQ-MOK-048`'s first amendment**, which added a branch and moved the engagement threshold from `30` to `95`. Four provisions: the engagement-threshold oracle now asserts `94` and `95`, and additionally asserts `30` and `60` so that the gate is proved *not* to be either answer threshold — the two were equal by coincidence before and a test that passed at `30` could not tell the constants apart; the draw-discipline oracle renumbers and adds the assertion that the new branch 3 draws nothing, which is what makes the amendment a reordering of decisions rather than of the shared stream; the differential oracle against `individual` is **widened** to hold wherever a tolerated resource is perceived, and both the narrow and the widened form are asserted; and manual assessment 8 records the six-branch ordering with the gate at `95`. No oracle is weakened or removed, and the retention list is unchanged. | Approved 2026-08-20 by the repository owner acting as assurance owner, on `REQ-MOK-048`'s amendment being approved the same date and on the measured evidence in `evidence/WO-MOK-012/escalation.md`. The realignment does not decide anything: it follows an approved requirement change, and the one oracle whose strength it alters it strengthens. |
+
 ## Independence
 
 This is the largest behavioral change since `WO-MOK-001`, and the temptations it creates are specific enough to name.
@@ -23,7 +30,7 @@ Five claims decide whether it is sound, and only one of them is about whether co
   happens to reach.
 - **It is reached.** A mechanism verified only on constructed states is a mechanism that might never fire in a real run,
   which is the failure `REQ-MOK-032` rejected a four-cell `fear` threshold for.
-- **The `social` source's fallback is the trait-aware source verbatim.** `REQ-MOK-048`'s branches 2 and 5 delegate to
+- **The `social` source's fallback is the trait-aware source verbatim.** `REQ-MOK-048`'s branches 2, 3 and 6 delegate to
   rule 19 rather than reimplementing it, which turns "unchanged" from a claim about how the code was written into an
   equality that can be checked on an observation.
 - **The `baseline` source did not move**, at all, and the movement in `reference` and `individual` is attributable to
@@ -128,15 +135,19 @@ Eight independent oracles are used.
    source's fallback is `individual`'s and is reached by delegating to rule 19 rather than by reimplementing it. That
    decision buys this contract an oracle that costs nothing to run: on any observation carrying no perceived living
    Mokiterion and an empty suffered-attack record, `social` and `individual` must propose the **identical** action, and
-   must leave the shared stream at the same position. An internal-tier test consults both sources on the same
+   must leave the shared stream at the same position. **Widened by `REQ-MOK-048`'s amendment of 2026-08-20**: with rule 19's
+   case 3 hoisted above the social branches, the equality now also holds on any observation where a tolerated resource is
+   perceived and the record is empty, whether or not a Mokiterion is perceived. The oracle is asserted in both forms, and the
+   widened form is the stronger of the two because it covers observations the narrow form excluded. An internal-tier test consults both sources on the same
    observation and asserts equality — over constructed observations covering each of rule 19's cases 1 to 4, and over
    observations captured from whole runs at every opportunity where both preconditions hold.
 
    The equality is stated **per observation and never per run**, and the reason belongs here rather than in a reviewer's
-   head. Because `REQ-MOK-048`'s branches 3 and 4 pre-empt rule 19's cases 3 and 4, a `social` run takes **fewer** draws
+   head. Because `REQ-MOK-048`'s branches 4 and 5 pre-empt rule 19's case 4, a `social` run takes **fewer** draws
    than an `individual` run on the same seed and diverges from it at the first opportunity where one Mokiterion perceives
-   another. A whole-run byte equality between the two sources would hold only in a world where no Mokiterion ever
-   perceives another, which at twelve Mokiterions and a perception radius of `16` is not a reachable run. A reviewer who
+   another and no tolerated resource is perceived. A whole-run byte equality between the two sources would hold only in a
+   world where no Mokiterion ever perceives another without also perceiving a meal, which at twelve Mokiterions and a
+   perception radius of `16` is not a reachable run. A reviewer who
    reached for whole-run equality here would find it failing and would be looking for a defect that is not there.
 
    This is appended as an eighth oracle rather than folded into oracle 3 or oracle 4, for `WO-MOK-010`'s renumbering
@@ -208,14 +219,14 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-048` | automated-test | The source is reported (oracle 4) | `decision_source_selected` names the `social` source exactly once per run |
 | `REQ-MOK-048` | automated-test | **The five-branch ordering is normative** (oracle 3) | Constructed observations that make two branches applicable at once resolve to the earlier branch: an unanswered attack beside a tolerated co-located resource yields the answer; a tolerated resource beside a Mokiterion in contact yields `eat`; `energy` below `REFERENCE_SLEEP_THRESHOLD` beside a Mokiterion in contact yields `sleep`; a Mokiterion in contact beside one perceived at distance yields the contact branch |
 | `REQ-MOK-048` | automated-test | **The answer thresholds** (oracle 3) | A defender proposes `surrender` at `fear` `60` and above, `retreat` from `30` to `59`, `fight` below `30`, against the **first** attacker in the record; asserted at `29`, `30`, `59` and `60`, and with a record holding two attackers |
-| `REQ-MOK-048` | automated-test | **The engagement threshold** (oracle 3) | A Mokiterion with a living Mokiterion at Chebyshev distance `1` or less proposes `attack` below `fear` `30` and `threaten` at `30` and above; one perceiving another at distance `2` or more proposes `approach` below `30` and `avoid` at `30` and above; asserted at `29` and `30` |
+| `REQ-MOK-048` | automated-test | **The engagement threshold** (oracle 3) | A Mokiterion with a living Mokiterion at Chebyshev distance `1` or less proposes `attack` below `fear` `95` and `threaten` at `95` and above; one perceiving another at distance `2` or more proposes `approach` below `95` and `avoid` at `95` and above; asserted at `94` and `95`, and at `30` and `60` to prove the gate is **not** either answer threshold. The value was `30` as first approved and moved under `REQ-MOK-048`'s amendment of 2026-08-20 |
 | `REQ-MOK-048` | automated-test | **One threat flips both branches** (oracle 3) | A Mokiterion at `fear` `10`, threatened once under `REQ-MOK-046` and so at `40`, proposes `threaten` where it would have proposed `attack` and `avoid` where it would have proposed `approach`. This is the row that makes `REQ-MOK-046`'s composition claim good |
 | `REQ-MOK-048` | automated-test | Tie-breaks (oracle 3) | Nearest first, then lowest identifier, on both the contact branch and the perceived branch, asserted with two candidates equidistant and with two at different distances |
 | `REQ-MOK-048` | automated-test | **An unanswerable attack is still answered** (oracle 3) | Branch 1 proposes against the first attacker in the record without re-checking rule 21's preconditions, on the technical owner's decision of 2026-08-20. Asserted in both cases the ordering admits: an attacker dead at the answering turn, and an attacker out of contact where `fear` below `30` selects `fight`. Each yields a rule 6 rejection naming the unmet precondition, mutates neither Mokiterion, spends the opportunity, and clears the record under rule 25 |
 | `REQ-MOK-048` | automated-test | The spent turns are counted, not assumed rare | Over the declared seeds at the default density, the count of branch-1 proposals rejected for a dead or out-of-contact target is measured and retained. No obligation is stated on the figure; it is the evidence the decision above returns to if the population floor is missed |
 | `REQ-MOK-048` | automated-test | **The `fear` the source reads** (oracle 3) | The value read is the one standing after the previous tick's rule 12 write, plus any threat applied by an earlier-acting Mokiterion in the current tick; asserted with the threatener's identifier below the reader's and above it |
 | `REQ-MOK-048` | automated-test | **The delegation equality** (oracle 8) | On every observation carrying no perceived living Mokiterion and an empty suffered-attack record, `social` proposes what `individual` proposes, action for action, and both leave the shared stream at the same position |
-| `REQ-MOK-048` | automated-test | **At most one draw, and never for a social decision** (oracle 2) | Branches 1, 3 and 4 leave the shared stream where they found it; branch 2 draws nothing; branch 5 draws exactly what rule 19 draws, from the same position |
+| `REQ-MOK-048` | automated-test | **At most one draw, and never for a social decision** (oracle 2) | Branches 1, 4 and 5 leave the shared stream where they found it; branches 2 and 3 draw nothing; branch 6 draws exactly what rule 19's case 4 draws, from the same position. **Branch 3 drawing nothing is the load-bearing assertion of `REQ-MOK-048`'s amendment**: it is what makes hoisting rule 19's case 3 above the social branches a reordering of decisions rather than of the shared stream |
 | `REQ-MOK-048` | automated-test | `social` consumes no more draws than `individual` (oracle 4) | Over the declared seeds, the total draw count under `social` is at most the count under `individual`, and the two runs' divergence begins at the first opportunity where a Mokiterion is perceived |
 | `REQ-MOK-048` | static-analysis | Branch 2 does not delegate and inspect | Rule 19's cases 1 and 2 are tested directly. No path consults rule 19 and discards its result, which would take a draw for a decision never used and move the shared stream silently |
 | `REQ-MOK-048` | static-analysis | Three new constants and no more | `60`, `30` and `30`. No new survival constant, no new hunger or fatigue threshold, and no duplicate of `REFERENCE_SLEEP_THRESHOLD` |
@@ -448,9 +459,11 @@ both acceptable outcomes, and silence is not either of them. The numbering is pr
    `--help`, in the invalid-value diagnostic and in every captured stream, the assessment that remains is not the choice
    but the check that the decided name landed in all three places identically and that no captured evidence carries an
    earlier working name.
-8. **The defender's decision rule, by the technical owner.** Decided: the five-branch ordering of `REQ-MOK-048`, survival
-   before society, with the defender answering `surrender` at `fear` `60`, `retreat` at `30` and `fight` below `30`, and
-   the aggressor engaging below `30`. The owner records whether the measured branch distribution is degenerate — every
+8. **The defender's decision rule, by the technical owner.** Decided: the six-branch ordering of `REQ-MOK-048`, survival
+   first and then a perceived meal before society, with the defender answering `surrender` at `fear` `60`, `retreat` at `30`
+   and `fight` below `30`, and the aggressor engaging below `95`. It was a five-branch ordering with the gate at `30` as
+   first approved; the assessment now also records that the amendment of 2026-08-20 was taken on measurement rather than on
+   preference, and that `SPEC-MOK-001` rule 12 was left as Phase 2 approved it. The owner records whether the measured branch distribution is degenerate — every
    defender surrendering, or every defender fighting, or a social branch that never fires — and if it is, that finding is
    the deliverable and not a failure, per `INT-MOK-009`. `REQ-MOK-048` leaves one thing genuinely open for this
    assessment to inform: whether branch 1 should be able to decline to answer at all.

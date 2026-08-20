@@ -163,11 +163,25 @@ fn the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source() {
     let mut ticks = 0;
     let mut current = 0u64;
     let mut acted: Vec<String> = Vec::new();
-    // The population entitled to an opportunity in the tick being read, snapshotted at the tick
-    // boundary. A Mokiterion that dies *during* a tick has already acted in it: rule 13 runs its
-    // survival step after its own action, so its death record follows its own trace line inside the
-    // same tick and takes nothing away from that tick's width. It opens at zero because tick 0 is
-    // the initialization pass, which reports twelve Mokiterions and grants no opportunities.
+    // The population entitled to an opportunity in the tick being read. Opened at the tick boundary
+    // and narrowed *within* the tick, because a death mid-tick falls on one side or the other of its
+    // holder's own turn and the two sides differ:
+    //
+    // - Rule 13's decay runs a Mokiterion's survival step after its own action, so a death by
+    //   starvation or exhaustion follows its own trace line inside the same tick and takes nothing
+    //   away from that tick's width.
+    // - Rule 22's damage resolves inside *another* Mokiterion's turn. `SPEC-MOK-001` rule 13 states
+    //   the consequence: "a Mokiterion may die at a point in the tick where it has not yet acted,
+    //   and it then receives no opportunity that tick or ever." That tick is one narrower.
+    //
+    // Which case a death is is not read from the event — the two share one path, one event and one
+    // finality by that rule's design, and `target_died` is the stream's way of telling them apart.
+    // It is read from position: a Mokiterion whose death record arrives before its own trace line in
+    // the tick lost that tick's opportunity, whichever rule killed it. So this narrows on exactly the
+    // deaths the ordering assertion below is about, and cannot be satisfied by counting deaths.
+    //
+    // It opens at zero because tick 0 is the initialization pass, which reports twelve Mokiterions
+    // and grants no opportunities.
     let mut entitled = 0;
 
     let close = |tick: u64, acted: &[String], entitled: usize| {
@@ -222,6 +236,14 @@ fn the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source() {
             );
             acted.push(subject);
         } else if line.contains("event=agent_died") {
+            // A death that arrives before its holder's own trace line in this tick takes an
+            // opportunity out of this tick as well as out of every later one. A death that arrives
+            // after it takes only the later ones, and `acted` already holds the opportunity it used.
+            if !acted.contains(&subject) {
+                entitled = entitled.checked_sub(1).unwrap_or_else(|| {
+                    panic!("tick {tick} killed {subject}, who was not among the tick's entitled")
+                });
+            }
             dead.push(subject);
         }
     }

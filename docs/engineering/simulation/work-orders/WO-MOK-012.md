@@ -165,10 +165,10 @@ because a work order that names a value in an amendment provision has to carry t
 | The forfeit's magnitude | `satiety / 2`, truncating — a proportion, not a flat amount | product owner |
 | The threat's `fear` increase | A new constant of `30`, distinct from rule 12's `FEAR_INCREASE` of `10` and not a pin to `ATTRIBUTE_MAX` | product owner |
 | The fourth source's name | `social`, from four candidates | product owner |
-| The source's decision rule | Survival before society: five ordered branches, answering an unanswered attack first, then rule 19's cases 1 and 2, then contact, then perception, then rule 19's remainder | technical owner |
-| Its thresholds | `surrender` at `fear` `60`, `retreat` at `30`, `fight` below `30`; engage at `attack` and `approach` below `30`, at `threaten` and `avoid` from `30` | technical owner |
-| Its fallback where nothing is perceived | `individual`'s, verbatim, by delegating to rule 19 rather than reimplementing it | technical owner |
-| `REQ-MOK-049`'s survivor floor | Lowered from six to five, before any measurement, because of the damage decision above | product owner |
+| The source's decision rule | Survival before society: five ordered branches, answering an unanswered attack first, then rule 19's cases 1 and 2, then contact, then perception, then rule 19's remainder. **Amended 2026-08-20 to six branches** — rule 19's case 3 hoisted ahead of contact and perception, its case 4 left last — on the measurement recorded in `evidence/WO-MOK-012/escalation.md` | technical owner |
+| Its thresholds | `surrender` at `fear` `60`, `retreat` at `30`, `fight` below `30`; engage at `attack` and `approach` below `95`, at `threaten` and `avoid` from `95`. **The engagement threshold was `30` as first approved and moved to `95` on 2026-08-20**, measured; the two answer thresholds did not move | technical owner |
+| Its fallback where nothing is perceived | `individual`'s, verbatim, by delegating to rule 19 rather than reimplementing it. The 2026-08-20 amendment widened the observations on which the two sources agree rather than narrowing them | technical owner |
+| `REQ-MOK-049`'s survivor floor | Lowered from six to five, before any measurement, because of the damage decision above. **Ratified at five on 2026-08-20** on the first measured curve, against measured alternatives of three and two | product owner |
 | `REQ-MOK-051`'s composition ceiling | Ratified at one half, against `60%` and `40%` | product owner |
 
 Four consequences of these values constrain the implementation and are recorded here rather than left to be discovered.
@@ -290,6 +290,26 @@ owner on 2026-08-20 with their alternatives and both were approved as correction
 act above, each with its own row in the amended specification's amendment record. The pattern worth carrying forward is
 that both defects are **understatements of a closed enumeration**, which is the failure mode an enumeration written from
 the change rather than from the surface produces.
+
+**Measuring it found a third defect, and this one was an obligation rather than an enumeration.** `REQ-MOK-048`'s
+five-branch ordering was implemented exactly as approved and measured to be **unsatisfiable** against `REQ-MOK-049`: rule
+12 drives `fear` from company perceived at radius `16`, the engagement gate opened only below `30`, and the contact branch
+needed radius `1`, so the gate closed on the third perceiving tick while closing sixteen squares takes fifteen. Nothing
+struck anything, branch 1 never fired, and `fight`, `retreat` and `surrender` — all branch 1's — were structurally
+unreachable, while the perceived branch's `avoid` displaced the seek-move and starved the population. This is the failure
+`escalation.md` records, and it is the one defect in this chain that **is** a change of behavior rather than a correction
+of text.
+
+It was not resolved by the implementation. Seventeen variants were measured across three levers and put to the repository
+owner, four decisions were taken, two of the four answers proved mutually unsatisfiable, and the measured refutation of the
+combination they selected was put back with three coherent packages. The owner selected the package that leaves
+`SPEC-MOK-001` rule 12 as Phase 2 approved it: rule 19's case 3 hoisted to a new branch 3, the engagement gate at `95`, and
+`REQ-MOK-049`'s floor ratified at five. `SPEC-MOK-001` rule 26, `REQ-MOK-048`, `REQ-MOK-049` and `VER-MOK-012` each carry
+an amendment-record row for it, and **no Phase 2 requirement is amended**, which is why `WO-MOK-010`'s measured `fear`
+distribution and this chain's 90-cell byte-identity both still stand. The lesson worth carrying forward is narrower than
+the two enumeration defects above: an ordering and a threshold that were each defensible in isolation were jointly
+unsatisfiable, and nothing short of running the world would have shown it — which is what `REQ-MOK-049` exists to force and
+what its "the measurement is reported and the owner decides" clause is for.
 
 **Eight consequences in the text were derived rather than decided.** None had been put to an owner, because each follows
 from something already decided; but each is a statement a reader will rely on, so each was named here for ratification

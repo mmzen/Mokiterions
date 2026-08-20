@@ -42,10 +42,19 @@ const SURRENDER_FEAR_THRESHOLD: u8 = 60;
 const RETREAT_FEAR_THRESHOLD: u8 = 30;
 
 /// Rule 26's engagement threshold: below this `fear` a Mokiterion attacks or approaches,
-/// and at or above it threatens or avoids. It equals [`RETREAT_FEAR_THRESHOLD`] and is
-/// named separately because rule 26 states three constants and they answer two different
-/// questions; a later amendment may move one without the other.
-const ENGAGEMENT_FEAR_THRESHOLD: u8 = 30;
+/// and at or above it threatens or avoids. It reads "engage unless nearly saturated": only a
+/// Mokiterion within `5` of [`ATTRIBUTE_MAX`] declines.
+///
+/// It was `30`, equal to [`RETREAT_FEAR_THRESHOLD`], and was named separately against exactly
+/// the amendment that has since happened — `REQ-MOK-048`'s of 2026-08-20 moved this one and
+/// left that one alone. **The value is measured rather than derived**, and the specification
+/// records that as a cost: at `30` no approach could ever complete, because rule 12 drives
+/// `fear` from company perceived at [`PERCEPTION_RADIUS`] while engagement needs contact at
+/// [`CONTACT_RADIUS`], so the gate closed on the third perceiving tick and closing sixteen
+/// squares takes fifteen. `90` fails `REQ-MOK-049` on one declared seed and `100` holds with
+/// less survivor margin; `95` is the measured point where both of that requirement's bounds
+/// first hold together on all five.
+const ENGAGEMENT_FEAR_THRESHOLD: u8 = 95;
 
 /// The constant mixed with the run seed to derive a Mokiterion's trait, fixed by
 /// `SPEC-MOK-001`'s *Behavioral trait*. It is a salt, not a generator parameter: the
@@ -985,12 +994,16 @@ fn tolerant_survival_choice(observation: &Observation) -> Option<Action> {
     None
 }
 
-/// Rule 19's cases 3 and 4: step toward the most attractive tolerated resource, else search.
-/// This is the only part of rule 19 that can draw, and it draws at most once.
-fn tolerant_movement_choice(
-    observation: &Observation,
-    entropy: &mut DecisionEntropy<'_>,
-) -> Action {
+/// Rule 19's case 3 alone: step toward the most attractive tolerated resource. Returns `None`
+/// where no such resource is perceived, or where neither of the two admissible axes yields a
+/// step rule 6 accepts.
+///
+/// It is separated from case 4 for the reason [`tolerant_survival_choice`] is separated from
+/// both, and the separation carries more weight here. Rule 26 branch 3 needs exactly this
+/// half: `REQ-MOK-048`'s amendment of 2026-08-20 hoists case 3 above that rule's two social
+/// branches, and hoisting is only legitimate because **this function draws nothing**. Lifting
+/// case 4 with it would have moved the shared stream for every social decision.
+fn tolerant_seek_choice(observation: &Observation) -> Option<Action> {
     if let Some(target) = observation.best_tolerated_distant_food()
         && let Some(direction) = target.direction
     {
@@ -1001,11 +1014,17 @@ fn tolerant_movement_choice(
                 direction: candidate,
             };
             if observation.allows(&step) {
-                return step;
+                return Some(step);
             }
         }
     }
 
+    None
+}
+
+/// Rule 19's case 4 alone: the search step. This is the only part of rule 19 that draws, and
+/// it draws exactly once.
+fn tolerant_search_choice(observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action {
     let moves = observation.valid_moves();
     debug_assert!(
         !moves.is_empty(),
@@ -1015,6 +1034,19 @@ fn tolerant_movement_choice(
     Action::Move {
         direction: moves[choice],
     }
+}
+
+/// Rule 19's cases 3 and 4 in rule 19's own order, which is what the trait-aware source wants.
+///
+/// Kept as a composition of the two halves rather than the other way round, so that splitting
+/// the halves for rule 26's benefit cannot move `--policy individual`: the fall-through from
+/// case 3 to case 4 is expressed once, here, and both callers read it from the same place.
+fn tolerant_movement_choice(
+    observation: &Observation,
+    entropy: &mut DecisionEntropy<'_>,
+) -> Action {
+    tolerant_seek_choice(observation)
+        .unwrap_or_else(|| tolerant_search_choice(observation, entropy))
 }
 
 /// Rule 19's trait-aware source. It is the reference source's order of business with one
@@ -1089,7 +1121,14 @@ impl DecisionSource for SocialDecisionSource {
             return action;
         }
 
-        // Branch 3: a Mokiterion in contact is engaged.
+        // Branch 3: food perceived outranks company perceived. Rule 19's case 3, drawing
+        // nothing — which is what makes its position here a reordering of decisions rather
+        // than of the shared stream.
+        if let Some(action) = tolerant_seek_choice(observation) {
+            return action;
+        }
+
+        // Branch 4: a Mokiterion in contact is engaged.
         if let Some(other) = observation.nearest_in_contact() {
             let target = other.id.clone();
             return if observation.fear < ENGAGEMENT_FEAR_THRESHOLD {
@@ -1099,7 +1138,7 @@ impl DecisionSource for SocialDecisionSource {
             };
         }
 
-        // Branch 4: a Mokiterion merely perceived is closed on or avoided.
+        // Branch 5: a Mokiterion merely perceived is closed on or avoided.
         if let Some(other) = observation.nearest_beyond_contact() {
             let target = other.id.clone();
             return if observation.fear < ENGAGEMENT_FEAR_THRESHOLD {
@@ -1109,8 +1148,8 @@ impl DecisionSource for SocialDecisionSource {
             };
         }
 
-        // Branch 5: otherwise rule 19 decides, at its case 3 or its case 4.
-        tolerant_movement_choice(observation, entropy)
+        // Branch 6: otherwise rule 19's case 4 decides. The only branch that draws.
+        tolerant_search_choice(observation, entropy)
     }
 }
 
@@ -6537,15 +6576,41 @@ mod tests {
         let mut simulation =
             encounter(11, Coordinate { x: 70, y: 70 }, Coordinate { x: 70, y: 71 });
         simulation.agents[0].fear = ENGAGEMENT_FEAR_THRESHOLD;
+        let mut output = Vec::new();
 
         simulation
-            .run_tick(&mut Vec::new(), &mut SocialDecisionSource)
+            .run_tick(&mut output, &mut SocialDecisionSource)
             .unwrap();
 
-        // `M01` threatened, then rule 12 added `10` for the company it kept, then `M02`
-        // threatened back onto that value, and rule 12 added `10` for `M02` too.
-        assert_eq!(simulation.agents[0].fear, 30 + 10 + THREAT_FEAR_INCREASE);
+        // `M02` carries the composition, and it is the half that proves the ordering: it was
+        // threatened inside `M01`'s turn for `THREAT_FEAR_INCREASE`, and rule 12 then added `10`
+        // for the company it kept at its own. Unsaturated, so both writes are visible in the sum.
         assert_eq!(simulation.agents[1].fear, THREAT_FEAR_INCREASE + 10);
+
+        // `M01` carries only saturation, and that is a consequence of `REQ-MOK-048`'s amendment
+        // of 2026-08-20 rather than a weakening of this test. Rule 26 threatens at or above
+        // `ENGAGEMENT_FEAR_THRESHOLD`, which that amendment moved to `95`, so **every** threatener
+        // is within `FEAR_DECREASE` of [`ATTRIBUTE_MAX`] and its own rule 12 write saturates.
+        // An unsaturated threatener composing with rule 12 is no longer a reachable construction
+        // in either direction, so it is asserted as the bound it now is.
+        assert_eq!(simulation.agents[0].fear, ATTRIBUTE_MAX);
+        assert!(
+            u16::from(ENGAGEMENT_FEAR_THRESHOLD) + u16::from(FEAR_INCREASE)
+                > u16::from(ATTRIBUTE_MAX),
+            "the line above would be an arithmetic coincidence if a threatener could stay below \
+             the ceiling"
+        );
+
+        // And `M02` answered the threat with `attack` rather than with a threat of its own, which
+        // is the same amendment read from the other side: at a gate of `95` a Mokiterion at
+        // `THREAT_FEAR_INCREASE` is calm, so one threat no longer makes its target threaten back.
+        // `SPEC-MOK-001` rule 26 records that as the cost of the value.
+        let output = String::from_utf8(output).unwrap();
+        assert_eq!(
+            output.matches("subject=M02 event=attack_resolved").count(),
+            1,
+            "the target of the threat was to answer with a strike at this gate"
+        );
 
         // The `-5` case, at the bound where the threat itself applies nothing.
         let mut simulation =
