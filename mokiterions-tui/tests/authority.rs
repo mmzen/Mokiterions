@@ -11,6 +11,10 @@
 //! of the three policies, and the source-dependent mapping names all three. Nothing was removed
 //! or weakened — an untested arm in an exhaustiveness check is the one thing this file exists to
 //! prevent.
+//!
+//! `WO-MOK-012` added a fourth source and three event types, on the same terms: the sweep runs
+//! under four policies, the source-dependent mapping names four, and the specified-mapping case
+//! carries the three added rows. Again nothing was removed or weakened.
 
 use mokiterions::simulation::{Event, EventDetail};
 use mokiterions::simulation::{EventType, Policy};
@@ -18,7 +22,12 @@ use mokiterions_tui::authority::*;
 
 #[test]
 fn every_event_type_the_observer_can_present_has_an_entry() {
-    for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+    for policy in [
+        Policy::Baseline,
+        Policy::Reference,
+        Policy::Individual,
+        Policy::Social,
+    ] {
         for event_type in EventType::ALL {
             let resolved = for_type(event_type, Some(policy));
             assert!(resolved.is_some(), "{event_type} has no authority");
@@ -43,12 +52,23 @@ fn the_mapping_is_the_specified_one() {
         (EventType::FoodRegenerated, "REQ-MOK-007"),
         (EventType::FoodRegenerationSkipped, "REQ-MOK-007"),
         (EventType::TerritoryCrossed, "REQ-MOK-005"),
+        // Rule 11's three added rows. `attack_resolved` carries one identifier for `attack` and
+        // for `fight` alike, because they are one resolution, and `REQ-MOK-043` has no row of its
+        // own because it adds no event type.
+        (EventType::AttackResolved, "REQ-MOK-044"),
+        (EventType::ThreatResolved, "REQ-MOK-046"),
+        (EventType::SurrenderResolved, "REQ-MOK-047"),
         (EventType::SimulationEnded, "REQ-MOK-011"),
         (EventType::ActionTrace, "REQ-MOK-012"),
     ];
     for (event_type, identifier) in expected {
         assert_eq!(for_type(event_type, None), Some(identifier), "{event_type}");
     }
+
+    // The table above is the whole of rule 11 minus its one source-dependent row, so its length
+    // plus that row is the vocabulary. A fourth added type would fail here rather than pass
+    // untested.
+    assert_eq!(expected.len() + 1, EventType::ALL.len());
 }
 
 #[test]
@@ -64,6 +84,7 @@ fn the_decision_source_maps_by_the_source_the_record_names() {
     assert_eq!(for_event(&source("baseline")), Some("REQ-MOK-008"));
     assert_eq!(for_event(&source("reference")), Some("REQ-MOK-015"));
     assert_eq!(for_event(&source("individual")), Some("REQ-MOK-033"));
+    assert_eq!(for_event(&source("social")), Some("REQ-MOK-048"));
 
     // A source the observer does not know is reported as missing, never guessed.
     assert_eq!(for_event(&source("something-else")), None);

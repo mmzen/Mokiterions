@@ -11,7 +11,7 @@
 use std::collections::BTreeMap;
 
 use mokiterions::simulation::{
-    AgentSnapshot, DecisionOutcome, FoodClass, Territory, TerritorySnapshot,
+    Action, AgentSnapshot, DecisionOutcome, FoodClass, Territory, TerritorySnapshot,
 };
 use ratatui::Frame;
 use ratatui::layout::Rect;
@@ -487,6 +487,34 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
     );
 }
 
+/// An action as rule 4's action field and rule 10's decision record present it: the verb, and the
+/// subject where the action has one.
+///
+/// The engine's `Display` renders a targeted verb bare, because `SPEC-MOK-001`'s `action_trace`
+/// line carries the target in a field of its own. A roster field rendering `attack` alone would
+/// leave an operator unable to read which Mokiterion struck against which was struck, which is the
+/// pair rule 4's acting order exists to make comparable, so the subject is appended here. It is the
+/// identifier and never the name: this field is a join key into the log pane and the export, and
+/// rule 10 states that a target is presented as the engine reports it while the *name* belongs to
+/// the pane's own selection.
+///
+/// The four core verbs are matched explicitly rather than by a wildcard, so a twelfth kind of action
+/// would fail to compile here instead of silently rendering without its object.
+fn action_text(action: &Action) -> String {
+    match action {
+        Action::Wait | Action::Sleep | Action::Eat { .. } | Action::Move { .. } => {
+            action.to_string()
+        }
+        Action::Attack { target }
+        | Action::Threaten { target }
+        | Action::Fight { target }
+        | Action::Retreat { target }
+        | Action::Surrender { target }
+        | Action::Approach { target }
+        | Action::Avoid { target } => format!("{action} {target}"),
+    }
+}
+
 /// Rule 4's entry form. Two lines at 47 columns or more, one line below.
 ///
 /// `name` is what the engine reported for this Mokiterion, or empty where it reported none, in
@@ -501,7 +529,7 @@ fn entry_lines(
     let applied = agent
         .applied_action
         .as_ref()
-        .map_or_else(|| ABSENT.to_string(), ToString::to_string);
+        .map_or_else(|| ABSENT.to_string(), action_text);
     // The engine's `Display` implementations write their text directly, so a column width has
     // to be applied to the rendered string rather than to the value.
     let territory = agent.territory.to_string();
@@ -682,7 +710,10 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
         None => lines.push(Line::from("no proposal has yet been made")),
         Some(decision) => {
             lines.push(Line::from(format!("decision, tick {}", snapshot.tick)));
-            lines.push(Line::from(format!("proposed  {}", decision.proposed)));
+            lines.push(Line::from(format!(
+                "proposed  {}",
+                action_text(&decision.proposed)
+            )));
             match &decision.outcome {
                 DecisionOutcome::Accepted => lines.push(Line::from(Span::styled(
                     "outcome   + accepted",
@@ -705,7 +736,7 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
                 decision
                     .applied
                     .as_ref()
-                    .map_or_else(|| ABSENT.to_string(), ToString::to_string)
+                    .map_or_else(|| ABSENT.to_string(), action_text)
             )));
             lines.push(Line::from(format!(
                 "authority {}",
