@@ -10,6 +10,11 @@ makes a status change a record of authority rather than a confidence estimate, s
 `VER-MOK-013` is satisfied; it is not, on one count. `VREC-MOK-013` was captured in the same act and is a **`ready`
 candidate, not verified**. The work order's *Transition to `implemented`* subsection carries both statements.
 
+> **Later fact, 2026-08-20.** `VREC-MOK-013` is now **`verified`**, on the assurance owner's decision 23, which also
+> verified `REQ-MOK-048` on its automated cases in place of the assessment `VER-MOK-013` contracts for. **`WO-MOK-013`
+> stays `implemented`** and **`VER-MOK-013` is still not satisfied, on that same one count** — the sentence above about
+> the contract holds unchanged, and it is the sentence that matters most in this paragraph. `assurance-decision.md`.
+
 ## 1. Decision 1 as taken, with both corrections to how the option was put
 
 **Option B — the log is held at six rows, `REQ-MOK-020` is untouched, and all twelve entries stay visible at the
@@ -364,6 +369,15 @@ requirement was never gated on a manual assessment, and `VER-MOK-013` states tha
 verification decision on it is the assurance owner's and is still outstanding. None of this blocked the implementation
 this pack evidences, and none of it is retired by the work order's move to `implemented`.
 
+> **Later fact, 2026-08-20 — the decision was taken, and it did not go as this paragraph anticipated.**
+> `VREC-MOK-013` is **`verified`**, and `REQ-MOK-048` is verified with it — **on the requirement's four
+> automated cases, accepted by the assurance owner in place of the primary evidence** rather than on
+> assessment 2, which is still **OUTSTANDING with no author**. The record therefore does **not** disclose the
+> requirement as unverified. **`VER-MOK-013` is not amended** and still says of that case that it is *"a
+> necessary condition and not the property"*, so the contract is **not satisfied** on this one count, and
+> `WO-MOK-013` did not move and stays `implemented`. `assurance-decision.md` records the instruction verbatim,
+> the three bases it was read against, what was accepted, and the nine things the acceptance does not retire.
+
 **A third act was taken on the same live pass.** Having watched the implementation run at `160 × 48`, the owner was
 asked whether decision 1 is re-opened on the corrected eight-to-four figure — the log now carries four recent events
 where it carried eight. It is not: **decision 1 stands**, as a product-owner act of 2026-08-20, this time on the
@@ -408,6 +422,11 @@ recurred inside a work order written to enumerate its own locations.
   and **disclosing `REQ-MOK-048` as unverified**. It is a **`ready` candidate and not `verified`**:
   `DECISION_RIGHTS.md` reserves that transition to the accountable assurance owner, the instruction stated no judgement
   on the evidence, and the harness reports the outstanding act as `decision_required -> review-assurance-decision`.
+
+  > **Later fact, 2026-08-20.** Taken since, by the owner as assurance owner, in a separate instruction and a
+  > separate commit: `VREC-MOK-013` is `verified` and `REQ-MOK-048` with it, on the automated cases accepted in
+  > place of the primary evidence. The queue is empty — `decision_required` **1 → 0**. Recorded as decision 23
+  > in `closing-review.md` and in full in `assurance-decision.md`. Nothing else in this list moves.
 - **Nothing is re-opened that a record binds.** `VREC-MOK-006` measured 97 items and 169 tests, and `VREC-MOK-007`,
   `VREC-MOK-010` and `VREC-MOK-011` measured their own trees. Each was correct where it was taken.
 
@@ -415,18 +434,31 @@ recurred inside a work order written to enumerate its own locations.
 
 - The **eight `W-HEX-003`** reassessments and the **`W-HEX-001`s, now four** with this work order's own — item 6
   attributes them and resolves none.
-- **The verification decision on `VREC-MOK-013`**, which the harness names as the one item under *Decision required*.
+- ~~**The verification decision on `VREC-MOK-013`**, which the harness names as the one item under *Decision
+  required*.~~ **Closed 2026-08-20**: taken by the assurance owner, `decision_required` 1 → 0, decision 23. What
+  is **not** closed by it is assessment 2, below, and the record bound to the merge commit, which is owed and not
+  created. `assurance-decision.md`.
 - **`WO-MOK-008`**, still `draft`, and the inspector's "Definitions pending (1)".
 - **`VREC-MOK-005`'s staleness** and **manual assessment 7 of `VER-MOK-005`**.
 - **`ROADMAP.md`'s Phase 2 claim**, which this work order's ROADMAP entry does not touch. Phases 2 and 2.5 are
   unreleased.
 - **Assessment 2 of `VER-MOK-013`**, outstanding with no author. Its route is decided and its material is prepared;
-  what remains is a person who has not read `SPEC-MOK-003` rule 7, which no agent can arrange.
+  what remains is a person who has not read `SPEC-MOK-003` rule 7, which no agent can arrange. **Still open after
+  decision 23**, which verified the requirement on the automated cases instead of on this assessment: what taking it
+  would now do is confirm or contradict that, and `VER-MOK-013` stays unsatisfied on this count until it is taken.
+- **A record bound to the merge commit.** `VREC-MOK-013` binds `41c20ca`; `master` carries this chain at `798e5d5`.
+  The code is identical between them — `git diff --stat 41c20ca 798e5d5 -- . ':(exclude)docs'` is empty — but the
+  harness graph is not, and **decision 23 neither created that record nor extended this one's binding**.
 - The **`WO-MOK-012` identifier collision**, deferred to the merge by decision 3. Whichever branch reaches `master`
-  second renumbers before it lands.
+  second renumbers before it lands. **Determined 2026-08-20 and not in this side's hands any more**: this chain
+  merged first, `origin/feature/phase-4a-definition` has not, so the renumbering is that branch's; it now reports
+  **9** conflicts against `master`.
 - **A second collision, found on 2026-08-20 and measured in `identifier-collision.md`.**
   `origin/governance/adr-mok-006-third-party-crates` holds a different `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and
   `REQ-MOK-047`, all pushed and all owner-approved on that side. Decision 3's rule reaches it unchanged; nothing was
-  renumbered here.
+  renumbered here. **Determined the same way**: that branch is unmerged and now reports **8** conflicts against
+  `master`, four of them `add/add` on the colliding names. Stop condition 8 did not fire — this branch was first.
 - **No push, pull request, tag or release.** `WO-MOK-013`'s *Out of scope* puts all four outside it, and none was
-  authorized in this work.
+  authorized in this work. **The owner authorized publication separately** and the branch merged through pull request
+  [#32](https://github.com/mmzen/Mokiterions/pull/32) at `798e5d5`; those are the owner's acts rather than this work
+  order's discharge, and there is still no tag and no release.

@@ -26,7 +26,7 @@ viewport. They are three of the four this review records that the work order's *
 because they could not be taken until there was something to look at. **Decision 22 is the lifecycle act
 that follows from them**, and it is the only one of the twenty-two that changes an artifact's status.
 
-## The twenty-two decisions
+## The twenty-two decisions, and the twenty-third
 
 | # | Subject | Role | Outcome |
 |---:|---|---|---|
@@ -52,6 +52,7 @@ that follows from them**, and it is the only one of the twenty-two that changes 
 | 20 | The route for manual assessment 2, which has no admissible assessor | assurance owner | **Find an admissible assessor** — the other two options declined |
 | 21 | Decision 1 re-opened on the corrected figure, after the live pass | product owner | **Stands** |
 | 22 | `WO-MOK-013`'s status, and whether `VREC-MOK-013` exists | engineering owner | **`implemented`, and the record prepared as a `ready` candidate** |
+| 23 | `VREC-MOK-013`'s `ready` → `verified` transition, and the basis for `REQ-MOK-048` | assurance owner | **`verified`, with `REQ-MOK-048` verified on its four automated cases accepted in place of the primary evidence** — the contract not amended, assessment 2 left outstanding |
 
 Decisions 1 to 18 are each recorded in full in `WO-MOK-013`'s *Decision record*, with the instruction
 verbatim where one was given verbatim, and nothing above restates a measurement that section already
@@ -70,6 +71,22 @@ reserves the transition to `verified` to the assurance owner. So `VREC-MOK-013` 
 candidate**, the harness reports `decision_required -> review-assurance-decision (assurance-owner)` against
 it, and **that decision is not among the twenty-two above because it has not been taken.**
 
+> **Later fact, 2026-08-20 — it has now been taken, and it is decision 23.** The instruction, verbatim: *"i
+> approve VREC-MOK-013, making REQ-MOK-048 verified."* Two acts in one sentence, and the second is not a
+> consequence of the first: the record as captured said `REQ-MOK-048` was **not** verified and that *"no
+> status on this record can make it so"*, so the basis was put back to the owner with three readings and
+> their costs measured — accept the automated cases, amend `VER-MOK-013`, or transition the record only and
+> leave the requirement disclosed as unverified. **The owner took the first.** `REQ-MOK-048` is verified on
+> the four automated cases accepted in place of the primary evidence the contract designates; `VER-MOK-013`
+> is **not amended** and still calls that case *"a necessary condition and not the property"*; manual
+> assessment 2 is still **OUTSTANDING with no author**; and `VER-MOK-013` is therefore **not satisfied on
+> that one count**. **`WO-MOK-013` did not move and stays `implemented`.** The paragraph above is left as
+> written because it correctly describes the state decision 22 produced; `assurance-decision.md` records
+> decision 23 in full, including the harness state either side of it — `decision_required` **1 → 0**,
+> everything else unchanged. **Decision 23 is the second of the twenty-three to change an artifact's
+> status**, and the sentence above about decision 22 being the only one is true of the twenty-two it was
+> written about.
+
 **Decision 2 exists because the figure decision 1 was taken on was wrong.** Option B was put as
 showing six recent events rather than ten; both figures counted pane rows and not event lines, and the
 true change is **eight to four**, which `log-height.md` measures. The owner was shown the correction
@@ -87,7 +104,17 @@ than still standing.
 such a person, amend `VER-MOK-013` to an assessment the available assessors can take, or leave the row
 outstanding by decision on the pattern of `evidence/WO-MOK-012/manual-assessment.md`'s assessment 7. The
 third would have closed the row and required nothing further; the owner took the first, **the only one
-that verifies `REQ-MOK-048`**, and the row therefore stays outstanding. It is attributed to the
+that verifies `REQ-MOK-048`**, and the row therefore stays outstanding.
+
+> **Later fact, 2026-08-20.** Decision 23 took a **fourth** course, which was not among the three put here:
+> verify `REQ-MOK-048` on its automated cases and leave the assessment open. So "the only one that verifies
+> `REQ-MOK-048`" was the reasoning on which decision 20 was taken, and decision 23 departs from it — the
+> reasoning is left as recorded, because a decision's recorded ground is not rewritten when a later decision
+> declines it. **Decision 20's route still stands**: the assessment is still worth taking, still unspent, and
+> still needs a person who has not read rule 7. What it would now settle is whether the verified requirement
+> holds in front of a reader, rather than whether it may be recorded as verified at all.
+
+It is attributed to the
 **assurance owner** because the two declined options are assurance acts on an approved contract — one
 amends it, the other waives an assessment it requires — which is the role
 `evidence/WO-MOK-012/manual-assessment.md` records for its own route decision. Decision 19, by contrast,
@@ -167,6 +194,15 @@ does not fire during implementation by decision 3 and fires at the merge if this
 Decision 3's rule reaches it unchanged — the second branch to `master` renumbers — but the condition's
 own words name the `WO-MOK-012` collision only, so the extension is stated here rather than assumed.
 
+> **Later fact, 2026-08-20 — condition 8 is now spent, and it did not fire.** Its trigger is *"if this branch
+> is the second of the two to reach `master`"*, and this branch was the **first**, merged at `798e5d5`.
+> Neither colliding branch — `origin/feature/phase-4a-definition` for the first collision,
+> `origin/governance/adr-mok-006-third-party-crates` for the second — is merged, so under decision 3's rule
+> the renumbering falls to them in both cases and nothing is owed from this side. The condition was not
+> waived and no renumbering was skipped that should have happened.
+> `identifier-collision.md`'s *What the merge determined* measures the outcome, including the 9 and 8
+> conflicts the two branches now report against `master`.
+
 ## What this review did not decide
 
 - **Whether manual assessment 2 passes.** It is outstanding with no author, in `manual-assessment.md`.
@@ -179,6 +215,11 @@ own words name the `WO-MOK-012` collision only, so the extension is stated here 
   `decision_required -> review-assurance-decision`. Decision 19 is what made the record writable —
   `REQ-MOK-047` on the assessment, `REQ-MOK-049` on the automated cases — and the record discloses
   `REQ-MOK-048` as unverified.
+
+  > **Later fact, 2026-08-20.** This review still did not decide it — **decision 23 did**, in a separate
+  > instruction and a separate commit. `VREC-MOK-013` is `verified`, and `REQ-MOK-048` with it, on the four
+  > automated cases accepted in place of the primary evidence. The bullet is kept because it is true of this
+  > review; what it disclaims is now recorded in `assurance-decision.md`.
 - **The four-identifier collision with `origin/governance/adr-mok-006-third-party-crates`.** That
   branch holds a different `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047`, all pushed
   and all owner-approved on their side. `identifier-collision.md` measures it and takes no decision;
@@ -189,3 +230,9 @@ own words name the `WO-MOK-012` collision only, so the extension is stated here 
   Phase 2 claim. All out of scope, all still open, and none touched.
 - **Any push, pull request, tag or release.** `WO-MOK-013` puts all four out of scope and none was
   authorized in this work.
+
+  > **Later fact, 2026-08-20.** The owner authorized publication separately, and the branch reached `master`
+  > through pull request [#32](https://github.com/mmzen/Mokiterions/pull/32) at `798e5d5`. **Those are the
+  > owner's acts, taken outside this work order's scope rather than as part of its discharge**, which is why
+  > the bullet stands. Still no tag and no release. The merge is not a governed act of this chain and is not
+  > verified by `VREC-MOK-013`, whose binding ends at `41c20ca`.

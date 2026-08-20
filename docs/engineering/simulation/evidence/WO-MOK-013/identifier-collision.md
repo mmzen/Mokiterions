@@ -27,6 +27,16 @@ merged into `master`**.
 > move**: the same four identifiers, the same statuses, and `REQ-MOK-048` and `REQ-MOK-049` still free. A
 > reader re-deriving any of this should expect the tip to have advanced again and should re-measure rather
 > than quote.
+>
+> **It advanced again, and the collision is now determined.** Re-measured on 2026-08-20 at the verification
+> decision, their tip is `ee0c0860c854f7f1aeae690f90680705919d15d8` of `2026-08-20T18:10:01+02:00`, subject
+> *"gov: correct VREC-MOK-013's false baseline claim about W-HEX-003"* — a third movement, and still not
+> merged. **This side merged at `798e5d5` on 2026-08-20T18:41:12+02:00, thirty-one minutes later**, so the
+> question decision 3 left to merge order is answered: see *What the merge determined* at the end. Their four
+> identifiers, their statuses and their record's binding to `65ac88b` are as tabulated below; their pack still
+> holds 21 files. Every other figure in this note is left at the `753a8b9` measurement it was taken from and
+> is labelled as such, because re-deriving a figure a third time would replace a dated measurement with an
+> undated one.
 
 | Identifier | This chain | `governance/adr-mok-006-third-party-crates` |
 |---|---|---|
@@ -44,6 +54,11 @@ within the same ten minutes, and nothing in either clone's tooling said so.
 
 **`REQ-MOK-048` and `REQ-MOK-049` are free.** Sweeping all 27 refs for content hits on either name returns
 this branch and nothing else. The collision is four names, not six.
+
+> **Later fact, 2026-08-20.** Re-swept after the merge, the two names are held by three refs —
+> `origin/master`, `origin/HEAD` which points at it, and `origin/assessment/wo-mok-005-remediation` — and all
+> three are this chain. **No branch outside it claims either name**, so the sentence above holds in substance:
+> the collision is still four names, not six.
 
 ## Why this is worse than the first one
 
@@ -120,6 +135,14 @@ The eight divide cleanly, and only half of them are this collision:
 Zero against `master` is worth stating: **neither branch blocks the other from merging first**, and
 whichever does, the other's merge is where the collision becomes a conflict.
 
+> **Later fact, 2026-08-20 — the last sentence has come true, and against them.** With this side merged at
+> `798e5d5`, `git merge-tree --write-tree` of their `ee0c086` against `master` reports **eight conflicted
+> paths where it reported none**, and the split is the same one: **four `add/add` on the colliding names** —
+> `REQ-MOK-047`, `VER-MOK-013`, `VREC-MOK-013`, `WO-MOK-013` — and **four content conflicts** in
+> `ARCH-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003` and `SPEC-MOK-004`. The eight against a branch became eight
+> against `master`, unchanged in kind and in count. Nothing was done to that branch to cause it: merging this
+> one is what moved the conflict.
+
 ## What this note does not do, and what it leaves standing
 
 - **It renumbers nothing.** Decision 3 of this chain's closing review, taken by the engineering owner on
@@ -127,7 +150,13 @@ whichever does, the other's merge is where the collision becomes a conflict.
   whichever of the two branches merges to `master` second."* That rule reaches this collision unchanged, but
   it was decided about the other one, so applying it here is stated as an extension rather than assumed.
 - **It does not decide which side renumbers.** By decision 3's rule that is settled by merge order and not
-  by argument, and neither branch has merged.
+  by argument, and when this note was written neither branch had merged.
+
+  > **Later fact, 2026-08-20.** This side has since merged, at `798e5d5`, so the rule has settled it: the
+  > renumbering falls to `governance/adr-mok-006-third-party-crates`. **This note still decides nothing**, and
+  > neither does the verification decision taken the same day — merge order did. *What the merge determined*
+  > below records the outcome and what this side owes because of it, which is nothing to that branch and one
+  > thing to any reader.
 - **It does not fire stop condition 8, and does not claim the condition covers it.** Condition 8's own words
   name "the `WO-MOK-012` identifier collision", and it "does not fire during implementation". It fires at
   the merge, and *reaching the merge without having renumbered is the escalation.* **This note is that
@@ -144,3 +173,41 @@ whichever does, the other's merge is where the collision becomes a conflict.
   branches exist, **the names `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047` do not identify
   one artifact each in this repository.** Any citation of them — in this pack, in `docs/ROADMAP.md`, in a
   pull request or in a later record — resolves only together with the branch it was written on.
+
+## What the merge determined
+
+Added 2026-08-20, after the merge and at the verification decision. **This section records an outcome; it
+takes no decision and asks nothing of anyone.**
+
+Pull request [#32](https://github.com/mmzen/Mokiterions/pull/32) merged `assessment/wo-mok-005-remediation`
+into `master` at **`798e5d5`**, at `2026-08-20T18:41:12+02:00`. Measured against the refs as they stand:
+
+| | First collision (`WO-MOK-012` names) | Second collision (`WO-MOK-013` names) |
+|---|---|---|
+| Colliding branch | `origin/feature/phase-4a-definition`, tip `94fc151` of `17:15:39+02:00` | `origin/governance/adr-mok-006-third-party-crates`, tip `ee0c086` of `18:10:01+02:00` |
+| Merged into `master`? | **No** | **No** |
+| Merge base with `master` | `ff3a155` | `ff3a155` |
+| Conflicts against `master` now | **9** — `WO-MOK-012.md` and four files of `evidence/WO-MOK-012/`, plus `ROADMAP.md`, `ARCH-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-004` | **8** — four `add/add` on the colliding names, plus `ARCH-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004` |
+| Who renumbers under decision 3 | The other branch | The other branch |
+
+**This side was first to `master` in both collisions, so under decision 3 it renumbers neither set.** That
+is the rule applying itself to a fact, not a judgement about which chain deserved the numbers, and it was
+not sought: the merge was authorized on 2026-08-20 for reasons that had nothing to do with either
+collision.
+
+**Stop condition 8 did not fire.** Its words are: *"if this branch is the second of the two to reach
+`master`, renumbering happens before the merge lands and every citation in this work order and its evidence
+moves with it. Reaching the merge without having renumbered is the escalation."* This branch was the
+**first**, so the condition's antecedent never held. It did not need to be waived, and no renumbering was
+skipped that should have happened.
+
+**What this side owes as a result: nothing to those branches, and one thing to any reader.** Both remain
+free to renumber at their own merge, on their own timing, by their own owners' acts; neither is blocked from
+merging by anything in this chain beyond the ordinary conflict work every parallel branch pays. But **the
+names are still ambiguous in the object store** — `git show origin/governance/adr-mok-006-third-party-crates:docs/engineering/simulation/work-orders/WO-MOK-013.md`
+still resolves to a different work order than `master`'s — so the last bullet of the previous section holds
+unchanged, and citing any of the four names outside this chain still requires naming the ref.
+
+**What is not recorded here.** No renumbering, no contact with either branch, no decision on either merge's
+sequencing, and no claim about what either branch's owner will do. Every figure in this section comes from
+`origin/*` refs in this clone's object store, read with `git log`, `git merge-base` and `git merge-tree`.

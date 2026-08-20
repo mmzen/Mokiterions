@@ -27,13 +27,22 @@ scope below and nothing else, and **it is `implemented` as of the same day** —
 Transition to `in_progress` records that implementation has begun and was never taken here; transition to `implemented`
 requires the completed change and the retained evidence. Verification and release require separate commit-bound records.
 
-Commit-bound verification is classified `required` above. `VREC-MOK-013` is the record that binds it, and **it exists as
-a `ready` candidate** at `docs/engineering/simulation/verification-records/VREC-MOK-013.md`, captured against commit
-`41c20ca` in the same instruction that moved this status. It is **not `verified`**: `DECISION_RIGHTS.md` reserves that
-transition to the accountable assurance owner, the harness reports it as `decision_required ->
-review-assurance-decision`, and the record discloses `REQ-MOK-048` as unverified because manual assessment 2 of
-`VER-MOK-013` is still unauthored. **This status and that record are independent**, and neither substitutes for the
-other in either direction.
+Commit-bound verification is classified `required` above. `VREC-MOK-013` is the record that binds it, at
+`docs/engineering/simulation/verification-records/VREC-MOK-013.md`, captured against commit `41c20ca` in the same
+instruction that moved this status, and **it is `verified`** — transitioned on 2026-08-20 by the repository owner as
+accountable assurance owner, in a separate instruction and a separate commit, which `DECISION_RIGHTS.md` reserves to
+that role. It records all three requirements, and `REQ-MOK-048` **on its four automated cases, accepted in place of the
+primary evidence `VER-MOK-013` designates**: manual assessment 2 of that contract is still unauthored, the contract is
+not amended and still calls the automated case *"a necessary condition and not the property"*, so **`VER-MOK-013` is not
+satisfied on that one count**. `evidence/WO-MOK-013/assurance-decision.md` records what was accepted and what it does
+not retire. **This status and that record are independent**, and neither substitutes for the other in either direction:
+this work order did not move when the record did, and stays `implemented`.
+
+> **Earlier form, for a reader diffing this file.** Until the verification decision this paragraph read *"**it exists as
+> a `ready` candidate** … It is **not `verified`**: `DECISION_RIGHTS.md` reserves that transition to the accountable
+> assurance owner, the harness reports it as `decision_required -> review-assurance-decision`, and the record discloses
+> `REQ-MOK-048` as unverified because manual assessment 2 of `VER-MOK-013` is still unauthored."* The queue is now empty;
+> the assessment is still unauthored.
 
 **The decision that blocked approval has been taken, and confirmed on a corrected cost figure.** It was the choice
 between amending `REQ-MOK-020` and holding the log at six rows; the product owner chose the latter on 2026-08-20 and
@@ -79,6 +88,16 @@ that `REQ-MOK-048` is verified, that `VREC-MOK-013` is verified, that the identi
 anything has been merged, pushed, tagged or released. Each of those is a separate record or a separate accountable act,
 and `VREC-MOK-013`'s *What this record does not claim* enumerates them.
 
+> **Later fact, 2026-08-20 — four of the five have since happened, each as its own act, and none by this status.** The
+> branch was pushed and merged to `master` at `798e5d5` through pull request
+> [#32](https://github.com/mmzen/Mokiterions/pull/32) on the owner's separate authorization; both identifier collisions
+> were **determined by merge order** rather than resolved by agreement, this chain having landed first in both, so
+> decision 3's rule puts the renumbering on the two other branches; and `VREC-MOK-013` is now **`verified`**, with
+> `REQ-MOK-048` verified on its four automated cases accepted in place of the primary evidence. **`VER-MOK-013` is
+> still not satisfied**, on the same one count, and is not amended. **The sentence above is unchanged and still true:
+> this status recorded none of those things, and each was a separate accountable act taken later.** Still no tag and no
+> release. `evidence/WO-MOK-013/assurance-decision.md` and `evidence/WO-MOK-013/identifier-collision.md` measure them.
+
 **One measured consequence of the transition, so that it is not discovered later as a surprise.** With this status at
 `implemented` the inspector's *Active work* queue is empty where it named this work order, and `W-HEX-001` moves from
 three observations to four: it warns against every implemented work order that retains an evidence directory, because
@@ -94,6 +113,14 @@ the key. Of the three options set out in `evidence/WO-MOK-013/manual-assessment.
 find an admissible assessor — declining the other two, and the frame and the exact question are prepared in
 `discoverability-assessment.md`. A route is not an outcome, so the row is still open and `REQ-MOK-048` is still
 unverified.
+
+> **Later fact, 2026-08-20.** The row is still open — assessment 2 is **OUTSTANDING with no author** and the route
+> still stands — but **`REQ-MOK-048` is no longer unverified**. In a later instruction the assurance owner
+> transitioned `VREC-MOK-013` to `verified` and verified that requirement **on its four automated cases, accepted in
+> place of the primary evidence `VER-MOK-013` designates**. The contract is **not amended** and is **not satisfied**
+> on that count. **This work order's status is untouched by it** and stays `implemented`; the paragraph above is left
+> as written because it records what the transition to `implemented` did and did not close.
+> `evidence/WO-MOK-013/assurance-decision.md` carries the decision.
 
 **No amendment row in this chain is to be left `OUTSTANDING`, and none is.** Every specification amendment this work order
 needs is stated below, in advance, in the terms the accountable owner had to decide it in, and every one was decided
@@ -575,6 +602,11 @@ verification, and `VREC-MOK-013` remains the record that binds this work order's
 > `VREC-MOK-013`, so *Assurance pending* is empty and *Decision required* names that record instead. The prediction was
 > taken with the status flipped alone; the real transition moved two things at once. *Transition to `implemented`* in
 > *Lifecycle* is the current statement; this subsection is the record of the approval.
+>
+> **A fourth row has since moved.** `VREC-MOK-013` is no longer a `ready` candidate but **`verified`**, on a later
+> instruction to the assurance owner, and the *Decision required* queue is empty. The sentence above is left at "`ready`
+> candidate" because that is what existed when this approval's consequences were last reconciled. The approval itself is
+> untouched by it — it still authorizes the nine in-scope items and nothing else, and it is still not a verification.
 
 **`commit_bound_verification` stays `required` and was not put for confirmation.** `WO-MOK-012`'s classification was
 `not_required` and was confirmed as its own act, because a waiver has to be decided by the owner who bears it. `required`

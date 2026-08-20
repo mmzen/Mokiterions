@@ -19,6 +19,12 @@ the status does **not** assert that `VER-MOK-013` is satisfied — it is not, on
 the same act, bound to `41c20ca`, and is a **`ready` candidate rather than `verified`**. The work order's *Transition to
 `implemented`* subsection carries both statements.
 
+> **Later fact, 2026-08-20.** `VREC-MOK-013` is now **`verified`**, transitioned by the repository owner as
+> accountable assurance owner in a separate instruction and a separate commit. **`WO-MOK-013` did not move
+> and stays `implemented`** — nothing is approved by implication — and the record's binding still ends at
+> `41c20ca`. `assurance-decision.md` records the decision; the sentence above describes the pack as it stood
+> when the work order was transitioned, which is what it is for.
+
 **What it closes, and what it does not.** `VER-MOK-013`'s **first** manual assessment was taken on 2026-08-20
 and is **SATISFIED** — "the bar carried it" — which answers the adverse observation on the roster gauges that
 this whole chain exists for. The **second** is **outstanding with no author** and has **no admissible assessor
@@ -27,6 +33,15 @@ rule 7, and the available assessor has ratified six amendments to that document.
 `manual-assessment.md` sets out, the owner took the one that verifies the requirement rather than the one that
 closes the row, so it stays open with its material prepared. `VREC-MOK-013` therefore records `REQ-MOK-047`
 and `REQ-MOK-049` and **discloses `REQ-MOK-048` as unverified**.
+
+> **Later fact, 2026-08-20 — the last sentence no longer describes the record.** In a separate instruction
+> the assurance owner verified `REQ-MOK-048` on its **four automated cases, accepted in place of the manual
+> assessment** `VER-MOK-013` designates as its primary evidence. So the record verifies all three
+> requirements, and the third on evidence the contract calls *"a necessary condition and not the property"*.
+> **Assessment 2 is still OUTSTANDING with no author, `VER-MOK-013` is not amended, and the contract is
+> therefore not satisfied on that one count** — the row stays open with its material prepared, exactly as
+> above, and taking it would now confirm or contradict rather than verify. `assurance-decision.md` states what
+> was accepted and what it does not retire.
 
 **Decision 1 is the one trade in this work order, and it is a trade.** The roster's three-line entry needs
 36 interior rows, which the reference viewport has only if the log stays at six. The product owner chose to
@@ -48,6 +63,7 @@ time, with the result on screen rather than only the arithmetic, and the choice 
 | `gauge-resolution.md` | `REQ-MOK-047` measured: the gauge at 13 cells rather than 2, 14 renderable states rather than 3, and a ten-point step moving the fill at **91 of 91** values where it moved at 11. Reads `gauge-resolution.txt` against the `WO-MOK-012` before form. |
 | `test-census.md` | Rule 11's test totals reconciled arrival by arrival, the static census validated target by target against the executed run, the one rename with both names, and every `VER-MOK-013` case mapped to the test that discharges it. |
 | `manual-assessment.md` | Both contracted manual assessments: the first **SATISFIED** on 2026-08-20 with its author, date, role and terminal, the traced subject it was taken on, and the five-point-step fact disclosed before the judgment; the second **outstanding, author none**, with its route decided and the two declined options recorded. |
+| `assurance-decision.md` | The verification decision of 2026-08-20 on `VREC-MOK-013`: the instruction verbatim, the three bases it was read against and the one the owner chose, what the decision accepted, **where it deviates from `VER-MOK-013` and in the contract's own words**, the nine things it does not retire, the collision determined by merge order, and the harness state measured either side of it. **Not in `VREC-MOK-013`'s `evidence_paths`**: it postdates the commit that record binds. |
 | `identifier-collision.md` | The second identifier collision, measured and left undecided: four names — `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047` — claimed by `origin/governance/adr-mok-006-third-party-crates` as well, with both sides approved and both pushed. The renumbering cost from this side, the eight conflicts a merge reports and the four that are this collision, and the evidence directories that collide in path without colliding in any file name. **Not in `VREC-MOK-013`'s `evidence_paths`**: it postdates the commit that record binds. |
 | `discoverability-assessment.md` | The packet for assessment 2, written to be handed to whoever administers it: who may assess and who may not, which frame to show, the question verbatim, what each of the three outcomes means and where it belongs, what the administrator must not say, and how to record the result. Usable without reading `SPEC-MOK-003` rule 7 to the assessor. |
 | `discoverability-frame.txt` | The frame that assessment 2 shows: 48 rows × 160 columns, the reference viewport at tick 200 of seed 42, extracted unmodified from `frames.txt` lines 14–61 so it can be shown without the banner that names the viewport. `?` appears on the header row and nowhere else. |
@@ -68,9 +84,15 @@ time, with the result on screen rather than only the arithmetic, and the choice 
 | `analysis/interface.py` | The script behind `interface.txt`: counts public declarations per module in the working tree and at `ff3a155`. |
 | `analysis/test-census.py` | The script behind `test-census.txt`: counts `#[test]` functions **by name** per file at both commits, since a count cannot distinguish a rename from a removal plus an addition. Run it with `PYTHONIOENCODING=utf-8`. |
 
-Twenty-six files, 2.24 MB, of which the two retained event streams are 1.97 MB. **`VREC-MOK-013`'s
-`evidence_paths` names 25 of the 26**, and the twenty-sixth is `identifier-collision.md`, which was written
-after the commit that record binds.
+**Twenty-seven files, 2.28 MB**, of which the two retained event streams are 1.97 MB. **`VREC-MOK-013`'s
+`evidence_paths` names 25 of the 27.** The two outside it are `identifier-collision.md` and
+`assurance-decision.md`, both written after the commit that record binds — the first in the same commit as
+the record, the second at the verification decision that followed. A record's evidence set is the capture's,
+not a later act's, which is the `VREC-MOK-007`, `VREC-MOK-010` and `VREC-MOK-011` precedent.
+
+> **Earlier form, for a reader diffing this file.** It read *"Twenty-six files, 2.24 MB… `evidence_paths`
+> names 25 of the 26, and the twenty-sixth is `identifier-collision.md`"* until `assurance-decision.md` was
+> added. The 25 named paths did not change.
 
 ## On the oracle
 
@@ -104,6 +126,10 @@ open. Then `closing-review.md` for who decided what, and whichever of `log-heigh
 here that still records an obligation alongside a result. `identifier-collision.md` is orthogonal to all of
 them: read it before citing any of this chain's identifiers outside this branch.
 
+`assurance-decision.md` was added after that order was written and belongs at its end, with
+`manual-assessment.md`: read the two together, because the assessment that is outstanding and the decision
+that verified the requirement without it are one situation described from two sides.
+
 `discoverability-assessment.md` is not in that order: it is not written for a reader of this pack but for
 whoever administers the one assessment left open. Read it when you are about to take that assessment, and not
 before — and if you have not read `SPEC-MOK-003` rule 7, do not read it at all, because you are one of the few
@@ -116,6 +142,13 @@ people who can still be its assessor.
   **disclosing `REQ-MOK-048` as unverified**. It is a **`ready` candidate and not `verified`**:
   `DECISION_RIGHTS.md` reserves that transition to the accountable assurance owner, and the harness reports
   the outstanding act as `decision_required -> review-assurance-decision`.
+
+  > **Later fact, 2026-08-20 — this bullet is discharged, and by an act outside this pack's authorization.**
+  > The assurance owner took the decision: `VREC-MOK-013` is `verified`, `REQ-MOK-048` is verified on the
+  > automated cases accepted in place of the primary evidence, and the `decision_required` queue is empty. The
+  > bullet is kept as written because it is a true statement about what this pack contained when it was
+  > assembled, and `assurance-decision.md` — added to this directory afterwards, and not to the record's
+  > `evidence_paths` — is where the decision lives.
 - **No commit hash of this work order's own commit.** A record cannot contain the hash of the commit that
   introduces it. `VREC-MOK-013` is written after the commit it binds for the same reason.
 - **No status transition, approval, assessment or release act taken by the agent.** All twenty-two decisions
@@ -134,5 +167,19 @@ people who can still be its assessor.
   attributes the warnings; it resolves none.
 - **No renumbering on either side of either identifier collision.** `identifier-collision.md` measures the
   second one and decides nothing; decision 3's rule sends both to the merge.
+
+  > **Later fact, 2026-08-20.** Still no renumbering, and now none owed from this side: this chain reached
+  > `master` first in **both** collisions, so decision 3's rule puts the renumbering on the two other
+  > branches. That is an outcome of merge order, not an act taken here. `identifier-collision.md`'s *What the
+  > merge determined* measures it — 9 conflicts against `master` for the first collision's branch, 8 for the
+  > second's — and stop condition 8 did not fire, because its antecedent was *"if this branch is the second of
+  > the two to reach `master`"*.
 - **No push, pull request, tag or release.** `WO-MOK-013`'s *Out of scope* puts all four outside it, and none
   was authorized in this work.
+
+  > **Later fact, 2026-08-20.** The owner authorized publication separately and the branch reached `master`
+  > through pull request [#32](https://github.com/mmzen/Mokiterions/pull/32) at `798e5d5`. **Those are the
+  > owner's acts and not this work order's discharge**, which is why the bullet stands as written; still no tag
+  > and no release, and nothing here authorizes either. The merge changed no source file — `git diff --stat
+  > 41c20ca 798e5d5 -- . ':(exclude)docs'` is empty — so every capture in this pack describes `master`'s code
+  > as well as the branch's, while the record bound to the merge commit remains owed.
