@@ -12,6 +12,7 @@ adverse observations the assessment pass produced are recorded here and **fixed 
 | File | What it establishes |
 |---|---|
 | `closing-review.md` | The fifteen decisions the repository owner took on 2026-08-20, each with the role acted in and what the owner was shown before answering. The record of the acts. |
+| `assurance-decision.md` | Decisions 16 and 17, taken in a later turn the same day: the approval of this work order and the confirmation of its `commit_bound_verification` classification. Records the instruction verbatim and what it did **not** authorize. |
 | `amendment-ratifications.md` | The eleven ratified provisions, one by one: what each says, what it changes, and why ratification rather than revision was the right act. |
 | `manual-assessment.md` | The seven assessments of `VER-MOK-005`, with status and author. Six authored by the owner; the seventh **outstanding by decision**, with its reason. |
 | `adverse-observations.md` | The three findings from the live pass, each with the measurement that establishes it, the specification provision it bears on, and the remedy decided for the later chain. Plus two further observations recorded but not raised as findings. |
@@ -62,7 +63,8 @@ the buffer means is a separate act performed by a person who can be named.
 
 - **No commit hash of this work order's own commit.** A record cannot contain the hash of the commit that introduces it.
 - **No verification record.** `WO-MOK-012` classifies `commit_bound_verification` as `not_required` and stops at
-  `implemented`, being governance-only work. The engineering owner confirms that classification at approval; the
-  implementation agent proposed it and holds no authority over it.
+  `implemented`, being governance-only work. **The engineering owner confirmed that classification on 2026-08-20**, as
+  a separately stated act; the implementation agent proposed it and held no authority over it. See
+  `assurance-decision.md`.
 - **No status transition, approval, assessment or release act taken by the agent.** Every decision recorded here was
   taken by the repository owner and is attributed.

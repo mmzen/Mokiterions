@@ -2,14 +2,14 @@
 id = "WO-MOK-012"
 type = "work_order"
 title = "Record VER-MOK-005's seven manual assessments and ratify the eleven amended provisions they were blocked behind"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
 
 [assurance]
 commit_bound_verification = "not_required"
-rationale = "This work order changes no executable behavior, no test, no managed policy and no CI definition. Its entire product is governance text: eleven approval cells that record a ratification the accountable owner performed on 2026-08-20, seven manual assessments the same owner authored on the same date, three amendments to VER-MOK-005 restating assessments whose subjects have moved, and the evidence retaining all of it. Nothing a later engineering, assurance, operational or release decision would rely on for correctness is altered, because the tree the assessments describe is byte-identical before and after: mokiterions-core/ and mokiterions-tui/ are untouched. Classifying this required would oblige a commit-bound record over a diff containing no trusted state, and would leave WO-MOK-005's assessment obligation open behind a second capture — the outcome this work order exists to end. The scope is not mixed: the one change that reaches an approved assurance artifact, the VER-MOK-005 amendment, is itself one of the recorded decisions of the 2026-08-20 review and was taken by the owner as assurance owner. THE ENGINEERING OWNER MUST CONFIRM THIS CLASSIFICATION AT APPROVAL; the implementation agent proposed it and holds no authority over it."
+rationale = "This work order changes no executable behavior, no test, no managed policy and no CI definition. Its entire product is governance text: eleven approval cells that record a ratification the accountable owner performed on 2026-08-20, seven manual assessments the same owner authored on the same date, three amendments to VER-MOK-005 restating assessments whose subjects have moved, and the evidence retaining all of it. Nothing a later engineering, assurance, operational or release decision would rely on for correctness is altered, because the tree the assessments describe is byte-identical before and after: mokiterions-core/ and mokiterions-tui/ are untouched. Classifying this required would oblige a commit-bound record over a diff containing no trusted state, and would leave WO-MOK-005's assessment obligation open behind a second capture — the outcome this work order exists to end. The scope is not mixed: the one change that reaches an approved assurance artifact, the VER-MOK-005 amendment, is itself one of the recorded decisions of the 2026-08-20 review and was taken by the owner as assurance owner. CONFIRMED on 2026-08-20 by the repository owner acting as engineering owner, in the same turn as the approval and as a separately stated act: 'i confirm commit_bound_verification = \"not_required\"'. The implementation agent proposed this classification and held no authority over it; the confirmation is the owner's."
 decided_by = "engineering owner"
 
 [relations]
@@ -44,7 +44,34 @@ This work order remains a proposal while its status is `draft`. Transition to `a
 below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
 completed change and the retained evidence.
 
-Commit-bound verification is classified `not_required` above, with the reasoning in the `rationale` field. This is
+**Approved 2026-08-20 by the repository owner acting as engineering owner**, the role `DECISION_RIGHTS.md` names for a
+bounded work order. The instruction, verbatim and complete:
+
+> i approve WO-MOK-012, i confirm commit_bound_verification = "not_required"
+
+**It named two acts and no others.** It approved this work order and it confirmed the assurance classification. It did
+**not** authorize a transition to `in_progress` or `implemented`, and it did not authorize a push, a pull request, a tag
+or a release. This work order therefore stands at `approved`, and the agent moved nothing else — on the same reading
+`evidence/WO-MOK-011/assurance-decision.md` applied when an instruction named `VREC-MOK-011` and not `WO-MOK-011`, and
+the work order was left where it stood. Nothing here is approved by implication.
+
+**The order of acts is recorded rather than smoothed over.** The governance text this work order authorizes was written
+and committed at `aebb26f` while this file read `draft`; the approval came afterwards, in the following turn. That is
+not the sequence `WORKFLOW.md` describes, in which an approved work order precedes its implementation, and a reader
+should not infer that it was.
+
+What makes the substance sound anyway, and what does not: **every decision this work order records was the owner's own
+act, taken in the review of 2026-08-20 before any file was edited.** The eleven approval cells transcribe ratifications
+the owner performed; the six assessments are the owner's, authored by the owner; the three restatements and the
+disposition of assessment 7 are the owner's. No decision was taken without authority and none was taken by the agent.
+What ran ahead of its authorization was this file's own approval, not the substance it records — a work order that
+records decisions already taken is a narrower thing than one that authorizes decisions yet to be made, which is why
+the deviation is disclosed here rather than treated as fatal. **It is disclosed for the owner's judgement, not excused
+by the agent's.**
+
+Commit-bound verification is classified `not_required` above, with the reasoning in the `rationale` field, **and that
+classification was confirmed by the engineering owner on 2026-08-20 as a separately stated act** rather than inferred
+from the approval. The agent proposed it and holds no authority over it. This is
 governance-only work and **stops at `implemented`**, as `WORKFLOW.md` requires: "Governance-only work that authorizes
 verification, release, tagging, review, or publication stops at `implemented` unless a distinct later VREC selects it."
 It does not become `verified` by recording assessments that `VER-MOK-005` requires, and it does not transition
@@ -55,8 +82,10 @@ what that record disclosed. Whether the chain needs a re-captured record, and wh
 the disclosure that survives, are separate assurance decisions on separate acts; this work order neither takes them nor
 presumes their outcome.
 
-**No status transition in this file was performed by the implementation agent.** The agent authored the text; every
-lifecycle act is the repository owner's.
+**No status transition in this file was decided by the implementation agent.** The agent authored the text and wrote
+`approved` into the `status` field as a transcription of the owner's instruction; every lifecycle act is the repository
+owner's. The distinction is the one `WORKFLOW.md` draws: a status change records authority, and it is not a confidence
+estimate the agent is entitled to form.
 
 ### Why this work order is numbered 012
 
@@ -98,6 +127,15 @@ The decisions are recorded in full in `evidence/WO-MOK-012/closing-review.md`. T
 | 13 | The roster gauge layout | product owner | **Two gauges per line over three lines per entry**, bar width 13 |
 | 14 | Discoverability of the `?` key | product owner | **A permanent header segment**, degrading to `?` at the floor |
 | 15 | The hidden-pane notice | product owner | **State the enlargement remedy and require visual emphasis** |
+
+Two further decisions were taken in a later turn on the same date, after the review's fifteen and after the evidence
+was committed. They are numbered on from the fifteen because they are acts of the same authority on the same day, and
+are recorded in `evidence/WO-MOK-012/assurance-decision.md`:
+
+| # | Decision | Role | Outcome, 2026-08-20 |
+|---|---|---|---|
+| 16 | Approval of this work order | engineering owner | **Approved.** `draft` → `approved` |
+| 17 | The `commit_bound_verification` classification | engineering owner | **Confirmed `not_required`**, as a separately stated act |
 
 Decisions 13 to 15 are recorded here but **are not implemented by this work order**. They are the substance of the
 second chain that decision 12 directs, and they are written down now so that the chain that carries them inherits a

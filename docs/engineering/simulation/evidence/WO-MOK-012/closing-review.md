@@ -220,7 +220,10 @@ other, because the overlay is the remedy available now and the enlargement is th
   re-captured record is a separate assurance decision that was not taken here.
 - **Whether `WO-MOK-005` changes status.** It is `implemented` and stays so.
 - **The `[assurance]` classification of `WO-MOK-012`.** The agent proposed `not_required` with its reasoning; the
-  engineering owner confirms or rejects it at approval.
+  engineering owner confirms or rejects it at approval. *Decided in a later turn the same day: the engineering owner
+  approved this work order and confirmed the classification as a separately stated act — decisions 16 and 17, in
+  `assurance-decision.md`. Neither was part of this review, and this list is left as the record of what the review
+  itself left open.*
 - **Any identifier for the second chain.** The sweep in `identifier-sweep.md` shows what was free on 2026-08-20, and
   the refs move; the chain re-sweeps rather than trusting that record.
 - **Any push, pull request, tag or release.** None was authorized in this review.

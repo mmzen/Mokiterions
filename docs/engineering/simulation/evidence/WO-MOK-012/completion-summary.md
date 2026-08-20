@@ -3,8 +3,9 @@
 Recorded 2026-08-20 on branch `assessment/wo-mok-005-remediation`, based on `origin/master` at `ff3a155`.
 
 **Status of this record.** It states what was done, what was decided, and what remains open. It does not transition any
-artifact. `WO-MOK-012` is `draft` and stays `draft` until the engineering owner approves it; being governance-only work
-it then stops at `implemented` and takes no verification record.
+artifact. `WO-MOK-012` was `draft` when this summary was first written and is now **`approved`**, on the engineering
+owner's act of 2026-08-20 recorded in `assurance-decision.md`; being governance-only work it stops at `implemented` and
+takes no verification record. The transition to `implemented` has not been authorized and was not taken.
 
 ---
 
@@ -150,14 +151,20 @@ removed. All twelve files are retained under `evidence/`; nothing was lost.
   closing it requires either an operator-reachable panic path or a decision to accept the automated result, and neither
   was taken.
 
-### Awaiting the engineering owner
+### Settled by the engineering owner on 2026-08-20
 
-- **Approval of `WO-MOK-012`.** It is `draft`.
-- **Confirmation of the `[assurance]` classification.** The agent proposed `commit_bound_verification = "not_required"`
-  on the ground that the diff contains no executable behavior, no test, no managed policy and no CI definition, and
-  that the work's sole purpose is recording already-authorized governance decisions — which is the condition
-  `WORKFLOW.md` states for `not_required`. **The engineering owner confirms or rejects this at approval.** The agent
-  holds no authority over it and did not decide it.
+Both were open when this summary was first written and were decided in a later turn the same day. Recorded in full,
+with the instruction verbatim, in `assurance-decision.md`.
+
+- **Approval of `WO-MOK-012`.** Given. `draft` → `approved`.
+- **The `[assurance]` classification.** Confirmed `not_required`, as a separately stated act rather than inferred from
+  the approval — which is what the `rationale` field's demand for confirmation at approval required.
+
+### Still awaiting the engineering owner
+
+- **The transition to `implemented`.** The gate is met on the facts: the change is complete and the evidence retained.
+  The transition is a separate act and the approval instruction did not name it, so it was not taken. Being
+  governance-only, `implemented` is where this work order stops — it takes no verification record.
 
 ### Not decided by the closing review
 

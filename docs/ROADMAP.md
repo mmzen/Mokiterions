@@ -314,8 +314,15 @@ recording and fixing are different acts and folding a rule 4 redesign into this 
 obligation open past the next release record. That chain re-sweeps its own identifiers rather than trusting a record of
 what was free.
 
-`WO-MOK-012` is governance-only and stops at `implemented`. Everything decided, and the measurement behind each
-decision, is in `engineering/simulation/evidence/WO-MOK-012` — start with its `README.md`, then `closing-review.md`.
+`WO-MOK-012` is **`approved`** on the engineering owner's act of 2026-08-20, which also confirmed its
+`commit_bound_verification = "not_required"` classification as a separately stated act. Being governance-only it stops
+at `implemented` and takes no verification record; that transition has not been authorized and was not taken. One
+sequencing deviation is disclosed rather than smoothed over: the governance text was committed before the work order was
+approved, and the work order's *Lifecycle* section records it.
+
+Everything decided, and the measurement behind each decision, is in `engineering/simulation/evidence/WO-MOK-012` —
+start with its `README.md`, then `closing-review.md` for the fifteen review decisions and `assurance-decision.md` for
+the approval.
 
 ---
 
