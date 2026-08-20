@@ -2,7 +2,7 @@
 id = "SPEC-MOK-006"
 type = "specification"
 title = "Structured record stream"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

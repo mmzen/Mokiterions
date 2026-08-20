@@ -2,7 +2,7 @@
 id = "CAP-MOK-009"
 type = "capability"
 title = "Measure a run from records the engine writes, additively and in integers"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

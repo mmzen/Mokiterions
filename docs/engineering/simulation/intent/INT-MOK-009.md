@@ -2,7 +2,7 @@
 id = "INT-MOK-009"
 type = "intent"
 title = "Make a run measurable by something other than a human reading lines"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

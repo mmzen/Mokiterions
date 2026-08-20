@@ -2,7 +2,7 @@
 id = "VER-MOK-012"
 type = "verification"
 title = "Structured record stream verification: projection, non-perturbation, additivity, and escaping totality"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

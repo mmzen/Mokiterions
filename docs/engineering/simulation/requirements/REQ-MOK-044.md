@@ -2,7 +2,7 @@
 id = "REQ-MOK-044"
 type = "requirement"
 title = "Report an end-of-run measurement carrying no classification"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

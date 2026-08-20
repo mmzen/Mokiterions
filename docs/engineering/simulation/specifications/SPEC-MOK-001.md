@@ -5,7 +5,7 @@ title = "Minimum simulation foundation behavior"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-11"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
 specifies = [
@@ -39,7 +39,9 @@ specifies = [
 
 This specification defines the smallest local, in-memory, text-only Mokiterions simulation. It fixes the world layout, initial state, tick order, survival values, core actions, food behavior, bounded perception, per-Mokiterion identity and behavioral variation, deterministic decision sources, output, and termination needed to implement `CAP-MOK-001`, `CAP-MOK-002`, `CAP-MOK-006`, and `CAP-MOK-008`.
 
-It does not define OpenAI integration, combat, social behavior, persistence, structured output, or a user interface. It defines one behavioral trait and the `fear` attribute, but no rule reads `fear`: threat response, retreat, surrender and encounter memory remain undefined.
+It does not define OpenAI integration, combat, social behavior, persistence, or a user interface. It defines one behavioral trait and the `fear` attribute, but no rule reads `fear`: threat response, retreat, surrender and encounter memory remain undefined.
+
+**Structured output, as amended 2026-08-20 for `REQ-MOK-042` through `REQ-MOK-046`.** Structured output was on the excluded list above and is removed from it. The structured record stream is defined by `SPEC-MOK-006`, and it is a projection of the output this specification fixes: every figure a record carries is a figure this specification already requires the program to produce, and no record introduces a fact of its own. This specification stays the single authority on what the simulation does and on the text it writes; `SPEC-MOK-006` states how the same facts are framed for a machine reader, and it may not change one of them. **Persistence stays on the excluded list.** A record stream is an output destination the operator names, written once and never read back; nothing survives the process in a form the engine consumes.
 
 This is the single behavior contract for the simulation core. It is amended in place rather than superseded, so that no two active specifications state conflicting survival or resource values.
 
@@ -57,6 +59,8 @@ This is the single behavior contract for the simulation core. It is amended in p
 | 2026-08-19 | Narrowed the `waste_tolerance` range from `0..=100` to `0..=40` in *Behavioral trait*, and with it the bounded selection the derivation takes. Rule 19's upper-bound note now reads the bound as `T = 40`, giving `S + R - 100 <= 2R/5`, and records that no reachable tolerance accepts restoration that is entirely clipped. The two *Acceptance examples* that cited the unreachable tolerances `60` and `58` are replaced by a medium-class pair at `34` and `33`, which also fixes the division as truncating, and a high-class pair at `40` and `39` at the bound. **No other provision changed: the derivation, the salt, the tolerant test's form, rule 19's case order, the `fear` provisions and rule 5 are all untouched, and the baseline and reference sources remain byte-identically unchanged.** | Approved 2026-08-19 by the repository owner acting as technical owner, on the measured evidence in `docs/engineering/simulation/evidence/WO-MOK-010/escalation.md`, in correction of `REQ-MOK-034`'s survivor floor missed on three of five declared seeds under `WO-MOK-010` stop condition 6. The first form of *Behavioral trait* named this amendment as the one to make on that evidence. The owner chose narrowing the range over amending the floor; the implementation agent measured the sweep, recommended the bound and wrote the amended text, and did not decide the substance. `REQ-MOK-031`, `REQ-MOK-033` and `REQ-MOK-034` need no amendment, each having delegated the range to this specification. |
 | 2026-08-19 | Corrected the *Help output* sentence this work order's first amendment added. It read "The explanatory prose on the decision sources describes all three, and states which one is the default", which contradicted the same section's *Every default stated in the options block* paragraph — approved 2026-08-17 — under which each default is stated once and the prose is where the removed copy lived. The sentence now states that the prose describes all three sources and states neither a default nor a value constraint. **The three-source description is retained; only the default clause is withdrawn.** No behavior changed, and the implementation was already on the corrected side of the contradiction. | **Ratified 2026-08-19 by the repository owner acting as technical owner**, in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`. It was **OUTSTANDING** until that act: written by the implementation agent under `WO-MOK-010` on 2026-08-19 and approved by nobody, being a correction to text the technical owner had approved on the same date. The defect was found by reading the amended section against the inherited test `cli::each_declared_default_is_stated_once`, which asserts that the explanatory prose contains no default at all; satisfying the withdrawn clause would have required relaxing an assertion `VREC-MOK-004` binds, which `WO-MOK-010` forbids. Recorded in `evidence/WO-MOK-010/completion-summary.md` §13 and checked in `evidence/WO-MOK-010/amendment-approvals.md`. |
 | 2026-08-19 | Naming, under `CAP-MOK-008`. Five provisions. *Scope* names `CAP-MOK-008` and per-Mokiterion identity. *State model / Mokiterion* gains the name. A new *Name* subsection fixes the twelve names and their assignment to `M01` through `M12`, the character and length domain, the pairwise distinctness of the names and of their twelve first characters, and the three load-bearing properties: the assignment reads neither the seed nor the configuration, naming performs no draw against any generator, and nothing in the engine reads a name. It also records that a name is not carried on the rule 3 observation, for the reason `fear` is not. *Time and entropy* records that naming is not an exception to the single shared stream because it is not a draw at all. *Data and interface contracts* puts `name` first in the `agent_initialized` details, before `position`, reports it once and on no other record kind, and states that both the name's leading position and `waste_tolerance`'s trailing position are fixed because two test suites parse that record positionally. Rule 1 places the assignment at agent creation. **No other provision changed: no rule, no decision source, no constant, no floor, no attribute, no ordering and no exit code is touched, and every run's outcome and entropy sequence are unchanged.** | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011` and `WO-MOK-011`. The twelve names and their assignment are the product owner's decision of the same date, recorded in `WO-MOK-011`; the name's position in the record and the decision that the observer sources it from the retained event stream rather than from a new public interface item are the technical owner's decisions of the same date, recorded there too. The implementation agent wrote the amended text under `WO-MOK-011` and did not decide the substance. |
+
+| 2026-08-20 | The optional structured record stream, under `CAP-MOK-009`. Eleven provisions, none of which changes a simulated behavior. *Scope* stops excluding structured output and names `SPEC-MOK-006` as its contract, while keeping persistence excluded. *Actors* adds the filesystem as a destination the binary target writes and the engine never reads. *Inputs* takes `--events-path <path>` in the synopsis and one bullet: absent by default, at most once, the empty string and the single character `-` rejected as invalid configuration, and a well-formed path the platform refuses classified as a runtime failure instead. *Help output* gains the option's entry between `--trace-actions` and `--help`, stating an absence rather than a value as its default and no constraint. *Outputs* adds the stream, and records that the text stream is unaffected by the option's presence; the exit-code list is unchanged and a paragraph states that no code is added. *Error and recovery behavior* adds that failing to create, write, flush or close the sink exits `1` with no summary claimed, that a sink that cannot be created stops the run before any tick, and that a file the process created is removed on failure. *Security and privacy properties* records the sink path as the one input interpreted as a path, interpreted only by the binary target and only as a path, and adds that no record carries a path, a clock, a host, a user, an environment value or a credential. *Performance and capacity* records the stream as write-only, linear in the run and flat in memory. *Observability* adds byte-identical records for identical trace and sink configuration, and byte-identical standard output when a sink is configured. *Compatibility and migration* names the stream's own schema version and records that no existing behavior, default or exit code changes. *Explicitly unspecified decisions* records that the stream's framing, fields, alphabet, version and failure behavior are governed rather than delegated. **No rule, no decision source, no constant, no floor, no attribute, no ordering, no default and no exit code is touched, and every run's text output and entropy sequence are unchanged.** | Approved 2026-08-20 by the repository owner acting as technical owner, together with `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`, `ADR-MOK-005` and `VER-MOK-012`, and by way of `ADR-MOK-005`, whose *Required amendments* section states all eleven in full. The option's name, its default, its two rejected spellings, the classification of an unopenable path as a runtime failure and the decision that the library target performs no filesystem operation are the owner's decisions of the same date, recorded in `WO-MOK-012`. The implementation agent wrote the amended text under `WO-MOK-012` and did not decide the substance. `VREC-MOK-001`, which binds the 2026-08-11 content, is not edited. |
 
 The released implementation at commit `09c4e1a` conforms to the 2026-08-11 content. `VREC-MOK-001` remains the
 commit-bound record of that earlier content.
@@ -80,7 +84,7 @@ eight. It also removes a false statement that the second amendment left standing
 - The operator starts the process, selects a decision source, and reads standard output and standard error.
 - A decision source proposes actions from bounded observations. Three exist: the random baseline source, the food-seeking reference source, and the trait-aware individual source.
 - The simulation engine is the only authority that changes world state.
-- There are no external systems or network calls.
+- There are no external systems and no network calls. Amended 2026-08-20 for `REQ-MOK-042`: the filesystem is a destination for the optional record stream. It is written by the binary target, at the operator's instruction, to the path the operator names, and by nothing else. The engine never reads it, and no filesystem location is a source of engine input.
 
 ## Inputs
 
@@ -90,6 +94,7 @@ The binary accepts:
 Mokiterions [--seed <u64>] [--ticks <u64>]
             [--policy <baseline|reference|individual>]
             [--density <percent>] [--trace-actions]
+            [--events-path <path>]
 ```
 
 - `--seed` defaults to `0`.
@@ -97,6 +102,7 @@ Mokiterions [--seed <u64>] [--ticks <u64>]
 - `--policy` selects the decision source and defaults to `reference`. Only `baseline`, `reference`, and `individual` are valid values. `individual` selects the trait-aware source of rule 19, which reads each Mokiterion's `waste_tolerance`; it is not the default, and whether it should become the default is deferred to a later governed decision under `REQ-MOK-033`.
 - `--density` selects the resource density as a percentage of a territory's cells and defaults to `0.75`. It accepts a decimal value with at most two decimal places, so the smallest representable step is `0.01`. It must resolve to at least one resource per territory and must not exceed `100`.
 - `--trace-actions` accepts no value, defaults to disabled, and enables one detailed action trace for every living-agent decision opportunity.
+- `--events-path`, added 2026-08-20 for `REQ-MOK-042`, names the destination of the structured record stream `SPEC-MOK-006` defines. It takes a value, is absent by default, may appear at most once, and writes no record stream when it is absent. Its value is rejected as invalid configuration when it is empty or the single character `-`: there is no standard-output form of the record stream and no convention here that `-` selects one. A well-formed path the platform refuses — a missing directory, a permission the operator lacks, a name the filesystem will not accept — is a **runtime failure and not an invalid configuration**, because whether a path can be opened is not a property of the argument. `SPEC-MOK-006` rules 13.1 and 13.2 fix the two exit codes that follow from that distinction.
 - Options may appear in any order and may appear at most once.
 - `--help` prints usage and exits successfully without starting a simulation.
 - Unknown, duplicate, missing, or invalid option values are invalid configuration.
@@ -114,9 +120,9 @@ together.
 The explanatory prose on the decision sources describes all three. It states no default and no value constraint:
 the options block below states each of those once, and the prose is where an earlier copy of them lived. The
 options block contains one entry for each option the program accepts — `--seed`, `--ticks`, `--policy`,
-`--density`, `--trace-actions`, and `--help`, in that order. Each entry states the option, its value placeholder
-where it takes a value, and a short description of its effect that is intelligible without this specification at
-hand. Each entry additionally states:
+`--density`, `--trace-actions`, `--events-path`, and `--help`, in that order. Each entry states the option, its
+value placeholder where it takes a value, and a short description of its effect that is intelligible without this
+specification at hand. Each entry additionally states:
 
 | Option | Stated default | Stated constraint |
 |---|---|---|
@@ -125,7 +131,17 @@ hand. Each entry additionally states:
 | `--policy` | `reference` | only `baseline`, `reference`, and `individual` are valid, which the value placeholder states |
 | `--density` | `0.75` | at most two decimal places |
 | `--trace-actions` | no value; the entry states that tracing is off unless the option is given | none |
+| `--events-path` | none; the entry states that no record stream is written unless the option is given | none |
 | `--help` | none | none |
+
+`--events-path`'s row was added 2026-08-20 for `REQ-MOK-042`. It sits between `--trace-actions` and `--help`,
+matching its position in the synopsis block, and it is the second option whose stated default is an absence rather
+than a value. **Absence is what the entry states, not a value the entry omits**: the *Every default stated in the
+options block* paragraph below requires each stated default to equal the applied default, and an option with no
+value to apply states that no record stream is written, exactly as `--trace-actions` states that tracing is off. The
+entry states no constraint, because the two rejected spellings — the empty string and the single character `-` —
+are not a property of the value's shape that an operator can be told to satisfy; a path is otherwise whatever the
+platform accepts, and `--events-path`'s *Inputs* bullet is where that is stated.
 
 Every default stated in the options block is the value the program applies when the option is omitted. The two are
 required to be equal, and that equality is verified rather than maintained by convention.
@@ -141,10 +157,13 @@ the operator's benefit, and where the two differ this specification's *Inputs* l
 - Deterministic simulation events and the final summary are written to standard output.
 - The selected decision source is reported exactly once on standard output, before agent processing begins, so that no run is ambiguous about which policy produced it.
 - Detailed per-action trace lines are additionally written to standard output only when `--trace-actions` is enabled.
+- Added 2026-08-20 for `REQ-MOK-042`: structured records are additionally written to the operator-named sink, and only when `--events-path` is given. Their content, framing, field names, field order, value alphabet and schema version are `SPEC-MOK-006`'s and are stated nowhere else. **The text stream is unaffected by the option's presence**: standard output is byte-identical with and without a sink, at every seed, every policy and tracing off or on, and the entropy draw sequence is likewise unchanged. `SPEC-MOK-006` rule 11 states that obligation as a rule and `VER-MOK-012` measures it.
 - Usage and configuration errors are written to standard error.
 - Successful help or simulation completion exits with code `0`.
 - Invalid configuration exits with code `2`.
 - An unrecoverable runtime or output failure exits with code `1`.
+
+**The three exit codes above are the whole set, and the 2026-08-20 amendment adds none.** A record sink that cannot be created, or that fails to be written, flushed or closed, is an output failure and exits `1`; a rejected `--events-path` value is invalid configuration and exits `2`. Both are existing codes doing what they already meant.
 
 ## State model
 
@@ -399,6 +418,7 @@ discovered.
 - Invalid action proposals are recoverable rejections and do not terminate the run.
 - Integer arithmetic saturates at attribute bounds and never wraps.
 - A standard-output write failure terminates the process with runtime exit code `1`; no successful summary is claimed.
+- Added 2026-08-20 for `REQ-MOK-042` and `REQ-MOK-046`: a failure to create the record sink, and a failure to write, flush or close it, likewise terminate the process with runtime exit code `1`, and no successful summary is claimed. **A sink that cannot be created stops the run before any tick**, before the first entropy draw and before any text observation record, so a run the operator asked to record either records or does not start. A file the process created is removed on that failure, so that no partial stream is left behind to read as a complete run; a file the process did not create — one that already existed — is not removed, because removing an operator's file on a failure that may not be the operator's is a worse outcome than leaving it. `SPEC-MOK-006` rule 13 states the failure behavior in full, including what the diagnostics say and what happens when the cleanup itself fails.
 
 ## Data and interface contracts
 
@@ -455,21 +475,26 @@ The final line begins with `summary` and reports fields in the order defined by 
 
 - The foundation reads no credentials and performs no network access.
 - Output contains only simulation configuration and state.
-- Invalid input is treated as data and never interpreted as code or a filesystem path.
+- Invalid input is treated as data and never interpreted as code or a filesystem path. Amended 2026-08-20 for `REQ-MOK-042` and `REQ-MOK-045`: **`--events-path`'s value is the one operator-supplied value that is interpreted as a filesystem path.** It is interpreted only by the binary target, and only as a path — never as code, never as a format string, never as an option, and never as engine input. The library target interprets no path at all and performs no filesystem operation, so the engine cannot be reached through the value. Every other input remains data.
+- Added 2026-08-20 for `REQ-MOK-045`: **no record carries a path, a wall-clock time, a hostname, a user, an environment value or a credential.** The record stream states the resolved configuration and the run's own facts, and nothing about the machine it ran on. The sink's own path is not written into the stream it names. `SPEC-MOK-006` rules 5.5, 5.6 and 3.2 are where that is enforced, the last of them by a closed value alphabet no operator-supplied text can enter.
 
 ## Performance and capacity
 
 - The foundation supports exactly twelve agents and a 128 by 128 world.
 - Per-tick work is bounded by the twelve agents, the current food collection, perception within the bounded radius, and emitted events.
-- State is held in memory and no persistence is required.
+- State is held in memory, and no persistence of state is required or performed. Amended 2026-08-20 for `REQ-MOK-042`: the record stream is a **write-only output the engine never reads back**. Its size grows linearly with the run — records per tick are bounded by the same twelve agents and the same event set the text stream is bounded by — while memory use does not, because a record is written and dropped rather than accumulated. Nothing the stream contains is loaded, indexed, queried or consumed by a later run.
 
 ## Observability
 
 Every initialization, decision-source selection, food consumption or regeneration result, territory crossing, survival attribute change, death, and termination is emitted in authoritative processing order. When action tracing is enabled, every living-agent decision opportunity additionally emits one ordered action trace. Identical runs with identical trace configuration produce byte-identical standard output.
 
+Amended 2026-08-20 for `REQ-MOK-042` and `REQ-MOK-044`: identical runs with identical trace **and sink** configuration additionally produce a byte-identical record stream, and **configuring a sink leaves standard output byte-identical**. The two properties are independent and both are required: the stream is reproducible from the same inputs, and asking for it changes nothing about the run that produced it.
+
 ## Compatibility and migration
 
 There is no prior data or interface compatibility obligation. Future output or model interfaces may replace this foundation only through later approved artifacts.
+
+Amended 2026-08-20 for `REQ-MOK-042`: the record stream carries its own schema version, governed by `SPEC-MOK-006` rule 10, so that a consumer can tell which shape it is reading without inferring it. **No existing behavior, default or exit code changes.** The option is absent by default, and a run that does not name a sink is byte-identical to the same run before this amendment.
 
 ## Examples and counterexamples
 
@@ -504,6 +529,7 @@ There is no prior data or interface compatibility obligation. Future output or m
   target layout, the public interface, and which tier a test belongs to are not unspecified: they are governed by
   `SPEC-MOK-002`.
 - The private organization of the trait-aware source's code, and whether it shares helper code with the reference source, provided rule 19's proposals and rule 5's are exactly as specified. What is not unspecified: the trait's name, range and derivation, the tolerant test, the `fear` driver and its two step sizes, and the third `--policy` value, all fixed above.
+- Added 2026-08-20: the record stream's framing, record kinds, field names, field order, value alphabet, schema version and failure behavior are **not** unspecified. They are governed by `SPEC-MOK-006`, exactly as crate target layout and the public interface are governed by `SPEC-MOK-002` in the entry above. What remains delegated on that side is what that specification itself delegates, and nothing here adds to it. The one decision this entry does record as unspecified is how the binary target establishes whether it created the destination file, which is a platform question and not a behavior of the simulation.
 - Column alignment, column widths, line wrapping, and cosmetic whitespace in the help text. Which options the
   options block describes, and which defaults and constraints it states, are not unspecified: they are fixed by the
   *Help output* section above.

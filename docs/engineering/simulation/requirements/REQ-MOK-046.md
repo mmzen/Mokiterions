@@ -2,7 +2,7 @@
 id = "REQ-MOK-046"
 type = "requirement"
 title = "Surface a record sink failure and refuse to claim a completed run"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

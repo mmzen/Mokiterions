@@ -2,7 +2,7 @@
 id = "ADR-MOK-005"
 type = "adr"
 title = "A host-supplied record sink, a closed value alphabet instead of an escaper, and one parameter of interface growth"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -15,7 +15,9 @@ decides = ["ARCH-MOK-001"]
 
 ## Status
 
-**Draft.** Not accepted. No approval is recorded and none is claimed.
+Accepted by the repository owner on 2026-08-20, acting as technical owner, together with the `ARCH-MOK-001`,
+`SPEC-MOK-001` and `SPEC-MOK-002` amendments this ADR requires. The same act approved `INT-MOK-009`, `CAP-MOK-009`,
+`REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006` and `VER-MOK-012`, and authorized `WO-MOK-012` to begin.
 
 This ADR refines `ARCH-MOK-001` on three points — where a filesystem destination is resolved, how a serialization
 format is produced without a serialization library, and how much the enumerated public interface grows — and
@@ -25,7 +27,9 @@ observer interface are all unaffected in substance.
 
 The amendments this ADR requires are listed under *Required amendments* and are the technical owner's act. This ADR
 does not claim them and `WO-MOK-012` makes them approval preconditions, in the same way `WO-MOK-003`, `WO-MOK-005`
-and `WO-MOK-006` did for their own chains.
+and `WO-MOK-006` did for their own chains. The owner's approval of this ADR on 2026-08-20 covered those amendments as
+stated here; each is written into its own document with its own amendment-record row, and `WO-MOK-012`'s *Lifecycle*
+states that reading so that it is disclosed rather than assumed.
 
 One precondition predates this chain and is stated here because it bears on the same architecture document:
 `ARCH-MOK-001`'s amendment record row of 2026-08-18 — narrowing the prohibition on public items from "mutable or

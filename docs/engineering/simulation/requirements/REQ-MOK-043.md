@@ -2,7 +2,7 @@
 id = "REQ-MOK-043"
 type = "requirement"
 title = "Report per-tick world metrics as integers"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

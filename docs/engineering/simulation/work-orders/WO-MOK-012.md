@@ -2,7 +2,7 @@
 id = "WO-MOK-012"
 type = "work_order"
 title = "Emit a structured record stream to an operator-named sink, leaving the observed run unchanged"
-status = "draft"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -61,6 +61,49 @@ implication, and an artifact whose approval is not recorded is not approved.
 The `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amendments are **approval preconditions of this work order**,
 not deliverables of it. `VER-MOK-012` oracle 7 checks their presence and approval, and their absence fails that
 contract regardless of the state of the code.
+
+### Approval record
+
+**Every precondition above was met on 2026-08-20.** The repository owner, acting as product owner, technical owner and
+assurance owner, approved `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`,
+`ADR-MOK-005` and `VER-MOK-012`, and approved this work order. The same act approved the `ARCH-MOK-001`,
+`SPEC-MOK-001` and `SPEC-MOK-002` amendments as `ADR-MOK-005` states them; each is written into its own document with
+its own amendment-record row dated 2026-08-20, and each row names `ADR-MOK-005` as the deciding artifact. The owner's
+approval covered the amendments' substance as the ADR states it; the wording is the implementation agent's, which
+this work order's *Authorized decision envelope* permits.
+
+**The pre-existing outstanding rows were not resolved, and nothing here claims they were.** The owner's instruction
+validated this chain's artifact pack and directed implementation; it said nothing about the amendment layer
+`WO-MOK-005` left, and an approval that was not given is not recorded. `ARCH-MOK-001`'s row of 2026-08-18 still reads
+**OUTSTANDING**, is untouched, and this chain's row is added beneath it. `VER-MOK-012` oracle 7 records that state,
+which is what it was written to do.
+
+**One correction to the section below.** *Precondition status of the wider repository* states that one amendment row
+remains outstanding and predates this chain. Two do, among the three documents this chain amends: `ARCH-MOK-001`'s
+2026-08-18 row, which that section describes, and `SPEC-MOK-002`'s first 2026-08-18 row — the four provisions narrowed
+for the terminal observer, whose approval column also reads **OUTSTANDING** and also names itself a `WO-MOK-005`
+approval precondition. Both belong to that earlier layer, neither is this chain's, and neither is depended on here:
+`SPEC-MOK-002` rule 5's growth clause and rule 6's narrowing are both favourable to what this work adds, and the
+`execute` row this chain amends is not among the four. The count in that section was wrong; the rows are untouched and
+this row states the fact rather than editing the section, because the section records what was surveyed at drafting.
+
+Status moved to `in_progress` on 2026-08-20, on the owner's instruction to implement. The pre-change capture named
+under *Evidence to record* was taken **before** the first code change, from a worktree whose every tracked file stood
+at the commit recorded in `evidence/WO-MOK-012/baseline/COMMIT.txt`, because a capture taken afterwards could not
+establish the absence claim this work order rests on.
+
+One item of the *Expected change surface* below was not implemented as written, and the deviation is stated here
+rather than left to be discovered: **the sink path does not enter `Config`.** `ADR-MOK-005`'s `SPEC-MOK-002` amendment
+states that "no item is added and no item's visibility changes"; `SPEC-MOK-006` rule 12.1 and 12.2 authorize growth by
+`execute`'s one parameter and by nothing else; and this work order's own *Constraints* require that the public
+interface grow "by exactly one parameter on `execute` and by no item" and that no existing test's assertions change. A
+sixth public field on `Config` would have contradicted all three, because `SPEC-MOK-002` rule 5 enumerates `Config`'s
+public fields and every existing `Config { … }` literal in an assertion would have had to be edited. It would also
+have put an operator-supplied path on the observation surface `Simulation::configuration` returns, which
+`SPEC-MOK-006` rule 5.5 and `INT-MOK-009` principle 7 both push it away from. The parser instead validates
+`--events-path` and retains nothing, and the binary target — which owns the destination under `ADR-MOK-005`'s
+decision sentence — reads the value it will open. The completion report records the consequences, including the two
+places this puts the option's spelling and the test that holds them equal.
 
 ### Precondition status of the wider repository
 

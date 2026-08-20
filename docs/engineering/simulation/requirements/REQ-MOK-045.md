@@ -2,7 +2,7 @@
 id = "REQ-MOK-045"
 type = "requirement"
 title = "Leave the observed run unchanged by observing it"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
