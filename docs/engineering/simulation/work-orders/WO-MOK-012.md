@@ -94,6 +94,39 @@ is made against the implemented code at approval and recorded as `VER-MOK-012` m
 confirmation is an outstanding assessment, and if the implementation turns out to need a boundary moved then the decision
 reverts to an `ADR` and the assessment says so.
 
+**Two escalations were raised during implementation and both were answered on 2026-08-20.** Both are in
+`evidence/WO-MOK-012/escalation.md`, which is the record they were decided against and is not rewritten after the fact.
+
+The first was stop conditions 5, 7 and 11: `REQ-MOK-049`'s lethality bound was missed on every declared seed and
+`surrender` never applied. The owner selected package **A** of that record's §8 as product owner, and §10 records what
+was written, what it measured, and the two tests the amendment itself broke — both fixed, neither by relaxing an
+assertion.
+
+The second was stop condition **6**, first half. Once combat was lethal, oracle 5's outcome half failed on its own
+terms rather than for want of data, and the escalation measured the cause over 1,000 seeds: the acting order confers an
+ordered advantage on *later*-acting Mokiterions, worth 4.75 percentage points of survival, and the oracle's own
+covariate was masking it. `WO-MOK-012` reserves exactly this — "the first is a finding about turn order and is the
+owner's to weigh" — so it was put with four measured options and answered in two parts:
+
+| Question | Answer | Acting as |
+|---|---|---|
+| Defect to be removed, or property of the world to be recorded and bounded? | **A property.** `SPEC-MOK-001` rule 25 stands; amending it was declined against an ablation showing it would remove about two thirds of the magnitude and none of the ordering | product owner |
+| Then what should oracle 5's outcome half bound? | **The survival consequence, on a larger declared set.** No rank correlation is bounded anywhere; both are recorded as evidence | assurance owner |
+
+`VER-MOK-012`'s amendment record of 2026-08-20 carries the four provisions and the approval; `identifier.md` is the
+measurement; `escalation.md` §11 is the decision record. **Stop condition 8 was engaged and is discharged by that
+approval rather than by this work order's judgment**: the `±0.5` band was removed, a second seed set was declared for
+the new bound alone, and the one test case became two — each an approved provision, with the removal's justification
+measured before it was put. No assertion was relaxed, nothing was `#[ignore]`d, and `post/test-census-reconciliation.md`
+§6 reconciles the resulting 250 names against the baseline census: **250 passing, 0 failing, 0 ignored**, with the only
+baseline name absent still the single rename of its §3.
+
+One finding is recorded and deliberately not acted on. `INT-MOK-009`'s risk states the advantage's direction as favoring
+`M01`, and the measured direction is the opposite. Its success measure is met either way, and amending an approved
+intent's risk text is a decision **stop condition 11** reserves to the intent owner, so it is left to them.
+
+**What still blocks `implemented` is `REQ-MOK-051` alone**, unimplemented under the approved deferral of 2026-08-20.
+
 ### Why this chain is numbered 009, 042 through 051, and 012
 
 The identifier space is shared across branches and sessions in this repository, and `WO-MOK-011` records the owner

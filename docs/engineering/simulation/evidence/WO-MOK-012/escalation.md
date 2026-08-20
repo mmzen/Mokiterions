@@ -8,7 +8,10 @@
 | Date raised | 2026-08-20 |
 | Resolution | §10. Package **A** of §8, selected by the product owner on 2026-08-20; stop conditions 5, 7 and 11 discharged |
 | Suite after it | 248 passing, **1 failing**, 0 ignored — the same 249 tests, none added, removed or `#[ignore]`d |
-| Still open | §11. Stop condition **6**, on data that did not exist when §1 was written |
+| Then raised | §11. Stop condition **6**, first half, on data that did not exist when §1 was written |
+| Resolution of that | §11, *The owner's answer, and what it implemented* — answered 2026-08-20; the advantage is accepted as a property and its survival consequence is bounded instead |
+| Suite after that | **250 passing, 0 failing, 0 ignored** — 250 names reconciled in `post/test-census-reconciliation.md` §6 |
+| Still open | `REQ-MOK-051`, unimplemented under the approved deferral of 2026-08-20, which is what keeps `WO-MOK-012` from `implemented` |
 
 **§1 to §9 are the record as it stood at `7c4aef3`, and they are not rewritten.** Work was stopped there,
 nothing in §1 to §8 had been implemented, and §6 put the choice to the product owner with each option
@@ -23,7 +26,7 @@ they stand rather than edited away, on the pattern `REQ-MOK-049`'s corrected bul
 |---|---|---|
 | `tests/viability.rs :: the_social_source_keeps_the_world_habitable_and_combat_lethal` | `REQ-MOK-049`, lethality | **0 combat deaths on all five declared seeds** |
 | `tests/decisions.rs :: every_targeted_verb_applies_somewhere_in_the_declared_matrix` | `REQ-MOK-043`, `VER-MOK-012` oracle 4 | **`surrender` never applies**, in any of the 5,000 opportunity-ticks measured |
-| `tests/viability.rs :: no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band` | `VER-MOK-012` oracle 5 | fails **downstream**: twelve strikes across five seeds cannot populate three per-identifier series — **and see §11: it fails on its own terms once the series are populated** |
+| `tests/viability.rs :: no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band` | `VER-MOK-012` oracle 5 | fails **downstream**: twelve strikes across five seeds cannot populate three per-identifier series — **and see §11: it fails on its own terms once the series are populated, and was restated by approval into two cases that pass** |
 | — | `REQ-MOK-051`, composition ceiling | **unimplemented**, 14 of 15 cells fail; deferred by product owner decision of 2026-08-20 |
 
 `REQ-MOK-049`'s survivor floor of five is **met** at this candidate — 6, 4, 8, 4, 5 — but that is not a pass:
@@ -386,7 +389,11 @@ itself broke were fixed — neither by relaxing an assertion. Both had encoded a
   test passed at `7c4aef3` because combat killed nobody there**; the case it got wrong was unreachable until
   lethality existed.
 
-## 11. Still open: the identifier-monotonicity band, escalated as stop condition 6's first half
+## 11. The identifier-monotonicity band, escalated as stop condition 6's first half
+
+**Raised at the implemented candidate of §10 and answered on 2026-08-20; the answer and what it implemented are
+the last two subsections.** Everything before them is the record as the escalation was put, and it is not
+rewritten — the decision was taken against these figures.
 
 `tests/viability.rs :: no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band` fails at
 the implemented candidate, and this time on its own terms. Over the five declared seeds, 1,000 ticks, default
@@ -408,7 +415,7 @@ turn order and is the owner's to weigh."**
 The obvious reading is that 68 events across twelve identifiers cannot resolve a ±0.5 rank correlation — which
 is what §1 said of the same row at `7c4aef3`, correctly, when there were twelve strikes. It was measured
 rather than assumed. A diagnostic sweep of **1,000 seeds** at 1,000 ticks and the default density under
-`social` gives 10,404 combat events, and the correlation does not dissolve:
+`social` gives **9,194 resolved strikes**, and the correlation does not dissolve:
 
 | Series | vs identifier, M01…M12 | within territory A, M01…M06 | within territory B, M07…M12 | pooled by turn position in own territory |
 |---|---:|---:|---:|---:|
@@ -416,6 +423,14 @@ rather than assumed. A diagnostic sweep of **1,000 seeds** at 1,000 ticks and th
 | attacks applied | **+0.601** | +0.943 | **+1.000** | **+1.000** |
 | attacks suffered | −0.357 | −0.657 | −0.943 | **−0.943** |
 | net strikes (applied − suffered) | +0.566 | **+1.000** | **+1.000** | **+1.000** |
+
+> **Corrected 2026-08-20.** This paragraph first gave the total as "10,404 combat events". Re-measured at the
+> candidate with the retained `analysis/identifier.py`, the event census over these 1,000 seeds is **9,194
+> resolved strikes**, 45,791 threats, 6,033 surrenders and 2,712 deaths, of which 1,274 were struck to death.
+> **The dataset is the same one**: the re-run reproduces all 1,000 seeds' three per-identifier series exactly,
+> and every correlation and pooled figure in this section and the next is unchanged. What was wrong was the
+> label on the total, not the measurement it summarizes, and it is corrected because the decision below was put
+> partly on the weight of that number.
 
 **The sweep is diagnostic and is not a proposed remedy.** `VER-MOK-012`'s band text forbids the obvious use of
 it in advance — "the residual is recorded below rather than reduced by widening the seed set, because a seed
@@ -476,7 +491,15 @@ put without knowing that.
 ### What this leaves the owner, and what has deliberately not been done
 
 The band has **not** been widened, the seed set has **not** been changed, and the test has **not** been
-renamed or `#[ignore]`d. Stop condition 8 forbids all four independently of this one, and the sweep is why
+renamed or `#[ignore]`d.
+
+> **Superseded 2026-08-20, by approval and not by this record.** Three of the four then happened: the band was
+> removed rather than widened, a second seed set was declared for the new bound alone, and the one case became
+> two. Each is in `VER-MOK-012`'s amendment record with the approval that carries it, and the fourth —
+> `#[ignore]` — did not happen and no assertion was relaxed. The sentence above states what an implementation
+> may not do on its own authority, and that remains true; it is not a claim about what the owner may approve.
+
+Stop condition 8 forbids all four independently of this one, and the sweep is why
 widening would be wrong on the merits rather than merely out of scope: on the covariate that carries the
 effect the correlation is `+1.000`, so no band on identifier 1…12 that this world passes would mean the
 advantage is absent. It would mean the oracle cannot see it.
@@ -514,8 +537,84 @@ The three whole answers this record can see are: **B**, taken knowingly as a wid
 advantage means and its magnitude is measured at 4.8 percentage points; or **D** accepted as a re-opening of
 Phase 3's turn-order decision with the re-measurement that implies. **C on its own is the trap**, because it is
 the only option that makes the suite green while leaving the world exactly as it is.
+
+### The owner's answer, and what it implemented
+
+Put with the four options and their figures on 2026-08-20, and answered in two parts.
+
+| Question | Answer | Acting as |
+|---|---|---|
+| Is the measured turn-order advantage a defect to be removed, or a property of the world to be recorded and bounded? | **A property.** `SPEC-MOK-001` rule 25's asymmetry stands; option **D** is declined with its ablated cost known | product owner |
+| Then what should oracle 5's outcome half bound? | **The survival magnitude, on a larger declared set.** Bound the survival consequence by turn position; do not bound a rank correlation anywhere | assurance owner |
+
+That is neither **B** nor **C** as this record framed them, and it is not **A** either: it is the second of the
+three whole answers §11 could see — "**C** combined with a bound on the survival consequence rather than on
+strike counts" — with the covariate correction taken *and* the `±0.5` band removed rather than kept, so the
+0.007 margin that made **C** the trap is not what the row rests on. The advantage is recorded as measured, and
+what is bounded is what it costs.
+
+`VER-MOK-012`'s amendment record of 2026-08-20 carries the four provisions and the approval. In the code the one
+case became two, because the two halves now need different seed sets:
+
+| | Seeds | What it asserts |
+|---|---|---|
+| `no_identifier_series_is_monotone_in_identifier` | the five declared | The tripwire, transcribed unchanged. No series monotone non-increasing in identifier |
+| `survival_by_turn_position_stays_inside_the_stated_bound` | the declared 200, `0`–`199` | Highest survival rate across the six turn positions ÷ lowest **< `1.25`** |
+
+Measured at the candidate: **`1.082`** on the declared set — `0.7850  0.7325  0.7500  0.7350  0.7625  0.7925`
+by position — and `1.063` over all 1,000 seeds of the sweep above. Both rank correlations are still computed,
+against identifier and against turn position, and printed with the event totals they came from. Neither is
+asserted on.
+
+**Why 200 and not five, measured rather than asserted.** Partitioning the 1,000 seeds into disjoint groups:
+
+| Group size | Groups | Bound's statistic | Groups that would breach `1.25` | Groups putting the last actor ahead of the first |
+|---|---:|---|---:|---:|
+| 50 | 20 | `1.068` – `1.284` | **2 of 20** | 16 of 20 |
+| 100 | 10 | `1.058` – `1.201` | 0 of 10 | 8 of 10 |
+| **200** | **5** | **`1.032` – `1.137`** | **0 of 5** | **5 of 5** |
+
+At 50 seeds the bound would fail on noise twice in twenty, and the groups disagree about which way the
+advantage even runs. At 200 every group agrees on the direction and the worst clears the bound by `0.113`.
+
+**And on the five declared seeds the same bound reads `1.2857` and would fail** — ten survival opportunities per
+position, one of which differs. That is the argument for a second set in one figure: this bound on five seeds would
+have been a row that fails on the world the product owner has just accepted, and that no correct implementation could
+make pass.
+
+The bound and the set size are therefore one provision: `1.25` is not a claim that holds at any sample size, and
+`VER-MOK-012` says so where it states it. `1.25` itself comes from the three-of-twelve survivor cost
+`REQ-MOK-049`'s floor of five concedes below `REQ-MOK-034`'s eight — an advantage worth more than that whole
+quarter is structural rather than residual — and not from the `1.082` it bounds.
+
+The set carries **no** survivor floor, no lethality bound and no comparability obligation; `REQ-MOK-049`'s and
+`REQ-MOK-014`'s obligations stay on the five declared seeds. That separation is what answers the objection the
+replaced section raised against declaring a second set, which was that a set chosen to make a row pass is no
+longer comparable: the set that carries the obligations is untouched, and this one has nothing to be comparable
+to.
+
+**Cost.** 200 in-process 1,000-tick runs take **33.6 s** in the debug profile, taking the whole workspace suite
+from about 7 s to **40.5 s**. That is the price of the only statistic that was measured to be stable, and it is
+recorded rather than absorbed silently.
+
+**Stop condition 6's first half is discharged.** The suite is **250 passing, 0 failing, 0 ignored** at the
+candidate that carries this section — `post/test-census-reconciliation.md` §6 reconciles the 250 names against
+the baseline and shows the only baseline name absent is still the one rename of its §3. `WO-MOK-012` remains
+short of `implemented` on `REQ-MOK-051` alone, under the deferral of 2026-08-20.
+
+**One thing is left for the intent owner, and it is not this work order's to change.** `INT-MOK-009`'s risk
+reads "deterministic resolution plus ascending-identifier acting order may hand `M01` a systematic advantage".
+The measured direction is the **opposite**: the advantage runs to the *last* actor in a territory, not the
+first, and `M01` holds position 1 of territory A — the worst of the six by survival rate over the sweep, the
+second-best over the declared 200, and the best on neither. `INT-MOK-009`'s success measure —
+"not monotonic in identifier" — is met and is not affected. Amending the risk's stated direction is a decision
+stop condition 11 reserves to the intent owner, so it is recorded here and in `VER-MOK-012` and left unmade.
+
+### What was not done at this candidate either
+
 - No aggregate over the population was introduced to suppress combat when the population falls, which is the
   cheap route to `REQ-MOK-049` that `REQ-MOK-050` exists to forbid. `post/reads.md` enumerates every reader
   of a set in the engine and shows that none is reachable from a rule, a source or a validation.
-- **`WO-MOK-012` has not been transitioned to `implemented`**, and will not be while an approved obligation
-  fails. Nothing has been pushed.
+- **`WO-MOK-012` has not been transitioned to `implemented`.** `REQ-MOK-051` is unimplemented under an
+  approved deferral, and a work order does not close over an approved requirement it did not implement.
+  Nothing has been pushed.

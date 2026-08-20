@@ -7,6 +7,7 @@
 | Invocation | `cargo test --locked --workspace --no-fail-fast`, from the workspace root |
 | Exit code | `101` — three cases fail; see §4 |
 | Date | 2026-08-20 |
+| Re-taken | **§6** — the candidate has moved three times since; 250 names, exit `0`, and a second rename |
 
 Row 248 states the obligation this file discharges: no case present before the change may be
 **removed, renamed away or `#[ignore]`d**. It groups the three because they are the same loss from a
@@ -138,3 +139,77 @@ It reconciles names and one body. It does not assert that the 38 new cases are t
 they cover what `VER-MOK-012` requires them to cover, or that any of them is well written — the
 requirement-to-test mapping and the verifier's own reading are what settle that, and both are owed.
 Nothing here is a verification verdict.
+
+## 6. The candidate moved: the census re-taken, and a second rename
+
+Everything above was measured at `7c4aef3`. The candidate has moved three times since — `77f3b25`,
+`7d744bb` and `64d00e5` — and this section is re-taken at the commit that carries it, whose parent is
+`64d00e5a423b1a4071f487260c629602fd2193de`. Row 248's obligation runs against the **baseline**, so it is
+re-checked against the baseline and not only against the previous candidate.
+
+| Field | Value |
+|---|---|
+| Invocation | `cargo test --locked --workspace --no-fail-fast`, from the workspace root |
+| Exit code | **`0`** |
+| Names | **250** — 250 passed, 0 failed, 0 ignored |
+| Date | 2026-08-20 |
+
+    $ python docs/engineering/simulation/evidence/WO-MOK-012/analysis/test-census.py <log> <out>
+    250 names; 250 passed, 0 failed, 0 ignored
+    $ comm -23 <(names baseline/test-census.txt) <(names <out>)          # baseline names absent
+    tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+    $ comm -23 <(names post/test-census.txt) <(names <out>)              # absent since 7c4aef3
+    tests/viability.rs :: no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band
+    $ comm -13 <(names post/test-census.txt) <(names <out>)              # added since 7c4aef3
+    tests/viability.rs :: no_identifier_series_is_monotone_in_identifier
+    tests/viability.rs :: survival_by_turn_position_stays_inside_the_stated_bound
+
+| | Count |
+|---|---:|
+| names at the baseline | 212 |
+| retained, target-qualified name unchanged | **211** |
+| present at the baseline, absent at the candidate | **1** — the same rename, §3, and no other |
+| added at the candidate | **39** |
+| names at the candidate | **250** |
+| `#[ignore]`d, either side | **0** |
+| removed | **0** |
+| non-`ok` outcomes | **0** |
+
+211 + 1 = 212 and 211 + 39 = 250. **The three failures of §4 are gone and no case that passed has
+stopped passing**: the one baseline name absent is the §3 rename and the list is unchanged, so the
+sweep above is the whole of row 248's obligation and it holds.
+
+**The second rename, and why row 248 does not reach it.** `VER-MOK-012` oracle 5's outcome half was
+restated by the amendment of 2026-08-20 — `escalation.md` §11 measures why, and the contract records the
+decision — and the one case that carried it became two, because its two parts now need different seed
+sets and cannot share one body:
+
+| | |
+|---|---|
+| Absent since `7c4aef3` | `tests/viability.rs :: no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band` |
+| Present at the candidate | `tests/viability.rs :: no_identifier_series_is_monotone_in_identifier` — the tripwire, on the five declared seeds |
+| | `tests/viability.rs :: survival_by_turn_position_stays_inside_the_stated_bound` — the bound, on the declared 200 |
+
+**This name was never at the baseline.** It was one of the 38 added by this work order, so it is not a
+case that was checked before the change and is now absent, which is the loss row 248 exists to prevent.
+The row is stated against the baseline census on purpose: a work order that could not restate an oracle
+it wrote itself, in the same session that measured the oracle to be wrong, would be prevented from
+correcting its own mistakes rather than prevented from hiding coverage. It is recorded here anyway,
+because a reader diffing the two candidate censuses would otherwise find an unexplained absence.
+
+What the split removed from the code is the `±0.5` rank-correlation assertion, and that removal is the
+amendment's, not the implementation's: it is approved in `VER-MOK-012`'s amendment record with the
+measurement it was approved against. Both correlations are still computed and still printed. Nothing
+else in either body was weakened — the monotone check is transcribed unchanged, and the bound is an
+assertion the suite did not have before.
+
+**Two further bodies changed, and neither is a baseline name.** `escalation.md` §10 states both:
+
+| Target | Case | What changed |
+|---|---|---|
+| `unittests` | `a_threat_composes_with_rule_12_in_turn_order_and_outlasts_its_tick` | Two assertions restated at the amended `ENGAGEMENT_FEAR_THRESHOLD` of `95`, and one added: the target now answers with a strike, which is asserted rather than left unmeasured |
+| `tests/decisions.rs` | `the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source` | Its model of which Mokiterions are entitled to an opportunity in a tick was contradicting `SPEC-MOK-001` rule 13, which combat exposed by killing anyone mid-tick for the first time |
+
+Both were added by this work order, both still assert what they were written to assert, and the second
+now asserts strictly more than it did — it narrows the expected width of a tick on a death before its
+holder's turn, which the old form could not have detected.

@@ -19,6 +19,7 @@ verifies = ["REQ-MOK-042", "REQ-MOK-043", "REQ-MOK-044", "REQ-MOK-045", "REQ-MOK
 |---|---|---|
 | 2026-08-20 | Original approved content. | Approved 2026-08-20 by the repository owner acting as assurance owner. |
 | 2026-08-20 | **Realigned to `REQ-MOK-048`'s first amendment**, which added a branch and moved the engagement threshold from `30` to `95`. Four provisions: the engagement-threshold oracle now asserts `94` and `95`, and additionally asserts `30` and `60` so that the gate is proved *not* to be either answer threshold — the two were equal by coincidence before and a test that passed at `30` could not tell the constants apart; the draw-discipline oracle renumbers and adds the assertion that the new branch 3 draws nothing, which is what makes the amendment a reordering of decisions rather than of the shared stream; the differential oracle against `individual` is **widened** to hold wherever a tolerated resource is perceived, and both the narrow and the widened form are asserted; and manual assessment 8 records the six-branch ordering with the gate at `95`. No oracle is weakened or removed, and the retention list is unchanged. | Approved 2026-08-20 by the repository owner acting as assurance owner, on `REQ-MOK-048`'s amendment being approved the same date and on the measured evidence in `evidence/WO-MOK-012/escalation.md`. The realignment does not decide anything: it follows an approved requirement change, and the one oracle whose strength it alters it strengthens. |
+| 2026-08-20 | **Oracle 5's outcome half is restated: the rank-correlation band is removed and a turn-position survival bound replaces it.** Four provisions. The monotone non-increasing check stays exactly as written and stays on the five declared seeds, because that is the part five seeds support. The `±0.5` rank-correlation band on identifier is **removed** and no rank correlation is bounded anywhere in this contract; both correlations are recorded as evidence with their event totals. A **declared diagnostic seed set** of the 200 seeds `0`–`199` is added, carrying no survivor floor, no lethality bound and no comparability obligation, and the obligations stay on the five declared seeds. Over that set, the ratio of the highest to the lowest survival rate across the six turn positions within a territory must be **below `1.25`**, a figure taken from the three-of-twelve survivor cost `REQ-MOK-049`'s floor concedes below `REQ-MOK-034`'s and not from the curve it bounds; the measured value on that set is `1.082`, and `1.063` over all 1,000 seeds measured. The bound and the set size are one provision: at 50 seeds a group would breach `1.25` on noise alone, which is measured in the section below. Manual assessment 11 is answered rather than deferred. **This weakens no oracle's ability to fail**: the removed bound could fail on noise and pass on a real advantage, and both replacements were measured against 9,194 resolved strikes and 12,000 identifier-runs over 1,000 seeds before being written. | Approved 2026-08-20 by the repository owner acting as product owner on accepting the measured turn-order advantage as a property of the world, and as assurance owner on what this row should bound, both against the four measured options in `evidence/WO-MOK-012/escalation.md` §11. The advantage is identifier-blind — the identifier-symmetry oracle still passes — and an ablation measured that amending `SPEC-MOK-001` rule 25 would shrink it by about two thirds without changing its ordering, so the alternative of changing the world was declined with its cost known. |
 
 ## Independence
 
@@ -37,6 +38,12 @@ Five claims decide whether it is sound, and only one of them is about whether co
   `REQ-MOK-051` and to nothing else.
 - **Two absences hold**: nothing reads a population aggregate, and the acting order does not hand a systematic advantage
   to low identifiers.
+
+  **Measured 2026-08-20, and the second absence holds only as literally as it is written.** The acting order hands a
+  systematic advantage to *later*-acting Mokiterions, which is the opposite direction, so no low identifier is favored
+  and this claim is not falsified. It should not be read as "no advantage by identifier": there is one, it is ordered,
+  and the turn-position bound below is what bounds it. Nothing reads an identifier — the symmetry oracle is what carries
+  that — so the advantage is turn order's and not the identifier's.
 
 The first two pull in opposite directions and the contract needs both, because contact is rare. `REQ-MOK-032`'s
 arithmetic puts the expected number of other Mokiterions inside a Chebyshev box of radius `1` at about `0.0060` per
@@ -108,11 +115,21 @@ Eight independent oracles are used.
    are identical. Damage is a function of the striker's `energy` and `health` and of nothing else, and this is the direct
    form of that claim.
 
-   The outcome check is statistical and weak, and is stated as weak: over the declared seeds at the default density
-   under the `social` source, per-identifier survival counts and per-identifier counts of attacks applied and attacks
-   suffered must not form a monotone non-increasing sequence in identifier, and the rank correlation between identifier
-   and survival must lie within a band stated in this contract. Five seeds and twelve identifiers cannot support more
-   than that, and the residual is recorded rather than dressed up.
+   The outcome check has two parts, and they are separated because they need different amounts of data. Over the
+   declared seeds at the default density under the `social` source, per-identifier survival counts and per-identifier
+   counts of attacks applied and attacks suffered must not form a monotone non-increasing sequence in identifier: that
+   is the gross-advantage tripwire, five seeds carry it, and it is what catches `M01` surviving every seed while `M12`
+   survives none. Separately, over a **declared diagnostic seed set** stated in this contract, the survival rate by
+   turn position within a Mokiterion's own territory must lie inside a **magnitude bound** stated in this contract.
+
+   **Amended 2026-08-20.** This check previously bounded the rank correlation between identifier and each series at
+   `±0.5` over the five declared seeds, and that bound was measured to be unsupportable in either direction — the
+   evidence is `evidence/WO-MOK-012/escalation.md` §11. It failed at the candidate on a real ordered advantage, and
+   five seeds could neither establish nor refute one: the same statistic that reads `+0.586` there reads `+1.000` on the
+   covariate that carries the effect, and a correlation over twelve points is underpowered at five seeds and saturated
+   at a thousand. Rank correlation is therefore no longer bounded anywhere in this contract. It is **recorded** as
+   evidence on both covariates with the event totals it was computed from, because a correlation is only interpretable
+   beside them, and because the measurement is the deliverable `INT-MOK-009` asks for even where no threshold reads it.
 
 6. **An enumeration of reads, for `REQ-MOK-050`.** Every rule of `SPEC-MOK-001` that governs a Mokiterion's behavior,
    every `DecisionSource` implementation, and every proposal-validation path is enumerated with what it reads, and each
@@ -254,28 +271,100 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-051` | static-analysis | **The correction is where it is permitted to be** | The change touches rule 5's and rule 19's waste condition only; rule 4, rule 9's eat effect, the food table and rules 14 to 16 are unchanged, compared line for line against the pre-change commit |
 | `REQ-MOK-051` | static-analysis | No composition read by any source | No decision source reads the class composition of a territory or of the world |
 | both | automated-test | **Identifier symmetry** (oracle 5) | One constructed encounter resolved with the two identifiers exchanged yields identical damage and identical resulting attributes |
-| both | automated-test | **Identifier monotonicity band** (oracle 5) | Per-identifier survival, attacks applied and attacks suffered are not monotone non-increasing in identifier, and the rank correlation with identifier lies within the band stated below |
+| both | automated-test | **Identifier monotonicity tripwire** (oracle 5) | Per-identifier survival, attacks applied and attacks suffered are not monotone non-increasing in identifier, over the five declared seeds |
+| both | automated-test | **Turn-position survival bound** (oracle 5) | Over the declared diagnostic seed set, the survival rate by turn position within a Mokiterion's own territory varies by less than the magnitude bound stated below. The rank correlations are recorded with their event totals and bound nothing |
 | both | automated-test | New event types are authorized | Each of the three added `EventType` variants maps to an authorizing requirement under `SPEC-MOK-003` rule 11 — `attack_resolved` to `REQ-MOK-044`, `threat_resolved` to `REQ-MOK-046`, `surrender_resolved` to `REQ-MOK-047` — and `mokiterions-tui`'s authority table gains those three rows with `EventType::ALL` covered exhaustively. `REQ-MOK-043` takes no row: `approach`, `avoid` and `retreat` emit no type of their own |
 | both | automated-test | Prior coverage preserved, name by name | Every test name present at the pre-change commit is present and passing at the candidate; every difference is an addition; no case removed, renamed away or `#[ignore]`d |
 | both | automated-test | Test-tier placement | Every added test is in the public tier only if writable through the library target's public interface with its assertions unchanged; no item widened to `pub` to relocate a test, per `SPEC-MOK-004` |
 | both | static-analysis | **Required amendments present and approved** (oracle 7) | The `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` amendments and the `REQ-MOK-005`, `REQ-MOK-014` and `REQ-MOK-034` amendments `WO-MOK-012` names are approved. Absence fails this contract regardless of code state |
 | both | static-analysis | The `VREC-MOK-005` gate | The row `VREC-MOK-010` records as outstanding is a precondition of this work, not an output of it, and its state is recorded here |
 
-## The stated monotonicity band
+## The stated monotonicity tripwire and turn-position bound
 
-The outcome check of oracle 5 needs a number, and the number needs its weakness stated with it.
+The outcome check of oracle 5 needs two numbers, and each needs its power stated with it.
+
+**Amended 2026-08-20**, on the product owner's decision to accept the measured turn-order advantage as a property of the
+world and the assurance owner's decision on what this row should bound. The section it replaces stated a single
+rank-correlation band of `±0.5` on identifier over the five declared seeds. What that band was measured to do, and why
+it is gone, is `evidence/WO-MOK-012/escalation.md` §11; the short form is that it was underpowered at five seeds and
+pointed at the wrong covariate, so it could fail loudly on noise and pass quietly on a real advantage.
+
+### Part one: the gross-advantage tripwire, unchanged
 
 Over the five declared seeds at the default density under the `social` source, three per-identifier series are computed:
-survivals to tick 1,000, attacks applied, and attacks suffered. For each series:
+survivals to tick 1,000, attacks applied, and attacks suffered. **No series may be monotone non-increasing in
+identifier.** A series in which every lower identifier does at least as well as every higher one is the failure this
+oracle exists to catch, and it fails the row outright.
 
-- **the series must not be monotone non-increasing in identifier.** A series in which every lower identifier does at
-  least as well as every higher one is the failure this oracle exists to catch, and it fails the row outright;
-- **the Spearman rank correlation between identifier and the series must lie within `-0.5` to `+0.5` inclusive.**
+Five seeds and twelve identifiers support exactly this and no more. Its purpose is to fail loudly on a gross advantage —
+`M01` surviving every seed while `M12` survives none — and it will not detect a small one. That limit is why part two
+exists rather than why part one is weakened: the tripwire is kept at the declared seeds so that this row stays
+comparable with `REQ-MOK-014`'s and `REQ-MOK-034`'s, and the measurement that needs more data is given its own set.
 
-Five seeds and twelve identifiers give this check little power, and it is not represented as more than a coarse tripwire.
-Its purpose is to fail loudly on a gross advantage — `M01` surviving every seed while `M12` survives none — and it will
-not detect a small one. The residual is recorded below rather than reduced by widening the seed set, because a seed set
-chosen to make this row pass would no longer be comparable with `REQ-MOK-014`'s and `REQ-MOK-034`'s.
+### Part two: the turn-position survival bound
+
+**The declared diagnostic seed set is the 200 seeds `0` through `199` inclusive**, at the default density under the
+`social` source, at 1,000 ticks. It is a diagnostic set and carries no survivor floor, no lethality bound and no
+comparability obligation; `REQ-MOK-049`'s and `REQ-MOK-014`'s obligations stay on the five declared seeds and are not
+evaluated here. Declaring a second set is what the replaced section forbade, and the reason it gave — that "a seed set
+chosen to make this row pass would no longer be comparable" — is answered by separating the two roles rather than
+overridden: the set that carries the obligations is untouched, and this set carries no obligation to be comparable to.
+
+Two hundred is measured rather than chosen, and it is measured against two failures. The bound's own statistic is a
+spread and so cannot change sign; the direction diagnostic beside it is the last-to-first ratio, and the 1,000 seeds
+were partitioned into disjoint groups to see what each size supports:
+
+| Group size | Groups | Bound's statistic, high to low | Groups at or above `1.25` | Last-to-first ratio | Groups putting the last actor ahead |
+|---|---:|---|---:|---|---:|
+| 50 | 20 | `1.068` – `1.284` | **2 of 20** | `0.934` – `1.221` | 16 of 20 |
+| 100 | 10 | `1.058` – `1.201` | 0 of 10 | `0.981` – `1.201` | 8 of 10 |
+| **200** | **5** | **`1.032` – `1.137`** | **0 of 5** | **`1.010` – `1.137`** | **5 of 5** |
+
+**On the five declared seeds this bound reads `1.2857` and would fail**, at the same candidate whose advantage the
+product owner accepted, on ten survival opportunities per position. That is the whole argument for a second set in one
+figure: keeping the bound on five seeds would not have been strictness, it would have been a row that fails on a world
+the owner has accepted and cannot be made to pass by any correct implementation.
+
+At 50 the groups disagree about which way the advantage runs *and* two of twenty would breach the bound on noise alone.
+At 100 they no longer breach it but still straddle `1.0` on direction. At 200 every group agrees on the direction and
+the worst group clears `1.25` by `0.113`. **The bound and the set size are one provision and not two**: `1.25` is not a
+statement about this world that holds at any sample size, and evaluating it on fewer seeds would make it fail falsely.
+
+Mokiterions are placed six to a territory by identifier — `M01` to `M06` in A, `M07` to `M12` in B — and contact is
+overwhelmingly within a territory, so **turn position within a Mokiterion's own territory** is the covariate that
+carries turn order's effect. Positions `1` through `6` are `M01`…`M06` and `M07`…`M12` respectively, pooled.
+
+- **The highest survival rate across the six turn positions, divided by the lowest, must be less than `1.25`.**
+
+**Where `1.25` comes from, and what it is not.** It is not read off the curve it bounds. `REQ-MOK-034` binds the
+trait-aware source at eight of twelve and `REQ-MOK-049` binds this source at five, so three of twelve — a quarter of the
+population — is the survivor cost the product owner accepted combat may impose. A turn-order advantage worth more than
+that whole quarter would be a structural asymmetry rather than a residue of the acting order, and that is the line. The
+measured value on the declared set at the candidate is **`1.082`** — survival by position `0.7850  0.7325  0.7500
+0.7350  0.7625  0.7925` — and `1.063` over all 1,000 seeds measured, so the bound holds with margin it did not choose.
+Its sensitivity is stated rather than assumed: a world where the last actor survived at 90% and the first at 70% would
+read `1.286` and fail, and the gross case part one catches reads `0` or unbounded.
+
+**The ratio is of extremes across all six positions and not of the last to the first**, so it bounds any pair rather
+than presuming which position is favored. That is stricter and it is deliberate: the measured direction is that later
+actors are favored, and an oracle that encoded that direction would stop being able to catch its reversal.
+
+### What is recorded and bounds nothing
+
+Both rank correlations — against identifier `1`…`12` and against turn position in territory — are computed on all three
+series and printed with the totals they were computed from, on both seed sets. They are evidence. `INT-MOK-009`'s
+success measure *Win rate and survival by identifier* is met by part one, whose target is "not monotonic in identifier";
+the correlations are what let a reader see how far from monotonic, and in which direction.
+
+**The measured direction is the opposite of the one `INT-MOK-009` anticipated**, and that is recorded here rather than
+corrected there. Its risk reads "deterministic resolution plus ascending-identifier acting order may hand `M01` a
+systematic advantage"; the measurement is that `M01` is *disadvantaged* — first-acting positions strike less, are struck
+more, and survive slightly less. That is exact over the 1,000-seed sweep, where position 1 holds the lowest survival
+rate of the six; on the declared 200 position 1 is second-highest and the extremes are positions 6 and 2, so the effect
+is directional in aggregate rather than exactly ordered at every position on every set. The bound is written for that:
+it takes the extremes wherever they fall. The risk's remedy stands unchanged, because it says the advantage "is bounded by
+measurement rather than assumed away", which is what this section does. Whether that artifact's stated direction should
+be amended is the intent owner's and is **not** decided here.
 
 ## Acceptance scenarios
 
@@ -477,6 +566,17 @@ both acceptable outcomes, and silence is not either of them. The numbering is pr
     completeness, and no automated check can establish that.
 11. **The monotonicity band's adequacy, by the assurance owner.** The owner records that the band is a coarse tripwire,
     what it would and would not catch, and that the identifier-symmetry test is what carries the mechanism claim.
+
+    **Assessed 2026-08-20, and it was not adequate.** The band was measured against 9,194 resolved strikes and 12,000
+    identifier-runs over 1,000 seeds — `evidence/WO-MOK-012/identifier.md` — and found to be
+    both underpowered and aimed at the wrong covariate: it failed at the candidate on a real advantage it could not
+    characterize, and correcting only its covariate would have made it pass by `0.007` while the same statistic reads
+    `+1.000` on a thousand seeds. The assessment is therefore that a rank correlation over twelve points cannot carry
+    this claim at any width, and it has been replaced — part one keeps the tripwire where five seeds support it, part two
+    bounds the survival consequence on a set large enough to measure it, and the correlations are recorded without
+    bounding anything. The identifier-symmetry test still carries the mechanism claim and still passes; the advantage
+    that remains is turn order's, which is identifier-blind, and the product owner accepted it as a property of the world
+    on the same date. `evidence/WO-MOK-012/escalation.md` §11 is the evidence this assessment was waiting for.
 
 ## Evidence retention
 

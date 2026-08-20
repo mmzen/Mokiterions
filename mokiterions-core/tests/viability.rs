@@ -276,29 +276,18 @@ fn monotone_non_increasing(series: &[usize]) -> bool {
     series.windows(2).all(|pair| pair[0] >= pair[1])
 }
 
-/// `VER-MOK-012` oracle 5, the outcome half: the identifier-monotonicity band.
+/// The three per-identifier series `VER-MOK-012` oracle 5 computes, summed over `seeds`.
 ///
-/// `INT-MOK-009` records the risk that deterministic resolution plus an ascending-identifier acting
-/// order advantages `M01`. The contract bounds it from two directions and states that neither is
-/// sufficient alone. The mechanism half is exact and lives in the internal tier, where one
-/// constructed encounter is resolved with the two identifiers exchanged and shown to yield identical
-/// damage. This is the other half, and the contract is explicit that it is weak: five seeds and
-/// twelve identifiers give it little power, its purpose is to fail loudly on a gross advantage —
-/// `M01` surviving every seed while `M12` survives none — and it will not detect a small one.
-///
-/// It is written as the contract states it, on all three series and with both conditions, and the
-/// whole table is printed either way. A correlation is only interpretable beside the number of
-/// events it was computed from, so the totals are printed with it.
-#[test]
-fn no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band() {
-    /// `VER-MOK-012`, *The stated monotonicity band*, transcribed.
-    const BAND: f64 = 0.5;
-
+/// Survival is read as the absence of an `agent_died` record rather than off a summary count,
+/// because the count says how many lived and this needs to know which. The strike counts come from
+/// the same stream for the same reason. A `fight` resolves as a strike and reports the same event,
+/// so `applied` and `suffered` are strikes dealt and strikes taken however they were proposed.
+fn identifier_series(seeds: &[u64]) -> ([usize; 12], [usize; 12], [usize; 12]) {
     let mut survivals = [0usize; 12];
     let mut applied = [0usize; 12];
     let mut suffered = [0usize; 12];
 
-    for seed in DECLARED_SEEDS {
+    for &seed in seeds {
         let mut simulation = Simulation::new(Config {
             policy: Policy::Social,
             ..config_at(seed, 1_000, DECLARED_FLOORS[0].0)
@@ -308,13 +297,11 @@ fn no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band(
         simulation.run(&mut output).unwrap();
         let output = String::from_utf8(output).unwrap();
 
-        for (index, slot) in survivals.iter_mut().enumerate() {
+        for index in 0..12 {
             let identifier = format!("M{:02}", index + 1);
             if !output.contains(&format!("subject={identifier} event=agent_died")) {
-                *slot += 1;
+                survivals[index] += 1;
             }
-            // A `fight` resolves as a strike and reports the same event, so these are counts of
-            // strikes dealt and strikes taken, which is what the series are for.
             applied[index] += output
                 .matches(&format!("subject={identifier} event=attack_resolved"))
                 .count();
@@ -326,6 +313,42 @@ fn no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band(
         }
     }
 
+    (survivals, applied, suffered)
+}
+
+/// A per-identifier series folded onto turn position within a Mokiterion's own territory.
+///
+/// `SPEC-MOK-001` places six Mokiterions in each territory by identifier — `M01` to `M06` in A,
+/// `M07` to `M12` in B — and contact is overwhelmingly within a territory, so position `index % 6`
+/// is the covariate turn order's effect actually runs along. Against identifier `1..=12` the same
+/// effect is a sawtooth that resets at `M07`, which is why `VER-MOK-012` measures it here instead.
+fn by_turn_position(series: &[usize; 12]) -> [usize; 6] {
+    let mut pooled = [0usize; 6];
+    for (index, value) in series.iter().enumerate() {
+        pooled[index % 6] += value;
+    }
+    pooled
+}
+
+/// `VER-MOK-012` oracle 5, the outcome half, part one: the gross-advantage tripwire.
+///
+/// `INT-MOK-009` records the risk that deterministic resolution plus an ascending-identifier acting
+/// order advantages `M01`. The contract bounds it from two directions and states that neither is
+/// sufficient alone. The mechanism half is exact and lives in the internal tier, where one
+/// constructed encounter is resolved with the two identifiers exchanged and shown to yield identical
+/// damage. This is one half of the other direction, and the contract is explicit about what five
+/// seeds support: this and no more. Its purpose is to fail loudly on a gross advantage — `M01`
+/// surviving every seed while `M12` survives none — and it will not detect a small one. The small
+/// one is `survival_by_turn_position_stays_inside_the_stated_bound`, on the set declared for it.
+///
+/// **Both rank correlations are printed and neither is asserted on.** The contract's amendment of
+/// 2026-08-20 removed the `±0.5` band it used to assert here: a correlation over twelve points is
+/// underpowered at five seeds and saturated at a thousand, so it was measured to be able to fail on
+/// noise and pass on a real advantage. It stays in the output because the measurement is a
+/// deliverable, and a correlation is only interpretable beside the number of events it came from.
+#[test]
+fn no_identifier_series_is_monotone_in_identifier() {
+    let (survivals, applied, suffered) = identifier_series(&DECLARED_SEEDS);
     let series = [
         ("survivals", &survivals),
         ("attacks applied", &applied),
@@ -335,9 +358,11 @@ fn no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band(
         .iter()
         .map(|(name, values)| {
             format!(
-                "  {name:<17} {values:?} total {}, correlation {:+.3}",
+                "  {name:<17} {values:?} total {}, correlation vs identifier {:+.3}, \
+                 vs turn position {:+.3}",
                 values.iter().sum::<usize>(),
-                rank_correlation(values.as_slice())
+                rank_correlation(values.as_slice()),
+                rank_correlation(&by_turn_position(values))
             )
         })
         .collect::<Vec<String>>()
@@ -350,11 +375,71 @@ fn no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band(
             "the {name} series never rises with identifier, which is the advantage this oracle \
              exists to catch\n{table}"
         );
-        let correlation = rank_correlation(values.as_slice());
-        assert!(
-            correlation.abs() <= BAND,
-            "the {name} series correlates with identifier at {correlation:+.3}, outside the stated \
-             band of ±{BAND}\n{table}"
-        );
     }
+}
+
+/// `VER-MOK-012` oracle 5, the outcome half, part two: the turn-position survival bound.
+///
+/// Survival is what an advantage means, so survival is what is bounded. The measured advantage runs
+/// to *later*-acting Mokiterions rather than to `M01`, which is the opposite of the direction
+/// `INT-MOK-009` anticipated, and the ratio is taken over the extremes of all six positions rather
+/// than of the last to the first so that it bounds any pair and cannot stop catching a reversal.
+///
+/// This runs its own declared seed set because the bound cannot be measured on five. Over five
+/// disjoint groups of 200 the ratio holds between `1.010` and `1.137` and every group agrees on the
+/// direction; at 100 and at 50 the groups straddle `1.0` and disagree about which way it runs. The
+/// set carries no survivor floor and no lethality bound — `REQ-MOK-049`'s obligations stay on
+/// `DECLARED_SEEDS`, and nothing here is comparable with `REQ-MOK-014`'s or `REQ-MOK-034`'s.
+#[test]
+fn survival_by_turn_position_stays_inside_the_stated_bound() {
+    /// `VER-MOK-012`, *Part two: the turn-position survival bound*, transcribed.
+    ///
+    /// Not read off the curve it bounds. `REQ-MOK-034` binds the trait-aware source at eight of
+    /// twelve and `REQ-MOK-049` binds this source at five, so three of twelve — a quarter of the
+    /// population — is the survivor cost combat was accepted to impose. An advantage worth more
+    /// than that whole quarter is structural rather than residual.
+    const BOUND: f64 = 1.25;
+    /// The declared diagnostic seed set: the 200 seeds `0` through `199` inclusive.
+    const DIAGNOSTIC_SEEDS: std::ops::RangeInclusive<u64> = 0..=199;
+
+    let seeds: Vec<u64> = DIAGNOSTIC_SEEDS.collect();
+    let (survivals, applied, suffered) = identifier_series(&seeds);
+
+    let pooled = by_turn_position(&survivals);
+    // Each turn position holds two identifiers, one per territory, on every seed.
+    let opportunities = (seeds.len() * 2) as f64;
+    let rates: Vec<f64> = pooled
+        .iter()
+        .map(|count| *count as f64 / opportunities)
+        .collect();
+
+    let table = format!(
+        "  survival rate by turn position in own territory, over {} seeds:\n    {}\n  \
+         strikes applied {:?} correlation {:+.3}\n  strikes suffered {:?} correlation {:+.3}",
+        seeds.len(),
+        rates
+            .iter()
+            .enumerate()
+            .map(|(position, rate)| format!("{}:{rate:.4}", position + 1))
+            .collect::<Vec<String>>()
+            .join("  "),
+        by_turn_position(&applied),
+        rank_correlation(&by_turn_position(&applied)),
+        by_turn_position(&suffered),
+        rank_correlation(&by_turn_position(&suffered)),
+    );
+    println!("{table}");
+
+    let highest = rates.iter().copied().fold(f64::MIN, f64::max);
+    let lowest = rates.iter().copied().fold(f64::MAX, f64::min);
+    assert!(lowest > 0.0, "no turn position survived at all\n{table}");
+    let ratio = highest / lowest;
+    println!("  ratio highest to lowest {ratio:.4}, bound {BOUND}");
+
+    assert!(
+        ratio < BOUND,
+        "survival by turn position spans a ratio of {ratio:.4}, outside the stated bound of \
+         {BOUND}: the acting order hands an advantage larger than the survivor cost combat was \
+         accepted to impose\n{table}"
+    );
 }
