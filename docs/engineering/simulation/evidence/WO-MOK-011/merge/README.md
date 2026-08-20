@@ -141,6 +141,24 @@ merge inherits the parent chain's evidence whole rather than reconstructing it.
 5. **`WO-MOK-011` to `implemented`** — engineering owner.
 6. **Retargeting PR #22's base to `master`, and pushing** — repository owner.
 
+> **Later facts, added 2026-08-20 without changing anything above.** Items **5** and **6** are discharged
+> and items **1**, **3** and **4** are not. Item 6 first: PR #22 was retargeted to `master`, taken out of
+> draft and merged at `dec1b95`, all on the owner's instructions. Item 5 next: `WO-MOK-011` moved to
+> `implemented` on the owner's instruction as engineering owner, and its own *Transition to `implemented`*
+> subsection records what that status does and does not do — in particular that it covers the merge
+> resolution described here, which no record binds. Item 2 was **decided rather than performed**: the
+> owner validated `VREC-MOK-011` as assurance owner, and `assurance-decision.md` records the acceptance of
+> the candidate commit's evidence with item 3 — assessment 5 — still outstanding. So `VREC-MOK-011` is now
+> `verified`, and **the heading above still holds: nothing binds this merge.** The record it names binds
+> `9ddcf83`, not `dec1b95`, and the new record wanted here is still wanted.
+>
+> Two consequences of item 5 land in this note's own subject matter. Point 2 above now has a second
+> observation: `W-HEX-001` reads `[WO-MOK-010, WO-MOK-011]`, because evidence discovery matches file names
+> and this packet's identifier is its directory's. And oracle 5's governance half fails its chain-status
+> row at both bases — `amendments-vs-master.py` goes `RESULT: PASS` → `FAIL` on that one control, with
+> every other line unchanged — because both reports were captured while this work order read
+> `in_progress`. Neither is edited to agree with the later status, for point 1's reason.
+
 ## Files here
 
 | File | What it is |

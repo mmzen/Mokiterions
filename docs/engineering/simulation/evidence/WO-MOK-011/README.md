@@ -168,3 +168,11 @@ outstanding — see `manual-assessment.md`.
 > `merge/README.md` records as owed — oracles 1, 2 and 4 and the mutation control — is still owed, and a
 > record bound to the merge commit is still owed with it. `assurance-decision.md` records the decision,
 > what it accepted and what it left standing.
+>
+> **Corrected the same day, one commit later:** `WO-MOK-011` **did** move, to `implemented`, on a separate
+> instruction given as engineering owner. Everything else in this note stands — the record still binds
+> `9ddcf83`, assessment 5 is still outstanding, and the re-derivation and the merge-bound record are still
+> owed. `implemented` says the change is complete and its evidence retained; it says nothing about
+> verification. The work order's own *Transition to `implemented`* subsection records what moved with it,
+> including the `W-HEX-001` this packet now raises: evidence discovery keys on **file** names beginning
+> with the work-order identifier, and every file here is named for what it contains instead.

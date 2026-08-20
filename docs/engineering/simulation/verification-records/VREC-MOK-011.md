@@ -342,6 +342,12 @@ paragraph above is left as it was measured, because it is a statement about the 
 
 `WO-MOK-011` is `in_progress` and `VER-MOK-011` is `approved`; the work order was **not** transitioned
 alongside this record, and `WORKFLOW.md` is explicit that its status never substitutes for this record's.
+
+> **Later fact.** `WO-MOK-011` moved to `implemented` on 2026-08-20, in the commit after this record's
+> transition, on a separate instruction given as engineering owner. The clause about `WORKFLOW.md` is why
+> that move changes nothing here: this record's claims are the same at either work-order status, and
+> `implemented` is not a verification. `VER-MOK-011` is still `approved` and still not satisfied.
+
 At candidate commit `9ddcf83fd460880ce25fc6548c768189bb3a5795`, **every automated case, oracle, static
 check and comparison in `VER-MOK-011` was executed and passed. One of the contract's seven manual
 assessments has no author, and the contract's own words are that it "is not satisfied while any remains
@@ -483,6 +489,16 @@ from the restored tree. `analysis/mutation-control.txt`, `renumbering.md`.
    **That is still true at the transition.** The instruction of 2026-08-20 named this record and nothing
    else — unlike the `VREC-MOK-010` instruction, which carried an explicit parenthetical moving its work
    order — so the work order was left where it is and the inspector still reports it under *Active work*.
+
+   > **Later fact, and the separate decision was taken.** On 2026-08-20, in the commit after this
+   > record's transition, the owner instructed the work order to `implemented` as engineering owner —
+   > separately, as this item says such a move must be. `WO-MOK-011` now reads `implemented`, *Active
+   > work* is 0, and `W-HEX-001` warns against it as it does against every implemented work order here,
+   > because evidence discovery keys on file names and this chain retains a directory. **None of this
+   > record's claims moves with it**, and this item's substance is unchanged: verification is carried by
+   > this record, and the work order's status never substituted for it in either direction.
+   > `WO-MOK-011`'s own *Transition to `implemented`* subsection records what that status does and does
+   > not do.
 
 ## What had to happen before this record could be verified, and what still stands
 

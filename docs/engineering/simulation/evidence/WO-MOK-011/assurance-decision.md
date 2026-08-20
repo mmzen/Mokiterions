@@ -56,6 +56,14 @@ reads **OUTSTANDING** against assessment 5 and was not edited to agree with the 
    recorded either way, not decided here.
 3. **`WO-MOK-011` stays `in_progress`.** Moving it to `implemented` is the engineering owner's act and
    was not instructed. The inspector still reports it under *Active work*.
+
+   > **Later fact, added 2026-08-20.** It was instructed, in the next turn and as engineering owner: *"you
+   > can also transition WO-MOK-011 as implemented and push it to same branch"*. The work order moved to
+   > `implemented` in the commit after this decision's, and the reasoning above is why it took a second
+   > instruction to do it. **That transition retires nothing on this list either** — `implemented` is not a
+   > verification, and the four other items stand exactly as written. The *Measured before and after* table
+   > below is the record transition's alone; the work-order transition's own figures are in `WO-MOK-011`'s
+   > *Transition to `implemented`* subsection, which is where the reader should go for them.
 4. **Nothing is released, tagged or published.** No release record binds this work. `RLS-MOK-001`
    released 0.1.0 from `755db72`, which does **not** contain `9ddcf83` — checked with `git merge-base
    --is-ancestor`, not assumed. A verified record is an input to a release decision, not one.
@@ -93,14 +101,36 @@ fields and this file's existence.
 | `inspect_engineering_artifacts.py` findings | 18 — error 0, warning 6, info 12 | **identical** |
 | Decision required | **1** — `VREC-MOK-011` `[ready]` assurance-review | **0 — none** |
 | Definitions pending | 1 — `WO-MOK-008` `[draft]` | 1, unchanged |
-| Active work | 1 — `WO-MOK-011` `[in_progress]` | 1, unchanged |
+| Active work | 1 — `WO-MOK-011` `[in_progress]` | 1, unchanged — **but see below** |
 | Assurance pending | 0 | 0 |
 | Suggested next steps | 9 | **8** |
 
 **The transition answers exactly the signal it was asked for and changes nothing else.** The
 `decision_required` queue empties from its one entry to none, *Suggested next steps* drops with it from 9
 to 8, and no error count, no warning count and no finding total moves. The snapshot digest moves because
-the artifact content moved; that is what a content digest is for.
+the artifact content moved.
+
+> **A correction to the sentence above, made 2026-08-20 when the work-order transition was measured.** The
+> snapshot digest is not purely a content digest, and describing it as one was imprecise. `build_snapshot`
+> in `scripts/generate_harness_dashboard.py` puts `repository.name` — the checkout directory's name — and
+> `repository.revision`, which is `git rev-parse HEAD`, into the hashed document alongside the artifacts,
+> the relations and the findings. **The pair above is still a valid pair**, because both readings were
+> taken in this clone with `HEAD` at `dec1b95` and the artifact content as the only moving input; measured
+> after `965fe67` was committed, the same content hashes to
+> `caae58cd29d3c9f189f71ff216e5f684b6e7bb84d886f68eb2c2c5057cb46f86` instead. So a snapshot digest is
+> comparable only against another taken in the same clone at the same `HEAD` — which is what
+> `merge/gates.txt` means when it says its digest "is not the digest of any commit and no record binds
+> it". It does not hash artifact prose either, in the other direction: the body corrections made to
+> `VREC-MOK-011` in the following commit leave the digest at
+> `d9d4c7f90c49acde7d87dc01a73509699273630d0a5844a8b57a2baa1b7ea2b7` whether they are applied or not,
+> because what is hashed is the normalized front matter, the relations and the findings. No figure in the
+> table changes; only the explanation of the last row does.
+
+> **Later fact, added 2026-08-20.** The *Active work* row is the record transition's alone. The
+> work-order transition of the next commit takes it from 1 to **0** and moves three other figures with it
+> — dashboard warnings 6 → 7, inspector findings 18 → 19, and a `W-HEX-001` against `WO-MOK-011` — all
+> recorded, with their cause, in `WO-MOK-011`'s *Transition to `implemented`* subsection. The validator
+> stays PASS at 102 / 0 / 0 across four planes through both.
 
 `updated` moving from `2026-08-19` to `2026-08-20` introduced no `W-HEX-003` date observation: the
 inspector reports the same five, against the same seven artifacts, before and after.
@@ -125,6 +155,12 @@ inspector reports the same five, against the same seven artifacts, before and af
    `VREC-MOK-010` transition, which had to disclose a control its own status move broke; this one
    discloses a control that `master` broke. Neither retained report is edited to agree with anything: a
    generated report that has been hand-corrected is no longer generated.
+
+   > **Later fact, added 2026-08-20.** The work-order transition of the next commit does break that row,
+   > exactly as the `VREC-MOK-010` transition's did. Both runs then report it, and **each changes exactly
+   > one line**: `in_progress` / yes becomes `implemented` / **no**. `merge/amendments-vs-master.py` goes
+   > `RESULT: PASS` → `FAIL` on that single control; `analysis/amendments.py` was already `FAIL` for
+   > `master`'s reason above and now carries this control too. Still neither retained report is edited.
 2. **`W-HEX-001` against `WO-MOK-010` is `master`'s and is untouched here.** Evidence discovery keys on
    file names beginning with the work-order identifier and that chain retains a directory instead.
    Retaining evidence keyed to `WO-MOK-010` is the engineering owner's act on that work order. This

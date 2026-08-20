@@ -2,10 +2,10 @@
 id = "WO-MOK-011"
 type = "work_order"
 title = "Give each Mokiterion a name, report it once, and present it wherever a Mokiterion is identified"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-19"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [assurance]
 commit_bound_verification = "required"
@@ -48,6 +48,78 @@ Status moved to `in_progress` on 2026-08-19, in the same commit as the first cod
 implement. The pre-change capture named under *Evidence* was taken **before** that change, from a tracked-clean
 worktree at the commit recorded in `evidence/WO-MOK-011/baseline/COMMIT.txt`, because a capture taken afterwards could
 not establish the absence claim this work order rests on.
+
+### Transition to `implemented`
+
+**Status moved from `in_progress` to `implemented` on 2026-08-20**, on the repository owner's instruction, given as
+engineering owner: "you can also transition WO-MOK-011 as implemented and push it to same branch". The implementation
+agent recorded the transition and did not decide it. The status had stood at `in_progress` through implementation,
+through the renumbering from `010`, through the verification capture, through the merge of `master`, and through this
+chain's verification record moving to `verified` one commit earlier, because no earlier instruction covered a lifecycle
+transition and this work order's *Authorized decision envelope* does not place one inside the agent's local decisions.
+
+**The order is the reverse of the `WO-MOK-010` pair's, because the instructions arrived in that order.** There, the
+work order was set to `implemented` first (`084b608`) so that the verification record could state the work order's
+final status instead of going stale one commit later. Here the owner validated the record first, so `VREC-MOK-011`
+moved to `verified` at `965fe67` while this file still read `in_progress` — and said so, in three places. Those three
+statements are corrected in the same commit as this transition rather than left stale, each keeping what it said with
+the later fact beside it.
+
+**What is implemented.** Everything under *In scope*: the twelve-name table and its total, injective, fixed assignment;
+the name stored at initialization, drawing nothing from any generator; the name reported as the first detail of every
+`agent_initialized` record and on no other record; the observer's identifier-to-name map built from the initialization
+records it already ingests and presented in the roster, the inspector and the map; the glyph derived from the name's
+first character uppercased at both zoom levels; the inspector naming a dead selection; the five `SPEC-MOK-001` and
+three `SPEC-MOK-003` provisions written as approved amendments, each with an amendment-record row; every check,
+measurement and retained item `VER-MOK-011` requires; `SIMULATION_RULES.md` including its §14 worked example; and the
+roadmap entry. Between `524a675` and the candidate commit that is nine non-documentation files, 974 insertions and 65
+deletions.
+
+The candidate commit is `9ddcf83fd460880ce25fc6548c768189bb3a5795`, whose gates are recorded in `VREC-MOK-011` and
+reproduced from `evidence/WO-MOK-011/gates.txt`: **205 test names, 205 passed, 0 failed, 0 ignored, 0 filtered out** in
+one workspace invocation; `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --
+-D warnings` clean in both packages; the engine's `cargo tree` still a single line; the public interface unchanged on
+both sides at both packages — observer 101 items, 24 public fields, 125 `pub` lines and engine 49, 43 and 92, pre and
+post identical (`interface.txt`); and validator PASS at 83 artifacts with 0 errors and 0 warnings across all four
+planes.
+
+**This status covers the merge resolution too, and no record binds that.** The lineage is `524a675` → `52b41c8`
+(implementation and evidence) → `a44a388` (the first record) → `9ddcf83` (the renumbering) → `88ea456` and `1013470`
+(two merges of `master`) → `master` at `dec1b95` through pull request #22. `evidence/WO-MOK-011/merge/` records the
+thirteen conflict regions in four files and each resolution — including the six inherited `entry_lines` call sites
+given a name argument — and re-derives oracle 3 (`master` 200 → **212** names, 0 removals, 0 renames) and both halves
+of oracle 5 at the merged tree. **Oracles 1 and 2, oracle 4's rendered buffers and the mutation control were not
+re-derived there and are still owed**, and a verification record bound to the merge commit is owed with them, as a new
+record rather than an edit of `VREC-MOK-011`.
+
+**What this status does not do.** It does not verify the work: `WORKFLOW.md` states that the verification record moves
+separately through an accountable human decision and that work-order status never substitutes for it, and
+`VREC-MOK-011` binds `9ddcf83` rather than the merged tree, so `master` carries this work unverified. It does not
+perform manual assessment 5 of `VER-MOK-011` — the assurance owner's judgement on `baseline/projection.py` — which
+`evidence/WO-MOK-011/manual-assessment.md` still records as **OUTSTANDING**, so `VER-MOK-011` is still not satisfied,
+on one count and one only. It does not release anything: no release record binds this work, and `RLS-MOK-001` released
+0.1.0 from `755db72`, which does not contain `9ddcf83`.
+
+**Three derived figures move with the status, measured rather than predicted.** The harness dashboard goes from 6
+warnings to 7; the seventh is a `W-HEX-001` against this work order, the same warning `WO-MOK-010` already carries.
+`discover_evidence` in `scripts/generate_harness_dashboard.py` matches `^(WO-[A-Z0-9-]*\d{3})(?:-|\.|$)` against each
+**file's own name**, and no file in the 8.2 MB `evidence/WO-MOK-011/` packet is named for the work order — the
+identifier is the directory's — so the packet is invisible to discovery. `inspect` goes from 18 findings to 19 and
+drops *Active work* from 1 to 0, so its recommendation to continue bounded work on a change that is complete is gone;
+*Suggested next steps* stays at 8 source observations while its printed lines fall from 4 to 3, the `W-HEX-001` line
+absorbing the second observation. The validator does not move: PASS at 102 artifacts, 0 errors and 0 warnings across
+all four planes, before and after.
+
+**Disclosed rather than repaired.** `evidence/WO-MOK-011/analysis/amendments.py` and
+`evidence/WO-MOK-011/merge/amendments-vs-master.py` — oracle 5's governance half at the candidate tree and at the
+merged tree — both expect this file to read `in_progress`, which was true at the commits they were captured against.
+Re-run after this move, each reports that one control failing and **exactly one line of its report changes**: the
+chain-status row, from `in_progress` / yes to `implemented` / **no**. The merged-tree run therefore goes `RESULT:
+PASS` → `FAIL` on that single control. The candidate-tree run was already `FAIL` on the merged working tree for a
+reason that predates this commit and is `master`'s, not this work order's — it measures against `524a675`, and
+`SPEC-MOK-002` and `VREC-MOK-007`, both of which it requires to be unchanged, moved on `master` after that commit
+while the candidate tree leaves both blobs identical to the base. Neither retained report is edited to track a status
+that moved after it was taken. `evidence/WO-MOK-011/assurance-decision.md` records the measured before and after.
 
 ### Why this chain is numbered 008, 040, 041 and 010
 
