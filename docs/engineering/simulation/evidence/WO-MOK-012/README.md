@@ -107,7 +107,7 @@ produced, which is the form the earlier packets in this repository established.
 
 | Path | What it is |
 |---|---|
-| `manual-assessment.md` | All eight manual assessments, prepared with the material each needs and **all eight OUTSTANDING**. Nothing in it is a judgement. |
+| `manual-assessment.md` | All eight manual assessments, prepared with the material each needs, and — **as of 2026-08-20, after the candidate commit this packet binds** — all eight **RECORDED** by the owner. Each decision states what accepting it settles and what it accepts by naming nothing in the alternative. At `50364a3` itself every one reads OUTSTANDING. |
 | `completion-summary.md` | `WO-MOK-012`'s *Completion report format*, all sixteen items in its order: what changed and what deliberately did not, one full record stream quoted, each oracle's result, the negative controls, the three amendment rows quoted, the eight outstanding assessments, and **nine defects measured in the approved artifacts**, none of them corrected here. |
 
 ## `VER-MOK-012`'s *Evidence retention* list, bullet by bullet
@@ -135,7 +135,7 @@ discharge as written, and the row says so.
 | 15 | the six static-check results | `static-checks.txt` items 1–6 are the six declared, in the list's own order; items 7–12 are additional. The rule 5 item-for-item comparison is also `interface.txt` |
 | 16 | the workspace test census before and after, reconciled name by name | `baseline/test-census.txt`, `post/test-census.txt`, `analysis/census-reconciliation.txt`, `analysis/census-by-target.txt` |
 | 17 | `cargo fmt`, `cargo clippy`, `cargo test` and `cargo tree -p Mokiterions` output | `gates.txt` |
-| 18 | the eight manual assessments, each with its accountable role and date | `manual-assessment.md` — each carries its role and the date its material was measured; **the decision line of all eight is blank and every one is OUTSTANDING**, so no assessment carries a decision date, because none has been decided |
+| 18 | the eight manual assessments, each with its accountable role and date | `manual-assessment.md` — each carries its role, the date its material was measured, and **its decision, recorded 2026-08-20 by the owner**. At the candidate commit `50364a3` the decision line of all eight was blank; the decisions postdate it, because a decision cannot be inside the commit it decides about |
 | 19 | the amendment-approval check of oracle 7, and the recorded state of `ARCH-MOK-001`'s outstanding 2026-08-18 row | `amendment-approvals.md`, sections 1–6; the `ARCH-MOK-001` row is named in section 5 |
 
 ## The capture matrix
@@ -216,10 +216,21 @@ which is provenance rather than a secret. The binary's absolute path appears for
 
 ## What this packet does not establish
 
-That the change is verified. Seven oracles are measured here and eight manual assessments are not: they are
-prepared in `manual-assessment.md` and every one is **OUTSTANDING**. Two deviations from the retention list
-stand disclosed above, the amendment beyond `ADR-MOK-005`'s approved list stands disclosed in
-`amendment-approvals.md` section 4, and nine defects measured in the approved artifacts stand in
-`completion-summary.md` item 16 — one of which, `SPEC-MOK-006` rule 3.2's direction domain, weakens oracle 5's
-size assertion for one domain of thirteen. A verification record binding a commit is written after the commit
-it names, which is why `WO-MOK-012` is `in_progress` and not `complete`.
+That the change is verified. Seven oracles are measured here. The eight manual assessments were **not**
+measured — they are judgements, prepared in `manual-assessment.md`, and the owner **recorded all eight on
+2026-08-20**, after the candidate commit this packet binds. That discharges the one condition
+`VER-MOK-012` states explicitly for being unsatisfied, and it discharges nothing else.
+
+What still stands, unchanged by that validation: two deviations from the retention list, disclosed above;
+the amendment beyond `ADR-MOK-005`'s approved list, disclosed in `amendment-approvals.md` section 4 and
+recorded there as **not approved**; and nine defects measured in the approved artifacts, in
+`completion-summary.md` item 16 — one of which, `SPEC-MOK-006` rule 3.2's direction domain, weakens oracle
+5's size assertion for one domain of thirteen, and another of which is the miscited rule in the wording of
+manual assessment 4 itself. `amendment-approvals.md` is generated rather than hand-edited, so its closing
+paragraph still reads that the eight assessments are OUTSTANDING; that is the state its own generation
+measured, and it is left rather than edited.
+
+A verification record binding a commit is written after the commit it names, which is why `WO-MOK-012` is
+`in_progress` and not `complete`. `VREC-MOK-012` binds `50364a3` and is **`ready`**: transitioning it to
+`verified` is a separate accountable act reserved to the assurance owner, and validating the eight
+assessments did not take it.

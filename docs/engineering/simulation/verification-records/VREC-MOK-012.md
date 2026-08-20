@@ -83,15 +83,63 @@ whether to transition it to `verified`.** `DECISION_RIGHTS.md` reserves that tra
 and states that record preparation never makes it: *"Automation may prepare `ready` verification and
 release records from bounded Git observations. Only accountable assurance and release owners may
 transition those records to `verified` or `released`."* **Preparing this record approved, verified,
-merged, tagged, released and published nothing.** The owner's instruction — *"you can prepapre the
-verification record, keep it ready, and commit and push"* — supplied the authority to commit and push
-the file; it did not state a judgement on the evidence, and none is recorded as made.
+merged, tagged, released and published nothing.** The instruction this file was prepared under — *"you
+can prepapre the verification record, keep it ready, and commit and push"* — supplied the authority to
+commit and push the file and stated no judgement on the evidence. **A later instruction, on the same
+day, did state judgements**: the section immediately below records it, what it settled, and what it
+left standing. It did not transition this record, and this record is still `ready`.
 
-**Read *What this record does not claim* before relying on this record at all.** All eight of
-`VER-MOK-012`'s manual assessments are unperformed, and the contract's own words are that it "is not
-satisfied while any remains outstanding". Every automated oracle, scenario and static check in the
-contract passes at this commit; the contract is still not satisfied, and this record says so rather
-than rounding the automated result up.
+## The owner's validation of 2026-08-20, and what it did and did not do
+
+**On 2026-08-20 the owner validated `VER-MOK-012` and all eight of its manual assessments**, in one
+act, verbatim: *"i validate VER-MOK-012 and and 8 manual assessments"*. This happened **after** the
+candidate commit this record binds. What it changes and what it leaves standing:
+
+- **`VER-MOK-012`'s own stated condition for being unsatisfied is discharged.** The contract says "an
+  unrecorded assessment is an outstanding assessment, and this contract is not satisfied while any
+  remains outstanding". All eight are now recorded, in `manual-assessment.md`, each with its
+  accountable role and the date. Every automated oracle, scenario and static check already passed at
+  this commit. **That is the substance of the contract answered.**
+- **`VER-MOK-012`'s status did not change and did not need to.** It was already `approved`, which is
+  the terminal status for a verification contract; a contract is *satisfied* by evidence and
+  judgements, not by a further status. Its text was not edited, so defect 5 — assessment 4's miscited
+  rule and miscounted facts — is still in it.
+- **Two bullets of the contract's *Evidence retention* list are still not satisfied as written**, and
+  no validation reached them: bullet 3 asks for the post-change sink capture's standard output, held
+  here as digests only, and bullet 4 asks for thirty full sink streams, of which four are retained.
+  Both are disclosed with their reason and cost in the packet's `README.md`. **So `VER-MOK-012` is
+  answered in substance and not satisfied in every literal respect**, and this record says which is
+  which rather than reporting the validation as a clean sweep.
+- **This record is still `ready`.** The owner's instruction named the contract and the assessments; it
+  did not name this record, and `DECISION_RIGHTS.md` reserves the `ready` → `verified` transition to
+  the accountable assurance owner as a separate act. Nothing here is approved by implication.
+- **Nothing else moved.** The nine defects are uncorrected, the `SPEC-MOK-004` rule 11 amendment made
+  beyond `ADR-MOK-005`'s approved list is still unapproved, the three carried-forward `OUTSTANDING`
+  amendment rows still stand, `WO-MOK-012` is still `in_progress`, and pull request #31 is still a
+  draft.
+
+**What a one-act validation of eight questions does and does not supply.** The instruction names all
+eight explicitly and the owner holds all three accountable roles, so each of the eight is covered. But
+it is one act rather than eight separately worded judgements, so each decision recorded in
+`manual-assessment.md` is **the affirmative side of the question as that file prepared it** — and three
+of the eight invited the owner to name something in the alternative, where **nothing was named**:
+assessment 1 invited any missing fact, assessment 5 an amendment to `ARCH-MOK-001`'s wording, and
+assessment 7 any misplaced figure. Each is therefore accepted rather than resolved, and the two worth
+carrying forward are that **build identity beyond the package version is accepted as not a gap in this
+schema** (so if Phase 4b needs to attribute a distribution to a build rather than a version, that is a
+new requirement, not a defect), and that **assessment 7's three named exceptions stand** — the
+thirty-combination sweep parses the text summary line, the entropy figures come from a `#[cfg(test)]`
+accessor, and the test census comes from `cargo test`. Assessment 4 was recorded against the measured
+substance rather than its own prompt: **two** facts at rule **7.6**, not three at 7.8.
+
+**Assessment 8 is a judgement and is recorded as one.** Its mechanical half — that the reconstructor
+carries no event-type-specific branch — is checked at `oracle2/reconstruction-result.txt` line 103. Its
+other half, that the replay consumer is derived from `SPEC-MOK-001` rather than from the engine's code,
+admits no mechanical check: a line-for-line transcription of the engine would pass every test in the
+packet. The owner's confirmation is the discharge the contract asked for, and **this record does not
+upgrade it to a proof.**
+
+## Provenance, and what a `ready` record does
 
 The record is written after the candidate commit it names, so its own commit metadata is not
 self-referential. **`verified_at` is the capture timestamp, not a verification decision**: the gate
@@ -109,11 +157,28 @@ and 0 warnings** across all four planes, and `scripts/inspect_engineering_artifa
 (assurance-owner)` against `VREC-MOK-012`. **The finding count is unchanged at 19** — the same 2
 `W-HEX-001`, 5 `W-HEX-003` and 12 `I-REV-001` observations, with none added against this record,
 because at the worktree this was measured in the observed checkout *is* the commit this record
-declares. That will not stay true: committing this file moves `HEAD` past `50364a3`, and a thirteenth
-`I-REV-001` — *the declared commit is not the observed checkout* — is what a governance record written
-after the commit it binds looks like from then on. It is an observation about ordering, not a defect.
+declares. **That did not stay true, and the follow-on was observed rather than predicted:** committing
+this file moved `HEAD` past `50364a3`, and at `e840ba7` the inspector reports **20 findings — 13
+`I-REV-001` rather than 12** — the addition being this record, whose declared commit is no longer the
+observed checkout. That is what a governance record written after the commit it binds looks like from
+then on. It is an observation about ordering, not a defect, and the error and warning counts are
+unchanged at 0 and 7.
 **The record raised the signal and changed no error or warning count.** Answering that signal is the
 assurance owner's act, not this file's.
+
+**`evidence_paths` names blobs at `50364a3`, not at the branch tip.** Three of the 55 have changed
+since, all of them in the commit that recorded the owner's validation: `manual-assessment.md`, which
+carried eight blank decision lines at this commit and now carries eight decisions; `completion-summary.md`
+and the packet `README.md`, which each gained a marked later-fact note pointing at those decisions and,
+in the summary's case, one corrected internal count. **No measured figure in any of the three was
+edited**, which is the rule this repository states for evidence: measure again rather than edit into
+agreement. Every other retained artifact, and every digest, byte count and oracle result in the packet,
+is untouched. A reader checking this record against the tip should expect exactly those three
+differences and no others.
+
+**Read *What this record does not claim* before relying on this record.** That list was written against
+the candidate commit and is left as written except where the validation reached it; its item 1 records
+what the validation settled and what it did not.
 
 ## What this record claims
 
@@ -122,8 +187,11 @@ alongside this record; `WORKFLOW.md` is explicit that its status never substitut
 and no lifecycle move was instructed.
 
 At candidate commit `50364a3719c68643f0b5354798b6d3084cff1c0e`, **every automated case, oracle,
-scenario and static check in `VER-MOK-012` was executed and passed. None of the contract's eight
-manual assessments has an author, so this record cannot claim the contract is met.**
+scenario and static check in `VER-MOK-012` was executed and passed.** The contract's eight manual
+assessments had no author at that commit and were **recorded by the owner on 2026-08-20**, afterwards;
+the two retention obligations named in item 3 below are still met by substitution rather than as
+written, which is why this record claims the contract answered in substance rather than satisfied
+outright.
 
 | Gate | Result |
 |---|---|
@@ -236,17 +304,30 @@ What else is measured, beyond the seven oracles:
 
 ## What this record does not claim
 
-1. **`VER-MOK-012` is not satisfied at this commit.** **All eight manual assessments are
-   OUTSTANDING** — assessments 1 and 2 the product owner's, 3 through 6 the technical owner's, 7 and 8
-   the assurance owner's. `manual-assessment.md` prepares each with the material it needs and states
-   in its own first line that nothing in it is a judgement; the decision line of all eight is blank,
-   so no assessment carries a decision date, because none has been decided. The contract's words are
-   that it "is not satisfied while any remains outstanding". **Transitioning this record to `verified`
-   as it stands would record that the assurance owner accepts the evidence with all eight of
-   `VER-MOK-012`'s manual assessments unperformed** — including assessments 7 and 8, which are the two
-   about the instruments rather than the outcome, and which the assurance owner owes personally. That
-   is a wider acceptance than any prior record in this repository was asked for, and it is stated here
-   so it cannot be read as narrower.
+1. **`VER-MOK-012` is answered in substance, and it is not satisfied in every literal respect.** What
+   this record said as a candidate, before the owner's validation: *"All eight manual assessments are
+   OUTSTANDING — assessments 1 and 2 the product owner's, 3 through 6 the technical owner's, 7 and 8
+   the assurance owner's ... the decision line of all eight is blank, so no assessment carries a
+   decision date, because none has been decided."* **All eight are now recorded**, so that clause is
+   discharged and the paragraph is kept rather than overwritten because it is what the owner was
+   deciding against. **At the commit this record binds, `manual-assessment.md` still reads
+   `OUTSTANDING` for all eight**: the decisions are in a later commit, because a decision cannot be
+   inside the commit it decides about, and `evidence_paths` names the blob at `50364a3` rather than the
+   blob at the branch tip.
+
+   **What is not discharged.** Two bullets of the contract's *Evidence retention* list remain
+   unsatisfied as written — item 3 below measures both — and the validation did not reach them. So this
+   record does **not** claim `VER-MOK-012` is satisfied without qualification; it claims the eight
+   judgements are recorded, every automated case passes, and two retention obligations are met by
+   substitution rather than as written, with the substitution's dependence on oracle 1 named.
+
+   **What transitioning this record to `verified` would now record.** That the accountable assurance
+   owner accepts the retained evidence for `WO-MOK-012` at `50364a3` **with those two retention
+   deviations, the nine uncorrected defects and the unapproved `SPEC-MOK-004` rule 11 amendment
+   standing** — and with assessment 8 discharged as a reading rather than as a measurement, which is
+   the strongest form that assessment admits. It is a materially narrower acceptance than the candidate
+   form of this record described, because the eight assessments are no longer part of what would be
+   waived. It is stated here so it cannot be read as either wider or narrower than it is.
 2. **Nine defects stand measured in approved artifacts, and none is corrected here.** Amending an
    approved artifact is the owner's act, so each is reported in `completion-summary.md` item 16 rather
    than fixed. **One of them weakens an oracle:** `SPEC-MOK-006` rule 3.2 says the direction domain
@@ -290,16 +371,22 @@ What else is measured, beyond the seven oracles:
    tree. **On a merged tree the gates, the census, the interface enumeration and oracles 1 through 6
    need re-running rather than carrying over**, and a record bound to the merge commit is a new
    record, not an edit of this one. **Verification is not merge and not release.** Pull request #31 is
-   open as a **draft** and was deliberately left that way: marking it ready signals that a reviewer
-   can act, and the eight assessments above are why one cannot yet.
+   open as a **draft** and was deliberately left that way. When it was prepared, the eight outstanding
+   assessments were the reason a reviewer could not yet act; they are recorded now, so what remains
+   before it is marked ready is this record's transition and the owner's decisions on the nine defects,
+   the two retention deviations and the `SPEC-MOK-004` rule 11 amendment. **Marking it ready was not
+   instructed and was not done.**
 6. **No claim is made about a consumer.** The reconstructor and the replay consumer exist for
    verification, are retained as evidence, and are not maintained artifacts. No reader, parser or
    schema file is product, and nothing in the workspace reads the record stream — the observer's ten
    targets are untouched at 127 tests precisely because this change adds a stream it does not read.
 7. **Every automated result bound here is a claim about bytes.** Whether the schema holds the facts
    Phase 4b will need, whether refusing to classify is right, and whether the closed alphabet is a
-   constraint worth keeping are judgements. They are assessments 1, 2 and 3, and they are recorded as
-   outstanding rather than measured.
+   constraint worth keeping are judgements, not measurements. They are assessments 1, 2 and 3, and they
+   are now **decided** — but decided is not measured, and nothing in this packet turns them into
+   evidence. Assessment 1 in particular was answered affirmatively **without naming the one candidate
+   gap its own material raised**, build identity beyond the package version, so that gap is accepted on
+   a judgement and not closed by a measurement.
 8. **`VER-MOK-012`'s own *Residual uncertainty* is inherited unchanged**, seven items of it,
    including that oracle 3 checks the captures rather than the format, that non-perturbation is
    verified over the declared matrix and at every tick within it rather than everywhere, that the
@@ -312,12 +399,16 @@ What else is measured, beyond the seven oracles:
 Each item names the role that owes it. **Nothing on this list is waiting on code**, and all seven
 oracles pass at the candidate commit.
 
-1. **The eight manual assessments — product owner, technical owner, assurance owner.** Two, four and
-   two respectively. `manual-assessment.md` has the material each needs assembled, so each is a
-   reading and a decision rather than a measurement. Assessments 7 and 8 are the assurance owner's own
-   and are about the instruments oracles 2 and 6 depend on; deciding on this record without performing
-   them accepts those two oracles on the strength of their construction rather than on a judgement of
-   it.
+1. **Discharged — the eight manual assessments, product owner, technical owner, assurance owner.** Two,
+   four and two respectively. What this record said as a candidate: *"`manual-assessment.md` has the
+   material each needs assembled, so each is a reading and a decision rather than a measurement.
+   Assessments 7 and 8 are the assurance owner's own and are about the instruments oracles 2 and 6
+   depend on; deciding on this record without performing them accepts those two oracles on the strength
+   of their construction rather than on a judgement of it."* **All eight were recorded on 2026-08-20**,
+   assessments 7 and 8 among them, so oracles 2 and 6 now rest on a judgement of their instruments and
+   not only on their construction. The decisions, and what each accepts by being an affirmative answer
+   to a prepared question, are in `manual-assessment.md`; the section at the top of this record states
+   the three places where nothing was named in the alternative.
 2. **The nine defects in approved artifacts — the owner of each artifact.** Whether each is corrected,
    accepted as an imprecision, or recorded and left. The one that matters most to this contract is the
    first: until `SPEC-MOK-006` rule 3.2's direction domain is corrected, oracle 5's size assertion for
@@ -332,8 +423,13 @@ oracles pass at the candidate commit.
    this record does not claim*. This record does not create that record, stand in for it, or extend
    its own binding past `50364a3`.
 
-**Keep `status` at `ready` until the accountable assurance owner has decided.** When that decision is
-taken, `status` and `updated` are the only front-matter fields that change: `commit`,
+**`status` stays at `ready`.** The validation of 2026-08-20 changed **no front-matter field of this
+record** — not `status`, and not `updated`, which already read `2026-08-20`. It was an act on the
+contract and on the eight assessments, and the body above records it; transitioning this record is a
+different act, reserved by `DECISION_RIGHTS.md` to the accountable assurance owner, and it has not been
+taken.
+
+When it is taken, `status` and `updated` are the only front-matter fields that change: `commit`,
 `git_object_format`, `worktree_state`, `verified_at`, `artifact_snapshot_sha256`, all 55
 `evidence_paths`, both relations and the `title` — which reads *candidate*, because the record was
 captured as one — stay exactly as the capture produced them. **The provenance is the capture's, not

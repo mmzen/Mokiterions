@@ -1,4 +1,4 @@
-# WO-MOK-012 manual assessments — the form, prepared and OUTSTANDING
+# WO-MOK-012 manual assessments — recorded
 
 `VER-MOK-012` states eight manual assessments and states what they are for:
 
@@ -6,26 +6,42 @@
 > assessment is an outstanding assessment, and this contract is not satisfied while any remains
 > outstanding.
 
-**All eight are OUTSTANDING.** Nothing below is a judgement, and no part of this file may be read as
-one. What is below is the material each judgement needs, measured and pointed at, so that the
-accountable role can make the call from evidence rather than from the implementation agent's summary
-of it. Where a measurement bears against the judgement rather than for it, it is here too — an
-assessment prepared only with the figures that support the answer is not an assessment.
+**All eight are recorded, on 2026-08-20, by the repository owner.** The instruction, verbatim: *"i
+validate VER-MOK-012 and and 8 manual assessments"*. The owner holds the product owner, technical owner
+and assurance owner roles at once, and the instruction names all eight explicitly, so every one of the
+three roles' assessments is covered by it.
 
-The repository owner holds the product owner, technical owner and assurance owner roles at once. That
-does not merge the eight into one act. Each names a different question, and one that is not answered
-is not answered by having answered the others.
+**What the owner supplied, and what they did not.** The instruction is one act of validation across all
+eight, not eight separately worded judgements. Each decision below therefore records the **affirmative
+side of the question as this file prepared it** — the material was assembled before the decision and
+was not written to lead it, which is why the case against is stated in each section too. Three
+assessments invited the owner to name something in the alternative, and **nothing was named in any of
+them**: assessment 1 invited any missing fact, assessment 5 invited an amendment to `ARCH-MOK-001`'s
+wording, and assessment 7 invited any misplaced figure. Each decision below states what accepting the
+affirmative side therefore settles, so the validation cannot later be read as wider or narrower than
+it was.
+
+**One decision departs from its own prompt.** Assessment 4's wording asks the owner to name "rule
+7.8's three facts"; the measurement in section 4 found **two** facts, stated at rule **7.6**, not
+three at 7.8. The decision is recorded against the measured substance rather than against the prompt,
+and the prompt's wording remains a defect in `VER-MOK-012` — the fifth of the nine in
+`completion-summary.md` item 16 — which this validation does not correct.
+
+This file's earlier form said that holding all three roles "does not merge the eight into one act.
+Each names a different question, and one that is not answered is not answered by having answered the
+others." That still stands as a statement about the questions, and it is why the eight are recorded
+separately below with their consequences separately stated, rather than as one line.
 
 | # | Assessment | Accountable role | State | Date |
 |---|---|---|---|---|
-| 1 | The record schema is sufficient for Phase 4b | product owner | **OUTSTANDING** | |
-| 2 | The refusal to classify is right | product owner | **OUTSTANDING** | |
-| 3 | The closed alphabet is an acceptable long-term constraint | technical owner | **OUTSTANDING** | |
-| 4 | The metrics record's redundancy is worth its cost | technical owner | **OUTSTANDING** | |
-| 5 | The library's freedom from the filesystem is worth the host's growth | technical owner | **OUTSTANDING** | |
-| 6 | Overwriting without prompting is right for the engine | technical owner | **OUTSTANDING** | |
-| 7 | The evidence is machine-checkable | assurance owner | **OUTSTANDING** | |
-| 8 | The reconstructor and the replay consumer | assurance owner | **OUTSTANDING** | |
+| 1 | The record schema is sufficient for Phase 4b | product owner | **RECORDED** — sufficient, no missing fact named | 2026-08-20 |
+| 2 | The refusal to classify is right | product owner | **RECORDED** — the refusal is the owner's, no label asked for | 2026-08-20 |
+| 3 | The closed alphabet is an acceptable long-term constraint | technical owner | **RECORDED** — kept, not relaxed | 2026-08-20 |
+| 4 | The metrics record's redundancy is worth its cost | technical owner | **RECORDED** — worth it; two facts at rule 7.6, not three at 7.8 | 2026-08-20 |
+| 5 | The library's freedom from the filesystem is worth the host's growth | technical owner | **RECORDED** — "stays thin" holds, wording not amended | 2026-08-20 |
+| 6 | Overwriting without prompting is right for the engine | technical owner | **RECORDED** — right for this program | 2026-08-20 |
+| 7 | The evidence is machine-checkable | assurance owner | **RECORDED** — confirmed, the three exceptions accepted as named | 2026-08-20 |
+| 8 | The reconstructor and the replay consumer | assurance owner | **RECORDED** — both properties confirmed, as a judgement | 2026-08-20 |
 
 ---
 
@@ -74,7 +90,22 @@ and this is the assessment that should say so.
 
 **Decision** — the owner records their judgement here, and names any fact found missing:
 
-    
+> **Sufficient. No fact is named missing.** Recorded 2026-08-20 by the repository owner as product
+> owner, under the instruction *"i validate VER-MOK-012 and and 8 manual assessments"*.
+>
+> **What this settles.** The facts a distribution over runs needs are accepted as present in the `run`
+> record with the `header` identifying the run, and the facts a classifier would need are accepted as
+> present whatever threshold is later chosen — the termination reason, the tick reached, the survivor
+> count and the full per-tick trajectory.
+>
+> **What it accepts by naming nothing.** The one candidate gap this section raised is **build
+> identity**: rule 5.4 carries the engine package's version, `0.1.0`, and no record carries the
+> version-control revision or the build profile, so two builds of one version are indistinguishable in
+> a capture. The section said that if Phase 4b needs to attribute a distribution to a particular build
+> rather than to a version, "this is the assessment that should say so". It does not say so. The gap is
+> therefore accepted as not a gap in this schema, and if Phase 4b needs build attribution that is a
+> **new requirement against the schema, not a defect in it**. This is the one consequence of the
+> decision worth keeping in view, and it is recorded here rather than left to be inferred from silence.
 
 ---
 
@@ -104,7 +135,21 @@ the reason this assessment is not a formality.
 
 **Decision** — the owner confirms the refusal is theirs, or asks for a label:
 
-    
+> **The refusal is the owner's own decision, and no label is asked for.** Recorded 2026-08-20 by the
+> repository owner as product owner, under the instruction above.
+>
+> **What this settles.** Rule 8.7's reasoning — that a threshold must be revisable without invalidating
+> a retained capture — is confirmed as still reflecting the owner's intent. Leaving the outcome label
+> out is held, not inherited.
+>
+> **What it accepts.** The cost stated in this section: every consumer classifies for itself, two
+> consumers can disagree, and the first Phase 4b consumer will fix a threshold that lives in the
+> consumer rather than in the schema. The measured shape that consumer must handle is accepted with it —
+> **fifteen of the thirty declared combinations reach the 10,000-tick limit and fifteen go extinct
+> first**, every baseline-policy combination goes extinct inside 200 ticks, and the default
+> configuration (seed 0, density 0.75, reference) goes extinct at tick 5,423. A classifier reading
+> "reached the tick limit" as success and nothing else would call the default configuration a failure.
+> That reading stays open, deliberately.
 
 ---
 
@@ -139,7 +184,23 @@ does not forbid that field; it prices it.
 **Decision** — the owner records the intent to keep the constraint, or relaxes it now rather than
 later:
 
-    
+> **Kept. The constraint is not relaxed.** Recorded 2026-08-20 by the repository owner as technical
+> owner, under the instruction above.
+>
+> **What this settles.** `SPEC-MOK-006` rules 3.3 and 3.4 are a constraint the owner intends to enforce,
+> not a rule left standing without intent behind it. The first future field that genuinely needs a wider
+> alphabet **pays for an escaper and its verification** rather than being quietly admitted.
+>
+> **What it accepts.** The price named in this section: a wrong escape is silent and produces
+> valid-looking JSON that means something else, so the rule does not forbid such a field, it prices it.
+> The prohibition on operator-supplied, environment-derived and free-text values stands, and the four
+> cases already refused — the destination path, the host, the user and the clock — stay refused.
+>
+> **What this decision does not reach.** The defect in rule 3.2's *direction* domain, which says "the
+> eight fixed direction words" where four cardinal ones reach a record. That is a rule 3.2 defect and
+> this assessment is about rules 3.3 and 3.4; validating the closed alphabet does not correct it, and it
+> still leaves oracle 5's size assertion for that one domain of thirteen comparing the engine against
+> itself. It is defect 1 of the nine and remains the owner's to correct.
 
 ---
 
@@ -224,7 +285,35 @@ leave oracle 6 with nothing to reconcile against.
 
 **Decision** — the owner records the judgement, naming the three facts and the rules that state them:
 
-    
+> **Worth its cost.** Recorded 2026-08-20 by the repository owner as technical owner, under the
+> instruction above.
+>
+> **The measured cost the judgement is made against.** For the declared 1,000-tick run at the default
+> configuration: 2,730,025 record bytes against 1,270,326 text bytes, **214%**, over 12,915 records of
+> which 1,000 are metrics. The metrics records themselves are about **one byte in seven** of an untraced
+> retained stream and one in fourteen of a traced one.
+>
+> **The facts with no event counterpart, named as the assessment requires — two, not three.** A
+> territory's **`capacity`**, the count the density resolves to, and a territory's permanent
+> **`depleted`** state. **Both are stated at `SPEC-MOK-006` rule 7.6**, and neither is derivable from
+> the event stream: `capacity` follows from the density in the header rather than from anything that
+> happens, and `depleted` is only ever *reconciled* against the replay's own standing count, which is
+> not a derivation. Named alongside them, at rule **7.5**: the extremum of each of the four attributes,
+> which is metrics-only as a *field* but recoverable by replay, and is therefore a weaker part of the
+> case and recorded as such.
+>
+> **This departs from the assessment's own wording, deliberately.** `VER-MOK-012`'s assessment 4 asks for
+> "rule 7.8's three facts". Rule 7.8 states the opposite kind of thing — that the record carries no field
+> for a phenomenon the engine does not compute — and the count is two, which is what the contract's own
+> *Residual uncertainty* section says. The judgement is recorded against the measured substance. **The
+> prompt's wording is not corrected by this decision**; it is defect 5 of the nine and stands in
+> `VER-MOK-012` for the owner to amend.
+>
+> **What it accepts.** That events alone would cut roughly 14% of the untraced stream, lose those two
+> facts outright, put 491 lines of engine-rule re-implementation into every consumer, and **leave oracle
+> 6 with nothing to reconcile against** — the last being the part of the case the owner records as
+> decisive, because it is the only reason the two figure sets are independent computations of the same
+> fact.
 
 ---
 
@@ -266,7 +355,25 @@ as one that does not.
 
 **Decision** — the owner records that "stays thin" still holds, or amends the wording:
 
-    
+> **"Stays thin" still holds. The wording is not amended.** Recorded 2026-08-20 by the repository owner
+> as technical owner, under the instruction above.
+>
+> **What this settles.** `ARCH-MOK-001`'s wording stands unchanged at a binary target of **154 lines**,
+> grown from a nineteen-line shim. The 135 new lines are the duties `ARCH-MOK-001`'s *Components* item 1
+> now names, every one of them a filesystem operation, and keeping them outside the library is what buys
+> `static-checks.txt` item 1: the library target reaches `collections`, `fmt` and `io` and **no**
+> filesystem, path, environment or process module.
+>
+> **What it accepts.** The cost stated in this section's case against: a 154-line target that opens
+> files, decides when to delete them and distinguishes two failure layers is a component with behaviour
+> of its own, and that behaviour is reachable **only through the process boundary** — which is why the
+> seventeen tests in `tests/records.rs` are process-level rather than unit tests. That is accepted as the
+> price of the boundary, not disputed.
+>
+> **What it declines.** The alternative the assessment offered — amending `ARCH-MOK-001`'s wording. No
+> amendment to `ARCH-MOK-001` arises from this decision, which matters because `ARCH-MOK-001` already
+> carries an **outstanding 2026-08-18 amendment row** that this decision does not touch and does not
+> resolve.
 
 ---
 
@@ -303,7 +410,23 @@ observable from the stream.
 
 **Decision** — the owner records that overwriting is right for this program:
 
-    
+> **Right for this program.** Recorded 2026-08-20 by the repository owner as technical owner, under the
+> instruction above.
+>
+> **What this settles.** A destination that already exists is replaced, without prompting, matching
+> `SPEC-MOK-003` rule 9.4 as approved for the observer's export. The engine differs from the observer in
+> the way that matters here: it is not interactive, so there is no session in which to prompt.
+>
+> **What it declines, each named.** Prompting — a run in a loop has no terminal and would hang. Refusing
+> to overwrite — the second run of a script becomes an error. Appending — the file is two runs and parses
+> as neither. A suffix convention (`-1`, `-2`, timestamped names) — that makes the program decide where
+> state accumulates, which is persistence design, and `ARCH-MOK-001`'s *Dependency direction* as amended
+> says the record stream is an output destination and **not** persistence of state.
+>
+> **What it accepts.** That the operator's protection is the option's absence by default — no run writes
+> a record stream unless asked — together with rule 13.4's bound, that a destination the process did not
+> create is not removed on failure. Both halves are covered at the process boundary by
+> `tests/records.rs`.
 
 ---
 
@@ -358,7 +481,31 @@ again from the records in `every_cumulative_figure_equals_its_event_record_count
 
 **Decision** — the owner confirms, and records any figure this table has misplaced:
 
-    
+> **Confirmed. No figure is recorded as misplaced.** Recorded 2026-08-20 by the repository owner as
+> assurance owner, under the instruction above.
+>
+> **What this settles.** Every figure that any of the seven oracles depends on came from reading records
+> or from reading source, and none from parsing the human-facing text stream. Where the text stream is
+> compared it is compared as **bytes** and not parsed. `INT-MOK-009`'s stated purpose, applied to its own
+> verification, holds.
+>
+> **What it accepts, by confirming the table rather than correcting it — the three exceptions stand as
+> named.**
+>
+> 1. The **thirty-combination sweep** in `sizes.txt` parses the text stream's summary line. This is the
+>    one figure the assessment's wording is directly about. It is accepted because the figures it carries
+>    are not load-bearing for any oracle — they establish which configurations reach the tick limit, which
+>    is context for assessments 2 and 4 — and because writing record streams for thirty 10,000-tick runs
+>    would have produced hundreds of megabytes to read three numbers from each.
+> 2. The **entropy figures** come from the `#[cfg(test)]` accessor rather than from records, and could not
+>    come from records: no record field carries the entropy state and the key set is closed, which
+>    `static-checks.txt` item 6 establishes over all 61 field names. Oracle 4's claim is that a sink moves
+>    no draw, and the only witness to a draw is inside the crate.
+> 3. The **test census** comes from `cargo test`, there being no other source for it.
+>
+> The confirmation is of the table **as complete rather than selective**, which is what the assessment
+> asked for: it names the three figures that were not produced by reading records, and the owner accepts
+> those three rather than treating them as absent.
 
 ---
 
@@ -410,18 +557,63 @@ provision is the whole of what this assessment is for. Reading `analysis/replay.
 
 **Decision** — the owner confirms both properties, having read the two scripts:
 
-    
+> **Both properties confirmed.** Recorded 2026-08-20 by the repository owner as assurance owner, under the
+> instruction above.
+>
+> **The reconstructor.** Derived from `SPEC-MOK-006` rule 6.6 alone and carrying no event-type-specific
+> branch. **This half is mechanically checked, not taken on the owner's word**: `no_event_specific_branch`
+> searches the script's own source for each of the twelve event names the captured streams carry, with the
+> names taken from the captures rather than from a list in the script, and the result is at
+> `oracle2/reconstruction-result.txt` line 103. The two departures from rule 6.6 are accepted as declared
+> in the script's own header — `event_line`'s four-field framing is `SPEC-MOK-001`'s and `summary_line` is
+> rule 8.3's.
+>
+> **The replay consumer.** Implements `SPEC-MOK-001`'s resource rules rather than reading the engine's
+> implementation.
+>
+> **What this confirmation is, stated at its true strength.** A judgement, which is what `VER-MOK-012`
+> asked for — **not a proof, and this record does not upgrade it.** This section's own material says so:
+> the replay's independence is a claim about *how the script was written*, no mechanical check can
+> establish it, and a line-for-line transcription of the engine's logic would pass every test in this
+> packet because it would agree with the engine everywhere. The available support is circumstantial — the
+> two figure sets reach the stream by different paths, so their agreement at all 55,768 reconciled tick
+> boundaries is an agreement between two independent computations **provided** the replay is independent.
+> The owner's confirmation is that provision. It is the strongest form of discharge this assessment
+> admits, and it is recorded as a reading rather than as a measurement.
 
 ---
 
-## What this file establishes
+## What this file establishes, and what it does not
 
-Nothing about whether the contract is satisfied. `VER-MOK-012` says an unrecorded assessment is an
-outstanding assessment and that the contract is not satisfied while any remains outstanding; all eight
-are outstanding, so the contract is not satisfied and this file is the reason it can be seen not to
-be. The seven mechanical oracles are green and their evidence is retained beside this file; that is a
-different claim and it does not close these eight.
+**What it establishes.** All eight assessments are recorded, so the one condition `VER-MOK-012` states
+explicitly for being unsatisfied — "an unrecorded assessment is an outstanding assessment, and this
+contract is not satisfied while any remains outstanding" — is **discharged**. Together with the seven
+mechanical oracles, whose evidence is retained beside this file, that is the substance of the contract
+answered.
 
-`ARCH-MOK-001`'s 2026-08-18 amendment, `SPEC-MOK-002`'s 2026-08-18 amendment and `SPEC-MOK-004`'s
-2026-08-19 amendment were already outstanding before this work began and remain so —
-`amendment-approvals.md` section 5 names each. Those are the owner's acts too, and they are not these.
+**What it does not establish.** That `VER-MOK-012` is satisfied in every respect. Two things stand
+independently of these eight, and recording the eight does not reach either:
+
+1. **Two bullets of the contract's *Evidence retention* list are not satisfied as written.** Bullet 3
+   asks for the post-change sink capture's standard output and this packet holds its digests only;
+   bullet 4 asks for thirty full sink streams and four are retained. Both deviations are disclosed in
+   this packet's `README.md` with the reason and the cost, and the substitution for bullet 3 rests on
+   oracle 1's result. Neither is a judgement in this file's scope.
+2. **Nine defects measured in approved artifacts are uncorrected**, `completion-summary.md` item 16.
+   Defect 1 — rule 3.2's *direction* domain — is the one that touches an oracle, leaving oracle 5's
+   size assertion for one domain of thirteen comparing the engine against itself. Assessment 3's
+   decision names this explicitly rather than letting a validated alphabet be read as covering it.
+
+**And what remains outstanding, unchanged.** `ARCH-MOK-001`'s 2026-08-18 amendment,
+`SPEC-MOK-002`'s 2026-08-18 amendment and `SPEC-MOK-004`'s 2026-08-19 amendment were already
+outstanding before this work began and remain so — `amendment-approvals.md` section 5 names each. So
+does `SPEC-MOK-004`'s 2026-08-20 rule 11 row, the amendment made beyond `ADR-MOK-005`'s approved list,
+recorded in section 4 as **not approved** rather than claimed. Those are the owner's acts too, and they
+are not these eight.
+
+**This file is not a verification record.** `VREC-MOK-012` is, it binds commit
+`50364a3719c68643f0b5354798b6d3084cff1c0e`, and at that commit every one of the eight assessments above
+reads `OUTSTANDING` — the decisions were recorded afterwards, because a decision cannot be inside the
+commit it decides about. Whether `VREC-MOK-012` moves from `ready` to `verified` is a separate
+accountable act reserved to the assurance owner by `DECISION_RIGHTS.md`, and recording these eight does
+not take it.

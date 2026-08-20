@@ -15,8 +15,19 @@ order exactly, so a numbered heading below is that clause and not a topic chosen
 **This work order is not complete and does not claim to be.** Seven oracles are measured and pass.
 Eight manual assessments are prepared and **all eight are outstanding** (item 15). `VREC-MOK-012` is a
 separate commit-bound record that this work order does not write and cannot self-approve (item 16).
-Four defects in the approved artifacts and one amendment beyond the approved list are disclosed here,
-in items 1, 7, 12 and 16.
+**Nine** defects in the approved artifacts and one amendment beyond the approved list are disclosed
+here, in items 1, 7, 12 and 16. *(The count in this sentence read "four" when the report was first
+written and item 16 grew to nine before the commit; the sentence is corrected to agree with the item it
+points at. No defect was added or removed by the correction.)*
+
+> **Later fact, recorded 2026-08-20 after this report's candidate commit.** The owner validated
+> `VER-MOK-012` and all eight manual assessments in one act — *"i validate VER-MOK-012 and and 8 manual
+> assessments"* — so item 15's "all eight are outstanding" describes the state at the commit this report
+> binds and no longer describes the head of the branch. The decisions, and what each accepts by being an
+> affirmative answer to a prepared question, are in `manual-assessment.md`; the body of this report is
+> left as it was measured rather than edited into agreement with a later decision. **Nothing else in this
+> report moves with it**: the nine defects are uncorrected, the amendment beyond the approved list is
+> still unapproved, the two retention deviations still stand, and `VREC-MOK-012` is still `ready`.
 
 ---
 
@@ -794,6 +805,17 @@ anything else now.
 ---
 
 ## 15. The eight manual assessments — all eight outstanding
+
+> **Later fact, 2026-08-20: all eight are now recorded.** The owner validated `VER-MOK-012` and all
+> eight assessments after this report's candidate commit. This item is left as measured — at
+> `50364a3` the decision line of all eight was blank — and `manual-assessment.md` carries the
+> decisions, each with what accepting the affirmative side settles and what it accepts by naming
+> nothing in the alternative. Three of the eight invited the owner to name something and nothing was
+> named in any of them: assessment 1 any missing fact, assessment 5 an amendment to `ARCH-MOK-001`'s
+> wording, assessment 7 any misplaced figure. **The three disclosures listed at the end of this item
+> were therefore accepted rather than resolved** — in particular the build-identity gap under
+> assessment 1, and assessment 4's miscited rule and miscounted facts, which stay a defect in
+> `VER-MOK-012` (defect 5 of item 16).
 
 **None has been decided. Nothing in `manual-assessment.md` is a judgement.** Each of the eight is
 prepared with its verbatim requirement, its accountable role, the material it needs measured, and a
