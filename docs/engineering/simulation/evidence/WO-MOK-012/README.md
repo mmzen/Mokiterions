@@ -7,6 +7,12 @@ blocked behind. This directory is its retained evidence.
 `mokiterions-tui/` is modified, and `completion-summary.md` records the diff check that establishes it. The three
 adverse observations the assessment pass produced are recorded here and **fixed by a later chain**, by decision 12.
 
+**That chain is now drafted.** `WO-MOK-013`, `VER-MOK-013` and `REQ-MOK-047` through `REQ-MOK-049` implement decisions 13
+to 15, all `draft` and awaiting approval. Two facts found while authoring it belong to this directory rather than to it:
+the identifier collision in `identifier-collision.md`, and that **decision 13 as recorded cannot be implemented without
+amending approved `REQ-MOK-020`** — the geometry is in `WO-MOK-013`'s *Authorized decision envelope* and the collision
+was not measured when the decision was taken.
+
 ## The files
 
 | File | What it establishes |
@@ -18,6 +24,7 @@ adverse observations the assessment pass produced are recorded here and **fixed 
 | `adverse-observations.md` | The three findings from the live pass, each with the measurement that establishes it, the specification provision it bears on, and the remedy decided for the later chain. Plus two further observations recorded but not raised as findings. |
 | `procedure-defects.md` | Three defects in `WO-MOK-005`'s recorded assessment procedure, each verified against `master` at `ff3a155`. |
 | `identifier-sweep.md` | That `WO-MOK-012` was free across all 24 remote heads on 2026-08-20, and that `master` moving from `dec1b95` to `ff3a155` mid-task left the captures and line numbers in this directory valid. |
+| `identifier-collision.md` | That `WO-MOK-012` **stopped being free later the same day**. A Phase 4a packet on `origin/feature/phase-4a-definition`, authored by another agent from the same base, claims the identifier for a different work order. Records both sides, and that the resolution is the owner's. |
 | `assessment-material/` | Twelve files: ten terminal captures and two oracle sources. What the buffer held, so that analysis is a separate act from measurement. |
 
 ## `assessment-material/`
