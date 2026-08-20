@@ -2,7 +2,7 @@
 id = "WO-MOK-013"
 type = "work_order"
 title = "Replace the engine's empty-dependency rule with a declared-set comparison, and check it at pull-request time and at release"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -114,6 +114,32 @@ implementation put to the owner; the implementation agent wrote the text and dec
    carry the same correction, each under its own dated row or note, and this third correction is a **reach beyond what
    the owner's answer enumerated** — the answer named those two artifacts — disclosed here for that reason and
    reversible by striking this paragraph and the two phrases it changed.
+
+### Transition to `implemented`
+
+This subsection sits below the corrections note rather than beside *Transition to `in_progress`* because it happened
+after that note, and this section is in the order the acts occurred.
+
+Status moved from `in_progress` to `implemented` on 2026-08-20 by the repository owner acting as accountable
+**engineering owner**, in the instruction *"you can: (1) commit and push, (2), mark WO-POK-013 as implemented"*. The
+identifier in that instruction is written `WO-POK-013`; it is quoted as given and read as `WO-MOK-013`, because this
+repository has no `POK` family, the instruction was given in this work order's own implementation and its first clause
+authorized the commit that carries it.
+
+**The transition is its own commit and does not travel with the implementation.** The change itself is commit
+`84b21b9cdc8566cf2bde45b47dae415944d19dca`, which moved the status to `in_progress` and no further; the sentence under
+*Transition to `in_progress`* saying it is **not** moved to `implemented` in that commit was accurate when written and
+remains an accurate description of that commit. Its stated ground — that no instruction covered the transition — was
+true until this instruction was given. `WO-MOK-011` is the precedent for the shape: there too the transition was a
+separate commit, taken when the owner said so and not when the work looked finished.
+
+**What this transition does and does not carry.** `WORKFLOW.md` ends the governance path for a work order at
+`implemented`, so this is the last transition this work order takes. It is not an assurance act and asserts nothing
+about verification: `commit_bound_verification` is classified `required` above, `VREC-MOK-013` is not written, and the
+work order cannot approve its own verification record. The queue move it causes — out of `active_work` and into
+`assurance_pending` — is recorded with the statements it makes stale in
+`evidence/WO-MOK-013/WO-MOK-013-transition.md`. No tag and no pull request are authorized by the instruction above,
+and neither is taken.
 
 ### Why this chain is numbered 006, 047 and 013
 

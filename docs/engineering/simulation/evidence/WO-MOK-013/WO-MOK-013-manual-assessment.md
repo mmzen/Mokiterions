@@ -49,7 +49,7 @@ number in approved artifacts and in the checking program:
 | 1 | `VER-MOK-013:104`, `:304`, `:339` |
 | 2 | `VER-MOK-013:105`, `:304` |
 | 3 | `SPEC-MOK-003:800`; `VER-MOK-013:186`, `:327`, `:336` |
-| 4 | `WO-MOK-013:303` |
+| 4 | `WO-MOK-013:329` |
 | 6 | `SPEC-MOK-003:59`, `:794`, `:818`; `SPEC-MOK-005:23`, `:24`; `scripts/check_declared_dependencies.py:1019`, `:1024`; `VER-MOK-013:96`, `:139`, `:190`, `:331` |
 
 Renumbering would break twenty citations in approved artifacts and in code. Inventing a fifth would have been worse: it
