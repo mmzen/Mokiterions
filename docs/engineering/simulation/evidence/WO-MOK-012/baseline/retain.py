@@ -53,7 +53,14 @@ FULL = ['seed42-baseline-d0.75-traceon']
 
 # The seven verbs REQ-MOK-042 adds, and the two fields REQ-MOK-043 adds. Counted by name rather than
 # discovered, so that a zero is reported as a zero instead of vanishing from the census.
-NEW_VERBS = ['attack', 'threaten', 'retreat', 'surrender', 'avoid', 'approach', 'observe']
+#
+# Corrected 2026-08-20: this list read `observe` where SPEC-MOK-001 rule 21 says `fight`, so the
+# census asserted a zero for a verb that does not exist and asserted nothing at all for one that
+# does. A named list is what makes a zero visible, and a wrong name in it makes the same zero
+# meaningless -- the check it exists to be. census.txt was regenerated from a reproduction of the
+# pre-change capture; correction-fight-verb.md records that, and the fifteen other columns and both
+# field columns came back identical.
+NEW_VERBS = ['attack', 'threaten', 'fight', 'retreat', 'surrender', 'avoid', 'approach']
 NEW_FIELDS = ['target', 'suffered']
 
 EVENT = re.compile(r' event=([a-z_]+)')
