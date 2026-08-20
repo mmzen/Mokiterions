@@ -696,6 +696,16 @@ internal-tier uses, no mention in the public tier or the observer.
 
 ### Amended beyond the approved list: `SPEC-MOK-004` rule 11
 
+> **Later fact, 2026-08-20, after this report's candidate commit: the row is approved.** The repository
+> owner, acting as technical owner, gave the confirmation this section says the rule cannot delegate —
+> that `SPEC-MOK-004` belongs in this chain, and that no figure in the row is wrong. The approval is
+> recorded in `SPEC-MOK-004`'s own amendment record, prepended to the row's status cell with the
+> cell's original text kept unedited beneath it. Nothing below is rewritten, and no figure below
+> changes: what this section measured was the state at the candidate commit, and it measured it
+> correctly. `amendment-approvals.md` is generated and was re-run with the approval present: its
+> output is **byte-identical**, because oracle 7 reads the cell for the phrases that record how the
+> row was written rather than for a verdict, and those phrases are still there.
+
 `ADR-MOK-005` names three documents to amend and `SPEC-MOK-004` is not one of them. Its rule 11 was
 amended anyway, and the row records the amendment as **OUTSTANDING** rather than claiming approval.
 
