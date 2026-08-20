@@ -2,7 +2,7 @@
 id = "WO-MOK-012"
 type = "work_order"
 title = "Let Mokiterions act on each other: contact, seven targeted actions, a defender's own answer, a source that reads fear, and the resource composition corrected"
-status = "approved"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -57,6 +57,20 @@ amendments, `REQ-MOK-042` through `REQ-MOK-051`, `VER-MOK-012` and this work ord
 with 116 artifacts and no errors or warnings, and `preflight . --work-order WO-MOK-012 --phase start` reports **PASS with
 no diagnostics** — the ten `E007`s and the `W016` that blocked the first attempt are gone, and `W013` with them, every
 governing artifact now being active.
+
+**Implementation began on 2026-08-20 and this work order is `in_progress`.** The first task is not a code change and
+could not have been: `VER-MOK-012` oracle 1 requires the engine's output captured *before* any change, from a
+tracked-clean worktree, at the commit the work begins from, and adds that "a discrepancy is never resolved by
+recapturing it". That baseline was taken at `39662d1`, the approval act itself, with `git diff --stat HEAD` empty and the
+only untracked path being the evidence directory committed with it. 90 cells, 110 MB, every cell exiting `0`, retained by
+per-cell digest with the stated subset kept whole, under `evidence/WO-MOK-012/baseline/`. Its provenance is measured
+rather than asserted: all 90 cells reproduce from a `git archive` of that commit on raw digest, byte count, line count
+and exit code, which is a stronger claim than a clean `git status`, because a tree extracted from a commit cannot hold a
+working-tree modification at all. Two further agreements came free and are recorded in `baseline/cross-check.txt` — all
+90 cells match `WO-MOK-011`'s post-change digests, as an engine whose only change since is comments predicts, and the
+212-name test census matches that work order's post-merge census name for name. The capture also fixes the pre-change
+value of two absence claims: across the whole 110 MB there is no `target` field, no `suffered` field and not one of the
+seven targeted verbs.
 
 One note for whoever runs that preflight next, because it cost a diagnosis here. It must be run under the harness version
 `.engineering-harness.toml` pins, `0.4.0`, which is also the version `.github/workflows/engineering-harness.yml` installs.

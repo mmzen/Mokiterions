@@ -1,0 +1,109 @@
+VER-MOK-012 oracle 1: the pre-change capture against WO-MOK-011's measurements
+==============================================================================
+
+Work order   WO-MOK-012 (Phase 3.1, encounters)
+Baseline     39662d13abd08e3410648d1c59ad38384f8ad2d2   (COMMIT.txt)
+Date         2026-08-20
+
+Two checks the baseline commit makes available for free. Both test the capture rather than the code,
+which is the whole of their value: they are taken before any line of WO-MOK-012 is written, and what
+they can find is a harness or a machine that does not reproduce a figure another work order recorded.
+
+
+1. The 90-cell matrix against WO-MOK-011's post-change capture
+--------------------------------------------------------------
+
+WO-MOK-011 declared the same 90-cell matrix and took its post-change capture with the same script, at
+the candidate tree its README names, `9ddcf83`. Its digests are in the repository at
+evidence/WO-MOK-011/post/post-manifest.txt.
+
+From that tree to this baseline, the engine's source changes by eighteen lines and none of them is
+executable:
+
+    $ git diff --stat 9ddcf83..HEAD -- mokiterions-core/src Cargo.toml Cargo.lock
+     mokiterions-core/src/lib.rs        |  2 +-
+     mokiterions-core/src/simulation.rs | 16 ++++++++--------
+     2 files changed, 9 insertions(+), 9 deletions(-)
+
+    $ (the same diff, with comment and blank lines removed)
+    (no non-comment engine line changed)
+
+The eighteen are the 007-to-010 renumbering inside doc comments and one test-module banner. The
+observer moved for real over the same range -- 356 lines of mokiterions-tui/src/render.rs, the colour
+bands of WO-MOK-007 -- but the observer writes nothing to the engine's standard output, which is what
+capture.sh captures. So every one of the 90 cells is predicted to be byte-identical across the two work
+orders, and it is:
+
+    $ awk '/^seed/ {print $1, $2, $4, $5, $6}' evidence/WO-MOK-011/post/post-manifest.txt | sort
+    $ awk '/^seed/ {print $1, $2, $3, $4, $5}' evidence/WO-MOK-012/baseline/pre-manifest.txt | sort
+    $ diff of the two
+
+    cells in each manifest:                                     90
+    identical on raw SHA-256, bytes, lines and exit:            90
+    differing:                                                   0
+
+WO-MOK-011's manifest carries a projected digest in column 3, which this one does not, so the columns
+are selected by name above rather than the files diffed whole. That projection is WO-MOK-011's and
+belongs to the field it added; VER-MOK-012 oracle 1 compares baseline unprojected, and manifest.py says
+why at length.
+
+Three cells are held whole on both sides. Their digests agree, and this is why retain.py does not copy
+them into this packet a second time:
+
+    seed42-baseline-d0.75-traceoff     d99b0e7d5f816fec9d2f0c89ed03af0b9b89fff74b2b83de3b82f3d7c73d1b5d
+    seed42-individual-d0.75-traceoff   e355a7b73ef983dc432efabce13673b17863cd85fb61b4ce8cc5b24c2e718ebc
+    seed42-reference-d0.75-traceoff    7d38539dcdca76056f08cee44f49850eaf0a8d6a9013d5cc639370a986dd79bb
+
+
+2. The workspace test census against WO-MOK-011's post-merge census
+-------------------------------------------------------------------
+
+baseline/test-census.txt reports 212 test names, all passing. The comparable figure is not
+WO-MOK-011's post/test-census.txt, which reports 205: that census was taken at the candidate, before
+the merge that brought WO-MOK-007's band tests in. The comparable figure is its merge/test-census.txt,
+taken at the merged tree, and it reconciles exactly:
+
+    $ diff <(names from WO-MOK-011/merge/test-census.txt) <(names from WO-MOK-012/baseline/test-census.txt)
+    (no output)
+
+    names in each census:                                      212
+    identical, target-qualified, name for name:                212
+
+The seven names the 205-census lacks are the band tests -- five under `unittests :: render::tests::`
+and two in `tests/render.rs` -- and their absence there and presence here is the merge, not a drift.
+
+analysis/census.py is WO-MOK-011's script copied unchanged, deliberately: a reconciliation name by name
+between two work orders is only sound if both censuses were taken by the same reader of the same log
+format. "Unchanged" is meant literally and is checkable --
+
+    $ cmp WO-MOK-011/analysis/census.py WO-MOK-012/analysis/census.py
+    (no output)
+    $ sha256sum both
+    7d35545477539fc56ebcd89efbfc790bb4860409b8156cbf603d8c316bc61567  (both)
+
+-- which is why its own docstring still says VER-MOK-011 and its usage line still names that packet's
+path. Correcting those two strings would have cost the byte equality that makes this paragraph
+verifiable, and the string is not what the census depends on.
+
+
+3. What these checks establish, and what they do not
+----------------------------------------------------
+
+They establish that the same matrix and the same test gate, taken on a different day by a different work
+order, produce the same 110 MB to the byte and the same 212 names: the harness is deterministic across
+invocations and the figures recorded here are not an artifact of this machine's state today.
+
+They establish nothing about the change WO-MOK-012 makes, which has not been written yet.
+
+They are not a substitute for capture-state.txt. Reproducing another work order's numbers says nothing
+about whether *this* worktree was clean when these numbers were taken; that claim is measured
+separately, from git archive.
+
+And they do not discharge anything owed elsewhere. WO-MOK-011's merge/README.md records its oracle 1 as
+not re-taken after the merge, and the agreement above is the first 90-cell measurement at the merged
+tree -- but it is taken against WO-MOK-011's *post* digests rather than the projected comparison against
+`524a675` that its oracle states, so whether that oracle is satisfied is that work order's verification
+record's business and not this file's.
+
+RESULT: PASS -- 90 of 90 cells and 212 of 212 test names agree with WO-MOK-011's measurements, as an
+engine whose only change is comments predicts.
