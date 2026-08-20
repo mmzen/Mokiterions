@@ -7,6 +7,12 @@ Fifty-five files, 10,674,199 bytes. The candidate tree is the working tree at
 `bb4a21491eff321cbfd14ba3ea794e34535e3033` plus the implementation this work order adds; the pre-change
 baseline is `de33d7440c323a98ac88db3fabaf87bea48ebf4e`, recorded in `baseline/COMMIT.txt`.
 
+> **Later fact, 2026-08-20.** This directory now holds **fifty-six** files. The fifty-fifth figure above
+> is the evidence set, and it is still fifty-five: `assurance-decision.md` is the addition and it is
+> deliberately **not** part of it, because it postdates the commit this packet binds and a record's
+> evidence set is the capture's rather than the decision's. `VREC-MOK-012`'s `evidence_paths` names the
+> same fifty-five it named when it was captured.
+
 ## What discharges what
 
 Each row names the artifact and the oracle, scenario or gate it answers. Every `.txt` file carries its own
@@ -108,6 +114,7 @@ produced, which is the form the earlier packets in this repository established.
 | Path | What it is |
 |---|---|
 | `manual-assessment.md` | All eight manual assessments, prepared with the material each needs, and — **as of 2026-08-20, after the candidate commit this packet binds** — all eight **RECORDED** by the owner. Each decision states what accepting it settles and what it accepts by naming nothing in the alternative. At `50364a3` itself every one reads OUTSTANDING. |
+| `assurance-decision.md` | **Not evidence and not among the fifty-five.** The record of the assurance owner's decision of 2026-08-20 to move `VREC-MOK-012` from `ready` to `verified`: the form the instruction took, what the decision accepted, what it does not retire, and the harness measured either side of it. It postdates the commit this packet binds. |
 | `completion-summary.md` | `WO-MOK-012`'s *Completion report format*, all sixteen items in its order: what changed and what deliberately did not, one full record stream quoted, each oracle's result, the negative controls, the three amendment rows quoted, the eight outstanding assessments, and **nine defects measured in the approved artifacts**, none of them corrected here. |
 
 ## `VER-MOK-012`'s *Evidence retention* list, bullet by bullet
@@ -221,7 +228,7 @@ measured — they are judgements, prepared in `manual-assessment.md`, and the ow
 2026-08-20**, after the candidate commit this packet binds. That discharges the one condition
 `VER-MOK-012` states explicitly for being unsatisfied, and it discharges nothing else.
 
-What still stands, unchanged by that validation: two deviations from the retention list, disclosed above;
+What still stood, unchanged by that validation: two deviations from the retention list, disclosed above;
 the amendment beyond `ADR-MOK-005`'s approved list, disclosed in `amendment-approvals.md` section 4 and
 recorded there as **not approved**; and nine defects measured in the approved artifacts, in
 `completion-summary.md` item 16 — one of which, `SPEC-MOK-006` rule 3.2's direction domain, weakens oracle
@@ -230,7 +237,20 @@ manual assessment 4 itself. `amendment-approvals.md` is generated rather than ha
 paragraph still reads that the eight assessments are OUTSTANDING; that is the state its own generation
 measured, and it is left rather than edited.
 
-A verification record binding a commit is written after the commit it names, which is why `WO-MOK-012` is
-`in_progress` and not `complete`. `VREC-MOK-012` binds `50364a3` and is **`ready`**: transitioning it to
-`verified` is a separate accountable act reserved to the assurance owner, and validating the eight
-assessments did not take it.
+**Three of those then moved, later the same day, by three further acts.** The `SPEC-MOK-004` rule 11 row
+was **approved** by the owner as technical owner. **`VREC-MOK-012` moved from `ready` to `verified`** by
+the same owner as assurance owner; `assurance-decision.md` records that decision and what it accepted, and
+what it accepted includes the two retention deviations as they stand and the nine defects uncorrected. The
+nine were **deferred to a correction work order in Phase 4b** — a disposition, not a repair: that work
+order does not exist yet, so six approved artifacts keep a known wrong statement until it lands.
+
+**What still stands after all of it**: the two retention deviations, so `VER-MOK-012`'s *Evidence
+retention* list is answered in substance and not satisfied on bullets 3 and 4 as written; the nine
+defects, uncorrected; and the three carried-forward `OUTSTANDING` amendment rows — `ARCH-MOK-001`
+2026-08-18, `SPEC-MOK-002` 2026-08-18, `SPEC-MOK-004` 2026-08-19 — none of which is this chain's to pay.
+
+**This packet still does not establish that the change is verified.** `VREC-MOK-012` does, for
+`50364a3` and no further commit. `50364a3` is a branch commit and is not an ancestor of `master`: on a
+merged tree the gates, the census, the interface enumeration and oracles 1 through 6 need re-running
+rather than carrying over, and a record bound to the merge is a new record rather than an edit of that
+one. Verification is not merge and not release.

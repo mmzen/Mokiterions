@@ -604,16 +604,29 @@ independently of these eight, and recording the eight does not reach either:
    size assertion for one domain of thirteen comparing the engine against itself. Assessment 3's
    decision names this explicitly rather than letting a validated alphabet be read as covering it.
 
-**And what remains outstanding, unchanged.** `ARCH-MOK-001`'s 2026-08-18 amendment,
-`SPEC-MOK-002`'s 2026-08-18 amendment and `SPEC-MOK-004`'s 2026-08-19 amendment were already
-outstanding before this work began and remain so — `amendment-approvals.md` section 5 names each. So
-does `SPEC-MOK-004`'s 2026-08-20 rule 11 row, the amendment made beyond `ADR-MOK-005`'s approved list,
-recorded in section 4 as **not approved** rather than claimed. Those are the owner's acts too, and they
-are not these eight.
+**And what remains outstanding.** `ARCH-MOK-001`'s 2026-08-18 amendment, `SPEC-MOK-002`'s 2026-08-18
+amendment and `SPEC-MOK-004`'s 2026-08-19 amendment were already outstanding before this work began and
+remain so — `amendment-approvals.md` section 5 names each. Those are the owner's acts too, and they are
+not these eight.
+
+> **Later fact, 2026-08-20: `SPEC-MOK-004`'s 2026-08-20 rule 11 row is no longer among them.** That row —
+> the amendment made beyond `ADR-MOK-005`'s approved list, which `amendment-approvals.md` section 4
+> records as **not approved** rather than claimed — was **approved** later the same day by the owner
+> acting as technical owner. Section 4 is generated and still measures the state before that approval;
+> re-running `analysis/amendments.py` with the approval present reproduces it byte for byte, because the
+> approval was written so as to leave the phrases that section reads intact. The three rows named above
+> are untouched and still outstanding.
 
 **This file is not a verification record.** `VREC-MOK-012` is, it binds commit
 `50364a3719c68643f0b5354798b6d3084cff1c0e`, and at that commit every one of the eight assessments above
 reads `OUTSTANDING` — the decisions were recorded afterwards, because a decision cannot be inside the
-commit it decides about. Whether `VREC-MOK-012` moves from `ready` to `verified` is a separate
-accountable act reserved to the assurance owner by `DECISION_RIGHTS.md`, and recording these eight does
+commit it decides about. Whether `VREC-MOK-012` moved from `ready` to `verified` was a separate
+accountable act reserved to the assurance owner by `DECISION_RIGHTS.md`, and recording these eight did
 not take it.
+
+> **Later fact, 2026-08-20: that act was taken.** The owner, as accountable assurance owner,
+> transitioned `VREC-MOK-012` to `verified`. `assurance-decision.md` records the decision, and what it
+> accepted includes these eight decisions **as they are recorded here** — one blanket act covering eight
+> prepared questions, with nothing named in the alternative in assessments 1, 5 and 7, and assessment 8's
+> second half a reading rather than a proof. The decision did not upgrade any of that. **No decision on
+> this page was edited to suit it.**

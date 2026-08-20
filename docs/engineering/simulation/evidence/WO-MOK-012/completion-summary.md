@@ -976,6 +976,28 @@ Before `VREC-MOK-012` can be written:
    explicitly carried forward again — none of them is this work order's to pay, and all three are
    unchanged.
 
+> **Later fact, 2026-08-20, after this report's candidate commit: all five are answered, and only two of
+> the five are answered by being done.** Taken in order.
+>
+> 1. **Recorded.** All eight manual assessments, by the owner across the three roles. `manual-assessment.md`.
+> 2. **Deferred, not corrected.** The nine defects go to a correction work order in Phase 4b with its own
+>    verification contract and evidence. That work order does not exist yet, so every defect in this
+>    report's item 16 is still in the artifact it was measured in.
+> 3. **Confirmed.** The `SPEC-MOK-004` rule 11 row is approved, by the owner as technical owner. The
+>    reverting option was declined: rule 11's own text calls a work order that loses a test count a
+>    defect, so reverting would have traded an unapproved row for a stale figure.
+> 4. **Accepted as they stand.** Both retention deviations. Nothing was re-captured and nothing deleted,
+>    so `VER-MOK-012`'s *Evidence retention* list is answered in substance and **still unsatisfied as
+>    written on bullets 3 and 4**.
+> 5. **Still outstanding.** The three carried-forward amendment rows are untouched.
+>
+> `VREC-MOK-012` was then moved from `ready` to `verified` by the owner as assurance owner, on that
+> footing and no better one; `assurance-decision.md` records what the decision accepted. Note the
+> ordering this section describes and the ordering that happened are not the same: the record was
+> prepared as `ready` **before** items 1 through 4 were answered, and transitioned after. Preparing a
+> candidate needs none of them; deciding on it needs all of them, which is the distinction the two
+> statuses exist to carry.
+
 **What this file establishes:** that seven oracles were run over the declared matrix and pass, that the
 text stream and the entropy sequence are unmoved, that the gates are green, and that the amendments
 this change depends on are approved. **What it does not establish:** that this change is verified.

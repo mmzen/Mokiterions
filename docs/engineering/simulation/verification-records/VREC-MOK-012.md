@@ -2,7 +2,7 @@
 id = "VREC-MOK-012"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-012"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -76,18 +76,24 @@ conforms_to = ["VER-MOK-012"]
 
 # Verification Record Candidate
 
-This `ready` record binds the retained evidence for `WO-MOK-012` — the optional structured record
-stream — to candidate commit `50364a3719c68643f0b5354798b6d3084cff1c0e` on
-`feature/phase-4a-definition`. **An accountable assurance owner must review the evidence and decide
-whether to transition it to `verified`.** `DECISION_RIGHTS.md` reserves that transition to that role
-and states that record preparation never makes it: *"Automation may prepare `ready` verification and
-release records from bounded Git observations. Only accountable assurance and release owners may
-transition those records to `verified` or `released`."* **Preparing this record approved, verified,
-merged, tagged, released and published nothing.** The instruction this file was prepared under — *"you
-can prepapre the verification record, keep it ready, and commit and push"* — supplied the authority to
-commit and push the file and stated no judgement on the evidence. **A later instruction, on the same
-day, did state judgements**: the section immediately below records it, what it settled, and what it
-left standing. It did not transition this record, and this record is still `ready`.
+This record binds the retained evidence for `WO-MOK-012` — the optional structured record stream — to
+commit `50364a3719c68643f0b5354798b6d3084cff1c0e` on `feature/phase-4a-definition`. **It is
+`verified`.** The repository owner, acting as accountable assurance owner, transitioned it from `ready`
+on 2026-08-20; `evidence/WO-MOK-012/assurance-decision.md` records that act and what it accepted.
+
+**The title still reads *candidate*, and that is deliberate.** The record was captured as one, and a
+verification decision does not rewrite the capture — `VREC-MOK-010`'s and `VREC-MOK-011`'s titles read
+the same way after their own transitions, for the same reason.
+
+`DECISION_RIGHTS.md` reserves the transition to that role and states that record preparation never
+makes it: *"Automation may prepare `ready` verification and release records from bounded Git
+observations. Only accountable assurance and release owners may transition those records to `verified`
+or `released`."* **Preparing this record approved, verified, merged, tagged, released and published
+nothing**, and the instruction it was prepared under — *"you can prepapre the verification record, keep
+it ready, and commit and push"* — supplied the authority to commit and push the file and stated no
+judgement on the evidence. The judgements came in two later instructions of the same day, both recorded
+below: the first validated the contract and the eight manual assessments and did **not** reach this
+record, the second took the transition.
 
 ## The owner's validation of 2026-08-20, and what it did and did not do
 
@@ -110,13 +116,22 @@ candidate commit this record binds. What it changes and what it leaves standing:
   Both are disclosed with their reason and cost in the packet's `README.md`. **So `VER-MOK-012` is
   answered in substance and not satisfied in every literal respect**, and this record says which is
   which rather than reporting the validation as a clean sweep.
-- **This record is still `ready`.** The owner's instruction named the contract and the assessments; it
-  did not name this record, and `DECISION_RIGHTS.md` reserves the `ready` → `verified` transition to
-  the accountable assurance owner as a separate act. Nothing here is approved by implication.
-- **Nothing else moved.** The nine defects are uncorrected, the `SPEC-MOK-004` rule 11 amendment made
-  beyond `ADR-MOK-005`'s approved list is still unapproved, the three carried-forward `OUTSTANDING`
-  amendment rows still stand, `WO-MOK-012` is still `in_progress`, and pull request #31 is still a
-  draft.
+- **That validation did not transition this record.** The owner's instruction named the contract and
+  the assessments; it did not name this record, and `DECISION_RIGHTS.md` reserves the `ready` →
+  `verified` transition to the accountable assurance owner as a separate act. Nothing was approved
+  here by implication. **The transition came later the same day, as its own act** — the section below
+  records it — and this record stayed `ready` across the whole interval between the two, including for
+  one commit of its own.
+- **Nothing else moved with it.** At the moment that validation was recorded the nine defects were
+  uncorrected, the `SPEC-MOK-004` rule 11 amendment made beyond `ADR-MOK-005`'s approved list was
+  still unapproved, the three carried-forward `OUTSTANDING` amendment rows stood, `WO-MOK-012` was
+  `in_progress`, and pull request #31 was a draft. **Each of those then moved by its own named act, bar
+  one.** Approved and taken by the commit before this one: the `SPEC-MOK-004` rule 11 row. Taken by
+  this commit: this record's transition. Authorized in the same turn and taken in the commits after
+  this one: `WO-MOK-012` to `implemented`, and the pull request made ready for review. **Not moved: the
+  three carried-forward `OUTSTANDING` amendment rows, which still stand untouched.** The nine defects
+  were dispositioned rather than corrected — deferred to a correction work order — which is a decision
+  about them and not a repair of them.
 
 **What a one-act validation of eight questions does and does not supply.** The instruction names all
 eight explicitly and the owner holds all three accountable roles, so each of the eight is covered. But
@@ -139,19 +154,61 @@ admits no mechanical check: a line-for-line transcription of the engine would pa
 packet. The owner's confirmation is the discharge the contract asked for, and **this record does not
 upgrade it to a proof.**
 
-## Provenance, and what a `ready` record does
+## The assurance decision of 2026-08-20, and what it accepted
 
-The record is written after the candidate commit it names, so its own commit metadata is not
+**`status` moved from `ready` to `verified` on 2026-08-20, by the repository owner acting as accountable
+assurance owner.** It is a second act, distinct from the validation above, taken in answer to a
+question that put this record's three available answers side by side with their measured costs. The full
+note is `evidence/WO-MOK-012/assurance-decision.md`; what the decision accepted, stated in the terms
+this record used as a candidate to describe what accepting it would mean:
+
+- **The seven oracles as measured at `50364a3`**, all passing, with **oracle 5's size assertion for one
+  domain of thirteen having no independent witness** — defect 1, `SPEC-MOK-006` rule 3.2's direction
+  domain, was not corrected first. What bounds that acceptance is measured rather than argued: 0
+  diagonal direction words appear in any of the seven retained streams, so the domain the specification
+  misdescribes is one no retained record uses.
+- **The two *Evidence retention* deviations**, unchanged: bullet 3's post-change standard output held as
+  digests only, and four of thirty full sink streams retained. Accepting them accepts that oracle 1's
+  byte-identity result is what stands in for the unretained text streams. **`VER-MOK-012` is therefore
+  answered in substance and still not satisfied in every literal respect**, and this decision is
+  recorded against that description of it rather than against a claim of full satisfaction.
+- **The nine defects uncorrected, and deferred rather than dismissed.** The owner's disposition is a
+  correction work order in Phase 4b, carrying all nine with its own verification contract and evidence.
+  This record does not create that work order and does not assume it: the defects stay as
+  `completion-summary.md` item 16 measured them, and the deferral is what makes them a scheduled debt
+  rather than an open question.
+- **The eight manual assessments as recorded**, including assessment 8, whose second half is a reading
+  and not a proof, and assessment 4, recorded against measured substance rather than its own defective
+  prompt.
+
+**What the decision did not accept, because the act before it removed it from the list.** The
+`SPEC-MOK-004` rule 11 amendment was still unapproved when the question was put; the owner approved it
+as technical owner in the commit immediately preceding this one. So this decision does not accept an
+unapproved amendment beyond `ADR-MOK-005`'s list — there is none left to accept.
+
+**Only `status` changed.** `updated` already read `2026-08-20`, and `commit`, `git_object_format`,
+`worktree_state`, `verified_at`, `artifact_snapshot_sha256`, all 55 `evidence_paths`, both relations and
+the `title` are exactly as the capture produced them. **The provenance is the capture's, not the
+decision's**, and a decision does not re-measure it. `assurance-decision.md` is deliberately **not**
+added to `evidence_paths`: it postdates the commit this record binds, and a record's evidence set is the
+capture's rather than the decision's — the same reason it was kept out of `VREC-MOK-007`'s,
+`VREC-MOK-010`'s and `VREC-MOK-011`'s.
+
+## Provenance, and what this record's figures are
+
+The record was written after the candidate commit it names, so its own commit metadata is not
 self-referential. **`verified_at` is the capture timestamp, not a verification decision**: the gate
 and harness figures below were taken at `2026-08-20T12:08:52Z` from a worktree
 `git status --porcelain` reported as empty at this commit, and `artifact_snapshot_sha256` is the
 digest `python scripts/generate_harness_dashboard.py --root .` printed there, over the **113**-artifact,
-**371**-relation graph as it stood **before this file existed**. Both are left exactly as captured. A
-`ready` record does not re-measure its own provenance, and the ordering matters: the capture cannot be
-repeated once the file is in the tree, so it was taken first.
+**371**-relation graph as it stood **before this file existed**. Both are left exactly as captured.
+Neither a record nor a decision on one re-measures the record's provenance, and the ordering matters:
+the capture cannot be repeated once the file is in the tree, so it was taken first. **Being `verified`
+does not change one figure in this section**, which is the point of separating the capture from the
+decision.
 
-What a `ready` record *does* is checkable rather than rhetorical, and it was measured with this file
-present. With it in the tree the validator reports **114 artifacts and 373 relations, still 0 errors
+What this file *did* while it was `ready` is checkable rather than rhetorical, and it was measured with
+the file present. With it in the tree the validator reports **114 artifacts and 373 relations, still 0 errors
 and 0 warnings** across all four planes, and `scripts/inspect_engineering_artifacts.py` moves from
 `Decision required (0): none` to reporting `decision_required -> review-assurance-decision
 (assurance-owner)` against `VREC-MOK-012`. **The finding count is unchanged at 19** — the same 2
@@ -163,18 +220,23 @@ this file moved `HEAD` past `50364a3`, and at `e840ba7` the inspector reports **
 observed checkout. That is what a governance record written after the commit it binds looks like from
 then on. It is an observation about ordering, not a defect, and the error and warning counts are
 unchanged at 0 and 7.
-**The record raised the signal and changed no error or warning count.** Answering that signal is the
-assurance owner's act, not this file's.
+**The record raised the signal and changed no error or warning count.** Answering that signal was the
+assurance owner's act, not this file's, and **it has now been answered** — the transition recorded above
+is the answer, and with `status` at `verified` the inspector no longer lists this record under
+`Decision required`.
 
 **`evidence_paths` names blobs at `50364a3`, not at the branch tip.** Three of the 55 have changed
-since, all of them in the commit that recorded the owner's validation: `manual-assessment.md`, which
-carried eight blank decision lines at this commit and now carries eight decisions; `completion-summary.md`
-and the packet `README.md`, which each gained a marked later-fact note pointing at those decisions and,
-in the summary's case, one corrected internal count. **No measured figure in any of the three was
+since, and only three: `manual-assessment.md`, which carried eight blank decision lines at this commit
+and now carries eight decisions; `completion-summary.md`, which gained marked later-fact notes pointing
+at those decisions and at the `SPEC-MOK-004` rule 11 approval, plus one corrected internal count; and
+the packet `README.md`, likewise a later-fact note. **No measured figure in any of the three was
 edited**, which is the rule this repository states for evidence: measure again rather than edit into
-agreement. Every other retained artifact, and every digest, byte count and oracle result in the packet,
-is untouched. A reader checking this record against the tip should expect exactly those three
-differences and no others.
+agreement. `amendment-approvals.md` is one of the 55 and is **byte-identical**, which is a measured
+claim and not an assumption: `analysis/amendments.py` was re-run after the `SPEC-MOK-004` approval and
+reproduces the retained file exactly, exit 0. `assurance-decision.md` is a new file in the packet
+directory and is not among the 55, deliberately. Every other retained artifact, and every digest, byte
+count and oracle result in the packet, is untouched. A reader checking this record against the tip
+should expect exactly those three differences and no others.
 
 **Read *What this record does not claim* before relying on this record.** That list was written against
 the candidate commit and is left as written except where the validation reached it; its item 1 records
@@ -182,9 +244,13 @@ what the validation settled and what it did not.
 
 ## What this record claims
 
-`WO-MOK-012` is `in_progress` and `VER-MOK-012` is `approved`. The work order was **not** transitioned
-alongside this record; `WORKFLOW.md` is explicit that its status never substitutes for this record's,
-and no lifecycle move was instructed.
+`WO-MOK-012` is `in_progress` as this record is transitioned, and `VER-MOK-012` is `approved`. The work
+order is **not** moved in the same commit, and not because it must not be: the owner authorized
+`implemented` in the same turn. `WORKFLOW.md` is explicit that a work order's status never substitutes
+for this record's, so the two are separate commits by separate accountable roles — assurance here,
+engineering next — in the order `VREC-MOK-011`'s transition and `WO-MOK-011`'s establish. The validator
+permits it either way: `in_progress` and `implemented` are both in the set a `verified` record's work
+order may carry.
 
 At candidate commit `50364a3719c68643f0b5354798b6d3084cff1c0e`, **every automated case, oracle,
 scenario and static check in `VER-MOK-012` was executed and passed.** The contract's eight manual
@@ -362,20 +428,29 @@ What else is measured, beyond the seven oracles:
 4. **One amendment was made beyond `ADR-MOK-005`'s approved list, and is recorded as unapproved rather
    than claimed.** `SPEC-MOK-004` rule 11's conservation clause was amended because the change adds
    test targets and the rule obliges the counts to move with them. `amendment-approvals.md` section 4
-   names it with the rule that obliges it. **It is not approved**, and this record does not treat it as
-   though it were. Three `OUTSTANDING` amendment rows carried forward from the earlier layer,
-   including `ARCH-MOK-001`'s 2026-08-18 row, are named rather than counted in section 5 and are not
-   resolved here.
+   names it with the rule that obliges it. It was **not** approved when this record was captured, and
+   the capture does not treat it as though it were. **It is approved now** — the owner, as technical
+   owner, approved that row in the commit immediately before this record's transition, so this is the
+   one item on this list that the transition found already settled rather than accepted open. The
+   approval was recorded by prepending to the row's status cell and keeping the cell's original text
+   unedited, precisely so that `amendment-approvals.md`'s measurement of that cell still holds; re-running
+   `analysis/amendments.py` with the approval present reproduces the retained file byte for byte. Three
+   `OUTSTANDING` amendment rows carried forward from the earlier layer, including `ARCH-MOK-001`'s
+   2026-08-18 row, are named rather than counted in section 5 and are **still not resolved** — none of
+   them is this chain's to pay.
 5. **This record binds a branch commit, not `master`'s tree.** `50364a3` is the tip of
    `feature/phase-4a-definition` and is not an ancestor of `master`. Every figure above describes that
    tree. **On a merged tree the gates, the census, the interface enumeration and oracles 1 through 6
    need re-running rather than carrying over**, and a record bound to the merge commit is a new
-   record, not an edit of this one. **Verification is not merge and not release.** Pull request #31 is
-   open as a **draft** and was deliberately left that way. When it was prepared, the eight outstanding
-   assessments were the reason a reviewer could not yet act; they are recorded now, so what remains
-   before it is marked ready is this record's transition and the owner's decisions on the nine defects,
-   the two retention deviations and the `SPEC-MOK-004` rule 11 amendment. **Marking it ready was not
-   instructed and was not done.**
+   record, not an edit of this one. **Verification is not merge and not release**, and being `verified`
+   does not extend this record's binding one commit past `50364a3`. Pull request #31 was open as a
+   **draft** while the eight assessments were outstanding, because that was the reason a reviewer could
+   not yet act. Every condition this item named as remaining is now met — the assessments recorded, the
+   `SPEC-MOK-004` row approved, the retention deviations accepted, the nine defects deferred to a
+   correction work order, and this record transitioned — and **the owner authorized marking the pull
+   request ready for review in the same turn as the transition**, so it is marked ready in an act after
+   this commit. That is a request for review of the branch. It is not a merge, it is not a release, and
+   it creates no record bound to `master`.
 6. **No claim is made about a consumer.** The reconstructor and the replay consumer exist for
    verification, are retained as evidence, and are not maintained artifacts. No reader, parser or
    schema file is product, and nothing in the workspace reads the record stream — the observer's ten
@@ -394,10 +469,13 @@ What else is measured, beyond the seven oracles:
    have the weakest independent witness in the contract, and that `fear`'s maximum is a well-formed
    figure about an attribute with no consumer. None of those is discharged by this record.
 
-## What must happen before this record can be verified
+## The five conditions this record set for its own verification, and how each was met
 
-Each item names the role that owes it. **Nothing on this list is waiting on code**, and all seven
-oracles pass at the candidate commit.
+This list was written while the record was `ready`, as the conditions it set for being verified. It is
+kept in its own order and its own words, with the outcome of each stated rather than the item deleted:
+a record that erased its own preconditions once they were met would leave a reader unable to see what
+the decision turned on. **Nothing on it was ever waiting on code**, and all seven oracles pass at the
+candidate commit.
 
 1. **Discharged — the eight manual assessments, product owner, technical owner, assurance owner.** Two,
    four and two respectively. What this record said as a candidate: *"`manual-assessment.md` has the
@@ -409,28 +487,46 @@ oracles pass at the candidate commit.
    not only on their construction. The decisions, and what each accepts by being an affirmative answer
    to a prepared question, are in `manual-assessment.md`; the section at the top of this record states
    the three places where nothing was named in the alternative.
-2. **The nine defects in approved artifacts — the owner of each artifact.** Whether each is corrected,
-   accepted as an imprecision, or recorded and left. The one that matters most to this contract is the
-   first: until `SPEC-MOK-006` rule 3.2's direction domain is corrected, oracle 5's size assertion for
-   that one domain has no independent witness.
-3. **The amendment beyond `ADR-MOK-005`'s approved list — the owner, as architecture decision owner.**
-   `SPEC-MOK-004` rule 11. Approving it or reverting it are both available; leaving it is what stands
-   now, disclosed.
-4. **The two retention deviations — the owner.** Whether digests plus four whole streams is the right
-   trade for this repository, and whether bullet 3's post-change text stream should be retained whole
-   after all.
-5. **The merge, and a record bound to it — engineering owner then assurance owner.** Item 5 of *What
-   this record does not claim*. This record does not create that record, stand in for it, or extend
+2. **Deferred, not corrected — the nine defects in approved artifacts, the owner of each artifact.**
+   What this record asked: *"whether each is corrected, accepted as an imprecision, or recorded and
+   left. The one that matters most to this contract is the first: until `SPEC-MOK-006` rule 3.2's
+   direction domain is corrected, oracle 5's size assertion for that one domain has no independent
+   witness."* **The owner's disposition on 2026-08-20 is a fourth answer the item did not offer: a
+   correction work order in Phase 4b**, carrying all nine with its own verification contract and
+   evidence. So none of the nine is corrected here, none is dismissed, and the one that matters most to
+   this contract is accepted **with its consequence unresolved and its blast radius measured** — 0
+   diagonal direction words in any of the seven retained streams. That work order does not exist yet.
+   Commissioning it is a definition act, and this record neither performs it nor assumes it.
+3. **Discharged — the amendment beyond `ADR-MOK-005`'s approved list, the owner as technical owner.**
+   `SPEC-MOK-004` rule 11. What this record said: *"Approving it or reverting it are both available;
+   leaving it is what stands now, disclosed."* **Approved on 2026-08-20**, in the commit immediately
+   before this record's transition, with the reverting option declined on the ground that it would trade
+   an unapproved row for a stale figure — rule 11's own text calls a work order that loses a test count
+   a defect. Item 4 of *What this record does not claim* records how the approval was written so that
+   oracle 7's measurement of the row still holds.
+4. **Accepted as they stand — the two retention deviations, the owner.** What this record asked:
+   *"whether digests plus four whole streams is the right trade for this repository, and whether bullet
+   3's post-change text stream should be retained whole after all."* The answer is that the trade stands
+   and bullet 3's text stream is **not** retained whole. Nothing was re-captured and nothing was
+   deleted. `VER-MOK-012`'s *Evidence retention* list is therefore **still not satisfied as written on
+   those two bullets**, and this record's acceptance of them is not a claim that it is.
+5. **Outstanding — the merge, and a record bound to it, engineering owner then assurance owner.** Item 5
+   of *What this record does not claim*. **This is the one item of the five that verification did not
+   discharge and could not.** Pull request #31 is made ready for review after this commit, which asks
+   for that review; it does not perform the merge, and a record bound to the merge commit is a new
+   record rather than an edit of this one. This record does not create it, stand in for it, or extend
    its own binding past `50364a3`.
 
-**`status` stays at `ready`.** The validation of 2026-08-20 changed **no front-matter field of this
-record** — not `status`, and not `updated`, which already read `2026-08-20`. It was an act on the
-contract and on the eight assessments, and the body above records it; transitioning this record is a
-different act, reserved by `DECISION_RIGHTS.md` to the accountable assurance owner, and it has not been
-taken.
+**`status` moved from `ready` to `verified`, and it is the only front-matter field that moved.**
+`updated` already read `2026-08-20`, so even it did not change. `commit`, `git_object_format`,
+`worktree_state`, `verified_at`, `artifact_snapshot_sha256`, all 55 `evidence_paths`, both relations and
+the `title` — which reads *candidate*, because the record was captured as one — stay exactly as the
+capture produced them. **The provenance is the capture's, not the decision's**, and a decision does not
+re-measure it.
 
-When it is taken, `status` and `updated` are the only front-matter fields that change: `commit`,
-`git_object_format`, `worktree_state`, `verified_at`, `artifact_snapshot_sha256`, all 55
-`evidence_paths`, both relations and the `title` — which reads *candidate*, because the record was
-captured as one — stay exactly as the capture produced them. **The provenance is the capture's, not
-the decision's**, and a decision does not re-measure it.
+**What being `verified` does not make true.** It does not make `VER-MOK-012` satisfied in every literal
+respect; two retention bullets stand unmet by their own terms. It does not correct a defect, resolve a
+carried-forward amendment row, merge a branch or release anything. It records that the accountable
+assurance owner read what is retained here, including everything this record declines to claim, and
+accepted it for `WO-MOK-012` at `50364a3`. **That is the whole of it, and the whole of it is on this
+page.**
