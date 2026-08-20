@@ -173,8 +173,12 @@ changes.
 
 - The field names and the shape of the suffered-attack record are the technical owner's, constrained by rule 3's
   contract, by `REQ-MOK-041`, and by `SPEC-MOK-002` rule 6's interface count.
-- Whether the record is cleared before or after the action trace line of `SPEC-MOK-001` rule 7 is written is the technical
-  owner's, and the trace must be able to report what the Mokiterion was answering.
+- Whether the record is cleared before or after the action trace line of `SPEC-MOK-001` rule 7 is written **was** the
+  technical owner's, and the trace must be able to report what the Mokiterion was answering. **It was decided on
+  2026-08-20: the trace line is written first, and the record is cleared after it.** The reason recorded is that rule 7
+  already fixes the traced `fear` as the pre-update value, so this extends that rule's existing principle rather than
+  adding a second convention beside it; clearing first would empty the field on exactly the lines it exists to explain.
+  It is no longer open, and it remains rule 7's to state as text.
 - Whether a defender may answer a *second* attacker in a later opportunity when it never had the chance to answer the
   first is closed by this requirement: it may not. If measurement shows that discards a meaningful number of encounters,
   that is evidence for a later change.

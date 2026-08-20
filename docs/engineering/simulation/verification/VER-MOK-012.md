@@ -221,7 +221,7 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-048` | automated-test | **`baseline` is byte-identical, unprojected** (oracle 1) | All 30 `baseline` cells identical byte for byte with identical exit codes, with no projection applied |
 | `REQ-MOK-048` | automated-test | `reference` and `individual` diverge only as accounted (oracle 1) | Each of the 60 cells' divergence is characterized to `REQ-MOK-051`'s corrected condition by first diverging tick, first diverging record and the decision that changed |
 | `REQ-MOK-048` | static-analysis | The source reads its observation and nothing else | No handle to authoritative state, no state between opportunities, no population aggregate; traits reach it as they reach `individual`, through the side generator |
-| `REQ-MOK-048` | static-analysis | Interface growth is counted | One `Policy` variant, the new event types, and the observation's two fields, enumerated against `SPEC-MOK-002` rule 5 and approved in its amendment |
+| `REQ-MOK-048` | static-analysis | Interface growth is counted | One `Policy` variant, seven `Action` variants, three `EventType` variants and their details, and the observation's two fields, enumerated against `SPEC-MOK-002` rule 5 and approved in its amendment. The observation's valid-proposal list is checked to have **not** grown, since growing it would move `baseline`'s draw |
 | `REQ-MOK-049` | automated-test | **Survivor floor** (oracle 4) | At least five of twelve living at tick 1,000, at the default density, under the `social` source, on every declared seed. Five, not six: the product owner lowered it on 2026-08-20 against the decided damage function, and `REQ-MOK-049` records what the move cost |
 | `REQ-MOK-049` | automated-test | **Lethality** (oracle 4) | At least one death attributable to combat on every declared seed, counted from the stream |
 | `REQ-MOK-049` | automated-test | Both bounds on each seed (oracle 4) | No seed satisfies one bound by failing the other; the per-seed table is retained |
@@ -240,7 +240,7 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-051` | static-analysis | No composition read by any source | No decision source reads the class composition of a territory or of the world |
 | both | automated-test | **Identifier symmetry** (oracle 5) | One constructed encounter resolved with the two identifiers exchanged yields identical damage and identical resulting attributes |
 | both | automated-test | **Identifier monotonicity band** (oracle 5) | Per-identifier survival, attacks applied and attacks suffered are not monotone non-increasing in identifier, and the rank correlation with identifier lies within the band stated below |
-| both | automated-test | New event types are authorized | Every added `EventType` maps to an authorizing requirement under `SPEC-MOK-003` rule 11, and `mokiterions-tui`'s authority table gains a row per new type with `EventType::ALL` covered exhaustively |
+| both | automated-test | New event types are authorized | Each of the three added `EventType` variants maps to an authorizing requirement under `SPEC-MOK-003` rule 11 — `attack_resolved` to `REQ-MOK-044`, `threat_resolved` to `REQ-MOK-046`, `surrender_resolved` to `REQ-MOK-047` — and `mokiterions-tui`'s authority table gains those three rows with `EventType::ALL` covered exhaustively. `REQ-MOK-043` takes no row: `approach`, `avoid` and `retreat` emit no type of their own |
 | both | automated-test | Prior coverage preserved, name by name | Every test name present at the pre-change commit is present and passing at the candidate; every difference is an addition; no case removed, renamed away or `#[ignore]`d |
 | both | automated-test | Test-tier placement | Every added test is in the public tier only if writable through the library target's public interface with its assertions unchanged; no item widened to `pub` to relocate a test, per `SPEC-MOK-004` |
 | both | static-analysis | **Required amendments present and approved** (oracle 7) | The `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` amendments and the `REQ-MOK-005`, `REQ-MOK-014` and `REQ-MOK-034` amendments `WO-MOK-012` names are approved. Absence fails this contract regardless of code state |
@@ -345,8 +345,9 @@ chosen to make this row pass would no longer be comparable with `REQ-MOK-014`'s 
   set, with nothing added.
 - No new package, no new target, no build script, and no change to any package, library or binary name.
 - **The engine's public interface growth is enumerated and matches the approved `SPEC-MOK-002` amendment item for item**
-  — one `Policy` variant, the added `EventType` variants and their details, and the observation's two new fields — and
-  nothing else grows.
+  — one `Policy` variant, seven `Action` variants, three `EventType` variants and their three details, and the
+  observation's two new fields — and nothing else grows. `EventType::ALL` goes from twelve entries to fifteen, and the
+  observation's valid-proposal list keeps its type, because it does not grow.
 - `EventType::ALL`'s length equals the number of variants, asserted against the variant set rather than against a
   literal, so that a variant added without a table row fails here.
 - No public item yields a mutable borrow of, or a reference into, authoritative state, in any build configuration

@@ -47,9 +47,9 @@ and `SPEC-MOK-001`'s amendment record shows the practice: the individuality amen
 **The specification amendments below are therefore an approval precondition of this work order and not a task inside
 it.** The ten requirements are approved with them or not at all, and the drafting order this packet used — requirements
 and work order first, amendment text under the work order — was wrong in exactly that respect. What the owner's
-validation covers is the text as it stood, and nothing else: the three decisions under *Decisions outstanding* below
-were **not** supplied with it, and each is now a stop condition on the amendment text rather than on the code, because
-the amendment is what this chain needs next. An approval is not a licence to choose them.
+validation covers is the text as it stood, and nothing else: the three decisions recorded below were **not** supplied
+with it, and none of them was taken on its authority. They were put to the owner separately once the ordering was found,
+and answered on the same date, before any amendment text existed. An approval is not a licence to choose them.
 
 **An architecture review is required and is not waived; its form is decided.** No active architecture carries an
 `addresses` edge to any requirement in this chain: `ARCH-MOK-001` addresses `REQ-MOK-004`, `008`, `009`, `010` and `016`,
@@ -173,24 +173,47 @@ arithmetic, and the ratification at `VER-MOK-012` assessment 4 is where that is 
 `REQ-MOK-049` is still `draft`, the move carries no amendment-record row: it was an edit to an unapproved obligation.
 Every movement after the approval it is given is an amendment and belongs in its record.
 
-### Decisions outstanding before this work order can be approved
+### The three decisions the validation did not supply, taken on the amendment text
 
-The ten values above were the bulk of what this packet left open, and they are now stated. Three decisions genuinely
-remain, and each is a stop condition if it is unstated when the work reaches the text or the code that needs it.
+The ten values above were the bulk of what this packet left open. Three decisions remained after them, each a stop
+condition on the amendment text rather than on the code, because the amendment is what this chain needed next. **The
+repository owner took all three on 2026-08-20, acting as technical owner, after the ordering above was found and before
+any amendment text was written.** Each is reproduced here for the same reason the ten above are.
 
-1. **The event-type set**: whether `attack` and `fight` share one event kind or take one each, likewise `approach` and
-   `avoid`, and whether the threat's event is its own kind. This was drafted as the implementation agent's local choice
-   and **that was wrong**: `SPEC-MOK-002`'s rule 5 enumeration has to be approved before implementation begins, and the
-   enumeration names the event types. So the choice belongs to the technical owner at the moment the `SPEC-MOK-002`
-   amendment is written, not to the agent at the moment the code is written. The *Authorized decision envelope* below is
-   corrected accordingly.
-2. **Whether the observation's list of currently valid proposals grows to include the targeted actions**, the technical
-   owner's under `SPEC-MOK-002` rule 6's interface count. `REQ-MOK-048` records that the `social` source does not need it
-   — branches 3 and 4 read `distance` from the perceived list, and the engine validates regardless — so the default is
-   that it does not grow, and growing it is a decision to widen the public interface.
-3. **Whether rule 7's trace line is written before or after the suffered-attack record is cleared**, which decides whether
-   the trace can report what a Mokiterion was answering. Provision 11 below requires the amendment to fix it; the
-   amendment's author does not get to leave it ambiguous.
+| Decision | Outcome | Where it lands |
+|---|---:|---|
+| The event-type set | **Three new types, one wherever a second Mokiterion's state moves**: `attack_resolved`, shared by `attack` and `fight`; `threat_resolved`; `surrender_resolved` | `SPEC-MOK-001` provision 6, `SPEC-MOK-002` provision 1, `SPEC-MOK-003` provision 1 |
+| The observation's valid-proposal list | **It does not grow**; the `social` source proposes targeted verbs the list never carries, and rule 6 validates them at application | `SPEC-MOK-001` provisions 6, 7 and 10, `SPEC-MOK-002` provision 1 |
+| Rule 7's clearing order | **The trace line is written before the record is cleared** | `SPEC-MOK-001` provision 11 |
+
+**The event-type decision was the technical owner's and this packet had drafted it as the agent's, which was wrong.**
+`SPEC-MOK-002`'s rule 5 enumeration has to be approved before implementation begins and the enumeration names the event
+types, so the choice belongs to the owner at the moment the amendment is written. The *Authorized decision envelope*
+below is corrected accordingly. What the owner decided against was seven types, one per verb, and one shared
+`encounter_resolved` carrying the verb in its detail. The reason given for three is `CAP-MOK-009`'s own driver for new
+types — that they carry the state transitions they caused, *including transitions to a second Mokiterion* — which
+`approach`, `avoid` and `retreat` do not have: each mutates only the actor and resolves as a rule 8 move, so rule 7's
+`action_trace` already reports everything they change. **`REQ-MOK-043` therefore takes no row in `SPEC-MOK-003` rule 11's
+authority table**, and provision 1 of that specification's amendment is corrected from the four requirements it named to
+three: `REQ-MOK-044` for `attack_resolved`, `REQ-MOK-046` for `threat_resolved`, `REQ-MOK-047` for `surrender_resolved`.
+`attack` and `fight` share `attack_resolved` because they are one resolution invoked by either party, which rule 22
+states as one function; a reader distinguishes them by which Mokiterion is the subject.
+
+**The valid-proposal decision was constrained to two live options rather than three, and the engine is why.**
+`BaselineDecisionSource::decide` selects with `entropy.choose_index(observation.valid_actions.len())`, so growing that
+list for every source moves `baseline`'s single draw and diverges every pre-existing `baseline` run — which
+`CAP-MOK-009` excludes absolutely and `REQ-MOK-051` holds byte-identical. The live alternative was growing the list only
+under `--policy social`, which `--policy` selecting one source for the whole run makes safe for `baseline`; the owner
+declined it so that rule 3's observation stays a function of world state alone rather than of the selected policy. **The
+cost is recorded rather than glossed**: `Observation::allows` and the `is_consistent` invariant stop describing the whole
+proposal contract, since a source may now propose a verb the list does not carry, and rule 6 is the only place that
+contract is complete.
+
+**The clearing order follows rule 7's existing principle rather than establishing a second one.** Rule 7 already fixes
+that the traced `fear` is the pre-update value, so the traced suffered-attack record is likewise what the source read.
+The alternative — clearing first, for uniformity with the `position`, `health`, `satiety` and `energy` that
+`emit_action_trace` reads after the action applies — was declined because it would empty the field on exactly the trace
+lines it exists to explain, every line where a response was proposed.
 
 Deferred to the first measured curve rather than outstanding at approval, and listed so that the two are not confused:
 `REQ-MOK-049`'s floor and `REQ-MOK-051`'s ceiling are ratified or amended on measurement (`VER-MOK-012` assessments 4 and
@@ -209,8 +232,14 @@ the substance.
 Each of them adds the requirements of this chain to its `specifies` relation, which is what makes those requirements
 approvable at all — `validate`'s `E007` and `preflight`'s `W016`, recorded above. So the text below is written, then
 approved together with `REQ-MOK-042` through `REQ-MOK-051`, `VER-MOK-012` and this work order in one act, and only then
-does implementation begin. The three requirement amendments in this section are not subject to that ordering; they
-amend requirements that are already active and may be approved with the rest.
+does implementation begin.
+
+The three requirement amendments in this section do not share that ordering, and they do not share each other's either.
+`REQ-MOK-005`'s re-reading is text, is written with the specification amendments, and is approved in the same act.
+`REQ-MOK-034`'s narrowing of its frozen clause is also text, and must be approved **before** the change that moves
+`reference`, but need not precede this work order's approval. `REQ-MOK-014`'s and `REQ-MOK-034`'s survivor floors cannot
+be amended in that act at all: re-measuring them requires the change to exist, so they are measured under this work order
+and amended afterwards only if the measurement moves them, each on its owner's separate act.
 
 **`SPEC-MOK-001`** — the behavior authority. Thirteen provisions, of which seven are appended rules.
 
@@ -228,16 +257,22 @@ amend requirements that are already active and may be approved with the rest.
    Chebyshev distance between two living Mokiterions, computed by the same distance rule 3's perception uses, recomputed
    from positions and never stored. The existing statements that Mokiterions do not block movement and may share a
    coordinate are unchanged.
-6. *Data and interface contracts*. The observation gains the observer's own `fear` and the suffered-attack record. The
-   event vocabulary gains the types this change reports, each with its field list and order fixed, each carrying the
-   state transitions it caused including transitions to a second Mokiterion. The amendment must state the reason for that
-   last obligation: rule 2 runs each Mokiterion's whole cycle in its own turn, so a Mokiterion acted on by a
-   higher-identified one has already emitted its `survival_changed` line for the tick, and a transition not carried on
-   the event would appear in no record.
+6. *Data and interface contracts*. The observation gains the observer's own `fear` and the suffered-attack record, and
+   **gains nothing else**: its valid-proposal list is unchanged, on the decision recorded above. The event vocabulary
+   gains **three** types — `attack_resolved`, `threat_resolved`, `surrender_resolved` — each with its field list and
+   order fixed, each carrying the state transitions it caused including transitions to a second Mokiterion. The
+   amendment must state the reason for that last obligation: rule 2 runs each Mokiterion's whole cycle in its own turn,
+   so a Mokiterion acted on by a higher-identified one has already emitted its `survival_changed` line for the tick, and
+   a transition not carried on the event would appear in no record. It must also state why `approach`, `avoid` and
+   `retreat` add no type: each mutates only the actor and resolves as a rule 8 move, so rule 7's trace already carries
+   every transition they cause, and a type that reported nothing new would be interface growth for nothing.
 7. Rule 3, *Observation*. The sentence "`fear` is deliberately **not** carried: no rule and no decision source reads it"
    is **replaced**, not deleted: the observation carries `fear` and the suffered-attack record, and the amendment states
    which requirement obliges the reader that makes them non-inert — `REQ-MOK-045` for the fields and `REQ-MOK-048` for
-   the reader. The amendment record retains the withheld form and the reason it was correct for two phases.
+   the reader. The amendment record retains the withheld form and the reason it was correct for two phases. The rule's
+   valid-proposal list is **untouched**, and the amendment states the consequence: a source may propose a targeted verb
+   the list does not carry, so this rule no longer enumerates everything a source may legitimately propose, and rule 6 is
+   where that contract is complete.
 8. *State model → Name* subsection. The sentence justifying a name's absence from the observation "for the same reason
    `fear` is not" **breaks the moment `fear` is carried** and is replaced by the reason that stands on its own: no
    decision source reads a name, and `REQ-MOK-041` obliges that nothing does. This is a correction of a justification,
@@ -249,10 +284,14 @@ amend requirements that are already active and may be approved with the rest.
    measured 45 of 61 figure is **retained** in the amendment record as the state this correction ends.
 10. Rule 6, *Validation*. Extended to targeted proposals: the engine validates against the target's authoritative state
     as well as the actor's, a rejected targeted proposal consumes the opportunity and mutates **neither** Mokiterion, and
-    validation never consults the observation the source read.
-11. Rule 7, *Optional action trace*. Covers targeted actions on the same terms, and fixes whether the suffered-attack
-    record is cleared before or after the trace line is written, so that the trace can report what a Mokiterion was
-    answering.
+    validation never consults the observation the source read. **This rule becomes the complete statement of what may be
+    proposed**, because rule 3's valid-proposal list is not growing: a targeted verb absent from that list is not thereby
+    invalid, and rejection is this rule's judgement alone. The amendment states each targeted verb's rejection reason.
+11. Rule 7, *Optional action trace*. Covers targeted actions on the same terms, and fixes the clearing order: **the trace
+    line is written before the suffered-attack record is cleared**, so the trace reports what the Mokiterion was
+    answering. The amendment states that this is rule 7's existing principle rather than a second one beside it — the
+    same rule already fixes that the traced `fear` is the pre-update value — and records that the traced record is
+    therefore the one field on the line read before the action applies rather than after, alongside `fear`.
 12. Rule 12, *Survival decay and fear*. Its own computation is unchanged. Its closing sentence — "**No rule reads
     `fear`.** It is computed, bounded, reported and otherwise inert; a consumer is a later governed change" — is
     **inverted**: a consumer now exists, it is the source of `REQ-MOK-048`, and the appended threat rule writes another
@@ -298,18 +337,23 @@ amend requirements that are already active and may be approved with the rest.
 **`SPEC-MOK-002`** — the engine's interface authority. Two provisions, and **an amendment is required here**, unlike
 under `WO-MOK-011`.
 
-1. Rule 5's enumeration gains the fourth `Policy` variant, the added `EventType` variants and their `EventDetail`
+1. Rule 5's enumeration gains the fourth `Policy` variant, the three added `EventType` variants and their `EventDetail`
    variants, and the observation's two new fields. `Observation` is a public item and two fields on it are interface
-   growth; `EventType::ALL` is a `pub const` array whose length is part of the public surface.
+   growth; `EventType::ALL` is a `pub const` array whose length is part of the public surface and moves from `12` to
+   `15`. The enumeration records what the interface does **not** gain, and why: no verb reaches the valid-proposal list,
+   so `Observation`'s existing fields keep their types and `Action`'s seven new variants are the whole of that growth.
 2. Rule 6 is re-checked and the re-check is recorded, because cross-agent mutation is introduced for the first time. No
    public item may yield a mutable borrow of, or a reference into, authoritative state, in any build configuration
    including test builds. The suffered-attack record must reach a source as owned values on the observation.
 
 **`SPEC-MOK-003`** — the observer. Three provisions.
 
-1. Rule 11's authority table gains one row per new event type, each mapping to the requirement that authorizes it —
-   `REQ-MOK-043`, `REQ-MOK-044`, `REQ-MOK-046`, `REQ-MOK-047` — because that rule requires every event type to map to an
-   authorizing requirement, and `mokiterions-tui/src/authority.rs` covers `EventType::ALL` exhaustively.
+1. Rule 11's authority table gains **three** rows, one per new event type, each mapping to the requirement that
+   authorizes it — `attack_resolved` to `REQ-MOK-044`, `threat_resolved` to `REQ-MOK-046`, `surrender_resolved` to
+   `REQ-MOK-047` — because that rule requires every event type to map to an authorizing requirement, and
+   `mokiterions-tui/src/authority.rs` covers `EventType::ALL` exhaustively. **`REQ-MOK-043` takes no row**, on the
+   event-type decision recorded above: the three verbs it authorizes that emit no new type are reported by
+   `action_trace`, whose row already maps to `REQ-MOK-012`.
 2. Rule 4's roster and rule 10's inspector, wherever they present the applied action, must present a targeted action's
    subject as well as its verb; an event whose meaning is "attacked M07" cannot be presented as "attacked".
 3. Rule 4.5's refusal of inert values is unchanged and is now satisfied differently for `fear`: it has a reader. The
@@ -390,7 +434,7 @@ The implementation agent may decide locally:
   opportunity, and reaches a source as owned values.
 - The field order within a new event's detail, and the private representation behind it, provided the order is the one the
   approved `SPEC-MOK-002` amendment fixes and every emitted type maps to an authorizing requirement under `SPEC-MOK-003`
-  rule 11. **Which event types exist is not in this envelope** — see outstanding decision 1.
+  rule 11. **Which event types exist is not in this envelope**: the owner decided three, and they are named above.
 - Which of `REQ-MOK-051`'s **permitted** mechanisms is used — relaxing rule 5's waste condition, raising rule 19's
   tolerance floor, or both — on measurement, and within the permitted set only.
 - Which test tier each new test belongs to, applying `SPEC-MOK-004`'s rule as written. **Widening an item to `pub` to
@@ -402,8 +446,9 @@ The implementation agent may decide locally:
 
 The implementation agent may **not** decide:
 
-- Any of the three decisions listed under *Decisions outstanding* above. Each is a stop condition if it is unstated when
-  the work reaches it.
+- Any of the three decisions under *The three decisions the validation did not supply* above — the event-type set, the
+  valid-proposal list, the clearing order. All three are now stated, and each is on the same footing as the ten below it:
+  decided, and escalated rather than adjusted.
 - Any of the ten values under *The values decided after the packet was drafted*. They are decided, and a measurement that
   makes one look wrong is escalated rather than adjusted.
 - Whether the defender's answer is deferred, or resolved inside the attacker's turn.
@@ -466,8 +511,9 @@ The implementation agent may **not** decide:
   unmet precondition.
 - Resolution functions for attack/fight, threaten and surrender, each pure integer arithmetic over the two Mokiterions'
   attributes, each with no access to any collection of Mokiterions.
-- `enum EventType` and `enum EventDetail` gain the new types, with `EventType::ALL` extended from twelve. Each detail
-  carries both parties' transitions.
+- `enum EventType` and `enum EventDetail` gain `AttackResolved`, `ThreatResolved` and `SurrenderResolved`, with
+  `EventType::ALL` extended from twelve entries to fifteen. Each detail carries both parties' transitions. `approach`,
+  `avoid` and `retreat` add nothing here: they resolve as rule 8 moves and rule 7's trace already reports them.
 - Rule 5's and rule 19's waste condition corrected, and **nothing else in the food, eat or regeneration paths touched**.
 - Internal-tier tests: the constructed-state resolution tables, entropy neutrality either side of every resolution, the
   identifier-exchange comparison, window opening and closing, the transfer identity including the discard, and the
@@ -577,8 +623,9 @@ Stop and escalate rather than proceeding, if:
    re-check finds a public item exposing a borrow into authoritative state.
 10. **A read cannot be resolved** to the acting Mokiterion's own state, its observation or a named individual — that is,
     `REQ-MOK-050` cannot be satisfied without redesigning something.
-11. **Any of the three outstanding decisions is still unstated** when the work reaches the code or the amendment text that
-    needs it.
+11. **The work reaches a decision this work order does not carry.** The three that were outstanding are stated, so this
+    condition no longer names them; it stands for the next one, and the test is whether the answer is written in an
+    artifact rather than inferable from one. Choosing it locally is the failure this condition exists to prevent.
 12. **Any required amendment is unapproved** when the evidence would otherwise be complete. An amendment nobody approved
     is not a specification.
 13. **The delegation equality fails** on any observation where no living Mokiterion is perceived and no attack is

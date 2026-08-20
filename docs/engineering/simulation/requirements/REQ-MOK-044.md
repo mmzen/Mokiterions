@@ -190,8 +190,13 @@ immediately before and immediately after every resolution, and the exit code is 
   this requirement's approval; recording the decision here does not perform it. Independently of the values, this
   requirement fixes their inputs (the striker's `energy` and `health`), their type (integer), their floor (at least `1`
   damage) and their arithmetic (saturating), so a later amendment to the constants does not reopen the shape.
-- Whether resolution emits one event kind for both `attack` and `fight` or one each is the technical owner's, constrained
-  by `SPEC-MOK-003` rule 11 and by `SPEC-MOK-002` rule 6's public-interface count.
+- Whether resolution emits one event kind for both `attack` and `fight` or one each **was** the technical owner's,
+  constrained by `SPEC-MOK-003` rule 11 and by `SPEC-MOK-002` rule 6's public-interface count. **It was decided on
+  2026-08-20: one kind, `attack_resolved`, for both**, because they are one resolution invoked by either party — which is
+  what this requirement already states as one function — and a reader distinguishes them by which Mokiterion the event's
+  subject is. It is no longer open. The type is authorized by this requirement under `SPEC-MOK-003` rule 11, and it is
+  the one place a target's `health` transition is reported, since rule 2 may have emitted the target's own
+  `survival_changed` line for the tick before the strike landed.
 - Whether an energy precondition should gate attacking at all is deferred. It is a product decision, it would go in
   `REQ-MOK-043`'s precondition list, and `VER-MOK-012`'s measurement of how often exhausted Mokiterions attack is the
   evidence it would be taken on.

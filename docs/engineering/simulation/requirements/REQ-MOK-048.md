@@ -268,10 +268,20 @@ under *The decided source*; each remains `SPEC-MOK-001`'s to state as specificat
 
 What remains open:
 
-- **Whether the observation's list of currently valid proposals grows to include the targeted actions** is the technical
-  owner's, under `SPEC-MOK-002` rule 6's interface count. This source does not need it: branch 3 and branch 4 read
-  `distance` from the perceived list, and the engine validates under `REQ-MOK-043` regardless. Extending the list would
-  make a source's view of its options complete at the cost of a wider public interface, and it is not required here.
+- **Whether the observation's list of currently valid proposals grows to include the targeted actions** **was** the
+  technical owner's, under `SPEC-MOK-002` rule 6's interface count. This source does not need it: branch 3 and branch 4
+  read `distance` from the perceived list, and the engine validates under `REQ-MOK-043` regardless. **It was decided on
+  2026-08-20: the list does not grow**, so this source proposes targeted verbs the observation never lists and
+  `SPEC-MOK-001` rule 6 judges them at application.
+
+  The decision had only two live options rather than three, and the engine is why. `baseline` selects with
+  `choose_index` over the length of that list, so growing it for every source moves `baseline`'s single draw and diverges
+  every pre-existing `baseline` run, which `CAP-MOK-009` excludes outright. The live alternative was growing it only
+  under `--policy social` — safe for `baseline`, since one source is selected for a whole run — and the owner declined it
+  so that the observation stays a function of world state alone rather than of the selected policy. **The cost is
+  recorded rather than glossed**: the observation's list stops enumerating everything a source may legitimately propose,
+  so a reader who takes it as the complete contract will be wrong about this source, and rule 6 is the only complete
+  statement.
 - **Whether branch 1 should be able to decline to answer** is deferred to the first measured curve. If `VER-MOK-012` finds
   the branch distribution degenerate — every defender surrendering, or every defender fighting — that is the evidence a
   change would be taken on, and `INT-MOK-009` records the degenerate case as a finding to report rather than a failure to

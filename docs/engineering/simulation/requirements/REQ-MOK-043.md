@@ -160,6 +160,12 @@ is reported with its reason, and the run's exit code is unaffected.
 
 - The direction `avoid` takes from a co-located target is `SPEC-MOK-001`'s to fix. It must be deterministic and must not
   consume entropy.
-- Whether `approach` and `avoid` emit their own event kind or reuse the movement path's reporting is the technical
+- Whether `approach` and `avoid` emit their own event kind or reuse the movement path's reporting **was** the technical
   owner's, constrained by `SPEC-MOK-003` rule 11 requiring every event type to map to an authorizing requirement, and by
-  `SPEC-MOK-002` rule 6 counting the public interface growth that a new `EventType` variant is.
+  `SPEC-MOK-002` rule 6 counting the public interface growth that a new `EventType` variant is. **It was decided on
+  2026-08-20: they reuse the movement path's reporting and emit no event kind of their own**, together with `retreat`, on
+  the ground that each mutates only the acting Mokiterion and so carries no transition rule 7's `action_trace` does not
+  already report. This requirement's seven verbs therefore map to three new event types rather than seven, and none of
+  the three is authorized by this requirement — `attack_resolved` by `REQ-MOK-044`, `threat_resolved` by `REQ-MOK-046`,
+  `surrender_resolved` by `REQ-MOK-047`. It is no longer open, and it remains `SPEC-MOK-001`'s and `SPEC-MOK-002`'s to
+  state as text.
