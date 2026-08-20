@@ -405,6 +405,12 @@ new rather than a revision of `REQ-MOK-026`'s.
   `ADR-MOK-006` together.
 - Amendment record row. **The 2026-08-18 row above it stays OUTSTANDING and is not touched**; it is `WO-MOK-005`'s
   precondition and this change neither clears nor inherits it.
+  **Later fact, 2026-08-20.** That row was ratified as written by the repository owner acting as technical
+  owner under `WO-MOK-012`, which reached this branch by merge after the amendment had been written.
+  `ARCH-MOK-001`'s 2026-08-20 row now records the ratification instead of asserting the row is outstanding.
+  This instruction is kept as the owner approved it; the correction and the authority for it are recorded in
+  `evidence/WO-MOK-014/WO-MOK-014-merge.md`. Nothing is cleared or inherited here — the ratification is
+  `WO-MOK-012`'s act and not this ADR's.
 
 ### `ARCH-MOK-002` — technical owner
 
@@ -456,6 +462,10 @@ new rather than a revision of `REQ-MOK-026`'s.
   features and, per decision 13, whether the crate carries a build script — and is empty on the day this amendment
   lands. An empty table is now a fact about the current declaration rather than a rule.
 - Amendment record row. **Both 2026-08-18 rows stay OUTSTANDING and untouched.**
+  **Later fact, 2026-08-20.** Only the first of those two rows ever was outstanding: the second, the path
+  re-basing, was approved on 2026-08-18 by way of `ADR-MOK-004`, and `WO-MOK-012` had already found the same
+  miscount in an earlier row of the same table. The first was ratified as written under `WO-MOK-012`, which
+  reached this branch by merge. `SPEC-MOK-002`'s 2026-08-20 row now records both facts.
 
 ### `SPEC-MOK-003` — technical owner
 
@@ -474,6 +484,9 @@ new rather than a revision of `REQ-MOK-026`'s.
   amended to match, and the *Explicitly unspecified decisions* entry withholding the dependency, its version and its
   feature set from the implementation is **extended** to every declared crate rather than narrowed.
 - Amendment record row; its own 2026-08-18 row stays OUTSTANDING and untouched.
+  **Later fact, 2026-08-20.** That row — the *Data and interface contracts* correction — was ratified as
+  written under `WO-MOK-012`, which reached this branch by merge. `SPEC-MOK-003`'s two 2026-08-20 rows name it
+  and record the ratification.
 
 ### `SPEC-MOK-004` — technical owner
 

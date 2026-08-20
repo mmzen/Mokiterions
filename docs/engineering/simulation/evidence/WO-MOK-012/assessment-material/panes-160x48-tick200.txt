@@ -1,0 +1,75 @@
+Captured at 160 x 48, seed 42, policy reference, --ticks 300, at tick 200.
+Selection made with Tab. Below the floor is never reached here: 160 x 48 is above it.
+
+=== roster pane, 47 x 34 at 0,3 ===
+┌ roster  living 12  deaths 0 ────────────────┐
+│Zug   M01  A  4:3           move:north       │
+│     h ██ 100  s █░  60  e ░░  20  f ░░   0  │
+│Krul  M02  B  8:119         move:west        │
+│     h ██ 100  s █░  65  e ░░  35  f █░  95  │
+│Quib  M03  A  0:26          move:south       │
+│     h ██ 100  s ░░  45  e ░░  35  f ░░   0  │
+│Sput  M04  A  60:63         move:east        │
+│     h ██ 100  s █░  85  e ░░  45  f ░░   0  │
+│Trok  M05  A  118:40        move:east        │
+│     h ██ 100  s █░  65  e ░░  35  f ░░   0  │
+│Womp  M06  B  12:71         eat:F0174        │
+│     h ██ 100  s █░  80  e ░░  40  f ░░   0  │
+│Hozz  M07  B  26:124        move:north       │
+│     h ██ 100  s █░  65  e ░░  35  f █░  90  │
+│Nurb  M08  B  118:120       move:east        │
+│     h ██ 100  s ░░  40  e ░░  30  f ██ 100  │
+│Vonk  M09  B  36:92         move:west        │
+│     h ██ 100  s █░  70  e ░░  40  f ░░   0  │
+│Gorm  M10  B  112:81        move:east        │
+│     h ██ 100  s ░░  40  e ░░  30  f ██ 100  │
+│Xob   M11  B  111:78        eat:F0172        │
+│     h ██ 100  s █░  55  e ░░  35  f ██ 100  │
+│Drix  M12  B  118:124       move:east        │
+│     h █░  65  s █░  61  e ░░  35  f ██ 100  │
+│                                             │
+│                                             │
+│                                             │
+│                                             │
+│                                             │
+│                                             │
+│                                             │
+│                                             │
+└─────────────────────────────────────────────┘
+
+=== inspector pane, 44 x 34 at 116,3 ===
+┌ inspector ───────────────────────────────┐
+│Zug  M01                                  │
+│position  4:3  territory A                │
+│sharing   1 in this rendered cell         │
+│health 100  satiety 60  energy 20         │
+│                                          │
+│decision, tick 200                        │
+│proposed  move:north                      │
+│outcome   + accepted                      │
+│applied   move:north                      │
+│authority REQ-MOK-004                     │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+└──────────────────────────────────────────┘
+

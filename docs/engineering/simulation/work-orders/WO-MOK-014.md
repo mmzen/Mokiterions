@@ -458,3 +458,26 @@ The completion summary records, in this order:
 12. residual uncertainty, including everything under *Stop and escalate conditions* that remains open, the standing
     OUTSTANDING rows this change does not touch, and the statement that `VREC-MOK-014` is a separate commit-bound
     record that this work order does not write and cannot self-approve.
+
+---
+
+## Later facts, recorded when `master` was merged in on 2026-08-20
+
+`master` reached this branch by merge after this work order was approved, implemented and verified. Two
+statements above are overtaken by facts. Neither is a change of scope, and nothing below is a decision.
+
+1. **The amendment rows this work order lists as standing OUTSTANDING were ratified elsewhere.** *Out of scope*
+   names `ARCH-MOK-001` and `SPEC-MOK-002` (two) and `SPEC-MOK-003` (one) at 2026-08-18 and `SPEC-MOK-004` at
+   2026-08-19. The repository owner acting as technical owner ratified every one of them on 2026-08-20 under
+   `WO-MOK-012`, in the assessment review that work order records. This work order still neither cleared nor
+   inherited any of them — what changed is that a different work order closed them, and that fact reached this
+   branch by merge. Four sentences in this branch's own amendment rows asserted the rows were still outstanding;
+   each is corrected in place under `WO-MOK-012`'s own rule for such a sentence, and one of the four also
+   repeated a miscount that work order had already found. `VER-MOK-011`'s manual assessment 5 is untouched and
+   still owed.
+2. **Required report item 12's *standing OUTSTANDING rows* now names an empty set.** What remains open after the
+   merge is stated in the merge evidence instead, including the verification record still owed against the merge
+   commit.
+
+`evidence/WO-MOK-014/WO-MOK-014-merge.md` measures the merge: the four conflicts and the resolution of each, the
+gate set re-derived on the merged tree, the recorded coordinates the merge moved, and what it does not discharge.

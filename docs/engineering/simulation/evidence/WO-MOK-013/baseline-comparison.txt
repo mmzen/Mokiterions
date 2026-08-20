@@ -1,0 +1,36 @@
+WO-MOK-013 — the run at ff3a155 and the run now, compared
+
+VER-MOK-013's non-perturbation property names three streams: the run observed with these
+changes, the same run observed at ff3a155, and the same run unobserved. This file closes the
+chain between them without asserting any link.
+
+Configuration on every leg: --seed 42 --ticks 300 --policy reference --density 0.75
+--trace-actions, which is the engine binary's form of the configuration the observer's own
+options module builds from those arguments.
+
+Leg 1 — the engine binary now, against the library run the observer's configuration produces:
+$ cargo run -q -p Mokiterions -- --seed 42 --ticks 300 --policy reference --density 0.75 --trace-actions
+$ diff <that stdout> non-perturbation-unobserved.txt
+  identical, 7535 lines including the summary
+
+Leg 2 — the engine binary at ff3a155, in a detached worktree of that commit, against the same:
+$ git worktree add --detach <temp> ff3a155 && cargo run -q -p Mokiterions -- <same arguments>
+  identical to the binary now, 7535 lines
+  identical to the unobserved stream retained here
+
+Leg 3 — the observed run now, against the unobserved run now: see non-perturbation.txt.
+  7534 records identical in order, and the observer's summary of the final state is the
+  engine's own summary line.
+
+So observed(now) == unobserved(now) == unobserved(ff3a155), byte for byte, and the engine
+package is byte-identical at the two commits (engine-untouched.txt). The one link this file
+does not re-measure is observed(ff3a155) == unobserved(ff3a155), which is VREC-MOK-005's
+evidence at that commit; it is inherited rather than re-taken, and it is inherited from a
+record bound to exactly this commit.
+
+sizes, for the record:
+1035272 /tmp/engine-ff3a155.txt
+1035272 /tmp/engine-now.txt
+1035272 docs/engineering/simulation/evidence/WO-MOK-013/non-perturbation-unobserved.txt
+1035128 docs/engineering/simulation/evidence/WO-MOK-013/non-perturbation-observed-export.txt
+4140944 total
