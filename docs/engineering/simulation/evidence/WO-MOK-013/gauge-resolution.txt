@@ -1,0 +1,48 @@
+WO-MOK-013 gauge resolution — the after form of
+evidence/WO-MOK-012/assessment-material/bar-quantization.txt
+
+Every figure below is counted out of a rendered buffer. Nothing here knows the layout's
+constants or the fill arithmetic: a gauge is located by its cells and its filled count is
+the number of full blocks drawn in it.
+
+Distinct roster pane widths over 34..=200 x 22..=60: 47
+(SPEC-MOK-003 rule 5 fixes the roster at 47 columns wherever it is present, so one width
+is the whole set. The sweep is what establishes that rather than the rule being taken on
+trust — a second width would appear here as a second table below.)
+
+=== roster pane 47 columns, first produced at 100 x 22 ===
+pane interior 45 columns; 4 gauges on the first entry, each 13 / 13 / 13 / 13 cells wide
+
+bar                 values          span
+░░░░░░░░░░░░░     0..=7        8 values
+█░░░░░░░░░░░░     8..=15       8 values
+██░░░░░░░░░░░    16..=23       8 values
+███░░░░░░░░░░    24..=30       7 values
+████░░░░░░░░░    31..=38       8 values
+█████░░░░░░░░    39..=46       8 values
+██████░░░░░░░    47..=53       7 values
+███████░░░░░░    54..=61       8 values
+████████░░░░░    62..=69       8 values
+█████████░░░░    70..=76       7 values
+██████████░░░    77..=84       8 values
+███████████░░    85..=92       8 values
+████████████░    93..=99       7 values
+█████████████   100..=100      1 values
+
+14 distinct renderable states for 101 values, against the 3 of the two-cell bar.
+Ten-point step over 0..=90: every step increases the filled count
+
+All four gauges of the first entry, filled cells at ten-point values:
+value    h    s    e    f
+    0    0    0    0    0
+   10    1    1    1    1
+   20    2    2    2    2
+   30    3    3    3    3
+   40    5    5    5    5
+   50    6    6    6    6
+   60    7    7    7    7
+   70    9    9    9    9
+   80   10   10   10   10
+   90   11   11   11   11
+  100   13   13   13   13
+

@@ -56,8 +56,13 @@ const VIEWPORTS: [(u16, u16); 10] = [
 ];
 
 /// The declared viewports above the floor, each with the canvas interior rule 5 derives for it.
+///
+/// The reference row reads `67 x 36` rather than `67 x 32` as amended 2026-08-20: the log is six
+/// rows at every viewport that has one, so the reference viewport's body keeps the four rows the
+/// ten-row log took. It is the only row that moves — every other viewport in the set already fails
+/// `W >= 140` or `H >= 48`, or has no log at all.
 const RENDERABLE: [(u16, u16, u16, u16); 9] = [
-    (160, 48, 67, 32),
+    (160, 48, 67, 36),
     (160, 44, 67, 32),
     (160, 40, 67, 28),
     (140, 44, 47, 32),
@@ -513,6 +518,13 @@ fn a_subject_whose_record_was_never_ingested_is_presented_without_a_name() {
     snapshot.living_count += 1;
     observer.replace_snapshot_for_test(snapshot);
     assert_eq!(observer.name_of(stranger), None);
+
+    // The reference viewport holds exactly twelve entries as of `WO-MOK-013`'s decision 1 — rule 4
+    // as amended makes an entry three lines and rule 5's log leaves the roster 36 interior rows —
+    // so a thirteenth subject is reached by selecting it rather than by being drawn below the
+    // twelfth. Rule 4's window keeps the selection visible, which is the affordance being used
+    // here; the name field this test is about is the same field in either position.
+    observer.select_for_test(stranger);
 
     let buffer = frame(&mut observer, 160, 48).expect("above the floor");
     let panes = layout::resolve(*buffer.area());

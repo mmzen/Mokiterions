@@ -41,11 +41,33 @@ amendments are all ratified**, each put as its own question, as decisions 12 to 
 the chain and implementation — this work order's own approval as a bounded scope — was given on 2026-08-20**, recorded as
 decision 18.
 
-**Nothing in the chain now waits on an accountable decision, and no in-scope item has been implemented.** At the moment
-of that approval the tree is byte-identical to `ff3a155` under `mokiterions-core/` and `mokiterions-tui/`, `bar_width`
-still divides by four, the six ratified amendment texts are ratified and not applied, `evidence/WO-MOK-013/` does not
-exist and `docs/ROADMAP.md` carries no entry for this chain. The status says who authorized the work, not that it is
-done.
+**Nothing in the chain waited on an accountable decision at that point, and no in-scope item had been implemented.** At
+the moment of that approval the tree was byte-identical to `ff3a155` under `mokiterions-core/` and `mokiterions-tui/`,
+`bar_width` still divided by four, the six ratified amendment texts were ratified and not applied,
+`evidence/WO-MOK-013/` did not exist and `docs/ROADMAP.md` carried no entry for this chain. The status says who
+authorized the work, not that it is done. **This paragraph read in the present tense until 2026-08-20 and was stale from
+the first implementation edit**; it is put in the past tense rather than deleted, because what the tree looked like at
+the moment of approval is what makes the approval reviewable. The correction is the agent's: it changes a tense and no
+claim.
+
+**Implementation landed on 2026-08-20, on the repository owner's direction in the same session** — "ok, now we can start
+implementing WO-MOK-013" — and all nine in-scope items are complete. The evidence is under
+`evidence/WO-MOK-013/`; `completion-summary.md` there is the completion report this work order's *Completion report
+format* section specifies, and `closing-review.md` records the eighteen decisions with the role that took each.
+
+**The status is deliberately left at `approved`, and the transition is an owner act.** `WORKFLOW.md` states that "a
+status change records authority; it is not a confidence estimate", and start preflight accepts `approved` or
+`in_progress`, so nothing is blocked by leaving it here. Neither `in_progress` nor `implemented` is recorded by the
+implementation agent: `in_progress` would record an authority that was given as an instruction and not as a status act,
+and `implemented` asserts the completed change **and** the retained evidence as an accountable judgement. `WO-MOK-007`
+stayed `approved` through its own implementation on the same reasoning. Both transitions are available to the owner and
+neither is taken here.
+
+**Two of `VER-MOK-013`'s obligations are outstanding and are not the implementation's to close.** Both manual
+assessments stand with no author, recorded in `evidence/WO-MOK-013/manual-assessment.md` with the material and the
+corrected procedure for each. The discoverability assessment additionally has no admissible assessor available: the
+contract asks for a person who has not read `SPEC-MOK-003` rule 7, and the owner has read it and ratified two amendments
+naming the key. Three options are set out there and none is taken.
 
 **No amendment row in this chain is to be left `OUTSTANDING`, and none is.** Every specification amendment this work order
 needs is stated below, in advance, in the terms the accountable owner had to decide it in, and every one was decided

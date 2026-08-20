@@ -1,0 +1,6 @@
+$ cargo fmt --all -- --check
+exit=0
+
+$ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.59s
+exit=0

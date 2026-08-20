@@ -52,22 +52,37 @@ fn each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it() {
     }
 }
 
-/// The log is ten rows only where rule 5 says it is: `W >= 140` and `H >= 48` together.
+/// The log is six rows wherever rule 5 admits it, as amended 2026-08-20, and absent below `H = 38`.
+///
+/// This is `the_log_is_ten_rows_only_where_both_thresholds_are_met` renamed and corrected. The
+/// ten-row height it asserted no longer occurs at any viewport, but the case it belongs to does not
+/// disappear with it: a constant is a pass condition, and it is the one `VER-MOK-005`'s log-height
+/// row states as amended. The two viewports that carried ten are kept as the cases that now read
+/// six, so the withdrawn growth is asserted absent rather than left untested.
 #[test]
-fn the_log_is_ten_rows_only_where_both_thresholds_are_met() {
+fn the_log_is_six_rows_wherever_it_is_present() {
     let rows = |width, height| {
         resolve(viewport(width, height))
             .log
             .map_or(0, |log| log.height)
     };
 
-    assert_eq!(rows(140, 48), 10);
-    assert_eq!(rows(200, 60), 10);
+    assert_eq!(rows(140, 48), 6);
+    assert_eq!(rows(200, 60), 6);
     assert_eq!(rows(139, 48), 6);
     assert_eq!(rows(140, 47), 6);
     assert_eq!(rows(140, 38), 6);
     assert_eq!(rows(34, 60), 6);
     assert_eq!(rows(200, 37), 0);
+
+    // And over the plane, so no width reaches a second height: the log reads one axis, and after
+    // this amendment it reads one threshold on it.
+    for width in 34..=200u16 {
+        for height in 22..=60u16 {
+            let expected = if height >= 38 { 6 } else { 0 };
+            assert_eq!(rows(width, height), expected, "log at {width}x{height}");
+        }
+    }
 }
 
 /// Rule 5's derived-consequences table, which is an obligation because it is checkable.
@@ -77,8 +92,12 @@ fn the_log_is_ten_rows_only_where_both_thresholds_are_met() {
 #[test]
 fn the_declared_viewports_yield_the_declared_canvases() {
     // width, height, roster, inspector, log rows, canvas width, canvas height
+    //
+    // The reference row reads a six-row log and a `67 x 36` canvas as amended 2026-08-20. It is the
+    // only row the amendment moves: every other declared viewport already failed one of the two
+    // conditions the withdrawn ten-row growth required, or has no log at all.
     let cases = [
-        (160u16, 48u16, true, true, 10u16, 67u16, 32u16),
+        (160u16, 48u16, true, true, 6u16, 67u16, 36u16),
         (160, 44, true, true, 6, 67, 32),
         (160, 40, true, true, 6, 67, 28),
         (140, 44, true, true, 6, 47, 32),
@@ -204,6 +223,56 @@ fn excluded_panes_are_the_ones_the_viewport_omits() {
         resolve(viewport(34, 22)).overlay_only(),
         vec![Pane::Roster, Pane::Log, Pane::Inspector]
     );
+}
+
+/// Rule 4's entry height as amended on 2026-08-20: an identity line and two bar lines.
+///
+/// Stated here rather than imported. The implementation's own figure would make this case pass
+/// whatever that figure said, and what `VER-MOK-013` asks is whether the pane the layout resolves
+/// holds the population at the height the specification fixes.
+const SPECIFIED_ENTRY_ROWS: u16 = 3;
+
+/// `SPEC-MOK-001`'s population: the number of Mokiterions a run creates, and therefore the number of
+/// entries `REQ-MOK-020` requires the roster present at the reference viewport.
+const SPECIFIED_POPULATION: u16 = 12;
+
+/// `VER-MOK-013`'s "the reference interior is what the fit assumes" row.
+///
+/// `REQ-MOK-047` was met by growing the entry to three lines, and three lines times twelve entries is
+/// thirty-six rows — exactly the roster interior the reference viewport has once rule 5 holds the log
+/// at six. The fit is exact in both directions, so it is asserted in both: the interior is thirty-six
+/// rows, and thirty-six rows hold the whole population and no more. A later change to the log's
+/// height, to the entry's height or to the population fails here, rather than at an entry silently
+/// vanishing from a pane.
+#[test]
+fn the_reference_roster_interior_holds_the_whole_population() {
+    let panes = resolve(viewport(160, 48));
+    let roster = panes
+        .roster
+        .expect("the reference viewport presents the roster");
+    assert_eq!(
+        panes.log.map_or(0, |log| log.height),
+        6,
+        "the interior below follows from a six-row log"
+    );
+
+    // A bordered pane spends its first and last row on the border, so the interior is two fewer.
+    let interior = roster.height - 2;
+    assert_eq!(interior, 36, "the reference roster interior moved");
+    assert!(
+        interior / SPECIFIED_ENTRY_ROWS >= SPECIFIED_POPULATION,
+        "an interior of {interior} rows holds {} entries of {SPECIFIED_ENTRY_ROWS} rows against a \
+         population of {SPECIFIED_POPULATION}",
+        interior / SPECIFIED_ENTRY_ROWS
+    );
+    assert_eq!(
+        interior % SPECIFIED_ENTRY_ROWS,
+        0,
+        "the interior does not divide into whole entries, so the pane ends mid-entry"
+    );
+    // No row to spare, which is the whole reason rule 5's log height is load-bearing here: one more
+    // row of log and the twelfth entry is the one that goes.
+    assert_eq!(interior / SPECIFIED_ENTRY_ROWS, SPECIFIED_POPULATION);
 }
 
 /// Rule 5 states the 1:1-with-inspector threshold as `47 + 44 + 66 = 157`.

@@ -58,6 +58,12 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-19 | **Rule 4 clause 7 amended in two provisions, so that the four gauges of clause 5 coexist with the bands of clause 7.** The two clauses were approved on the same date by the same owner against different trees, and each is retained above verbatim. They meet at exactly one point: clause 5 makes the bar row four gauges and clause 7 bands "each of the three bars", which leaves the fourth gauge unstated. **The banded set is now named rather than counted**: the band applies to health, satiety and energy, and `fear` renders as a bar and a numeric value with no colour at all. The reason is stated in the clause rather than left to be inferred — the three bands are a survival scale on which a high value is a good one, and `fear` inverts that, so a banded `fear 100` would read green while naming the worst state that attribute has. **The collapsed one-line form's count is corrected from three numeric values to four**, which clause 5 had already changed; it remains unstyled and takes no band, so that provision's substance is untouched. Nothing else in either clause changes: no boundary, no colour, no glyph, no character of the entry, no bar width, and no band for health, satiety or energy either gains or loses. Rule 2.5 still holds for the same reason it held before, and holds a fortiori for `fear`, which now carries no colour to be the sole carrier of anything. | **Decided 2026-08-19 by the repository owner acting as technical owner**, on the choice put to them once the collision was found: band `fear` on the same three-band scale, give it a second and opposite scale of its own, or leave it unbanded. The owner chose unbanded, on the reasoning that the scale is a survival scale and `fear`, whose direction inverts, does not borrow it; a second opposite scale was declined because it would put two contradictory colour meanings on one row. The implementation agent found the collision, put the choice, wrote this text and the amended clause, and decided none of the substance. **The wording is the agent's and was OUTSTANDING for the owner's ratification until 2026-08-19, when the repository owner, acting as technical owner, ratified it in the closing review of `WO-MOK-010` recorded in `evidence/WO-MOK-010/closing-review.md`; the decision it records never needed one.** `VREC-MOK-010` is a `ready` candidate bound to a commit that predates this row and is re-captured against the merge, not edited. |
 | 2026-08-19 | Four provisions amended under `REQ-MOK-041`, so the observer presents the name `REQ-MOK-040` makes the engine report. **Rule 2's glyph tables**: the detail table's `M01`–`M09 → 1`–`9` and `M10`–`M12 → A, B, C` rows are replaced by the name's first character uppercased, with `?` for a subject whose name was not received, and the overview layer table's "the identifier's last character" becomes "the name's first character" — the two zooms derive one glyph and had drifted, since the withdrawn overview rule gave `M10` a `0` where the detail table gave it an `A`. The twelve resulting glyphs `Z K Q S T W H N V G X D` are stated, resting on `SPEC-MOK-001`'s twelve pairwise-distinct first characters, which is what rule 2.5 needs and what the identifier-derived assignment had by construction. **The anticipation is retained rather than deleted**: the withdrawn table and the sentence promising that "when agent naming is introduced by a later phase, the glyph becomes the name's first character and this table is amended" are quoted in place, because they are why the old assignment was correct while no name existed. **Rule 4**: the entry mockup and prose carry the name first, then the identifier, in the two-line form and in the collapsed one-line form, and the addition to the identifier rather than replacement of it is stated with its reason — the identifier is the join key into the log, the export and every retained stream. **Line two is measured to be untouched**: the name occupies six columns of line one only, so the bar row's five leading columns, its 35-column overhead and `bar_width(interior) = min(20, (interior - 35) / 4)` are unchanged and the reference roster's two-cell bars stand; line one's fixed fields total 28 columns of a 45-column interior, so nothing truncates. **Rule 10**: the presented-value list gains the name, before the identifier and for a dead subject as well as a living one, under rule 10.6's retained selection; item 7 loses `name`, because the engine now reports one, and the item's principle is restated as the reason the presented name must be the engine's own — a name derived from an identifier or filled in as a placeholder would be a value the engine did not compute. **Nothing else changes**: no pane threshold, no floor, no layout figure, no key binding, no export form, no authority mapping row, no snapshot field, no interface item, and no obligation that layout be a pure function of viewport size. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`, `REQ-MOK-041`, `VER-MOK-011` and `WO-MOK-011`. The twelve names are the product owner's decision of the same date; the decision that the name is presented in addition to the identifier and precedes it, and that the observer sources it from the retained event stream rather than from a new engine interface item, are the technical owner's, recorded in `WO-MOK-011`. The implementation agent wrote the text and did not decide the substance; rule 2's glyph assignments are withheld from it by `WO-MOK-005`'s decision envelope. **The 2026-08-18 row marked OUTSTANDING above is untouched**, as are the four rows above it that `WO-MOK-010` and its merges left: rule 4's clause 5, its clause 7, the row reconciling clause 5 with `WO-MOK-005`'s rule 5, and the row reconciling clause 7 with clause 5. **Clause 7 and this row do not meet**: the bands colour cells on line two and this row adds the name to line one, so the banded set, its three boundaries, the unbanded `fear`, the 35-column bar overhead and `bar_width` are neither read nor written here, and the frame re-derivation the reconciliation row records as discharged is not reopened by a name. This sentence is the one part of this row the merge rewrote, and it changes no provision. |
 | 2026-08-20 | **No rule changed. The `specifies` relation gains `REQ-MOK-047`, `REQ-MOK-048` and `REQ-MOK-049`**, the three legibility requirements the product owner approved on 2026-08-20 — that a survival gauge be rendered at a width resolving the value it presents, that the key opening the key-binding overlay be on screen without operator action, and that an excluded pane's notice state the axis and value at which it returns. This specification is the one accountable for all three: each is a presentation obligation on the terminal observer, and the six amendments `WO-MOK-013` enumerates are amendments to rules 4 and 5 of this document. **What this row declares is accountability, not discharge.** The rule text as it stands does not yet meet the three requirements — that is what `WO-MOK-013` exists to change, and the six amendments it names are unratified at the time of this row. Declaring coverage before the text provides it is deliberate: the harness requires an approved requirement to name the specification answerable for it, and leaving that unstated would have left three approved requirements with no specification accountable for them at all. No provision, figure, threshold, glyph, band, key binding or derived consequence of this document is added, removed or reworded by this row. | **Decided 2026-08-20 by the repository owner acting as technical owner**, in the same turn as the product owner's approval of the three requirements and in response to the harness rejecting those approvals for want of active specification coverage (`E007`). The owner was shown the alternative — hold the requirements at `draft` until the amendments were ratified — and chose to declare coverage now. The implementation agent measured the validator failure, put the choice, wrote this text and decided none of the substance. |
+| 2026-08-20 | **Rule 4's bar row moves from four gauges on one line to two gauges on each of two lines, and the entry from two lines to three**, under `REQ-MOK-047`. The row overhead `5 + 4 * 6 + 3 * 2 = 35` becomes `5 + 2 * 6 + 1 * 2 = 19`, `bar_width(interior) = min(20, (interior - 35) / 4)` becomes `min(20, (interior - 19) / 2)`, and the reference roster's 45-column interior goes from **2**-cell bars to **13**, consuming all 45 columns. The mockup is redrawn at that interior. The one it replaces showed four gauges at their capped twenty cells, a 115-column row the 47-column pane cannot produce, so it illustrated a width no viewport reaches while the width the arithmetic gave at the reference roster was two cells; the cap of twenty is nonetheless retained, because it is a property of a gauge rather than of a pane. **The 2026-08-19 reasoning that accepted the narrowing to two is retained verbatim in item 5 rather than deleted**, because it is what made two correct for a phase, and this amendment records what that acceptance turned out to be: a two-cell bar has three distinguishable states, so a ten-point change in the value it presents moves nothing, and the proportional fill stopped carrying the level that rule 2.5 relies on it to carry beside the numeric value. It was accepted as a narrowing and it was a loss of the quantity. Both alternatives declined on that date — widening the roster pane in rule 5, raising rule 4's 47-column multi-line threshold — remain declined, and this amendment is neither of them: the pane keeps 47 columns and the threshold stays at 47, since four thirteen-cell gauges on one line would need an 89-column pane where the widening declined then was to 61. The name paragraph under `REQ-MOK-041` is restated on the moved figures and asserts what it always did, that the name reaches line one only. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, as **decision 12** of `WO-MOK-013`, put as its own question with its provisions enumerated and ahead of that work order's own approval. The two-gauges-to-a-line arrangement is a provision the owner had not previously been shown, and it was put beside the alternative of one line of four gauges at a widened roster pane, which this rule's 47 columns and the 2026-08-19 refusal of a 61-column widening both stand against. The product owner's **decision 1** of the same date is what makes the three-line entry affordable at the reference viewport, and it was taken first: the entry costs a row per Mokiterion and rule 5's six-row log is where that row comes from. The implementation agent measured the arithmetic, wrote this text and decided none of the substance; `bar_width` and the row overhead are implementation names for figures this rule fixes, and the ten-point granularity is `REQ-MOK-047`'s. `VREC-MOK-005` is not edited: what it measured was true at its commit, and the geometry figures it carries now describe a superseded layout, which is a further instance of the staleness that record already discloses. |
+| 2026-08-20 | **Rule 4 item 1 restated on the three-line entry, and the reference viewport's interior stated as a provision.** "Twelve living entries in the two-line form require 24 lines plus the pane border" becomes `12 * 3 = 36` lines plus the border, and the item now also states that the reference viewport provides **exactly 36 interior rows and no more**, with the arithmetic: 3 header rows, 1 footer row and rule 5's 6 log rows leave a body of 38, and the roster's border takes two of them. **This makes rule 4's twelve-entry claim visibly dependent on rule 5's log height.** A seventh log row leaves 35 interior rows, holds eleven whole entries, and hides the twelfth — which clause 2's title would report as hidden, and which would still lose `REQ-MOK-020`'s no-scroll obligation at the reference size. Stating the 36 rows here makes that a failure against written text rather than the silent cost of a change to another rule. At the ten-row log the interior was 32 rows and 24 lines left eight rows of slack, so no dependency was worth stating; the three-line entry consumes the slack, which is why the arithmetic is now written out. The collapsed one-line form below 47 columns is untouched: it has no bars, takes no band, and its four numeric values carry the level directly. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, as **decision 13** of `WO-MOK-013`, put as its own question. The owner was shown that the fit is exact in both directions and that the provision is a constraint on this document's own future — a later amendment to rule 5's log height, to this item's entry height or to `SPEC-MOK-001`'s population fails a stated provision here instead of costing an entry quietly. The alternative put beside it was to state the entry height alone and leave the interior to be derived from rule 5, which is how the item read while the slack existed. The implementation agent wrote the text and decided none of the substance; the population is `SPEC-MOK-001`'s and the no-scroll obligation is `REQ-MOK-020`'s. |
+| 2026-08-20 | **Rule 4 clause 5's four gauges and clause 7's three bands are carried onto the two bar lines unchanged, and the order of the four gauges across the two lines is fixed.** The three boundaries, the three banded attributes, the unbanded `fear`, clause 4's zero rendering and clause 6's reversed-video selection are all as they were; what changes is that they apply across three lines of an entry rather than two, and that reversed video therefore covers three lines, which follows from item 1's entry height rather than from clause 6. Each bar line takes the same five-column indent and the same two-column separator, both unstyled and both accounted for in the overhead of 19, so a band stays the property of one gauge rather than of a line. **The order is `health` and `satiety` on the first bar line, `energy` and `fear` on the second**, preserving the left-to-right order the one-line row had, so a frame captured before this amendment reads against one captured after it gauge for gauge and the retained captures under `WO-MOK-005` and `WO-MOK-010` stay comparable. It also leaves the unbanded gauge last rather than between two banded ones, where an unstyled gauge reads as one whose band failed to render. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, as **decision 14** of `WO-MOK-013`, put as its own question. **The order across the two lines is a provision the owner had not previously been shown**, and it was put beside the alternative of pairing the two gauges that share a scale direction — `health` with `energy` and `satiety` with `fear` — which would have grouped by meaning at the cost of making every retained capture read in a new order. The owner chose comparability. The implementation agent found that the two clauses met at the new row, put the choice, wrote this text and decided none of the substance; the band boundaries are this rule's and are unmoved, and `WO-MOK-013`'s envelope withholds the gauge order from the implementation for this reason. |
+| 2026-08-20 | **The *Observability* section's header list gains a second clause admitting exactly one permanent affordance**, under `REQ-MOK-048`: the key rule 7 binds to the key-binding overlay, on screen from the first frame, in every run state, with no operator action, at every viewport the observer draws at all including the floor `34 × 22`. **The closed list of five conditions is unchanged item for item and stays closed** — draw failures, input failures, export outcomes, panes available only as overlays, hidden roster entries — and the affordance is admitted as different in kind from them rather than as a sixth of them: each of the five appears when the condition it reports occurs, and this appears always, so a header reporting none of the five still carries it. The reason it is an obligation is stated: rule 7's table is the observer's only documentation of its controls and is itself reachable only through one of them, so an operator who does not already know that key has no way on screen to learn any of the rest. It displaces neither rule 5's Announcement obligation nor rule 8's footer. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, as **decision 15** of `WO-MOK-013`, put as its own question and answered as a distinct affordance rather than as a sixth condition. The alternative put beside it was to admit it as a sixth item of the closed list, which would have made a permanent element of the header indistinguishable in this document from five conditions that appear only when they occur, and would have left "the header reports observer conditions" describing something that is not a condition. The product owner's approval of `REQ-MOK-048`, **decision 6** of the same date, is the requirement this discharges; the finding it answers is the owner's own live observation of 2026-08-20, recorded in `evidence/WO-MOK-012/adverse-observations.md`. The implementation agent wrote the text and decided none of the substance; the key itself is rule 7's and is read, not written, here. |
+| 2026-08-20 | **Rule 5's Announcement obligation gains the axis, the threshold value, visual emphasis and a fixed order of loss**, under `REQ-MOK-049`. For each excluded pane the header now states the pane, the **axis** that excludes it and the **threshold value** at which it returns, in addition to the overlay key it already named. The value is read from this rule's own thresholds and is not restated in the presentation layer, so a threshold changed here cannot leave a notice quoting the old one. The notice **carries visual emphasis distinguishing it from the optional header segments on the same line and stays legible with all colour removed**, so rule 2.5 applies to the emphasis like any other distinction. **The abbreviation is fixed as an order of loss rather than as exact strings**: the joining words go first, then each pane's full name in favour of its initial, then the overlay key; **the axis and the threshold value go last and are never dropped while any part of the notice is drawn**, so the remedy that survives at the narrowest viewports is enlarging the terminal — the one remedy that needs no key press, the overlay keys remaining reachable through the permanent affordance the amendment above admits. The exact wording of each rung is the implementation's; the order is not. Neither the notice nor that affordance is satisfied by consuming the width the other needs, an optional segment yields to both, and a viewport that cannot carry both at the last rung is a defect in this rule rather than a case for dropping one. The roster title's hidden-entry count and the view title's world range are unchanged. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, as **decision 16** of `WO-MOK-013`, put as its own question. **Which part of the notice survives last is a provision the owner had not previously been shown**, and it was put beside the alternative of keeping the overlay key last — on the reasoning that an overlay is the faster remedy — which was declined because the overlay key is reachable from the permanent affordance while the threshold value is reachable from nowhere else on screen. Fixing the order is a **narrowing of `WO-MOK-013`'s decision envelope**, which had granted the implementation "the abbreviation ladder" outright and now grants only the short forms within this order. The product owner's approval of `REQ-MOK-049`, **decision 7** of the same date, is the requirement this discharges. The implementation agent wrote the text and decided none of the substance; the thresholds the notice quotes are this rule's and none of them moves. |
+| 2026-08-20 | **Rule 5's log is `6` rows wherever it is present, and its growth to `10` at `W ≥ 140` and `H ≥ 48` is withdrawn.** The presence threshold `H ≥ 38` does not change, so no pane's presence changes at any viewport and monotonicity is not reached. Six consequential edits, each located: the **pane table**'s log row becomes `6` unconditionally; the **derived table's `160 × 48` row** becomes log `6` and canvas `67 × 36`, its *Overview presents* column unchanged because `36 ≥ 32` and 36 canvas rows address 144 world rows of 128, and the other eight rows checked row by row and unmoved; the **non-monotone canvas-area trade** "Crossing `H = 48` at `W ≥ 140` grows the log from 6 rows to 10" is withdrawn, which removes the one case in which enlarging the terminal cost the canvas whole rows — `evidence/WO-MOK-005/layout-and-viewports.txt` line 106 measures `140 × 47 → 140 × 48` taking the canvas from `47 × 35` to `47 × 32` — so canvas area becomes more monotone than this rule promises rather than less; the **vertical fidelity sentence** loses its second half and `H ≥ 44` becomes unconditional; and the **reference-viewport example** reads 6 log rows, a `67 × 36` canvas, **4** records rather than 8 — a log pane shows its rows less the two its border takes, and `evidence/WO-MOK-005/frames.txt` measures eight lines in the ten-row pane — and the three-line roster form, keeping the word *twelve*. **This row is the sixth edit**: the ten-row log was specified, approved and held for a phase, and it is **traded rather than found wrong**. The reason this rule gives for admitting a log at all, that it "carries the authoritative event stream", is retained in place because it is what made ten rows right, and this amendment records that the reference viewport now shows less of that stream in exchange for an approved requirement it could not otherwise keep. **A seventh location was found while applying the amendment**, outside the enumeration: the *shrinking terminal* example said the log "shrinks to 6 rows, since the taller log needs both thresholds" and that the canvas "becomes 71 × 36", both false once `160 × 48` already has a six-row log. It is corrected as a consequence rather than as an amendment of its own, since it illustrates a provision rather than stating one, and the enumeration's miss is reported in `WO-MOK-013`'s completion report. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, as **decision 17** of `WO-MOK-013`, put as its own question with all six consequential edits enumerated. The substance is the product owner's **decision 1** of the same date, the choice between amending `REQ-MOK-020` and holding the log at six rows, taken as option B and stood by when the cost was restated on a corrected figure as **decision 2**; that decision is the reason a three-line roster entry fits at the reference viewport at all. What the technical owner ratified here is that the withdrawal is recorded as a trade and located in every place this document states it. The implementation agent measured the six locations and the seventh, wrote this text and decided none of the substance; rule 5's thresholds and derived figures are withheld from it by `WO-MOK-005`'s envelope, and the log's presence threshold `H ≥ 38` is untouched. **No file under `evidence/` is edited and `VREC-MOK-005` is not edited**: each records what was measured at a commit and remains true of that commit, on the precedent of `evidence/WO-MOK-011/merge/` and this document's own rule that a capture is re-run rather than corrected. |
 
 ## Actors and external systems
 
@@ -248,40 +254,71 @@ the capacity implied by the run's density.
 The roster lists every living Mokiterion in ascending identifier order, which is the order in which
 `SPEC-MOK-001` processes them, so reading position in the roster corresponds to acting order.
 
-Each entry occupies two lines at widths of 47 columns or more:
+Each entry occupies three lines at widths of 47 columns or more:
 
 ```text
 Trok  M05  A  81:14         eat F0058
-     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20
+     h █████████████ 100  s ██████████░░░  81
+     e █████████░░░░  72  f ██░░░░░░░░░░░  20
 ```
 
 Line one carries the name, the identifier, current territory, position, and the action the engine applied on the most
-recently completed tick, in that order. Line two carries health, satiety, energy and fear, each as a proportional bar
-of at most twenty cells and a numeric value. Below 47 columns each entry collapses to one line carrying the name, the
+recently completed tick, in that order. Lines two and three carry health, satiety, energy and fear, each as a
+proportional bar of at most twenty cells and a numeric value, **two gauges to a line**: health and satiety on the first
+bar line, energy and fear on the second. Below 47 columns each entry collapses to one line carrying the name, the
 identifier, territory and the four numeric values without bars.
+
+**The four gauges occupy two bar lines rather than one, as amended 2026-08-20 under `REQ-MOK-047`.** The mockup is the
+reference roster's 45-column interior, where item 5's arithmetic gives thirteen-cell bars and consumes all 45 columns.
+The previous mockup showed the same four gauges on one line at their capped twenty cells, a width no viewport this rule
+admits can produce — the widest interior the 47-column pane has is 45, and four twenty-cell bars need 115 — so the
+figure it illustrated was unreachable while the width it left at the reference roster was two cells. Both are corrected
+here: the form is what the reference viewport draws, and the bars resolve the values they present.
 
 **The name is presented in addition to the identifier, not instead of it, and it precedes it.** The identifier is the
 join key into the log pane, the export and every retained stream, so an operator cross-referencing a roster row
 against an engine record must not have to translate. The name is first because it is what the operator reads to tell
 one Mokiterion from another; the identifier follows as the reference.
 
-**Line two and its arithmetic are untouched by the name.** The name occupies six columns of line one, which carries
-name, identifier, territory and position in fixed fields and the applied action last, and it is the only line the
-name appears on. So the bar row's five leading columns, its `5 + 4 * 6 + 3 * 2 = 35` columns of overhead and
-`bar_width(interior) = min(20, (interior - 35) / 4)` are all unchanged, and the reference roster's 45-column interior
-still yields two-cell bars. Line one's fixed fields total `6 + 5 + 3 + 14 = 28` columns before the applied action,
-which leaves 17 at that interior, so the name costs no other field a column and truncates nothing. `SPEC-MOK-001`
-bounds a name at five characters, which the six-column field holds with its separating space.
+**The bar lines and their arithmetic are untouched by the name.** The name occupies six columns of line one, which
+carries name, identifier, territory and position in fixed fields and the applied action last, and it is the only line
+the name appears on. So each bar line's five leading columns, the row's `5 + 2 * 6 + 1 * 2 = 19` columns of overhead and
+`bar_width(interior) = min(20, (interior - 19) / 2)` are all unaffected by it, and the reference roster's 45-column
+interior yields thirteen-cell bars. Line one's fixed fields total `6 + 5 + 3 + 14 = 28` columns before the applied
+action, which leaves 17 at that interior, so the name costs no other field a column and truncates nothing.
+`SPEC-MOK-001` bounds a name at five characters, which the six-column field holds with its separating space.
 
-1. Twelve living entries in the two-line form require 24 lines plus the pane border, which the reference viewport
-   provides; the no-scroll obligation of `REQ-MOK-020` is an obligation at the reference size and rule 5 states what
-   happens below it.
+Amended 2026-08-20: this paragraph read "Line two and its arithmetic", `5 + 4 * 6 + 3 * 2 = 35`,
+`min(20, (interior - 35) / 4)` and "still yields two-cell bars". Those three figures are item 5's and moved with it.
+What this paragraph asserts is unchanged by the move — the name reaches line one only, so it costs the bar arithmetic
+nothing whatever that arithmetic is — which is why it is restated here rather than withdrawn, and line one is untouched
+by this amendment in every field.
+
+1. Twelve living entries in the three-line form require `12 * 3 = 36` lines plus the pane border, which the reference
+   viewport provides; the no-scroll obligation of `REQ-MOK-020` is an obligation at the reference size and rule 5 states
+   what happens below it.
+
+   **The reference viewport provides exactly 36 interior rows and no more, and that is stated here rather than left to
+   be derived.** At `160 × 48` rule 5 gives the header 3 rows, the footer 1 and the log 6, so the body is 38 rows; the
+   roster occupies the body height and spends two rows on its border, leaving 36. Twelve entries of three lines fill
+   them exactly, in both directions: nothing is hidden, and nothing is spare. This makes rule 4's twelve-entry claim
+   visibly dependent on rule 5's six-row log. A seventh log row leaves 35 interior rows, which hold eleven whole
+   entries, and the twelfth would be hidden — announced as hidden by clause 2's title, and still a loss of
+   `REQ-MOK-020`'s no-scroll obligation at the reference size. Stating the 36 rows as a provision of this rule makes
+   that a failure against written text rather than the silent cost of a change to another rule.
+
+   Amended 2026-08-20 under `REQ-MOK-047`. This item read "Twelve living entries in the two-line form require 24 lines
+   plus the pane border, which the reference viewport provides", and at a ten-row log the interior was 32 rows, so 24
+   lines left eight rows of slack and no dependency worth stating. The three-line entry consumes the slack and the
+   dependency becomes load-bearing, which is why the arithmetic is written out. The collapsed one-line form below 47
+   columns is untouched by this amendment: it has no bars, takes no band, and its four numeric values carry the level
+   directly.
 2. The living count is presented in the pane title.
 3. A Mokiterion is removed from the roster on the tick its death is applied. The pane states the number of deaths so
    far, so a disappearance is corroborated by a total.
 4. A value of `0` renders as `0` with an empty bar, which is distinguishable from an absent value because absent
    values render as `—`.
-5. Attributes the engine does not compute are absent. The line-two bar row carries four gauges, the fourth being
+5. Attributes the engine does not compute are absent. The two bar lines carry four gauges, the fourth being
    `fear`, which `SPEC-MOK-001` rule 12 computes and reports. Item 4 governs its zero case like any other: `fear 0`
    renders as `0` with an empty bar, and it is a computed zero rather than an inert one.
 
@@ -290,16 +327,39 @@ bounds a name at five characters, which the six-column field holds with its sepa
    retained here rather than deleted: it is what made an empty slot correct while the engine computed three
    attributes, and it is the condition this amendment satisfies rather than waives.
 
-   **The bar width follows from the fourth gauge, and the consequence is stated rather than left to be discovered.**
-   The row is five leading columns, then four groups of label, space, bar, space and a three-column value, separated
-   by two columns: `5 + 4 * 6 + 3 * 2 = 35` columns of overhead and four bars. So
+   **The bar width follows from two gauges to a line, and the consequence is stated rather than left to be
+   discovered.** A bar line is five leading columns, then two groups of label, space, bar, space and a three-column
+   value, separated by two columns: `5 + 2 * 6 + 1 * 2 = 19` columns of overhead and two bars. So
+   `bar_width(interior) = min(20, (interior - 19) / 2)`. At the reference roster's 45-column interior each bar is
+   `(45 - 19) / 2 = 13` cells and the row consumes all 45 columns, while the three-column numeric values are unaffected
+   at every width. The cap of twenty stands and is reached at a 59-column interior, which the 47-column pane does not
+   have; the cap is retained because it is a property of a gauge rather than of a pane, and a later rule 5 that widened
+   the pane would meet it.
+
+   **Amended 2026-08-20 under `REQ-MOK-047`, which the one-line form of this item could not satisfy at any viewport this
+   rule admits.** At a 45-column interior four gauges left two cells per bar, and a two-cell bar has three
+   distinguishable states, so a ten-point change in the value it presents moves nothing and the proportional fill
+   stopped carrying the level. Rule 2.5 leans on that fill as one of the two colour-independent carriers of level; with
+   two cells the numeric value was carrying it alone. Two lines of two gauges recover thirteen cells at the same
+   interior, taking no column from any other pane, at the cost of one row per entry — which item 1 and rule 5's log row
+   count together provide for.
+
+   **The 2026-08-19 form of this paragraph is retained rather than deleted**, because it is what made two-cell bars
+   correct for a phase, and because what it recorded as an accepted narrowing turned out to be a loss of the quantity
+   the gauge exists to carry. It read: "The row is five leading columns, then four groups of label, space, bar, space
+   and a three-column value, separated by two columns: `5 + 4 * 6 + 3 * 2 = 35` columns of overhead and four bars. So
    `bar_width(interior) = min(20, (interior - 35) / 4)`, replacing the three-gauge rule
    `min(20, (interior - 27) / 3)`. At the reference roster's 45-column interior the bars therefore narrow from
    `(45 - 27) / 3 = 6` cells to `(45 - 35) / 4 = 2`, while the three-column numeric values are unaffected at every
    width. The narrowing was accepted rather than avoided: widening the roster pane in rule 5 would have taken
    fourteen columns from the map pane, and raising this rule's 47-column two-line threshold would have cost bars
-   entirely to operators between 47 and 60 columns. This also closes `VREC-MOK-005` finding 3, which recorded that
-   the reserved slot was zero-wide at the reference roster and therefore absent there rather than empty.
+   entirely to operators between 47 and 60 columns." **Both alternatives it declined are still declined, and this
+   amendment is neither of them**: the roster keeps its 47 columns and the multi-line threshold stays at 47. Four
+   thirteen-cell gauges on one line would need an 87-column interior and an 89-column pane, a wider widening than the
+   61 columns declined on 2026-08-19, so the row was divided instead of the pane being grown.
+
+   This also closes `VREC-MOK-005` finding 3, which recorded that the reserved slot was zero-wide at the reference
+   roster and therefore absent there rather than empty.
 6. Selecting a roster entry and selecting a Mokiterion are the same operation; the selected entry is highlighted by
    reversed video, not by colour alone.
 7. **Survival bands.** Each of the three survival bars — health, satiety and energy — carries a colour band read from
@@ -320,7 +380,7 @@ bounds a name at five characters, which the six-column field holds with its sepa
    form exists to keep the numbers legible where the bar cells will not fit, and the numbers carry the level directly.
 
    **The fourth gauge takes no band.** `fear`, which clause 5 fills the reserved slot with, renders as a bar and a
-   numeric value with no colour at all, in the two-line form as in the collapsed one. The three bands are a
+   numeric value with no colour at all, in the multi-line form as in the collapsed one. The three bands are a
    survival scale, and on that scale a high value is a good one; `fear` inverts it, so a banded `fear 100` would
    read green while naming the worst state that attribute has. Giving `fear` a second scale of its own, running the
    other way, was declined: it would put two contradictory colour meanings on one row, and a reader would have to
@@ -328,6 +388,21 @@ bounds a name at five characters, which the six-column field holds with its sepa
    rule 2.5 protects, because `fear`'s level is carried by its numeric value and its proportional fill exactly as
    the other three are. This is the single point at which clause 5 and this clause meet, and it is decided rather
    than derived: neither provision forces it.
+
+   **Amended 2026-08-20: the bands are carried onto item 5's two bar lines unchanged.** The three boundaries, the three
+   banded attributes, the unbanded `fear`, clause 4's zero rendering and this clause's composition with clause 6's
+   reversed video are all as they were; what changes is that they apply across three lines of an entry instead of two.
+   Each bar line takes the same five-column indent and the same two-column separator, both unstyled and both accounted
+   for in clause 5's overhead of 19, so a band stays the property of one gauge rather than of a line. A selected entry's
+   reversed video now covers three lines, which follows from item 1's entry height and is not a change to clause 6.
+
+   **The order of the four gauges across the two lines is fixed here rather than left to the implementation**: `health`
+   and `satiety` on the first bar line, `energy` and `fear` on the second. That preserves the left-to-right order the
+   one-line row had, so a frame captured before this amendment reads against one captured after it gauge for gauge —
+   which is what keeps the retained captures under `WO-MOK-005` and `WO-MOK-010` comparable to a capture taken now, and
+   is the reason the order is a provision rather than a preference. It also keeps the unbanded gauge last: `fear` ends
+   the second line as it ended the one-line row, rather than sitting between two banded gauges, where an unstyled gauge
+   between two coloured ones reads as a gauge whose band failed to render.
 
 ### Rule 5 — Layout and degradation
 
@@ -348,7 +423,7 @@ configurations and no viewport that matches none of them.
 | footer | always | `1` row, bottommost |
 | roster | `W ≥ 100` | `47` columns, leftmost in the body |
 | inspector | `W ≥ 140` | `44` columns, rightmost in the body |
-| log | `H ≥ 38` | `10` rows when `W ≥ 140` and `H ≥ 48`, otherwise `6`; below the body |
+| log | `H ≥ 38` | `6` rows; below the body |
 | view | always | every column and every row the body has left |
 
 The axis each threshold reads is the axis that constrains the pane. The roster is a vertical list in a fixed-width
@@ -367,16 +442,23 @@ by construction, because each pane's presence is one threshold on one axis, and 
 checkable over the whole plane rather than at named sizes.
 
 Canvas *area* is deliberately not monotone, and each place it is not is a declared trade rather than a defect.
-Crossing `W = 140` introduces the inspector, which takes 44 columns from the view. Crossing `H = 48` at `W ≥ 140`
-grows the log from 6 rows to 10. Crossing `H = 38` introduces the log, which takes 6 rows from the view. In each, a
-pane the operator would otherwise have to open as an overlay is worth more than the columns or rows it costs, and the
-view states the region it can then present.
+Crossing `W = 140` introduces the inspector, which takes 44 columns from the view. Crossing `H = 38` introduces the log,
+which takes 6 rows from the view. In each, a pane the operator would otherwise have to open as an overlay is worth more
+than the columns or rows it costs, and the view states the region it can then present.
+
+**Amended 2026-08-20: a third trade is withdrawn from this list, not added to it.** It read "Crossing `H = 48` at
+`W ≥ 140` grows the log from 6 rows to 10", and the log's growth is withdrawn with it. That trade was the one case in
+which enlarging the terminal made the canvas smaller in a whole pane's worth of rows:
+`evidence/WO-MOK-005/layout-and-viewports.txt` line 106 measures `140 × 47 → 140 × 48` taking the canvas from `47 × 35`
+to `47 × 32`, a three-row loss under growth. This rule declared it as a trade rather than a defect and it was a
+defensible one, but with the growth withdrawn canvas area becomes more monotone than this rule promises rather than
+less. Pane-presence monotonicity above is untouched either way, since no pane's presence threshold moves.
 
 **Derived consequences**, which are obligations because they are checkable at named sizes:
 
 | Viewport | Panes besides header, view and footer | Canvas cells | Overview presents |
 |---|---|---|---|
-| 160 × 48 | roster, inspector, log `10` | 67 × 32 | the whole world at one dot per world cell |
+| 160 × 48 | roster, inspector, log `6` | 67 × 36 | the whole world at one dot per world cell |
 | 160 × 44 | roster, inspector, log `6` | 67 × 32 | the whole world at one dot per world cell |
 | 160 × 40 | roster, inspector, log `6` | 67 × 28 | all 128 columns, world rows 0–111 of 128; a region, so annotated |
 | 140 × 44 | roster, inspector, log `6` | 47 × 32 | world columns 0–93 of 128; a region, so annotated |
@@ -385,6 +467,14 @@ view states the region it can then present.
 | 120 × 30 | roster | 71 × 24 | all 128 columns, world rows 0–95 of 128; a region, so annotated |
 | 100 × 30 | roster | 51 × 24 | world columns 0–101 and rows 0–95 of 128; a region, so annotated |
 | 34 × 22 | none | 32 × 16 | world 64 × 64 of 128 × 128; a region, so annotated |
+
+**Amended 2026-08-20: the reference row is the one row the log's row count moves, and it is the only figure in this
+table that changes.** It read "roster, inspector, log `10`" and `67 × 32`. Its *Overview presents* column does **not**
+change: the whole world needs `Cw ≥ 64` and `Ch ≥ 32`, `36 ≥ 32` holds, and 36 canvas rows address 144 world rows of
+the 128 that exist. Every other declared viewport already had a six-row log or no log at all — `160 × 44`, `160 × 40`,
+`140 × 44`, `140 × 43` and `120 × 48` each fail `W ≥ 140` or `H ≥ 48`, and `120 × 30`, `100 × 30` and `34 × 22` are
+below the log's presence threshold — so eight of the nine rows are untouched, which was checked row by row rather than
+assumed.
 
 Each canvas figure is the view pane's interior: the columns and rows the pane occupies less the two cells its border
 occupies in each axis. Width alone never suffices. A viewport can be wide enough to address every world column and
@@ -396,8 +486,11 @@ annotated as one.
 The horizontal 1:1 threshold is `W ≥ 157` with the inspector shown, since `47 + 44 + 66 = 157`, and `W ≥ 113` with the
 roster but not the inspector, since `47 + 66 = 113`. Between 140 and 156 columns the inspector is retained and the
 overview presents a region, which is the declared trade at widths already below the reference size. The vertical 1:1
-threshold is `H ≥ 44`: `Ch ≥ 32` needs a body of 34 rows, and the header, footer and a 6-row log take 10 more. Where
-the log is 10 rows it is `H ≥ 48`, which is the reference height.
+threshold is `H ≥ 44`: `Ch ≥ 32` needs a body of 34 rows, and the header, footer and a 6-row log take 10 more.
+
+Amended 2026-08-20: a second sentence read "Where the log is 10 rows it is `H ≥ 48`, which is the reference height." A
+six-row log is now the only log, so the threshold above is unconditional and the case that sentence carved out does not
+occur.
 
 Between 38 and 43 rows the log is present and the overview therefore presents a region in rows, where the same
 heights without a log would have addressed every world row. Admitting the log only at `H ≥ 44`, where it costs no
@@ -409,6 +502,31 @@ changing one threshold, and nothing else in this rule depends on it.
 **Announcement.** Whenever any pane is excluded, any roster entry is not visible, or the view presents a region, the
 observer states it: the header lists the panes currently available only as overlays, the roster title states how
 many entries are hidden, and the view title states the visible world range.
+
+**For each excluded pane the header states the pane, the axis that excludes it and the threshold value at which it
+returns, in addition to the key that opens it as an overlay.** Amended 2026-08-20 under `REQ-MOK-049`. Before this
+amendment the notice named the pane and its overlay key alone, which tells an operator that something is missing and
+how to look at it once, and nothing about how to get it back. The axis says which way the terminal must grow and the
+value says how far, so the notice states a remedy the operator can carry out. **The value is read from this rule's own
+thresholds and is not restated in the presentation layer**, so a threshold changed here cannot leave a notice quoting
+the old one. The roster title's hidden-entry count and the view title's world range are unchanged.
+
+The notice **carries visual emphasis distinguishing it from the optional header segments on the same line, and stays
+legible with all colour removed.** It shares the header row with content that is optional — an active filter, a recent
+export outcome — and an operator cannot act on a notice they read as one item in a list of status text. The emphasis is
+therefore a distinction that carries which part of the row is an obligation, and rule 2.5 applies to it like any other:
+it must survive with colour removed.
+
+**Where the width will not carry the notice in full, the abbreviation is fixed as an order of loss rather than as exact
+strings.** The joining words go first; then each pane's full name in favour of its initial; then the key that opens it
+as an overlay. **The axis and the threshold value go last and are never dropped while any part of the notice is
+drawn.** So the remedy that survives at the narrowest viewports is enlarging the terminal, which is the one remedy that
+needs no key press: the overlay keys stay reachable through the permanent affordance the *Observability* section admits,
+while a notice that had shed the axis and the value would name no remedy at all. The exact wording of each rung, and
+what stands for a pane once its name is shed, are the implementation's under *Explicitly unspecified decisions*; the
+order in which content is shed is not. Both this notice and that affordance are obligations, and neither is satisfied by
+consuming the width the other needs — an optional segment yields to both, and a viewport that cannot carry both even at
+the last rung is a defect in this rule rather than a case for dropping one.
 
 **Resize.** The layout is recomputed for the new dimensions on the next frame. Selection, filter, zoom, camera,
 progression, speed and retained events all survive a resize. A resize below the floor mid-run suspends drawing,
@@ -696,7 +814,16 @@ mokiterions-tui/
 ## Observability
 
 - The header reports observer conditions: draw failures, input failures, export outcomes, panes available only as
-  overlays, and hidden roster entries.
+  overlays, and hidden roster entries. That list is closed and is unchanged item for item.
+- The header additionally carries **exactly one permanent affordance**: the key rule 7 binds to the key-binding
+  overlay, on screen from the first frame, in every run state, with no operator action, at every viewport the observer
+  draws at all including the floor `34 × 22`. Amended 2026-08-20 under `REQ-MOK-048`. It is admitted as different in
+  kind from the five conditions above rather than as a sixth of them: each of those appears when the condition it
+  reports occurs, and this appears always, so a header reporting none of the five still carries it. The reason it is an
+  obligation is that rule 7's table is the observer's only documentation of its controls and is itself reachable only
+  through one of them, so an operator who does not already know that key has no way on screen to learn any of the rest.
+  It displaces neither rule 5's Announcement obligation nor rule 8's footer, and where the width will not hold it and
+  the announcement in full, rule 5's Announcement fixes what abbreviates and in what order; neither is dropped.
 - The footer reports run provenance per rule 8.
 - The export is the observer's retainable artifact and the only observer output admissible as evidence.
 - Observer diagnostics are never written into an export, so an export contains authoritative events only.
@@ -747,11 +874,17 @@ mokiterions-tui/
 
 ### Example: the reference viewport
 
-At 160 × 48, every pane is present and the log has its full 10 rows. The canvas is 67 × 32 cells, so the whole
+At 160 × 48, every pane is present and the log has its 6 rows. The canvas is 67 × 36 cells, so the whole
 128 × 128 world appears at one dot per world cell with territory A above territory B. Twelve roster entries are
-visible in the two-line form without scrolling.
-The inspector occupies 44 columns. The log shows 8 records. The footer reads the seed, tick limit, density, source,
+visible in the three-line form without scrolling.
+The inspector occupies 44 columns. The log shows 4 records. The footer reads the seed, tick limit, density, source,
 tick and retained count.
+
+Amended 2026-08-20 in three figures and one form. The log was "its full 10 rows" and the canvas `67 × 32`, both moved by
+rule 5's log row count; the record count was 8 and is 4, since a log pane shows its rows less the two its border takes
+and `evidence/WO-MOK-005/frames.txt` measures eight lines in the ten-row pane; and the roster's twelve entries move from
+the two-line form to the three-line form under rule 4 item 5. The word *twelve* is unchanged and is what decision 1 was
+taken to keep.
 
 ### Example: single-stepping to a rejection
 
@@ -763,10 +896,19 @@ movement. The log gains tick 41's records. Pressing `t` on the highlighted `acti
 ### Example: a shrinking terminal
 
 At 160 × 48 the operator narrows the terminal to 120 columns, crossing the inspector's `W ≥ 140` threshold: the
-inspector leaves the body and the header states that it is available as an overlay; the log shrinks to 6 rows, since
-the taller log needs both thresholds; the roster keeps 47 columns, since 120 is above its own threshold; the canvas
-becomes 71 × 36 and still presents the whole world, since 71 ≥ 64 and 36 ≥ 32. Selection, filter, zoom and retained
-events are unchanged, and the run does not pause.
+inspector leaves the body and the header states that it is available as an overlay, on the axis that excluded it and
+with the width at which it returns; the log keeps its 6 rows, since the log reads height alone and 6 is what it is
+wherever it is present; the roster keeps 47 columns, since 120 is above its own threshold; the canvas is 71 × 36 at both
+widths and still presents the whole world, since 71 ≥ 64 and 36 ≥ 32. Selection, filter, zoom and retained events are
+unchanged, and the run does not pause.
+
+Amended 2026-08-20. This example read "the log shrinks to 6 rows, since the taller log needs both thresholds" and "the
+canvas becomes 71 × 36", both of which the withdrawal of the ten-row log makes false: at `160 × 48` the log is already 6
+rows and the canvas is already 36 rows tall, so this resize changes the log not at all and the canvas in width only.
+**This is a seventh location the log's row count reaches, and `WO-MOK-013` enumerated six.** It is corrected here as a
+consequence of that amendment rather than as an amendment of its own — it illustrates a provision rather than stating
+one — and the miss is reported in that work order's completion report, because an enumeration of consequences that is
+one short is the same failure the 2026-08-19 rule 4 amendment made when it left `VER-MOK-005` unswept.
 
 ### Counterexample: territory A drawn below territory B
 
