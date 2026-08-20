@@ -216,6 +216,22 @@ What this corrects, and what it leaves standing:
 no commit holds — which is the mistake this section documents. What the record's presence does to the graph is recorded
 as counts instead, below.
 
+**Note added 2026-08-20, after this record was first committed: this repository had already written the fact down, so
+the three figures are a lapse and not a discovery.** `evidence/WO-MOK-011/assurance-decision.md:113-120` corrects an
+earlier sentence of its own with exactly this: *"`build_snapshot` in `scripts/generate_harness_dashboard.py` puts
+`repository.name` — the checkout directory's name — and `repository.revision`, which is `git rev-parse HEAD`, into the
+hashed document"*, and concludes that *"a snapshot digest is comparable only against another taken in the same clone at
+the same `HEAD`"*, citing `evidence/WO-MOK-011/merge/gates.txt` saying its own digest *"is not the digest of any commit
+and no record binds it"*. That correction is dated 2026-08-20 and is in `master` at `ff3a155`, the commit this branch
+was cut from — so it was available when every figure in this packet was captured, and the packet recorded three
+pre-commit digests as commit figures anyway. Attributing that to the reader would be wrong; it was the implementation
+agent's to read.
+
+The same passage settles one further thing this record depends on: the digest hashes *"the normalized front matter, the
+relations and the findings"* and not artifact prose. So this note cannot move `artifact_snapshot_sha256`, and the field
+still binds the graph it was captured over. That was confirmed rather than taken on trust — with this note in the
+working tree at the record's own commit, the dashboard prints the same digest it printed before the note was written.
+
 ## What a `ready` record does to the graph
 
 Measured with this file in the working tree at this commit, before it is committed:
