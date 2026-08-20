@@ -1,0 +1,86 @@
+WO-MOK-013 graph validation and inspection
+
+Run from the pinned harness 0.4.0 environment (C:\Users\mathi\harness-venv-040). The
+machine-wide 0.4.1 install FAILs this repository on template skew alone, which is a property
+of the harness version and not of these artifacts.
+
+$ python scripts/validate_engineering_artifacts.py --root .
+Engineering artifact validation: PASS
+Artifacts: 108 | Errors: 0 | Warnings: 0
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+
+$ python scripts/inspect_engineering_artifacts.py --root .
+Harness inspection
+Repository: Mokiterions-explore-20260820-075202 @ a3399023bad526b4661df1d1f3a684e9a5e18268
+Formal validation: PASS
+Graph: 108 artifacts | 372 relations | 23 findings
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+Finding severity: error 0 | warning 11 | info 12
+
+Decision required (0):
+- none
+
+Definitions pending (1):
+- WO-MOK-008 [draft] complete-definition: Make the provenance footer shed fields without losing authoritative information (docs/engineering/simulation/work-orders/WO-MOK-008.md)
+
+Active work (1):
+- WO-MOK-013 [approved] start-authorized-work: Make the observer's survival gauges resolve, its controls discoverable, and its hidden-pane notice actionable (docs/engineering/simulation/work-orders/WO-MOK-013.md)
+
+Assurance pending (0):
+- none
+
+Findings (23):
+- [WARNING] W-HEX-001 (derived): 3 observations [WO-MOK-010, WO-MOK-011, WO-MOK-012]
+- [WARNING] W-HEX-003 (derived): 8 observations [ADR-MOK-001, ADR-MOK-002, ADR-MOK-003, ARCH-MOK-001, ARCH-MOK-002, REL-MOK-001, SPEC-MOK-003, SPEC-MOK-004, +2 more]
+- [INFO] I-REV-001 (derived): 12 observations [RLS-MOK-001, VREC-MOK-001, VREC-MOK-002, VREC-MOK-003, VREC-MOK-004, VREC-MOK-005, VREC-MOK-006, VREC-MOK-007, +4 more]
+
+Suggested next steps (13):
+- W-HEX-001 -> retain-work-order-evidence (engineering-owner): Retain evidence keyed to the implemented work order and reassess the observation. Repeated for 3 source observations. [WO-MOK-010, WO-MOK-011, WO-MOK-012]
+- W-HEX-003 -> reassess-dependent-artifact (artifact-owner): Reassess the older source against its newer declared dependency or parent. Repeated for 8 source observations. [ADR-MOK-001, ADR-MOK-002, ADR-MOK-003, ARCH-MOK-001, ARCH-MOK-002, REL-MOK-001, SPEC-MOK-003, SPEC-MOK-004, +2 more]
+- active_work -> start-bounded-work (engineering-owner): Run start preflight and begin only the approved scope. [WO-MOK-013]
+- definition_pending -> complete-or-dispose-definition (artifact-owner): Complete the definition or explicitly dispose of it through an allowed governed state. [WO-MOK-008]
+
+Authority: repository-local, derived observation. Inspection does not validate by exit status, approve, authorize, verify, release, or remediate.
+
+===============================================================================
+The eleven warnings, attributed
+
+The validator reports zero warnings on all four planes. The eleven above are the
+inspector's derived findings, which the validator does not raise and which are not
+errors. They were counted at three trees rather than only at this one:
+
+  tree                                   warnings   W-HEX-001   W-HEX-003
+  ff3a155  (origin/master, the baseline)         7           2           5
+  a339902  (this branch, before implementing)   11           3           8
+  working tree (after implementing)             11           3           8
+
+The set is identical at a339902 and now, observation for observation. **This
+implementation introduces no W-HEX-003 and no W-HEX-001.** No artifact's `updated`
+field is bumped by it: SPEC-MOK-003, SPEC-MOK-004, VER-MOK-005 and WO-MOK-013 all
+already read 2026-08-20 at a339902, so no new date skew can arise.
+
+The three-warning rise from ff3a155 to a339902 belongs to this chain's governance
+work and to WO-MOK-012, both of which landed before implementation began. Five
+observations arrive and two depart:
+
+  arrives   ADR-MOK-002 -> ARCH-MOK-001   (decides)
+  arrives   ADR-MOK-003 -> ARCH-MOK-001   (decides)
+  arrives   REL-MOK-001 -> VER-MOK-005    (gates)
+  arrives   WO-MOK-008  -> SPEC-MOK-003   (specifications)
+  arrives   WO-MOK-008  -> VER-MOK-005    (verification)
+  departs   ARCH-MOK-001 -> SPEC-MOK-001  (conforms_to)
+  departs   ARCH-MOK-001 -> SPEC-MOK-002  (conforms_to)
+
+The two departures are not a remediation: ARCH-MOK-001's own `updated` moved to
+2026-08-20 when WO-MOK-012 ratified its public-item prohibition, so it no longer
+predates SPEC-MOK-001 or SPEC-MOK-002. Every one of the eight is a reassessment
+owed by an artifact owner and none is authorized here.
+
+W-HEX-001 stands at three -- WO-MOK-010, WO-MOK-011, WO-MOK-012 -- unchanged, and
+accepted on the precedent the first two set. WO-MOK-013 does not appear in it,
+because it is `approved` rather than `implemented`; a transition to `implemented`
+would add a fourth unless evidence keyed to the identifier is present, and this
+pack is that evidence.
+
+The twelve I-REV-001 informational findings are the verification and release
+records' own review cadence and are unmoved.

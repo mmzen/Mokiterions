@@ -1,0 +1,13 @@
+Captured at 160 x 48, seed 42, policy reference, --ticks 300, at tick 200.
+Selection made with Tab. Below the floor is never reached here: 160 x 48 is above it.
+
+foreground colour        cells   first at   glyph
+Some(Reset)               2242     6,0     x
+Some(Gray)                  98    90,4     ⢀
+Some(Green)                 92     6,5     h
+Some(Indexed(208))          70    16,5     s
+Some(DarkGray)              63    48,19    ⣀
+Some(Red)                   45    26,5     e
+Some(Magenta)               40     0,2     B
+Some(Cyan)                  37     0,1     A
+Some(Yellow)                 4     0,0     H

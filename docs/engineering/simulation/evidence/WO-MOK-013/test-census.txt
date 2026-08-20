@@ -1,0 +1,70 @@
+WO-MOK-013 test census — every test by name, ff3a155 against this tree
+
+file                                        at ff3a155   now   +   -
+mokiterions-core/src/lib.rs                          0     0   0   0
+mokiterions-core/src/cli.rs                          0     0   0   0
+mokiterions-core/src/simulation.rs                  54    54   0   0
+mokiterions-core/src/main.rs                         0     0   0   0
+mokiterions-core/tests/cli.rs                       13    13   0   0
+mokiterions-core/tests/decisions.rs                  1     1   0   0
+mokiterions-core/tests/density.rs                    2     2   0   0
+mokiterions-core/tests/naming.rs                     3     3   0   0
+mokiterions-core/tests/process.rs                    6     6   0   0
+mokiterions-core/tests/termination.rs                4     4   0   0
+mokiterions-core/tests/viability.rs                  2     2   0   0
+mokiterions-tui/src/lib.rs                           0     0   0   0
+mokiterions-tui/src/authority.rs                     0     0   0   0
+mokiterions-tui/src/export.rs                        0     0   0   0
+mokiterions-tui/src/layout.rs                        0     0   0   0
+mokiterions-tui/src/options.rs                       0     0   0   0
+mokiterions-tui/src/render.rs                       18    20   2   0
+mokiterions-tui/src/spatial.rs                       0     0   0   0
+mokiterions-tui/src/state.rs                         4     4   0   0
+mokiterions-tui/src/verification.rs                  9     9   0   0
+mokiterions-tui/src/main.rs                          8     8   0   0
+mokiterions-tui/tests/authority.rs                   4     4   0   0
+mokiterions-tui/tests/export.rs                      7     7   0   0
+mokiterions-tui/tests/layout.rs                     10    11   2   1
+mokiterions-tui/tests/options.rs                     8     8   0   0
+mokiterions-tui/tests/render.rs                     12    22  10   0
+mokiterions-tui/tests/spatial.rs                     7     7   0   0
+mokiterions-tui/tests/state.rs                      21    21   0   0
+mokiterions-tui/tests/verification.rs               19    20   1   0
+workspace total                                    212   226
+
+engine (mokiterions-core)                           85    85
+observer (mokiterions-tui)                         127   141
+
+SPEC-MOK-004 rule 11 records 127 observer, 85 engine, 212 workspace at the baseline,
+and 141 / 85 / 226 as corrected for WO-MOK-013.
+
+Tier split, this tree, under rules 9 and 10:
+  observer internal tier (src/)    41
+  observer public tier (tests/)   100
+
+Arrivals, by name:
+  mokiterions-tui/src/render.rs  (+2)
+      a_ten_point_step_moves_the_fill_at_the_reference_viewport
+      every_bar_width_the_roster_can_produce_resolves_a_ten_point_step
+  mokiterions-tui/tests/layout.rs  (+2)
+      the_log_is_six_rows_wherever_it_is_present
+      the_reference_roster_interior_holds_the_whole_population
+  mokiterions-tui/tests/render.rs  (+10)
+      every_living_mokiterion_has_an_entry_at_the_reference_viewport
+      a_declining_mokiterion_shows_a_declining_bar
+      the_key_binding_hint_is_on_screen_in_the_first_frame_at_every_viewport
+      the_hint_is_present_after_two_hundred_ticks_in_both_run_states
+      the_hint_displaces_neither_the_announcement_nor_the_footer
+      the_announcement_states_the_axis_and_the_value_the_layout_decides_presence_from
+      the_announcement_is_emphasised_and_the_optional_segments_are_not
+      the_announcement_and_the_hint_read_nothing_but_the_viewport
+      the_announcement_appears_and_disappears_with_the_pane_it_names
+      no_entry_is_lost_silently_at_any_viewport_presenting_the_roster
+  mokiterions-tui/tests/verification.rs  (+1)
+      the_announcement_and_the_hint_survive_the_loss_of_colour
+
+Departures, by name:
+  mokiterions-tui/tests/layout.rs  (-1)
+      the_log_is_ten_rows_only_where_both_thresholds_are_met
+
+No #[test] carries #[ignore], as rule 11 requires.

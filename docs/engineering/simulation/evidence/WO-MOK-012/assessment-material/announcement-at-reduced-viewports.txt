@@ -1,0 +1,93 @@
+SPEC-MOK-003 rule 5, Announcement (line 405):
+  "Whenever any pane is excluded, any roster entry is not visible, or the view presents
+  a region, the observer states it: the header lists the panes currently available only as
+  overlays, the roster title states how many entries are hidden, and the view title states
+  the visible world range."
+
+render.rs:187 announcement_text implements it and is evaluated on every frame, so the
+statement is permanent wherever it appears at all. What follows is the header row and the
+pane titles as actually drawn.
+
+Note what the announcement does and does not say: it names the excluded panes and the key
+that opens each as an overlay. It does not say the viewport is too small, and it does not
+say that enlarging the terminal would restore the pane.
+
+================ 160 x 48 — every pane, ten-row log ================
+panes present:  roster true  inspector true  log true
+header row:
+[HELD  x8  overview  filter none                                                                                                                                 ]
+roster title:
+[┌ roster  living 12  deaths 0 ────────────────┐]
+view title:
+[┌ view  overview  x0-127 y0-127  whole world ───────────────────────┐]
+log title:
+[┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐]
+
+================ 160 x 44 — every pane, six-row log ================
+panes present:  roster true  inspector true  log true
+header row:
+[HELD  x8  overview  filter none                                                                                                                                 ]
+roster title:
+[┌ roster  living 12  deaths 0 ────────────────┐]
+view title:
+[┌ view  overview  x0-127 y0-127  whole world ───────────────────────┐]
+log title:
+[┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐]
+
+================ 139 x 48 — one column below the inspector threshold ================
+panes present:  roster true  inspector false  log true
+header row:
+[HELD  x8  overview  filter none                                                                                       overlays: inspector i]
+roster title:
+[┌ roster  living 12  deaths 0 ────────────────┐]
+view title:
+[┌ view  overview  x0-127 y0-127  whole world ──────────────────────────────────────────────┐]
+log title:
+[┌ log  retained 5095 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐]
+
+================ 120 x 48 — inspector excluded ================
+panes present:  roster true  inspector false  log true
+header row:
+[HELD  x8  overview  filter none                                                                    overlays: inspector i]
+roster title:
+[┌ roster  living 12  deaths 0 ────────────────┐]
+view title:
+[┌ view  overview  x0-127 y0-127  whole world ───────────────────────────┐]
+log title:
+[┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────┐]
+
+================ 120 x 37 — inspector and log excluded ================
+panes present:  roster true  inspector false  log false
+header row:
+[HELD  x8  overview  filter none                                                             overlays: log L  inspector i]
+roster title:
+[┌ roster  living 12  deaths 0 ────────────────┐]
+view title:
+[┌ view  overview  x0-127 y0-123  region ────────────────────────────────┐]
+
+================ 100 x 30 — roster present, inspector and log excluded ================
+panes present:  roster true  inspector false  log false
+header row:
+[HELD  x8  overview  filter none                                         overlays: log L  inspector i]
+roster title:
+[┌ roster  living 12  deaths 0 ────────────────┐]
+view title:
+[┌ view  overview  x0-101 y0-95  region ─────────────┐]
+
+================ 99 x 30 — one column below the roster threshold ================
+panes present:  roster false  inspector false  log false
+header row:
+[HELD  x8  overview  filter none                              overlays: roster r  log L  inspector i]
+view title:
+[┌ view  overview  x0-127 y0-95  region ───────────────────────────────────────────────────────────┐]
+
+================ 34 x 22 — the floor ================
+panes present:  roster false  inspector false  log false
+header row:
+[HELD  x8  overview       ovl r L i]
+view title:
+[┌ x0-63 y0-63 region ────────────┐]
+
+================ 33 x 21 — one below the floor: nothing is presented ================
+below the floor: 0 non-blank cells drawn (rule 5 presents nothing)
+

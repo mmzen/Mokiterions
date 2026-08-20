@@ -1,0 +1,101 @@
+Captured at 160 x 48, seed 42, policy reference, at tick 1, subject M01.
+The rejection is injected through Observer::replace_decisions_for_test, which is
+#[cfg(test)] and compiled out of the shipped binary. It cannot be reached by running
+the observer.
+
+=== inspector pane, where the outcome is presented ===
+┌ inspector ───────────────────────────────┐
+│Zug  M01                                  │
+│position  12:1  territory A               │
+│sharing   1 in this rendered cell         │
+│health 100  satiety 99  energy 99         │
+│                                          │
+│decision, tick 1                          │
+│proposed  move:west                       │
+│outcome   x rejected                      │
+│ground    the target cell lies outside the│
+│world                                     │
+│the engine validates every proposal; a    │
+│rejection is the authority boundary       │
+│working                                   │
+│applied   —                               │
+│authority REQ-MOK-004                     │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+└──────────────────────────────────────────┘
+
+=== whole screen ===
+HELD  x8  overview  sel M01  filter none                                                                                                                        
+A  standing 61/61  low 21  medium 20  high 20                                                                                                                   
+B  standing 61/61  low 21  medium 20  high 20                                                                                                                   
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  overview  x0-127 y0-127  whole world ───────────────────────┐┌ inspector ───────────────────────────────┐
+│Zug   M01  A  12:1          move:east        ││  ⡀⢀  Z ⠐ ⢀                               ⢀                        ││Zug  M01                                  │
+│     h ██ 100  s █░  99  e █░  99  f ░░   0  ││           ⢄                    ⠁                        ⠄         ││position  12:1  territory A               │
+│Krul  M02  A  17:62         move:north       ││                         ⠠⢀     ⠈                                  ││sharing   1 in this rendered cell         │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││                       ⠠                    ⠐              ⠈       ││health 100  satiety 99  energy 99         │
+│Quib  M03  A  27:52         move:east        ││      ⠂                                 ⠂ T              ⠈         ││                                          │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││                     ⡀           ⠈       ⠁⠄                        ││decision, tick 1                          │
+│Sput  M04  A  84:44         move:east        ││ ⠄                ⡀           ⡀      ⡈              ⠂              ││proposed  move:west                       │
+│     h ██ 100  s █░  99  e █░  99  f ░░   0  ││ ⠂            ⠠⠂          ⢀                  ⡀            ⠰   ⠐    ││outcome   x rejected                      │
+│Trok  M05  A  84:16         move:south       ││⠄  ⠈                                    ⠄                   ⢀      ││ground    the target cell lies outside the│
+│     h ██ 100  s █░  99  e █░  99  f ░░   0  ││                              ⠠               ⠈                    ││world                                     │
+│Womp  M06  A  11:46         move:west        ││                                   ⠄                               ││the engine validates every proposal; a    │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││     W                                    S            ⡀ ⠁         ││rejection is the authority boundary       │
+│Hozz  M07  B  67:94         move:north       ││                               ⡀              ⠄                    ││working                                   │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││             Q ⠂                       ⠄     ⠁     ⡀⠠              ││applied   —                               │
+│Nurb  M08  B  62:103        move:north       ││⠠                ⠂      ⠄                ⠠       ⠁                 ││authority REQ-MOK-004                     │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││⣀⣀⣀⣀⣀⣀⣀⣀K⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀   ││                                          │
+│Vonk  M09  B  65:82         move:east        ││                             ⠂   ⢀                   ⠈         ⠠   ││                                          │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││                            ⡀                                      ││                                          │
+│Gorm  M10  B  121:120       move:east        ││              ⠂             ⢀      ⠠     ⢀            ⠂⢀           ││                                          │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││      ⠂               ⠠    ⠄      ⠠                                ││                                          │
+│Xob   M11  B  123:115       move:north       ││                 ⠐ ⠂            V       ⠂ ⠁⠂                 ⠄⠠    ││                                          │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││⠐        ⠒                    ⠂                                    ││                                          │
+│Drix  M12  B  68:98         move:east        ││                                                                   ││                                          │
+│     h ██ 100  s █░  99  e █░  99  f ░░  10  ││                    ⢀⢀ ⠄ ⠁       H                          ⠠      ││                                          │
+│                                             ││                                  D                                ││                                          │
+│                                             ││  ⠠                    ⠂       N            ⠂               ⢀      ││                                          │
+│                                             ││            ⠄        ⠄⠐       ⠠         ⢀       ⠈                  ││                                          │
+│                                             ││      ⢀  ⠐                        ⢀                                ││                                          │
+│                                             ││            ⠐                    ⠄          ⠈          ⠈     X     ││                                          │
+│                                             ││             ⠂    ⡀                        ⠂        ⠐              ││                                          │
+│                                             ││                    ⠁           ⠁  ⠈                      ⠁ G      ││                                          │
+│                                             ││     ⠈      ⠂                                              ⠈  ⠈⠂   ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 160 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=1 subject=M09 event=action_trace result=proposal:move:east,status:accepted,detail:position:65:82,position:65:82,territory:B,health:100,satiety:100,energy│
+│tick=1 subject=M09 event=survival_changed result=health:100->100,satiety:100->99,energy:100->99,fear:0->10                                                    │
+│tick=1 subject=M10 event=action_trace result=proposal:move:east,status:accepted,detail:position:121:120,position:121:120,territory:B,health:100,satiety:100,en│
+│tick=1 subject=M10 event=survival_changed result=health:100->100,satiety:100->99,energy:100->99,fear:0->10                                                    │
+│tick=1 subject=M11 event=action_trace result=proposal:move:north,status:accepted,detail:position:123:115,position:123:115,territory:B,health:100,satiety:100,e│
+│tick=1 subject=M11 event=survival_changed result=health:100->100,satiety:100->99,energy:100->99,fear:0->10                                                    │
+│tick=1 subject=M12 event=action_trace result=proposal:move:east,status:accepted,detail:position:68:98,position:68:98,territory:B,health:100,satiety:100,energy│
+│tick=1 subject=M12 event=survival_changed result=health:100->100,satiety:100->99,energy:100->99,fear:0->10                                                    │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 100  density 0.75%  source reference  tick 1  events 160                                                                                         
+
+=== colour on this frame ===
+foreground colour        cells   first at   glyph
+Some(Reset)               2512     6,0     x
+Some(Green)                192     6,5     h
+Some(Gray)                 114    50,4     ⡀
+Some(DarkGray)              63    48,19    ⣀
+Some(Cyan)                  55     0,1     A
+Some(Magenta)               39     0,2     B
+Some(Yellow)                 4     0,0     H
+
