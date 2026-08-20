@@ -194,14 +194,23 @@ between the two. The harness figures in the table above were re-measured at `41c
    the two frames and the administrator's packet. The person is not, and no agent can supply one.
    `manual-assessment.md` still reads **OUTSTANDING** and was not edited to agree with anything here.
 2. **Four of this chain's identifiers are claimed by another pushed branch, including this record's own, and
-   this record does not resolve that.** `origin/governance/adr-mok-006-third-party-crates`, tip `f40b711`
-   of 2026-08-20T14:51:06+02:00, based on the same `ff3a155` and not merged into `master`, holds a
+   this record does not resolve that.** `origin/governance/adr-mok-006-third-party-crates`, tip `753a8b9`
+   of 2026-08-20T17:43:09+02:00, based on the same `ff3a155` and not merged into `master`, holds a
    different `WO-MOK-013` (`implemented`, an engine dependency-set comparison), a different `VER-MOK-013`,
    a different `REQ-MOK-047` (`approved`, "Resolve each package's dependency set equal to its
    declaration…" against this chain's "Render a survival gauge at a width that resolves the value it
-   presents"), and a `VREC-MOK-013` of its own — `ready`, bound to `d33ecb8`, captured at
-   `2026-08-20T12:37:27Z`, three hours before this one. `REQ-MOK-048` and `REQ-MOK-049` are free on all 27
-   remote refs. **Both sides are owner-approved and both sides are pushed**, which is worse than the
+   presents"), and a `VREC-MOK-013` of its own — `ready`, bound to `65ac88b`, captured at
+   `2026-08-20T15:29:34Z`, **nine minutes before this one**. `REQ-MOK-048` and `REQ-MOK-049` are free on all
+   27 remote refs.
+
+   > **Later fact.** That ref moved after this record was captured, twice: the tip was `f40b711` and their
+   > record was bound to candidate `d33ecb8`, captured `2026-08-20T12:37:27Z`, when the figures above were
+   > first taken. Re-measured at `753a8b9` before this branch was published, the collision is unchanged —
+   > the same four identifiers, the same statuses, `REQ-MOK-048` and `REQ-MOK-049` still free, the same
+   > eight merge conflicts and still none against `master` — and only their candidate, their capture
+   > timestamp and their pack's file count moved. The gap between the two captures closed from three hours
+   > to nine minutes, which sharpens the point rather than softening it. **This record's own claims and
+   > figures do not move**, and `evidence/WO-MOK-013/identifier-collision.md` carries the re-derivation. **Both sides are owner-approved and both sides are pushed**, which is worse than the
    `WO-MOK-012` case where one side was still `draft`. Decision 3 of this chain leaves the conflict to
    whichever branch merges second and stop condition 8 does not fire during implementation, so this blocks
    no authorized act — but it means **the name `VREC-MOK-013` does not identify one record across this
@@ -211,8 +220,11 @@ between the two. The harness figures in the table above were re-measured at `41c
    `assessment/wo-mok-005-remediation`, nine commits ahead of `origin/master` at `ff3a155`, and two commits
    ahead of the branch's own pushed tip `a339902` — so at the moment of capture the bound commit is
    **local**. No merge has happened, and a record bound to a merge commit would be a **new record, not an
-   edit of this one**. Nothing here was pushed, tagged, released or published, and `WO-MOK-013`'s *Out of
-   scope* puts all four outside it.
+   edit of this one**. `WO-MOK-013`'s *Out of scope* puts a push, a pull request, a tag and a release outside
+   the work order, and the pack's *What is not here* bullets are scoped to what the work order authorized.
+   **The owner authorized publication of this branch separately, on 2026-08-20, and that act is theirs rather
+   than part of this work order's discharge** — so the bound commit reaches `origin` while nothing here is
+   tagged, released or deployed, and neither publication nor a pull request is a verification of it.
 4. **Every automated result bound here is a claim about text or about an in-memory character buffer.** The
    fifteen cases and four properties read `TestBackend` buffers; no case was verified by looking at a
    terminal. Exactly one measurement in this packet was taken on a real terminal, and it is manual
