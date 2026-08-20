@@ -11,7 +11,7 @@ because a reader arriving at "decision 13" needs to know which document it belon
 `ENGINEERING_HARNESS.md` — product owner, technical owner, assurance owner and release owner — and
 acted in the named role for each decision below. The implementation agent put each question with the
 measured facts already assembled, transcribed the answer, and decided none of the substance. Nothing
-here was approved by implication of anything else: twenty-one acts, each put and answered on its own.
+here was approved by implication of anything else: twenty-two acts, each put and answered on its own.
 
 **What is unusual about this work order is when the decisions were taken.** The first eighteen were
 taken **before** implementation began, and `WO-MOK-013` says why: "No amendment row in this chain is to
@@ -22,10 +22,11 @@ is how that was prevented, and this review is therefore largely a record of deci
 in the work order rather than a fresh round of questions.
 
 **Decisions 19 to 21 were taken after implementation**, on the live pass of 2026-08-20 at the reference
-viewport. They are the only three this review records that the work order does not, because they could
-not be taken until there was something to look at.
+viewport. They are three of the four this review records that the work order's *Decision record* does not,
+because they could not be taken until there was something to look at. **Decision 22 is the lifecycle act
+that follows from them**, and it is the only one of the twenty-two that changes an artifact's status.
 
-## The twenty-one decisions
+## The twenty-two decisions
 
 | # | Subject | Role | Outcome |
 |---:|---|---|---|
@@ -50,12 +51,24 @@ not be taken until there was something to look at.
 | 19 | Manual assessment 1 — the gauge is legible at `160 × 48` | product owner | **SATISFIED** — "the bar carried it" |
 | 20 | The route for manual assessment 2, which has no admissible assessor | assurance owner | **Find an admissible assessor** — the other two options declined |
 | 21 | Decision 1 re-opened on the corrected figure, after the live pass | product owner | **Stands** |
+| 22 | `WO-MOK-013`'s status, and whether `VREC-MOK-013` exists | engineering owner | **`implemented`, and the record prepared as a `ready` candidate** |
 
 Decisions 1 to 18 are each recorded in full in `WO-MOK-013`'s *Decision record*, with the instruction
 verbatim where one was given verbatim, and nothing above restates a measurement that section already
 carries. Decision 1 in particular retains the two options as they were put rather than only its outcome,
 because the arithmetic is what makes it reviewable. Decisions 19 to 21 are recorded in
-`manual-assessment.md` and in item 7 of `completion-summary.md`; the work order predates them.
+`manual-assessment.md` and in item 7 of `completion-summary.md`; the work order predates them. Decision 22
+is recorded in `WO-MOK-013`'s own *Transition to `implemented`* subsection and in `VREC-MOK-013`.
+
+**Decision 22 moved one status and created one record, and it is one act rather than two.** The
+instruction, verbatim: *"you can transition WO-MOK-013 as implemented, and create VREC-MOK-013"*. The
+status change is the accountable half — `implemented` asserts the completed change **and** the retained
+evidence, which is why the implementation agent held the work order at `approved` through implementation
+and through decisions 19 to 21 rather than moving it. The record's creation is **not** an accountable
+decision: `DECISION_RIGHTS.md` classes preparing a `ready` verification record as automation's work and
+reserves the transition to `verified` to the assurance owner. So `VREC-MOK-013` exists as a **`ready`
+candidate**, the harness reports `decision_required -> review-assurance-decision (assurance-owner)` against
+it, and **that decision is not among the twenty-two above because it has not been taken.**
 
 **Decision 2 exists because the figure decision 1 was taken on was wrong.** Option B was put as
 showing six recent events rather than ten; both figures counted pane rows and not event lines, and the
@@ -148,19 +161,29 @@ already fired once, before approval, and had already been answered by decisions 
 fire again. Condition 7 — a test whose assertion cannot survive — did not fire: the one test whose
 subject ceased to exist was strengthened rather than weakened. Condition 8, the identifier collision,
 does not fire during implementation by decision 3 and fires at the merge if this branch lands second.
+**It now covers a second collision the condition was not written for**: `WO-MOK-013`, `VER-MOK-013`,
+`VREC-MOK-013` and `REQ-MOK-047` are each claimed by
+`origin/governance/adr-mok-006-third-party-crates` as well, which `identifier-collision.md` measures.
+Decision 3's rule reaches it unchanged — the second branch to `master` renumbers — but the condition's
+own words name the `WO-MOK-012` collision only, so the extension is stated here rather than assumed.
 
 ## What this review did not decide
 
 - **Whether manual assessment 2 passes.** It is outstanding with no author, in `manual-assessment.md`.
   Decision 20 settles how it will be closed and not what it returns. The frame and the question are
   prepared in `discoverability-assessment.md`; the person is not, and no agent can supply one.
-- **`WO-MOK-013`'s status.** It is `approved`. Implementation began on the owner's direction of
-  2026-08-20; the transition to `in_progress` or `implemented` is an owner act and neither was taken
-  here. Start preflight accepts `approved`, so nothing is blocked by leaving it there.
-- **`VREC-MOK-013`.** `commit_bound_verification` is `required` and the record does not exist. Decision
-  19 makes it writable — `REQ-MOK-047` on the assessment, `REQ-MOK-049` on the automated cases — but it
-  is captured against the commit that carries this implementation, by a separate act, and it would have
-  to disclose `REQ-MOK-048` as unverified.
+- **Whether `VREC-MOK-013` is verified.** The record exists as a **`ready` candidate** bound to
+  `41c20ca`, prepared under decision 22. `DECISION_RIGHTS.md` reserves the `ready` → `verified`
+  transition to the accountable assurance owner, the instruction of 2026-08-20 named the record's
+  creation and stated no judgement on its evidence, and the harness reports the outstanding act as
+  `decision_required -> review-assurance-decision`. Decision 19 is what made the record writable —
+  `REQ-MOK-047` on the assessment, `REQ-MOK-049` on the automated cases — and the record discloses
+  `REQ-MOK-048` as unverified.
+- **The four-identifier collision with `origin/governance/adr-mok-006-third-party-crates`.** That
+  branch holds a different `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047`, all pushed
+  and all owner-approved on their side. `identifier-collision.md` measures it and takes no decision;
+  decision 3's rule sends it to the merge and stop condition 8 does not fire during implementation.
+  Neither side renumbered here.
 - **`VREC-MOK-005`'s staleness**, `WO-MOK-008`'s draft disposition, the eight `W-HEX-003`
   reassessments, the three `W-HEX-001`s, manual assessment 7 of `VER-MOK-005`, and `ROADMAP.md`'s
   Phase 2 claim. All out of scope, all still open, and none touched.

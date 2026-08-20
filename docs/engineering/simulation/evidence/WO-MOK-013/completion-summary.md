@@ -2,10 +2,13 @@
 
 `WO-MOK-013`'s *Completion report format* specifies eight items. This document is those eight, in that order.
 
-**All nine in-scope items are implemented.** The status is **`approved`** and not `implemented`: the transition is an
-owner act and was not taken here. `WORKFLOW.md` makes a status change a record of authority rather than a confidence
-estimate, start preflight accepts `approved`, and `WO-MOK-007` stayed `approved` through its own implementation. The
-work order's *Lifecycle* section carries the same statement.
+**All nine in-scope items are implemented, and the status is now `implemented`.** The transition was taken on
+2026-08-20 by the repository owner as engineering owner, after this report was written and after the three
+post-implementation decisions of item 7 — the implementation agent held the work order at `approved` throughout, because
+`implemented` asserts the completed change **and** the retained evidence as an accountable judgement. `WORKFLOW.md`
+makes a status change a record of authority rather than a confidence estimate, so `implemented` does not assert that
+`VER-MOK-013` is satisfied; it is not, on one count. `VREC-MOK-013` was captured in the same act and is a **`ready`
+candidate, not verified**. The work order's *Transition to `implemented`* subsection carries both statements.
 
 ## 1. Decision 1 as taken, with both corrections to how the option was put
 
@@ -309,9 +312,12 @@ The two departures are not a remediation: `ARCH-MOK-001`'s own `updated` moved t
 ratified its public-item prohibition, so it no longer predates either specification. **Every one of the eight is a
 reassessment owed by an artifact owner and none is authorized here.**
 
-`W-HEX-001` stands at three, accepted on the precedent the first two set. `WO-MOK-013` does not appear in it because
-it is `approved` rather than `implemented`; a transition would add a fourth unless evidence keyed to the identifier is
-present, and **this pack is that evidence**.
+`W-HEX-001` stood at three when this item was measured, accepted on the precedent the first two set, and `WO-MOK-013`
+did not appear in it because the work order was still `approved`. **The transition to `implemented` added the fourth, as
+predicted here**: at that status the inspector reports `W-HEX-001` against `WO-MOK-010`, `WO-MOK-011`, `WO-MOK-012` and
+`WO-MOK-013`, its warning count moves from 11 to 12, and *Active work* is empty. The warning fires despite this pack
+existing, because evidence discovery keys on file names rather than on the directory; it is the same naming artefact the
+first three are, `validation.txt` attributes them, and the validator stays PASS with 0 warnings on all four planes.
 
 ## 7. Both manual assessments, with author, date, role and terminal
 
@@ -351,11 +357,12 @@ half is delivered — `discoverability-frame.txt` (48 × 160, the reference view
 without its viewport-naming banners, and `discoverability-assessment.md` is the packet an administrator can work from
 without reading rule 7 to the assessor. In each frame the character `?` appears on the header row and nowhere else.
 
-**Consequence.** `VREC-MOK-013` can now record `REQ-MOK-047` as verified on assessment 1 and **must disclose
-`REQ-MOK-048` as unverified** while assessment 2 stands. `REQ-MOK-049` was never gated on a manual assessment —
-`VER-MOK-013` states that and gives its reason — so it turns on the automated cases alone. Verification remains a
-separate commit-bound record and a separate accountable act, and none of this blocks the implementation this pack
-evidences.
+**Consequence, and it has since been drawn.** `VREC-MOK-013` was captured on 2026-08-20 against `41c20ca` and does
+exactly this: it records `REQ-MOK-047` as verified on assessment 1, `REQ-MOK-049` on the automated cases — that
+requirement was never gated on a manual assessment, and `VER-MOK-013` states that and gives its reason — and it
+**discloses `REQ-MOK-048` as unverified** while assessment 2 stands. The record is a **`ready` candidate**: the
+verification decision on it is the assurance owner's and is still outstanding. None of this blocked the implementation
+this pack evidences, and none of it is retired by the work order's move to `implemented`.
 
 **A third act was taken on the same live pass.** Having watched the implementation run at `160 × 48`, the owner was
 asked whether decision 1 is re-opened on the corrected eight-to-four figure — the log now carries four recent events
@@ -391,18 +398,24 @@ recurred inside a work order written to enumerate its own locations.
   discloses, and out of scope here.
 - **`evidence/WO-MOK-012/closing-review.md` is not edited**, though its decision 13 has been superseded in its route.
   It records what the owner decided on the material they were shown, and it remains a true record of that act.
-- **No status transition.** `WO-MOK-013` stays `approved`. Neither `in_progress` — which would record an authority
-  given as an instruction rather than as a status act — nor `implemented`, which asserts an accountable judgement.
-- **No `VREC-MOK-013`.** `commit_bound_verification` is `required`. With assessment 1 satisfied the record has become
-  writable — it could record `REQ-MOK-047` on that assessment and `REQ-MOK-049` on the automated cases — but it is a
-  separate accountable act against the commit that carries this implementation, and it was not authorized here. It
-  would have to disclose `REQ-MOK-048` as unverified.
+- **No status transition taken by the agent.** `WO-MOK-013` stayed `approved` through implementation and through the
+  three decisions of item 7. `in_progress` would have recorded an authority given as an instruction rather than as a
+  status act, and `implemented` asserts an accountable judgement. **The owner took the second on 2026-08-20**, as
+  engineering owner, in the instruction *"you can transition WO-MOK-013 as implemented, and create VREC-MOK-013"* —
+  recorded as decision 22 in `closing-review.md` and in the work order's *Transition to `implemented`* subsection.
+- **No verification decision.** `commit_bound_verification` is `required`, and the same instruction created
+  `VREC-MOK-013` — bound to `41c20ca`, recording `REQ-MOK-047` on assessment 1 and `REQ-MOK-049` on the automated cases,
+  and **disclosing `REQ-MOK-048` as unverified**. It is a **`ready` candidate and not `verified`**:
+  `DECISION_RIGHTS.md` reserves that transition to the accountable assurance owner, the instruction stated no judgement
+  on the evidence, and the harness reports the outstanding act as `decision_required -> review-assurance-decision`.
 - **Nothing is re-opened that a record binds.** `VREC-MOK-006` measured 97 items and 169 tests, and `VREC-MOK-007`,
   `VREC-MOK-010` and `VREC-MOK-011` measured their own trees. Each was correct where it was taken.
 
 ### Still open, and none of it authorized here
 
-- The **eight `W-HEX-003`** reassessments and the **three `W-HEX-001`s** — item 6 attributes them and resolves none.
+- The **eight `W-HEX-003`** reassessments and the **`W-HEX-001`s, now four** with this work order's own — item 6
+  attributes them and resolves none.
+- **The verification decision on `VREC-MOK-013`**, which the harness names as the one item under *Decision required*.
 - **`WO-MOK-008`**, still `draft`, and the inspector's "Definitions pending (1)".
 - **`VREC-MOK-005`'s staleness** and **manual assessment 7 of `VER-MOK-005`**.
 - **`ROADMAP.md`'s Phase 2 claim**, which this work order's ROADMAP entry does not touch. Phases 2 and 2.5 are
@@ -411,5 +424,9 @@ recurred inside a work order written to enumerate its own locations.
   what remains is a person who has not read `SPEC-MOK-003` rule 7, which no agent can arrange.
 - The **`WO-MOK-012` identifier collision**, deferred to the merge by decision 3. Whichever branch reaches `master`
   second renumbers before it lands.
+- **A second collision, found on 2026-08-20 and measured in `identifier-collision.md`.**
+  `origin/governance/adr-mok-006-third-party-crates` holds a different `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and
+  `REQ-MOK-047`, all pushed and all owner-approved on that side. Decision 3's rule reaches it unchanged; nothing was
+  renumbered here.
 - **No push, pull request, tag or release.** `WO-MOK-013`'s *Out of scope* puts all four outside it, and none was
   authorized in this work.

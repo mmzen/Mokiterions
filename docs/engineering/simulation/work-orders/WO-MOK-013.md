@@ -2,7 +2,7 @@
 id = "WO-MOK-013"
 type = "work_order"
 title = "Make the observer's survival gauges resolve, its controls discoverable, and its hidden-pane notice actionable"
-status = "approved"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -22,13 +22,18 @@ verification = ["VER-MOK-013"]
 
 ## Lifecycle
 
-This work order was a proposal while its status was `draft`. **It is `approved` as of 2026-08-20**, which authorizes the
-scope below and nothing else. Transition to `in_progress` records that implementation has begun. Transition to
-`implemented` requires the completed change and the retained evidence. Verification and release require separate
-commit-bound records.
+This work order was a proposal while its status was `draft`. **It was `approved` on 2026-08-20**, which authorized the
+scope below and nothing else, and **it is `implemented` as of the same day** — see *Transition to `implemented`* below.
+Transition to `in_progress` records that implementation has begun and was never taken here; transition to `implemented`
+requires the completed change and the retained evidence. Verification and release require separate commit-bound records.
 
-Commit-bound verification is classified `required` above. `VREC-MOK-013` is the record that binds it, and it does not
-exist yet.
+Commit-bound verification is classified `required` above. `VREC-MOK-013` is the record that binds it, and **it exists as
+a `ready` candidate** at `docs/engineering/simulation/verification-records/VREC-MOK-013.md`, captured against commit
+`41c20ca` in the same instruction that moved this status. It is **not `verified`**: `DECISION_RIGHTS.md` reserves that
+transition to the accountable assurance owner, the harness reports it as `decision_required ->
+review-assurance-decision`, and the record discloses `REQ-MOK-048` as unverified because manual assessment 2 of
+`VER-MOK-013` is still unauthored. **This status and that record are independent**, and neither substitutes for the
+other in either direction.
 
 **The decision that blocked approval has been taken, and confirmed on a corrected cost figure.** It was the choice
 between amending `REQ-MOK-020` and holding the log at six rows; the product owner chose the latter on 2026-08-20 and
@@ -53,21 +58,42 @@ claim.
 **Implementation landed on 2026-08-20, on the repository owner's direction in the same session** — "ok, now we can start
 implementing WO-MOK-013" — and all nine in-scope items are complete. The evidence is under
 `evidence/WO-MOK-013/`; `completion-summary.md` there is the completion report this work order's *Completion report
-format* section specifies, and `closing-review.md` records the eighteen decisions with the role that took each.
+format* section specifies, and `closing-review.md` records the twenty-one decisions with the role that took each —
+eighteen before implementation and three on the live pass that followed it.
 
-**The status is deliberately left at `approved`, and the transition is an owner act.** `WORKFLOW.md` states that "a
-status change records authority; it is not a confidence estimate", and start preflight accepts `approved` or
-`in_progress`, so nothing is blocked by leaving it here. Neither `in_progress` nor `implemented` is recorded by the
-implementation agent: `in_progress` would record an authority that was given as an instruction and not as a status act,
-and `implemented` asserts the completed change **and** the retained evidence as an accountable judgement. `WO-MOK-007`
-stayed `approved` through its own implementation on the same reasoning. Both transitions are available to the owner and
-neither is taken here.
+### Transition to `implemented`
 
-**Two of `VER-MOK-013`'s obligations are outstanding and are not the implementation's to close.** Both manual
-assessments stand with no author, recorded in `evidence/WO-MOK-013/manual-assessment.md` with the material and the
-corrected procedure for each. The discoverability assessment additionally has no admissible assessor available: the
-contract asks for a person who has not read `SPEC-MOK-003` rule 7, and the owner has read it and ratified two amendments
-naming the key. Three options are set out there and none is taken.
+**`approved` → `implemented` was taken on 2026-08-20 by the repository owner, acting as accountable engineering
+owner.** The instruction, verbatim: *"you can transition WO-MOK-013 as implemented, and create VREC-MOK-013"*. It is
+recorded as decision 22 in `evidence/WO-MOK-013/closing-review.md`. The implementation agent held this status at
+`approved` through implementation and through the three post-implementation decisions, on the ground that `implemented`
+asserts the completed change **and** the retained evidence as an accountable judgement — `WO-MOK-007` and `WO-MOK-011`
+each stayed `approved` through their own implementation on the same reasoning. The status moved when that judgement was
+given, and not before. `in_progress` was never recorded, because the authority to begin was given as an instruction
+rather than as a status act and start preflight accepts `approved`.
+
+**What the status records is authority, not confidence.** `WORKFLOW.md`: "a status change records authority; it is not a
+confidence estimate." So `implemented` records that the accountable engineering owner judges the nine in-scope items
+complete and their evidence retained. It does **not** record that `VER-MOK-013` is satisfied — it is not, on one count —
+that `REQ-MOK-048` is verified, that `VREC-MOK-013` is verified, that the identifier collision is resolved, or that
+anything has been merged, pushed, tagged or released. Each of those is a separate record or a separate accountable act,
+and `VREC-MOK-013`'s *What this record does not claim* enumerates them.
+
+**One measured consequence of the transition, so that it is not discovered later as a surprise.** With this status at
+`implemented` the inspector's *Active work* queue is empty where it named this work order, and `W-HEX-001` moves from
+three observations to four: it warns against every implemented work order that retains an evidence directory, because
+evidence discovery keys on file names, and this chain retains one. That warning is a naming artefact of the harness and
+not an adverse finding about this work; `evidence/WO-MOK-013/validation.txt` attributes all of them.
+
+**One of `VER-MOK-013`'s obligations is outstanding and is not the implementation's to close.** Manual assessment 1 —
+reference-viewport gauge legibility — was taken on 2026-08-20 and is **SATISFIED**, with its author, date, role and
+terminal recorded, which answers the adverse observation on the roster gauges that this chain exists for. Manual
+assessment 2, overlay discoverability, **stands with no author and has no admissible assessor available**: the contract
+asks for a person who has not read `SPEC-MOK-003` rule 7, and the owner has read it and ratified two amendments naming
+the key. Of the three options set out in `evidence/WO-MOK-013/manual-assessment.md` the assurance owner took the first —
+find an admissible assessor — declining the other two, and the frame and the exact question are prepared in
+`discoverability-assessment.md`. A route is not an outcome, so the row is still open and `REQ-MOK-048` is still
+unverified.
 
 **No amendment row in this chain is to be left `OUTSTANDING`, and none is.** Every specification amendment this work order
 needs is stated below, in advance, in the terms the accountable owner had to decide it in, and every one was decided
@@ -538,6 +564,17 @@ the same session. The owner chose approval alone.
 decision envelope* above, and nothing outside them. It does not begin the work: `in_progress` is a separate transition
 and the status stays `approved` until implementation starts. It asserts nothing about what is built. It is not a
 verification, and `VREC-MOK-013` remains the record that binds this work order's assurance classification.
+
+> **Later fact.** This subsection is left in the tense it was written in, because what was put to the owner and what they
+> answered on 2026-08-20 is what makes the approval reviewable. Three of its rows have since moved: all nine in-scope
+> items landed, `evidence/WO-MOK-013/` and the `docs/ROADMAP.md` entry exist, and `VREC-MOK-013` exists as a `ready`
+> candidate. `in_progress` was never recorded — the status went `approved` → `implemented`. **One of the two predicted
+> inspector figures held and one did not**, which is worth stating because the prediction is written above as a
+> measurement: `W-HEX-001` did move from **3** to **4** observations, but `assurance_pending →
+> prepare-commit-bound-verification` **did not appear**, because the same instruction that moved this status also created
+> `VREC-MOK-013`, so *Assurance pending* is empty and *Decision required* names that record instead. The prediction was
+> taken with the status flipped alone; the real transition moved two things at once. *Transition to `implemented`* in
+> *Lifecycle* is the current statement; this subsection is the record of the approval.
 
 **`commit_bound_verification` stays `required` and was not put for confirmation.** `WO-MOK-012`'s classification was
 `not_required` and was confirmed as its own act, because a waiver has to be decided by the owner who bears it. `required`

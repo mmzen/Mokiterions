@@ -329,7 +329,7 @@ the approval.
 to. `REQ-MOK-047`, `REQ-MOK-048` and `REQ-MOK-049` were approved on 2026-08-20 in three separate acts, `VER-MOK-013`
 approved as their contract, six `SPEC-MOK-003` amendments ratified one question at a time, and the work order approved
 as a bounded scope — eighteen decisions, **all taken before implementation began** so that no amendment row was left
-`OUTSTANDING`, and three more on the live pass that followed. What changed:
+`OUTSTANDING`, three more on the live pass that followed, and a twenty-second that moved the status. What changed:
 
 - **The survival gauges resolve.** Two gauges per line instead of four raises the roster entry to three lines and the
   bar from **2 cells to 13**, which is 14 renderable states for 101 values where there were 3, and a ten-point change
@@ -349,8 +349,10 @@ The workspace runs **226** tests, up from 212 — fourteen arrivals, no losses, 
 `test-census.md`. The engine is untouched: `mokiterions-core/` is byte-identical to `master`, and non-perturbation is
 closed as a measured chain against `ff3a155` rather than asserted.
 
-**Status.** `WO-MOK-013` is **`approved`**, and implementation landed on the repository owner's direction of
-2026-08-20. It is **not verified**: `commit_bound_verification` is `required` and `VREC-MOK-013` does not exist yet.
+**Status.** `WO-MOK-013` is **`implemented`** as of 2026-08-20, moved there by the repository owner as engineering owner
+after the live pass. It is **not verified**: `commit_bound_verification` is `required`, and `VREC-MOK-013` exists as a
+**`ready` candidate** bound to `41c20ca` rather than as a verified record — `DECISION_RIGHTS.md` reserves that
+transition to the accountable assurance owner, and the harness reports it as the one item under *Decision required*.
 
 Of `VER-MOK-013`'s two manual assessments, **the gauge-legibility one was taken at `160 × 48` on 2026-08-20 and is
 SATISFIED** — which is the adverse observation this chain exists to answer, now answered by a person rather than by
@@ -358,9 +360,17 @@ arithmetic. **The discoverability one is still outstanding with no author**: it 
 `SPEC-MOK-003` rule 7, which the available assessor has read and ratified six amendments to. The owner chose to find
 such a person rather than amend the contract or close the row by decision — the only route that verifies
 `REQ-MOK-048` — so the frame, the question and the administrator's rules are prepared in
-`evidence/WO-MOK-013/discoverability-assessment.md` and the row waits on the person. `VREC-MOK-013` will therefore
-record `REQ-MOK-047` and `REQ-MOK-049` and disclose `REQ-MOK-048` as unverified. Everything measured is in
-`engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
+`evidence/WO-MOK-013/discoverability-assessment.md` and the row waits on the person. `VREC-MOK-013` therefore
+records `REQ-MOK-047` and `REQ-MOK-049` and **discloses `REQ-MOK-048` as unverified**.
+
+**One thing about this chain's names.** Four of its identifiers — `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and
+`REQ-MOK-047` — are also claimed by `governance/adr-mok-006-third-party-crates`, a branch off the same base that is
+pushed and not merged, where they name a dependency-set work order and its contract. Both sides' artifacts are
+owner-approved. Nothing was renumbered: decision 3's rule sends the conflict to whichever branch reaches `master` second.
+`evidence/WO-MOK-013/identifier-collision.md` measures it, and until one side merges **a citation of any of those four
+names resolves only together with the branch it was written on**.
+
+Everything measured is in `engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
 
 ---
 
