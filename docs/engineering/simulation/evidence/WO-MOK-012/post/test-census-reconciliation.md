@@ -9,6 +9,7 @@
 | Date | 2026-08-20 |
 | Re-taken | **§6** — the candidate has moved three times since; 250 names, exit `0`, and a second rename |
 | Re-taken again | **§7** — the branch-numbering correction; still 250 names and exit `0`, with a third rename |
+| Retained | **§8** — §§6 and 7 measured from logs that were not kept. `post/test-run-amended.txt` and `post/test-census-amended.txt` are those two files, and §8 reconciles them against both retained censuses |
 
 Row 248 states the obligation this file discharges: no case present before the change may be
 **removed, renamed away or `#[ignore]`d**. It groups the three because they are the same loss from a
@@ -254,3 +255,80 @@ the branches were numbered 3 and 4 when the test was written, so the history is 
 only in this file. The alternative — leaving a normatively numbered branch list disagreeing with the test
 names that check it — would have cost every later reader the mapping, and `SPEC-MOK-001` rule 26 states
 that the ordering is normative rather than illustrative.
+
+## 8. The log §§6 and 7 measured from, retained
+
+Sections 6 and 7 report a 250-name census at exit `0`, and until now **neither figure had a file behind
+it.** The two retained files, `post/test-run.txt` and `post/test-census.txt`, are the `7c4aef3` pair:
+249 names, three failures, exit `101`. A verifier reading §6's "250 passed, 0 failed" had nothing to
+hash and nothing to re-census, which is the one thing this packet is not allowed to ask of them.
+
+So the pair is retained, at the tree that carries this section:
+
+| Field | Value |
+|---|---|
+| Commit | `139061530f1dba72c9a20427eeaac6ce69492fb2`, tracked-clean, nothing untracked |
+| Invocation | `cargo test --locked --workspace --no-fail-fast`, from the workspace root |
+| Exit code | **`0`** |
+| Log | `post/test-run-amended.txt` — 377 lines, 22,721 bytes |
+| Census | `post/test-census-amended.txt` — 250 names, 250 passed, 0 failed, 0 ignored |
+| Reader | `analysis/test-census.py`, unchanged, the same reader that wrote every census here |
+| Date | 2026-08-20 |
+
+Two commits sit between this run and `59d61b9`, the commit §7 was taken at, and **neither contains a
+line the engine compiles** — one is this evidence directory, the other is `VER-MOK-012` and
+`WO-MOK-012` prose. So this log is `59d61b9`'s suite, on the same reasoning `post/capture-state.txt` §5
+gives for naming a capture's commit.
+
+**Both pairs are kept and neither replaces the other.** §§1 to 5 reconcile the 249-name census and name
+its three failures, and `escalation.md` cites those three by name as the measured failure that stopped
+the work; overwriting that file would leave five sections and an escalation record without their
+artifact. The files are named for what they are, and this is which section reads which:
+
+| File | Read by | State |
+|---|---|---|
+| `post/test-run.txt`, `post/test-census.txt` | §§1 to 5, `escalation.md` | `7c4aef3` — 249 names, 246 pass, 3 fail, exit `101` |
+| `post/test-run-amended.txt`, `post/test-census-amended.txt` | §§6 to 8 | after the `REQ-MOK-048` amendment — 250 names, 250 pass, exit `0` |
+
+### The reconciliation, recomputed from the retained files
+
+Row 248's obligation runs against the **baseline**, so that is the comparison that discharges it, and it
+is now computable by a verifier from two committed files:
+
+    $ names() { grep -v '^#' "$1" | grep -v '^$' | sed 's/ :: [^:]*$//' | sort; }
+    $ comm -23 <(names baseline/test-census.txt) <(names post/test-census-amended.txt)
+    tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+| | Count |
+|---|---:|
+| names at the baseline | 212 |
+| present at the baseline, absent here | **1** — still the §3 rename, and no other |
+| retained, target-qualified name unchanged | **211** |
+| added since the baseline | **39** |
+| names here | **250** |
+| `#[ignore]`d | **0** |
+| removed | **0** |
+| non-`ok` outcomes | **0** |
+
+211 + 1 = 212 and 211 + 39 = 250, so every name on both sides sits in exactly one row.
+
+The step from the `7c4aef3` census to this one is five lines, and it is exactly what §§6 and 7 describe
+— two renames and one genuine addition, no removal:
+
+    - tests/viability.rs :: no_identifier_series_is_monotone_in_identifier_or_correlated_beyond_the_band
+    + tests/viability.rs :: no_identifier_series_is_monotone_in_identifier
+    + tests/viability.rs :: survival_by_turn_position_stays_inside_the_stated_bound
+    - unittests :: simulation::tests::branches_three_and_four_choose_by_distance_then_by_the_engagement_threshold
+    + unittests :: simulation::tests::branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold
+
+The first three lines are `VER-MOK-012`'s third amendment row landing in the suite: oracle 5's outcome
+check was one test asserting a monotonicity tripwire *and* a rank-correlation band, and the amendment
+removed the band and put a turn-position survival bound in its place. One test became two because one
+obligation became two, which is why this is `+2 −1` rather than a rename. The last two lines are §7's.
+
+**The suite's cost moved with it**, and the figure belongs here rather than in a reader's assumption:
+`tests/viability.rs` now runs 37.88 s of the whole invocation's wall time, against 2.08 s for the next
+slowest target, because the turn-position bound is evaluated over the declared 200-seed diagnostic set at
+1,000 ticks each. `VER-MOK-012` states no time bound on the suite and this section sets none; it records
+what one invocation now costs, so that a later reader who finds `cargo test` slow knows which target to
+look at and why it is expected.
