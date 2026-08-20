@@ -1,4 +1,18 @@
-# The approval and classification decisions of 2026-08-20 on `WO-MOK-012`
+# The approval, classification and completion decisions of 2026-08-20 on `WO-MOK-012`
+
+> **Decision 18, added in a later turn the same day.** `WO-MOK-012` was set from `approved` to **`implemented`** by the
+> repository owner acting as engineering owner: *"you can transition WO-MOK-012 to implemened, and create the artifact
+> pack for the reported findings"*. That is the terminal status for this work order — governance-only work stops at
+> `implemented` and takes no verification record. The same instruction authorized a new artifact pack for the three
+> adverse observations, which is a separate chain with its own identifiers and its own approval, and which this work
+> order's *Out of scope* section always placed outside it. Still not authorized: any push, pull request, tag or release.
+>
+> `in_progress` was never recorded. The implementation was complete and committed before the approval, so there was no
+> interval in which it would have been true — a consequence of the sequencing deviation recorded below, stated rather
+> than left as a gap.
+>
+> At `implemented` this work order emits a **W-HEX-001**, accepted rather than engineered around, on the precedent
+> `WO-MOK-010` and `WO-MOK-011` set. The rest of this note records decisions 16 and 17 and is unchanged.
 
 `WO-MOK-012` moved from `draft` to `approved` on 2026-08-20, and its `commit_bound_verification` classification was
 confirmed `not_required`, both by the repository owner acting as **engineering owner** — the role `DECISION_RIGHTS.md`

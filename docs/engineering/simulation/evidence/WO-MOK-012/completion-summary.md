@@ -160,11 +160,15 @@ with the instruction verbatim, in `assurance-decision.md`.
 - **The `[assurance]` classification.** Confirmed `not_required`, as a separately stated act rather than inferred from
   the approval — which is what the `rationale` field's demand for confirmation at approval required.
 
-### Still awaiting the engineering owner
+- **The transition to `implemented`.** Taken in a later turn the same day, decision 18. This work order is now
+  `implemented`, which is where governance-only work stops: it takes no verification record and nothing further is owed
+  on its own lifecycle. `in_progress` was never recorded, because the implementation was complete before the approval —
+  a consequence of the sequencing deviation, stated rather than left as a gap.
 
-- **The transition to `implemented`.** The gate is met on the facts: the change is complete and the evidence retained.
-  The transition is a separate act and the approval instruction did not name it, so it was not taken. Being
-  governance-only, `implemented` is where this work order stops — it takes no verification record.
+At `implemented` this work order emits one **W-HEX-001** warning, accepted deliberately. `discover_evidence` matches
+`^(WO-[A-Z0-9-]*\d{3})(?:-|\.|$)` against each file's own name, and this packet's identifier is its directory's;
+`WO-MOK-010` and `WO-MOK-011` carry the same warning for the same reason, and following that precedent was preferred to
+renaming a file for a cosmetic gain.
 
 ### Not decided by the closing review
 

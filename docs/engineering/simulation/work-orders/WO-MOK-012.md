@@ -2,7 +2,7 @@
 id = "WO-MOK-012"
 type = "work_order"
 title = "Record VER-MOK-005's seven manual assessments and ratify the eleven amended provisions they were blocked behind"
-status = "approved"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -50,10 +50,31 @@ bounded work order. The instruction, verbatim and complete:
 > i approve WO-MOK-012, i confirm commit_bound_verification = "not_required"
 
 **It named two acts and no others.** It approved this work order and it confirmed the assurance classification. It did
-**not** authorize a transition to `in_progress` or `implemented`, and it did not authorize a push, a pull request, a tag
-or a release. This work order therefore stands at `approved`, and the agent moved nothing else — on the same reading
-`evidence/WO-MOK-011/assurance-decision.md` applied when an instruction named `VREC-MOK-011` and not `WO-MOK-011`, and
-the work order was left where it stood. Nothing here is approved by implication.
+not authorize a push, a pull request, a tag or a release, and it did not authorize a lifecycle transition beyond
+`approved` — on the same reading `evidence/WO-MOK-011/assurance-decision.md` applied when an instruction named
+`VREC-MOK-011` and not `WO-MOK-011`, and the work order was left where it stood. Nothing here is approved by
+implication.
+
+**Set to `implemented` on 2026-08-20 by the repository owner acting as engineering owner**, in a later turn the same
+day. The instruction, verbatim: *"you can transition WO-MOK-012 to implemened, and create the artifact pack for the
+reported findings"*. The agent recorded the transition; it did not decide it. Still not authorized and still not done:
+any push, pull request, tag or release.
+
+**`in_progress` was never recorded, and that is a consequence of the sequencing below rather than an oversight.** The
+implementation was complete and committed before this file was approved, so there was no interval during which
+`in_progress` would have been true when written. It is stated here rather than left as a gap in the lifecycle trail.
+
+**This is the terminal status for this work order.** Being governance-only it stops here and takes no verification
+record, so nothing further is owed on its own lifecycle. What it records as open — manual assessment 7, the three
+adverse observations, `VREC-MOK-005`'s staleness — is open elsewhere and is not closed by this transition.
+
+**One derived warning is accepted rather than engineered around.** At `implemented` this work order emits a
+**W-HEX-001** — "is implemented but has no evidence document keyed to its ID" — because `discover_evidence` in
+`scripts/generate_harness_dashboard.py` matches `^(WO-[A-Z0-9-]*\d{3})(?:-|\.|$)` against each *file's own* name, and
+the identifier of this packet is its directory's rather than any file's. `WO-MOK-010` and `WO-MOK-011` both carry the
+same warning for the same reason. Renaming one evidence file would silence it; the precedent is to carry it, and
+following the precedent keeps three consecutive packets consistent instead of making this one an exception for a
+cosmetic reason. The agent raised the choice before the transition and did not decide it silently.
 
 **The order of acts is recorded rather than smoothed over.** The governance text this work order authorizes was written
 and committed at `aebb26f` while this file read `draft`; the approval came afterwards, in the following turn. That is
@@ -136,6 +157,7 @@ are recorded in `evidence/WO-MOK-012/assurance-decision.md`:
 |---|---|---|---|
 | 16 | Approval of this work order | engineering owner | **Approved.** `draft` → `approved` |
 | 17 | The `commit_bound_verification` classification | engineering owner | **Confirmed `not_required`**, as a separately stated act |
+| 18 | Completion of this work order | engineering owner | **Set to `implemented`**, the terminal status for governance-only work |
 
 Decisions 13 to 15 are recorded here but **are not implemented by this work order**. They are the substance of the
 second chain that decision 12 directs, and they are written down now so that the chain that carries them inherits a
