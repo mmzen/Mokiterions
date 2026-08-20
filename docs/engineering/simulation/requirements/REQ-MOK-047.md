@@ -2,7 +2,7 @@
 id = "REQ-MOK-047"
 type = "requirement"
 title = "Surrender forfeits satiety to the attacker and settles the encounter"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

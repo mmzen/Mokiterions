@@ -2,7 +2,7 @@
 id = "REQ-MOK-042"
 type = "requirement"
 title = "Detect contact between Mokiterions"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

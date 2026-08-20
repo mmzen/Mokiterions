@@ -2,7 +2,7 @@
 id = "WO-MOK-012"
 type = "work_order"
 title = "Let Mokiterions act on each other: contact, seven targeted actions, a defender's own answer, a source that reads fear, and the resource composition corrected"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -50,6 +50,19 @@ and work order first, amendment text under the work order — was wrong in exact
 validation covers is the text as it stood, and nothing else: the three decisions recorded below were **not** supplied
 with it, and none of them was taken on its authority. They were put to the owner separately once the ordering was found,
 and answered on the same date, before any amendment text existed. An approval is not a licence to choose them.
+
+**The transition was completed on 2026-08-20, in the order that finding requires.** The amendment text was written first;
+the four questions it left genuinely open were put to the owner and answered; and the owner then approved the five
+amendments, `REQ-MOK-042` through `REQ-MOK-051`, `VER-MOK-012` and this work order in one act. `validate` reports PASS
+with 116 artifacts and no errors or warnings, and `preflight . --work-order WO-MOK-012 --phase start` reports **PASS with
+no diagnostics** — the ten `E007`s and the `W016` that blocked the first attempt are gone, and `W013` with them, every
+governing artifact now being active.
+
+One note for whoever runs that preflight next, because it cost a diagnosis here. It must be run under the harness version
+`.engineering-harness.toml` pins, `0.4.0`, which is also the version `.github/workflows/engineering-harness.yml` installs.
+Run under a newer harness the same tree reports **FAIL** with eight `I001` "differs from distribution template" lines and
+nothing else: that is skew between the newer distribution's templates and this repository's pinned ones, and it is not a
+finding about this chain. The reading above is the pinned one.
 
 **An architecture review is required and is not waived; its form is decided.** No active architecture carries an
 `addresses` edge to any requirement in this chain: `ARCH-MOK-001` addresses `REQ-MOK-004`, `008`, `009`, `010` and `016`,
@@ -243,9 +256,9 @@ and amended afterwards only if the measurement moves them, each on its owner's s
 
 #### The text was written on 2026-08-20, and what writing it exposed
 
-The amended text of `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `REQ-MOK-005` and `REQ-MOK-034` now exists in those
-artifacts, each carrying an amendment-record row marked **OUTSTANDING** and pointing here. Every `status` field is
-unchanged; nothing below has been approved by anyone.
+The amended text of `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `REQ-MOK-005` and `REQ-MOK-034` was written on
+2026-08-20, and the repository owner approved it on the same day together with `REQ-MOK-042` through `REQ-MOK-051`,
+`VER-MOK-012` and this work order, in the single act this section requires.
 
 Writing it found four defects in this section, and each is corrected in place above rather than silently: provision 1 of
 the `SPEC-MOK-002` list stated that `Observation` is a public item, which the source contradicts; provision 6 of the
@@ -253,22 +266,45 @@ the `SPEC-MOK-002` list stated that `Observation` is a public item, which the so
 numeric mechanism that `REQ-MOK-051` leaves open on measurement, so it is two amendments and only the first is written;
 and the rule 21 bullet placed a tie-break in a rule that selects nothing.
 
-**Eight consequences in the text were derived rather than decided, and they need the owner's ratification with it.**
-None was put to an owner, because each follows from something already decided; but each is a statement a reader will
-rely on, so each is named here rather than left inside prose:
+**Eight consequences in the text were derived rather than decided.** None had been put to an owner, because each follows
+from something already decided; but each is a statement a reader will rely on, so each was named here for ratification
+rather than left inside prose. **The owner took the four that were genuinely open on 2026-08-20**, and those four are
+recorded in the table below rather than in this list. All eight are ratified as they now stand in the specifications:
 
 1. **The `suffered` field is present only when the record is non-empty.** Forced: an unconditional field changes every
    `baseline --trace-actions` line and `CAP-MOK-009` excludes that.
-2. **A targeted proposal renders as `proposal:<verb>:<target-id>`** inside the existing field, on the `position:<x:y>`
-   precedent, so the trace line's field count does not change.
+2. **A targeted proposal reports its target in a `target` field of its own**, immediately after `proposal`, present only
+   on those lines. **Decided, not derived** — see the table below.
 3. **The field lists of `attack_resolved`, `threat_resolved` and `surrender_resolved`**, including `target_died`,
    `discarded` and `increase`, each present because the transition it reports would otherwise appear in no record.
-4. **`avoid` against a co-located target moves north**, then east, south, west, rather than being a rejection.
+4. **`avoid` against a co-located target moves north**, then east, south, west, rather than being a rejection. Worth a
+   reader's note: rule 26 never reaches this case, because its contact branch covers distance `0` and its perceived
+   branch fires only at distance `2` or more. The clause is defensive completeness for rule 21, which any source's
+   proposal enters.
 5. **The uniform field name `target`** across all seven targeted variants.
-6. **`fight` carries two preconditions and not one** — contact as well as an unanswered attack in the record.
+6. **`fight` carries two preconditions and not one** — contact as well as an unanswered attack in the record. What
+   happens when the second cannot be met at the answering turn was open, and is now decided below.
 7. **`agent_died` gains no cause detail**; `attack_resolved`'s `target_died` makes a combat death recoverable without
    changing a released event's shape.
-8. **`REQ-MOK-051`'s numeric form is deferred to a second amendment**, per the correction above.
+8. **`REQ-MOK-051`'s numeric form is deferred to a second amendment**, per the correction above. Confirmed below.
+
+### The four decisions taken on the written text, 2026-08-20
+
+Taken by the repository owner after reading this section, and before the approval act. Each is written into the
+specification it governs, at the place a reader meets the consequence.
+
+| Question | Decision | Alternative declined | Where it is written |
+|---|---|---|---|
+| Rule 26 branch 1 answers the first attack in the record. What happens when that answer cannot succeed — the attacker died, or it left contact and `fear` below `30` selects `fight`? | **Answer it anyway.** Branch 1 does not re-check rule 21's preconditions. Rule 6 rejects the proposal, the opportunity is spent, neither Mokiterion changes, and rule 25 clears the record regardless. | Skipping to the next answerable attack, and skipping only a dead attacker. Both were cheap to state and both would have hidden rule 25's asymmetric latency behind a source that quietly routed around it. | `SPEC-MOK-001` rule 26, the paragraph after the branch list. `VER-MOK-012` asserts both failure cases and **counts** the spent turns rather than assuming they stay rare. |
+| `REQ-MOK-051`'s correction mechanism: decide the numeric form now, or defer it? | **Defer.** Rule 5 states the ceiling and names the amendment to make; the numeric form is a second amendment taken later on the measured evidence. | A proportional allowance `S + R - 100 <= C * R / 100` now, which would move rule 19's identity with the reference source off `T = 0` and touch `REQ-MOK-033`; and a last-resort clause, which would need a mirror in rule 19. | `SPEC-MOK-001` rule 5's accumulation paragraph and rule 19's three added paragraphs, including the `T = 0` hazard the later amendment must answer. |
+| How does the `--trace-actions` line render a targeted proposal's target? | **A `target` field of its own**, immediately after `proposal`, present only for the seven targeted verbs. | Rendering it inside `proposal` as `attack:M03`, on the inner-colon precedent `position:<x:y>` and `proposal:move:south` already set. That would have kept the field count fixed. | `SPEC-MOK-001` *Data and interface contracts*, the `action_trace` format block and the paragraph under it; rule 7's second paragraph. |
+| Approve now, or read the text first? | **Approve now, in one act**, as the ordering above requires. | Reading first, and ratifying the amendment text alone while the chain stayed `draft`. | The amendment records of all five amended artifacts, and the `status` field of every artifact in this chain. |
+
+Two consequences of the third decision are recorded where they land rather than left to be discovered. The
+`action_trace` line now has **two conditionally-present fields**, so no parser may assume a fixed field count on it; and
+`target`'s position shifts `status` and everything after it by one field on targeted lines, which is safe only because a
+targeted line exists nowhere but under `social`. `VER-MOK-012` carries both as checks, one of them a static check over
+every suite and retained script that parses the line.
 
 **`SPEC-MOK-001`** — the behavior authority. Thirteen provisions, of which seven are appended rules.
 
@@ -300,8 +336,8 @@ rely on, so each is named here rather than left inside prose:
    the enumeration above omitted.** The omission was not cosmetic. Provision 11 decides that the trace line reports the
    suffered-attack record, and a line cannot report a field whose position and rendering are unfixed; this provision is
    where every other record kind's field order is fixed, so it is where this one belongs. Two shapes are fixed here.
-   Targeted proposals render their target inside the existing `proposal` field as `<verb>:<target-id>`, on the
-   inner-colon precedent `position:<x:y>` already sets, so the field count does not change. The suffered-attack record
+   Targeted proposals report their target in a `target` field of its own, immediately after `proposal` and present only
+   on those lines, on the technical owner's decision of 2026-08-20 recorded above. The suffered-attack record
    is appended after `fear` as a `suffered` field that is **present only when the record is non-empty** — which is
    derived, not chosen: an unconditional field would change every `baseline --trace-actions` line, and `CAP-MOK-009`
    excludes that outright. Provision 11 keeps the semantics, which is when the field is read relative to the clearing.

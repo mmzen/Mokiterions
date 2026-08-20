@@ -2,7 +2,7 @@
 id = "REQ-MOK-050"
 type = "requirement"
 title = "Read no population aggregate anywhere a decision or a rule is made"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

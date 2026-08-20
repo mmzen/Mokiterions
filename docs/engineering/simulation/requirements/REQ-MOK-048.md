@@ -2,7 +2,7 @@
 id = "REQ-MOK-048"
 type = "requirement"
 title = "A fourth decision source that reads fear and proposes the targeted actions"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

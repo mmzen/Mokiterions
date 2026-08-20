@@ -2,7 +2,7 @@
 id = "REQ-MOK-049"
 type = "requirement"
 title = "Keep the world habitable and combat lethal under the social decision source"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

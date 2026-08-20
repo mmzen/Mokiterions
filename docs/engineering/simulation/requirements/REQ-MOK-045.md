@@ -2,7 +2,7 @@
 id = "REQ-MOK-045"
 type = "requirement"
 title = "Carry fear and suffered attacks on the observation so a defender answers for itself"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

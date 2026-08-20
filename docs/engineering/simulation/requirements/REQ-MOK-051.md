@@ -2,7 +2,7 @@
 id = "REQ-MOK-051"
 type = "requirement"
 title = "Bound the class composition of a territory's standing resources"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

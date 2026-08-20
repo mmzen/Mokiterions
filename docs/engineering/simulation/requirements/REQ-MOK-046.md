@@ -2,7 +2,7 @@
 id = "REQ-MOK-046"
 type = "requirement"
 title = "Threatening raises the target's fear and does nothing else"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"

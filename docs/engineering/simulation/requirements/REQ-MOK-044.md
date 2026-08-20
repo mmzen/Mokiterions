@@ -2,7 +2,7 @@
 id = "REQ-MOK-044"
 type = "requirement"
 title = "Resolve an attack deterministically and permit death by combat"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
