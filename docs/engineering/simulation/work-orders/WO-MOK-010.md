@@ -411,7 +411,7 @@ Stated as components. Paths are the current ones and are not a licence to change
 **Governance and documentation.**
 
 - `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`: the amendments above, each with its amendment-record row.
-- `SIMULATION_RULES.md` and `docs/mokiterions/ROADMAP.md`.
+- `SIMULATION_RULES.md` and `../../../ROADMAP.md`.
 - `docs/engineering/simulation/evidence/WO-MOK-010/`.
 
 **Tests.** New cases in both tiers of both packages, placed by `SPEC-MOK-004`'s rule. No existing test is deleted,

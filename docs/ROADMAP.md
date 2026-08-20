@@ -2,7 +2,7 @@
 
 > **Authority note.** This document is repository-owned functional planning. It is **not** approved product
 > intent, a requirement, an architecture decision, work authorization, a verification contract, or release
-> authority. Only formal artifacts under `docs/engineering/` carry that authority, per `ENGINEERING_HARNESS.md`.
+> authority. Only formal artifacts under `engineering` carry that authority, per `../ENGINEERING_HARNESS.md`.
 > Nothing here authorizes implementation. Each phase below must be converted into an approved artifact chain
 > before any work begins.
 
@@ -64,7 +64,7 @@ about tick 1,000 rather than a steady state.
 **The two hard blockers of the next section are resolved.** Constraints 1 and 2 below are retained as the recorded
 rationale for the phase ordering, not as a description of the current system. Their figures describe the
 pre-Phase-1 constants and are superseded by the measurements in
-`docs/engineering/simulation/evidence/WO-MOK-002/`.
+`engineering/simulation/evidence/WO-MOK-002`.
 
 ## Three constraints that shape the ordering
 
@@ -162,7 +162,7 @@ building on an unauthorized base.
 
 **Also resolve:**
 
-- The evidence-detection mismatch: `scripts/generate_harness_dashboard.py` keys evidence on **file name**,
+- The evidence-detection mismatch: `../scripts/generate_harness_dashboard.py` keys evidence on **file name**,
   while `WO-MOK-001` instructed evidence into a **directory** named for the work order. This produces a
   misleading `W-HEX-001` warning despite evidence existing. Align the convention in one direction.
 - `W-HEX-003`: `ADR-MOK-001` now predates its newer declared target `ARCH-MOK-001` and needs reassessment.
@@ -304,7 +304,7 @@ written against a final contract instead of being rewritten twice.
   10,000-tick run at the default density reaches extinction at tick 9,154. This was measured, disclosed, and
   accepted by the product owner on 2026-08-17 because no Phase 1 requirement speaks past tick 1,000, where the
   rule is decisively better than its predecessor. See
-  `docs/engineering/simulation/evidence/WO-MOK-002/density-curve.md`.
+  `engineering/simulation/evidence/WO-MOK-002/density-curve.md`.
 
 **Out of scope.** Combat resolution, model integration.
 
@@ -365,7 +365,7 @@ the merged commit is outstanding work under `WO-MOK-010`, on the precedent `VREC
 under its own first candidate.
 
 Everything measured, and everything it does not establish, is in
-`docs/engineering/simulation/evidence/WO-MOK-010/` — start with its `README.md`, then `completion-summary.md`.
+`engineering/simulation/evidence/WO-MOK-010` — start with its `../README.md`, then `completion-summary.md`.
 The survivor figures there are downstream of one mid-implementation owner decision: `WO-MOK-010` stop condition 6
 fired when `REQ-MOK-034`'s floor was missed on three of five declared seeds at the `0..=100` trait range first
 specified, and the technical owner chose to narrow the range to `0..=40` rather than amend the floor
@@ -419,7 +419,7 @@ predates `master`'s release-ci work, so oracle 3's census, oracle 4's frames and
 re-derived when this branch merges `master`. Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
 `SPEC-MOK-004` — are approved by the repository owner's act of 2026-08-19; the rows marked `OUTSTANDING` in those
 specifications from earlier work are untouched and still outstanding. Everything measured is in
-`docs/engineering/simulation/evidence/WO-MOK-011/`.
+`engineering/simulation/evidence/WO-MOK-011`.
 
 **It does not close anything Phase 2 left open.** `fear` is still read by nothing, the trait vector is still one
 trait, entropy substreams are still unimplemented, and high-class resource accumulation is still carried. Phase 2's
@@ -576,5 +576,5 @@ anticipate it:
 
 Update this roadmap when a phase is converted into an approved artifact chain, when a phase is completed,
 reordered, or abandoned, or when a constraint above is invalidated by measurement. Formal authority always
-comes from typed artifact metadata and accountable lifecycle decisions under `docs/engineering/`, never from
+comes from typed artifact metadata and accountable lifecycle decisions under `engineering`, never from
 this document.

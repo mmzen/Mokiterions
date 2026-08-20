@@ -35,7 +35,7 @@ measurement retained in this packet and is cited to the file that holds it.
 | `SPEC-MOK-003.md` | 50 | 16 | four provisions, one amendment row |
 | `SPEC-MOK-004.md` | 57 | 5 | the recorded figures, one amendment row |
 | `SIMULATION_RULES.md` | 34 | 14 | the derived rules text |
-| `docs/mokiterions/ROADMAP.md` | 61 | 0 | Phase 2.5 |
+| `../../../../ROADMAP.md` | 61 | 0 | Phase 2.5 |
 
 New governance artifacts, none of them modifications: `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-040`,
 `REQ-MOK-041`, `VER-MOK-011`, `WO-MOK-011`, and this evidence packet.
