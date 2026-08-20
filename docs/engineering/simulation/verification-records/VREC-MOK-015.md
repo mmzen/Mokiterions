@@ -2,7 +2,7 @@
 id = "VREC-MOK-015"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-014 at the merge commit"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -41,10 +41,28 @@ verifies_work_order = ["WO-MOK-014"]
 conforms_to = ["VER-MOK-014"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
+
+**Transitioned from `ready` to `verified` on 2026-08-20 by the repository owner, acting as accountable assurance
+owner.** `DECISION_RIGHTS.md` states that *"only accountable assurance and release owners may transition those records
+to `verified` or `released`; record preparation never creates commits, tags, or publications"*. The instruction,
+verbatim: *"you can transition VREC-MOK-015 to verified, i validate, and commit / push"*. It names this record, so
+nothing had to be read across — the previous instruction in this chain named the contract, `VER-MOK-014`, and
+`evidence/WO-MOK-014/assurance-decision.md` records that reading. What the transition accepted and what it leaves
+standing is in *Scope of the transition taken* at the end of this record; **read that before relying on the status.**
+
+**`status` is the only front-matter field that changed, and `updated` did not move** — it already read `2026-08-20`,
+which is the capture date and the decision date both. `commit`, `git_object_format`, `worktree_state`, `verified_at`,
+`artifact_snapshot_sha256`, all twenty-two `evidence_paths`, both declared relations and the `title` — which still
+reads *candidate*, because the record was captured as one — are exactly as the capture produced them. A decision does
+not re-measure provenance, and it does not re-point the record at the commit that carries the decision: this record
+still binds the merge, `9599c0a`, and its snapshot figure is still reproducible only there. **No path was added to
+`evidence_paths`**, and in particular not `evidence/WO-MOK-014/merge/assurance-decision.md`, which records this
+decision, postdates the commit this record binds, and is the reasoning behind the status rather than evidence the
+status accepts. `VREC-MOK-011` set that precedent and `VREC-MOK-014` followed it.
 
 This record names commit `9599c0a91bb2b6e183bce3a5e82b570d547594f8` — the merge of `origin/master` into this branch —
-as a candidate satisfying `VER-MOK-014`, and the evidence in
+as the candidate satisfying `VER-MOK-014`, and the evidence in
 `docs/engineering/simulation/evidence/WO-MOK-014/merge/` as the evidence for it.
 
 **It is the first record in this repository bound to a merge commit, and the item it discharges was written down twice
@@ -54,8 +72,12 @@ stays bound to it"*, and that *"a record for the merge is a new record"* — and
 carries the same item as its last residual: *"the verification record owed against the merge commit"*. This is that
 record, for this merge. It is not that record for `WO-MOK-011`'s merge, which is still owed and belongs to that chain.
 
-**It is `ready`, and it decides nothing.** Moving it to `verified` is the accountable assurance owner's act on the
-evidence listed above. Nothing here takes that act, and no part of this record's preparation was an acceptance.
+What this file said as a candidate is kept rather than overwritten: *"It is `ready`, and it decides nothing. Moving it
+to `verified` is the accountable assurance owner's act on the evidence listed above. Nothing here takes that act, and
+no part of this record's preparation was an acceptance."* That is still true of the preparation; the decision came
+afterwards on the same day and is recorded in `evidence/WO-MOK-014/merge/assurance-decision.md`. **Verification is not
+merge and not release.** Pull request #33 is open and has not merged, no release record binds this work, and this status
+makes no commit release-eligible.
 
 ## The front matter is the capture's provenance, not a decision's
 
@@ -76,7 +98,7 @@ So the front matter was composed by hand and each field was measured directly:
 |---|---|
 | `commit` | `git rev-parse HEAD` at the merge commit, which was already committed and pushed before any figure below was taken |
 | `worktree_state` | `git status --porcelain` in a detached worktree checked out at `9599c0a`: **0 entries**. In this checkout the same command returns the packet and one modification, both of which belong to the commit that carries this record and neither of which is a tracked difference from `9599c0a` in anything the contract reads |
-| `verified_at` | the capture timestamp, as the template names it. It is not an approval time: `status` is `ready` |
+| `verified_at` | the capture timestamp, as the template names it, and **not** the approval time. The capture read `2026-08-20T19:46:51Z`; the transition was taken at `20:12Z` the same evening and did not move this field, because a decision does not re-measure provenance |
 | `artifact_snapshot_sha256` | `python scripts/generate_harness_dashboard.py` in that same detached worktree, whose leaf directory name equals this repository's because `build_snapshot` puts the checkout's directory name into the hashed document. **PASS, 114 artifacts, 396 relations, 0 errors, 10 warnings, snapshot `b3470146…`**, and `sha256sum target/harness-dashboard/dashboard-data.json` equal to it |
 
 The precedent for a hand-composed record front matter re-measured at the commit it names is `VREC-MOK-014`'s own
@@ -119,7 +141,7 @@ record for the merge is a new record.
 | `CARGO_HTTP_PROXY=http://127.0.0.1:1 cargo test -p Mokiterions --locked --offline` | exit 0 — 85 tests, `Cargo.lock` sha256 `4154a6f1…` before and after, `git status --porcelain` unchanged across both commands |
 | `python scripts/validate_engineering_artifacts.py --root .` | **PASS**, exit 0 — 0 errors, 0 warnings, all four planes `E0/W0`. **114 artifacts** at the candidate clean, **115** with this record present |
 | `python scripts/generate_harness_dashboard.py --root .` | **PASS**, exit 0 — at the candidate clean **114 artifacts / 396 relations / 0 errors / 10 warnings**, snapshot `b3470146…`, the figure this record declares; with this record present 115 / 398 / 0 / 11, snapshot `27c27144…`. In both columns the printed snapshot equals `sha256sum target/harness-dashboard/dashboard-data.json` |
-| `python scripts/inspect_engineering_artifacts.py --root .` | **PASS**, exit 0 — with this record present `decision_required` holds exactly one entry, `VREC-MOK-015 [ready] assurance-review`; `active_work` and `assurance_pending` are empty; `definitions_pending` holds only `WO-MOK-008 [draft]`, which predates this chain |
+| `python scripts/inspect_engineering_artifacts.py --root .` | **PASS**, exit 0 — with this record present `decision_required` holds exactly one entry, `VREC-MOK-015 [ready] assurance-review` — that reading is of the capture, and the later fact below records the queue empty once the transition was taken; `active_work` and `assurance_pending` are empty; `definitions_pending` holds only `WO-MOK-008 [draft]`, which predates this chain |
 | `python -m se_harness doctor .` under the pinned 0.4.0 venv | exit 0 — **81 `PASS` lines, no `FAIL`**, byte-for-byte the same list in both columns: every managed file unchanged, every distribution file matched, lock and config present |
 | `python -m se_harness preflight . --work-order WO-MOK-014 --phase review` | **PASS**, exit 0, identical in both columns — `WO-MOK-014 (implemented)`, commit-bound verification **required**, decided by the engineering owner |
 | `git rev-parse HEAD` before and after every check | `9599c0a…`, with no tracked file differing from it |
@@ -130,14 +152,22 @@ this checkout with all of it — so that the difference between the columns is t
 moved from `VREC-MOK-014`'s reading is the workspace test total, **212 → 226**: the 14 are `master`'s observer tests,
 arriving with the six source files above.
 
-**This record's presence raises one new warning, and this record does not close it.** `W-REV-004` — *"`VREC-MOK-015` is
-ready but its work is fully covered by verified or released records; review possible supersession without inferring
-authority"* — names both records and suggests `review-verification-supersession` to the assurance owner. The harness is
-right to ask, because one work order now carries two records; the reason supersession is not available is stated below,
+**This record's presence raised one new warning, and preparing the record did not close it.** `W-REV-004` —
+*"`VREC-MOK-015` is ready but its work is fully covered by verified or released records; review possible supersession
+without inferring authority"* — named both records and suggested `review-verification-supersession` to the assurance
+owner. The harness was right to ask, because one work order now carries two records; the reason supersession is not
+available is stated below,
 and stating it is not the same as closing a finding whose own words are *not to infer authority*. `I-REV-001` reads 14
 observations in both columns only because this record's declared commit is the observed revision at the moment of
 capture; from the commit that carries this file onward it reads 15, and `merge/harness.txt` says so where the numbers
 are printed.
+
+> **Later fact, 2026-08-20, in the commit that transitioned this record.** `W-REV-004` is gone from the graph, and it
+> was **not answered**. Its predicate is `ready`; the transition made this record `verified`, so the finding stops being
+> raised rather than being resolved — warnings 11 → 10, findings 26 → 25, suggested next steps 13 → 11, of which two are
+> `W-REV-004`'s and the emptied `decision_required` queue's. No supersession was assessed and none was taken. That is
+> the one figure this transition moves beyond the queue it was asked to answer, it is disclosed here rather than left to
+> be noticed, and `evidence/WO-MOK-014/merge/assurance-decision.md` records the before-and-after pair in full.
 
 ### The five oracles, re-derived rather than carried over
 
@@ -198,8 +228,11 @@ nothing and the worktree's leaf directory name equal to this repository's.
 rather than a general rule.** `VREC-MOK-014` had to publish two figures for `65ac88b` — `a12ec1a3…` with the record held
 out of the tree and `dcb28212…` with it present — because it already existed at the commit it binds. This record does
 not exist at `9599c0a`, and neither does the evidence packet it lists: both arrive in the commit that carries this file.
-So one figure serves, and it is invariant under every later edit to this record for the reason `VREC-MOK-014` records —
-`build_snapshot` hashes the normalized front matter, the relations and the findings, and not artifact prose.
+So one figure serves, and no later edit to this record can move it — not this transition's change of `status` either,
+because the tree it is a figure of contains no copy of this record to change. The distinction `VREC-MOK-014` records
+applies to the working-tree figures rather than to this one: `build_snapshot` hashes the normalized front matter, the
+relations and the findings, and not artifact prose, so at any commit that does carry this record `status` moves the
+digest and prose does not. `evidence/WO-MOK-014/merge/assurance-decision.md` measures that pair.
 
 **No digest is given for the commit that carries this record, and none can be.** `build_snapshot` writes
 `git rev-parse HEAD` into the hashed document in 25 places, so that digest does not exist until the commit does, and a
@@ -233,9 +266,12 @@ recorded rather than the figures deleted.
   `evidence/WO-MOK-012/amendment-ratifications.md` states for `VREC-MOK-005`.
 - **It takes no release decision and no merge decision.** Pull request #33 is the repository owner's, its body is not
   edited here, and nothing in this record makes any commit release-eligible.
-- **It is not an assurance decision.** `status` is `ready`. What it would accept, if the accountable assurance owner
-  accepts it, is the evidence enumerated in `evidence_paths` as satisfying `VER-MOK-014` at commit
-  `9599c0a91bb2b6e183bce3a5e82b570d547594f8`, and nothing beyond it.
+- **The status reaches the candidate commit and nothing downstream of it.** What the decision accepted is the evidence
+  enumerated in `evidence_paths` as satisfying `VER-MOK-014` at commit
+  `9599c0a91bb2b6e183bce3a5e82b570d547594f8`, and nothing beyond it — the words are the `ready` record's own, and the
+  transition took them as they stood. `9599c0a` is not an ancestor of `origin/master` and not of `755db72`, the commit
+  `RLS-MOK-001` released 0.1.0 from, so `master` carries none of this work and a reader who takes this `verified` status
+  as a statement about `master` has read it wider than it was given.
 
 ## What had to happen before this record could be captured, and what still stands
 
@@ -245,13 +281,44 @@ as `9599c0a` and pushed; and the contract was re-derived at that commit into the
 matters — the candidate had to exist before its evidence could be a figure of it, which is the mistake
 `WO-MOK-011`'s merge capture disclosed about itself and this one avoids.
 
-What still stands, none of it this record's to take:
+A fourth act followed, and the rest still stands:
 
-1. **This record from `ready` to `verified`** — the accountable assurance owner, who also holds the `W-REV-004`
-   supersession question the inspector raises against this record and `VREC-MOK-014`. Two acts, not one.
+1. **This record from `ready` to `verified`** — **taken on 2026-08-20** by the accountable assurance owner, on the
+   instruction quoted at the top of this record, and recorded in `evidence/WO-MOK-014/merge/assurance-decision.md`. The
+   `W-REV-004` supersession question that stood beside it was **not** taken: it was never assessed, and the finding
+   stopped being raised when the status moved. Two acts were owed and one of them happened.
 2. **`VER-MOK-011`'s fifth manual assessment** — assurance owner. Outstanding since 2026-08-19.
 3. **`VER-MOK-014`'s manual assessment 7** — technical owner, at the first admission of a crate beyond `ratatui`.
 4. **A verification record for `WO-MOK-011`'s merge** — still owed to that chain; this record is not it.
-5. **Pull request #33** — the repository owner. Four statements in its body are overtaken by the three commits made
-   after it was last edited.
+5. **Pull request #33** — the repository owner. Four statements in its body are overtaken by the commits made after it
+   was last edited; the body still uses the pre-renumbering identifiers throughout and does not mention this record at
+   all, because it predates it. It is not edited here.
 6. **The `VER-MOK-005` / `VER-MOK-008` rewording** — a separate work order after #33 merges, as the owner directed.
+
+## Scope of the transition taken
+
+The status accepts the twenty-two evidence paths above as satisfying `VER-MOK-014` at `9599c0a`, and that is its whole
+extent. It performs no assessment, re-derives no figure, takes no technical owner's reading, moves no work order —
+`WO-MOK-014` stays `implemented`, no instruction named it, and `WORKFLOW.md` is explicit that a work order's status
+never substitutes for a record's — renumbers nothing, merges nothing, tags nothing and releases nothing. `verified_at`
+remains the capture timestamp because the decision measured nothing of its own; the before-and-after readings it did
+take are in `evidence/WO-MOK-014/merge/assurance-decision.md` and are readings of the tree, not of the candidate.
+
+Five things a `verified` status is most easily read as having closed, and does not:
+
+1. **`VREC-MOK-014` stands, and this is not a supersession.** Both records are `verified`, one work order carries both,
+   and each binds its own commit with its own evidence and its own reading. `W-REV-004` asked whether one should
+   supersede the other; that question was not assessed, and the finding stopped being raised the moment this record left
+   `ready`. **A finding that stops being raised has not been answered.**
+2. **`VER-MOK-011`'s fifth manual assessment stays owed.** It belongs to another contract, no measurement in this
+   packet reaches it, and this status does not narrow it.
+3. **`VER-MOK-014`'s assessment 7 was found not due, not discharged.** The first admission of a crate beyond `ratatui`
+   owes it by name, together with assessments 1 and 2 for that crate and the seven-item evidence set the contract fixes.
+4. **`VER-MOK-005` and `VER-MOK-008` stay owed**, and their repair is a separate work order after #33 merges, as the
+   owner directed. The `W-HEX-003` observations that name them are unmoved by this status — six before and six after.
+5. **Pull request #33 is not readied by this.** It is open and unmerged; verification is the assurance owner's act and
+   merging is the engineering owner's, and this status neither authorizes nor enables it.
+
+Every command behind every figure in this record is offline, reads no credential, secret, token or environment value,
+and none appears in the retained evidence. The transition adds no command and no figure of its own; what it measures is
+in `evidence/WO-MOK-014/merge/assurance-decision.md`, under the same constraint.
