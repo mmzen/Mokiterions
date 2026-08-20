@@ -1,0 +1,579 @@
+VER-MOK-012: the engine's public interface, enumerated at both commits
+======================================================================
+
+Work order   WO-MOK-012 (Phase 3.1, encounters)
+Retains      "the engine public-interface enumeration at both commits, against the approved
+             SPEC-MOK-002 amendment"
+Authority    SPEC-MOK-002 rule 5, whose three lists close the interface, as amended 2026-08-18
+             (observation surface) and 2026-08-20 (CAP-MOK-009 growth, four rows); rule 6, whose
+             prohibition was re-checked on 2026-08-20 and not amended
+Baseline     39662d13abd08e3410648d1c59ad38384f8ad2d2   (baseline/COMMIT.txt)
+Candidates   7c4aef3967406c05d80da963695898b77f5329e9   (first candidate, 3 failing)
+             a5ded20ef1dc6af8faf55d03674fbbe9733a299d   (feature/phase-3-definition, HEAD)
+Reader       analysis/interface.py, exit 0
+Date         2026-08-20
+
+SPEC-MOK-002 rule 5 does not describe the engine's public interface, it closes it: "the library
+target's public interface is exactly the union of the three lists below." Its 2026-08-20
+amendment then says what the check on that closure is -- "VER-MOK-012's interface-growth check
+compares the engine's public surface item for item against this table, so the check is re-run
+against four rows rather than three."
+
+A comparison against a closed list needs the surface as a list. `grep pub` does not produce one:
+of the fifteen units of growth this work order makes, fourteen are enum variants, and a variant
+carries no visibility keyword of its own. That is precisely how the defect the amendment's fourth
+row corrects came about -- a field appended to a variant that was already public is invisible to
+any check that looks for the word `pub`.
+
+So this file carries the surface, extracted rather than grepped: section 2 is the complete
+enumeration at the candidate, 186 entries, and section 3 is the baseline as a diff against it.
+
+
+1. The reader, and why its enumeration cannot have omitted an item
+------------------------------------------------------------------
+
+analysis/interface.py takes the three files that make up the library target -- src/lib.rs and the
+two modules it declares `pub mod` for -- and emits, for every public item, its declaration with
+its body or value removed, and underneath it the field or variant list. Bodies, match arms,
+comments and constant values are dropped on purpose: they are not surface, and a public function
+that gains a match arm has not grown the interface.
+
+    $ git show <rev>:mokiterions-core/src/lib.rs > lib.rs        (and cli.rs, simulation.rs)
+    $ python analysis/interface.py <that directory>
+    exit 0
+
+                                        baseline   candidate
+    entries                                  172         186
+    sha256 of the listing              ef2d12b0…   91d8e6be…
+    bytes                                  7,406       8,066
+
+The listing is a claim that nothing public was missed, and the claim is checkable against a
+cruder reader that cannot miss anything either:
+
+    $ grep -cE "^[[:space:]]*pub([[:space:]]|\()" lib.rs cli.rs simulation.rs   (summed)
+    92          at the baseline, and 92 at the candidate
+
+    entries beginning `pub` at column 0        49    +
+    entries beginning `    pub ` (a field)     43    =   92
+
+Exactly the 92 lines the grep sees, at both commits, with nothing left over on either side. Those
+92 are the first two rows below; everything under them is what the grep cannot see, and the fourth
+row is where the growth is:
+
+                                            baseline   candidate
+    `pub` declarations                            49          49    \  the 92 lines
+    public fields                                 43          43    /  the grep sees
+    trait implementations on public types         13          13
+    enum variants                                 48          62
+    private fields                                18          18       Density 1, RunSummary 8,
+    the `#[default]` marker on `Policy`            1           1       Simulation 9
+                                              ------      ------
+    entries                                      172         186
+
+The private-field rows are in the listing rather than suppressed, because rule 5 makes two claims
+that only a listing of them can settle: `RunSummary` is an "opaque value type; its fields stay
+private", and `Simulation` "exposes no public field". Section 6 turns the same rows to a third
+purpose.
+
+
+2. The candidate enumeration, in full
+--------------------------------------
+
+186 entries, at a5ded20e. Verbatim reader output; six lines exceed 100 columns and are not
+wrapped, because a wrapped enumeration is no longer a thing `diff` can be trusted on.
+
+    # lib.rs -- module `crate`, 79 lines
+    pub mod cli
+    pub mod simulation
+    pub fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8 where I: IntoIterator<Item = S>, S: Into<String>, W: Write, E: Write,
+
+    # cli.rs -- module `cli`, 157 lines
+    pub const cli::USAGE: &str
+    pub enum cli::Command   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        Help,
+        Run(Config),
+    pub fn cli::parse<I, S>(args: I) -> Result<Command, String> where I: IntoIterator<Item = S>, S: Into<String>,
+
+    # simulation.rs -- module `simulation`, 6865 lines
+    pub const simulation::CELLS_PER_TERRITORY: usize
+    pub struct simulation::Config   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub seed: u64,
+        pub tick_limit: u64,
+        pub policy: Policy,
+        pub density: Density,
+        pub trace_actions: bool,
+    pub struct simulation::Density   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        hundredths_of_percent: u32,
+    pub const simulation::Density::DEFAULT: Self
+    pub fn simulation::Density::parse(value: &str) -> Result<Self, String>
+    pub fn simulation::Density::resources_per_territory(self) -> usize
+    impl Default for simulation::Density
+    impl fmt::Display for simulation::Density
+    pub enum simulation::Policy   #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+        Baseline,
+        #[default]
+        Reference,
+        Individual,
+        Social,
+    pub fn simulation::Policy::parse(value: &str) -> Option<Self>
+    impl fmt::Display for simulation::Policy
+    pub enum simulation::Territory   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        A,
+        B,
+    impl fmt::Display for simulation::Territory
+    pub struct simulation::Coordinate   #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub x: u8,
+        pub y: u8,
+    impl fmt::Display for simulation::Coordinate
+    pub enum simulation::Direction   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        North,
+        East,
+        South,
+        West,
+    impl fmt::Display for simulation::Direction
+    pub enum simulation::FoodClass   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        Low,
+        Medium,
+        High,
+    impl fmt::Display for simulation::FoodClass
+    pub enum simulation::Action   #[derive(Debug, Clone, PartialEq, Eq)]
+        Wait,
+        Sleep,
+        Eat { food_id: String },
+        Move { direction: Direction },
+        Attack { target: String },
+        Threaten { target: String },
+        Fight { target: String },
+        Retreat { target: String },
+        Surrender { target: String },
+        Approach { target: String },
+        Avoid { target: String },
+    impl fmt::Display for simulation::Action
+    pub enum simulation::TerminationReason   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        TickLimit,
+        Extinction,
+    impl fmt::Display for simulation::TerminationReason
+    pub struct simulation::RunSummary   #[derive(Debug, Clone, PartialEq, Eq)]
+        reason: TerminationReason,
+        ticks: u64,
+        survivors: usize,
+        deaths: usize,
+        territory_a: usize,
+        territory_b: usize,
+        food_a: [usize; 3],
+        food_b: [usize; 3],
+    pub fn simulation::RunSummary::reason(&self) -> TerminationReason
+    pub fn simulation::RunSummary::ticks(&self) -> u64
+    pub fn simulation::RunSummary::survivors(&self) -> usize
+    pub fn simulation::RunSummary::deaths(&self) -> usize
+    pub enum simulation::RegenerationSkipReason   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        Depleted,
+        Capacity,
+    impl fmt::Display for simulation::RegenerationSkipReason
+    pub enum simulation::EventType   #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        WorldInitialized,
+        FoodInitialized,
+        AgentInitialized,
+        DecisionSourceSelected,
+        SurvivalChanged,
+        AgentDied,
+        FoodConsumed,
+        FoodRegenerated,
+        FoodRegenerationSkipped,
+        TerritoryCrossed,
+        AttackResolved,
+        ThreatResolved,
+        SurrenderResolved,
+        SimulationEnded,
+        ActionTrace,
+    pub const simulation::EventType::ALL: [Self; 15]
+    pub fn simulation::EventType::as_str(self) -> &'static str
+    impl fmt::Display for simulation::EventType
+    pub enum simulation::EventDetail   #[derive(Debug, Clone, PartialEq, Eq)]
+        WorldInitialized { width: u8, height: u8, territories: u8, },
+        FoodInitialized { class: FoodClass, position: Coordinate, territory: Territory, },
+        AgentInitialized { name: String, position: Coordinate, territory: Territory, health: u8, satiety: u8, energy: u8, fear: u8, waste_tolerance: u8, },
+        DecisionSourceSelected { source: String, },
+        SurvivalChanged { health: (u8, u8), satiety: (u8, u8), energy: (u8, u8), fear: (u8, u8), },
+        AgentDied { health: u8, },
+        FoodConsumed { food: String, class: FoodClass, satiety: (u8, u8), energy: (u8, u8), },
+        FoodRegenerated { food: String, class: FoodClass, position: Coordinate, },
+        FoodRegenerationSkipped { reason: RegenerationSkipReason, count: usize, },
+        TerritoryCrossed { from: Territory, to: Territory, },
+        AttackResolved { target: String, damage: u8, target_health: (u8, u8), striker_energy: (u8, u8), target_died: bool, },
+        ThreatResolved { target: String, increase: u8, target_fear: (u8, u8), },
+        SurrenderResolved { recipient: String, transferred: u8, discarded: u8, subject_satiety: (u8, u8), recipient_satiety: (u8, u8), },
+        SimulationEnded { reason: TerminationReason, },
+        ActionTrace { proposal: Action, accepted: bool, detail: String, position: Coordinate, territory: Territory, health: u8, satiety: u8, energy: u8, fear: u8, suffered: Vec<(String, u8)>, },
+    pub fn simulation::EventDetail::event_type(&self) -> EventType
+    impl fmt::Display for simulation::EventDetail
+    pub struct simulation::Event   #[derive(Debug, Clone, PartialEq, Eq)]
+        pub tick: u64,
+        pub subject: String,
+        pub detail: EventDetail,
+    pub fn simulation::Event::event_type(&self) -> EventType
+    impl fmt::Display for simulation::Event
+    pub enum simulation::DecisionOutcome   #[derive(Debug, Clone, PartialEq, Eq)]
+        Accepted,
+        Rejected { ground: String, },
+    pub struct simulation::DecisionSnapshot   #[derive(Debug, Clone, PartialEq, Eq)]
+        pub agent_id: String,
+        pub proposed: Action,
+        pub outcome: DecisionOutcome,
+        pub applied: Option<Action>,
+    pub struct simulation::TerritorySnapshot   #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub id: Territory,
+        pub standing: usize,
+        pub low: usize,
+        pub medium: usize,
+        pub high: usize,
+        pub capacity: usize,
+        pub permanently_depleted: bool,
+    pub struct simulation::AgentSnapshot   #[derive(Debug, Clone, PartialEq, Eq)]
+        pub id: String,
+        pub position: Coordinate,
+        pub territory: Territory,
+        pub health: u8,
+        pub satiety: u8,
+        pub energy: u8,
+        pub fear: u8,
+        pub applied_action: Option<Action>,
+    pub struct simulation::ResourceSnapshot   #[derive(Debug, Clone, PartialEq, Eq)]
+        pub id: String,
+        pub position: Coordinate,
+        pub territory: Territory,
+        pub class: FoodClass,
+    pub struct simulation::WorldSnapshot   #[derive(Debug, Clone, PartialEq, Eq)]
+        pub tick: u64,
+        pub living_count: usize,
+        pub deaths: usize,
+        pub territories: [TerritorySnapshot; 2],
+        pub agents: Vec<AgentSnapshot>,
+        pub resources: Vec<ResourceSnapshot>,
+        pub decisions: Vec<DecisionSnapshot>,
+    pub struct simulation::TickOutcome   #[derive(Debug, Clone, PartialEq, Eq)]
+        pub events: Vec<Event>,
+        pub finished: bool,
+        pub reason: Option<TerminationReason>,
+    pub struct simulation::Simulation
+        config: Config,
+        tick: u64,
+        agents: Vec<Mokiterion>,
+        foods: Vec<Food>,
+        entropy: SplitMix64,
+        next_food_id: u32,
+        outcome: Option<TerminationReason>,
+        decisions: Vec<DecisionSnapshot>,
+        collected_events: Option<Vec<Event>>,
+    pub fn simulation::Simulation::new(config: Config) -> Result<Self, String>
+    pub fn simulation::Simulation::run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary>
+    pub fn simulation::Simulation::advance_tick(&mut self) -> Result<TickOutcome, String>
+    pub fn simulation::Simulation::is_finished(&self) -> bool
+    pub fn simulation::Simulation::termination_reason(&self) -> Option<TerminationReason>
+    pub fn simulation::Simulation::configuration(&self) -> Config
+    pub fn simulation::Simulation::snapshot(&self) -> WorldSnapshot
+    pub fn simulation::Simulation::initialization_events(&self) -> Vec<Event>
+
+
+3. The baseline enumeration, as the difference from it
+------------------------------------------------------
+
+The baseline listing is not restated: it is section 2 with the difference below applied in
+reverse, which is a shorter way of saying the same thing and a stricter one, because it puts the
+whole of the change in one place where it can be counted.
+
+    $ diff surface-39662d13.txt surface-a5ded20e.txt
+    6c6
+    < # cli.rs -- module `cli`, 153 lines
+    ---
+    > # cli.rs -- module `cli`, 157 lines
+    13c13
+    < # simulation.rs -- module `simulation`, 4180 lines
+    ---
+    > # simulation.rs -- module `simulation`, 6865 lines
+    32a33
+    >     Social,
+    58a60,66
+    >     Attack { target: String },
+    >     Threaten { target: String },
+    >     Fight { target: String },
+    >     Retreat { target: String },
+    >     Surrender { target: String },
+    >     Approach { target: String },
+    >     Avoid { target: String },
+    91a100,102
+    >     AttackResolved,
+    >     ThreatResolved,
+    >     SurrenderResolved,
+    94c105
+    < pub const simulation::EventType::ALL: [Self; 12]
+    ---
+    > pub const simulation::EventType::ALL: [Self; 15]
+    107a119,121
+    >     AttackResolved { target: String, damage: u8, target_health: (u8, u8), striker_energy: (u8, u8), target_died: bool, },
+    >     ThreatResolved { target: String, increase: u8, target_fear: (u8, u8), },
+    >     SurrenderResolved { recipient: String, transferred: u8, discarded: u8, subject_satiety: (u8, u8), recipient_satiety: (u8, u8), },
+    109c123
+    <     ActionTrace { proposal: Action, accepted: bool, detail: String, position: Coordinate, territory: Territory, health: u8, satiety: u8, energy: u8, fear: u8, },
+    ---
+    >     ActionTrace { proposal: Action, accepted: bool, detail: String, position: Coordinate, territory: Territory, health: u8, satiety: u8, energy: u8, fear: u8, suffered: Vec<(String, u8)>, },
+
+Eighteen entries differ. Two of them are the files' own line counts, which the reader prints as a
+header and which are not surface. The other sixteen are the whole of the change to the interface:
+**fourteen entries added, two changed in place, none removed.**
+
+
+4. Item for item against the amendment's four rows
+--------------------------------------------------
+
+    row of the growth table            declared   measured   where in section 3
+    simulation::Policy                        1          1   `Social,`
+    simulation::Action                        7          7   the seven target-carrying variants
+    simulation::EventType                 3 + 3      3 + 3   three variants, three payloads
+    EventDetail::ActionTrace, existing        1          1   `suffered: Vec<(String, u8)>`
+                                        ------     ------
+                                            15         15
+
+    added entries        14      the 1 + 7 + 3 + 3 variants
+    changed entries       2      EventType::ALL's length; ActionTrace's field list
+    removed entries       0
+    everything else       -      identical, entry for entry
+
+**The 14-and-1 split is the whole argument for the fourth row.** Fourteen of the fifteen units of
+growth are new lines in the enumeration: an entry that was not there before. The fifteenth is not
+a line, it is a field inside a line that already existed, and no reader that counts added items
+finds it. SPEC-MOK-002 says exactly that -- "the fourth row is here because this list is closed
+and checkable: three of the four items are new variants, and the fourth is a field appended to a
+public variant that already existed, which is the one form of growth an enumeration of added
+variants does not catch" -- and the measurement is what that sentence predicts.
+
+The `suffered` field's two stated properties are both in the entry as extracted. It is
+`Vec<(String, u8)>` and not the engine's own `SufferedAttack`, so no type is added: the ten
+private names of rule 6 are absent from the whole listing except as private fields, and section 6
+measures that. And it is appended after `fear`, at the end of the variant's field list, so a host
+matching `ActionTrace` with a `..` rest pattern is unaffected.
+
+`EventType::ALL`'s change is a change of type, not only of value, because an array's length is
+part of its type -- which is why the amendment calls it public-surface growth. The value, and
+where the three new entries were placed in it:
+
+    baseline, 12                              candidate, 15
+    Self::WorldInitialized                    Self::WorldInitialized
+    Self::FoodInitialized                     Self::FoodInitialized
+    Self::AgentInitialized                    Self::AgentInitialized
+    Self::DecisionSourceSelected              Self::DecisionSourceSelected
+    Self::SurvivalChanged                     Self::SurvivalChanged
+    Self::AgentDied                           Self::AgentDied
+    Self::FoodConsumed                        Self::FoodConsumed
+    Self::FoodRegenerated                     Self::FoodRegenerated
+    Self::FoodRegenerationSkipped             Self::FoodRegenerationSkipped
+    Self::TerritoryCrossed                    Self::TerritoryCrossed
+                                              Self::AttackResolved      <- inserted
+                                              Self::ThreatResolved      <- inserted
+                                              Self::SurrenderResolved   <- inserted
+    Self::SimulationEnded                     Self::SimulationEnded
+    Self::ActionTrace                         Self::ActionTrace
+
+Inserted before `SimulationEnded` rather than appended, and in the same order as the enum's own
+variant list, which section 2 shows. The twelve existing entries keep their order and their
+relative positions. Section 7 records the two things that follow from the insertion point and
+that the enumeration does not cover.
+
+
+5. What does not grow, clause by clause
+----------------------------------------
+
+The amendment makes "what does not grow" part of the enumeration, so each clause is a check.
+All of them reduce to two diffs, taken over the listing:
+
+    $ diff <(grep -E "^(pub|impl) " baseline) <(grep -E "^(pub|impl) " candidate)
+    one line differs: EventType::ALL's length.        62 declaration entries each
+
+    $ diff <(grep -E "^    pub " baseline) <(grep -E "^    pub " candidate)
+    (no output)                                       43 public field entries each
+
+- **`AgentSnapshot` still carries a `String`, a `Coordinate`, a `Territory`, four `u8`
+  attributes and an `Option<Action>`.** Its eight public fields are among the 43 that are
+  identical, so no fifth attribute exists and the suffered-attack record is not one of them.
+- **`DecisionSnapshot` is unchanged in shape** and carries the seven new verbs through the
+  `Action` it already holds -- `pub proposed: Action` and `pub applied: Option<Action>`, both
+  unchanged, both now denoting eleven verbs rather than four.
+- **The eleven types the amendment names as untouched** -- `WorldSnapshot`,
+  `TerritorySnapshot`, `ResourceSnapshot`, `TickOutcome`, `Event`, `DecisionOutcome`,
+  `RegenerationSkipReason`, `Coordinate`, `Territory`, `Direction` and `FoodClass` -- appear in
+  the listing at both commits with identical declarations, identical field or variant lists and
+  identical derive lists.
+- **The first list's nine items and the five authorized additions are otherwise identical.**
+  `Policy` is the one item of the nine that grew, by exactly the one variant row 1 of the growth
+  table accounts for; the other eight, and all five additions, are unchanged in declaration and in
+  members. The additions list is a ceiling rather than a checklist: two of the accessors it
+  authorizes, population per territory and resource counts per territory by calorie class, are
+  present at neither commit, and rule 5 requires that absence -- "an item on it that no relocated
+  test requires must not be added". The engine states the same thing itself, in the comment above
+  `impl RunSummary`.
+- **No accessor is added and no method is added.** The 62 declaration entries include every
+  public `fn` of the library target; one of the 62 differs, and it is a `const`.
+- **No trait implementation on a public type is added or removed.** Thirteen at both commits,
+  identical: `Default for Density`, and `fmt::Display` for the twelve types that print. The
+  derive lists are in the listing beside their types for the same reason -- a derive on a public
+  type is a public implementation, and removing one is a breaking change that no `pub` keyword
+  records.
+- **`EventType::ALL` is the only `pub const` whose declaration changed.** Four exist on the
+  surface; the other three are `cli::USAGE`, `simulation::CELLS_PER_TERRITORY` and
+  `simulation::Density::DEFAULT`, and all three declarations are unchanged. On `USAGE`'s value,
+  see section 7.
+
+
+6. Rule 5's own check, and rule 6
+----------------------------------
+
+Rule 5 states its mutating-method check as a command, so the command is what is run:
+
+    $ grep -n 'pub fn .*&mut self' src/simulation.rs          at 39662d13
+    1423:    pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+    1483:    pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+
+    $ grep -n 'pub fn .*&mut self' src/simulation.rs          at a5ded20e
+    1851:    pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+    1915:    pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+
+Exactly those two, at both commits, moved and otherwise unaltered. "No new mutating method
+exists, so the two-method `grep` check in rule 5 is unchanged" is the amendment's claim, and this
+is it, run rather than repeated.
+
+Rule 6 was re-checked on 2026-08-20 and not amended. Its clauses, measured on the listing:
+
+- **The ten prohibited names stay private.** Seven of the ten appear nowhere in the listing at
+  either commit. Three appear, and all three appear as private fields of `Simulation`:
+
+        agents: Vec<Mokiterion>,
+        foods: Vec<Food>,
+        entropy: SplitMix64,
+
+  A private field of a public struct is not reachable from outside the crate, and these three are
+  the world's agents, its resources and its entropy state -- the first bullet's subjects. That
+  they are named in the listing at all is the reader keeping private members rather than hiding
+  them, so the claim can be read off the enumeration instead of trusted.
+- **No `pub(crate)` item is widened**, because there is no restricted visibility to widen:
+
+        $ grep -nE "pub\((crate|super|in )" lib.rs cli.rs simulation.rs | wc -l
+        0        at both commits
+
+- **No public item hands out a borrow of engine state, an iterator over its collections or a
+  handle that permits mutation.** Every public `fn` in the listing returns an owned value, with
+  one exception: `EventType::as_str(self) -> &'static str`, whose reference is into the program's
+  own static text and not into a `Simulation`. `Simulation::run` and `execute` take `&mut W` on
+  writers the caller owns. No `Iterator`, no `impl Trait`, no lifetime-parameterized return type
+  and no reference-typed field appears anywhere on the surface.
+- **No `&self` method mutates through interior mutability**, because no engine type can:
+
+        $ grep -nE "\b(Cell|RefCell|UnsafeCell|Rc|Arc|Mutex|RwLock|Atomic|OnceCell|LazyLock)\b" \
+              mokiterions-core/src/*.rs
+        (no match)
+        $ grep -c unsafe mokiterions-core/src/*.rs
+        0 in all four files
+
+  The only crate the engine imports from is `std`, and from it only `std::fmt` and
+  `std::io::{self, Write}` in `simulation.rs` and `std::io::Write` in `lib.rs` -- which is section
+  3 of post/gates.txt read from the other direction.
+- **A target is an identifier, not a reference.** The seven `Action` variants carry
+  `target: String`, and the three `EventDetail` payloads carry `target` or `recipient` the same
+  way. There is no `&mut Mokiterion`, no index into the agent collection and no callback on the
+  surface through which one could be obtained.
+
+
+7. Two changes the surface diff cannot show, one of which is a wording defect
+-----------------------------------------------------------------------------
+
+**`cli::USAGE`'s value changed, and SPEC-MOK-002's sentence about `pub const`s does not allow for
+it.** The declaration is `pub const USAGE: &str` at both commits; the item behind it is not. The
+figures are of the whole item, from `pub const USAGE` to the `);` that closes its `concat!`:
+
+    baseline    1,937 bytes   32 lines   sha256 a53d76243575c25e…
+    candidate   2,266 bytes   36 lines   sha256 7d5e9035bf0e697d…
+
+The change is four lines describing the social policy, `social` added to the two `--policy` value
+lists, and `social` added to the invalid-value diagnostic. It is obliged by an approved
+requirement, `REQ-MOK-048`: "`--policy` accepts `social`, and its usage text, its long help and
+its invalid-value diagnostic all name the four values." So the change is authorized and correct.
+
+What is not exact is SPEC-MOK-002 rule 5's own sentence, at line 250: "`EventType::ALL`'s length
+moving from `12` to `15` remains the only change to a `pub const`." Read of a constant's *type*
+that is true, and it is the reading the enumeration checks -- `USAGE: &str` is unchanged, so
+rule 5's list still closes. Read of a constant's *value* it is false, because `USAGE`'s value is
+329 bytes longer. The amendment record at line 35 is exact where the rule text is not: it says
+`ALL`'s length "is public-surface growth because that array is a `pub const`", which is a claim
+about that array and not about every constant.
+
+This is recorded here as a defect in an approved specification's wording, not corrected. Rule 5
+is technical-owner text and its amendment is an owner act; nothing in this packet may edit it.
+The correction the sentence needs is one clause -- "the only change to a `pub const`'s type" --
+and it changes no requirement, no interface item and no test. Until it is taken, a verifier
+running this check against the sentence as written will find a second changed `pub const` and be
+right to.
+
+**The three `EventType` variants were inserted rather than appended, and two consequences of that
+are observable to a host without being interface growth.** `EventType` derives `PartialOrd, Ord`
+at both commits, so its declaration order is a public total order, and it is a C-like enum, so a
+host may cast it to an integer.
+
+- The derived order between any two pre-existing variants is preserved: inserting in the middle
+  moves no existing variant relative to another. A host that sorts events by kind sees the twelve
+  old kinds in the same relative order, with three new kinds between `territory_crossed` and
+  `simulation_ended`.
+- The discriminants of the two variants after the insertion point do move: `SimulationEnded` from
+  10 to 13 and `ActionTrace` from 11 to 14. Nothing in this workspace casts an `EventType` to an
+  integer, and no specification assigns it a numeric value, so nothing depends on it here.
+
+The observer does depend on `ALL`'s order, at `mokiterions-tui/src/state.rs:552`, where the type
+filter cycles through it: the three new kinds now appear in that cycle between `territory_crossed`
+and `simulation_ended`. That is the observer's obligation and is owed as observer.md, together
+with the authority table's new rows; it is named here because the insertion point is what causes
+it and this is where the insertion point is measured.
+
+
+8. The two candidate commits carry the same public surface
+-----------------------------------------------------------
+
+The packet keeps both candidates, for the reason post/test-census-reconciliation.md section 8
+gives. Their surfaces are the same surface:
+
+    7c4aef39   186 entries    8,066 bytes    the first candidate, 3 failing
+    a5ded20e   186 entries    8,066 bytes    HEAD
+
+    $ diff surface-7c4aef39.txt surface-a5ded20e.txt
+    13c13
+    < # simulation.rs -- module `simulation`, 6794 lines
+    ---
+    > # simulation.rs -- module `simulation`, 6865 lines
+
+One differing line, and it is the reader's own header. Every one of the 186 entries is identical,
+`ActionTrace`'s `suffered` field included.
+
+**That measures the amendment's own account of why its fourth row was needed.** SPEC-MOK-002 says
+the missing row "was a defect in this enumeration rather than in the implementation". The field
+was on the public payload at the first candidate, before the row existed to authorize it; the
+amendment of 2026-08-20 closed a gap in the specification and required no change to the engine.
+The engine source has been unchanged since `0df4a317679505ff86593318af89a176471f1947`, so the
+enumeration in section 2 also holds at `13906153`, where the amended test log was captured, and at
+`1b06d851`, which post/world-rules-unchanged.txt names.
+
+
+9. What this file does not establish
+-------------------------------------
+
+- Nothing here is a verification verdict. VER-MOK-012 is the contract, VREC-MOK-012 the record.
+- The enumeration is of the engine's library target. The observer's public surface is not in it,
+  and neither is the engine's binary target, which declares no item of its own.
+- Surface identity is not behavioural identity. `EventDetail::event_type` and the `Display`
+  implementations gained arms for the three new kinds; their signatures did not change, which is
+  why they do not appear in section 3. What those arms print is post/reads.md and the test census,
+  not this file.
+- analysis/interface.py reads Rust with a brace counter, imported from analysis/regions.py so the
+  two evidence readers cannot disagree about where an item ends. It does not resolve types, so it
+  cannot tell that `Vec<(String, u8)>` names no private type -- section 6's name check is what
+  establishes that, and it is a check on names rather than on resolution.
+- Rule 6's first bullet is a claim about capability, and the strongest thing measured here is a
+  property of every signature on the surface. A public item that returned an owned copy today and
+  a borrow tomorrow would show in this listing; one that returns an owned copy of something it
+  should not copy at all would not.

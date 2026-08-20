@@ -259,7 +259,7 @@ known targets rather than gaining a target column.
 - Nothing here is a verification verdict. VER-MOK-012 is the contract, VREC-MOK-012 the record.
 - The engine's public-interface enumeration against the approved SPEC-MOK-002 amendment is a separate
   retention item and is not in this file. `cargo tree` bounds what the engine depends on; it says
-  nothing about what the engine exports. interface.txt is where that is owed.
+  nothing about what the engine exports. post/interface.txt is that enumeration.
 - The observer authority table's new rows and the EventType::ALL exhaustiveness check are likewise a
   separate item, owed as observer.md. Section 2's clean clippy run does not stand in for either.
 - clippy at exit 0 is a statement about the lints clippy has, at this toolchain, on this platform. It
