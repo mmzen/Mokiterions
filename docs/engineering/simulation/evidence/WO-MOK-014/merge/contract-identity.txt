@@ -1,0 +1,96 @@
+# VER-MOK-014: is the contract still about the same tree?
+#
+# VREC-MOK-014 is verified against candidate 65ac88b. This file asks the one question a
+# reader needs answered before reusing any figure from that record here: did the merge change
+# anything the contract is about? Three groups are compared -- the build inputs, the checking
+# program and its workflows, and the declaring text of the specifications. Comparison is by
+# git blob identity where a file is compared whole, and by section text where a file changed
+# elsewhere (both specifications gained amendment rows in the merge, so their whole-file
+# hashes must differ and say nothing).
+#
+# base=ff3a155 (merge base)  candidate=65ac88b (what VREC-MOK-014 binds)  merged=9599c0a
+
+# 1. Build inputs -- what a replay compiles from
+# --------------------------------------------------------------------------------------------
+  IDENTICAL  Cargo.toml                       420ec1c540547f811296362f1177d8e4932f7146
+  IDENTICAL  Cargo.lock                       824003e1cbd4757f28d09849e2faca0a4546e99f
+  IDENTICAL  rust-toolchain.toml              4302d691664a1d3e0550163dbaf10dc246c0c3d4
+  DIFFERS    mokiterions-core/Cargo.toml      d94bd7d7fa846b1894df005b47b40cdfbd669ea8
+  IDENTICAL  mokiterions-tui/Cargo.toml       3f6b9ab2157544537b1a187b0a3c871c93e78c13
+
+  IDENTICAL and DIFFERS in this section compare the candidate with the merged tree, and the hash shown
+  is the blob both carry; the base is reported in words below rather than in the column. Against the
+  base, three of these five differ and all three are this branch's own: Cargo.toml, rust-toolchain.toml
+  and mokiterions-tui/Cargo.toml. Each is byte-identical at ff3a155 and at 6b02573, so master changed
+  no build input at all between the base and this merge. Cargo.lock is 824003e1 at all five commits --
+  base, master, candidate, this branch and the merge.
+
+  The one difference is a comment: mokiterions-core/Cargo.toml line 43 reads REQ-MOK-050
+  where the candidate read REQ-MOK-047, changed by 4a32a95, this branch's own renumbering,
+  and not by the merge. `git diff 4a32a95 9599c0a` over these five paths is empty, so the
+  merge changed no build input at all. Cargo.lock is identical, which is why the 182-package
+  figure and every per-target count in WO-MOK-014-counts.txt reproduce unchanged.
+
+# 2. The check and where it runs
+# --------------------------------------------------------------------------------------------
+  DIFFERS    scripts/check_declared_dependencies.py         absent at base
+  DIFFERS    scripts/test_check_declared_dependencies.py    absent at base
+  IDENTICAL  .github/workflows/dependency-declarations.yml  absent at base
+  IDENTICAL  .github/workflows/release.yml                  changed by this branch
+  IDENTICAL  .github/workflows/engineering-harness.yml      unchanged from base
+
+  The checking program and its test file differ from the candidate on identifier text only, and
+  the substitution VER-MOK-013 -> VER-MOK-014 accounts for every differing line: 3 of the
+  program's 1,226 lines -- one comment and the two message strings the run prints for a disclosed
+  hit -- and 8 of the test file's 857, all prose and docstrings. Neither file gained or lost a
+  line. No condition, no threshold and no term of the by-name scan moved. Both changes are
+  4a32a95's, not the merge's.
+
+  engineering-harness.yml is byte-identical at all three commits. It is the managed workflow,
+  and VER-MOK-014 requires that this work order leave it untouched; the merge did too.
+  dependency-declarations.yml is the repository-owned workflow this branch added, so it is
+  absent at the base and unchanged from the candidate. release.yml carries this branch's
+  release-gate placement and is likewise unchanged from the candidate.
+
+# 3. The declaring text
+# --------------------------------------------------------------------------------------------
+  DIFFERS    SPEC-MOK-002.md  ### 13. Declared dependency set
+              59 lines, sha256 2c2aa992d4ee65d96d2d576296117b0279c7f63a646ec6f857a6f2b982514e2f, 2 lines differ, no line added or removed
+  DIFFERS    SPEC-MOK-003.md  ## Declared dependency set
+              124 lines, sha256 e3d35b47615cb367ee0b9ace8bb0df08b6ed6376105fb8ba387300f74c493f7f, 6 lines differ, no line added or removed
+  IDENTICAL  SPEC-MOK-005.md  ### 15. The dependency comparison at pull-request time
+              26 lines, sha256 1f87274bd299c02d6dddc9329f53c2f7be0f9cf225e621ffcab79f80ea41b40a
+
+  SPEC-MOK-005 rule 15 -- the pull-request comparison -- is byte-identical. The two declaring
+  sections differ on 8 lines between them, 2 in SPEC-MOK-002 and 6 in SPEC-MOK-003, and three
+  identifier substitutions account for all 8 with nothing left over: REQ-MOK-047 -> REQ-MOK-050
+  four times, VER-MOK-013 -> VER-MOK-014 three times, and one evidence path re-based from
+  WO-MOK-013 to WO-MOK-014, which is two tokens on one line. Neither section gained or lost a
+  line. The declared sets themselves, the disclosure table's two rows, the feature lists, the
+  build-script counts and the version pins are unchanged, line for line. Every one of those edits
+  is 4a32a95's.
+
+# 4. What the re-derived captures show
+# --------------------------------------------------------------------------------------------
+  WO-MOK-014-capture.sh in this directory is a byte-identical copy of the retained script and
+  was run here, writing its seven outputs beside it. Compared against the retained captures:
+
+    WO-MOK-014-graphs.txt  differs on: header line only
+    WO-MOK-014-counts.txt  differs on: header line only
+    WO-MOK-014-build-scripts.txt  differs on: header line only
+    WO-MOK-014-features.txt  differs on: header line only
+    WO-MOK-014-scan.txt  differs on: header line and two VER-MOK-013 references in quoted SPEC-MOK-003 prose
+    WO-MOK-014-check-run.txt  differs on: header line and two VER-MOK-013 references in the program's own output
+    WO-MOK-014-check-tests.txt  differs on: header line and the suite's elapsed time (0.042s -> 0.084s)
+
+  Line endings match per file too: 105, 32, 68 and 56 CRLF pairs in build-scripts, check-run,
+  check-tests and scan, the same counts as the retained captures carry, and none in graphs, counts
+  and features. That is what makes the differences above line differences rather than whole-file
+  ones -- a capture whose endings had changed would differ on every line and say nothing.
+
+  Not one dependency, version, feature, count, build script or comparison line moved. Every
+  difference is either the renumbering the retained captures predate -- WO-MOK-014-renumbering.md
+  line 137 predicted exactly this and said a comparison must be made on content and not on the
+  header -- or a wall-clock time. The retained captures keep the old identifiers because that
+  is what this work order was called when they were taken; these carry the new ones because
+  the script and the specifications now do.

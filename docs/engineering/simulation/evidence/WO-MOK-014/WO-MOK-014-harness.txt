@@ -1,0 +1,220 @@
+VER-MOK-013 — the harness, baseline against candidate
+=====================================================
+
+Work order   WO-MOK-013 (crates policy, declared-set comparison)
+Baseline     ff3a155f3ce006fdc38abb62df3fca4a2c3c3aa3 (origin/master)
+Branch       governance/adr-mok-006-third-party-crates
+Date         2026-08-20
+Python       Python 3.14.6
+
+WO-MOK-013-gates.txt records what the harness says about the candidate tree. This file records
+what it said about the tree this change started from, so that every figure in the completion
+report is a difference and not an absolute. A single number -- "7 warnings" -- is not evidence of
+anything until the same number is known for the baseline, and in one case below the number is
+identical while the observations behind it are entirely different.
+
+How the baseline was measured
+-----------------------------
+
+    $ git worktree add --detach "$HOME/wo13-baseline-wt" origin/master
+    worktree at ff3a155f3ce006fdc38abb62df3fca4a2c3c3aa3
+
+A worktree and not `git archive`, and the distinction is load-bearing. An archive extraction has
+no `.git`, so the inspector's `I-REV-001` rule -- which compares the observed checkout against
+each record's declared candidate commit -- cannot run at all and reports nothing. Measured that
+way the baseline showed 0 info findings against the candidate's 12, which reads as twelve new
+observations caused by this change. It is an artefact of the measurement: in a real checkout the
+baseline has the same 12. That first reading is recorded here because it is exactly the kind of
+difference a completion report would otherwise have claimed.
+
+The worktree adds an entry under `.git/worktrees` and nothing else. It touches no branch, no
+index and no file in this checkout, and it is removed at the end of this capture.
+
+Validator
+---------
+
+    $ python scripts/validate_engineering_artifacts.py --root <tree>
+
+    baseline    PASS | Artifacts: 102 | Errors: 0 | Warnings: 0 | exit 0
+                Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+    candidate   PASS | Artifacts: 106 | Errors: 0 | Warnings: 0 | exit 0
+                Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+
+The four new artifacts are `ADR-MOK-006`, `REQ-MOK-047`, `VER-MOK-013` and `WO-MOK-013`.
+
+Dashboard
+---------
+
+    $ python scripts/generate_harness_dashboard.py --root <tree>
+
+    baseline    PASS | Artifacts: 102 | Relations: 335 | Errors: 0 | Warnings: 7
+                Snapshot: 4de12c63e8604ddba86d6a5836d0e48730af4d38a53100a3b05348a91830cd12
+    candidate   PASS | Artifacts: 106 | Relations: 357 | Errors: 0 | Warnings: 7
+                Snapshot: 2d709365ad39ad1ff367a315265a26b4f557cdebbcc05a70520065cfca04c530
+
++4 artifacts and +22 relations. The warning count is unchanged and that is a coincidence; see
+below.
+
+Inspector
+---------
+
+    $ python scripts/inspect_engineering_artifacts.py --root <tree>
+
+    baseline    102 artifacts | 335 relations | 19 findings | error 0 | warning 7 | info 12
+    candidate   106 artifacts | 357 relations | 19 findings | error 0 | warning 7 | info 12
+
+Same totals in every severity. The membership is not the same.
+
+W-HEX-001 -- unchanged, and the reason it matters
+-------------------------------------------------
+
+Both trees:
+
+    [warning] W-HEX-001 WO-MOK-010
+    [warning] W-HEX-001 WO-MOK-011
+
+Both are implemented work orders with no evidence document keyed to their own identifier. Their
+evidence exists -- `evidence/WO-MOK-010/` and `evidence/WO-MOK-011/` are both populated -- but
+`discover_evidence` in `scripts/generate_harness_dashboard.py` matches the work-order identifier
+against each *file's* name, not its directory's, and those directories hold `capture.sh`,
+`manual-assessment.md`, `README.md` and so on. This is a pre-existing condition of the baseline
+and this change does not fix it; it is out of WO-MOK-013's scope.
+
+It is recorded here because it is the check on WO-MOK-013's own file-naming rule. Every file in
+this packet is named `WO-MOK-013-*` for that reason, and `W-HEX-001` does not fire on WO-MOK-013
+in the candidate tree. Had the naming rule been wrong, this warning would have named three work
+orders instead of two.
+
+W-HEX-003 -- five observations in both trees, no observation in common
+---------------------------------------------------------------------
+
+    baseline
+      ADR-MOK-001 predates newer declared decides target ARCH-MOK-001       [2026-08-17 < 2026-08-18]
+      ARCH-MOK-001 predates newer declared conforms_to target SPEC-MOK-001  [2026-08-18 < 2026-08-19]
+      ARCH-MOK-001 predates newer declared conforms_to target SPEC-MOK-002  [2026-08-18 < 2026-08-19]
+      ARCH-MOK-002 predates newer declared conforms_to target SPEC-MOK-003  [2026-08-18 < 2026-08-19]
+      ARCH-MOK-002 predates newer declared conforms_to target SPEC-MOK-004  [2026-08-18 < 2026-08-19]
+
+    candidate
+      ADR-MOK-002 predates newer declared decides target ARCH-MOK-001          [2026-08-18 < 2026-08-20]
+      ADR-MOK-004 predates newer declared decides target ARCH-MOK-002          [2026-08-18 < 2026-08-20]
+      VER-MOK-005 predates newer declared verifies target REQ-MOK-026          [2026-08-19 < 2026-08-20]
+      VER-MOK-008 predates newer declared verifies target REQ-MOK-036          [2026-08-19 < 2026-08-20]
+      WO-MOK-008 predates newer declared specifications target SPEC-MOK-003    [2026-08-19 < 2026-08-20]
+
+Five out, five in. The count is unchanged by arithmetic accident, and a completion report that
+said "warnings: 7 before, 7 after" without this table would be true and misleading at once.
+
+The mechanism is the amendment dates. The rule fires when an artifact is older than something it
+points at. This change carries a 2026-08-20 amendment row on ten existing artifacts:
+
+    $ grep -rl '2026-08-20' docs/engineering/simulation --include='*.md'
+    baseline    WO-MOK-011 and its evidence, VREC-MOK-011 (6 files, none of them a rule-13 source)
+    candidate   the same, plus ADR-MOK-001, ADR-MOK-003, ARCH-MOK-001, ARCH-MOK-002,
+                REQ-MOK-026, REQ-MOK-036, SPEC-MOK-002, SPEC-MOK-003, SPEC-MOK-004,
+                SPEC-MOK-005, and the four new artifacts
+
+So the baseline's five clear because their *sources* moved to 2026-08-20: ADR-MOK-001 is no
+longer older than ARCH-MOK-001, and ARCH-MOK-001/002 are no longer older than the four
+specifications. And five appear because their *targets* moved to 2026-08-20 while the sources did
+not: ADR-MOK-002 and ADR-MOK-004 were not amended and now trail the architecture documents they
+decide; VER-MOK-005 and VER-MOK-008 now trail the requirements they verify; WO-MOK-008 now trails
+SPEC-MOK-003.
+
+None of the five is a defect in this change and none is silent. They are the harness saying that
+five approved artifacts describe a tree that has moved since they were written, which is true:
+`REQ-MOK-026`'s prohibition was reworded by `ADR-MOK-006` decision 4 and `VER-MOK-005` verifies
+the old wording; `REQ-MOK-036` and `VER-MOK-008` stand in the same relation; `WO-MOK-008` is
+already in the definition_pending queue in both trees. Whether they are reassessed is an owner
+decision, not an implementation one, and it belongs in the completion report rather than in a
+commit.
+
+I-REV-001 -- twelve info observations in both trees
+--------------------------------------------------
+
+    both trees, identically:
+      [info] I-REV-001 RLS-MOK-001
+      [info] I-REV-001 VREC-MOK-001 .. VREC-MOK-011   (eleven records)
+
+"Observed checkout differs from declared candidate commit." Each record names the commit it was
+taken at; the checkout is at something later. True of any checkout of master that is not one of
+those eleven commits, and unrelated to this change. See the measurement note at the top: the
+first baseline reading, taken from a `git archive` extraction with no `.git`, reported zero of
+these and would have attributed all twelve to this work order.
+
+Queues
+------
+
+    baseline    active_work: empty        definition_pending: WO-MOK-008
+    candidate   active_work: WO-MOK-013   definition_pending: WO-MOK-008
+    both        assurance_pending: empty  decision_required: empty
+
+WO-MOK-013 is in active_work and not in assurance_pending because its status is `approved`. It is
+not moved to `implemented` in this tree: that transition, and the assurance decision that follows
+it, are owner acts and neither is authorised here.
+
+Doctor -- and the harness version the figure depends on
+-------------------------------------------------------
+
+    $ <pinned 0.4.0 venv>/python -m se_harness doctor <tree>
+
+    baseline    exit 0 | 81 PASS | 0 FAIL | 0 WARN
+    candidate   exit 0 | 81 PASS | 0 FAIL | 0 WARN
+
+Doctor is a green gate on both trees and the candidate passes it. Every `managed:` check reports
+`unchanged`, including `managed:.github/workflows/engineering-harness.yml`,
+`managed:scripts/generate_harness_dashboard.py`, `managed:scripts/inspect_engineering_artifacts.py`
+and `managed:scripts/validate_engineering_artifacts.py`. This change adds
+`scripts/check_declared_dependencies.py` and its test module, which are repository-owned and not
+managed files, and it edits no managed file.
+
+WHICH HARNESS RAN IS PART OF THE FIGURE, and an earlier reading of this file got it wrong. Measured
+with the machine-wide install instead of the pinned one:
+
+    $ python -m se_harness doctor .              # se_harness 0.4.1, machine-wide
+
+    candidate   exit 1 | 73 PASS | 8 FAIL | 0 WARN
+
+      FAIL distribution:.engineering-harness.toml
+      FAIL distribution:.github/workflows/engineering-harness.yml
+      FAIL distribution:ENGINEERING_HARNESS.md
+      FAIL distribution:docs/engineering/WORKFLOW.md
+      FAIL distribution:docs/engineering/templates/RELEASE_RECORD.template.md
+      FAIL distribution:scripts/generate_harness_dashboard.py
+      FAIL distribution:scripts/harness_explorer/index.template.html
+      FAIL distribution:scripts/validate_engineering_artifacts.py
+
+An earlier draft of this file recorded those eight as "distribution drift predating this change" and
+concluded that doctor "is not a gate this change can be said to pass or fail". Both statements were
+wrong, and the correction is recorded here rather than quietly replaced, because the wrong reading is
+the one a reader would reproduce by running the obvious command.
+
+The eight are template skew between 0.4.1's templates and a repository whose declared runtime is
+0.4.0. `.github/workflows/engineering-harness.yml` installs `se-harness==0.4.0` exactly, pinned by
+version and not by range, so 0.4.0 is the runtime whose verdict describes this repository and 0.4.1
+is measuring the candidate against templates it does not declare. The eight FAILs are a property of
+the measuring install, not of either tree: the baseline reports the same eight under 0.4.1 and zero
+under 0.4.0.
+
+Both figures are kept above so the discrepancy is reproducible in either direction. The gate figure
+is the 0.4.0 one, on the same principle as the worktree note at the top of this file: a difference
+that comes from how the measurement was taken is not a difference in what was measured.
+
+Teardown
+--------
+
+    $ git worktree remove "$HOME/wo13-baseline-wt"
+
+Recorded so that a reader knows the scratch tree is gone and that `.git/worktrees` is back to
+what it was. This checkout was not modified by anything in this file: every command above reads.
+
+A second detached worktree at the same baseline commit was added and removed later the same day, for
+the sole purpose of re-measuring doctor under the pinned 0.4.0 venv after the 0.4.1 reading was found
+to be wrong:
+
+    $ git worktree add --detach "$HOME/wo13-baseline-wt2" origin/master
+    $ <pinned 0.4.0 venv>/python -m se_harness doctor "$HOME/wo13-baseline-wt2"   # exit 0, 81 PASS
+    $ git worktree remove "$HOME/wo13-baseline-wt2"
+
+It is recorded because the corrected baseline figure above is a measurement and not an inference from
+the candidate's.

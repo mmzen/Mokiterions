@@ -395,6 +395,21 @@ rule the renumbering falls to the two other branches and none is owed here. Neit
 outcome of merge order rather than a decision anyone took, stop condition 8 did not fire because its trigger was this
 branch merging *second*, and nothing was asked of either branch.
 
+> **Later fact, recorded on 2026-08-20 on `governance/adr-mok-006-third-party-crates`, in the commit that merged
+> `master` into it.** The two paragraphs above are overtaken on one point each. **That branch renumbered.** Its
+> `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047` are now `WO-MOK-014`, `VER-MOK-014`,
+> `VREC-MOK-014` and `REQ-MOK-050`, so the four names above resolve to this chain alone and a citation of any of
+> them no longer needs the branch it was written on. It moved because `VREC-MOK-013` here is `verified` against a
+> commit while `VERIFICATION_RECORD.template.md` lets a governance decision move only a `ready` record to
+> `superseded`: two `verified` homonyms cannot both stand, so the side that had not landed is the side that could
+> move. The repository owner directed it inside that branch's own approved work order. Nothing is asked of this
+> chain: no artifact here is renamed, re-dated or re-opened, and `evidence/WO-MOK-013/identifier-collision.md`
+> stays as it was written. The conflict figure moved with the renumbering — measured in that clone, **9** before
+> it and **4** after, with all four `add/add` gone; the **8** recorded above was measured against an earlier tip
+> of that branch. It has since merged `master` into itself, resolving those four, and it is still not merged into
+> `master`. Both acts are measured there in `evidence/WO-MOK-014/WO-MOK-014-renumbering.md` and
+> `WO-MOK-014-merge.md`.
+
 Everything measured is in `engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
 
 ---

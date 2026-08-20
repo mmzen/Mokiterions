@@ -1,0 +1,121 @@
+# WO-MOK-013: build-time code-execution surface, per ADR-MOK-006 decision 13
+# A crate is listed when any of its targets has kind custom-build in cargo metadata.
+#
+# Four counts are reconstructible here and they answer four different questions. The
+# declared table records the per-target ones, because those are what a build executes.
+
+x86_64-pc-windows-msvc: 7
+    instability 0.3.13
+    parking_lot_core 0.9.12
+    proc-macro2 1.0.107
+    quote 1.0.47
+    rustversion 1.0.23
+    thiserror 2.0.20
+    winapi 0.3.9
+x86_64-unknown-linux-gnu: 9
+    instability 0.3.13
+    libc 0.2.189
+    parking_lot_core 0.9.12
+    proc-macro2 1.0.107
+    quote 1.0.47
+    rustix 1.1.4
+    rustversion 1.0.23
+    signal-hook 0.3.18
+    thiserror 2.0.20
+aarch64-apple-darwin: 9
+    instability 0.3.13
+    libc 0.2.189
+    parking_lot_core 0.9.12
+    proc-macro2 1.0.107
+    quote 1.0.47
+    rustix 1.1.4
+    rustversion 1.0.23
+    signal-hook 0.3.18
+    thiserror 2.0.20
+
+union of the three targets: 10
+    instability 0.3.13
+    libc 0.2.189
+    parking_lot_core 0.9.12
+    proc-macro2 1.0.107
+    quote 1.0.47
+    rustix 1.1.4
+    rustversion 1.0.23
+    signal-hook 0.3.18
+    thiserror 2.0.20
+    winapi 0.3.9
+
+observer at --target all: 12
+    instability 0.3.13
+    libc 0.2.189
+    parking_lot_core 0.9.12
+    proc-macro2 1.0.107
+    quote 1.0.47
+    rustix 1.1.4
+    rustversion 1.0.23
+    signal-hook 0.3.18
+    thiserror 2.0.20
+    winapi 0.3.9
+    winapi-i686-pc-windows-gnu 0.4.0
+    winapi-x86_64-pc-windows-gnu 0.4.0
+
+packages in the lockfile carrying a build script: 29
+    anyhow 1.0.104
+    generic-array 0.14.7
+    getrandom 0.3.4
+    getrandom 0.4.3
+    instability 0.3.13
+    libc 0.2.189
+    libm 0.2.16
+    memoffset 0.9.1
+    nix 0.29.0
+    num-traits 0.2.19
+    parking_lot_core 0.9.12
+    portable-atomic 1.15.0
+    proc-macro2 1.0.107
+    quote 1.0.47
+    rustix 1.1.4
+    rustversion 1.0.23
+    serde 1.0.229
+    serde_core 1.0.229
+    signal-hook 0.3.18
+    syn 1.0.109
+    terminfo 0.9.0
+    thiserror 1.0.69
+    thiserror 2.0.20
+    wasm-bindgen 0.2.127
+    wasm-bindgen-shared 0.2.127
+    winapi 0.3.9
+    winapi-i686-pc-windows-gnu 0.4.0
+    winapi-x86_64-pc-windows-gnu 0.4.0
+    wit-bindgen 0.57.1
+
+in the lockfile, carrying a build script, reachable from neither package at
+--target all and -e normal,build,dev: 17
+    anyhow 1.0.104
+    generic-array 0.14.7
+    getrandom 0.3.4
+    getrandom 0.4.3
+    libm 0.2.16
+    memoffset 0.9.1
+    nix 0.29.0
+    num-traits 0.2.19
+    portable-atomic 1.15.0
+    serde 1.0.229
+    serde_core 1.0.229
+    syn 1.0.109
+    terminfo 0.9.0
+    thiserror 1.0.69
+    wasm-bindgen 0.2.127
+    wasm-bindgen-shared 0.2.127
+    wit-bindgen 0.57.1
+
+The two the amendment rows single out, as cargo reports them:
+  $ cargo tree -i syn@1.0.109 -e normal,build,dev --locked --offline --target all
+    warning: nothing to print.
+    
+    To find dependencies that require specific target platforms, try to use option `--target all` first, and then narrow your search scope accordingly.
+  $ cargo tree -i thiserror@1.0.69 -e normal,build,dev --locked --offline --target all
+    warning: nothing to print.
+    
+    To find dependencies that require specific target platforms, try to use option `--target all` first, and then narrow your search scope accordingly.

@@ -1,7 +1,13 @@
 # `SPEC-MOK-004` rule 2: this file is a workspace manifest and nothing else. It declares no
-# package, no target, no dependency and no workspace dependency table. Each package's
-# manifest, sources and tests are under that package's own directory, which is what
-# `REQ-MOK-030` requires and `ADR-MOK-004` decides.
+# package, no target and no dependency. Each package's manifest, sources and tests are under
+# that package's own directory, which is what `REQ-MOK-030` requires and `ADR-MOK-004` decides.
+#
+# It also declares no `[workspace.dependencies]` table. Amended 2026-08-20 under `ADR-MOK-006`:
+# that is now a measurement and not a prohibition. Rule 2 as amended admits such a table for a
+# crate declared in **both** packages' sets, and `SPEC-MOK-005` rule 8.4a checks an entry here
+# against both — a crate inherited by one package alone has no business being centralized, and
+# a crate here that either declared set omits refuses. There is no such crate today, so the
+# table is absent rather than empty.
 #
 # Before that rule, this file was both the workspace manifest and the engine package's
 # manifest, so the root held one package's implementation and the other package's directory

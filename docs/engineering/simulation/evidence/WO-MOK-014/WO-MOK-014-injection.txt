@@ -1,0 +1,143 @@
+# WO-MOK-013: the checking program refusing, ten ways
+# cargo 1.97.1 (c980f4866 2026-06-30)
+#
+# One declaration is edited per case, on a copy of this workspace. The notes each run
+# prints are filtered out here; what is left is the refusals and the exit code.
+
+==============================================================================
+Case 1: the declared ratatui version moved to 0.30.1
+Expected: 8.4a, a version mismatch in both directions
+------------------------------------------------------------------------------
+REFUSED: 8.4a mokiterions-tui: ratatui is declared at 0.30.1 and the manifest asks for '0.30.2'. The *Version* column is the exact resolved version and not a range; a version change is an amendment.
+REFUSED: 8.4b mokiterions-tui: ratatui resolves to 0.30.2 on aarch64-apple-darwin and is declared at 0.30.1.
+REFUSED: 8.4b mokiterions-tui: ratatui resolves to 0.30.2 on x86_64-pc-windows-msvc and is declared at 0.30.1.
+REFUSED: 8.4b mokiterions-tui: ratatui resolves to 0.30.2 on x86_64-unknown-linux-gnu and is declared at 0.30.1.
+4 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 2: layout-cache removed from the declared features
+Expected: 8.4b, a resolved feature that is neither declared nor implied, and a manifest feature the declaration does not state
+------------------------------------------------------------------------------
+REFUSED: 8.4b mokiterions-tui: ratatui is declared with features ['crossterm', 'underline-color'] and the manifest asks for ['crossterm', 'layout-cache', 'underline-color']. The declared cell is the exact set the manifest states; a feature set change is an amendment.
+REFUSED: 8.4b mokiterions-tui: ratatui resolves on aarch64-apple-darwin with ['layout-cache'] enabled, which is neither declared nor recorded as implied. A feature enabled by unification rather than by declaration is a mismatch: it is how a capability the declaration excludes arrives without an amendment.
+REFUSED: 8.4b mokiterions-tui: ratatui resolves on x86_64-pc-windows-msvc with ['layout-cache'] enabled, which is neither declared nor recorded as implied. A feature enabled by unification rather than by declaration is a mismatch: it is how a capability the declaration excludes arrives without an amendment.
+REFUSED: 8.4b mokiterions-tui: ratatui resolves on x86_64-unknown-linux-gnu with ['layout-cache'] enabled, which is neither declared nor recorded as implied. A feature enabled by unification rather than by declaration is a mismatch: it is how a capability the declaration excludes arrives without an amendment.
+4 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 3: the Windows external-crate figure moved to 58
+Expected: 8.4c, a declared count that the graph does not have
+------------------------------------------------------------------------------
+REFUSED: SPEC-MOK-003 records 58 external crates for mokiterions-tui on x86_64-pc-windows-msvc; the resolved graph has 57. The figure is a measurement in an approved artifact, so a difference is either a dependency change or a stale specification, and both are refusals here.
+1 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 4: the winapi build-script row deleted
+Expected: decision 13, a build-script crate the table does not list, and a count of 7 that is now 6 declared
+------------------------------------------------------------------------------
+REFUSED: decision 13 mokiterions-tui: winapi 0.3.9 carries a build script and reaches x86_64-pc-windows-msvc, and SPEC-MOK-003's build-script table does not record it for that target. A crate that acquires one is a mismatch, not an unremarked change.
+1 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 5: the mio disclosure row renamed, so nothing discloses mio
+Expected: 8.4d twice: an undisclosed prohibited-class name on two targets, and a disclosure no target reaches
+------------------------------------------------------------------------------
+REFUSED: 8.4d mokiterions-tui: mio 1.2.2 is reached transitively on aarch64-apple-darwin and its name places it in the network access class, and SPEC-MOK-003 does not disclose it. A transitive prohibited-class name refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it.
+REFUSED: 8.4d mokiterions-tui: mio 1.2.2 is reached transitively on x86_64-unknown-linux-gnu and its name places it in the network access class, and SPEC-MOK-003 does not disclose it. A transitive prohibited-class name refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it.
+REFUSED: 8.4d mokiterions-tui: SPEC-MOK-003 discloses mio-not-this-one 1.2.2 and no declared target reaches it. A disclosure the graph does not need is as wrong as a missing one: it makes the scan look weighed when it was not.
+3 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 6: serde 1.0.229 declared, which the manifest does not name
+Expected: 8.4a, a declared entry absent from the manifest
+------------------------------------------------------------------------------
+REFUSED: 8.4a mokiterions-tui: SPEC-MOK-003 declares serde, which Cargo.toml does not contain. A declared entry that has vanished from the manifest is as much a mismatch as an undeclared one — the comparison runs in both directions.
+1 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 7: ratatui declared in the engine's rule 13 table
+Expected: 8.4a, a declared entry absent from the engine's manifest, and 8.4d, a user-interface crate declared by the engine
+------------------------------------------------------------------------------
+REFUSED: 8.4a Mokiterions: SPEC-MOK-002 declares ratatui, which Cargo.toml does not contain. A declared entry that has vanished from the manifest is as much a mismatch as an undeclared one — the comparison runs in both directions.
+1 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 8: thiserror added to the observer's manifest and to the lockfile, declared nowhere
+Expected: 8.4a, a manifest dependency that is not a declared entry
+------------------------------------------------------------------------------
+REFUSED: 8.4a mokiterions-tui: Cargo.toml declares thiserror, which SPEC-MOK-003's declared set does not. An entry reaches a manifest by amendment to that specification, approved by the technical owner; adding one here is not an implementation act.
+1 refusal(s).
+Mokiterions — declared by SPEC-MOK-002
+mokiterions-tui — declared by SPEC-MOK-003
+git is unavailable, so the working-tree comparison did not run
+exit 1
+
+==============================================================================
+Case 9: the same dependency added to the manifest and NOT to the lockfile
+Expected: a stale-lockfile refusal, before rule 8.4 compares anything -- cargo will not resolve under --locked, and the message has to say that rather than send a reader to fetch
+------------------------------------------------------------------------------
+REFUSED: the lockfile does not describe these manifests: error: cannot update the lock file C:\Users\mathi\wo13-injection\Cargo.lock because --locked was passed to prevent this. A dependency added to a manifest without updating `Cargo.lock` cannot be compared against a declared set at all, because cargo refuses to resolve before the comparison runs. Update the lockfile in the same change as the manifest — an ordinary `cargo build` does it — and commit both, then this check has something to compare. Fetching will not help: the lockfile is what is out of date.
+exit 1
+
+==============================================================================
+Case 10: ratatui added to the ENGINE's manifest, its rule 13 table and the lockfile
+Expected: 8.4d, the surviving REQ-MOK-026 prohibition, which no declaration can satisfy
+------------------------------------------------------------------------------
+REFUSED: 8.4d Mokiterions: mio 1.2.2 is reached transitively on aarch64-apple-darwin and its name places it in the network access class, and SPEC-MOK-002 does not disclose it. A transitive prohibited-class name refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it.
+REFUSED: 8.4d Mokiterions: signal-hook-mio 0.2.5 is reached transitively on aarch64-apple-darwin and its name places it in the network access class, and SPEC-MOK-002 does not disclose it. A transitive prohibited-class name refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it.
+REFUSED: 8.4d Mokiterions: crossterm 0.29.0 is a user-interface crate in this package's graph on aarch64-apple-darwin. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui 0.30.2 is a user-interface crate in this package's graph on aarch64-apple-darwin. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-core 0.1.2 is a user-interface crate in this package's graph on aarch64-apple-darwin. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-crossterm 0.1.2 is a user-interface crate in this package's graph on aarch64-apple-darwin. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-widgets 0.3.2 is a user-interface crate in this package's graph on aarch64-apple-darwin. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: crossterm 0.29.0 is a user-interface crate in this package's graph on x86_64-pc-windows-msvc. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: crossterm_winapi 0.9.1 is a user-interface crate in this package's graph on x86_64-pc-windows-msvc. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui 0.30.2 is a user-interface crate in this package's graph on x86_64-pc-windows-msvc. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-core 0.1.2 is a user-interface crate in this package's graph on x86_64-pc-windows-msvc. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-crossterm 0.1.2 is a user-interface crate in this package's graph on x86_64-pc-windows-msvc. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-widgets 0.3.2 is a user-interface crate in this package's graph on x86_64-pc-windows-msvc. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: mio 1.2.2 is reached transitively on x86_64-unknown-linux-gnu and its name places it in the network access class, and SPEC-MOK-002 does not disclose it. A transitive prohibited-class name refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it.
+REFUSED: 8.4d Mokiterions: signal-hook-mio 0.2.5 is reached transitively on x86_64-unknown-linux-gnu and its name places it in the network access class, and SPEC-MOK-002 does not disclose it. A transitive prohibited-class name refuses until the declaring specification records the crate, the chain, the activating feature and what the package does not do with it, and the technical owner judges it.
+REFUSED: 8.4d Mokiterions: crossterm 0.29.0 is a user-interface crate in this package's graph on x86_64-unknown-linux-gnu. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui 0.30.2 is a user-interface crate in this package's graph on x86_64-unknown-linux-gnu. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-core 0.1.2 is a user-interface crate in this package's graph on x86_64-unknown-linux-gnu. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-crossterm 0.1.2 is a user-interface crate in this package's graph on x86_64-unknown-linux-gnu. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+REFUSED: 8.4d Mokiterions: ratatui-widgets 0.3.2 is a user-interface crate in this package's graph on x86_64-unknown-linux-gnu. `REQ-MOK-026` confines the user interface to the observer package, and `ADR-MOK-006` decision 4 leaves that prohibition exactly where it was.
+... and 3 refusal(s) from rule 13's
+strict closure, one per target, each naming every external crate the engine's graph
+acquired -- 57 to 63 of them depending on the target, so they are counted and not quoted.
+total refusal lines in the run: 23
+exit 1
+
+==============================================================================
+The scratch root is removed. This checkout was not edited: the working tree after this
+script is the working tree before it, which is what the program's own git status
+comparison asserts on the real root in WO-MOK-013-check-run.txt.

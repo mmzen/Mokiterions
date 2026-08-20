@@ -5,7 +5,7 @@ title = "Terminal observer as a separate package over a read-only engine surface
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-18"
+updated = "2026-08-20"
 
 [relations]
 addresses = [
@@ -13,6 +13,7 @@ addresses = [
   "REQ-MOK-025",
   "REQ-MOK-026",
   "REQ-MOK-028",
+  "REQ-MOK-050",
 ]
 conforms_to = ["SPEC-MOK-003", "SPEC-MOK-004"]
 
@@ -26,7 +27,7 @@ triggers = [
   "difficult-to-reverse",
   "material-alternatives",
 ]
-rationale = "This architecture introduces a second package and therefore a new system boundary where the repository previously had one crate, and it fixes the dependency direction across that boundary so the engine cannot reach the interface. It promotes the engine's read-only observation surface to a maintained public interface consumed by a second component. It selects a specific external framework and version as the first external dependency the project has ever taken, at a measured surface of 57 crates, which introduces a supply-chain and upgrade obligation the foundation did not have. Reversal is difficult in practice: once the observer is the instrument used to assess later phases, removing it removes the means of assessment, and the observation surface becomes a contract other work depends on. Material alternatives exist and were rejected — a single crate with a feature flag, a piped text-stream consumer, a serialized snapshot protocol, and building no interface at all — each with different consequences for determinism and for the engine's empty dependency set. Amended 2026-08-18: the observer package now builds a library target as well as a binary, which promotes its presentation layer to a stated public interface with a maintained contract, and each package's manifest, sources and tests move under its own directory. Both are boundary and public-interface changes to this architecture rather than to the engine's, and `ADR-MOK-004` decides them; the alternatives it rejected — documenting the asymmetry, a feature-gated test-support seam, and a thin observer binary mirroring the engine's — are material and were weighed. Neither change alters the dependency direction, the framework selection, the trust boundary or the non-perturbation property, so the triggers already recorded are the same triggers."
+rationale = "This architecture introduces a second package and therefore a new system boundary where the repository previously had one crate, and it fixes the dependency direction across that boundary so the engine cannot reach the interface. It promotes the engine's read-only observation surface to a maintained public interface consumed by a second component. It selects a specific external framework and version as the first external dependency the project has ever taken, at a measured surface of 57 crates, which introduces a supply-chain and upgrade obligation the foundation did not have. Reversal is difficult in practice: once the observer is the instrument used to assess later phases, removing it removes the means of assessment, and the observation surface becomes a contract other work depends on. Material alternatives exist and were rejected — a single crate with a feature flag, a piped text-stream consumer, a serialized snapshot protocol, and building no interface at all — each with different consequences for determinism and for the engine's empty dependency set. Amended 2026-08-18: the observer package now builds a library target as well as a binary, which promotes its presentation layer to a stated public interface with a maintained contract, and each package's manifest, sources and tests move under its own directory. Both are boundary and public-interface changes to this architecture rather than to the engine's, and `ADR-MOK-004` decides them; the alternatives it rejected — documenting the asymmetry, a feature-gated test-support seam, and a thin observer binary mirroring the engine's — are material and were weighed. Neither change alters the dependency direction, the framework selection, the trust boundary or the non-perturbation property, so the triggers already recorded are the same triggers. Amended 2026-08-20: ADR-MOK-006 replaces the empty-set premise with a per-package declared set; no boundary, direction or trust property moves."
 assessed_by = "technical owner"
 +++
 
@@ -38,6 +39,7 @@ assessed_by = "technical owner"
 |---|---|---|
 | 2026-08-17 | Original approved content for `CAP-MOK-004`. | Approved; implemented under `WO-MOK-005` and verified under `VREC-MOK-005`. |
 | 2026-08-18 | The observer package's target shape and the repository's package-directory layout, for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`. Component 4 no longer calls the observer host "the new binary": it is a library target and a binary target, and component 5's presentation layer is what the library target carries. *Testability without a terminal* extended from "assertable in memory" to "assertable in memory through a stated public interface, from a test tier outside the crate". A required pattern added for the library target and its provenance-closed interface; three prohibited patterns added — widening an item to reach it from a test, ungating a `#[cfg(test)]` item, and any test-support seam. Four conformance checks added. `addresses` grew by `REQ-MOK-028`, `conforms_to` by `SPEC-MOK-004`, and `decision_assessment.rationale` records both changes against the triggers already declared. No dependency edge, no trust boundary, no non-perturbation property and no quality attribute other than testability changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005` binds this architecture's 2026-08-17 content to `WO-MOK-005`'s commit and is not edited. |
+| 2026-08-20 | **The engine's empty-dependency premise becomes a per-package declared set**, decided by `ADR-MOK-006`. Prohibited pattern 1 keeps its first clause — no dependency edge from engine to observer — and its second becomes an external dependency in either package that is not a declared entry of that package's set. The prohibition on re-deriving the engine's validation verdict is **extended** to the observer's declared crates, and with it decision 11's reservation of the proprietary core; it gains reach and does not change meaning. *Containment* is rewritten: the property was that the engine's set survived a 57-crate framework *empty*, and it is now that the set survives it *declared*, established by comparing the resolved graph against the declaration per package. The first conformance check becomes that comparison for both packages instead of *"`cargo tree` for the engine package resolves to the engine package alone"*. **Prohibited pattern 2 — a user-interface dependency anywhere but the observer package, including a dependency shared by both — is deliberately unchanged**: it is the one dependency prohibition this relaxation does not touch. **This row also reaches three clauses the deciding ADR did not enumerate** — component 1's *"Holds no dependency on anything"*, the *Dependency direction* diagram and its bullet *"The engine package depends on nothing"*, and the driver sentence naming `REQ-MOK-026`'s empty-set clause — because each asserted the withdrawn rule, and `REQ-MOK-050` is added to `addresses` beside `REQ-MOK-026` as the requirement carrying what replaced it. Nothing about the dependency *direction*, the trust boundary, non-perturbation, the observation surface or determinism moves. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-014`; it did not decide it. `VREC-MOK-005` binds this architecture's 2026-08-17 content and is not edited. |
 
 ## Context and scope
 
@@ -54,7 +56,8 @@ where they became checkable per package rather than asserted for a repository.
 It addresses the three requirement drivers that materially shape its boundaries rather than every requirement it
 conforms to: the promotion of proposal-and-authority information to a cross-boundary public interface
 (`REQ-MOK-021`), the preservation of simulation outcome under observation (`REQ-MOK-025`), and the component
-independence that makes the engine's empty dependency set enforceable (`REQ-MOK-026`). The remaining observer
+independence that makes the engine's declared dependency set enforceable per package (`REQ-MOK-026`, whose
+empty-dependency clause `ADR-MOK-006` withdrew, and `REQ-MOK-050`, which carries what replaced it). The remaining observer
 requirements are presentation rules whose detailed behavior is governed by `SPEC-MOK-003`, which this architecture
 conforms to.
 
@@ -62,7 +65,8 @@ conforms to.
 
 1. **Engine package** — unchanged in authority. Owns world, agents, resources, tick, entropy, validation, rule
    application, event creation, termination, summary, and the `REQ-MOK-010` text stream. Additionally exposes the
-   read-only observation surface of `SPEC-MOK-003`. Holds no dependency on anything.
+   read-only observation surface of `SPEC-MOK-003`. Holds exactly the dependencies `SPEC-MOK-002` declares for it,
+   which is nothing as that declaration stands, and in particular holds no user-interface dependency.
 2. **Observation surface** — the engine package's public boundary toward hosts: owned snapshots out, one single-tick
    advance in. It is a maintained interface, not an internal convenience.
 3. **Command-line host** — the existing binary. Constructs a run, advances it to completion, streams text events.
@@ -90,13 +94,20 @@ cannot, because their access is the same surface.
 ```text
 mokiterions-tui  ──depends on──▶  Mokiterions
        │                                 │
-       ├── ratatui 0.30.2 (+ 56)         └── (nothing)
+       ├── ratatui 0.30.2 (+ 56)         └── (its declared set: empty today)
 ```
 
+Each side of the diagram is a package's declared set, not a fixed shape: `SPEC-MOK-003` declares the observer's and
+`SPEC-MOK-002` declares the engine's, and `ADR-MOK-006` governs what may join either. The engine's is empty as this is
+written, and an empty declared set is a fact about the current declaration rather than a rule.
+
 - The observer package depends on the engine package by path, and on the user-interface framework.
-- The engine package depends on nothing, and in particular not on the observer package.
+- The engine package depends on what `SPEC-MOK-002` declares for it — nothing, as that specification's declared set
+  stands today — and in particular not on the observer package.
 - No dependency edge runs from engine to observer. The direction is enforced by Cargo, not by review.
 - Neither package depends on network, credential, asynchronous-runtime, database, or model-provider infrastructure.
+  This is preserved without relaxation by `ADR-MOK-006` decision 4 and checked by name, having previously followed from
+  the engine's set being empty and the observer's being one framework.
 
 The asymmetry is the point. A convention that the engine "should not" import rendering types is unenforceable in one
 crate and fails silently. A package that does not list the observer as a dependency cannot import from it at all.
@@ -158,8 +169,8 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 
 ## Prohibited patterns
 
-- Any dependency edge from the engine package to the observer package, or any external dependency in the engine
-  package.
+- Any dependency edge from the engine package to the observer package, or an external dependency in either package
+  that is not a declared entry of that package's set under `ADR-MOK-006`.
 - A user-interface dependency anywhere but the observer package, including a dependency shared by both.
 - A mutable handle to world, agent, resource, event-log or engine state crossing the boundary.
 - Any operator control that mutates simulation state, or any additional mutating operation on the observation
@@ -167,7 +178,10 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 - Wall-clock time, frame timing, input timing, terminal dimensions, or terminal capabilities reaching engine
   computation.
 - Re-deriving the engine's validation verdict in the observer, which would let the display disagree with the engine
-  about what was authorized.
+  about what was authorized. This binds the observer's declared crates as well as its own code: no entry in the
+  observer package's declared set may re-derive the verdict either, and none may implement simulation semantics, own or
+  advance entropy, or validate an action. The prohibition gains reach rather than changing meaning, which is
+  `ADR-MOK-006` decision 11.
 - Advancing more than one tick per scheduling opportunity to recover from falling behind.
 - Reading repository files, invoking version control, or performing network access at run time.
 - Serialization, asynchronous runtimes, threads sharing simulation state, or a third package.
@@ -184,8 +198,12 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 - **Non-perturbation:** an observed run and an unobserved run are byte-identical in authoritative events and final
   state. This is the architecture's primary attribute, and the one-way flow exists to make it structural rather than
   defended.
-- **Containment:** the engine's empty dependency set survives the introduction of a 57-crate framework, provably and
-  per package.
+- **Containment:** the engine package's dependency set is exactly what `SPEC-MOK-002` declares for it, the observer's
+  57-crate framework is not in that set, and both facts are established per package by comparing the resolved graph
+  against the declaration rather than argued. **Amended 2026-08-20:** the property this attribute names used to be that
+  the engine's set survived the framework's introduction *empty*; after `ADR-MOK-006` it is that the engine's set
+  survives it *declared*. Containment is unchanged in what it protects — nothing the observer pulls in reaches the
+  engine's build — and changed in what proves it.
 - **Testability without a terminal:** layout, mapping and rendering are assertable in memory, so presentation is
   covered by automated tests rather than by screenshots. **Amended 2026-08-18:** and assertable *through a stated
   public interface, from a test tier outside the crate*. In-memory assertion alone left every observer test inside the
@@ -201,7 +219,9 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 
 ## Conformance checks
 
-- Confirm `cargo tree` for the engine package resolves to the engine package alone.
+- Confirm each package's resolved dependency graph equals the set declared for it — `SPEC-MOK-002` for the engine
+  package, `SPEC-MOK-003` for the observer package — at the declared versions and the declared feature sets, with no
+  undeclared entry and no declared entry missing. Resolve per package: a workspace graph would not answer it.
 - Confirm the engine package does not list the observer package as a dependency, directly or transitively.
 - Confirm every user-interface dependency appears in the observer package's manifest and in no other.
 - Confirm the engine package's tests pass with no terminal attached.
@@ -238,4 +258,9 @@ Added 2026-08-18 for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`:
 - `ADR-MOK-001` remains accepted. It requires a superseding ADR only for replacing engine authority; a read-only
   observer replaces none of it, and the observation-and-proposal semantics it fixes are untouched.
 - `ADR-MOK-003` is the deciding ADR for this architecture and for the `ARCH-MOK-001` amendment. It records the
-  rejected alternatives and the measured dependency surface.
+  rejected alternatives and the measured dependency surface. Its decision 4 and the word *"only"* in its decision 5
+  are reversed by `ADR-MOK-006`; everything else it decides stands, and it is not superseded.
+- `ADR-MOK-006` decides the repository's third-party-component policy and decides this architecture together with
+  `ARCH-MOK-001`. It replaces the engine's empty-dependency rule and the observer's escalation gate with one admission
+  test against a per-package declared set, and it is the deciding ADR for the 2026-08-20 amendment recorded above.
+  `ratatui`'s pin is unaffected by it: that pin was already a declared entry and stays one.

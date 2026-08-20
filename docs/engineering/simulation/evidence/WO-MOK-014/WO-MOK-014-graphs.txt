@@ -1,0 +1,207 @@
+# WO-MOK-013: resolved dependency graphs, per package and per target
+# cargo 1.97.1 (c980f4866 2026-06-30), rustc 1.97.1 (8bab26f4f 2026-07-14)
+# host x86_64-pc-windows-msvc
+
+$ cargo tree -p Mokiterions -e normal,build,dev --locked --offline --target x86_64-pc-windows-msvc --prefix none --no-dedupe -f '{p}|{f}'
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-core)|
+
+$ cargo tree -p Mokiterions -e normal,build,dev --locked --offline --target x86_64-unknown-linux-gnu --prefix none --no-dedupe -f '{p}|{f}'
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-core)|
+
+$ cargo tree -p Mokiterions -e normal,build,dev --locked --offline --target aarch64-apple-darwin --prefix none --no-dedupe -f '{p}|{f}'
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-core)|
+
+$ cargo tree -p mokiterions-tui -e normal --locked --offline --target x86_64-pc-windows-msvc --prefix none --no-dedupe -f '{p}|{f}'
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-core)|
+allocator-api2 v0.2.21|alloc
+bitflags v2.13.1|std
+castaway v0.2.4|alloc
+cfg-if v1.0.4|
+compact_str v0.9.1|std
+convert_case v0.10.0|
+critical-section v1.2.0|
+crossterm v0.29.0|bracketed-paste,default,derive-more,events,windows
+crossterm_winapi v0.9.1|
+darling v0.24.0|default,suggestions
+darling_core v0.24.0|strsim,suggestions
+darling_macro v0.24.0 (proc-macro)|
+derive_more v2.1.1|default,is_variant,std
+derive_more-impl v2.1.1 (proc-macro)|default,is_variant
+document-features v0.2.12 (proc-macro)|default
+either v1.17.0|std,use_std
+equivalent v1.0.2|
+foldhash v0.2.0|
+hashbrown v0.16.1|allocator-api2,default,default-hasher,equivalent,inline-more,raw-entry
+hashbrown v0.17.1|allocator-api2,default,default-hasher,equivalent,inline-more,raw-entry
+heck v0.5.0|
+ident_case v1.0.1|
+indoc v2.0.7 (proc-macro)|
+instability v0.3.13 (proc-macro)|
+itertools v0.14.0|use_alloc,use_std
+itoa v1.0.18|
+kasuari v0.4.12|std
+line-clipping v0.3.8|
+litrs v1.0.0|
+lock_api v0.4.14|atomic_usize,default
+lru v0.18.2|default,hashbrown
+mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-tui)|
+parking_lot v0.12.5|default
+parking_lot_core v0.9.12|
+proc-macro2 v1.0.107|default,proc-macro
+quote v1.0.47|default,proc-macro
+ratatui v0.30.2|crossterm,layout-cache,std,underline-color
+ratatui-core v0.1.2|default,layout-cache,std,underline-color
+ratatui-crossterm v0.1.2|crossterm_0_29,default,underline-color
+ratatui-widgets v0.3.2|std
+rustversion v1.0.23 (proc-macro)|
+ryu v1.0.23|
+scopeguard v1.2.0|
+smallvec v1.15.2|
+static_assertions v1.1.0|
+strsim v0.11.1|
+strum v0.28.0|derive,std,strum_macros
+strum_macros v0.28.0 (proc-macro)|
+syn v2.0.119|clone-impls,default,derive,parsing,printing,proc-macro
+syn v3.0.3|clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro
+thiserror v2.0.20|std
+thiserror-impl v2.0.20 (proc-macro)|
+unicode-ident v1.0.24|
+unicode-segmentation v1.13.3|
+unicode-truncate v2.0.1|std
+unicode-width v0.2.2|cjk,default
+winapi v0.3.9|consoleapi,handleapi,impl-default,processenv,synchapi,winbase,winerror,winuser
+windows-link v0.2.1|
+
+$ cargo tree -p mokiterions-tui -e normal --locked --offline --target x86_64-unknown-linux-gnu --prefix none --no-dedupe -f '{p}|{f}'
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-core)|
+allocator-api2 v0.2.21|alloc
+bitflags v2.13.1|std
+castaway v0.2.4|alloc
+cfg-if v1.0.4|
+compact_str v0.9.1|std
+convert_case v0.10.0|
+critical-section v1.2.0|
+crossterm v0.29.0|bracketed-paste,default,derive-more,events,windows
+darling v0.24.0|default,suggestions
+darling_core v0.24.0|strsim,suggestions
+darling_macro v0.24.0 (proc-macro)|
+derive_more v2.1.1|default,is_variant,std
+derive_more-impl v2.1.1 (proc-macro)|default,is_variant
+document-features v0.2.12 (proc-macro)|default
+either v1.17.0|std,use_std
+equivalent v1.0.2|
+errno v0.3.14|default,std
+foldhash v0.2.0|
+hashbrown v0.16.1|allocator-api2,default,default-hasher,equivalent,inline-more,raw-entry
+hashbrown v0.17.1|allocator-api2,default,default-hasher,equivalent,inline-more,raw-entry
+heck v0.5.0|
+ident_case v1.0.1|
+indoc v2.0.7 (proc-macro)|
+instability v0.3.13 (proc-macro)|
+itertools v0.14.0|use_alloc,use_std
+itoa v1.0.18|
+kasuari v0.4.12|std
+libc v0.2.189|default,std
+line-clipping v0.3.8|
+linux-raw-sys v0.12.1|auxvec,elf,errno,general,ioctl,no_std
+litrs v1.0.0|
+lock_api v0.4.14|atomic_usize,default
+log v0.4.33|
+lru v0.18.2|default,hashbrown
+mio v1.2.2|default,log,net,os-ext,os-poll
+mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-tui)|
+parking_lot v0.12.5|default
+parking_lot_core v0.9.12|
+proc-macro2 v1.0.107|default,proc-macro
+quote v1.0.47|default,proc-macro
+ratatui v0.30.2|crossterm,layout-cache,std,underline-color
+ratatui-core v0.1.2|default,layout-cache,std,underline-color
+ratatui-crossterm v0.1.2|crossterm_0_29,default,underline-color
+ratatui-widgets v0.3.2|std
+rustix v1.1.4|alloc,std,stdio,termios
+rustversion v1.0.23 (proc-macro)|
+ryu v1.0.23|
+scopeguard v1.2.0|
+signal-hook v0.3.18|channel,default,iterator
+signal-hook-mio v0.2.5|mio-1_0,support-v1_0
+signal-hook-registry v1.4.8|
+smallvec v1.15.2|
+static_assertions v1.1.0|
+strsim v0.11.1|
+strum v0.28.0|derive,std,strum_macros
+strum_macros v0.28.0 (proc-macro)|
+syn v2.0.119|clone-impls,default,derive,parsing,printing,proc-macro
+syn v3.0.3|clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro
+thiserror v2.0.20|std
+thiserror-impl v2.0.20 (proc-macro)|
+unicode-ident v1.0.24|
+unicode-segmentation v1.13.3|
+unicode-truncate v2.0.1|std
+unicode-width v0.2.2|cjk,default
+
+$ cargo tree -p mokiterions-tui -e normal --locked --offline --target aarch64-apple-darwin --prefix none --no-dedupe -f '{p}|{f}'
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-core)|
+allocator-api2 v0.2.21|alloc
+bitflags v2.13.1|std
+castaway v0.2.4|alloc
+cfg-if v1.0.4|
+compact_str v0.9.1|std
+convert_case v0.10.0|
+critical-section v1.2.0|
+crossterm v0.29.0|bracketed-paste,default,derive-more,events,windows
+darling v0.24.0|default,suggestions
+darling_core v0.24.0|strsim,suggestions
+darling_macro v0.24.0 (proc-macro)|
+derive_more v2.1.1|default,is_variant,std
+derive_more-impl v2.1.1 (proc-macro)|default,is_variant
+document-features v0.2.12 (proc-macro)|default
+either v1.17.0|std,use_std
+equivalent v1.0.2|
+errno v0.3.14|default,std
+foldhash v0.2.0|
+hashbrown v0.16.1|allocator-api2,default,default-hasher,equivalent,inline-more,raw-entry
+hashbrown v0.17.1|allocator-api2,default,default-hasher,equivalent,inline-more,raw-entry
+heck v0.5.0|
+ident_case v1.0.1|
+indoc v2.0.7 (proc-macro)|
+instability v0.3.13 (proc-macro)|
+itertools v0.14.0|use_alloc,use_std
+itoa v1.0.18|
+kasuari v0.4.12|std
+libc v0.2.189|default,std
+line-clipping v0.3.8|
+litrs v1.0.0|
+lock_api v0.4.14|atomic_usize,default
+log v0.4.33|
+lru v0.18.2|default,hashbrown
+mio v1.2.2|default,log,net,os-ext,os-poll
+mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-yellow-8201\mokiterions-tui)|
+parking_lot v0.12.5|default
+parking_lot_core v0.9.12|
+proc-macro2 v1.0.107|default,proc-macro
+quote v1.0.47|default,proc-macro
+ratatui v0.30.2|crossterm,layout-cache,std,underline-color
+ratatui-core v0.1.2|default,layout-cache,std,underline-color
+ratatui-crossterm v0.1.2|crossterm_0_29,default,underline-color
+ratatui-widgets v0.3.2|std
+rustix v1.1.4|alloc,std,stdio,termios
+rustversion v1.0.23 (proc-macro)|
+ryu v1.0.23|
+scopeguard v1.2.0|
+signal-hook v0.3.18|channel,default,iterator
+signal-hook-mio v0.2.5|mio-1_0,support-v1_0
+signal-hook-registry v1.4.8|
+smallvec v1.15.2|
+static_assertions v1.1.0|
+strsim v0.11.1|
+strum v0.28.0|derive,std,strum_macros
+strum_macros v0.28.0 (proc-macro)|
+syn v2.0.119|clone-impls,default,derive,parsing,printing,proc-macro
+syn v3.0.3|clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro
+thiserror v2.0.20|std
+thiserror-impl v2.0.20 (proc-macro)|
+unicode-ident v1.0.24|
+unicode-segmentation v1.13.3|
+unicode-truncate v2.0.1|std
+unicode-width v0.2.2|cjk,default
+
