@@ -234,7 +234,7 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-047` | static-analysis | Transfer is unique to surrender | No other rule moves any attribute between Mokiterions, and rule 9's non-waste condition is unmodified |
 | `REQ-MOK-048` | automated-test | `--policy social` (oracle 4) | The value `social` is accepted; usage text, long help and invalid-value diagnostic all name the four values; the diagnostic keeps the existing configuration-error exit code |
 | `REQ-MOK-048` | automated-test | The source is reported (oracle 4) | `decision_source_selected` names the `social` source exactly once per run |
-| `REQ-MOK-048` | automated-test | **The five-branch ordering is normative** (oracle 3) | Constructed observations that make two branches applicable at once resolve to the earlier branch: an unanswered attack beside a tolerated co-located resource yields the answer; a tolerated resource beside a Mokiterion in contact yields `eat`; `energy` below `REFERENCE_SLEEP_THRESHOLD` beside a Mokiterion in contact yields `sleep`; a Mokiterion in contact beside one perceived at distance yields the contact branch |
+| `REQ-MOK-048` | automated-test | **The branch ordering is normative** (oracle 3) | Constructed observations that make two branches applicable at once resolve to the earlier branch: an unanswered attack beside a tolerated co-located resource yields the answer; a tolerated resource beside a Mokiterion in contact yields `eat`; `energy` below `REFERENCE_SLEEP_THRESHOLD` beside a Mokiterion in contact yields `sleep`; a Mokiterion in contact beside one perceived at distance yields the contact branch |
 | `REQ-MOK-048` | automated-test | **The answer thresholds** (oracle 3) | A defender proposes `surrender` at `fear` `60` and above, `retreat` from `30` to `59`, `fight` below `30`, against the **first** attacker in the record; asserted at `29`, `30`, `59` and `60`, and with a record holding two attackers |
 | `REQ-MOK-048` | automated-test | **The engagement threshold** (oracle 3) | A Mokiterion with a living Mokiterion at Chebyshev distance `1` or less proposes `attack` below `fear` `95` and `threaten` at `95` and above; one perceiving another at distance `2` or more proposes `approach` below `95` and `avoid` at `95` and above; asserted at `94` and `95`, and at `30` and `60` to prove the gate is **not** either answer threshold. The value was `30` as first approved and moved under `REQ-MOK-048`'s amendment of 2026-08-20 |
 | `REQ-MOK-048` | automated-test | **One threat flips both branches** (oracle 3) | A Mokiterion at `fear` `10`, threatened once under `REQ-MOK-046` and so at `40`, proposes `threaten` where it would have proposed `attack` and `avoid` where it would have proposed `approach`. This is the row that makes `REQ-MOK-046`'s composition claim good |
@@ -597,8 +597,10 @@ Retained under `docs/engineering/simulation/evidence/WO-MOK-012/`:
 - the per-observation comparison of `social` against `individual` at every opportunity where no living Mokiterion is
   perceived and no attack is unanswered, carrying both proposals and the shared stream's position either side, together
   with the total draw count per run under each source at matched seeds;
-- the branch distribution under `social` per seed — how often each of `REQ-MOK-048`'s five branches fired, and how often
-  the answer branch chose `surrender`, `retreat` and `fight` — which is the evidence manual assessment 8 is taken on;
+- the branch distribution under `social` per seed — how often each of `REQ-MOK-048`'s six branches fired, and how often
+  the answer branch chose `surrender`, `retreat` and `fight` — which is the evidence manual assessment 8 is taken on. The
+  count reads six rather than the five this list carried as first approved, because the amendment of 2026-08-20 hoisted
+  rule 19's case 3 into a new branch 3; the item itself is unchanged, as the second amendment row states;
 - the measured strikes per encounter, the measured frequency of a forfeit discarded at a full recipient, and the measured
   frequency of a surrender in the free band below `satiety` `2`, which is what manual assessments 1 and 2 are taken on;
 - the per-identifier series and the computed rank correlations, with the band evaluation;
@@ -622,11 +624,22 @@ Evidence is retained in the repository, is reproducible from the recorded comman
 
 ## Residual uncertainty
 
-- **The identifier-advantage bound is weak and is stated as weak.** Five seeds and twelve identifiers cannot support a
-  strong claim about a distributional advantage. The identifier-symmetry test closes the mechanism — damage does not read
-  an identifier — and the band closes only a gross outcome asymmetry. A modest systematic advantage arising from turn
-  order rather than from the damage function would pass both, and would be visible only in a larger study this contract
-  does not commission.
+- **The identifier-advantage bound is weak where it remains weak, and the study it deferred was commissioned.** Five
+  seeds and twelve identifiers cannot support a strong claim about a distributional advantage, so part one of oracle 5's
+  outcome check is a gross tripwire and nothing more. The identifier-symmetry test closes the mechanism — damage does not
+  read an identifier.
+
+  **Amended 2026-08-20, with this contract's third amendment row.** This bullet said that a modest systematic advantage
+  arising from turn order rather than from the damage function "would be visible only in a larger study this contract
+  does not commission". That study was commissioned and run, and it found the advantage: it is turn order's, it runs
+  toward *later* actors rather than toward `M01`, and part two now bounds it at `1.25` over a declared 200-seed
+  diagnostic set where it measures `1.082` — `1.063` over the 1,000 seeds measured in
+  `evidence/WO-MOK-012/identifier.md`. What stays residual is narrower and is three things rather than one. The bound is
+  a spread over six pooled turn positions, so an advantage distributed evenly across all six would not register in it.
+  The diagnostic set carries no survivor floor and no lethality bound, so a regression that moved outcomes on that set
+  without breaching `1.25` fails no row here. And the claim that the advantage is identifier-*blind* still rests on one
+  constructed encounter with the two identifiers exchanged; the sweep bounds the consequence of turn order and does not
+  independently establish that nothing reads an identifier.
 - **Exact arithmetic is verified on constructed states, and constructed states are not the world.** Oracle 4 establishes
   that each verb applies somewhere and that combat kills on every seed; it does not establish that every arithmetic
   branch verified in oracle 3 is reached in a natural run. The count of each branch reached in whole runs is retained so

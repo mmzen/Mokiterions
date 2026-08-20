@@ -794,7 +794,7 @@ In particular:
 - `delegation.md`, the per-observation comparison of `social` against `individual` wherever no living Mokiterion is
   perceived and no attack is unanswered, with both proposals, the shared stream's position either side, and each source's
   total draw count at matched seeds;
-- `branches.md`, how often each of the `social` source's five branches fired per seed and how the answer branch split
+- `branches.md`, how often each of the `social` source's six branches fired per seed and how the answer branch split
   between `surrender`, `retreat` and `fight`, together with the measured strikes per encounter, the frequency of a forfeit
   discarded at a full recipient and the frequency of a surrender in the free band below `satiety` `2` — the evidence
   manual assessments 1, 2 and 8 are taken on;
