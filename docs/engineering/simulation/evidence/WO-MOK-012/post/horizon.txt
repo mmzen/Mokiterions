@@ -1,0 +1,112 @@
+1. The capture, by cell
+   cell  sha256(raw)  bytes  lines  exit
+
+   seed0-social-d0.75-t1000-traceoff      aa139c35f57d010fb4b8839144494f01e32af8e3dedd093b104c49a031c3184d   1244721   11780 0
+   seed0-social-d0.75-t10000-traceoff     d4c0341a713f6c193798176d1a2c4ef372595dda0ea3a9af72764e0543d1c96a   4339020   41152 0
+   seed0-social-d0.75-t2000-traceoff      11894f25352e5044cbef11c32b85b11c15841b78b01224840398b245272a98c9   2210069   20847 0
+   seed0-social-d0.75-t20000-traceoff     d4c0341a713f6c193798176d1a2c4ef372595dda0ea3a9af72764e0543d1c96a   4339020   41152 0
+   seed0-social-d0.75-t5000-traceoff      b54689aa17b7c59945f52627c08345d192faef5a39bc766c23d8f9ceb8b5b4a1   3768081   35643 0
+   seed1-social-d0.75-t10000-traceoff     42cd16c1e821a8c6b86d419bfcc12da73ebea187b36dcd21b13c09995bb28dee   8510445   80513 0
+   seed1-social-d0.75-t10000-traceon      95c232b1b057b89c7cdb06f7f4dc45f2d4257e451a8ace6a5ed010644893653d  21329031  154883 0
+   seed123-social-d0.75-t10000-traceoff   79df18b2064217cdf9003117f09864db54315adbc272ec59da3d3235988a4827   5534511   52700 0
+   seed42-social-d0.75-t10000-traceoff    4563d022f091223cb20db3cb9981e0c260263df58c42f3f4403a003d39189c93   6640529   63096 0
+   seed777-social-d0.75-t10000-traceoff   7f448e349bb8a694fdd41e2aeb5fc0a0cb5c63dd8f18d089f6d5c85397f18c10   6357726   60192 0
+
+2. Completion
+   cell                                         exit      reason  ticks   lines     bytes
+   seed0-social-d0.75-t1000-traceoff               0  tick_limit   1000   11780   1244721
+   seed0-social-d0.75-t10000-traceoff              0  extinction   7890   41152   4339020
+   seed0-social-d0.75-t2000-traceoff               0  tick_limit   2000   20847   2210069
+   seed0-social-d0.75-t20000-traceoff              0  extinction   7890   41152   4339020
+   seed0-social-d0.75-t5000-traceoff               0  tick_limit   5000   35643   3768081
+   seed1-social-d0.75-t10000-traceoff              0  tick_limit  10000   80513   8510445
+   seed1-social-d0.75-t10000-traceon               0  tick_limit  10000  154883  21329031
+   seed123-social-d0.75-t10000-traceoff            0  tick_limit  10000   52700   5534511
+   seed42-social-d0.75-t10000-traceoff             0  tick_limit  10000   63096   6640529
+   seed777-social-d0.75-t10000-traceoff            0  extinction   9511   60192   6357726
+
+3. Survivors and composition, from rule 18's own summary
+   cell                                         surv died terr_a terr_b         food A         food B
+   seed0-social-d0.75-t1000-traceoff               9    3      3      6        9/16/36         2/7/40
+   seed0-social-d0.75-t10000-traceoff              0   12      0      0       12/10/39       11/19/31
+   seed0-social-d0.75-t2000-traceoff               8    4      3      5        5/15/41         5/7/47
+   seed0-social-d0.75-t20000-traceoff              0   12      0      0       12/10/39       11/19/31
+   seed0-social-d0.75-t5000-traceoff               2   10      2      0        8/12/41        6/13/42
+   seed1-social-d0.75-t10000-traceoff              5    7      5      0        7/10/44         9/9/43
+   seed1-social-d0.75-t10000-traceon               5    7      5      0        7/10/44         9/9/43
+   seed123-social-d0.75-t10000-traceoff            2   10      0      2         6/9/46       14/10/37
+   seed42-social-d0.75-t10000-traceoff             2   10      1      1        4/16/41         8/7/46
+   seed777-social-d0.75-t10000-traceoff            0   12      0      0        12/9/40       11/12/38
+   food columns are low/medium/high; capacity is 61 per territory
+
+4. Deaths, by cause and by tick
+   cell                                         died combat starved first  last no turn
+   seed0-social-d0.75-t1000-traceoff               3      1       2     9   984       0
+   seed0-social-d0.75-t10000-traceoff             12      2      10     9  7890       1
+   seed0-social-d0.75-t2000-traceoff               4      1       3     9  1414       0
+   seed0-social-d0.75-t20000-traceoff             12      2      10     9  7890       1
+   seed0-social-d0.75-t5000-traceoff              10      2       8     9  4378       1
+   seed1-social-d0.75-t10000-traceoff              7      4       3     9  9107       1
+   seed1-social-d0.75-t10000-traceon               7      4       3     9  9107       1
+   seed123-social-d0.75-t10000-traceoff           10      3       7     6  8427       1
+   seed42-social-d0.75-t10000-traceoff            10      3       7     8  9833       2
+   seed777-social-d0.75-t10000-traceoff           12      1      11    10  9511       1
+   combat is attack_resolved's own target_died:yes; the remainder is rule 12's decay.
+   'no turn' counts the victims a lower identifier killed earlier in the same tick,
+   which never reached their own decision opportunity in it:
+   seed0-social-d0.75-t10000-traceoff           M10 in tick 4378
+   seed0-social-d0.75-t20000-traceoff           M10 in tick 4378
+   seed0-social-d0.75-t5000-traceoff            M10 in tick 4378
+   seed1-social-d0.75-t10000-traceoff           M11 in tick 9107
+   seed1-social-d0.75-t10000-traceon            M11 in tick 9107
+   seed123-social-d0.75-t10000-traceoff         M06 in tick 9
+   seed42-social-d0.75-t10000-traceoff          M11 in tick 9, M10 in tick 6953
+   seed777-social-d0.75-t10000-traceoff         M12 in tick 10
+
+5. Retained state, reconstructed tick by tick
+   cell                                          pop A high B high A low B low at cap id high suff    opps
+   seed0-social-d0.75-t1000-traceoff               9     61     61    47    43     12     479    0   10847
+   seed0-social-d0.75-t10000-traceoff              0     61     61    47    43    797    1325    0   37603
+   seed0-social-d0.75-t2000-traceoff               8     61     61    47    43     48     764    0   19261
+   seed0-social-d0.75-t20000-traceoff              0     61     61    47    43    797    1325    0   37603
+   seed0-social-d0.75-t5000-traceoff               2     61     61    47    43    352    1184    0   32837
+   seed1-social-d0.75-t10000-traceoff              5     61     61    39    54    485    2595    0   74370
+   seed1-social-d0.75-t10000-traceon               5     61     61    39    54    485    2595    1   74370
+   seed123-social-d0.75-t10000-traceoff            2     61     61    36    57    900    1757    0   48158
+   seed42-social-d0.75-t10000-traceoff             2     61     61    47    55    705    2082    0   57813
+   seed777-social-d0.75-t10000-traceoff            0     61     61    43    51    752    1946    0   55341
+   pop is the surviving population; 'at cap' counts food_regeneration_skipped lines,
+   each carrying the engine's own count, checked against the reader's; 'opps' is the
+   decision opportunities taken, checked per tick against the reconstructed population
+
+6. Food, consumed against regenerated
+   cell                                         consumed    regen  skipped    ids
+   seed0-social-d0.75-t1000-traceoff                 369      357       12    479
+   seed0-social-d0.75-t10000-traceoff               1203     1203      797   1325
+   seed0-social-d0.75-t2000-traceoff                 644      642       48    764
+   seed0-social-d0.75-t20000-traceoff               1203     1203      797   1325
+   seed0-social-d0.75-t5000-traceoff                1062     1062      352   1184
+   seed1-social-d0.75-t10000-traceoff               2473     2473      485   2595
+   seed1-social-d0.75-t10000-traceon                2473     2473      485   2595
+   seed123-social-d0.75-t10000-traceoff             1635     1635      900   1757
+   seed42-social-d0.75-t10000-traceoff              1960     1960      705   2082
+   seed777-social-d0.75-t10000-traceoff             1824     1824      752   1946
+
+7. The tick ladder: the same world, five limits
+     t1000 body of  11778 lines is a prefix of t2000   yes
+     t2000 body of  20845 lines is a prefix of t5000   yes
+     t5000 body of  35641 lines is a prefix of t10000  yes
+    t10000 body of  41150 lines is a prefix of t20000  yes
+   t10000 and t20000 are byte-identical: yes
+   traceon minus its 74370 action_trace lines is traceoff, byte for byte: yes
+
+8. The suffered-attack record, where the stream shows it
+   seed1-social-d0.75-t10000-traceon                27 traces carry it, widest 1, bound 11
+                                                 74370 traces in all, against 74370 decision opportunities
+   trace-off streams carry no such field and are not counted
+
+9. Provenance: the ladder's shortest rung against the released capture
+   seed0-social-d0.75-t1000-traceoff reproduces seed0-social-d0.75-traceoff: yes
+   compared against docs/engineering/simulation/evidence/WO-MOK-012/post/social-manifest.txt
+
+RESULT: PASS -- 10 runs complete, 561958 lines checked, no disagreement
