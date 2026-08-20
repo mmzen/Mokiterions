@@ -1,0 +1,101 @@
+VER-MOK-012 oracle 1: the pre-change and post-change matrices compared
+======================================================================
+
+Baseline    39662d13abd08e3410648d1c59ad38384f8ad2d2   baseline/pre-manifest.txt
+Candidate   7c4aef3967406c05d80da963695898b77f5329e9   post/post-manifest.txt
+Date        2026-08-20
+
+Oracle 1 asks two different things of the same 90 cells, and this change answers them in two different
+ways. Both answers are below, and the second one is not a pass.
+
+
+1. The comparison, as run
+-------------------------
+
+    $ strip() { grep -v '^#' "$1"; }
+    $ diff <(strip post/post-manifest.txt) <(strip baseline/pre-manifest.txt)
+    (no output)
+
+Comment lines are excluded because the two manifests label themselves differently -- one says which
+commit it came from -- and agree on every other line. No projection is applied to either side, which
+is oracle 1's requirement and manifest.py's docstring explains at length why the reader carries none.
+
+Every row is compared on four columns at once: raw SHA-256, byte count, line count and exit code.
+
+    cells compared                                               90
+    identical on all four columns                                90
+    differing on any column                                       0
+
+    by source:   baseline     30 of 30 identical
+                 reference    30 of 30 identical
+                 individual   30 of 30 identical
+
+    exit codes observed, both sides:   {'0'}
+
+110 MB of stream on each side, and not one byte of it moved.
+
+
+2. The `baseline` clause: satisfied
+-----------------------------------
+
+    "The 30 `baseline` cells must be byte-identical, unprojected, with identical exit codes."
+
+30 of 30, unprojected, exit 0 on both sides. This is the load-bearing claim of INT-MOK-009 -- that a
+capability about Mokiterions acting on each other changes what a Mokiterion *chooses* and nothing about
+what the world *does* -- and it is measured rather than argued. Rule 4's candidate list, rule 9's eat
+effect, the food table, rules 14 to 16 and the shared entropy stream's consumption are all reachable
+from a `baseline` run, so a change to any of them would appear here; the seven new verbs, the two new
+trace fields and the four new resolutions are reachable from none of it.
+
+It also carries a second fact worth stating plainly, because it is easy to lose: the `social` source
+draws no entropy for any targeted decision. Had it drawn one, the shared stream would still be
+untouched in a `baseline` run -- `baseline` never runs the social source -- so this comparison does not
+establish that. Oracle 2 does, and it is a separate owed item.
+
+
+3. The `reference` and `individual` clause: NOT satisfied
+--------------------------------------------------------
+
+    "The 60 `reference` and `individual` cells are expected to differ, and each difference must be
+     attributed to REQ-MOK-051's corrected waste condition by a stated characterization -- first
+     diverging tick, first diverging record, and the eat-or-seek decision that changed -- not merely
+     noted."
+
+Sixty of sixty are identical. There is no divergence to characterize, and the absence is not a
+convenience: it is REQ-MOK-051 measured as unimplemented.
+
+REQ-MOK-051 requires that "no calorie class hold more than half of any territory's standing resources"
+and states where the correction may be made -- "in the waste condition of the decision sources", rule
+5's `satiety + restoration <= 100` and rule 19's tolerant form. Neither waste condition was touched by
+98a85ea. So the two sources propose exactly what they proposed at the baseline, their streams are
+unchanged, and the requirement's obligation is unmet: measurement at this candidate fails 14 of the 15
+seed-and-territory cells the requirement bounds.
+
+That state is the product owner's decision of 2026-08-20, recorded rather than discovered here: the
+composition correction is deferred to a second amendment, so that REQ-MOK-014's and REQ-MOK-034's
+floors are re-measured once against a world holding both properties rather than twice against
+intermediate worlds that never ship -- which is the reasoning REQ-MOK-051's own rationale gives for
+pairing the two changes in the first place.
+
+So this section is a recorded failure of an approved requirement, not an oracle awaiting evidence. It
+is listed as such in escalation.md, and WO-MOK-012 cannot reach `implemented` while it stands.
+
+
+4. What this comparison does and does not settle
+------------------------------------------------
+
+Settles      that the world's behavior is unchanged under the three pre-existing sources, on the whole
+             declared matrix, without projection.
+Settles      that REQ-MOK-051 is unimplemented at this candidate, by the absence of the divergence its
+             own text predicts.
+
+Does not     say anything about the `social` source, which does not appear in these 90 cells.
+             post/social-manifest.txt records those thirty separately and provisionally.
+Does not     establish the no-entropy constraint (oracle 2) or the resolution arithmetic (oracle 3).
+Does not     survive an amendment to REQ-MOK-051, whose whole point is to move 60 of these 90 cells.
+             When that amendment lands, this file is superseded and the characterization oracle 1 asks
+             for becomes writable for the first time.
+
+RESULT: MIXED -- the `baseline` clause passes on 30 of 30 cells; the `reference` and `individual`
+clause is unsatisfied because REQ-MOK-051 is unimplemented, which is a recorded deferral and an open
+obligation, not a measurement gap.

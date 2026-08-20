@@ -1,0 +1,37 @@
+# WO-MOK-012 social 30-cell matrix, reproduced from git archive 7c4aef3967406c05d80da963695898b77f5329e9
+# cell  sha256(raw)  bytes  lines  exit
+
+seed0-social-d0.15-traceoff        e15992c445ea60af0aa05b9eac14a9472316a81eb27c2abe2c7c98ea5c9ee07e    399587    3824 0
+seed0-social-d0.15-traceon         db8ea377d157400d9788b3df069c4ffc130fd68aa8c79532ad8684261d7b3935   1003682    7350 0
+seed0-social-d0.75-traceoff        7c8ee1fedc69a7c7c2c310ba0a580e4235612a9fb8e3a455696d531bf9b5f5b5   1040506    9872 0
+seed0-social-d0.75-traceon         33e116801e0a7dfaea7313534aee0c3b0d2a9c7cd8a8cb61a4c8f9f524c3074a   2610056   18953 0
+seed0-social-d1.50-traceoff        fe6d2cede73a6c178a142bb7a245d4e13b8650e6b2ee4503cadb5ee89a66c4a8   1120065   10603 0
+seed0-social-d1.50-traceon         b5220c3b699e7cec4e5d2bb05eeb1bb2d71a310413134bbf35677984a86e1c26   2791284   20241 0
+seed1-social-d0.15-traceoff        4d98a785343b45dd1be409cc762e0978420f6d1bbafe8e0e5dd48b86b7d8b8d2    360191    3461 0
+seed1-social-d0.15-traceon         1712f50d79076b3154c2988dff1d2929afe790d4d313cb609485be65d4daa420    908356    6654 0
+seed1-social-d0.75-traceoff        8ba45108eba5d5f93d2c8b5954eff7276e8773c80b629c65becc08d766135219    926127    8803 0
+seed1-social-d0.75-traceon         d9782bbf21a444ab5994226a6d1991051e96105d0d9a4a6baef6dd0e46d76daf   2320354   16877 0
+seed1-social-d1.50-traceoff        8fe43f64b175015b1c08de41a8dad957a0ebad5450f181fb42fec1a0e77cb839   1299197   12301 0
+seed1-social-d1.50-traceon         7113700023e52e326ae0db7e6fb6a291dde04ba0eed4565e17bfbc3a3128b6bf   3235732   23494 0
+seed123-social-d0.15-traceoff      08ea4235e5a7a4a7cc79444c79b5d2fc186034e697d00a9b1861ab3b4f3ed5b3    316528    3019 0
+seed123-social-d0.15-traceon       373ab465906cd584e2f440ed096b72d7db912f629635a88139797869d347ddec    800188    5836 0
+seed123-social-d0.75-traceoff      af2669d4eb11d1a5a5a97c27229c36d37832922b06cdb0691c7cb19320340e34    752644    7207 0
+seed123-social-d0.75-traceon       765bccbd470f2c9052850627f884c04d1436fcb3644fa81755226f272d5a7a24   1845716   13550 0
+seed123-social-d1.50-traceoff      95f08ba43cff5a5d14d3299d3316b828d4abd00add0b1e9c85caa5384cc78e32   1054593    9978 0
+seed123-social-d1.50-traceon       e541f81c1d8a5ecfdc9a93b05f8e35143affe17eadb0fa21bffaf32eac473505   2615307   18998 0
+seed42-social-d0.15-traceoff       6dc0fc0915c8f8f3e6029af3ef87f2f15f4a436668ba0d4a650a882c0e5f2663    336065    3208 0
+seed42-social-d0.15-traceon        3aeba176d4df2db7da5c94d036f5159b905e701e1bf0d860779fd4ace75ad6ae    847473    6186 0
+seed42-social-d0.75-traceoff       317ebd5709d3cf486db02203d80a2f2aa5b523f0d7dd72ea0c7407b474d1d8c5   1027200    9827 0
+seed42-social-d0.75-traceon        145b01af4c02893f2f553bc3598642f652ef8b535e1032f49e739a5ce4aa2ba9   2538763   18604 0
+seed42-social-d1.50-traceoff       da95b05c353a99712a47d9984c60ab0a52276e0da7c8689b03065abb90a3dd03   1231819   11653 0
+seed42-social-d1.50-traceon        7e8c08bb8638f1cdf1b0a71ca0db2af6fb6083cdfea4cc1e19d96e9195840baf   3068468   22271 0
+seed777-social-d0.15-traceoff      b5a30f2493af6e17b038a11c04c027f20f597db0ea29695f129ab4a93111d9e6    291432    2794 0
+seed777-social-d0.15-traceon       b238b7b7b6f8b64e65ad3da162b6307fb8337a3c4105209400c08f178950d797    733663    5381 0
+seed777-social-d0.75-traceoff      1692a4fbe588bd0d6aee609010f90f14700f6c7618f43ddc7da3a7fa40b9d2c8    948510    9007 0
+seed777-social-d0.75-traceon       eb63beddd29f832b0cd16c5fd926bdea48902b589c71bf99439991aecfbc7e06   2372868   17272 0
+seed777-social-d1.50-traceoff      f2dd3ba1f80619fcc5e4eb29f4f8f561dfe31a82c46f4e33e9fdd0cb80b87a5c   1209672   11491 0
+seed777-social-d1.50-traceon       ed57aa86b10d0a8f340136bba747818d1f78affb3bf4a3d9cc095f5fafbad6d3   3010525   21922 0
+
+cells: 30
+  social: 30
+exit codes observed: ['0']

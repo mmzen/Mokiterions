@@ -1,0 +1,110 @@
+VER-MOK-012 oracle 1: the provenance of the post-change capture
+===============================================================
+
+Work order   WO-MOK-012 (Phase 3.1, encounters)
+Candidate    7c4aef3967406c05d80da963695898b77f5329e9   (the bare hash is COMMIT.txt, which is
+             therefore kept to one line so a script can read it)
+Baseline     39662d13abd08e3410648d1c59ad38384f8ad2d2   (baseline/COMMIT.txt)
+Branch       feature/phase-3-definition
+Date         2026-08-20
+
+This is the other side of the comparison baseline/capture-state.txt was taken for. It is measured to
+the same standard and for a reason particular to this side: the post-change capture was first taken
+from a working tree during implementation, and a working tree during implementation is exactly where
+an unrecorded modification can enter a capture. So the capture is not asserted to be the candidate's
+output. It is reproduced from a tree that cannot hold a working-tree modification, and the
+reproduction is compared with what was captured from the working tree.
+
+
+1. The state of the worktree at capture
+---------------------------------------
+
+    $ git rev-parse HEAD
+    7c4aef3967406c05d80da963695898b77f5329e9
+    $ git diff --stat HEAD
+    (no output)
+    $ git status --short
+    (no output)
+
+Tracked-clean with nothing untracked. Two commits sit between this and the baseline: 98a85ea, the
+implementation, and 7c4aef3, the documentation. Neither the second commit nor this evidence directory
+contains a line the engine compiles, so the streams below are 98a85ea's; the candidate is named as
+7c4aef3 because that is the commit the capture was taken at and naming the commit actually captured is
+the whole content of a provenance record.
+
+
+2. The capture is the candidate commit's own output
+---------------------------------------------------
+
+    $ rm -rf <scratch>/recap-tree <scratch>/recap <scratch>/recap-social
+    $ mkdir -p <scratch>/recap-tree
+    $ git archive HEAD | tar -x -C <scratch>/recap-tree
+    $ cd <scratch>/recap-tree && cargo build --release --offline -p Mokiterions
+       Compiling Mokiterions v0.1.0 (<scratch>/recap-tree/mokiterions-core)
+        Finished `release` profile [optimized] target(s) in 2.76s
+    $ bash <repo>/docs/engineering/simulation/evidence/WO-MOK-012/capture.sh <scratch>/recap
+    captured 90 streams into <scratch>/recap                                    (4.0 seconds)
+    $ bash <repo>/docs/engineering/simulation/evidence/WO-MOK-012/capture-social.sh <scratch>/recap-social
+    captured 30 streams into <scratch>/recap-social                             (1.5 seconds)
+
+`git archive` writes the commit's trees and nothing else: no untracked file, no working-tree
+modification, no index state. Unlike at the baseline, the archived tree does contain this evidence
+directory, because it is tracked at this commit; both capture scripts are therefore invoked from the
+repository anyway, so that one copy of each script takes both sides and the comparison stays a
+statement about the tree rather than about the harness.
+
+Each capture was then digested with baseline/manifest.py -- the same reader that digested the baseline,
+unchanged and still carrying no projection -- and the 90-cell reproduction was compared with the
+capture taken from the working tree during implementation, on four columns at once:
+
+    cells in the working-tree capture:                           90
+    reproduced exactly (raw digest, bytes, lines, exit):         90
+    mismatched:                                                   0
+
+So the working-tree capture was the candidate commit's own output, and no unrecorded modification was
+present when it was taken. The manifest committed as post/post-manifest.txt is the reproduction's,
+which is the one whose provenance this file establishes.
+
+manifest.py exits 1 on the 30-cell social capture and 0 on the 90-cell one. That is the reader
+asserting its matrix is ninety cells and is not a finding about the streams: both captures report
+exit codes {'0'} on every cell, which is what VER-MOK-012 retains them for.
+
+
+3. What the two captures are
+----------------------------
+
+post-manifest.txt   the declared 90-cell matrix at the candidate: five declared seeds x baseline,
+                    reference and individual x densities 0.15, 0.75 and 1.50 x trace off and on, at
+                    1,000 ticks. 110 MB of stream. This is the capture oracle 1 compares with the
+                    baseline, and byte-identity.txt is that comparison.
+
+social-manifest.txt the thirty cells the same matrix cannot hold at the baseline, because the source
+                    does not exist there: the same seeds and densities and traces under
+                    --policy social. 63 MB of stream. Recorded here for the retention item that asks
+                    for "the new 30-cell capture under the social source, with exit codes": all
+                    thirty complete and exit 0.
+
+                    **This manifest is provisional.** REQ-MOK-049 is failing at this candidate, the
+                    product owner has an open decision on REQ-MOK-048's branch order and thresholds,
+                    and every one of these thirty digests is a digest of what that decision changes.
+                    A digest recorded before an amendment describes a tree the amendment replaces.
+                    When the amendment lands, this file is retaken; the ninety cells above are not,
+                    because nothing the amendment can touch is read by the three sources they run.
+
+Both scratch captures were written outside the repository and deleted after measurement. That is why
+this file records the outcome and not the streams.
+
+
+4. What is not measured here
+----------------------------
+
+The subset retained whole on the baseline side -- every cell's initialization block, rule 18's summary
+line per cell, the per-cell census, one traced cell in full -- has no counterpart here yet. Those
+belong to the retention items still owed, and the social ones are held deliberately: they are the
+per-seed curve, the verb counts and the branch distribution, and the product owner directed on
+2026-08-20 that the decision-dependent artifacts wait until the amendment is measured rather than be
+committed twice.
+
+RESULT: PASS -- the post-change capture is reproducible from the commit it claims, 90 of 90 cells on
+four columns, from a tree that cannot have been dirty, and it agrees with the capture taken from the
+working tree during implementation.
