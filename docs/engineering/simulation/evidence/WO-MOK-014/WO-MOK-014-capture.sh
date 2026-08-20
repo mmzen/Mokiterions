@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Captures every dependency measurement WO-MOK-013 retains, into the directory holding this file.
+# Captures every dependency measurement WO-MOK-014 retains, into the directory holding this file.
 #
 # Run from the workspace root:
-#     bash docs/engineering/simulation/evidence/WO-MOK-013/WO-MOK-013-capture.sh
+#     bash docs/engineering/simulation/evidence/WO-MOK-014/WO-MOK-014-capture.sh
 #
 # Nothing here resolves anything: every cargo invocation passes --locked, and every one after the
 # fetch passes --offline as well, so the figures below describe the committed lockfile and not a
 # resolution taken on the day of the capture. The script is retained so that each figure in
-# SPEC-MOK-002 rule 13, SPEC-MOK-003's declared set and VER-MOK-013 is reproducible from a
+# SPEC-MOK-002 rule 13, SPEC-MOK-003's declared set and VER-MOK-014 is reproducible from a
 # recorded command rather than trusted.
 #
 # The determinism capture is NOT here. It reuses evidence/WO-MOK-011/capture.sh unchanged, which
 # is the point: the baseline is a retained capture and re-running it with a script written today
-# would make the comparison circular. See WO-MOK-013-determinism.txt for the two commands.
+# would make the comparison circular. See WO-MOK-014-determinism.txt for the two commands.
 set -u
 
 # Retained evidence is UTF-8. Without this, a Python process writing to a redirect on Windows
@@ -24,7 +24,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 targets="x86_64-pc-windows-msvc x86_64-unknown-linux-gnu aarch64-apple-darwin"
 
 {
-  echo "# WO-MOK-013: resolved dependency graphs, per package and per target"
+  echo "# WO-MOK-014: resolved dependency graphs, per package and per target"
   echo "# $(cargo --version), $(rustc --version)"
   echo "# host $(rustc -vV | sed -n 's/^host: //p')"
   echo
@@ -38,7 +38,7 @@ targets="x86_64-pc-windows-msvc x86_64-unknown-linux-gnu aarch64-apple-darwin"
       echo
     done
   done
-} > "$here/WO-MOK-013-graphs.txt"
+} > "$here/WO-MOK-014-graphs.txt"
 
 # A crate is one (name, version) pair, not one name: `hashbrown` and `syn` are each in the
 # observer's graph at two versions, so a count taken over names is two short of the declared
@@ -50,7 +50,7 @@ external() {
 }
 
 {
-  echo "# WO-MOK-013: the figures a reader might confuse, each with the question it answers"
+  echo "# WO-MOK-014: the figures a reader might confuse, each with the question it answers"
   echo
   echo "\"How many crates does a build of the observer compile on this target?\""
   for target in $targets; do
@@ -90,10 +90,10 @@ external() {
         --prefix none --no-dedupe | grep -c .
     )"
   done
-} > "$here/WO-MOK-013-counts.txt"
+} > "$here/WO-MOK-014-counts.txt"
 
 {
-  echo "# WO-MOK-013: build-time code-execution surface, per ADR-MOK-006 decision 13"
+  echo "# WO-MOK-014: build-time code-execution surface, per ADR-MOK-006 decision 13"
   echo "# A crate is listed when any of its targets has kind custom-build in cargo metadata."
   echo "#"
   echo "# Four counts are reconstructible here and they answer four different questions. The"
@@ -159,10 +159,10 @@ PY
     echo "  \$ cargo tree -i $crate -e normal,build,dev --locked --offline --target all"
     cargo tree -i "$crate" -e normal,build,dev --locked --offline --target all 2>&1 | sed 's/^/    /'
   done
-} > "$here/WO-MOK-013-build-scripts.txt"
+} > "$here/WO-MOK-014-build-scripts.txt"
 
 {
-  echo "# WO-MOK-013: resolved feature sets, against SPEC-MOK-003's declaration"
+  echo "# WO-MOK-014: resolved feature sets, against SPEC-MOK-003's declaration"
   echo
   for target in $targets; do
     echo "$target:"
@@ -170,10 +170,10 @@ PY
       --prefix none --no-dedupe -f '{p}|{f}' | sort -u \
       | grep -E '^(ratatui|mio|signal-hook-mio|crossterm) ' | sed 's/^/  /'
   done
-} > "$here/WO-MOK-013-features.txt"
+} > "$here/WO-MOK-014-features.txt"
 
 {
-  echo "# WO-MOK-013: the by-name scan of SPEC-MOK-005 rule 8.4d, before disclosure"
+  echo "# WO-MOK-014: the by-name scan of SPEC-MOK-005 rule 8.4d, before disclosure"
   echo "#"
   echo "# The terms are read out of the checking program, so this file cannot disagree with what"
   echo "# actually ran. They were written from the prohibitions ADR-MOK-006 decision 4 preserved,"
@@ -264,24 +264,24 @@ for name, disclosure in sorted(declaration.disclosures.items()):
     print(f"  {name} {disclosure.version} on {', '.join(sorted(disclosure.labels))}"
           f" -- {disclosure.capability} -- assessment {state}")
     print(f"      assessment as SPEC-MOK-003 states it: {' '.join(disclosure.assessment.split())}")
-print("\nResidue after disclosure: the run in WO-MOK-013-check-run.txt refuses on nothing, so every")
+print("\nResidue after disclosure: the run in WO-MOK-014-check-run.txt refuses on nothing, so every")
 print("raw hit above is a disclosed row and no hit is unaccounted for. A disclosure matching no hit")
 print("would refuse as well, which is what keeps the table from outliving the graph.")
 PY
-} > "$here/WO-MOK-013-scan.txt"
+} > "$here/WO-MOK-014-scan.txt"
 
 {
-  echo "# WO-MOK-013: the declared-set comparison, full run"
+  echo "# WO-MOK-014: the declared-set comparison, full run"
   echo "\$ python scripts/check_declared_dependencies.py --root ."
   python scripts/check_declared_dependencies.py --root . 2>&1
   echo "exit $?"
-} > "$here/WO-MOK-013-check-run.txt"
+} > "$here/WO-MOK-014-check-run.txt"
 
 {
-  echo "# WO-MOK-013: the checking program's own test suite"
+  echo "# WO-MOK-014: the checking program's own test suite"
   echo "\$ python -m unittest discover -s scripts -p 'test_check_declared*.py' -v"
   python -m unittest discover -s scripts -p 'test_check_declared*.py' -v 2>&1
   echo "exit $?"
-} > "$here/WO-MOK-013-check-tests.txt"
+} > "$here/WO-MOK-014-check-tests.txt"
 
 echo "captured into $here"

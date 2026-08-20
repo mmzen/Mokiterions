@@ -2,12 +2,12 @@
 # Demonstrates that check_declared_dependencies.py refuses, by making it refuse ten ways.
 #
 # Run from the workspace root:
-#     bash docs/engineering/simulation/evidence/WO-MOK-013/WO-MOK-013-injection.sh
+#     bash docs/engineering/simulation/evidence/WO-MOK-014/WO-MOK-014-injection.sh
 #
 # Why this exists. A check written by the same agent that wrote the thing being checked, against a
 # tree that already conforms, produces a green line either way; a check that cannot fail is
-# indistinguishable from no check at all. WO-MOK-013's assurance rationale says so, and
-# VER-MOK-013 scenarios 2, 3, 4 and 10 are the scenarios. The unit suite exercises the readers and
+# indistinguishable from no check at all. WO-MOK-014's assurance rationale says so, and
+# VER-MOK-014 scenarios 2, 3, 4 and 10 are the scenarios. The unit suite exercises the readers and
 # the comparisons directly; this script exercises the whole program end to end, on a copy of this
 # workspace with one declaration edited at a time.
 #
@@ -18,7 +18,7 @@
 # mismatch in a real checkout, and git status would carry it.
 #
 # --no-engine-build is passed throughout: 8.4c compiles the engine, which is measured once for
-# real in WO-MOK-013-check-run.txt and would add minutes per case here for no new information.
+# real in WO-MOK-014-check-run.txt and would add minutes per case here for no new information.
 set -u
 
 export PYTHONIOENCODING=utf-8
@@ -29,7 +29,7 @@ scratch="$HOME/wo13-injection"
 # while a native Python process reads it as C:\tmp, so the shell would write where the program
 # cannot read.
 
-report="$here/WO-MOK-013-injection.txt"
+report="$here/WO-MOK-014-injection.txt"
 
 prepare() {
   rm -rf "$scratch"
@@ -72,7 +72,7 @@ PY
 }
 
 {
-  echo "# WO-MOK-013: the checking program refusing, ten ways"
+  echo "# WO-MOK-014: the checking program refusing, ten ways"
   echo "# $(cargo --version)"
   echo "#"
   echo "# One declaration is edited per case, on a copy of this workspace. The notes each run"
@@ -192,7 +192,7 @@ ratatui = { version = "0.30.2", default-features = false, features = ["crossterm
   echo "=============================================================================="
   echo "The scratch root is removed. This checkout was not edited: the working tree after this"
   echo "script is the working tree before it, which is what the program's own git status"
-  echo "comparison asserts on the real root in WO-MOK-013-check-run.txt."
+  echo "comparison asserts on the real root in WO-MOK-014-check-run.txt."
 } > "$report" 2>&1
 
 echo "wrote $report"

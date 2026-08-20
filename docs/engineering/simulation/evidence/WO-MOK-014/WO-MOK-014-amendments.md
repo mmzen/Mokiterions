@@ -1,9 +1,9 @@
-# WO-MOK-013 — `ADR-MOK-006`'s sixteen required amendments, located
+# WO-MOK-014 — `ADR-MOK-006`'s sixteen required amendments, located
 
-**Work order** `WO-MOK-013` · **Branch** `governance/adr-mok-006-third-party-crates` · **Baseline**
+**Work order** `WO-MOK-014` · **Branch** `governance/adr-mok-006-third-party-crates` · **Baseline**
 `ff3a155f3ce006fdc38abb62df3fca4a2c3c3aa3` · **Date** 2026-08-20
 
-`VER-MOK-013`'s oracle 5 reads: *all sixteen entries of `ADR-MOK-006`'s Required amendments section are present, the
+`VER-MOK-014`'s oracle 5 reads: *all sixteen entries of `ADR-MOK-006`'s Required amendments section are present, the
 twelve that land in a governed artifact carry their approval, and `ARCH-MOK-001` carries both replacement conformance
 checks. Absence fails this contract regardless of code state.* This file is that oracle, entry by entry, with the file
 and line where each landed.
@@ -18,7 +18,7 @@ the ADR was drafted first and approved before any of this was written.
 | # | Artifact | Where the amendment is | Approval |
 |---|---|---|---|
 | 1 | `REQ-MOK-026` | `requirements/REQ-MOK-026.md:23` | Approved 2026-08-20 by the repository owner acting as accountable **product owner**, by way of `ADR-MOK-006` |
-| 2 | `REQ-MOK-047` (new) | `requirements/REQ-MOK-047.md` | `status = "approved"`, `created = updated = 2026-08-20`, `owners = ["product owner"]`. See *The three without an approval row* below |
+| 2 | `REQ-MOK-050` (new) | `requirements/REQ-MOK-050.md` | `status = "approved"`, `created = updated = 2026-08-20`, `owners = ["product owner"]`. See *The three without an approval row* below |
 | 3 | `REQ-MOK-036` | `requirements/REQ-MOK-036.md:23` | Approved 2026-08-20 by the repository owner acting as accountable **product owner**, by way of `ADR-MOK-006` |
 | 4 | `ARCH-MOK-001` | `architecture/ARCH-MOK-001.md:48` | Approved 2026-08-20 by the repository owner acting as accountable **technical owner**, by way of `ADR-MOK-006`, *"whose Required amendments section states this amendment in full"* |
 | 5 | `ARCH-MOK-002` | `architecture/ARCH-MOK-002.md:42` | same form, **technical owner** |
@@ -28,7 +28,7 @@ the ADR was drafted first and approved before any of this was written.
 | 9 | `SPEC-MOK-003` | `specifications/SPEC-MOK-003.md:58` | same form, **technical owner** |
 | 10 | `SPEC-MOK-004` | `specifications/SPEC-MOK-004.md:25` | same form, **technical owner** |
 | 11 | `SPEC-MOK-005` | `specifications/SPEC-MOK-005.md:23` | same form, **technical owner** |
-| 12 | `VER-MOK-013` (new) | `verification/VER-MOK-013.md:20` | Approved 2026-08-20 by the repository owner acting as accountable **assurance owner**, by way of `ADR-MOK-006`, *"whose Required amendments section states this contract's minimum content in full"* |
+| 12 | `VER-MOK-014` (new) | `verification/VER-MOK-014.md:20` | Approved 2026-08-20 by the repository owner acting as accountable **assurance owner**, by way of `ADR-MOK-006`, *"whose Required amendments section states this contract's minimum content in full"* |
 
 Nine of the twelve carry the approval clause in an amendment-record row, and it names the role the ADR assigned to
 that entry: product owner for the two requirements, technical owner for the two architecture documents and the four
@@ -43,11 +43,11 @@ subsection heading names, not a role chosen at writing time.
   carry `updated = "2026-08-20"`. `ADR-MOK-001`'s note says the support for its no-network assertion is withdrawn and
   the assertion is not; `ADR-MOK-003`'s says two of its statements are *reversed* rather than narrowed, and lists what
   still stands. Neither ADR is superseded, which is what its own text says and what the ADR required.
-- **`REQ-MOK-047` has no *Amendment record* section at all.** That is this repository's convention rather than an
+- **`REQ-MOK-050` has no *Amendment record* section at all.** That is this repository's convention rather than an
   omission. In the baseline, **2 of 42** requirements carried one — `REQ-MOK-014` and `REQ-MOK-037` — both because they
   had been amended; in the candidate there are 4, the two this change adds below. The other 38 approved requirements
   carry none. A requirement's original approval lives in its front matter — `status = "approved"` — and in the work
-  order and ADR that produced it. `VER-MOK-013` does carry an *original approved content* row because the
+  order and ADR that produced it. `VER-MOK-014` does carry an *original approved content* row because the
   verification-contract template opens with one, which `VER-MOK-011` also shows.
 
 ### The two new *Amendment record* sections, which are not backdating
@@ -86,8 +86,8 @@ are recorded here as present and consistent with the governed text they cite.
 | # | Where | What changed |
 |---|---|---|
 | 13 | `docs/engineering/REPOSITORY_CONTEXT.md` | The three statements the ADR named, all in the declared-set form: *Additional required verification* (the `cargo tree` one-crate line becomes a per-package comparison with `SPEC-MOK-005` rule 8.4 as the check), *External services or dependencies* (the empty-table requirement becomes a declared set that is empty *today*, with admission routed to the technical owner under `ADR-MOK-006` decisions 1, 4 and 11), and *Local conventions* (the terminal interface is not a declared entry of the engine's set and no user-interface crate may become one) |
-| 14 | `.github/workflows/release.yml` | The step *"The engine's dependency table must stay empty"* is replaced by `cargo fetch --locked` and `python3 scripts/check_declared_dependencies.py --root .`. The trigger is untouched. Quoted as a diff in `WO-MOK-013-workflows.txt` |
-| 15 | `.github/workflows/dependency-declarations.yml` | New, `pull_request` only, `contents: read`, one job carrying rule 8.4's four checks and nothing else. The managed `engineering-harness.yml` is not touched — `python -m se_harness doctor` reports it `unchanged` in both trees, recorded in `WO-MOK-013-harness.txt` |
+| 14 | `.github/workflows/release.yml` | The step *"The engine's dependency table must stay empty"* is replaced by `cargo fetch --locked` and `python3 scripts/check_declared_dependencies.py --root .`. The trigger is untouched. Quoted as a diff in `WO-MOK-014-workflows.txt` |
+| 15 | `.github/workflows/dependency-declarations.yml` | New, `pull_request` only, `contents: read`, one job carrying rule 8.4's four checks and nothing else. The managed `engineering-harness.yml` is not touched — `python -m se_harness doctor` reports it `unchanged` in both trees, recorded in `WO-MOK-014-harness.txt` |
 | 16 | Source comments | `mokiterions-core/Cargo.toml` above the empty `[dependencies]` table, `mokiterions-tui/Cargo.toml` fixing `ratatui`, and `mokiterions-core/src/lib.rs`'s module documentation asserting the engine *"has no external dependencies"*. Each now states the declared-set form and cites the specification that owns it |
 
 ## The second round of dated entries, later on 2026-08-20
@@ -100,12 +100,12 @@ that did not, unless the distinction is written down and checkable.
 
 | Where | Entry | What it records |
 |---|---|---|
-| `specifications/SPEC-MOK-003.md:59` | New amendment row | The two disclosed transitive capabilities are **accepted**, closing `VER-MOK-013` manual assessment 6. Both *Assessment* cells and the *Security and privacy properties* network bullet now carry the judgement, its three grounds and its limit. Approved 2026-08-20 by the repository owner acting as accountable **technical owner** — the role the assessment names |
+| `specifications/SPEC-MOK-003.md:59` | New amendment row | The two disclosed transitive capabilities are **accepted**, closing `VER-MOK-014` manual assessment 6. Both *Assessment* cells and the *Security and privacy properties* network bullet now carry the judgement, its three grounds and its limit. Approved 2026-08-20 by the repository owner acting as accountable **technical owner** — the role the assessment names |
 | `specifications/SPEC-MOK-005.md:24` | New amendment row | Rule 8.4d's statement of current fact follows: the disclosure whose assessment is recorded is still printed. No rule changed |
-| `verification/VER-MOK-013.md:21` | New amendment row | **Four manual assessments recorded** — 1, 2, 3 and 6 — no check, oracle or pass condition changed. Approved 2026-08-20 by the repository owner acting as accountable **assurance owner** |
-| `verification/VER-MOK-013.md:22` | New amendment row | **One reference corrected** — the `VREC-MOK-002` phrasing in oracle 3 and four other statements — no rule, check or figure changed. Same approval form |
+| `verification/VER-MOK-014.md:21` | New amendment row | **Four manual assessments recorded** — 1, 2, 3 and 6 — no check, oracle or pass condition changed. Approved 2026-08-20 by the repository owner acting as accountable **assurance owner** |
+| `verification/VER-MOK-014.md:22` | New amendment row | **One reference corrected** — the `VREC-MOK-002` phrasing in oracle 3 and four other statements — no rule, check or figure changed. Same approval form |
 | `architecture/adr/ADR-MOK-006.md:77` | Second dated note in *Status* | The same reference corrected in the first *Negative* consequence, naming the three other references at lines 158, 514 and 660 as unchanged, and stating that **no decision changes** |
-| `work-orders/WO-MOK-013.md:87` | Dated note in *Lifecycle* | Three corrections to the work order: *seven* → **six** manual assessments, the exclusions bullet's disposition of each, and the `VREC-MOK-002` phrase. **No scope change** |
+| `work-orders/WO-MOK-014.md:87` | Dated note in *Lifecycle* | Three corrections to the work order: *seven* → **six** manual assessments, the exclusions bullet's disposition of each, and the `VREC-MOK-002` phrase. **No scope change** |
 
 **Why the work order's correction is a *Lifecycle* note and not an amendment row.** `docs/engineering/templates/WORK_ORDER.template.md`
 has no *Amendment record* section, and no work order in this repository carries one — `WO-MOK-004` and `WO-MOK-007`
@@ -113,7 +113,7 @@ mention amendment records only as instructions to amend *other* artifacts. The p
 *Status* note that `ADR-MOK-001` and `ADR-MOK-003` carry at entries 6 and 7 above. The note is dated and states its
 approving role, so it records what was true when written rather than rewriting the approved text in place.
 
-**Why `VER-MOK-013` takes two rows and not one.** The assessments and the reference correction are separate acts with
+**Why `VER-MOK-014` takes two rows and not one.** The assessments and the reference correction are separate acts with
 separate reasons, and an amendment row records what was true when it was written. Folding them into one row would make a
 later reader unable to tell which of the two the assurance owner approved, and a status change recorded by editing an
 existing row would leave no trace that the row had said something else.
@@ -133,21 +133,21 @@ the failure mode this list exists to expose. Every one is also disclosed in the 
   chain, the activating feature and what the package does not do with it, and the technical owner judges it.
 - **`SPEC-MOK-002` rule 13** gains the mechanical reading convention the checking program depends on (one table, the
   column shape, how a *Features* cell states implied and prohibited features).
-- **Three `specifies` relations** to `REQ-MOK-047`, from `SPEC-MOK-002`, `SPEC-MOK-003` and `SPEC-MOK-005`, so the
+- **Three `specifies` relations** to `REQ-MOK-050`, from `SPEC-MOK-002`, `SPEC-MOK-003` and `SPEC-MOK-005`, so the
   requirement's only checks are traceable to the obligation they discharge.
 - **Further clauses in `SPEC-MOK-004` and `ARCH-MOK-001`** beyond the enumerated ones, where a restatement of the
   empty-table premise would otherwise have outlived it.
 - **The root `Cargo.toml` and `rust-toolchain.toml` comments**, which the ADR's source-comment entry does not name and
   which restate the same withdrawn rule.
-- **`VER-MOK-013`'s own count corrected** from fifteen to sixteen required amendments in its oracle-5 row.
+- **`VER-MOK-014`'s own count corrected** from fifteen to sixteen required amendments in its oracle-5 row.
 - **Three provenance corrections made while measuring**, all recording that `ADR-MOK-006`'s *"eight resolved crates
   that carry a build script"* matches none of the four reconstructible counts — 7 on Windows, 9 on Linux, 9 on macOS,
   10 in union, 12 at `--target all`, 29 in `Cargo.lock`. The note in `ADR-MOK-006`, the `SPEC-MOK-003` amendment row
   and the `SPEC-MOK-003` prose all now say the provenance cannot be reconstructed and give the four figures.
-  `WO-MOK-013-build-scripts.txt` is the measurement.
+  `WO-MOK-014-build-scripts.txt` is the measurement.
 - **The `VREC-MOK-002` precision correction**, which the owner decided on 2026-08-20 after being shown that the record
   holds no replay hash — only `artifact_snapshot_sha256` — and names none of the four configurations. The owner's answer
-  enumerated `ADR-MOK-006` and `VER-MOK-013`, and both are corrected. **`WO-MOK-013` carries the same loose phrase in
+  enumerated `ADR-MOK-006` and `VER-MOK-014`, and both are corrected. **`WO-MOK-014` carries the same loose phrase in
   its *Required verification* and in its completion-report format, and correcting it there is a reach beyond what that
   answer enumerated**; it is disclosed in the work order's own dated note as well as here. `VREC-MOK-002` is not edited
   and neither is `evidence/WO-MOK-002/determinism-and-resilience.md`, which is where the four hashes are, at lines 12
@@ -158,12 +158,12 @@ the failure mode this list exists to expose. Every one is also disclosed in the 
   acceptance that removed the line would be indistinguishable from the disclosure never having existed; a new test,
   `test_an_accepted_disclosure_is_still_printed`, is what holds that; the existing reading test asserts that the cell
   still carries a judgement with its grounds and its limit rather than the bare word *accepted*; and
-  `WO-MOK-013-capture.sh` prints the assessment text in full so the retained scan carries the judgement rather than a
+  `WO-MOK-014-capture.sh` prints the assessment text in full so the retained scan carries the judgement rather than a
   one-word state. No approved text asked for any of the four.
 
 ## Where a declared figure is duplicated, and what an amendment must update
 
-Both workflows and `check_declared_dependencies.py` name no crate, version, feature or count — `WO-MOK-013-workflows.txt`
+Both workflows and `check_declared_dependencies.py` name no crate, version, feature or count — `WO-MOK-014-workflows.txt`
 is the search. Two places do hold a copy, and an approved amendment to a declared set has to edit them:
 
 1. **`scripts/test_check_declared_dependencies.py`** — its reading tests assert today's values against the real
@@ -175,7 +175,7 @@ is the search. Two places do hold a copy, and an approved amendment to a declare
 
 An earlier draft of `check_declared_dependencies.py` also carried 57, 63 and 62 in its module docstring. That was
 rewritten to point at `SPEC-MOK-003` instead: a count in a comment is a second declaration, and the copy in the code
-is the one that goes stale. The search in `WO-MOK-013-workflows.txt` is what found it.
+is the one that goes stale. The search in `WO-MOK-014-workflows.txt` is what found it.
 
 ## What was deliberately not touched
 
@@ -192,6 +192,6 @@ Every amendment row dated before 2026-08-20 in `ARCH-MOK-001`, `ARCH-MOK-002`, `
 | `SPEC-MOK-005` | 3 → 3 | yes |
 
 Among them are the rows standing **OUTSTANDING** from earlier work — `ARCH-MOK-001` and `SPEC-MOK-002` (two) and
-`SPEC-MOK-003` (one) at 2026-08-18, `SPEC-MOK-004` at 2026-08-19 — which `WO-MOK-013` is expressly forbidden to clear
+`SPEC-MOK-003` (one) at 2026-08-18, `SPEC-MOK-004` at 2026-08-19 — which `WO-MOK-014` is expressly forbidden to clear
 or inherit. They are neither cleared nor inherited, and the check above is how that is established rather than
 asserted. `VER-MOK-011`'s manual assessment 5 is likewise still outstanding and untouched.

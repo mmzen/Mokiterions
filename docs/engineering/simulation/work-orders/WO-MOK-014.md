@@ -1,5 +1,5 @@
 +++
-id = "WO-MOK-013"
+id = "WO-MOK-014"
 type = "work_order"
 title = "Replace the engine's empty-dependency rule with a declared-set comparison, and check it at pull-request time and at release"
 status = "implemented"
@@ -13,10 +13,10 @@ rationale = "The load-bearing claim of this change is that relaxing a prohibitio
 decided_by = "engineering owner"
 
 [relations]
-implements = ["REQ-MOK-047"]
+implements = ["REQ-MOK-050"]
 specifications = ["SPEC-MOK-002", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-005"]
 architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-006"]
-verification = ["VER-MOK-013"]
+verification = ["VER-MOK-014"]
 +++
 
 # Work Order: A declared dependency set, in place of an empty one
@@ -31,7 +31,7 @@ Commit-bound verification is classified `required` above.
 
 The `architecture` relation is declared and carries three identifiers, because unlike `WO-MOK-011` this change is
 architectural in the traceability rule's own terms: **`ARCH-MOK-001` and `ARCH-MOK-002` each directly `addresses`
-`REQ-MOK-047`**, the requirement this work order implements, and each shares a conforming specification with the set
+`REQ-MOK-050`**, the requirement this work order implements, and each shares a conforming specification with the set
 declared above — `ARCH-MOK-001` through `SPEC-MOK-002` and `ARCH-MOK-002` through `SPEC-MOK-003` and `SPEC-MOK-004` —
 which is what `TRACEABILITY.md` requires of a selected architecture. Both also carry prohibitions and conformance checks
 whose text this change amends. `ADR-MOK-006` sits beside them as the deciding ADR, on the precedent of `WO-MOK-001`,
@@ -41,8 +41,8 @@ This paragraph was re-derived on 2026-08-20 when the declared requirement set wa
 declared requirement set, corrected* below records why, and records that the earlier derivation — through
 `REQ-MOK-026`, which `ARCH-MOK-002` also addresses — reached the same two architectures.
 
-**This work order cannot be approved before the artifacts it depends on are.** `REQ-MOK-047` is the product owner's
-act, `VER-MOK-013` is the assurance owner's, `ADR-MOK-006` is the technical owner's, and every amendment below is one
+**This work order cannot be approved before the artifacts it depends on are.** `REQ-MOK-050` is the product owner's
+act, `VER-MOK-014` is the assurance owner's, `ADR-MOK-006` is the technical owner's, and every amendment below is one
 of those three. **`ADR-MOK-006` and this work order were both approved by the repository owner on 2026-08-20**, in one
 instruction — *"i approve the ADR, i approve the work order: go implement"* — acting as product owner, technical owner,
 assurance owner and engineering owner. The owner holds every accountable role in this repository, so that instruction
@@ -60,7 +60,7 @@ full in the ADR and is not restated here; what this section does is bind them to
 | Artifact | What the amendment does | Accountable role |
 |---|---|---|
 | `REQ-MOK-026` | Removes *"with no external dependency and"* from the statement; keeps all three obligations in the rationale, each now resting on a named check | product owner |
-| `REQ-MOK-047` | **New.** The declared-set obligation in `SHALL` form, `verification_method = "static-analysis"`, deriving from `CAP-MOK-004` | product owner |
+| `REQ-MOK-050` | **New.** The declared-set obligation in `SHALL` form, `verification_method = "static-analysis"`, deriving from `CAP-MOK-004` | product owner |
 | `REQ-MOK-036` | The release-refusal scenario refuses a resolved set that differs from the declared one, in either direction, instead of any engine dependency | product owner |
 | `ARCH-MOK-001` | Three *Prohibited patterns* entries, three *Conformance checks* entries including the split of the empty-graph inference into two, two *Quality attributes*, and the decision assessment's rationale | technical owner |
 | `ARCH-MOK-002` | Four *Prohibited patterns* entries, the **Containment** quality attribute, and the first conformance check | technical owner |
@@ -70,7 +70,7 @@ full in the ADR and is not restated here; what this section does is bind them to
 | `SPEC-MOK-003` | The `ratatui` clause repointed, the observer's declared set added with its build-script table, *Component layout* clause 1, and two later restatements | technical owner |
 | `SPEC-MOK-004` | Rule 1's `[workspace.dependencies]` clause becomes a rule about a crate declared in both sets; the counterexample that forbade it is replaced by one that still bites | technical owner |
 | `SPEC-MOK-005` | Rule 8.4 becomes the four-part comparison, states what the set is and is not, and **rule 15** places it at pull-request time | technical owner |
-| `VER-MOK-013` | **New.** Independent methods and pass conditions for `REQ-MOK-047`, and the decision about what an admission must retain | assurance owner |
+| `VER-MOK-014` | **New.** Independent methods and pass conditions for `REQ-MOK-050`, and the decision about what an admission must retain | assurance owner |
 
 **Four carry no authority, and are checked for presence and consistency rather than approval:**
 `REPOSITORY_CONTEXT.md`'s three restatements; `.github/workflows/release.yml`'s dependency step; the new
@@ -98,13 +98,13 @@ no in-scope item, removes no out-of-scope item and authorizes no act.** All thre
 repository owner on 2026-08-20 acting as accountable **engineering owner**, in answer to questions this work order's
 implementation put to the owner; the implementation agent wrote the text and decided none of it.
 
-1. **Seven manual assessments becomes six.** `VER-MOK-013`'s *Manual assessments* list is numbered 1, 2, 3, 4, 6, 7 and
+1. **Seven manual assessments becomes six.** `VER-MOK-014`'s *Manual assessments* list is numbered 1, 2, 3, 4, 6, 7 and
    contains no fifth. This work order said *"seven"* under *Required verification* and in its evidence list and its
    *Completion report format*, and said *"Assessments 1 to 5 and 7"* under *Out of scope*, naming an assessment the
    contract does not state. The owner resolved the discrepancy in the direction that **six is the intended set** and the
-   *"seven"* was the error. `VER-MOK-013` is **not** renumbered and the gap in its numbering stays: assessment numbers
-   are cited by number in `SPEC-MOK-003`, `SPEC-MOK-005`, `VER-MOK-013` itself and
-   `scripts/check_declared_dependencies.py`, and `evidence/WO-MOK-013/WO-MOK-013-manual-assessment.md` enumerates the
+   *"seven"* was the error. `VER-MOK-014` is **not** renumbered and the gap in its numbering stays: assessment numbers
+   are cited by number in `SPEC-MOK-003`, `SPEC-MOK-005`, `VER-MOK-014` itself and
+   `scripts/check_declared_dependencies.py`, and `evidence/WO-MOK-014/WO-MOK-014-manual-assessment.md` enumerates the
    twenty citations renumbering would break. No obligation is added or removed by this: the same six judgements were
    owed before this note and are owed after it.
 2. **The exclusions bullet now speaks of every assessment the contract states**, rather than of *"the two manual
@@ -116,7 +116,7 @@ implementation put to the owner; the implementation agent wrote the text and dec
    hashes"*. That record holds no replay hash — it holds its own `artifact_snapshot_sha256` — and the four are in
    `evidence/WO-MOK-002/determinism-and-resilience.md` at lines 12 to 15, which its `evidence_paths` binds. Both places
    now read *"retained under `VREC-MOK-002` in `evidence/WO-MOK-002/determinism-and-resilience.md`"*. The baseline
-   substitution of oracle 3 is untouched; what is corrected is where a reader is sent. `VER-MOK-013` and `ADR-MOK-006`
+   substitution of oracle 3 is untouched; what is corrected is where a reader is sent. `VER-MOK-014` and `ADR-MOK-006`
    carry the same correction, each under its own dated row or note, and this third correction is a **reach beyond what
    the owner's answer enumerated** — the answer named those two artifacts — disclosed here for that reason and
    reversible by striking this paragraph and the two phrases it changed.
@@ -128,7 +128,7 @@ after that note, and this section is in the order the acts occurred.
 
 Status moved from `in_progress` to `implemented` on 2026-08-20 by the repository owner acting as accountable
 **engineering owner**, in the instruction *"you can: (1) commit and push, (2), mark WO-POK-013 as implemented"*. The
-identifier in that instruction is written `WO-POK-013`; it is quoted as given and read as `WO-MOK-013`, because this
+identifier in that instruction is written `WO-POK-013`; it is quoted as given and read as `WO-MOK-014`, because this
 repository has no `POK` family, the instruction was given in this work order's own implementation and its first clause
 authorized the commit that carries it.
 
@@ -141,15 +141,15 @@ separate commit, taken when the owner said so and not when the work looked finis
 
 **What this transition does and does not carry.** `WORKFLOW.md` ends the governance path for a work order at
 `implemented`, so this is the last transition this work order takes. It is not an assurance act and asserts nothing
-about verification: `commit_bound_verification` is classified `required` above, `VREC-MOK-013` is not written, and the
+about verification: `commit_bound_verification` is classified `required` above, `VREC-MOK-014` is not written, and the
 work order cannot approve its own verification record. The queue move it causes — out of `active_work` and into
 `assurance_pending` — is recorded with the statements it makes stale in
-`evidence/WO-MOK-013/WO-MOK-013-transition.md`. No tag and no pull request are authorized by the instruction above,
+`evidence/WO-MOK-014/WO-MOK-014-transition.md`. No tag and no pull request are authorized by the instruction above,
 and neither is taken.
 
 ### The declared requirement set, corrected
 
-On 2026-08-20 `implements` was narrowed from `["REQ-MOK-026", "REQ-MOK-036", "REQ-MOK-047"]` to `["REQ-MOK-047"]` by the
+On 2026-08-20 `implements` was narrowed from `["REQ-MOK-026", "REQ-MOK-036", "REQ-MOK-050"]` to `["REQ-MOK-050"]` by the
 repository owner acting as accountable **engineering owner**, choosing between three measured routes put to them. This
 is an edit to an approved and implemented work order's declared scope, which is why it is the owner's act and not the
 implementation agent's, and why it is recorded here rather than applied silently.
@@ -158,12 +158,12 @@ implementation agent's, and why it is recorded here rather than applied silently
 `preflight --phase review` runs only on `pull_request`, so four green pushes never reached it — and it failed with one
 diagnostic: *"`[W016]` … verification coverage is missing `REQ-MOK-026`, `REQ-MOK-036`"*. The rule is this repository's
 own: `TRACEABILITY.md` requires selected active verification coverage for every requirement selected for
-implementation, and `VER-MOK-013` verifies `REQ-MOK-047` alone. `REQ-MOK-026` is verified by `VER-MOK-005` and
+implementation, and `VER-MOK-014` verifies `REQ-MOK-050` alone. `REQ-MOK-026` is verified by `VER-MOK-005` and
 `REQ-MOK-036` by `VER-MOK-008`.
 
 **Why the other route was refused.** Declaring those two contracts here would have cleared the same diagnostic, and
 `VERIFICATION_RECORD.template.md` then requires a verification record's contract set to **equal** the union its work
-orders declare — so `VREC-MOK-013` would have had to conform to both. `VER-MOK-008` is the release contract, and its
+orders declare — so `VREC-MOK-014` would have had to conform to both. `VER-MOK-008` is the release contract, and its
 scenarios are checks on an actual release run: a published archive read by an independent reader, a checksum verified
 with a standard tool, two builds of one commit differing only by run identity. `VER-MOK-005` requires manual legibility
 and colour-independence assessments in a real terminal, which that contract itself states cannot be automated. Neither
@@ -172,13 +172,13 @@ equal and every claim is evidenced.
 
 **The reading it rests on.** What this change did to `REQ-MOK-026` and `REQ-MOK-036` was strike a clause from each under
 `ADR-MOK-006`'s product-owner authority. It did not implement their obligations; the obligation it implements is
-`REQ-MOK-047`'s, and both amendments remain among the twelve preconditions above, each carrying its own approved
+`REQ-MOK-050`'s, and both amendments remain among the twelve preconditions above, each carrying its own approved
 amendment row in its own artifact.
 
 **The cost, stated rather than mitigated.** `TRACEABILITY.md` holds that only declared relations in formal metadata
 establish authority, and that prose *"may aid discovery but do not satisfy formal coverage"*. After this correction no
 declared relation runs from either amended requirement to the work order that rewrote its text, and this model has no
-`amends` relation to carry one; what remains is the phrase *"Written under `WO-MOK-013`"* in each requirement's
+`amends` relation to carry one; what remains is the phrase *"Written under `WO-MOK-014`"* in each requirement's
 amendment row, which by that rule is discovery and not coverage.
 
 **What it does not do.** It does not withdraw, weaken or reword either amendment. It does not clear `W-HEX-003`, which
@@ -187,9 +187,9 @@ correction — measured, not assumed, and the deferred debt stays visible there.
 `VER-MOK-008`, which stay owed on the owner's decision of 2026-08-20 to leave them for a separate change. No Rust
 source, manifest, lockfile, workflow or script changes, so no measured code figure in this packet can move.
 
-`evidence/WO-MOK-013/WO-MOK-013-review-gate.md` records the finding, the reproduction under the pinned runtime, all
+`evidence/WO-MOK-014/WO-MOK-014-review-gate.md` records the finding, the reproduction under the pinned runtime, all
 three routes with their measured figures, and the statements this correction makes stale. Because the correction moves
-the branch tip past the candidate commit `VREC-MOK-013` binds, the record is re-pointed to the commit that carries this
+the branch tip past the candidate commit `VREC-MOK-014` binds, the record is re-pointed to the commit that carries this
 subsection, in the following commit — `WORKFLOW.md` forbids a record containing the hash of its own commit.
 
 ### Why this chain is numbered 006, 047 and 013
@@ -199,7 +199,7 @@ discovered. `origin/feature/phase-4a-definition` holds a `WO-MOK-012` and a `VER
 flight. The local maximum in this tree is `WO-MOK-011` and `VER-MOK-011`, and taking `012` would collide on merge,
 which `evidence/WO-MOK-007/renumbering.md` records the owner resolving once already and records as the owner's act
 rather than an implementation agent's. This chain therefore takes the next identifier above every number used on every
-branch in each family it touches: `ADR-MOK-006`, `REQ-MOK-047`, `VER-MOK-013`, `WO-MOK-013`, and `VREC-MOK-013` when
+branch in each family it touches: `ADR-MOK-006`, `REQ-MOK-050`, `VER-MOK-014`, `WO-MOK-014`, and `VREC-MOK-014` when
 the verification record is written. Every ref was checked, not only the local maximum.
 
 ### Decision record
@@ -227,7 +227,7 @@ plus three source comments and a CI step.
 Replace one prohibition with one comparison, and prove that nothing else moved.
 
 The prohibition is the engine package's empty dependency table, *"with no exception"*. The comparison is
-`REQ-MOK-047`: each package's resolved external dependency set equals the set its specification declares, crate by
+`REQ-MOK-050`: each package's resolved external dependency set equals the set its specification declares, crate by
 crate, version by version, feature by feature, on each of the three targets the release builds — with the capability
 classes `ADR-MOK-006` decision 4 preserves checked by name, and the engine still building and testing offline from the
 committed lockfile. The comparison runs on every pull request and again at the release gate, from one implementation,
@@ -245,7 +245,7 @@ than a rule.
   the declared sets out of `SPEC-MOK-002` rule 13 and `SPEC-MOK-003` and restates neither, since rule 15.5 forbids a
   third source of truth.
 - `scripts/test_check_declared_dependencies.py`: its `unittest` suite, which is also the injection-based demonstration
-  that each check refuses — `VER-MOK-013` acceptance scenarios 2, 3, 4 and 10.
+  that each check refuses — `VER-MOK-014` acceptance scenarios 2, 3, 4 and 10.
 - `.github/workflows/release.yml`: the *"The engine's dependency table must stay empty"* step replaced by
   `cargo fetch --locked` followed by the program. The trigger is unchanged.
 - `.github/workflows/dependency-declarations.yml`: the new repository-owned `pull_request` workflow, carrying rule
@@ -253,8 +253,8 @@ than a rule.
 - The source comments that state the withdrawn rule: `mokiterions-core/Cargo.toml`, `mokiterions-tui/Cargo.toml`,
   `mokiterions-core/src/lib.rs`, and — beyond the ADR's enumeration, disclosed — the root `Cargo.toml` and
   `rust-toolchain.toml`.
-- Every measurement `VER-MOK-013` requires, and the evidence it retains under
-  `docs/engineering/simulation/evidence/WO-MOK-013/`, in files named for the work order.
+- Every measurement `VER-MOK-014` requires, and the evidence it retains under
+  `docs/engineering/simulation/evidence/WO-MOK-014/`, in files named for the work order.
 - The determinism re-derivation at the five declared seeds, and its comparison against a retained capture.
 
 ## Out of scope
@@ -274,7 +274,7 @@ than a rule.
 - Resolving any amendment row that stands **OUTSTANDING** from earlier work: `ARCH-MOK-001` and `SPEC-MOK-002` (two)
   and `SPEC-MOK-003` (one) at 2026-08-18, `SPEC-MOK-004` at 2026-08-19, and `VER-MOK-011` manual assessment 5. None is
   touched, cleared or inherited.
-- **Every manual assessment `VER-MOK-013` states.** `VER-MOK-013` manual assessment 6 — whether the disclosed
+- **Every manual assessment `VER-MOK-014` states.** `VER-MOK-014` manual assessment 6 — whether the disclosed
   transitive capability of `mio` with its `net` feature is accepted — is the technical owner's, and was **OUTSTANDING**
   as this work order was approved; the owner recorded it on 2026-08-20 as **accepted**, limited to a compiled and
   uncalled capability. Assessments 1, 2, 3, 4 and 7 are likewise the accountable roles', not the agent's; 1, 2 and 3
@@ -310,7 +310,7 @@ The implementation agent may **not** decide:
   checkout and recorded with the command that produced it.
 - Any lint suppression, any gate change, any `#[ignore]`, or any edit to an existing amendment record row.
 - Any edit to an artifact bound by a `verified` verification record. `VREC-MOK-002` in particular is **not** edited,
-  and the reason its hashes cannot serve as this change's determinism baseline is recorded in `VER-MOK-013` instead.
+  and the reason its hashes cannot serve as this change's determinism baseline is recorded in `VER-MOK-014` instead.
 
 ## Constraints
 
@@ -332,10 +332,10 @@ The implementation agent may **not** decide:
 ## Expected change surface
 
 **Artifacts** — the twelve amendments above, in `docs/engineering/simulation/`: `requirements/REQ-MOK-026.md`,
-`requirements/REQ-MOK-047.md` (new), `requirements/REQ-MOK-036.md`, `architecture/ARCH-MOK-001.md`,
+`requirements/REQ-MOK-050.md` (new), `requirements/REQ-MOK-036.md`, `architecture/ARCH-MOK-001.md`,
 `architecture/ARCH-MOK-002.md`, `architecture/adr/ADR-MOK-001.md`, `architecture/adr/ADR-MOK-003.md`,
 `architecture/adr/ADR-MOK-006.md` (new), `specifications/SPEC-MOK-002.md`, `specifications/SPEC-MOK-003.md`,
-`specifications/SPEC-MOK-004.md`, `specifications/SPEC-MOK-005.md`, `verification/VER-MOK-013.md` (new), and this file.
+`specifications/SPEC-MOK-004.md`, `specifications/SPEC-MOK-005.md`, `verification/VER-MOK-014.md` (new), and this file.
 
 **`scripts/check_declared_dependencies.py`** (new)
 
@@ -367,7 +367,7 @@ and assert the refusal.
 
 ## Required verification
 
-`VER-MOK-013`, in full: its five oracles, its requirement-to-evidence matrix, its twelve acceptance scenarios, its
+`VER-MOK-014`, in full: its five oracles, its requirement-to-evidence matrix, its twelve acceptance scenarios, its
 property and invariant tests, its static, architecture, security, privacy, performance and resilience checks, and its
 six manual assessments — the contract's list is numbered 1, 2, 3, 4, 6, 7 and contains no fifth. A manual assessment
 that is not recorded is outstanding, and the contract is not satisfied while any remains outstanding.
@@ -377,12 +377,12 @@ hashes retained under `VREC-MOK-002` in `evidence/WO-MOK-002/determinism-and-res
 were taken on 2026-08-17 at commit `68163ac452619e2f8d5a05ed3a73d42b920ba5f6`, before `WO-MOK-007` added `fear` and
 `WO-MOK-011` added `name:` to the record they hash. `ADR-MOK-006` names them, and it names a tree that no longer exists.
 `evidence/WO-MOK-011/post/post-manifest.txt`, bound by `VREC-MOK-011`, is substituted. Neither `VREC-MOK-002` nor the
-evidence it binds is edited, and the substitution is `VER-MOK-013` manual assessment 4, the assurance owner's.
+evidence it binds is edited, and the substitution is `VER-MOK-014` manual assessment 4, the assurance owner's.
 
 ## Evidence to record
 
-Under `docs/engineering/simulation/evidence/WO-MOK-013/`, everything `VER-MOK-013`'s *Evidence retention* section
-lists. **Every file is named `WO-MOK-013-*`**, because `discover_evidence` in `scripts/generate_harness_dashboard.py`
+Under `docs/engineering/simulation/evidence/WO-MOK-014/`, everything `VER-MOK-014`'s *Evidence retention* section
+lists. **Every file is named `WO-MOK-014-*`**, because `discover_evidence` in `scripts/generate_harness_dashboard.py`
 matches the work-order identifier against each *file's own name* and not its directory's, so a packet named only by its
 directory is invisible to discovery and raises `W-HEX-001` — the warning `WO-MOK-010` and `WO-MOK-011` both carry. In
 particular:
@@ -402,9 +402,9 @@ particular:
   `python -m se_harness doctor`;
 - both workflow files as they stand, and the search showing that neither restates a declared set;
 - oracle 5's sixteen entries, each located in the artifact that carries it;
-- `WO-MOK-013-manual-assessment.md`, the six assessments with role and date, each outstanding one recorded as
+- `WO-MOK-014-manual-assessment.md`, the six assessments with role and date, each outstanding one recorded as
   **OUTSTANDING** rather than omitted, and each recorded one carrying the judgement in the accountable role's own words;
-- `WO-MOK-013-completion-summary.md`.
+- `WO-MOK-014-completion-summary.md`.
 
 ## Stop and escalate conditions
 
@@ -456,5 +456,5 @@ The completion summary records, in this order:
 10. the gate output, before and after, including the dashboard's and inspector's derived figures;
 11. the six manual assessments, or an explicit statement of which are outstanding and who owes them;
 12. residual uncertainty, including everything under *Stop and escalate conditions* that remains open, the standing
-    OUTSTANDING rows this change does not touch, and the statement that `VREC-MOK-013` is a separate commit-bound
+    OUTSTANDING rows this change does not touch, and the statement that `VREC-MOK-014` is a separate commit-bound
     record that this work order does not write and cannot self-approve.

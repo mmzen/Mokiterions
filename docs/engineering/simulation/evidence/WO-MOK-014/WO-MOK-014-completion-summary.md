@@ -1,11 +1,11 @@
-# `WO-MOK-013` — completion summary
+# `WO-MOK-014` — completion summary
 
 | Field | Value |
 |---|---|
-| Work order | `WO-MOK-013` — crates policy, declared-set comparison |
+| Work order | `WO-MOK-014` — crates policy, declared-set comparison |
 | Deciding ADR | `ADR-MOK-006`, accepted 2026-08-20 by the repository owner acting as accountable technical owner |
-| New requirement | `REQ-MOK-047`, approved 2026-08-20, product owner |
-| Verification contract | `VER-MOK-013`, approved 2026-08-20, assurance owner |
+| New requirement | `REQ-MOK-050`, approved 2026-08-20, product owner |
+| Verification contract | `VER-MOK-014`, approved 2026-08-20, assurance owner |
 | Branch | `governance/adr-mok-006-third-party-crates` |
 | Baseline | `ff3a155f3ce006fdc38abb62df3fca4a2c3c3aa3` (`origin/master`, *Merge pull request #30*) |
 | Commits | **none.** Nothing is committed, pushed, tagged or opened as a pull request |
@@ -45,13 +45,13 @@ pull-request CI and been refused at release.
 
 | Kind | Files |
 |---|---|
-| New governed artifacts | `ADR-MOK-006`, `REQ-MOK-047`, `VER-MOK-013`, `WO-MOK-013` |
+| New governed artifacts | `ADR-MOK-006`, `REQ-MOK-050`, `VER-MOK-014`, `WO-MOK-014` |
 | Amended governed artifacts | `REQ-MOK-026`, `REQ-MOK-036`, `ARCH-MOK-001`, `ARCH-MOK-002`, `ADR-MOK-001`, `ADR-MOK-003`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-005` |
 | New code | `scripts/check_declared_dependencies.py` (1,225 lines), `scripts/test_check_declared_dependencies.py` (856 lines, **56 tests, all passing**) |
 | New workflow | `.github/workflows/dependency-declarations.yml` (108 lines, `pull_request` only, `contents: read`) |
 | Amended workflow | `.github/workflows/release.yml` — the empty-table step replaced by `cargo fetch --locked` and the declared-set check |
 | Non-authoritative text | `docs/engineering/REPOSITORY_CONTEXT.md`, `Cargo.toml`, `mokiterions-core/Cargo.toml`, `mokiterions-tui/Cargo.toml`, `mokiterions-core/src/lib.rs`, `rust-toolchain.toml` |
-| Evidence | 19 files under `evidence/WO-MOK-013/`, every one named `WO-MOK-013-*` |
+| Evidence | 19 files under `evidence/WO-MOK-014/`, every one named `WO-MOK-014-*` |
 
 **No Rust behaviour changes.** `mokiterions-core/src/lib.rs` is touched in its module documentation only; both manifests
 are touched in comments only. The declared sets are unchanged in substance: the engine's is empty and the observer's is
@@ -75,7 +75,7 @@ invocation passes `--locked`, and none reaches a registry.
 
 ## Baseline against candidate, because a single number is not evidence
 
-`WO-MOK-013-harness.txt` holds this in full. Three things in it matter to a reader of the figures.
+`WO-MOK-014-harness.txt` holds this in full. Three things in it matter to a reader of the figures.
 
 **Measurement method changed the finding set.** The baseline was first taken from a `git archive` extraction, which has
 no `.git`, so the inspector's `I-REV-001` could not run and reported nothing — making the candidate's **12** info
@@ -106,12 +106,12 @@ An earlier reading of this gate, taken with the machine-wide **0.4.1** install, 
 `distribution:` FAILs and concluded that doctor *"is not a gate this change can be said to pass or fail"*. That was
 wrong: the eight are template skew between 0.4.1's templates and a repository whose declared runtime is 0.4.0, the
 baseline reports the same eight under 0.4.1 and none under 0.4.0, and the correction with both figures is retained in
-`WO-MOK-013-harness.txt` rather than replaced — the wrong reading is what a reader reproduces by running the obvious
+`WO-MOK-014-harness.txt` rather than replaced — the wrong reading is what a reader reproduces by running the obvious
 command.
 
 ## The check, and that it can be made to fail
 
-`WO-MOK-013-injection.txt` records the program refusing in **ten distinct ways**, each from one edited declaration on a
+`WO-MOK-014-injection.txt` records the program refusing in **ten distinct ways**, each from one edited declaration on a
 throwaway copy: a moved version (4 refusals, in both directions), a removed feature (4, including a feature arriving by
 unification rather than by declaration), a wrong per-target count, a deleted build-script row, a renamed disclosure row
 (3, including a disclosure no target reaches), a declared entry absent from the manifest, `ratatui` declared for the
@@ -181,7 +181,7 @@ the same query for `thiserror@1.0.69`). That is consistent with the figure havin
 off a graph, though the provenance cannot be reconstructed and this summary does not claim it. **The declared table
 records the per-target counts**, because those are what a build executes, and three artifacts now state that the ADR's
 figure could not be reproduced and give all four: `ADR-MOK-006`'s own note, `SPEC-MOK-003`'s amendment row and
-`SPEC-MOK-003`'s prose. `WO-MOK-013-build-scripts.txt` is the measurement. **This is the first time this repository has
+`SPEC-MOK-003`'s prose. `WO-MOK-014-build-scripts.txt` is the measurement. **This is the first time this repository has
 written down that it executes third-party code at build time.**
 
 ## The by-name scan, and what it cannot do
@@ -213,11 +213,11 @@ from the disclosure never having existed, which is what
 
 Matching is by token and not by substring: `name_tokens` splits on `-` and `_`. The near misses a substring rule would
 have hit are retained (`ratatui*` containing `tui`, `windows-link` containing `ws`), along with a positive control.
-`VER-MOK-013` states the blind spot beside the passing result: a crate can open a socket without saying so in its name.
+`VER-MOK-014` states the blind spot beside the passing result: a crate can open a socket without saying so in its name.
 
 ## Manual assessments: six, none outstanding, and a numbering defect the owner resolved
 
-`WO-MOK-013-manual-assessment.md` is the record. Summary:
+`WO-MOK-014-manual-assessment.md` is the record. Summary:
 
 | # | Assessment | Role | Status |
 |---|---|---|---|
@@ -229,17 +229,17 @@ have hit are retained (`ratatui*` containing `tui`, `windows-link` containing `w
 | 6 | The disclosed transitive capabilities | technical owner | **Recorded 2026-08-20** — accepted on the "admission, not arrival" basis, limited to a compiled and uncalled capability |
 | 7 | The strength this change gives up | technical owner | Not yet due — triggers at the first admission beyond `ratatui` |
 
-**`VER-MOK-013`'s *Manual assessments* list is numbered 1, 2, 3, 4, 6, 7. There is no assessment 5** — and `WO-MOK-013`
+**`VER-MOK-014`'s *Manual assessments* list is numbered 1, 2, 3, 4, 6, 7. There is no assessment 5** — and `WO-MOK-014`
 twice said *"seven"* and once *"Assessments 1 to 5 and 7"*, naming a fifth the contract does not contain. This was a
 defect in artifacts the owner approved on 2026-08-20, found while writing the record. Renumbering was not available:
-assessments 3, 4 and 6 are cited by number in **twenty** places across `SPEC-MOK-003`, `SPEC-MOK-005`, `VER-MOK-013`,
-`WO-MOK-013` and `check_declared_dependencies.py`, each re-derived in the record. Inventing a fifth would have been
+assessments 3, 4 and 6 are cited by number in **twenty** places across `SPEC-MOK-003`, `SPEC-MOK-005`, `VER-MOK-014`,
+`WO-MOK-014` and `check_declared_dependencies.py`, each re-derived in the record. Inventing a fifth would have been
 worse — it would create an owner obligation no approved text states.
 
-**The owner resolved it on 2026-08-20: six is the intended set, and `WO-MOK-013`'s "seven" is the error.** The work order
+**The owner resolved it on 2026-08-20: six is the intended set, and `WO-MOK-014`'s "seven" is the error.** The work order
 is corrected to six in a dated *Lifecycle* note — it carries no *Amendment record* section, which the template confirms —
 and the gap at 5 is preserved rather than closed, with `## 5. — does not exist` standing in the record so that a reader
-counting six items against a list ending at 7 finds the reason rather than a missing file. Relatedly, `WO-MOK-013`'s
+counting six items against a list ending at 7 finds the reason rather than a missing file. Relatedly, `WO-MOK-014`'s
 bullet *"The two manual assessments this change itself creates"* named only one; that bullet is rewritten in the same
 note to state every assessment's disposition, so that **a reader can tell an acceptance from a silence**.
 
@@ -248,7 +248,7 @@ to the owner with the candidate wording written out in full, and recorded in the
 
 - **Assessment 2**: no approved text applied decision 1's criteria to `ratatui`. `ADR-MOK-006` decision 2 says the pin
   *"is unaffected"* and `ADR-MOK-003`'s note says the pin is *"untouched"* — both statements that the criteria were
-  **not** applied. `VER-MOK-013` asks the owner to record whether `ADR-MOK-003` satisfies them retrospectively *"rather
+  **not** applied. `VER-MOK-014` asks the owner to record whether `ADR-MOK-003` satisfies them retrospectively *"rather
   than assuming a pinned crate is grandfathered"*. **Recorded as satisfied**, with dependency debt named as the
   yardstick the criteria are measured against rather than as a bare assertion of compliance.
 - **Assessment 3**: the term list postdates the approval that would otherwise have discharged it. It lives in code
@@ -265,14 +265,14 @@ question with the full candidate text, and the owner chose. Assessment 6 was rec
 bases, and its text in `SPEC-MOK-003` was written by the agent from that decision and is marked as such. Assessment 4
 was recorded by the approval of 2026-08-20 on the reading the record states.
 
-**No manual assessment of `VER-MOK-013` is outstanding.** Assessment 7's trigger has not occurred, which under the
+**No manual assessment of `VER-MOK-014` is outstanding.** Assessment 7's trigger has not occurred, which under the
 contract's unqualified sentence would make it permanently unsatisfiable; that tension is flagged in the record for the
-owner and is not resolved by an agent. Whether `VER-MOK-013` is satisfied is the assurance owner's decision, not this
+owner and is not resolved by an agent. Whether `VER-MOK-014` is satisfied is the assurance owner's decision, not this
 report's.
 
 ## The determinism baseline was substituted, and why
 
-`ADR-MOK-006` and `VER-MOK-013` name the four replay hashes retained under `VREC-MOK-002` in
+`ADR-MOK-006` and `VER-MOK-014` name the four replay hashes retained under `VREC-MOK-002` in
 `evidence/WO-MOK-002/determinism-and-resilience.md` as oracle 3's baseline. **They cannot serve.**
 They were taken on 2026-08-17 at commit `68163ac452619e2f8d5a05ed3a73d42b920ba5f6`; since then `WO-MOK-010` added the
 `fear` trait and `WO-MOK-011` added `name:` to the text record. Both change the bytes of every replay **by design** and
@@ -291,15 +291,15 @@ content it was written for.
 | baseline `1.50%` | `85f052bb…` | `44a448a1…` |
 
 All four differ from 2026-08-17 and all four equal `WO-MOK-011`'s retained capture, as do all 90 manifest cells. The
-substitution is `VER-MOK-013` manual assessment 4, the assurance owner's.
+substitution is `VER-MOK-014` manual assessment 4, the assurance owner's.
 
 **One precision correction, now applied.** `VREC-MOK-002.md` contains **no replay hash** — its only SHA-256 is
 `artifact_snapshot_sha256`, its own figures are survivor counts, and it names none of the four configurations. The four
 hashes are in `evidence/WO-MOK-002/determinism-and-resilience.md:12–15`, which the record binds through `evidence_paths`.
 *"Retained under `VREC-MOK-002`"* is right; *"`VREC-MOK-002`'s four replay hashes"* is loose. **The owner decided on
 2026-08-20 to correct both artifacts**, and both are corrected: `ADR-MOK-006`'s first *Negative* consequence and
-`VER-MOK-013`'s oracle 3 now name the evidence file, each recording the correction in a dated entry — a second *Status*
-note in the ADR and a new amendment row in `VER-MOK-013` — that states no decision, check, oracle, pass condition or
+`VER-MOK-014`'s oracle 3 now name the evidence file, each recording the correction in a dated entry — a second *Status*
+note in the ADR and a new amendment row in `VER-MOK-014` — that states no decision, check, oracle, pass condition or
 figure changes with it. The three other references in the ADR that already read *"retained under"* are named as
 unchanged, at lines 158, 514 and 660. `VREC-MOK-002` itself is **not edited**, and neither is the evidence it binds: the
 four were correct at the commit that record names. The substitution is unaffected; what changes is that the owner
@@ -307,21 +307,21 @@ judging it is pointed at the file that holds them.
 
 ## Every reach beyond what the ADR enumerated
 
-`WO-MOK-013-amendments.md` locates all sixteen required amendments and lists these separately, because an
+`WO-MOK-014-amendments.md` locates all sixteen required amendments and lists these separately, because an
 implementation that quietly widened its own mandate is the failure mode that list exists to expose. Each is also
 disclosed in the amendment row that carries it.
 
 - `SPEC-MOK-003`'s *Disclosed transitive capabilities* section and security bullet — forced by the `mio` hits.
 - `SPEC-MOK-005` rule 8.4d's disclosure mechanism as a provision.
 - `SPEC-MOK-002` rule 13's mechanical reading convention, which the program depends on.
-- Three `specifies` relations to `REQ-MOK-047`, from `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-005`.
+- Three `specifies` relations to `REQ-MOK-050`, from `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-005`.
 - Further clauses in `SPEC-MOK-004` and `ARCH-MOK-001` where a restatement of the empty-table premise would have
   outlived it.
 - The root `Cargo.toml` and `rust-toolchain.toml` comments, which the ADR's source-comment entry does not name.
-- `VER-MOK-013`'s own count corrected from fifteen to sixteen required amendments.
+- `VER-MOK-014`'s own count corrected from fifteen to sixteen required amendments.
 - Three provenance corrections for the build-script figure.
-- The `VREC-MOK-002` precision correction in `ADR-MOK-006` and `VER-MOK-013`, which the owner decided on 2026-08-20 —
-  and the same phrase in `WO-MOK-013`'s *Required verification* and completion-report format, which is a **reach beyond
+- The `VREC-MOK-002` precision correction in `ADR-MOK-006` and `VER-MOK-014`, which the owner decided on 2026-08-20 —
+  and the same phrase in `WO-MOK-014`'s *Required verification* and completion-report format, which is a **reach beyond
   what that answer enumerated**: the owner was asked about the ADR and the contract, and the work order carries the
   loose phrase too. Disclosed in the work order's own dated note as well as here.
 - The two `SPEC-MOK-003` *Assessment* cells and its security bullet rewritten to carry the acceptance of manual
@@ -343,19 +343,19 @@ approved amendment reaches both placements with no edit. **Two places do hold a 
 
 ## What was not done, and what is outstanding
 
-**Not authorized and not performed:** commit, push, tag, pull request, or transitioning `WO-MOK-013` to `implemented`.
+**Not authorized and not performed:** commit, push, tag, pull request, or transitioning `WO-MOK-014` to `implemented`.
 
 **Deliberately out of scope**, each considered and declined by the ADR: advisory scanning, licence policy, `cargo deny`,
 `cargo audit`, vendoring, a crate-count ceiling, a numeric dependency-debt threshold, and adding `cargo fmt`, `cargo
 clippy` or the test suite to pull-request CI. A check this work order did not build is not a check this repository has.
-`REQ-MOK-047` states expressly that declared-set conformance is **not** supply-chain assurance.
+`REQ-MOK-050` states expressly that declared-set conformance is **not** supply-chain assurance.
 
 **Outstanding, owed by an accountable role:**
 
-1. **No manual assessment of `VER-MOK-013` is outstanding.** Assessments 1, 2, 3 and 6 were recorded by the owner on
-   2026-08-20 and 4 stands as it did; 7's trigger has not occurred. Whether that satisfies `VER-MOK-013`, and how its
+1. **No manual assessment of `VER-MOK-014` is outstanding.** Assessments 1, 2, 3 and 6 were recorded by the owner on
+   2026-08-20 and 4 stands as it did; 7's trigger has not occurred. Whether that satisfies `VER-MOK-014`, and how its
    unqualified sentence reads against a not-yet-due assessment, is the assurance owner's to decide.
-2. The numbering defect is **resolved**: the owner decided six is the intended set and `WO-MOK-013`'s *"seven"* the
+2. The numbering defect is **resolved**: the owner decided six is the intended set and `WO-MOK-014`'s *"seven"* the
    error, and the work order is corrected with the gap at 5 preserved.
 3. Whether `VER-MOK-005` and `VER-MOK-008` are reassessed, now that `REQ-MOK-026` and `REQ-MOK-036` have moved beneath
    them — the two new `W-HEX-003` warnings that name them. **The owner chose on 2026-08-20 to leave both for a separate

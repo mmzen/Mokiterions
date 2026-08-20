@@ -656,7 +656,7 @@ def build_script_identities(metadata: dict) -> set[str]:
 # decision rather than from the crates that happen to be present: a list derived from the
 # current graph would pass by construction on the day it was written. The scan is by name and
 # is not exhaustive over those classes, which `SPEC-MOK-005` rule 8.4d states and
-# `VER-MOK-013` manual assessment 3 stands behind. Its refusal is conclusive; its pass is not.
+# `VER-MOK-014` manual assessment 3 stands behind. Its refusal is conclusive; its pass is not.
 # ---------------------------------------------------------------------------------------
 
 PROHIBITED_TERMS: dict[str, tuple[str, ...]] = {
@@ -1016,12 +1016,12 @@ def check_prohibited_names(
         if "outstanding" in disclosure.assessment.lower():
             report.note(
                 f"  disclosed and OUTSTANDING: {crate} {disclosure.version} — "
-                "the technical owner's judgement is owed (`VER-MOK-013` manual assessment 6)"
+                "the technical owner's judgement is owed (`VER-MOK-014` manual assessment 6)"
             )
         else:
             report.note(
                 f"  disclosed and accepted: {crate} {disclosure.version} — "
-                "the technical owner's judgement is recorded (`VER-MOK-013` manual assessment 6)"
+                "the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)"
             )
 
 

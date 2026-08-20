@@ -2,26 +2,26 @@
 """Tests for `check_declared_dependencies.py`, the shared implementation of rule 8.4.
 
 Repository-owned, absent from `.engineering-harness.lock`. Two kinds of test live here and the
-distinction matters to `VER-MOK-013`:
+distinction matters to `VER-MOK-014`:
 
 * **Reading tests** parse the real `SPEC-MOK-002` and `SPEC-MOK-003` out of this checkout. They
   fail if an amendment renames a heading, changes a column or writes a *Features* cell the
   convention cannot read — which is the failure mode a hand-copied declaration would hide.
 * **Injection tests** hand the checks a declaration and a resolved graph that disagree, so the
-  refusals are demonstrated rather than asserted to exist. `VER-MOK-013` acceptance scenarios
+  refusals are demonstrated rather than asserted to exist. `VER-MOK-014` acceptance scenarios
   2, 3, 4 and 10 are discharged here: a passing check proves nothing about a check that cannot
   fail, and today's graph matches its declaration, so a real mismatch has to be constructed.
 
 The reading tests assert today's declared values — one entry, `ratatui 0.30.2`, the per-target
 counts, the build-script table's size, and the two disclosures with the acceptance the technical
-owner recorded against them on 2026-08-20 as `VER-MOK-013` manual assessment 6. **An approved
+owner recorded against them on 2026-08-20 as `VER-MOK-014` manual assessment 6. **An approved
 amendment to a declared set therefore edits this file too**, and that is the one place in this
 repository where
 that is true: neither workflow and no part of `check_declared_dependencies.py` names a declared
 crate, version or figure, so both placements follow an amendment with no edit. These assertions
 are not a second declaration — nothing reads them to decide whether a graph conforms — but an
 admission that left them untouched would fail the suite, which is the intended reminder rather
-than an obstacle. `VER-MOK-013`'s *What an admission must retain* list is the checklist; this
+than an obstacle. `VER-MOK-014`'s *What an admission must retain* list is the checklist; this
 file is a line in it.
 
 Run with:
@@ -347,7 +347,7 @@ class TestReadingTheRepositoryDeclarations(unittest.TestCase):
         self.assertIn("rustix 1.1.4", observer.build_script_crates["macOS"])
 
     def test_the_observers_two_disclosures_are_accepted(self) -> None:
-        # The technical owner recorded `VER-MOK-013` manual assessment 6 on 2026-08-20 and
+        # The technical owner recorded `VER-MOK-014` manual assessment 6 on 2026-08-20 and
         # accepted both. What is asserted here is that the *Assessment* cell still carries a
         # judgement with its grounds and its limit — an acceptance stated as "accepted" and
         # nothing else would read the same as a cell nobody had filled in.
@@ -438,7 +438,7 @@ class TestManifestReading(unittest.TestCase):
 
 
 class TestSetEquality(unittest.TestCase):
-    """8.4a, injected in both directions. Scenarios 2 and 3 of `VER-MOK-013`."""
+    """8.4a, injected in both directions. Scenarios 2 and 3 of `VER-MOK-014`."""
 
     def setUp(self) -> None:
         self.declaration = declaration(entries={"ratatui": entry("ratatui", "0.30.2")})
@@ -487,7 +487,7 @@ class TestSetEquality(unittest.TestCase):
 
 
 class TestFeatureChecks(unittest.TestCase):
-    """8.4b, injected. Scenario 4 of `VER-MOK-013`, including the negatives."""
+    """8.4b, injected. Scenario 4 of `VER-MOK-014`, including the negatives."""
 
     def setUp(self) -> None:
         self.cell = (
@@ -574,7 +574,7 @@ class TestFeatureChecks(unittest.TestCase):
 
 
 class TestProhibitedNames(unittest.TestCase):
-    """8.4d, injected. Scenarios 3 and 10 of `VER-MOK-013`."""
+    """8.4d, injected. Scenarios 3 and 10 of `VER-MOK-014`."""
 
     def disclosure(self, labels: frozenset[str] = frozenset({"Linux", "macOS"})) -> Disclosure:
         return Disclosure(

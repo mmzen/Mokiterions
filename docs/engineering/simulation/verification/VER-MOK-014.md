@@ -1,5 +1,5 @@
 +++
-id = "VER-MOK-013"
+id = "VER-MOK-014"
 type = "verification"
 title = "Declared dependency set verification: what each package resolves, at which features, and what no graph read can answer"
 status = "approved"
@@ -8,7 +8,7 @@ created = "2026-08-20"
 updated = "2026-08-20"
 
 [relations]
-verifies = ["REQ-MOK-047"]
+verifies = ["REQ-MOK-050"]
 +++
 
 # Verification Contract: Declared dependency set verification
@@ -17,8 +17,8 @@ verifies = ["REQ-MOK-047"]
 
 | Date | Change | Approval |
 |---|---|---|
-| 2026-08-20 | Original approved content for `REQ-MOK-047`, required by `ADR-MOK-006`. | Approved 2026-08-20 by the repository owner acting as accountable assurance owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this contract's minimum content in full. Written under `WO-MOK-013`; the implementation agent wrote the text and took the measurements, and decided neither. |
-| 2026-08-20 | **Four manual assessments recorded; no check, oracle or pass condition changed.** This contract was approved with assessments 1, 2, 3 and 6 all unrecorded. The repository owner recorded them later the same day — 1, 2 and 6 as accountable technical owner, 3 as accountable assurance owner — and the statements of *current state* in this contract are corrected to match: the matrix rows for 1, 2 and 6, the four entries in *Manual assessments*, the *Security and privacy* bullet, the residual-uncertainty bullet on disclosed capabilities, and acceptance scenario 11, which now requires a reader to be able to tell an acceptance from a silence. Assessment 6 is **accepted**, limited to a compiled and uncalled capability. **Assessments 4 and 7 are unchanged and 7 is not yet due**, and no outstanding item in any other artifact is cleared. The assessments themselves are in `evidence/WO-MOK-013/WO-MOK-013-manual-assessment.md`; this row records only that the contract no longer says they are absent. | Approved 2026-08-20 by the repository owner acting as accountable assurance owner. The assessments recorded were made by the repository owner in the roles named above; the implementation agent wrote this text and made no judgement. |
+| 2026-08-20 | Original approved content for `REQ-MOK-050`, required by `ADR-MOK-006`. | Approved 2026-08-20 by the repository owner acting as accountable assurance owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this contract's minimum content in full. Written under `WO-MOK-014`; the implementation agent wrote the text and took the measurements, and decided neither. |
+| 2026-08-20 | **Four manual assessments recorded; no check, oracle or pass condition changed.** This contract was approved with assessments 1, 2, 3 and 6 all unrecorded. The repository owner recorded them later the same day — 1, 2 and 6 as accountable technical owner, 3 as accountable assurance owner — and the statements of *current state* in this contract are corrected to match: the matrix rows for 1, 2 and 6, the four entries in *Manual assessments*, the *Security and privacy* bullet, the residual-uncertainty bullet on disclosed capabilities, and acceptance scenario 11, which now requires a reader to be able to tell an acceptance from a silence. Assessment 6 is **accepted**, limited to a compiled and uncalled capability. **Assessments 4 and 7 are unchanged and 7 is not yet due**, and no outstanding item in any other artifact is cleared. The assessments themselves are in `evidence/WO-MOK-014/WO-MOK-014-manual-assessment.md`; this row records only that the contract no longer says they are absent. | Approved 2026-08-20 by the repository owner acting as accountable assurance owner. The assessments recorded were made by the repository owner in the roles named above; the implementation agent wrote this text and made no judgement. |
 | 2026-08-20 | **One reference corrected; no rule, check or figure changed.** Five statements in this contract said *`VREC-MOK-002`'s four replay hashes* or *the four configurations `VREC-MOK-002` names*. That record carries no replay hash and names no configuration — it carries its own `artifact_snapshot_sha256` and binds the evidence, and the four hashes are in `evidence/WO-MOK-002/determinism-and-resilience.md` at lines 12 to 15. Each statement now reads *retained under `VREC-MOK-002` in `evidence/WO-MOK-002/determinism-and-resilience.md`*. The baseline substitution of oracle 3, the four `WO-MOK-011` hashes and every pass condition are untouched; what is corrected is where a reader is sent to find the superseded figures. `ADR-MOK-006` carries the same correction as a dated note in its *Status*. | Approved 2026-08-20 by the repository owner acting as accountable assurance owner. |
 
 ## Independence
@@ -80,32 +80,32 @@ three targets are `x86_64-pc-windows-msvc`, `x86_64-unknown-linux-gnu` and `aarc
 
 | Requirement | Method | Case/evidence | Pass condition |
 |---|---|---|---|
-| `REQ-MOK-047` | static-analysis | **Declared-set equality, engine package, both directions** | Every direct dependency and dev-dependency entry of `mokiterions-core/Cargo.toml` is an entry of `SPEC-MOK-002` rule 13, and every entry of rule 13 is in that manifest. Measured 2026-08-20: both sides empty, `cargo tree -p Mokiterions -e normal --locked --offline` prints one crate on all three targets |
-| `REQ-MOK-047` | static-analysis | **Declared-set equality, observer package, both directions** | Every direct entry of `mokiterions-tui/Cargo.toml` other than the `Mokiterions` path dependency is an entry of `SPEC-MOK-003`'s declared set, and every entry of that set is in the manifest. Measured 2026-08-20: one entry each side, `ratatui 0.30.2` |
-| `REQ-MOK-047` | static-analysis | Set equality fails in the undeclared direction | An entry added to either manifest and to no declared set fails the check. Demonstrated by injection, not by inspection (scenario 2) |
-| `REQ-MOK-047` | static-analysis | Set equality fails in the missing direction | A declared entry removed from a manifest fails the check. Demonstrated by injection (scenario 3) |
-| `REQ-MOK-047` | static-analysis | Version match | Each entry resolves at the declared version exactly. A range where a version is declared, or a resolved version other than the declared one, fails |
-| `REQ-MOK-047` | static-analysis | **Feature match, including negatives and the implied feature** | The manifest declares `default-features = false` and exactly `crossterm`, `layout-cache`, `underline-color`; `ratatui` resolves with those three and `std`, which the declaration records as implied, and with `default` and `serde` **absent**. Equality is against declared-plus-implied, so a feature arriving by unification fails and an implied feature is not a loophole. `SPEC-MOK-002` rule 13 fixes how the cell is read |
-| `REQ-MOK-047` | static-analysis | The set is the resolved graph, not the lockfile | The check reads `cargo tree`/`cargo metadata` resolution and not `Cargo.lock` as a package's set. Evidence records both figures, the **182**-against-**59** gap, and the two unreachable lockfile crates by name |
-| `REQ-MOK-047` | static-analysis | **Per-target resolution** | The comparison runs for all three release targets. Recorded external-crate counts for the observer: 57, 63, 62, and 66 in union. A check run on one target only does not satisfy this row |
-| `REQ-MOK-047` | static-analysis | **Trust envelope, by name** | No crate in either package's resolved graph is a network, asynchronous-runtime, database or model-provider crate. Recorded as a named scan over the union graph of all three targets, with the search terms retained |
-| `REQ-MOK-047` | review | The scan's insufficiency is stated where it is used | The retained scan output states that it is by name and not exhaustive, and points at manual assessment 3. A scan presented as conclusive fails this row even when it passes |
-| `REQ-MOK-047` | static-analysis | **A prohibited-class name in a declared entry refuses** | The check refuses with no exception available, per `ADR-MOK-006` decision 4. Demonstrated by injection, by declaring such a crate and finding no disclosure able to admit it |
-| `REQ-MOK-047` | static-analysis | **A transitive prohibited-class name refuses until disclosed** | An undisclosed transitive hit refuses; a hit disclosed in the declaring specification, with crate, version, targets, chain, activating feature and non-use, passes. Demonstrated in both states |
-| `REQ-MOK-047` | review | **The two disclosed hits are the measured ones and no more** | `mio 1.2.2` and `signal-hook-mio 0.2.5`, on Linux and macOS only, with the chain and the `net` feature recorded. A disclosure table with an entry the graph does not reach fails this row as surely as a missing one |
-| `REQ-MOK-047` | manual | **The disclosed transitive capabilities are accepted or refused** | Manual assessment 6, by the technical owner. Unrecorded is **OUTSTANDING**. It was outstanding as this contract was approved and was **recorded later the same day**: accepted, on the grounds `SPEC-MOK-003`'s disclosure table states |
-| `REQ-MOK-047` | static-analysis | **User-interface confinement** | No user-interface crate is in the engine package's resolved graph, on any target, and the engine does not depend on `mokiterions-tui` directly or transitively |
-| `REQ-MOK-047` | static-analysis | **Offline resolution, build and test of the engine** | `cargo build -p Mokiterions --locked --offline` and `cargo test -p Mokiterions --locked --offline` succeed with no package-registry access, from the committed lockfile, with no lockfile modification |
-| `REQ-MOK-047` | static-analysis | No check modifies a tracked file | `git status --porcelain` is empty after every check in this contract, and `Cargo.lock` is byte-identical before and after. A check that updated the lockfile would have released a different commit than it verified |
-| `REQ-MOK-047` | static-analysis | **Build-script status matches the declaration** | The set of crates in each target's resolved graph carrying a `build.rs` equals what `SPEC-MOK-003`'s declared set records for that target: 7 on Windows, 9 on Linux, 9 on macOS, 10 in union. A crate that gains or loses one is a mismatch |
-| `REQ-MOK-047` | automated-test | **Determinism, byte-identical replay** (oracle 3) | At seed `123`, 1,000 ticks, the four configurations retained under `VREC-MOK-002` in `evidence/WO-MOK-002/determinism-and-resilience.md` each reproduce byte-identically across two runs, and each equals the raw hash retained in `evidence/WO-MOK-011/post/post-manifest.txt`: `reference 0.75%` `cebe44c4…`, `reference 1.50%` `9621f5f8…`, `baseline 0.75%` `fcd03d6f…`, `baseline 1.50%` `44a448a1…` |
-| `REQ-MOK-047` | automated-test | Determinism across the declared seeds | Byte-identical output across two runs at each of the five declared seeds under each of the three policies, and equality with the corresponding cell of the same retained manifest |
-| `REQ-MOK-047` | review | **Why the hashes retained under `VREC-MOK-002` are not the baseline** (oracle 3) | The retained evidence states the two approved amendments that moved the stream, names the record that binds the replacement baseline, and shows the four current hashes differing from the four 2026-08-17 hashes. An unexplained substitution of a baseline fails this row |
-| `REQ-MOK-047` | manual | **No declared entry implements simulation semantics** | Manual assessment 1, by the technical owner. Unrecorded is **OUTSTANDING** and leaves this contract unsatisfied. **Recorded 2026-08-20**, with the line for future entries stated: a declared crate may compute the presentation of a value the engine produced and may not compute the value |
-| `REQ-MOK-047` | manual | **The criteria of `ADR-MOK-006` decision 1 were applied to each entry** | Manual assessment 2, by the technical owner. Unrecorded is **OUTSTANDING**. **Recorded 2026-08-20**, applied to `ratatui 0.30.2` retrospectively and not grandfathered, with the measured debt named as the yardstick for the next admission |
-| `REQ-MOK-047` | static-analysis | **Required amendments present and approved** (oracle 5) | All sixteen entries of `ADR-MOK-006`'s *Required amendments* section are present, the twelve that land in a governed artifact carry their approval, and `ARCH-MOK-001` carries both replacement conformance checks. Absence fails this contract regardless of code state |
-| `REQ-MOK-047` | static-analysis | Both placements exist and read one declaration | The release gate and the pull-request workflow both run rule 8.4's checks, and neither restates a declared set. Two implementations that could disagree about what is declared fail this row |
-| `REQ-MOK-047` | static-analysis | The managed workflow is untouched | `.github/workflows/engineering-harness.yml` is byte-identical to its locked digest and `python -m se_harness doctor` reports no integrity finding |
+| `REQ-MOK-050` | static-analysis | **Declared-set equality, engine package, both directions** | Every direct dependency and dev-dependency entry of `mokiterions-core/Cargo.toml` is an entry of `SPEC-MOK-002` rule 13, and every entry of rule 13 is in that manifest. Measured 2026-08-20: both sides empty, `cargo tree -p Mokiterions -e normal --locked --offline` prints one crate on all three targets |
+| `REQ-MOK-050` | static-analysis | **Declared-set equality, observer package, both directions** | Every direct entry of `mokiterions-tui/Cargo.toml` other than the `Mokiterions` path dependency is an entry of `SPEC-MOK-003`'s declared set, and every entry of that set is in the manifest. Measured 2026-08-20: one entry each side, `ratatui 0.30.2` |
+| `REQ-MOK-050` | static-analysis | Set equality fails in the undeclared direction | An entry added to either manifest and to no declared set fails the check. Demonstrated by injection, not by inspection (scenario 2) |
+| `REQ-MOK-050` | static-analysis | Set equality fails in the missing direction | A declared entry removed from a manifest fails the check. Demonstrated by injection (scenario 3) |
+| `REQ-MOK-050` | static-analysis | Version match | Each entry resolves at the declared version exactly. A range where a version is declared, or a resolved version other than the declared one, fails |
+| `REQ-MOK-050` | static-analysis | **Feature match, including negatives and the implied feature** | The manifest declares `default-features = false` and exactly `crossterm`, `layout-cache`, `underline-color`; `ratatui` resolves with those three and `std`, which the declaration records as implied, and with `default` and `serde` **absent**. Equality is against declared-plus-implied, so a feature arriving by unification fails and an implied feature is not a loophole. `SPEC-MOK-002` rule 13 fixes how the cell is read |
+| `REQ-MOK-050` | static-analysis | The set is the resolved graph, not the lockfile | The check reads `cargo tree`/`cargo metadata` resolution and not `Cargo.lock` as a package's set. Evidence records both figures, the **182**-against-**59** gap, and the two unreachable lockfile crates by name |
+| `REQ-MOK-050` | static-analysis | **Per-target resolution** | The comparison runs for all three release targets. Recorded external-crate counts for the observer: 57, 63, 62, and 66 in union. A check run on one target only does not satisfy this row |
+| `REQ-MOK-050` | static-analysis | **Trust envelope, by name** | No crate in either package's resolved graph is a network, asynchronous-runtime, database or model-provider crate. Recorded as a named scan over the union graph of all three targets, with the search terms retained |
+| `REQ-MOK-050` | review | The scan's insufficiency is stated where it is used | The retained scan output states that it is by name and not exhaustive, and points at manual assessment 3. A scan presented as conclusive fails this row even when it passes |
+| `REQ-MOK-050` | static-analysis | **A prohibited-class name in a declared entry refuses** | The check refuses with no exception available, per `ADR-MOK-006` decision 4. Demonstrated by injection, by declaring such a crate and finding no disclosure able to admit it |
+| `REQ-MOK-050` | static-analysis | **A transitive prohibited-class name refuses until disclosed** | An undisclosed transitive hit refuses; a hit disclosed in the declaring specification, with crate, version, targets, chain, activating feature and non-use, passes. Demonstrated in both states |
+| `REQ-MOK-050` | review | **The two disclosed hits are the measured ones and no more** | `mio 1.2.2` and `signal-hook-mio 0.2.5`, on Linux and macOS only, with the chain and the `net` feature recorded. A disclosure table with an entry the graph does not reach fails this row as surely as a missing one |
+| `REQ-MOK-050` | manual | **The disclosed transitive capabilities are accepted or refused** | Manual assessment 6, by the technical owner. Unrecorded is **OUTSTANDING**. It was outstanding as this contract was approved and was **recorded later the same day**: accepted, on the grounds `SPEC-MOK-003`'s disclosure table states |
+| `REQ-MOK-050` | static-analysis | **User-interface confinement** | No user-interface crate is in the engine package's resolved graph, on any target, and the engine does not depend on `mokiterions-tui` directly or transitively |
+| `REQ-MOK-050` | static-analysis | **Offline resolution, build and test of the engine** | `cargo build -p Mokiterions --locked --offline` and `cargo test -p Mokiterions --locked --offline` succeed with no package-registry access, from the committed lockfile, with no lockfile modification |
+| `REQ-MOK-050` | static-analysis | No check modifies a tracked file | `git status --porcelain` is empty after every check in this contract, and `Cargo.lock` is byte-identical before and after. A check that updated the lockfile would have released a different commit than it verified |
+| `REQ-MOK-050` | static-analysis | **Build-script status matches the declaration** | The set of crates in each target's resolved graph carrying a `build.rs` equals what `SPEC-MOK-003`'s declared set records for that target: 7 on Windows, 9 on Linux, 9 on macOS, 10 in union. A crate that gains or loses one is a mismatch |
+| `REQ-MOK-050` | automated-test | **Determinism, byte-identical replay** (oracle 3) | At seed `123`, 1,000 ticks, the four configurations retained under `VREC-MOK-002` in `evidence/WO-MOK-002/determinism-and-resilience.md` each reproduce byte-identically across two runs, and each equals the raw hash retained in `evidence/WO-MOK-011/post/post-manifest.txt`: `reference 0.75%` `cebe44c4…`, `reference 1.50%` `9621f5f8…`, `baseline 0.75%` `fcd03d6f…`, `baseline 1.50%` `44a448a1…` |
+| `REQ-MOK-050` | automated-test | Determinism across the declared seeds | Byte-identical output across two runs at each of the five declared seeds under each of the three policies, and equality with the corresponding cell of the same retained manifest |
+| `REQ-MOK-050` | review | **Why the hashes retained under `VREC-MOK-002` are not the baseline** (oracle 3) | The retained evidence states the two approved amendments that moved the stream, names the record that binds the replacement baseline, and shows the four current hashes differing from the four 2026-08-17 hashes. An unexplained substitution of a baseline fails this row |
+| `REQ-MOK-050` | manual | **No declared entry implements simulation semantics** | Manual assessment 1, by the technical owner. Unrecorded is **OUTSTANDING** and leaves this contract unsatisfied. **Recorded 2026-08-20**, with the line for future entries stated: a declared crate may compute the presentation of a value the engine produced and may not compute the value |
+| `REQ-MOK-050` | manual | **The criteria of `ADR-MOK-006` decision 1 were applied to each entry** | Manual assessment 2, by the technical owner. Unrecorded is **OUTSTANDING**. **Recorded 2026-08-20**, applied to `ratatui 0.30.2` retrospectively and not grandfathered, with the measured debt named as the yardstick for the next admission |
+| `REQ-MOK-050` | static-analysis | **Required amendments present and approved** (oracle 5) | All sixteen entries of `ADR-MOK-006`'s *Required amendments* section are present, the twelve that land in a governed artifact carry their approval, and `ARCH-MOK-001` carries both replacement conformance checks. Absence fails this contract regardless of code state |
+| `REQ-MOK-050` | static-analysis | Both placements exist and read one declaration | The release gate and the pull-request workflow both run rule 8.4's checks, and neither restates a declared set. Two implementations that could disagree about what is declared fail this row |
+| `REQ-MOK-050` | static-analysis | The managed workflow is untouched | `.github/workflows/engineering-harness.yml` is byte-identical to its locked digest and `python -m se_harness doctor` reports no integrity finding |
 
 ## Acceptance scenarios
 
@@ -144,7 +144,7 @@ three targets are `x86_64-pc-windows-msvc`, `x86_64-unknown-linux-gnu` and `aarc
 ## Property and invariant tests
 
 - **Set equality is symmetric.** The comparison fails on an undeclared entry and on a missing declared entry. A check
-  that only detects additions satisfies half of `REQ-MOK-047` and this property is what distinguishes them.
+  that only detects additions satisfies half of `REQ-MOK-050` and this property is what distinguishes them.
 - **The declaration is target-independent and its resolution is not.** The same declared set holds on all three
   targets; the resolved graph does not, and no figure in this contract is stated without its target.
 - **Feature negatives are asserted, not assumed.** `serde` being off is a positive assertion about an absence, checked
@@ -200,7 +200,7 @@ three targets are `x86_64-pc-windows-msvc`, `x86_64-unknown-linux-gnu` and `aarc
   asserts that it does not.
 - Retained evidence contains dependency graphs, feature sets, hashes and simulation output. No secret and no personal
   data.
-- **Advisories and licences are expressly out of scope**, as `REQ-MOK-047` states. No `cargo audit`, no advisory
+- **Advisories and licences are expressly out of scope**, as `REQ-MOK-050` states. No `cargo audit`, no advisory
   database and no licence scan is part of this contract, and a passing result here says nothing about either. This is
   recorded so a reader does not mistake declared-set conformance for supply-chain assurance.
 
@@ -227,7 +227,7 @@ still is.
    owner records the judgement per entry. **With one entry declared, the assessment is about `ratatui`: a terminal
    rendering library that computes no simulation value.** The assessment is recorded even so, because an assessment
    that is only made when it is difficult is a habit nobody has. **Recorded 2026-08-20**, in
-   `evidence/WO-MOK-013/WO-MOK-013-manual-assessment.md`, and it states the line for future entries as well as the
+   `evidence/WO-MOK-014/WO-MOK-014-manual-assessment.md`, and it states the line for future entries as well as the
    judgement on this one.
 2. **The criteria of decision 1 were applied to each entry, by the technical owner.** Stable, well-maintained
    functionality that accelerates delivery without excessive dependency debt, and a proven solution for a standard,
@@ -269,7 +269,7 @@ still is.
 
 ## Evidence retention
 
-Retained under `docs/engineering/simulation/evidence/WO-MOK-013/`, in files named `WO-MOK-013-*`:
+Retained under `docs/engineering/simulation/evidence/WO-MOK-014/`, in files named `WO-MOK-014-*`:
 
 - the per-target resolved graphs for both packages, as recorded command output with the command line and the toolchain
   version, for all three release targets and for `--target all`;

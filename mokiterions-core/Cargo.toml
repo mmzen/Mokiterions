@@ -40,6 +40,6 @@ path = "src/main.rs"
 #
 # `python scripts/check_declared_dependencies.py` is the check, at pull-request time and again
 # at the release gate. `cargo tree -p Mokiterions --locked` is what it reads for this package,
-# at every edge kind including dev-only, and `REQ-MOK-026` and `REQ-MOK-047` are what it
+# at every edge kind including dev-only, and `REQ-MOK-026` and `REQ-MOK-050` are what it
 # discharges.
 [dependencies]

@@ -18,7 +18,7 @@ decides = ["ARCH-MOK-001", "ARCH-MOK-002"]
 **Accepted 2026-08-20 by the repository owner acting as accountable technical owner.** The instruction, verbatim, in
 the turn it was given: *"i approve the ADR, i approve the work order: go implement"*. It answered a stated requirement
 that acceptance and a work order be given separately, and it gave both: this decision as technical owner, and
-`WO-MOK-013` as engineering owner.
+`WO-MOK-014` as engineering owner.
 
 It was drafted by an implementation agent on the repository owner's instruction to relax the third-party-crate policy,
 and the agent did not take this decision. `DECISION_RIGHTS.md` reserves acceptance to the technical owner and states
@@ -28,7 +28,7 @@ technical owner.
 **What the acceptance covers is the *Required amendments* section, in full.** Each amendment there is stated
 completely, so accepting this one file approves the whole change, following the `ADR-MOK-004` precedent that
 `WO-MOK-006` implemented. **Four** of those amendments are not the technical owner's — `REQ-MOK-026`, `REQ-MOK-036` and
-the new `REQ-MOK-047` are the product owner's, and `VER-MOK-013` is the assurance owner's. The owner holds all of
+the new `REQ-MOK-050` are the product owner's, and `VER-MOK-014` is the assurance owner's. The owner holds all of
 those roles and approved them here, by way of this section; each amended artifact records which role approved it and
 that it was approved through this ADR rather than separately.
 
@@ -45,10 +45,17 @@ superseded either, but two of its statements are reversed rather than narrowed: 
 **Why this is `006` and not `005`.** `ADR-MOK-005` is taken by a draft on `origin/feature/phase-4a-definition`,
 created the same day by another agent, which has also claimed `INT-MOK-009`, `CAP-MOK-005` to `CAP-MOK-009`,
 `REQ-MOK-042` to `REQ-MOK-046`, `SPEC-MOK-006`, `VER-MOK-012` and `WO-MOK-012`. Every identifier this change uses —
-`ADR-MOK-006`, `REQ-MOK-047`, `VER-MOK-013` and `WO-MOK-013` — was free across every ref in `refs/heads` and
+`ADR-MOK-006`, `REQ-MOK-050`, `VER-MOK-014` and `WO-MOK-014` — was free across every ref in `refs/heads` and
 `refs/remotes` when this file was written and again when the pack was implemented, checked by enumerating refs rather
 than by reading one working tree. They are free-when-written, which is all any identifier can be in a shared space:
 if that branch renumbers into them, the collision is resolved by whichever chain has not yet landed.
+
+**That last sentence stopped being hypothetical, and this list is the second set of numbers.** This chain was written,
+approved and implemented as `REQ-MOK-047`, `VER-MOK-013` and `WO-MOK-013` — free across every ref when written, and
+taken the same day by an unrelated chain that reached `master` first. `REQ-MOK-050`, `VER-MOK-014` and `WO-MOK-014` are
+the renumbering the owner instructed on 2026-08-20, re-swept across all thirty-one refs before being taken.
+`ADR-MOK-006` itself never collided and is unchanged. See
+`evidence/WO-MOK-014/WO-MOK-014-renumbering.md`.
 
 **Implementation note dated 2026-08-20, recorded by the implementation agent. One figure in this ADR is wrong, and no
 decision changes.** Decision 13's supporting text, the `SPEC-MOK-003` amendment row and the *Positive* consequence about
@@ -62,9 +69,9 @@ Where the eight came from cannot be reconstructed, and this note said "a lockfil
 finished: `Cargo.lock` holds **29** packages carrying a build script, the observer reaches **12** of them at
 `--target all`, **10** across the three targets `SPEC-MOK-005` rule 10 builds, and **7**, **9** and **9** on those
 targets taken one at a time. Eight is none of the four. The seven come from the resolved graph on one target, which is
-what decision 7 and `REQ-MOK-047` require and what a build actually executes. It is the same distinction the amended
+what decision 7 and `REQ-MOK-050` require and what a build actually executes. It is the same distinction the amended
 `SPEC-MOK-005` rule 8.4 now has to state in order to be checkable, and it is why this ADR asked for re-measurement
-instead of copying. `evidence/WO-MOK-013/WO-MOK-013-build-scripts.txt` holds all four counts with the crates named
+instead of copying. `evidence/WO-MOK-014/WO-MOK-014-build-scripts.txt` holds all four counts with the crates named
 under each, including the 17 scripted lockfile packages no build of either package reaches.
 
 The implemented figure is **seven**, in `SPEC-MOK-003`'s *Declared dependency set*, which records this deviation and its
@@ -81,14 +88,14 @@ SHA-256 is its own `artifact_snapshot_sha256` — and the four hashes are in
 `evidence/WO-MOK-002/determinism-and-resilience.md` at lines 12 to 15, which `VREC-MOK-002` binds through its
 `evidence_paths`. The consequence now reads *"the four replay hashes retained under `VREC-MOK-002` in
 `evidence/WO-MOK-002/determinism-and-resilience.md`"*. The three other places in this ADR that refer to those hashes —
-*What the empty table is doing, beyond taste* item 3 at line 158, the `VER-MOK-013` amendment entry at line 514, and the
+*What the empty table is doing, beyond taste* item 3 at line 158, the `VER-MOK-014` amendment entry at line 514, and the
 *Validation* list at line 660 — already said *"retained under"* and are unchanged. `VREC-MOK-002` itself is **not edited**, and neither is the evidence it binds: both were correct at the
 commit that record names. **This changes no decision, no option, no driver and no consequence in substance**: the
 consequence it corrects is that verified behavior is now downstream of a dependency choice, which is as true of hashes
 held in bound evidence as of hashes held in a record. What is corrected is where a reader is sent to find them, which
-matters because `VER-MOK-013` oracle 3 substitutes a newer baseline for these four and a reader checking that
-substitution needs the file that holds them. `VER-MOK-013` carries the same correction in a dated amendment row, and
-`WO-MOK-013` in a dated *Lifecycle* note. It was found while measuring, and it is recorded rather than fixed silently
+matters because `VER-MOK-014` oracle 3 substitutes a newer baseline for these four and a reader checking that
+substitution needs the file that holds them. `VER-MOK-014` carries the same correction in a dated amendment row, and
+`WO-MOK-014` in a dated *Lifecycle* note. It was found while measuring, and it is recorded rather than fixed silently
 because a reference an implementation quietly repointed is indistinguishable from one that was always right.
 
 ## Context
@@ -290,7 +297,7 @@ Adopt option 2.
     than left inside the judgement: *standard, non-core* functionality is what a crate may supply, and the
     simulation is what this project builds. It binds the observer as well as the engine, where it strengthens
     `ARCH-MOK-002`'s existing prohibition on re-deriving the engine's validation verdict: an observer crate may not
-    do it either. It is a review obligation, not a graph read, and item 7's checks cannot see it — `VER-MOK-013`
+    do it either. It is a review obligation, not a graph read, and item 7's checks cannot see it — `VER-MOK-014`
     carries it as a manual assessment, which is how this repository already handles a claim no script can settle.
 12. **The check runs at pull-request time as well as at release**, in a **repository-owned** workflow, because the
     property this decision protects stops being visible in a diff: a resolved set can drift through a lockfile
@@ -312,8 +319,8 @@ Adopt option 2.
 ## Required amendments
 
 Each is stated in full so that accepting this ADR accepts the change. **Four of them are not the technical owner's**:
-`REQ-MOK-026`, `REQ-MOK-036` and the new `REQ-MOK-047` are the product owner's acts, and the verification contract is
-the assurance owner's. `WO-MOK-013` makes every row below an approval precondition, as `WO-MOK-005` and `WO-MOK-006`
+`REQ-MOK-026`, `REQ-MOK-036` and the new `REQ-MOK-050` are the product owner's acts, and the verification contract is
+the assurance owner's. `WO-MOK-014` makes every row below an approval precondition, as `WO-MOK-005` and `WO-MOK-006`
 did for their ADRs.
 
 ### `REQ-MOK-026` — product owner
@@ -328,7 +335,7 @@ did for their ADRs.
   redirected to decision 4 of this ADR.
 - Amendment record row, in the `REQ-MOK-014` form, whose *Approval* cell names the product owner and this ADR.
 
-### New requirement, `REQ-MOK-047` — product owner
+### New requirement, `REQ-MOK-050` — product owner
 
 The policy is an obligation over future builds, and requirements are the only artifacts that carry those.
 `TRACEABILITY.md` requires a revised or new requirement when the normative obligation changes, and this obligation is
@@ -387,7 +394,7 @@ new rather than a revision of `REQ-MOK-026`'s.
   lockfile without registry access, which is decision 5.
 - *Conformance checks*, **a new entry** for decision 11: review each admitted crate against what it supplies, and
   confirm that no declared entry implements simulation semantics, owns entropy, or validates an action. It is stated
-  as a review because no graph read answers it, and `VER-MOK-013` is where the assessment is retained.
+  as a review because no graph read answers it, and `VER-MOK-014` is where the assessment is retained.
 - *Quality attributes*: this list does not mention the dependency set at all today, because nothing threatened it.
   Add registry independence and the declared-set property, so that the properties decisions 5 and 7 protect are
   attributes of the architecture rather than only checks under it.
@@ -506,9 +513,9 @@ new rather than a revision of `REQ-MOK-026`'s.
   dependency's own build script, which rule 11.5 never spoke to.
 - Amendment record row.
 
-### New verification contract, `VER-MOK-013` — assurance owner
+### New verification contract, `VER-MOK-014` — assurance owner
 
-Independent methods and pass conditions for `REQ-MOK-047`, and the artifact that decides what evidence an admission
+Independent methods and pass conditions for `REQ-MOK-050`, and the artifact that decides what evidence an admission
 must retain. It must cover, at minimum: the declared-set comparison per package in both directions; the feature
 audit; the offline engine build and test from the committed lockfile; the by-name prohibition scan; a determinism
 re-derivation at the declared seeds, compared against the replay hashes retained under `VREC-MOK-002`, since decision
@@ -599,7 +606,7 @@ unsatisfied, as `VER-MOK-011`'s fifth still does.
 - **`Cargo.lock` review grows** for both packages, and the engine's audit stops being *read one table*.
 - **Decision 11 is a review obligation, and reviews drift.** *Does this crate implement simulation semantics* has a
   clear answer for a terminal backend and a debatable one for, say, a spatial-index or fixed-point-arithmetic crate.
-  The prohibition will hold exactly as well as the assessment behind it, and `VER-MOK-013` records that assessment
+  The prohibition will hold exactly as well as the assessment behind it, and `VER-MOK-014` records that assessment
   rather than automating it.
 - **The pull-request workflow can refuse a merge for a reason no line of the diff shows.** That is its purpose, and it
   is still a new way for CI to block work: a contributor whose change is correct can be stopped by a transitive
@@ -662,7 +669,7 @@ than this decision is.
   final state observes while drawing entropy, reading wall-clock time, reading the environment, or iterating in an
   unspecified order — reviewed, since no graph read answers it.
 - No crate in either declared set implements simulation semantics, owns or advances entropy, or performs action
-  validation — reviewed, and the assessment retained under `VER-MOK-013` rather than asserted here.
+  validation — reviewed, and the assessment retained under `VER-MOK-014` rather than asserted here.
 - Each declared entry's build-script status matches the resolved graph, so a build script appearing in a crate that
   did not carry one is a declared-set mismatch and not an unremarked change.
 - The comparison runs on every pull request and at release, and `python -m se_harness doctor` reports

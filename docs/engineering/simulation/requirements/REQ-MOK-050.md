@@ -1,5 +1,5 @@
 +++
-id = "REQ-MOK-047"
+id = "REQ-MOK-050"
 type = "requirement"
 title = "Resolve each package's dependency set equal to its declaration, within the preserved trust envelope"
 status = "approved"
@@ -77,7 +77,7 @@ every commit, not only at the ones a workflow happens to read.
 
 Responses 1 to 7 and 9 are observable from the resolved graph and a build. Response 8 is observable only in part: a
 feature that is off is a graph fact, and what a crate does with the capabilities its features leave on is a review
-obligation. `VER-MOK-013` carries that part as a manual assessment rather than claiming a check for it.
+obligation. `VER-MOK-014` carries that part as a manual assessment rather than claiming a check for it.
 
 ## Failure and boundary behavior
 
@@ -90,7 +90,7 @@ obligation. `VER-MOK-013` carries that part as a manual assessment rather than c
   `ADR-MOK-006` decision 1 select *within* the envelope of response 5 and never widen it.
 - The by-name scan of response 5 is a named-crate check and is **not** exhaustive over the capability classes it
   names. A crate providing a prohibited capability under a name the scan does not carry passes it, and is caught by
-  the review obligation `VER-MOK-013` retains rather than by the scan. This is stated so a passing scan is not read as
+  the review obligation `VER-MOK-014` retains rather than by the scan. This is stated so a passing scan is not read as
   a proof it cannot give.
 - Nothing here refuses a graph for its size. `ADR-MOK-006` decision 10 declares no crate-count ceiling, so a package
   whose declaration has grown large satisfies this requirement exactly as one with an empty declaration does.
@@ -138,5 +138,5 @@ to that crate and recorded in the amendment row.
 None for this requirement. Two decisions are deliberately left with a named human rather than resolved here, and both
 are `ADR-MOK-006`'s: whether a candidate crate meets the criteria of decision 1, which is the technical owner's per
 admission, and whether a declared entry implements the proprietary core, which decision 11 prohibits and
-`VER-MOK-013` retains as a manual assessment. Neither is an unresolved product decision; both are recurring decisions
+`VER-MOK-014` retains as a manual assessment. Neither is an unresolved product decision; both are recurring decisions
 this requirement is written not to pretend it can automate.
