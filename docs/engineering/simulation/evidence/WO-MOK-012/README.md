@@ -8,10 +8,27 @@ blocked behind. This directory is its retained evidence.
 adverse observations the assessment pass produced are recorded here and **fixed by a later chain**, by decision 12.
 
 **That chain is now drafted.** `WO-MOK-013`, `VER-MOK-013` and `REQ-MOK-047` through `REQ-MOK-049` implement decisions 13
-to 15, all `draft` and awaiting approval. Two facts found while authoring it belong to this directory rather than to it:
-the identifier collision in `identifier-collision.md`, and that **decision 13 as recorded cannot be implemented without
-amending approved `REQ-MOK-020`** — the geometry is in `WO-MOK-013`'s *Authorized decision envelope* and the collision
-was not measured when the decision was taken.
+to 15, all `draft` and awaiting approval. Three facts found while authoring it bear on this directory.
+
+**Decision 13 has been superseded in its route, by the product owner, on 2026-08-20.** As recorded in
+`closing-review.md`, decision 13 accepted showing ten of twelve roster entries at the reference viewport. Authoring the
+chain measured that this collides with approved `REQ-MOK-020`, which obliges all twelve without scrolling and which was
+not put to the owner at the time. Shown the collision, the product owner chose instead to **hold the log at six rows and
+leave `REQ-MOK-020` intact**. That instruction and its arithmetic are recorded as decision 1 in `WO-MOK-013`'s *Decision
+record*, which is where the live decision now lives. **`closing-review.md` is not edited**: it records what the owner
+decided on the material they were shown, and it remains a true record of that act.
+
+**A defect was found in approved `VER-MOK-005`, and it is not this chain's doing.** Its `REQ-MOK-020` fill row specifies
+that each bar's filled count equals `round(value / 5)` of its **twenty cells**. The roster pane is 47 columns at every
+viewport, so its interior is 45 and `bar_width` yields **2**; twenty cells would need a 115-column interior. Before
+`WO-MOK-010` the same interior yielded 6, which `frames.txt` in `assessment-material/` shows. **The row was unsatisfiable
+on the day it was approved, and it is the one row of that contract whose subject is the gauge's resolution** — so the
+contract's own check on fill granularity could not have caught the two-cell gauge this chain exists to fix.
+`WO-MOK-013`'s *Required `VER-MOK-005` amendment* carries the measurement and the options; the disposition is the
+assurance owner's and is not taken.
+
+**The identifier collision** is in `identifier-collision.md` and is unresolved. It was put to the owner in the same turn
+as the decision above and was not answered, so nothing here treats it as settled.
 
 ## The files
 

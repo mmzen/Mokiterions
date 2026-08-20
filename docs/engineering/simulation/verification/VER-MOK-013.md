@@ -47,6 +47,8 @@ function, a module path or a colour. `bar_width`, `BAR_ROW_OVERHEAD` and `rows_p
 | `REQ-MOK-047` | automated-test | A ten-point step moves the fill, over the whole value range | For every gauge the reference viewport presents and every `v` in `0..=90`, the filled-cell count at `v + 10` exceeds the count at `v` |
 | `REQ-MOK-047` | automated-test | The gauge resolves at every viewport that presents a bar row | At every viewport of rule 5's derived table presenting the roster in its multi-line form, the obligation above holds; where rule 4 collapses the entry to numeric values, no gauge is drawn and the case is vacant rather than passing by absence |
 | `REQ-MOK-047` | automated-test | The values are the engine's | Each gauge's numeric value equals the corresponding field of the `AgentSnapshot` for that identifier, unchanged from `VER-MOK-005`'s obligation |
+| `REQ-MOK-047` | automated-test | **`REQ-MOK-020` is preserved, not traded** | At `160 × 48` all twelve living entries are present in the roster pane and none is hidden, in whatever entry height rule 4 fixes. This row verifies an **approved requirement this chain does not implement**, and it is here because satisfying `REQ-MOK-047` is what threatened it: the entry grew to three lines and `12 × 3 = 36` fits the interior exactly. A pass with eleven entries is a failure of this contract |
+| `REQ-MOK-047` | automated-test | The reference interior is what the fit assumes | At `160 × 48` the roster interior is 36 rows, which follows from a six-row log, and the count of entries the pane can hold at rule 4's entry height is at least the population bound `SPEC-MOK-001` fixes. Asserted from the resolved layout, so a later change to the log or the population fails here rather than by an entry silently vanishing |
 | `REQ-MOK-047` | manual | Reference-viewport legibility, re-assessed | A person at `160 × 48` reports that a declining attribute is visible as a declining bar. This is the assessment that failed on 2026-08-20 and it is re-taken, not inherited |
 | `REQ-MOK-048` | automated-test | The overlay key is on screen from the first frame | With no input delivered, the rendered buffer of the first frame contains the character bound to the key-binding overlay by rule 7 |
 | `REQ-MOK-048` | automated-test | It survives every viewport above the floor | The same holds at every viewport of rule 5's derived table and at the floor `34 × 22` |
@@ -59,6 +61,12 @@ function, a module path or a colour. `bar_width`, `BAR_ROW_OVERHEAD` and `rows_p
 | `REQ-MOK-049` | automated-test | The announcement is emphasised | The announcement's cells carry a style differing from the cells of the optional header segments in the same line |
 | `REQ-MOK-049` | automated-test | Legible without colour | Over a projection holding only `(symbol, modifier)` per cell, the axis, the value and the key are all still readable — the projection `VER-MOK-005` established for rule 2.5 |
 | `REQ-MOK-049` | automated-test | Every excluded pane is announced | At `34 × 22`, where all three panes are excluded, all three are named with their axis and value |
+
+**What this matrix deliberately does not cover, and where it is covered instead.** The log's row count is a
+`SPEC-MOK-003` rule 5 provision, and `VER-MOK-005`'s log-height row as amended under `WO-MOK-013` is what asserts it.
+This contract asserts the *consequence* it depends on — a 36-row roster interior at the reference viewport, in the second
+`REQ-MOK-047` row above — so a change to the log breaks a case here as well as there, and neither contract restates the
+other's obligation. The same division holds for the reference canvas interior, which is `VER-MOK-005`'s.
 
 ## Acceptance scenarios
 
@@ -84,8 +92,9 @@ function, a module path or a colour. `bar_width`, `BAR_ROW_OVERHEAD` and `rows_p
   let the two-cell gauge pass.
 - **No entry is lost silently.** For every viewport presenting the roster, the number of entries drawn plus the number
   the roster title reports hidden equals the living count. This is the invariant that makes an entry falling off the
-  pane an announced fact rather than a disappearance, and it is load-bearing for whichever resolution `WO-MOK-013`'s
-  open decision takes.
+  pane an announced fact rather than a disappearance. It is load-bearing **below** the reference viewport, where
+  `WO-MOK-013`'s decision 1 does not secure twelve entries and does not claim to — at `160 × 44` ten of twelve are drawn
+  and the other two are counted.
 - **Layout purity.** Layout, the announcement and the hint are functions of `(W, H)` and the excluded-pane set alone.
   Same dimensions, same result, at any tick, in any run state, at any entropy state.
 - **Non-perturbation.** The text stream, the event stream and the entropy state of a run observed with these changes
@@ -176,9 +185,21 @@ Retained under `evidence/WO-MOK-013/`:
   survival attribute is the coarsest change an operator should never miss. A finer obligation would demand a wider
   gauge and more of the roster; the figure is the product owner's and this contract verifies it rather than defending
   it.
-- **What this contract cannot verify is whether the trade `WO-MOK-013` resolves was the right one.** If the open
-  decision is taken toward showing ten of twelve entries, every case here can pass while an operator is worse off for
-  the two entries they must scroll to; if it is taken toward a six-row log, every case here can pass while an operator
-  is worse off for the four log rows. **That is a product judgement and no verification case reaches it.** The
-  reference-viewport manual assessment is the closest this contract comes, and it is deliberately worded to let an
-  assessor report it.
+- **What this contract cannot verify is whether the trade `WO-MOK-013` resolves was the right one.** The trade has been
+  taken — the product owner held the log at six rows on 2026-08-20 rather than amend `REQ-MOK-020` — and **every case
+  here can pass while an operator is worse off for the four log rows.** The reference viewport will show four recent
+  events where it showed eight. That is a product judgement and no verification case reaches it: a case can assert that
+  the log has six rows, and no case can assert that six is enough. The reference-viewport manual assessment is the
+  closest this contract comes, and it is deliberately worded to let an assessor report it.
+- **The cost figure the decision was taken on was corrected after it was taken.** Option B was put as showing six recent
+  events instead of ten; both figures counted pane rows rather than event lines, and the true change is eight to four.
+  `WO-MOK-013` records the correction and states that the product owner may re-open decision 1 on it. **This contract
+  does not depend on the outcome** — its cases assert the log's row count and the roster's entry count against whatever
+  the amended rule 5 fixes, not against four or six — but an assurance owner approving it should know that one input to
+  the decision it descends from was restated.
+- **One row of the predecessor contract could not have caught the defect this chain exists to fix.** `VER-MOK-005`'s
+  `REQ-MOK-020` fill row specifies `round(value / 5)` of a twenty-cell bar, and the roster's fixed 47-column pane cannot
+  produce a bar wider than two. The row was unsatisfiable when it was approved, which `WO-MOK-013` measures and reports
+  to the assurance owner. **It is named here because it is the reason this contract asserts a property rather than a
+  width**, and because if that row is amended rather than withdrawn, the two contracts will both hold obligations on the
+  same fill arithmetic and they must not disagree.

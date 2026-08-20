@@ -95,7 +95,17 @@ property rather than the width, so a change to the fill rule cannot satisfy it b
 
 ## Open decisions
 
-**One, and it is blocking. It is a decision about `REQ-MOK-020`, not about this requirement.**
+**None. The one decision this requirement was blocked behind has been taken, and it was a decision about `REQ-MOK-020`
+rather than about this requirement.**
+
+**The product owner chose on 2026-08-20 to hold the log at six rows rather than amend `REQ-MOK-020`**, recorded verbatim
+as decision 1 in `WO-MOK-013`'s *Decision record*. With a six-row log the reference body is 38 rows, the roster interior
+is `45 × 36`, and `12 × 3 = 36` fits exactly. **This requirement and `REQ-MOK-020` are therefore both satisfiable as
+approved, and `REQ-MOK-020` is not amended, restated or reinterpreted.** It may now be approved on its own terms.
+
+The problem the decision resolved is retained below, because it is what makes the geometry of this requirement
+reviewable and because a reader who meets `12 × 3 = 36` in a 36-row interior should be able to find out why it is exactly
+36 and not comfortably more.
 
 At the reference viewport the roster interior is 45 × 32 columns and rows. Satisfying this requirement means moving
 from four gauges on one line to two, which raises the entry from two lines to three, and 12 entries × 3 lines = 36
@@ -107,6 +117,13 @@ two-line entries are present in the roster pane; none is hidden."
 roster and a 10-row log.** Four gauges of width 13 on one line need an 87-column interior, which is the roster
 widening the technical owner declined on 2026-08-19.
 
-`WO-MOK-013` states the two ways out, with what each amends and what each costs, and carries the decision. Neither is
-taken here, and this requirement must not be approved before one is: approving it alone would leave two approved
-requirements that cannot both be met.
+`WO-MOK-013` states the two ways out, with what each amends and what each costs, and carries the decision. **The second
+was taken.** The `10`-row log at the reference height is withdrawn from `SPEC-MOK-003` rule 5, which is a technical-owner
+amendment enumerated in that work order and not yet ratified — so this requirement is satisfiable in principle and the
+specification change it depends on is still outstanding.
+
+One boundary is worth stating on this requirement rather than only in the work order. **The reference fit has no
+slack**: `12 × 3 = 36` fills a 36-row interior exactly. `SPEC-MOK-001` bounds the population at twelve, so the fit holds
+today, and a later phase raising that bound reaches this requirement and `REQ-MOK-020` together. Below the reference
+viewport entries still hide — at `160 × 44` ten of twelve — which is rule 5's specified degradation and not a property
+this requirement claims.
