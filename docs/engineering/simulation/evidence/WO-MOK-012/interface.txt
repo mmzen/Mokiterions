@@ -1,0 +1,371 @@
+VER-MOK-012 — the public interface of both packages, compared item for item
+===========================================================================
+
+Work order   WO-MOK-012 (Phase 4A, the record stream)
+Baseline     de33d7440c323a98ac88db3fabaf87bea48ebf4e   ("pre")
+Candidate    the working tree of feature/phase-4a-definition ("post")
+Date         2026-08-20
+Tool         WO-MOK-011/analysis/interface.py, reused unmodified, which counts what SPEC-MOK-004
+             rule 6 counts and which documents the rule it counts by in its own docstring
+
+Commands, from the repository root, with the baseline sources extracted by `git show` into a
+scratch directory so that one tool measures both revisions:
+
+    for f in $(ls mokiterions-core/src/); do git show de33d74:mokiterions-core/src/$f > base-core/$f; done
+    for f in $(ls mokiterions-tui/src/);  do git show de33d74:mokiterions-tui/src/$f  > base-tui/$f;  done
+    python .../interface.py base-core/*.rs             > core-pre.txt
+    python .../interface.py mokiterions-core/src/*.rs   > core-post.txt
+    python .../interface.py base-tui/*.rs               > tui-pre.txt
+    python .../interface.py mokiterions-tui/src/*.rs     > tui-post.txt
+    diff core-pre.txt core-post.txt
+    diff tui-pre.txt  tui-post.txt
+
+The scratch directory is under `target/` and is not retained: it holds nothing but two revisions of
+files the repository already carries, and the four enumerations it produced are reproduced below.
+
+
+Totals
+------
+
+    engine     pre    items  49   public fields 43   pub lines  92
+    engine     post   items  49   public fields 43   pub lines  92
+    observer   pre    items 101   public fields 24   pub lines 125
+    observer   post   items 101   public fields 24   pub lines 125
+
+    diff core-pre.txt core-post.txt      one line, reproduced in Part 1
+    diff tui-pre.txt  tui-post.txt       (no output)   OBSERVER INTERFACE IDENTICAL
+
+SPEC-MOK-002 rule 5 lists the engine's items by hand with a justification each and records no
+total, so the engine figures are not a comparison against a recorded number; they are a comparison
+of the engine against itself. SPEC-MOK-004 rule 6 does record a total for the observer, and Part 3
+reconciles the mechanical figure with it.
+
+
+Part 1 — the engine: one changed line in ninety-two, and it is rule 4's parameter
+--------------------------------------------------------------------------------
+
+    4c4
+    < lib.rs           item  pub fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8
+    ---
+    > lib.rs           item  pub fn execute<I, S, W, E>(
+
+That is the whole diff. `execute` gained the fourth parameter SPEC-MOK-002 rule 4 states —
+`records: Option<&mut dyn Write>` — and the signature therefore no longer fits one line:
+
+    pub fn execute<I, S, W, E>(
+        args: I,
+        stdout: &mut W,
+        stderr: &mut E,
+        records: Option<&mut dyn Write>,
+    ) -> u8
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+        W: Write,
+        E: Write,
+
+**What the mechanical figure cannot see, stated before what it can.** `interface.py` renders the
+first line of each item, so a signature that spills across lines is reported as a stub and the
+parameter list is invisible to it. On this one item the enumeration is therefore weaker after the
+change than before, and no reading of the figure `49 / 43 / 92` establishes anything about the
+parameter. This is not a defect discovered here: SPEC-MOK-002 rule 5's 2026-08-20 amendment
+anticipated it and replaced the single grep with two, "Because the signature now spans several
+lines". The two greps are the check for this item, and the enumeration is the check for the rest.
+
+    $ grep -n 'pub fn execute' src/lib.rs
+    54:pub fn execute<I, S, W, E>(
+    (exactly one line)
+
+    $ grep -n 'records: Option<&mut dyn Write>' src/lib.rs
+    58:    records: Option<&mut dyn Write>,
+    (exactly one line)
+
+The first fails on a second public process-boundary function; the second fails on a fifth
+parameter, a second sink, or a sink that is not optional. Both return exactly one line, which is
+rule 5's restated form satisfied literally.
+
+**What the figure does establish, which the greps cannot.** A parameter is not an item, so the
+interface grows by no item — but that sentence is a claim about the whole surface, not about
+`execute`, and the enumeration is what measures it. Item for item, across ninety-two `pub` lines:
+
+    no `pub struct`, `pub enum`, `pub trait`, `pub fn` or `pub const` entered or left  (49 = 49)
+    no public field entered or left                                                   (43 = 43)
+    no item's rendered declaration changed, save the one line above                   (92 = 92)
+
+Named, because two of them are the ones a sink option would most plausibly have moved:
+
+    cli::Command      pre and post   `enum Command { Help, Run(Config) }`, unchanged
+    simulation::Config  43 public fields across all types, unchanged; Config gains none
+
+`Config` gaining no field is the substantive fact rather than a bookkeeping one. The sink reaches
+the engine as a `Write` the caller owns, never as a path, so there is no public field for a
+destination to sit in — which is what makes SPEC-MOK-006 rule 5.4's "no path among the header's
+nine fields" a property of the type rather than a discipline applied at the point of writing. The
+engine cannot state a path it was never given.
+
+Two of the forty-nine items are `lib.rs`'s `pub mod cli;` and `pub mod simulation;`. They are the
+module tree rather than members of the interface, and they are counted here because the tool counts
+them; rule 5 records no total, so unlike the observer's figure nothing needs adjusting for them.
+
+**Mutating methods: still exactly two, and the carrier that takes the sink is not one of them.**
+
+    $ grep -n 'pub fn .*&mut self' src/simulation.rs
+    1533:    pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+    1626:    pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+
+`run` and `advance_tick`, which is what rule 5 states. The sink is carried down the same call chain
+the text stream travels, and the method that takes it is
+
+    $ grep -n 'pub(crate) fn run_recording' src/simulation.rs
+    1545:    pub(crate) fn run_recording<W: Write>(
+
+which the pattern does not match because `pub(crate) fn` is not `pub fn`. Rule 5's amendment names
+this explicitly so that the non-match is disclosed rather than relied on silently, and the
+disclosure is discharged here by measurement: `run_recording` does not appear in the ninety-two-line
+enumeration above, so it is not on the interface, and no enumerated item returns it, takes it or
+names it. `Simulation::run`'s own enumerated form — `&mut self` and a writer in, `io::Result<RunSummary>`
+out — is byte-identical at both revisions, and it delegates to `run_recording` with no sink.
+
+
+Part 2 — SPEC-MOK-002 rule 6 re-checked rather than amended
+-----------------------------------------------------------
+
+Rule 6 carries a 2026-08-20 note recording that it is deliberately **not** amended by this work
+order. A rule that is not amended still has to be shown to hold, so each of its five properties is
+measured at the candidate tree.
+
+(a) **No public item permits mutation of engine-owned state.** The two `&mut self` methods are
+    `run` and `advance_tick`, measured in Part 1. Both take `&mut self` on a `Simulation` the
+    caller owns, which rule 6's 2026-08-18 amendment settles as not a handle into another owner's
+    state. This is one measurement serving two rules, and it is recorded once.
+
+(b) **No public item hands out a borrow of, or a reference into, engine-owned state.**
+
+        $ grep -n 'pub fn .*-> *&' src/simulation.rs src/cli.rs src/lib.rs
+        src/simulation.rs:1033:    pub fn as_str(self) -> &'static str {
+        (one line)
+
+        $ grep -n 'pub fn .*-> *impl' src/simulation.rs src/cli.rs src/lib.rs
+        (no output: no public item returns an iterator or an opaque type)
+
+        $ grep -n 'pub [a-z_]*: *&' src/simulation.rs
+        (no output: no public field is of reference type)
+
+    The single returner of a reference is `EventType::as_str`, whose `&'static str` is a string
+    literal in the binary and not a borrow of anything the engine owns. Every other public item
+    returns an owned value, which is the shape rule 5's snapshots have and rule 6's amendment
+    admits.
+
+(c) **No interior mutability anywhere in the engine.**
+
+        $ grep -c 'Cell<\|RefCell<\|Rc<\|Arc<\|Mutex<\|RwLock<\|Atomic' src/simulation.rs src/cli.rs src/lib.rs
+        src/simulation.rs:0
+        src/cli.rs:0
+        src/lib.rs:0
+
+    So no `&self` method can mutate, and (b) cannot be circumvented by an interior-mutable value.
+
+(d) **The ten prohibited names are ten, and every one is private.** Each declaration, with its
+    visibility as written:
+
+        Mokiterion            401:struct Mokiterion {
+        Food                  394:struct Food {
+        RelativeDirection     285:enum RelativeDirection {
+        ActionResult          954:struct ActionResult {
+        Observation           518:struct Observation {
+        PerceivedFood         501:struct PerceivedFood {
+        PerceivedMokiterion   511:struct PerceivedMokiterion {
+        SplitMix64            867:struct SplitMix64 {
+        DecisionEntropy       707:struct DecisionEntropy<'a> {
+        DecisionSource        723:trait DecisionSource {
+
+    Not one carries `pub` or `pub(crate)`. `SplitMix64` is the one this work order touches: the
+    record projection reads its state through a `#[cfg(test)]` accessor returning an owned `u64`,
+    so the value crosses and the type does not, and the type stays private in every build
+    configuration. `Observation` and `DecisionSource` are the two that carry the ADR-MOK-001 trust
+    boundary and neither is touched at all. This is an enumeration of every declaration rather than
+    a search for `pub` before each name: a positive enumeration cannot pass by failing to look.
+
+(e) **The four counter fields this work order adds are private, and the type exposes no accessor
+    for any of them.**
+
+        crossings: u64,
+        consumed: [u64; 3],
+        regenerated: u64,
+        regeneration_skipped: [u64; 2],
+
+    Four fields carrying seven counters. None is `pub`, so none appears among the forty-three
+    public fields of Part 1, and the enumeration is what establishes that rather than a promise:
+    a field widened to `pub` would have made the figure forty-four. The `#[cfg(test)]` entropy
+    accessor at simulation.rs:2506 is likewise absent from the enumeration, because
+    `interface.py` skips `#[cfg(test)]` bodies whole and because the accessor is not `pub`
+    either way. `static-checks.txt` items 8, 9 and 11 carry the same three facts approached from
+    the other side — from the private items the internal tier reaches for — and the two agree.
+
+Rule 6 is the security-relevant rule of SPEC-MOK-002. Nothing it prohibits became public, and
+nothing public became a path to anything it prohibits.
+
+
+Part 3 — the observer: unchanged, and unchanged over five revisions
+-------------------------------------------------------------------
+
+This work order adds a stream the observer does not read. The observer passes `None` for
+`execute`'s new parameter — a fact SPEC-MOK-002's *Compatibility and migration* records — and
+nothing else about it changes. Measured rather than asserted, at five revisions with one tool:
+
+    2157f77   Merge PR #27, governance/wo-mok-010-post-release-facts     items 101  fields 24  pub lines 125
+    4606145   docs: re-capture the naming verification record             items 101  fields 24  pub lines 125
+    88ea456   Merge master into feature/phase-2-5-naming                  items 101  fields 24  pub lines 125
+    de33d74   the baseline for this work order                            items 101  fields 24  pub lines 125
+    candidate the working tree of feature/phase-4a-definition             items 101  fields 24  pub lines 125
+
+`2157f77` is included because it is the revision SPEC-MOK-004 rule 11's figures were measured on,
+so it is the revision a claim of "unchanged" has to reach back to. The figure has not moved once
+across the four commits between it and the candidate tree.
+
+Stronger than the totals: the enumeration itself is byte-identical to the one WO-MOK-011 retained.
+
+    sed -n '105,229p' WO-MOK-011/interface.txt                > wo011-tui.txt   (125 lines)
+    python .../interface.py mokiterions-tui/src/*.rs | sed '$d;/^$/d' > tui-now.txt
+    diff wo011-tui.txt tui-now.txt
+    (no output)   IDENTICAL TO WO-MOK-011'S RETAINED ENUMERATION
+
+That is what makes the module-by-module table WO-MOK-011 recorded — authority 5, export 3, layout
+10, options 8, render 2, spatial 19, state 47, total 94, with 24 public fields — still hold without
+being re-derived: it was computed from these exact 125 lines, and they are these exact 125 lines.
+
+
+Reconciliation with SPEC-MOK-004 rule 6's recorded 94 / 118 / 24
+----------------------------------------------------------------
+
+The mechanical figure is 101 items and 125 `pub` lines; the rule records 94 and 118. The difference
+is a counting convention, documented, and not drift. Rule 6's "What is counted" list enumerates the
+seven presentation modules' members and does not count `lib.rs`'s seven `pub mod` declarations,
+which are the module tree; `interface.py`'s item pattern does count them. WO-MOK-011/interface.txt
+line 60 states the adjustment, and it is quoted here rather than re-derived:
+
+    mechanical items 101 − 7 `pub mod` =  94   = rule 6's Total
+    mechanical pub lines 125 − 7       = 118   = rule 6's "same interface counted the other way"
+    mechanical public fields            24     = rule 6's stated field figure
+
+Both differences are the same seven lines, and the field figure needs no adjustment because a
+`pub mod` declaration is not a field. The seven declarations are visible in the retained
+enumeration at `lib.rs item pub mod authority;` through `lib.rs item pub mod state;`.
+
+It is worth saying plainly what this rules out, because the alternative reading is available and
+wrong. `101 ≠ 94` is not an interface that grew by seven items at some point and was never
+recorded. The seven are named, they are `pub mod` lines, they exist at all five revisions above,
+and subtracting them gives the recorded figure exactly on two independent counts — items and
+lines — which a coincidence would not do. SPEC-MOK-004 rule 6 records the observer's interface
+correctly and needs no correction under this work order.
+
+Rule 11 of the same specification is a different matter: it records the *test census*, not the
+interface, and its figures do move from 212 to 246. That correction is `analysis/census-reconciliation.txt`'s
+subject and is disclosed in `completion-summary.md`.
+
+
+Full enumeration, post-change engine (92 lines)
+-----------------------------------------------
+
+cli.rs           item  pub const USAGE: &str = concat!(
+cli.rs           item  pub enum Command {
+cli.rs           item  pub fn parse<I, S>(args: I) -> Result<Command, String>
+lib.rs           item  pub fn execute<I, S, W, E>(
+lib.rs           item  pub mod cli;
+lib.rs           item  pub mod simulation;
+simulation.rs    field pub agent_id: String,
+simulation.rs    field pub agents: Vec<AgentSnapshot>,
+simulation.rs    field pub applied: Option<Action>,
+simulation.rs    field pub applied_action: Option<Action>,
+simulation.rs    field pub capacity: usize,
+simulation.rs    field pub class: FoodClass,
+simulation.rs    field pub deaths: usize,
+simulation.rs    field pub decisions: Vec<DecisionSnapshot>,
+simulation.rs    field pub density: Density,
+simulation.rs    field pub detail: EventDetail,
+simulation.rs    field pub energy: u8,
+simulation.rs    field pub events: Vec<Event>,
+simulation.rs    field pub fear: u8,
+simulation.rs    field pub finished: bool,
+simulation.rs    field pub health: u8,
+simulation.rs    field pub high: usize,
+simulation.rs    field pub id: String,
+simulation.rs    field pub id: String,
+simulation.rs    field pub id: Territory,
+simulation.rs    field pub living_count: usize,
+simulation.rs    field pub low: usize,
+simulation.rs    field pub medium: usize,
+simulation.rs    field pub outcome: DecisionOutcome,
+simulation.rs    field pub permanently_depleted: bool,
+simulation.rs    field pub policy: Policy,
+simulation.rs    field pub position: Coordinate,
+simulation.rs    field pub position: Coordinate,
+simulation.rs    field pub proposed: Action,
+simulation.rs    field pub reason: Option<TerminationReason>,
+simulation.rs    field pub resources: Vec<ResourceSnapshot>,
+simulation.rs    field pub satiety: u8,
+simulation.rs    field pub seed: u64,
+simulation.rs    field pub standing: usize,
+simulation.rs    field pub subject: String,
+simulation.rs    field pub territories: [TerritorySnapshot; 2],
+simulation.rs    field pub territory: Territory,
+simulation.rs    field pub territory: Territory,
+simulation.rs    field pub tick: u64,
+simulation.rs    field pub tick: u64,
+simulation.rs    field pub tick_limit: u64,
+simulation.rs    field pub trace_actions: bool,
+simulation.rs    field pub x: u8,
+simulation.rs    field pub y: u8,
+simulation.rs    item  pub const ALL: [Self; 12] = [
+simulation.rs    item  pub const CELLS_PER_TERRITORY: usize = WORLD_SIZE as usize * TERRITORY_HEIGHT as usize;
+simulation.rs    item  pub const DEFAULT: Self = Self {
+simulation.rs    item  pub enum Action {
+simulation.rs    item  pub enum DecisionOutcome {
+simulation.rs    item  pub enum Direction {
+simulation.rs    item  pub enum EventDetail {
+simulation.rs    item  pub enum EventType {
+simulation.rs    item  pub enum FoodClass {
+simulation.rs    item  pub enum Policy {
+simulation.rs    item  pub enum RegenerationSkipReason {
+simulation.rs    item  pub enum TerminationReason {
+simulation.rs    item  pub enum Territory {
+simulation.rs    item  pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+simulation.rs    item  pub fn as_str(self) -> &'static str {
+simulation.rs    item  pub fn configuration(&self) -> Config {
+simulation.rs    item  pub fn deaths(&self) -> usize {
+simulation.rs    item  pub fn event_type(&self) -> EventType {
+simulation.rs    item  pub fn event_type(&self) -> EventType {
+simulation.rs    item  pub fn initialization_events(&self) -> Vec<Event> {
+simulation.rs    item  pub fn is_finished(&self) -> bool {
+simulation.rs    item  pub fn new(config: Config) -> Result<Self, String> {
+simulation.rs    item  pub fn parse(value: &str) -> Option<Self> {
+simulation.rs    item  pub fn parse(value: &str) -> Result<Self, String> {
+simulation.rs    item  pub fn reason(&self) -> TerminationReason {
+simulation.rs    item  pub fn resources_per_territory(self) -> usize {
+simulation.rs    item  pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+simulation.rs    item  pub fn snapshot(&self) -> WorldSnapshot {
+simulation.rs    item  pub fn survivors(&self) -> usize {
+simulation.rs    item  pub fn termination_reason(&self) -> Option<TerminationReason> {
+simulation.rs    item  pub fn ticks(&self) -> u64 {
+simulation.rs    item  pub struct AgentSnapshot {
+simulation.rs    item  pub struct Config {
+simulation.rs    item  pub struct Coordinate {
+simulation.rs    item  pub struct DecisionSnapshot {
+simulation.rs    item  pub struct Density {
+simulation.rs    item  pub struct Event {
+simulation.rs    item  pub struct ResourceSnapshot {
+simulation.rs    item  pub struct RunSummary {
+simulation.rs    item  pub struct Simulation {
+simulation.rs    item  pub struct TerritorySnapshot {
+simulation.rs    item  pub struct TickOutcome {
+simulation.rs    item  pub struct WorldSnapshot {
+
+items 49  public fields 43  pub lines 92
+
+The pre-change enumeration is this list with line 4 reading
+`lib.rs           item  pub fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8`
+and is otherwise identical, which is the diff at the top of Part 1. The observer's 125-line
+enumeration is not reproduced: it is byte-identical to WO-MOK-011/interface.txt lines 105–229, and
+copying it would create a second place for it to drift.
+
+result: PASS

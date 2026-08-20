@@ -54,8 +54,21 @@ Added under `WO-MOK-011` (implemented, **not verified** — see Phase 2.5's stat
   from nowhere else — no name table, no fallback, no derivation from an identifier
 - The map glyph becoming the name's initial, replacing the digit-and-letter table, on twelve pairwise-distinct letters
 
+Added under `WO-MOK-012` (implemented, **not verified** — see Phase 4a's status below):
+
+- A structured record stream, `SPEC-MOK-006`, written to a file named by `--events-path` and to nothing by default:
+  one record per line, four kinds — `header`, `event`, `metrics`, `run` — with every event record in one-to-one
+  correspondence with a line of the text stream, in the same order and carrying the same values
+- Per-tick world metrics the text stream never carried: living and dead counts, population per territory, the sums
+  and extremes of the four attributes, and standing food per territory by class against capacity
+- Seven cumulative counters and a per-Mokiterion death tick, retained by the engine, read only by the record
+  producer, and reported in the `run` record together with the summary line's twelve figures
+- The binary target owning every filesystem operation, the library owning none: it resolves the path, opens the
+  destination, and removes only a file it created itself when a run fails
+
 Not yet implemented: per-agent entropy substreams, any second trait, any consumer for `fear`, social and combat
-behavior, LLM-backed decisions, structured observability.
+behavior, LLM-backed decisions, and anything that reads the record stream — no batch runner, no distribution across
+seeds, no outcome classification.
 
 Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
 restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
@@ -127,9 +140,14 @@ Phase 2  Individuality: traits and fear
    │
    ├──────────────┬───────────────┐
    ▼              ▼               │
-Phase 3        Phase 4            │   (3 and 4 are independent
-Conflict       Analytical         │    and may run in parallel)
-   │           observability      │
+Phase 3        Phase 4a           │   (3 and 4 are independent
+Conflict       Structured         │    and may run in parallel)
+   │           measurement        │
+   │              │               │
+   │              ▼               │
+   │           Phase 4b           │   (4b consumes 4a, and is
+   │           Distribution and   │    deferred until it does)
+   │           classification     │
    │              │               │
    └──────┬───────┘               │
           ▼                       │
@@ -458,7 +476,7 @@ Verification should assert the **absence** of population-level triggers, not mer
 It requires outcome distributions across many seeds. **This phase is independent of Phase 3** — different
 modules, no shared dependency — so the two may proceed in parallel.
 
-**In scope**
+**In scope, as originally written**
 
 - Structured event stream (for example JSONL) alongside the existing text stream
 - World-level metrics: surviving population, population per territory, available food, consumption and
@@ -469,12 +487,64 @@ modules, no shared dependency — so the two may proceed in parallel.
 
 **Constraint.** Preserve the existing text output so `REQ-MOK-010` remains satisfied. Add, do not replace.
 
+**Split into 4a and 4b on 2026-08-20**, in `docs/PHASE_4_PROPOSAL.md` and authorized as drafted. The four items
+above are not one deliverable: the first two are a change to the engine, the last two are a consumer of that
+change, and the consumer's shape depends on a measurement the engine has to produce first. The split is between
+producing measurable output and consuming it.
+
 **Relationship to Phase 1.5.** Phase 1.5's terminal observer does not deliver any part of this phase, and this
 phase does not make it redundant. Phase 1.5 answers *what is happening in this run*; this phase answers *what
 happens across many runs*. Phase 1.5's event export is a per-run record in the existing text format, deliberately
 not a structured stream, so the structured output this phase adds is still new work. If Phase 1.5's snapshot
 contract turns out to be the natural source for structured output, that is a convenience to exploit rather than a
 dependency to rely on.
+
+### Phase 4a — Structured measurement in the engine
+
+**Status: implemented under `WO-MOK-012`, not verified and not released.** The artifact packet —
+`INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`, `ADR-MOK-005`, `WO-MOK-012`
+and `VER-MOK-012` —
+was drafted, reviewed and validated by the owner on 2026-08-20. `VER-MOK-012`'s seven oracles, its eight manual
+assessments and its evidence remain outstanding until recorded, and the phase is not complete while any of them is.
+
+**What was built**
+
+- One record per line, four kinds, each self-describing through a leading `record` field: `header` once at the top
+  with the resolved configuration and a schema version, `event` for every text event line, `metrics` at the end of
+  every completed tick, `run` once at the bottom
+- The event projection placed at the single point every authoritative event already passes through, so the
+  one-to-one correspondence with the text stream is structural rather than maintained by discipline
+- Per-tick metrics that answer the roadmap's list without interpreting it, and the run-level totals that a reader
+  would otherwise have had to derive by re-implementing the rules: crossings, consumption by class, regeneration,
+  regenerations skipped and why, and each Mokiterion's death tick
+- `--events-path`, and the destination's whole lifetime owned by the binary target: the library resolves no path,
+  opens no file and removes none, which keeps the engine's prohibition on interpreting input as a path true of the
+  library rather than merely observed by it
+
+**What was deliberately not built**
+
+| Considered | Decided | Why |
+|---|---|---|
+| A JSON library | **Hand-written writers, no dependency** | `ARCH-MOK-001` keeps the engine's dependency table empty and the owner declined to open it for this. The closed value alphabet is what makes that safe: no value can contain a quotation mark or a backslash, so there is nothing to escape |
+| Any floating-point figure | **Integers only, sums rather than averages** | An average is a float, a float's text form is platform-sensitive, and the whole value of the stream is that two files can be compared byte for byte. A consumer that wants a mean has the sum and the count |
+| An outcome label of any kind | **Prohibited, not deferred** | This was named in `WO-MOK-012` as the most tempting scope creep in the work. A file that labels its own numbers hands everyone downstream somebody else's opinion, and Phase 6's evaluation is where a classification is argued on evidence |
+| A timestamp or a duration | **Neither, anywhere** | The same seed and build must produce an identical file on any machine on any day, so that a diff between two runs is a statement about the simulation |
+| A reader, a schema file or an example analysis script | **None, in this phase** | 4a produces; 4b consumes. A consumer written here would be written before the measurement that decides 4b's shape |
+
+### Phase 4b — Distribution and classification
+
+**Deferred, and cheaper once 4a exists.** Multi-seed batch execution, run persistence across runs, distribution
+across seeds, and outcome classification stated as a table over 4a's `run` records.
+
+**What it needs before it can be specified honestly**, and what 4a produces toward it: a measured answer to whether
+a batch loop needs to be a program at all. If a shell loop over the existing binary plus a script under `scripts/`
+— where the Python instruments and their tests already live — produces the distribution evidence Phase 6 needs,
+then 4b is a runbook and a verification contract, and `ARCH-MOK-001`'s third-package prohibition is never touched.
+If it does not, the third package is argued on that finding. Deciding it now would be deciding it without the
+measurement.
+
+Phase 4a is independent of Phase 3 and does not block it. If Phase 3 lands first, its events join the projection
+for free and its metrics arrive as `schema: 2`.
 
 ---
 
@@ -550,7 +620,8 @@ means to the same risk reduction.
 | 1.5 | `ARCH-MOK-001` amended in place to scope its one-crate, empty-dependency and UI-framework rules to the engine package; new intent, capability, nine requirements, specification, architecture and ADR added; `ADR-MOK-001` not superseded; `SPEC-MOK-001` unchanged |
 | 2 | New intent, capability and four requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `ARCH-MOK-001` confirmed unchanged; no existing requirement changed; observation contract extended. Broader than this row anticipated: the trait had to be stated in `SPEC-MOK-001`, the new tests' tiers in `SPEC-MOK-002`, and the fourth gauge in `SPEC-MOK-003` |
 | 3 | `REQ-MOK-005` extended or superseded |
-| 4 | `REQ-MOK-010` preserved, extended additively |
+| 4a | New intent, capability and five requirements added; new specification `SPEC-MOK-006` and new `ADR-MOK-005`; `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amended in place; `REQ-MOK-010` preserved and extended additively — not one byte of the text stream changed; no existing requirement changed |
+| 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
 | 6 | New verification contract; no existing artifact changed |
 
@@ -562,7 +633,10 @@ Two decisions are cheaper to settle now than at the phase in which they bind:
    at 1,000 ticks under the reference source, recorded as `REQ-MOK-014` and measured on the seed set declared in
    `VER-MOK-002`. All twelve surviving on every declared seed is an adverse observation, not a success.
 2. **Determinism strategy for Phase 5.** Record/replay is recommended. This propagates into Phase 4's output
-   format, so deciding it before Phase 4 avoids rework.
+   format, so deciding it before Phase 4 avoids rework. *Still open after Phase 4a, and no longer urgent for this
+   reason:* 4a's stream is a complete, ordered, byte-reproducible record of everything the engine did, so it can
+   already be replayed against. Whether Phase 5 replays *this* stream or records provider exchanges separately is a
+   Phase 5 decision that 4a does not foreclose either way.
 
 A third was settled during Phase 2 rather than before it, and is recorded here because the phase order did not
 anticipate it:

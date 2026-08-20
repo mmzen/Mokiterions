@@ -9,6 +9,13 @@
 //! states about an option's default is only worth stating if it is the value this parser
 //! applies, so the two are held equal here. None of them compares the text to a literal
 //! declared in this file, which would move the drift one level up rather than remove it.
+//!
+//! `WO-MOK-012` adds one option, and most of what has to be true of it is already asserted by
+//! the tests above, which read the parser's own match arms rather than a list: an option added
+//! to the parser and left out of the help fails there without being named. What the three tests
+//! at the end of this file add is what those cannot reach — that the parser keeps no path
+//! (`SPEC-MOK-006` rule 1.2), and that the binary target, which is the one place a path is
+//! resolved, spells the option the same way the parser does.
 
 use mokiterions::cli::{Command, USAGE, parse};
 use mokiterions::simulation::{Config, Density, Policy};
@@ -415,4 +422,96 @@ fn the_help_text_states_order_and_repetition() {
         run_config(["--ticks", "2", "--seed", "1"])
     );
     assert!(parse(["--seed", "1", "--seed", "1"]).is_err());
+}
+
+/// `SPEC-MOK-006` rule 1.2: the parser validates the sink option and retains no path.
+///
+/// The configuration it produces is the one an unflagged invocation produces, whatever value the
+/// option carried, which is the observable form of "the library resolves no path". Everything
+/// the parser does reject about the value it rejects for a stated reason: a missing value, a
+/// value that is really the next option, and the two spellings that conventionally denote a
+/// standard stream. Every other property of the value belongs to the platform, so a path that
+/// cannot be opened parses and then fails at runtime under rule 13.2 rather than here.
+#[test]
+fn the_sink_option_is_validated_and_its_value_is_not_retained() {
+    let unflagged = run_config(Vec::<String>::new());
+    assert_eq!(run_config(["--events-path", "records.jsonl"]), unflagged);
+    assert_eq!(
+        run_config(["--events-path", "somewhere-else.jsonl"]),
+        unflagged
+    );
+    assert_eq!(
+        run_config(["--events-path", "records.jsonl", "--seed", "9"]),
+        run_config(["--seed", "9"])
+    );
+
+    assert!(parse(["--events-path"]).is_err());
+    assert!(parse(["--events-path", "--seed"]).is_err());
+    assert!(parse(["--events-path", ""]).is_err());
+    assert!(parse(["--events-path", "-"]).is_err());
+    assert!(parse(["--events-path", "a.jsonl", "--events-path", "b.jsonl"]).is_err());
+
+    // Not this parser's business, and accepted for that reason.
+    assert!(parse(["--events-path", "no/such/directory/records.jsonl"]).is_ok());
+    assert!(parse(["--events-path", "-leading-dash.jsonl"]).is_ok());
+    assert!(parse(["--events-path", "records.jsonl"]).is_ok());
+}
+
+/// The sink option's entry describes what it writes and what it replaces, and states no default.
+///
+/// A default value here would be a path printed in the help, and an operator who read it would
+/// have been told where the program writes when in fact it writes nowhere unless asked.
+#[test]
+fn the_sink_option_states_what_it_writes_and_what_it_replaces() {
+    let entry = entry("--events-path");
+    let effect = description("--events-path").to_lowercase();
+
+    assert!(effect.contains("record stream"), "{effect}");
+    assert!(effect.contains("replacing"), "{effect}");
+    assert!(effect.contains("unless given"), "{effect}");
+
+    assert!(!entry.contains("Default:"), "{entry}");
+    assert_eq!(documented_default("--events-path"), None, "{entry}");
+}
+
+/// The parser and the binary target spell the option identically.
+///
+/// The spelling exists twice because the two halves of the option are split between the two
+/// targets: the parser validates it and keeps nothing, and the binary reads the value it will
+/// open, since `SPEC-MOK-006` rule 1.2 keeps every path out of the library. A rename in one
+/// place would leave a program that accepts the option and then records nothing — the option
+/// would parse, and the destination would never be found. This holds the two equal.
+#[test]
+fn the_binary_and_the_parser_spell_the_sink_option_the_same_way() {
+    let host = include_str!("../src/main.rs");
+    let declaration = host
+        .lines()
+        .map(str::trim)
+        .find(|line| line.starts_with("const EVENTS_PATH_OPTION"))
+        .expect("the binary target declares the option whose value it reads");
+    let spelling = declaration
+        .split('"')
+        .nth(1)
+        .expect("the declaration states a string literal")
+        .to_string();
+
+    assert!(
+        options_the_parser_accepts().contains(&spelling),
+        "the binary reads {spelling}, which the parser does not accept"
+    );
+    assert!(
+        documented_options().contains(&spelling),
+        "the binary reads {spelling}, which the help does not describe"
+    );
+
+    // Spelled once in the host, through that constant, so this test has one thing to hold.
+    let uses = host
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.starts_with("//") && line.contains(&format!("\"{spelling}\"")))
+        .count();
+    assert_eq!(
+        uses, 1,
+        "the host must spell {spelling} only in its constant"
+    );
 }

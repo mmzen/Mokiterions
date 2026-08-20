@@ -3,21 +3,140 @@
 This packet is the evidence `VER-MOK-012` requires for `WO-MOK-012`. It is written as the work proceeds
 rather than assembled afterwards, so the reading order below is also the order the artifacts were produced.
 
-## What is here now
+Fifty-five files, 10,674,199 bytes. The candidate tree is the working tree at
+`bb4a21491eff321cbfd14ba3ea794e34535e3033` plus the implementation this work order adds; the pre-change
+baseline is `de33d7440c323a98ac88db3fabaf87bea48ebf4e`, recorded in `baseline/COMMIT.txt`.
+
+## What discharges what
+
+Each row names the artifact and the oracle, scenario or gate it answers. Every `.txt` file carries its own
+command line, its provenance and its own `RESULT:` line in its header, and every generating script is
+retained in the packet — either as a file under `analysis/` or as full text appended to the artifact it
+produced, which is the form the earlier packets in this repository established.
+
+### Oracle 1 — the text stream is unmoved, with a sink and without
 
 | Path | What it is |
 |---|---|
 | `capture.sh` | The capture script for the whole matrix. Takes `<target-dir> [sink]`; in `sink` mode it additionally passes `--events-path`. |
 | `analysis/digest.py` | Per-cell SHA-256, byte count and line count of standard output, standard error, exit code and — in sink mode — the record stream. |
-| `analysis/retain.py` | Copies the stated subset of whole streams into the packet. |
+| `analysis/retain.py` | Copies the stated subset of whole text streams into the packet. |
+| `analysis/compare.py` | Compares two manifests cell by cell and states where they differ. |
 | `baseline/COMMIT.txt` | The commit the pre-change capture was taken at. |
 | `baseline/capture-state.txt` | The working tree's state at that commit, so that "before any code change" is checkable rather than asserted. |
 | `baseline/pre-manifest.txt` | The digest manifest of all 90 pre-change cells. |
 | `baseline/full/` | Three whole pre-change standard-output streams. |
+| `post-nosink-manifest.txt` | The same 90 cells at the candidate tree, no sink configured. |
+| `post-sink-manifest.txt` | The same 90 cells at the candidate tree with a sink, including each record stream's digest. |
+| `oracle1/pre-vs-post-nosink.txt` | Comparison A: pre-change against post-change with no sink. |
+| `oracle1/post-nosink-vs-post-sink.txt` | Comparison B: post-change with no sink against post-change with a sink. |
+| `oracle1/pre-vs-post-sink.txt` | Comparison C: pre-change against post-change with a sink. |
 
-Everything else `VER-MOK-012`'s *Evidence retention* list names is produced later in the work order and is
-not here yet. This file is updated as each part lands; a section that is missing means the work is not done,
-not that it was skipped.
+### Oracle 2 — the text stream is reconstructible from the record stream
+
+| Path | What it is |
+|---|---|
+| `analysis/reconstruct.py` | The reconstructor. Rebuilds standard output from the records alone, with no event-specific branch. |
+| `oracle2/reconstruction-result.txt` | The byte comparison of reconstruction against standard output for every captured cell, and the mechanical check that the reconstructor has no per-event-kind branch. |
+
+### Oracle 3 — every record is JSON, to a parser outside this repository
+
+| Path | What it is |
+|---|---|
+| `analysis/validate.py` | Parses every record of every retained capture with Python's `json` module. |
+| `json-validity.txt` | The result per capture, with the exact command. |
+
+### Oracle 4 — a sink moves no entropy draw
+
+| Path | What it is |
+|---|---|
+| `analysis/entropy.py` | Runs the three entropy assertions and retains what they printed. |
+| `entropy.txt` | The oracle's own result file: the state after initialization, at tick 1,000, and against the pre-change build. |
+| `entropy-states.txt` | Additivity, twelve combinations per row, and the state at the thousandth tick. |
+| `entropy-per-tick.txt` | The state at **every** tick boundary, sink against no sink, five seeds × three policies × tracing off and on. |
+
+### Oracle 5 — the value alphabet is closed, so no escaping function is needed
+
+| Path | What it is |
+|---|---|
+| `alphabet.txt` | Every member of every one of the thirteen closed domains, its emitted bytes in hexadecimal, and each domain's size asserted against the specification's. |
+
+### Oracle 6 — the metrics and run records reconcile against a replay of the events
+
+| Path | What it is |
+|---|---|
+| `analysis/replay.py` | The replay consumer, written independently of the engine. |
+| `oracle6/reconciliation.txt` | The reconciliation per tick per seed. |
+
+### Oracle 7 — the amendments this change depends on are approved
+
+| Path | What it is |
+|---|---|
+| `analysis/amendments.py` | Reads the artifacts and the git history and measures seven things about the chain's governance state. |
+| `amendment-approvals.md` | The chain's status at the base and now, all twenty-eight required provisions found twice each, the provision counts, the two places the artifacts disagree, the amendment made beyond the approved list, and the earlier layer's outstanding rows named rather than counted. |
+
+### The oracles shown to fail, and the boundaries
+
+| Path | What it is |
+|---|---|
+| `negative-controls.txt` | The deliberate perturbations of acceptance scenarios 4, 5 and 6, each applied, captured failing, and reverted. |
+| `analysis/capture-failures.py` | Drives the six process-boundary captures. |
+| `failure-captures.txt` | The five failure captures — sink not creatable, write failure mid-run, flush failure, run-record write failure, reserved-spelling rejection — each with its standard error, exit code and the destination's state afterwards, plus the overwrite capture. |
+| `analysis/prior-captures.py` | Re-runs every configuration retained under `WO-MOK-002`, `WO-MOK-010` and `WO-MOK-011`. |
+| `additivity.txt` | Scenario 12: that re-run, byte-compared against each retained capture. |
+| `analysis/retain-sink.py` | Runs each retained cell twice to two deliberately different destinations and requires byte-identical records. |
+| `retained-sink-streams.txt` | The retained subset, the path-independence result, the closed character set of the retained bytes, and the retention deviation. |
+| `post/full/` | Four whole post-change record streams. |
+
+### Sizes, static checks, the interface and the gates
+
+| Path | What it is |
+|---|---|
+| `measure-sizes.sh` | Measures stream sizes for the 1,000-tick and 10,000-tick traced runs. |
+| `sizes.txt` | Those sizes, over thirty combinations. |
+| `analysis/static-checks.py` | The twelve static and architecture checks. |
+| `static-checks.txt` | Their results. |
+| `interface.txt` | The public interface of both packages before and after, item for item, by `WO-MOK-011`'s enumerator reused unmodified. |
+| `gates.txt` | `cargo fmt`, `cargo clippy`, `cargo test` and `cargo tree -p Mokiterions` at the candidate tree. |
+| `baseline/test-run.txt`, `baseline/test-census.txt` | The workspace test run at the base commit, and its 212 test names. |
+| `post/test-run.txt`, `post/test-census.txt` | The same at the candidate tree, and its 246 test names. |
+| `analysis/census-by-target.py`, `analysis/census-by-target.txt` | The census split by the binary that ran each test. |
+| `analysis/census-reconciliation.txt` | The two censuses reconciled name by name. |
+
+### What is not measured, and is recorded as unmeasured
+
+| Path | What it is |
+|---|---|
+| `manual-assessment.md` | All eight manual assessments, prepared with the material each needs and **all eight OUTSTANDING**. Nothing in it is a judgement. |
+| `completion-summary.md` | `WO-MOK-012`'s *Completion report format*, all sixteen items in its order: what changed and what deliberately did not, one full record stream quoted, each oracle's result, the negative controls, the three amendment rows quoted, the eight outstanding assessments, and **nine defects measured in the approved artifacts**, none of them corrected here. |
+
+## `VER-MOK-012`'s *Evidence retention* list, bullet by bullet
+
+The list is the checklist this packet is answerable to, so it is mapped here in its own order rather than
+paraphrased. A bullet whose row says anything other than a filename is a bullet this packet does not
+discharge as written, and the row says so.
+
+| # | The declaration | Where it is |
+|---|---|---|
+| 1 | the pre-change baseline capture, before any code change, with the commit recorded | `baseline/pre-manifest.txt`, `baseline/COMMIT.txt`, `baseline/capture-state.txt`; three cells whole in `baseline/full/` |
+| 2 | the post-change capture with no sink, and the byte comparison for every combination | `post-nosink-manifest.txt`, `oracle1/pre-vs-post-nosink.txt` |
+| 3 | the post-change capture with a sink, **its standard output**, and the byte comparison against the sinkless capture | `post-sink-manifest.txt`, `oracle1/post-nosink-vs-post-sink.txt`, `oracle1/pre-vs-post-sink.txt` — the standard output as digests only; see the deviation below |
+| 4 | one full sink stream per declared seed at the default density under each policy, tracing off and on | `post/full/` — **four** of the thirty declared; `retained-sink-streams.txt` states the deviation and what stands in for the rest |
+| 5 | the full text of the reconstructor, and the byte comparison of reconstruction for every combination | `analysis/reconstruct.py`, `oracle2/reconstruction-result.txt` |
+| 6 | the full text of the replay consumer, and its reconciliation per tick per seed | `analysis/replay.py`, `oracle6/reconciliation.txt` |
+| 7 | the JSON-parser check, including the exact command, for every retained capture | `json-validity.txt`, command on line 5; `analysis/validate.py` |
+| 8 | the entropy-state comparison per tick, per seed, per policy, with and without a sink; and after initialization and at tick 1,000 against the pre-change build | `entropy-per-tick.txt`, `entropy-states.txt`, `entropy.txt` |
+| 9 | the value-alphabet enumeration, each domain's members and size, and the emitted bytes | `alphabet.txt` |
+| 10 | the deliberate-perturbation results of scenarios 4, 5 and 6 | `negative-controls.txt` |
+| 11 | the re-run of every configuration retained under `WO-MOK-002`, `WO-MOK-010` and `WO-MOK-011`, byte-compared | `additivity.txt`, `analysis/prior-captures.py` |
+| 12 | the five failure captures, each with standard error, exit code and the destination's state afterwards | `failure-captures.txt`, captures 1–5 |
+| 13 | the overwrite capture, showing a prior run's file replaced | `failure-captures.txt`, capture 6, line 332 |
+| 14 | stream sizes for a 1,000-tick run and a 10,000-tick traced run | `sizes.txt`, `measure-sizes.sh` |
+| 15 | the six static-check results | `static-checks.txt` items 1–6 are the six declared, in the list's own order; items 7–12 are additional. The rule 5 item-for-item comparison is also `interface.txt` |
+| 16 | the workspace test census before and after, reconciled name by name | `baseline/test-census.txt`, `post/test-census.txt`, `analysis/census-reconciliation.txt`, `analysis/census-by-target.txt` |
+| 17 | `cargo fmt`, `cargo clippy`, `cargo test` and `cargo tree -p Mokiterions` output | `gates.txt` |
+| 18 | the eight manual assessments, each with its accountable role and date | `manual-assessment.md` — each carries its role and the date its material was measured; **the decision line of all eight is blank and every one is OUTSTANDING**, so no assessment carries a decision date, because none has been decided |
+| 19 | the amendment-approval check of oracle 7, and the recorded state of `ARCH-MOK-001`'s outstanding 2026-08-18 row | `amendment-approvals.md`, sections 1–6; the `ARCH-MOK-001` row is named in section 5 |
 
 ## The capture matrix
 
@@ -50,11 +169,24 @@ packets established for this oracle:
   a reviewer must be able to make — "these two captures are byte-identical, and this third one differs
   exactly here" — is made on the manifests, and a digest comparison is stronger than an eyeball comparison of
   two 1.2 MB files, not weaker.
-- **Three whole cells per capture**, at seed 42 and the default density, one per decision source, tracing off:
-  `seed42-baseline-d0.75-traceoff`, `seed42-reference-d0.75-traceoff`, `seed42-individual-d0.75-traceoff`.
-  These are the same three cells `WO-MOK-011` retained whole, so the two packets compare directly, and a
-  reviewer who wants to read a complete 1,000-tick stream rather than trust a hash has three of them, and
-  will have their record streams beside them.
+- **Three whole pre-change text streams**, at seed 42 and the default density, one per decision source,
+  tracing off: `seed42-baseline-d0.75-traceoff`, `seed42-reference-d0.75-traceoff`,
+  `seed42-individual-d0.75-traceoff`. These are the same three cells `WO-MOK-011` retained whole, so the two
+  packets compare directly, and a reviewer who wants to read a complete 1,000-tick stream rather than trust a
+  hash has three of them, with their record streams beside them in `post/full/`.
+- **Four whole post-change record streams**, in `post/full/`: those same three cells' records, plus the
+  traced baseline cell, which at 743 KB is the smallest traced cell in the matrix. `retained-sink-streams.txt`
+  gives the reason for each and measures the gap: thirty declared, four retained, 86 cells covered by digest
+  alone.
+
+**No post-change *text* stream is retained whole.** Bullet 3 of the retention list asks for the sink
+capture's standard output and this packet holds its digests only, in `post-nosink-manifest.txt` and
+`post-sink-manifest.txt`. The reason it is not a gap in the evidence is that oracle 1 establishes the
+post-change text stream is byte-identical to the pre-change one in all 90 cells, with a sink and without, so
+the three whole streams in `baseline/full/` are the post-change streams too — that identity is the claim
+oracle 1 exists to test, and `oracle1/pre-vs-post-sink.txt` is where it is tested. A reader who does not
+accept oracle 1's result should not accept the substitution either, which is why it is named here rather than
+relied on silently.
 
 Everything not retained is reproducible: `capture.sh` at the commit in `baseline/COMMIT.txt` reproduces the
 pre-change capture, and at the candidate commit the two post-change captures. The manifests are what detect a
@@ -72,3 +204,22 @@ No capture command carries a credential, and no retained artifact contains one. 
 carries the path it was written to**, which `VER-MOK-012` names as the property that makes this evidence class
 safe to retain at all: `SPEC-MOK-006` rule 5.5 keeps the sink's path out of the header record in every form,
 and rule 3.2's closed value alphabet means no operator-supplied text can reach any field.
+`retained-sink-streams.txt` does not take that on trust. Each retained cell was run twice to two deliberately
+different destinations and the record bytes required to be identical, the digests then compared against the
+manifest taken at a **third** destination, and the complete set of distinct characters in all 6,444,508
+retained bytes enumerated: 64 characters, and neither `/` nor `\` among them. A path cannot be spelled
+without one of those two, so the enumeration is a statement about every destination rather than about the
+ones used here.
+
+Capture directories are under the system temporary directory and their paths appear in the artifact headers,
+which is provenance rather than a secret. The binary's absolute path appears for the same reason.
+
+## What this packet does not establish
+
+That the change is verified. Seven oracles are measured here and eight manual assessments are not: they are
+prepared in `manual-assessment.md` and every one is **OUTSTANDING**. Two deviations from the retention list
+stand disclosed above, the amendment beyond `ADR-MOK-005`'s approved list stands disclosed in
+`amendment-approvals.md` section 4, and nine defects measured in the approved artifacts stand in
+`completion-summary.md` item 16 — one of which, `SPEC-MOK-006` rule 3.2's direction domain, weakens oracle 5's
+size assertion for one domain of thirteen. A verification record binding a commit is written after the commit
+it names, which is why `WO-MOK-012` is `in_progress` and not `complete`.

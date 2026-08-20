@@ -35,10 +35,28 @@ pub mod simulation;
 use cli::Command;
 use simulation::Simulation;
 
-/// The process boundary. Maps arguments and two writers to an exit code and owns no
-/// state: `0` on success or help, `1` on output failure, `2` on invalid configuration,
+/// The process boundary. Maps arguments and the caller's writers to an exit code and owns
+/// no state: `0` on success or help, `1` on output failure, `2` on invalid configuration,
 /// with the usage text written to standard error on invalid configuration.
-pub fn execute<I, S, W, E>(args: I, stdout: &mut W, stderr: &mut E) -> u8
+///
+/// `records` is the structured record stream's sink, `SPEC-MOK-006`'s subject. It is written
+/// when it is present and nothing is produced when it is absent, and the run is otherwise
+/// the same run either way: the same text bytes, the same entropy draws, the same exit code.
+/// **This function resolves no path, opens no file, creates no directory and removes none.**
+/// The sink arrives already open, from a caller that owns the destination — rule 1.2, and
+/// what keeps `SPEC-MOK-001`'s prohibition on interpreting input as a path true of the
+/// library target. A failure to write the sink is an output failure and exits `1`, like a
+/// failure to write standard output; rule 13.6 adds no code and changes the meaning of none.
+///
+/// The parameter takes `&mut dyn Write` rather than a second type parameter so that a caller
+/// with no sink writes `None` and nothing else: an `Option<&mut W>` would leave `W`
+/// unconstrained at every such call site, and every existing call site is one.
+pub fn execute<I, S, W, E>(
+    args: I,
+    stdout: &mut W,
+    stderr: &mut E,
+    records: Option<&mut dyn Write>,
+) -> u8
 where
     I: IntoIterator<Item = S>,
     S: Into<String>,
@@ -62,7 +80,7 @@ where
                 }
             };
 
-            match simulation.run(stdout) {
+            match simulation.run_recording(stdout, records) {
                 Ok(_) => 0,
                 Err(error) => {
                     let _ = writeln!(stderr, "runtime error: {error}");

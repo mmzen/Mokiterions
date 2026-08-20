@@ -1,0 +1,103 @@
+# VER-MOK-012 oracle 3: every retained capture parsed by a parser outside this repository
+#
+# capture directory: C:\Users\mathi\AppData\Local\Temp\tmp.atp9ro58v2\post\sink
+# parser: Python 3.14.6 standard-library json module
+# command: python docs/engineering/simulation/evidence/WO-MOK-012/analysis/validate.py <capture-dir> <output-file>
+#
+# Checked per line: parses as an object with "record" first; every number an int and not a
+# float; every key and string value on SPEC-MOK-006 rule 3.3's alphabet; every key a field
+# the specification names; every null one of the three permitted absences; no duplicate key.
+
+seed0-baseline-d0.15-traceoff.jsonl          1638 records parsed
+seed0-baseline-d0.15-traceon.jsonl           3066 records parsed
+seed0-baseline-d0.75-traceoff.jsonl          1724 records parsed
+seed0-baseline-d0.75-traceon.jsonl           3152 records parsed
+seed0-baseline-d1.50-traceoff.jsonl          2086 records parsed
+seed0-baseline-d1.50-traceon.jsonl           3662 records parsed
+seed0-individual-d0.15-traceoff.jsonl        4192 records parsed
+seed0-individual-d0.15-traceon.jsonl         7429 records parsed
+seed0-individual-d0.75-traceoff.jsonl       13885 records parsed
+seed0-individual-d0.75-traceon.jsonl        25809 records parsed
+seed0-individual-d1.50-traceoff.jsonl       14124 records parsed
+seed0-individual-d1.50-traceon.jsonl        26124 records parsed
+seed0-reference-d0.15-traceoff.jsonl         2933 records parsed
+seed0-reference-d0.15-traceon.jsonl          5275 records parsed
+seed0-reference-d0.75-traceoff.jsonl        12915 records parsed
+seed0-reference-d0.75-traceon.jsonl         23905 records parsed
+seed0-reference-d1.50-traceoff.jsonl        13981 records parsed
+seed0-reference-d1.50-traceon.jsonl         25865 records parsed
+seed1-baseline-d0.15-traceoff.jsonl          1622 records parsed
+seed1-baseline-d0.15-traceon.jsonl           3050 records parsed
+seed1-baseline-d0.75-traceoff.jsonl          1720 records parsed
+seed1-baseline-d0.75-traceon.jsonl           3148 records parsed
+seed1-baseline-d1.50-traceoff.jsonl          1877 records parsed
+seed1-baseline-d1.50-traceon.jsonl           3320 records parsed
+seed1-individual-d0.15-traceoff.jsonl        4905 records parsed
+seed1-individual-d0.15-traceon.jsonl         8735 records parsed
+seed1-individual-d0.75-traceoff.jsonl       12962 records parsed
+seed1-individual-d0.75-traceon.jsonl        23980 records parsed
+seed1-individual-d1.50-traceoff.jsonl       14164 records parsed
+seed1-individual-d1.50-traceon.jsonl        26164 records parsed
+seed1-reference-d0.15-traceoff.jsonl         4497 records parsed
+seed1-reference-d0.15-traceon.jsonl          8001 records parsed
+seed1-reference-d0.75-traceoff.jsonl        13799 records parsed
+seed1-reference-d0.75-traceon.jsonl         25623 records parsed
+seed1-reference-d1.50-traceoff.jsonl        14167 records parsed
+seed1-reference-d1.50-traceon.jsonl         26167 records parsed
+seed123-baseline-d0.15-traceoff.jsonl        1634 records parsed
+seed123-baseline-d0.15-traceon.jsonl         3062 records parsed
+seed123-baseline-d0.75-traceoff.jsonl        1829 records parsed
+seed123-baseline-d0.75-traceon.jsonl         3306 records parsed
+seed123-baseline-d1.50-traceoff.jsonl        1847 records parsed
+seed123-baseline-d1.50-traceon.jsonl         3275 records parsed
+seed123-individual-d0.15-traceoff.jsonl      3428 records parsed
+seed123-individual-d0.15-traceon.jsonl       6183 records parsed
+seed123-individual-d0.75-traceoff.jsonl     13127 records parsed
+seed123-individual-d0.75-traceon.jsonl      24306 records parsed
+seed123-individual-d1.50-traceoff.jsonl     14102 records parsed
+seed123-individual-d1.50-traceon.jsonl      26042 records parsed
+seed123-reference-d0.15-traceoff.jsonl       3868 records parsed
+seed123-reference-d0.15-traceon.jsonl        7039 records parsed
+seed123-reference-d0.75-traceoff.jsonl      11610 records parsed
+seed123-reference-d0.75-traceon.jsonl       21375 records parsed
+seed123-reference-d1.50-traceoff.jsonl      13950 records parsed
+seed123-reference-d1.50-traceon.jsonl       25778 records parsed
+seed42-baseline-d0.15-traceoff.jsonl         1626 records parsed
+seed42-baseline-d0.15-traceon.jsonl          3054 records parsed
+seed42-baseline-d0.75-traceoff.jsonl         1774 records parsed
+seed42-baseline-d0.75-traceon.jsonl          3225 records parsed
+seed42-baseline-d1.50-traceoff.jsonl         2077 records parsed
+seed42-baseline-d1.50-traceon.jsonl          3675 records parsed
+seed42-individual-d0.15-traceoff.jsonl       3906 records parsed
+seed42-individual-d0.15-traceon.jsonl        7074 records parsed
+seed42-individual-d0.75-traceoff.jsonl      12993 records parsed
+seed42-individual-d0.75-traceon.jsonl       24060 records parsed
+seed42-individual-d1.50-traceoff.jsonl      14168 records parsed
+seed42-individual-d1.50-traceon.jsonl       26168 records parsed
+seed42-reference-d0.15-traceoff.jsonl        3819 records parsed
+seed42-reference-d0.15-traceon.jsonl         6811 records parsed
+seed42-reference-d0.75-traceoff.jsonl       12223 records parsed
+seed42-reference-d0.75-traceon.jsonl        22586 records parsed
+seed42-reference-d1.50-traceoff.jsonl       14141 records parsed
+seed42-reference-d1.50-traceon.jsonl        26141 records parsed
+seed777-baseline-d0.15-traceoff.jsonl        1625 records parsed
+seed777-baseline-d0.15-traceon.jsonl         3053 records parsed
+seed777-baseline-d0.75-traceoff.jsonl        1755 records parsed
+seed777-baseline-d0.75-traceon.jsonl         3198 records parsed
+seed777-baseline-d1.50-traceoff.jsonl        1912 records parsed
+seed777-baseline-d1.50-traceon.jsonl         3371 records parsed
+seed777-individual-d0.15-traceoff.jsonl      2942 records parsed
+seed777-individual-d0.15-traceon.jsonl       5342 records parsed
+seed777-individual-d0.75-traceoff.jsonl     13982 records parsed
+seed777-individual-d0.75-traceon.jsonl      25982 records parsed
+seed777-individual-d1.50-traceoff.jsonl     13573 records parsed
+seed777-individual-d1.50-traceon.jsonl      25018 records parsed
+seed777-reference-d0.15-traceoff.jsonl       5711 records parsed
+seed777-reference-d0.15-traceon.jsonl       10149 records parsed
+seed777-reference-d0.75-traceoff.jsonl      13387 records parsed
+seed777-reference-d0.75-traceon.jsonl       24861 records parsed
+seed777-reference-d1.50-traceoff.jsonl      14148 records parsed
+seed777-reference-d1.50-traceon.jsonl       26148 records parsed
+
+# 90 streams, 961105 records, 0 findings
+# result: PASS

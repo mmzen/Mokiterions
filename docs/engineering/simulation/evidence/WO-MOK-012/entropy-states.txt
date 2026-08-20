@@ -1,0 +1,94 @@
+# VER-MOK-012 oracle 4: entropy additivity, and the state at the thousandth tick
+#
+# commit: bb4a21491eff321cbfd14ba3ea794e34535e3033 (working tree, WO-MOK-012 implementation)
+# command: cargo test -p Mokiterions --lib -- --exact --nocapture \
+#            simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone
+#          cargo test -p Mokiterions --lib -- --exact --nocapture \
+#            simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink
+#
+# Part 1 -- additivity. The state a run starts from is the seed and the density and nothing
+# else. Twelve combinations per row: three policies, tracing off and on, sink and no sink.
+# One value across all twelve is the pass condition, per declared seed and swept density.
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+
+running 1 test
+seed=0 density=0.15 after_initialization=0x7f9a3c2bccf2e5e8 combinations=12 all_equal=yes
+seed=0 density=0.75 after_initialization=0xde8261a4408ede26 combinations=12 all_equal=yes
+seed=0 density=1.50 after_initialization=0xe7d159e492221a54 combinations=12 all_equal=yes
+seed=1 density=0.15 after_initialization=0x7f9a3c2bccf2e5e9 combinations=12 all_equal=yes
+seed=1 density=0.75 after_initialization=0xa2136e3141f9e5fd combinations=12 all_equal=yes
+seed=1 density=1.50 after_initialization=0xe7d159e492221a55 combinations=12 all_equal=yes
+seed=42 density=0.15 after_initialization=0x7f9a3c2bccf2e612 combinations=12 all_equal=yes
+seed=42 density=0.75 after_initialization=0xa2136e3141f9e626 combinations=12 all_equal=yes
+seed=42 density=1.50 after_initialization=0xe7d159e492221a7e combinations=12 all_equal=yes
+seed=123 density=0.15 after_initialization=0x7f9a3c2bccf2e663 combinations=12 all_equal=yes
+seed=123 density=0.75 after_initialization=0xa2136e3141f9e677 combinations=12 all_equal=yes
+seed=123 density=1.50 after_initialization=0xab626671938d22a5 combinations=12 all_equal=yes
+seed=777 density=0.15 after_initialization=0x7f9a3c2bccf2e8f1 combinations=12 all_equal=yes
+seed=777 density=0.75 after_initialization=0xa2136e3141f9e905 combinations=12 all_equal=yes
+seed=777 density=1.50 after_initialization=0xe7d159e492221d5d combinations=12 all_equal=yes
+test simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 67 filtered out; finished in 0.10s
+
+
+# Part 2 -- the state at the thousandth tick, per declared seed, swept density and policy.
+# Unlike the state after initialization this one is a function of the policy too, because
+# deciding draws; so the sink comparison is made within a combination. These are the figures
+# compared against the pre-change build in pre-change-comparison.txt.
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+
+running 1 test
+seed=0 density=0.15 policy=baseline ticks=119 reason=extinction nosink=0x0d0d3ae5d86f0b0c sink=0x0d0d3ae5d86f0b0c equal
+seed=0 density=0.15 policy=reference ticks=409 reason=extinction nosink=0x71e62dfbb5b9c4ae sink=0x71e62dfbb5b9c4ae equal
+seed=0 density=0.15 policy=individual ticks=674 reason=extinction nosink=0xaaa938f8411afcfb sink=0xaaa938f8411afcfb equal
+seed=0 density=0.75 policy=baseline ticks=119 reason=extinction nosink=0x6bf5605e4c0b034a sink=0x6bf5605e4c0b034a equal
+seed=0 density=0.75 policy=reference ticks=1000 reason=tick_limit nosink=0x8884c75242dfc4f3 sink=0x8884c75242dfc4f3 equal
+seed=0 density=0.75 policy=individual ticks=1000 reason=tick_limit nosink=0x516b25d5975b0407 sink=0x516b25d5975b0407 equal
+seed=0 density=1.50 policy=baseline ticks=193 reason=extinction nosink=0x0d3d46e727eab516 sink=0x0d3d46e727eab516 equal
+seed=0 density=1.50 policy=reference ticks=1000 reason=tick_limit nosink=0x3db3efd902cb1268 sink=0x3db3efd902cb1268 equal
+seed=0 density=1.50 policy=individual ticks=1000 reason=tick_limit nosink=0x13b2e0e557e0e890 sink=0x13b2e0e557e0e890 equal
+seed=1 density=0.15 policy=baseline ticks=119 reason=extinction nosink=0x0d0d3ae5d86f0b0d sink=0x0d0d3ae5d86f0b0d equal
+seed=1 density=0.15 policy=reference ticks=709 reason=extinction nosink=0x5de13a2b95da8dfd sink=0x5de13a2b95da8dfd equal
+seed=1 density=0.15 policy=individual ticks=757 reason=extinction nosink=0x26e54a812629681a sink=0x26e54a812629681a equal
+seed=1 density=0.75 policy=baseline ticks=119 reason=extinction nosink=0x2f866ceb4d760b21 sink=0x2f866ceb4d760b21 equal
+seed=1 density=0.75 policy=reference ticks=1000 reason=tick_limit nosink=0x82c405b628acad9a sink=0x82c405b628acad9a equal
+seed=1 density=0.75 policy=individual ticks=1000 reason=tick_limit nosink=0xa79fceb4d0024a3e sink=0xa79fceb4d0024a3e equal
+seed=1 density=1.50 policy=baseline ticks=134 reason=extinction nosink=0x952ae7a990daf8f3 sink=0x952ae7a990daf8f3 equal
+seed=1 density=1.50 policy=reference ticks=1000 reason=tick_limit nosink=0xdcb6f13ae82fc2ae sink=0xdcb6f13ae82fc2ae equal
+seed=1 density=1.50 policy=individual ticks=1000 reason=tick_limit nosink=0x65ede37a920529d7 sink=0x65ede37a920529d7 equal
+seed=42 density=0.15 policy=baseline ticks=119 reason=extinction nosink=0x0d0d3ae5d86f0b36 sink=0x0d0d3ae5d86f0b36 equal
+seed=42 density=0.15 policy=reference ticks=569 reason=extinction nosink=0xeea0095975931f13 sink=0xeea0095975931f13 equal
+seed=42 density=0.15 policy=individual ticks=494 reason=extinction nosink=0x549241eb444751f8 sink=0x549241eb444751f8 equal
+seed=42 density=0.75 policy=baseline ticks=142 reason=extinction nosink=0x4128c9c23b06a56c sink=0x4128c9c23b06a56c equal
+seed=42 density=0.75 policy=reference ticks=1000 reason=tick_limit nosink=0xdcd4a30d24035de0 sink=0xdcd4a30d24035de0 equal
+seed=42 density=0.75 policy=individual ticks=1000 reason=tick_limit nosink=0x5c21216565a6feb5 sink=0x5c21216565a6feb5 equal
+seed=42 density=1.50 policy=baseline ticks=169 reason=extinction nosink=0xcb5b4fab9a71eacf sink=0xcb5b4fab9a71eacf equal
+seed=42 density=1.50 policy=reference ticks=1000 reason=tick_limit nosink=0xaa627db0a1483b0b sink=0xaa627db0a1483b0b equal
+seed=42 density=1.50 policy=individual ticks=1000 reason=tick_limit nosink=0xe8e64a4946dc8ab2 sink=0xe8e64a4946dc8ab2 equal
+seed=123 density=0.15 policy=baseline ticks=119 reason=extinction nosink=0x0d0d3ae5d86f0b87 sink=0x0d0d3ae5d86f0b87 equal
+seed=123 density=0.15 policy=reference ticks=469 reason=extinction nosink=0xc3d372bd648ec15c sink=0xc3d372bd648ec15c equal
+seed=123 density=0.15 policy=individual ticks=463 reason=extinction nosink=0x314d883d69261e05 sink=0x314d883d69261e05 equal
+seed=123 density=0.75 policy=baseline ticks=168 reason=extinction nosink=0x52cb269928973fdf sink=0x52cb269928973fdf equal
+seed=123 density=0.75 policy=reference ticks=1000 reason=tick_limit nosink=0xfc3d68433c75288e sink=0xfc3d68433c75288e equal
+seed=123 density=0.75 policy=individual ticks=1000 reason=tick_limit nosink=0x91d3bf929473019c sink=0x91d3bf929473019c equal
+seed=123 density=1.50 policy=baseline ticks=119 reason=extinction nosink=0x38d5652b9f0947c9 sink=0x38d5652b9f0947c9 equal
+seed=123 density=1.50 policy=reference ticks=1000 reason=tick_limit nosink=0x9203cb93e3eeaba6 sink=0x9203cb93e3eeaba6 equal
+seed=123 density=1.50 policy=individual ticks=1000 reason=tick_limit nosink=0x3b214cde8100cc49 sink=0x3b214cde8100cc49 equal
+seed=777 density=0.15 policy=baseline ticks=119 reason=extinction nosink=0x0d0d3ae5d86f0e15 sink=0x0d0d3ae5d86f0e15 equal
+seed=777 density=0.15 policy=reference ticks=927 reason=extinction nosink=0x22eba43727a66632 sink=0x22eba43727a66632 equal
+seed=777 density=0.15 policy=individual ticks=379 reason=extinction nosink=0x9ec79dbd6dbd7d3c sink=0x9ec79dbd6dbd7d3c equal
+seed=777 density=0.75 policy=baseline ticks=134 reason=extinction nosink=0x4f6cfbf640b2c7a3 sink=0x4f6cfbf640b2c7a3 equal
+seed=777 density=0.75 policy=reference ticks=1000 reason=tick_limit nosink=0xeddb843cfaf570bb sink=0xeddb843cfaf570bb equal
+seed=777 density=0.75 policy=individual ticks=1000 reason=tick_limit nosink=0x6dc37e3c53379bb6 sink=0x6dc37e3c53379bb6 equal
+seed=777 density=1.50 policy=baseline ticks=142 reason=extinction nosink=0x5348f06e0362318a sink=0x5348f06e0362318a equal
+seed=777 density=1.50 policy=reference ticks=1000 reason=tick_limit nosink=0x6ae31d6e461e1009 sink=0x6ae31d6e461e1009 equal
+seed=777 density=1.50 policy=individual ticks=1000 reason=tick_limit nosink=0x65ede37a92052cdf sink=0x65ede37a92052cdf equal
+test simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 67 filtered out; finished in 5.97s
+
