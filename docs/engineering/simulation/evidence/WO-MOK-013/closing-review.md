@@ -11,17 +11,21 @@ because a reader arriving at "decision 13" needs to know which document it belon
 `ENGINEERING_HARNESS.md` — product owner, technical owner, assurance owner and release owner — and
 acted in the named role for each decision below. The implementation agent put each question with the
 measured facts already assembled, transcribed the answer, and decided none of the substance. Nothing
-here was approved by implication of anything else: eighteen acts, each put and answered on its own.
+here was approved by implication of anything else: twenty-one acts, each put and answered on its own.
 
-**What is unusual about this work order is when the decisions were taken.** All eighteen were taken
-**before** implementation began, and `WO-MOK-013` says why: "No amendment row in this chain is to be
-left `OUTSTANDING`, and none is." The eleven provisions ratified under `WO-MOK-012` had been drafted
+**What is unusual about this work order is when the decisions were taken.** The first eighteen were
+taken **before** implementation began, and `WO-MOK-013` says why: "No amendment row in this chain is to
+be left `OUTSTANDING`, and none is." The eleven provisions ratified under `WO-MOK-012` had been drafted
 by implementation agents and left unratified for one or two days, and `WO-MOK-005` records of five of
 them that it "is not verifiable until they are given". Obtaining the ratifications ahead of approval
-is how that was prevented, and this review is therefore a record of decisions already documented in
-the work order rather than a fresh round of questions.
+is how that was prevented, and this review is therefore largely a record of decisions already documented
+in the work order rather than a fresh round of questions.
 
-## The eighteen decisions
+**Decisions 19 to 21 were taken after implementation**, on the live pass of 2026-08-20 at the reference
+viewport. They are the only three this review records that the work order does not, because they could
+not be taken until there was something to look at.
+
+## The twenty-one decisions
 
 | # | Subject | Role | Outcome |
 |---:|---|---|---|
@@ -43,17 +47,39 @@ the work order rather than a fresh round of questions.
 | 16 | Amendment 5 — rule 5's announcement obligation and the ladder | technical owner | **Ratified, threshold survives last** |
 | 17 | Amendment 6 — rule 5's log row count, six unconditionally | technical owner | **Ratified as enumerated** |
 | 18 | This work order as a bounded scope | engineering owner | **Approved** |
+| 19 | Manual assessment 1 — the gauge is legible at `160 × 48` | product owner | **SATISFIED** — "the bar carried it" |
+| 20 | The route for manual assessment 2, which has no admissible assessor | assurance owner | **Find an admissible assessor** — the other two options declined |
+| 21 | Decision 1 re-opened on the corrected figure, after the live pass | product owner | **Stands** |
 
-Each is recorded in full in `WO-MOK-013`'s *Decision record*, with the instruction verbatim where one
-was given verbatim, and nothing above restates a measurement that section already carries. Decision 1
-in particular retains the two options as they were put rather than only its outcome, because the
-arithmetic is what makes it reviewable.
+Decisions 1 to 18 are each recorded in full in `WO-MOK-013`'s *Decision record*, with the instruction
+verbatim where one was given verbatim, and nothing above restates a measurement that section already
+carries. Decision 1 in particular retains the two options as they were put rather than only its outcome,
+because the arithmetic is what makes it reviewable. Decisions 19 to 21 are recorded in
+`manual-assessment.md` and in item 7 of `completion-summary.md`; the work order predates them.
 
 **Decision 2 exists because the figure decision 1 was taken on was wrong.** Option B was put as
 showing six recent events rather than ten; both figures counted pane rows and not event lines, and the
 true change is **eight to four**, which `log-height.md` measures. The owner was shown the correction
 and stood by option B. `VER-MOK-013` records that the contract does not depend on the outcome and that
 the owner may re-open decision 1 on the corrected figure.
+
+**Decision 21 closes what decision 2 left open.** `WO-MOK-013` states that the product owner may
+re-open decision 1 on the corrected eight-to-four figure; decision 2 stood by option B on the arithmetic
+alone, before there was an implementation to look at. On the live pass the question was put again, this
+time with the result on screen. Option B stands. The invitation in the work order is now spent rather
+than still standing.
+
+**Decision 20 is a route, not an outcome.** Assessment 2 needs a person who has not read
+`SPEC-MOK-003` rule 7, and the owner has ratified six amendments to it. Three options were put: find
+such a person, amend `VER-MOK-013` to an assessment the available assessors can take, or leave the row
+outstanding by decision on the pattern of `evidence/WO-MOK-012/manual-assessment.md`'s assessment 7. The
+third would have closed the row and required nothing further; the owner took the first, **the only one
+that verifies `REQ-MOK-048`**, and the row therefore stays outstanding. It is attributed to the
+**assurance owner** because the two declined options are assurance acts on an approved contract — one
+amends it, the other waives an assessment it requires — which is the role
+`evidence/WO-MOK-012/manual-assessment.md` records for its own route decision. Decision 19, by contrast,
+is a **product-owner** act, because `VER-MOK-013` makes an adverse manual outcome "an artifact decision
+requiring product review".
 
 ## What the agent decided, inside the envelope
 
@@ -125,16 +151,16 @@ does not fire during implementation by decision 3 and fires at the merge if this
 
 ## What this review did not decide
 
-- **The two manual assessments.** Both outstanding with no author, in `manual-assessment.md`. One
-  needs a person at a terminal; the other needs a person who has not read `SPEC-MOK-003` rule 7, which
-  the owner has read and ratified amendments to. Three options are set out there and none is taken.
+- **Whether manual assessment 2 passes.** It is outstanding with no author, in `manual-assessment.md`.
+  Decision 20 settles how it will be closed and not what it returns. The frame and the question are
+  prepared in `discoverability-assessment.md`; the person is not, and no agent can supply one.
 - **`WO-MOK-013`'s status.** It is `approved`. Implementation began on the owner's direction of
   2026-08-20; the transition to `in_progress` or `implemented` is an owner act and neither was taken
   here. Start preflight accepts `approved`, so nothing is blocked by leaving it there.
-- **`VREC-MOK-013`.** `commit_bound_verification` is `required` and the record does not exist. It is
-  captured against the commit that carries this implementation, by a separate act.
-- **Whether decision 1 is re-opened** on the corrected eight-to-four figure. `WO-MOK-013` states that
-  the owner may; nothing here asks them to.
+- **`VREC-MOK-013`.** `commit_bound_verification` is `required` and the record does not exist. Decision
+  19 makes it writable — `REQ-MOK-047` on the assessment, `REQ-MOK-049` on the automated cases — but it
+  is captured against the commit that carries this implementation, by a separate act, and it would have
+  to disclose `REQ-MOK-048` as unverified.
 - **`VREC-MOK-005`'s staleness**, `WO-MOK-008`'s draft disposition, the eight `W-HEX-003`
   reassessments, the three `W-HEX-001`s, manual assessment 7 of `VER-MOK-005`, and `ROADMAP.md`'s
   Phase 2 claim. All out of scope, all still open, and none touched.

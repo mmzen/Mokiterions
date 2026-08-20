@@ -315,33 +315,52 @@ present, and **this pack is that evidence**.
 
 ## 7. Both manual assessments, with author, date, role and terminal
 
-| # | Assessment | Status | Author | Date | Role | Terminal |
-|---:|---|---|---|---|---|---|
-| 1 | Reference-viewport gauge legibility | **OUTSTANDING** | **none** | — | product owner | — |
-| 2 | Overlay discoverability | **OUTSTANDING** | **none** | — | product owner | — |
+| # | Assessment | Requirement | Status | Author | Date | Role | Terminal |
+|---:|---|---|---|---|---|---|---|
+| 1 | Reference-viewport gauge legibility | `REQ-MOK-047` | **SATISFIED** | the repository owner | 2026-08-20 | product owner | Windows Terminal on Windows 11 |
+| 2 | Overlay discoverability | `REQ-MOK-048` | **OUTSTANDING** | **none** | — | product owner | — |
 
-**Neither has been performed and neither is claimed as passed.** `VER-MOK-013` classes both as "the primary evidence
-for their requirements rather than a confirmation of the automated cases", so **`VREC-MOK-013` cannot record
-`REQ-MOK-047` or `REQ-MOK-048` as verified while they stand**. This does not block the implementation, which is what
-this pack evidences; it blocks verification, which is a separate commit-bound record and a separate accountable act.
+**Assessment 1 was taken and passed on 2026-08-20**, in the words the owner gave: *"SATISFIED — the bar carried it."*
+This is `VER-MOK-005`'s assessment 2 re-taken, and it is the assessment this whole chain exists to let pass: the
+adverse observation of 2026-08-20 on the roster gauges is answered by this row and by nothing else in this pack.
+`VER-MOK-013` puts the manual assessment **above** the automated cases for `REQ-MOK-047` rather than beside them, so
+the arithmetic in item 2 is a necessary condition this outcome does not rest on.
 
-The implementation agent can take neither. Assessment 1 requires a person at a real terminal judging legibility;
-recording a status against it would put a signature where no person looked, which is the failure mode assessment 7 of
-`evidence/WO-MOK-012/manual-assessment.md` refused and stated its reason for. Both are prepared in
-`manual-assessment.md` so each can be taken in one sitting, on the procedure
-`evidence/WO-MOK-012/procedure-defects.md` corrected — `cargo run -p mokiterions-tui -- --seed 42 --ticks 300 --policy
-reference --speed 8`, where `--ticks` is required because the default is 100 and `--policy reference` is required
-because seed 42 under baseline reaches extinction at tick 142.
+**A fact adverse to a clean pass was disclosed before the owner judged.** M01 under the contracted invocation loses
+health in **five**-point steps — eighteen of them, ticks 261 to 278, then to zero at 279 — and `REQ-MOK-047`
+guarantees only that a change of **ten** moves the fill. At 13 cells a five-point step is 0.65 of a cell, so roughly
+every other one of those steps draws the same bar as the step before. The satiety window, ticks 200 to 260, falls
+exactly one point per tick from 61 to 1 with no refill and is the window that exercises the guarantee cleanly. Both
+were traced out of `non-perturbation-unobserved.txt` and named before the assessment was put, so the judgment was
+taken against the property the requirement states rather than against a guarantee never made.
 
-**Assessment 2 has no admissible assessor available, and that is a finding rather than a delay.** The contract asks
-for a person who has **not read `SPEC-MOK-003` rule 7**. The only assessor has read it and ratified six amendments to
-that document on 2026-08-20, two of which — decisions 15 and 16 — fix the hint's content and the ladder's order of
-loss, so they know the key from the specification rather than from the screen. `VER-MOK-013`'s own residual uncertainty
-records that the assessment "is available once per assessor" and that a second run on the same person confirms
-nothing. **Finding an admissible assessor is outside what an implementation agent can arrange.** Three options are set
-out in `manual-assessment.md` — find such a person; amend `VER-MOK-013` to an assessment the available assessors can
-take, which is an assurance-owner act on an approved contract; or leave it outstanding by decision with the reason
-recorded, on the assessment-7 pattern. **None is taken here.**
+**Assessment 2 remains outstanding, and its route is now decided.** The contract asks for a person who has **not read
+`SPEC-MOK-003` rule 7**. The available assessor has read it and ratified six amendments to that document on
+2026-08-20, two of which — decisions 15 and 16 — fix the hint's content and the ladder's order of loss, so they know
+the key from the specification rather than from the screen; `VER-MOK-013`'s residual uncertainty records that the
+assessment "is available once per assessor" and that a second run on the same person confirms nothing. Of the three
+options `manual-assessment.md` set out, the owner took **find an admissible assessor** as an **assurance-owner** act
+on 2026-08-20, on the ground that it is the only one that verifies the requirement — amending `VER-MOK-013` and
+closing the row by decision are both recorded as declined. **The option that verifies the requirement was preferred
+over the option that closes the row**, which is why this row is still outstanding rather than closed as
+`VER-MOK-005`'s assessment 7 is.
+
+That decision divides the work: the agent prepares the frame and the question, the owner finds the person. The agent's
+half is delivered — `discoverability-frame.txt` (48 × 160, the reference viewport) and
+`discoverability-frame-floor.txt` (22 × 34, the floor and the harder case) carve two frames out of `frames.txt`
+without its viewport-naming banners, and `discoverability-assessment.md` is the packet an administrator can work from
+without reading rule 7 to the assessor. In each frame the character `?` appears on the header row and nowhere else.
+
+**Consequence.** `VREC-MOK-013` can now record `REQ-MOK-047` as verified on assessment 1 and **must disclose
+`REQ-MOK-048` as unverified** while assessment 2 stands. `REQ-MOK-049` was never gated on a manual assessment —
+`VER-MOK-013` states that and gives its reason — so it turns on the automated cases alone. Verification remains a
+separate commit-bound record and a separate accountable act, and none of this blocks the implementation this pack
+evidences.
+
+**A third act was taken on the same live pass.** Having watched the implementation run at `160 × 48`, the owner was
+asked whether decision 1 is re-opened on the corrected eight-to-four figure — the log now carries four recent events
+where it carried eight. It is not: **decision 1 stands**, as a product-owner act of 2026-08-20, this time on the
+corrected figure and after seeing the result rather than only the arithmetic.
 
 ## 8. What was left open, and what was decided not to do
 
@@ -357,7 +376,7 @@ recorded, on the assessment-7 pattern. **None is taken here.**
 | 6 | **The ladder has three rungs, and the rule's order of loss admits a fourth that is not implemented.** Amendment 5 fixes the order as joining words, then the pane's full name in favour of its initial, then **the overlay key**, with the axis and threshold never dropped. `announcement_text` builds three rungs — spelled, named, initials — and never drops the key. At the floor the third rung draws `HELD  ?  x8  r W100  L H38  i W140`, which is **exactly 34 columns** in a 34-column terminal: the header is full, with nothing to spare. | The rule fixes an *order* of loss, not that every loss must be realized, and the shortest implemented rung fits everywhere the observer draws — so no viewport needs the fourth. But the margin is zero, not comfortable: a threshold gaining a digit, or a fourth overlay-only pane, makes the third rung overflow, and the implementation then draws the shortest rung rather than dropping the key, since "a rung that fits nowhere is not silently truncated". Reported so the missing rung is a known gap rather than a surprise at the next threshold change. |
 | 7 | **The two plane sweeps draw at a deduplicated subset of the plane, not at every point.** `every_bar_width_the_roster_can_produce_resolves_a_ten_point_step` and `no_entry_is_lost_silently_at_any_viewport_presenting_the_roster` both walk `34..=200 × 22..=60`, but draw one full frame per **distinct roster rectangle**: **33 of them**, of which 20 hide an entry. | Drawing 6,513 frames in a unit test is not affordable, and the roster rectangle is what both properties depend on. But two viewports sharing a roster rectangle and differing in the panes around it are not both drawn, so neither sweep is a per-viewport guarantee. Stated so it is not read as one. The no-roster half of the plane **is** visited at every point, asserting no gauge is drawn there. |
 | 8 | **`a_subject_whose_record_was_never_ingested_is_presented_without_a_name`** (`src/verification.rs:484`) needed its setup modified. Its thirteenth subject used to be drawn below the twelfth; `12 × 3 = 36` now fills the interior exactly, so the test adds `observer.select_for_test(stranger)` to bring it into rule 4's window. | The assertion — `name_of(stranger) == None`, and the drawn entry carrying no name — is unchanged in what it requires, and the field it reads is the same field in either position. Reported because a modified setup on a pre-existing test is the shape a weakened assertion also takes, and a reader should not have to diff to tell them apart. |
-| 9 | **Assessment 2 has no admissible assessor.** | Item 7. Not the agent's to resolve. |
+| 9 | **Assessment 2 has no admissible assessor among the people this chain has available.** | Item 7. Not the agent's to resolve, and it was not resolved by amending the contract: the owner's route of 2026-08-20 is to find one. The frame and the question are prepared; the row stays outstanding until a person takes it. |
 
 Findings 1 to 3 are all one kind: an amendment moved a rendering and the documents illustrating the old one were not
 swept with it. That is the same cause `VER-MOK-005`'s three stale rows had, which `WO-MOK-012` recorded, and it
@@ -374,8 +393,10 @@ recurred inside a work order written to enumerate its own locations.
   It records what the owner decided on the material they were shown, and it remains a true record of that act.
 - **No status transition.** `WO-MOK-013` stays `approved`. Neither `in_progress` — which would record an authority
   given as an instruction rather than as a status act — nor `implemented`, which asserts an accountable judgement.
-- **No `VREC-MOK-013`.** `commit_bound_verification` is `required` and the record must be captured against the commit
-  that carries this implementation, which does not yet exist.
+- **No `VREC-MOK-013`.** `commit_bound_verification` is `required`. With assessment 1 satisfied the record has become
+  writable — it could record `REQ-MOK-047` on that assessment and `REQ-MOK-049` on the automated cases — but it is a
+  separate accountable act against the commit that carries this implementation, and it was not authorized here. It
+  would have to disclose `REQ-MOK-048` as unverified.
 - **Nothing is re-opened that a record binds.** `VREC-MOK-006` measured 97 items and 169 tests, and `VREC-MOK-007`,
   `VREC-MOK-010` and `VREC-MOK-011` measured their own trees. Each was correct where it was taken.
 
@@ -386,8 +407,8 @@ recurred inside a work order written to enumerate its own locations.
 - **`VREC-MOK-005`'s staleness** and **manual assessment 7 of `VER-MOK-005`**.
 - **`ROADMAP.md`'s Phase 2 claim**, which this work order's ROADMAP entry does not touch. Phases 2 and 2.5 are
   unreleased.
-- **Whether decision 1 is re-opened** on the corrected eight-to-four figure. `WO-MOK-013` states that the product
-  owner may; nothing here asks them to.
+- **Assessment 2 of `VER-MOK-013`**, outstanding with no author. Its route is decided and its material is prepared;
+  what remains is a person who has not read `SPEC-MOK-003` rule 7, which no agent can arrange.
 - The **`WO-MOK-012` identifier collision**, deferred to the merge by decision 3. Whichever branch reaches `master`
   second renumbers before it lands.
 - **No push, pull request, tag or release.** `WO-MOK-013`'s *Out of scope* puts all four outside it, and none was

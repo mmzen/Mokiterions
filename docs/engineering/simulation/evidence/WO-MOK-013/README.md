@@ -17,11 +17,14 @@ not taken here.** `WORKFLOW.md` makes a status change a record of authority rath
 and start preflight accepts `approved`, so nothing is blocked by leaving it there. The work order's *Lifecycle*
 section carries the same statement.
 
-**What it does not close.** Both of `VER-MOK-013`'s manual assessments are **outstanding with no author**, and
-one of them has **no admissible assessor available**: the contract asks for a person who has not read
-`SPEC-MOK-003` rule 7, and the only assessor has ratified six amendments to that document. `manual-assessment.md`
-sets out three options and takes none. Because `VER-MOK-013` classes both as primary evidence for their
-requirements, `VREC-MOK-013` cannot record any of the three requirements as verified while they stand.
+**What it closes, and what it does not.** `VER-MOK-013`'s **first** manual assessment was taken on 2026-08-20
+and is **SATISFIED** — "the bar carried it" — which answers the adverse observation on the roster gauges that
+this whole chain exists for. The **second** is **outstanding with no author** and has **no admissible assessor
+among the people this chain has available**: the contract asks for a person who has not read `SPEC-MOK-003`
+rule 7, and the available assessor has ratified six amendments to that document. Of the three options
+`manual-assessment.md` sets out, the owner took the one that verifies the requirement rather than the one that
+closes the row, so it stays open with its material prepared. `VREC-MOK-013` can therefore record `REQ-MOK-047`
+and `REQ-MOK-049` and **must disclose `REQ-MOK-048` as unverified**.
 
 **Decision 1 is the one trade in this work order, and it is a trade.** The roster's three-line entry needs
 36 interior rows, which the reference viewport has only if the log stays at six. The product owner chose to
@@ -29,7 +32,8 @@ hold the log at six rows and keep `REQ-MOK-020`'s twelve entries intact rather t
 and then stood by that choice when the cost figure it had been put on turned out to be wrong. The log carries
 **four** recent events where it carried eight, not six where it carried ten. `log-height.md` measures both
 forms out of rendered buffers and exhibits the counterfactual; `closing-review.md` records the correction as
-the agent's error in how the option was framed.
+the agent's error in how the option was framed. On the live pass of 2026-08-20 the question was put a third
+time, with the result on screen rather than only the arithmetic, and the choice **stands**.
 
 ## The files
 
@@ -37,11 +41,14 @@ the agent's error in how the option was framed.
 |---|---|
 | `README.md` | This index. Every file in the pack, what it establishes, and what is deliberately absent. |
 | `completion-summary.md` | The eight-item completion report `WO-MOK-013`'s *Completion report format* specifies: decision 1 with both corrections to how it was put, the three requirements against their before figures, every amendment with its ratifying act, the change surface, the test and interface counts, the validator and inspector results, both manual assessments, and nine findings reported rather than fixed. |
-| `closing-review.md` | The eighteen decisions this work order rests on, each with the role that took it, plus the choices the agent made inside the authorized envelope, the three locations the work order's enumeration missed, and the four stop conditions that could have fired and did not. |
+| `closing-review.md` | The twenty-one decisions this work order rests on, each with the role that took it, plus the choices the agent made inside the authorized envelope, the three locations the work order's enumeration missed, and the four stop conditions that could have fired and did not. Eighteen were taken before implementation; three on the live pass that followed it. |
 | `log-height.md` | Decision 1 measured in both directions: six rows against ten, four log records against eight, twelve roster entries against ten, and that `12 × 3 = 36` fits with no slack either way. Names what was **not** corrected. |
 | `gauge-resolution.md` | `REQ-MOK-047` measured: the gauge at 13 cells rather than 2, 14 renderable states rather than 3, and a ten-point step moving the fill at **91 of 91** values where it moved at 11. Reads `gauge-resolution.txt` against the `WO-MOK-012` before form. |
 | `test-census.md` | Rule 11's test totals reconciled arrival by arrival, the static census validated target by target against the executed run, the one rename with both names, and every `VER-MOK-013` case mapped to the test that discharges it. |
-| `manual-assessment.md` | Both contracted manual assessments, **outstanding, author none**, with the corrected procedure, the prepared material, and the assessor constraint that neither the agent nor the owner can satisfy for the second. |
+| `manual-assessment.md` | Both contracted manual assessments: the first **SATISFIED** on 2026-08-20 with its author, date, role and terminal, the traced subject it was taken on, and the five-point-step fact disclosed before the judgment; the second **outstanding, author none**, with its route decided and the two declined options recorded. |
+| `discoverability-assessment.md` | The packet for assessment 2, written to be handed to whoever administers it: who may assess and who may not, which frame to show, the question verbatim, what each of the three outcomes means and where it belongs, what the administrator must not say, and how to record the result. Usable without reading `SPEC-MOK-003` rule 7 to the assessor. |
+| `discoverability-frame.txt` | The frame that assessment 2 shows: 48 rows × 160 columns, the reference viewport at tick 200 of seed 42, extracted unmodified from `frames.txt` lines 14–61 so it can be shown without the banner that names the viewport. `?` appears on the header row and nowhere else. |
+| `discoverability-frame-floor.txt` | The same for the floor, 22 rows × 34 columns, `frames.txt` lines 389–410. The hint is `?` alone and three hidden panes are announced at the last rung. The harder case, for a second assessor only. |
 | `frames.txt` | A frame at all nine renderable viewports plus the floor, each with the header line in full and every roster entry drawn. The instrument's own output for the hint, the announcement and the ladder. |
 | `gauge-resolution.txt` | For every gauge width the implementation can produce, the filled-cell count at every value in `0..=100`, counted out of cells. The sweep establishing that 47 columns is the whole set rather than assuming rule 5. |
 | `test-census.txt` | The census itself: `#[test]` counts by name per file, now and at `ff3a155`, with arrivals, departures, the tier split, and that no test carries `#[ignore]`. |
@@ -58,7 +65,7 @@ the agent's error in how the option was framed.
 | `analysis/interface.py` | The script behind `interface.txt`: counts public declarations per module in the working tree and at `ff3a155`. |
 | `analysis/test-census.py` | The script behind `test-census.txt`: counts `#[test]` functions **by name** per file at both commits, since a count cannot distinguish a rename from a removal plus an addition. Run it with `PYTHONIOENCODING=utf-8`. |
 
-Twenty-two files, 2.2 MB, of which the two retained event streams are 1.97 MB.
+Twenty-five files, 2.23 MB, of which the two retained event streams are 1.97 MB.
 
 ## On the oracle
 
@@ -89,25 +96,31 @@ This follows `WO-MOK-012`'s `assessment-oracle.rs`, `WO-MOK-010`'s `observer/fra
 `completion-summary.md` first — it is the eight-item report `WO-MOK-013` specifies, and it states what remains
 open. Then `closing-review.md` for who decided what, and whichever of `log-height.md`, `gauge-resolution.md` or
 `test-census.md` covers the measurement at hand. `manual-assessment.md` last, because it is the one document
-here that records an obligation rather than a result.
+here that still records an obligation alongside a result.
+
+`discoverability-assessment.md` is not in that order: it is not written for a reader of this pack but for
+whoever administers the one assessment left open. Read it when you are about to take that assessment, and not
+before — and if you have not read `SPEC-MOK-003` rule 7, do not read it at all, because you are one of the few
+people who can still be its assessor.
 
 ## What is not here
 
 - **No verification record.** `VER-MOK-013` classifies `commit_bound_verification` as **`required`**, and
   `VREC-MOK-013` does not exist. It is captured against the commit that carries this implementation, by a
-  separate accountable act, and it cannot record `REQ-MOK-047` or `REQ-MOK-048` as verified while the two
-  manual assessments stand outstanding.
+  separate accountable act. With assessment 1 satisfied it has become writable, and it would have to disclose
+  `REQ-MOK-048` as unverified.
 - **No commit hash of this work order's own commit.** A record cannot contain the hash of the commit that
   introduces it.
-- **No status transition, approval, assessment or release act taken by the agent.** All eighteen decisions
-  were the repository owner's and are attributed in `closing-review.md`; the two manual assessments are
-  unauthored because no person looked.
+- **No status transition, approval, assessment or release act taken by the agent.** All twenty-one decisions
+  were the repository owner's and are attributed in `closing-review.md`; assessment 2 is unauthored because
+  no admissible person has looked yet.
 - **No correction to `evidence/WO-MOK-005/frames.txt` and no edit to `VREC-MOK-005`.** That capture is a true
   record of what the instrument drew on the day it was taken, and the verification record it feeds is stale
   for reasons that are out of this work order's scope. `log-height.md` says so under *What was not done*.
 - **No assessment material directory.** `WO-MOK-012` needed one because its evidence *was* the captures a
   person judged. Here `frames.txt` and `gauge-resolution.txt` serve that role directly and are named as the
-  material in `manual-assessment.md`.
+  material in `manual-assessment.md`. The two `discoverability-frame*.txt` files sit at the top level for the
+  same reason: they are extracts of `frames.txt`, not a separate body of material.
 - **Nothing about the eight `W-HEX-003` reassessments, the three `W-HEX-001`s, `WO-MOK-008`'s draft
   disposition, `VREC-MOK-005`'s staleness, `VER-MOK-005`'s manual assessment 7, or `ROADMAP.md`'s Phase 2
   claim.** All out of scope, all still open. `validation.txt` attributes the warnings; it resolves none.

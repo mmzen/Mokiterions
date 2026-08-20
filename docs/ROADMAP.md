@@ -329,7 +329,7 @@ the approval.
 to. `REQ-MOK-047`, `REQ-MOK-048` and `REQ-MOK-049` were approved on 2026-08-20 in three separate acts, `VER-MOK-013`
 approved as their contract, six `SPEC-MOK-003` amendments ratified one question at a time, and the work order approved
 as a bounded scope — eighteen decisions, **all taken before implementation began** so that no amendment row was left
-`OUTSTANDING`. What changed:
+`OUTSTANDING`, and three more on the live pass that followed. What changed:
 
 - **The survival gauges resolve.** Two gauges per line instead of four raises the roster entry to three lines and the
   bar from **2 cells to 13**, which is 14 renderable states for 101 values where there were 3, and a ten-point change
@@ -342,18 +342,25 @@ as a bounded scope — eighteen decisions, **all taken before implementation beg
 - **The log is held at six rows wherever it is present**, which withdraws the ten-row growth at `160 × 48`. This is the
   product owner's decision 1 and it is a **trade, not a correction**: the reference viewport now shows four recent
   events where it showed eight. It is what keeps `REQ-MOK-020` intact, because twelve three-line entries need 36
-  interior rows and a six-row log is what leaves exactly 36. The fit has no slack in either direction.
+  interior rows and a six-row log is what leaves exactly 36. The fit has no slack in either direction. The trade was
+  put to the product owner a third time after the live pass, with the result on screen, and it **stands**.
 
 The workspace runs **226** tests, up from 212 — fourteen arrivals, no losses, reconciled name by name in that pack's
 `test-census.md`. The engine is untouched: `mokiterions-core/` is byte-identical to `master`, and non-perturbation is
 closed as a measured chain against `ff3a155` rather than asserted.
 
 **Status.** `WO-MOK-013` is **`approved`**, and implementation landed on the repository owner's direction of
-2026-08-20. It is **not verified**: `commit_bound_verification` is `required`, `VREC-MOK-013` does not exist yet, and
-**both of `VER-MOK-013`'s manual assessments are outstanding with no author** — one needs a person at a real terminal,
-and the other needs a person who has not read `SPEC-MOK-003` rule 7, which the owner has read and ratified amendments
-to. That constraint is recorded with three options in `evidence/WO-MOK-013/manual-assessment.md` and none is taken.
-Everything measured is in `engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
+2026-08-20. It is **not verified**: `commit_bound_verification` is `required` and `VREC-MOK-013` does not exist yet.
+
+Of `VER-MOK-013`'s two manual assessments, **the gauge-legibility one was taken at `160 × 48` on 2026-08-20 and is
+SATISFIED** — which is the adverse observation this chain exists to answer, now answered by a person rather than by
+arithmetic. **The discoverability one is still outstanding with no author**: it needs a person who has not read
+`SPEC-MOK-003` rule 7, which the available assessor has read and ratified six amendments to. The owner chose to find
+such a person rather than amend the contract or close the row by decision — the only route that verifies
+`REQ-MOK-048` — so the frame, the question and the administrator's rules are prepared in
+`evidence/WO-MOK-013/discoverability-assessment.md` and the row waits on the person. `VREC-MOK-013` will therefore
+record `REQ-MOK-047` and `REQ-MOK-049` and disclose `REQ-MOK-048` as unverified. Everything measured is in
+`engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
 
 ---
 
