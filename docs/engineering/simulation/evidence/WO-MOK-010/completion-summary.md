@@ -30,7 +30,7 @@ Implemented, under `INT-MOK-006` → `CAP-MOK-006` → `REQ-MOK-031`…`REQ-MOK-
 or `ReferenceDecisionSource`, no dependency, no new package, target or build script, and no public interface item beyond
 the two the work order names. The two scope cuts the owner accepted — no per-Mokiterion trait display in the observer
 and no trait in the event vocabulary beyond the initialization record — were not implemented and are recorded as
-declined in `docs/mokiterions/ROADMAP.md`.
+declined in `../../../../ROADMAP.md`.
 
 Four changes were made that the *In scope* list does not name and that are reported here rather than left to a diff:
 

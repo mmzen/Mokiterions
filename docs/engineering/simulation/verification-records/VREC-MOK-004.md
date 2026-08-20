@@ -259,7 +259,7 @@ One derived observation survives into this record rather than being left to be r
 Explorer raises `W-HEX-001` against `WO-MOK-004`, reporting no evidence document keyed to its ID. That is
 a detection mismatch and not a shortfall: `discover_evidence` in `scripts/generate_harness_dashboard.py`
 keys evidence on the *file name*, while this work order's evidence is retained in a *directory* named for
-the work order, so no file name matches the pattern. `docs/mokiterions/ROADMAP.md` already records the
+the work order, so no file name matches the pattern. `../../../ROADMAP.md` already records the
 mismatch and the need to align the convention in one direction. It applies identically to `WO-MOK-001`,
 `WO-MOK-002`, and `WO-MOK-003`, and because the rule's status set includes `verified` and `released`, the
 observation will not clear on verification and would not clear on release.

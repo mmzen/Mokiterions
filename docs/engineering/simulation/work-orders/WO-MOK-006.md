@@ -229,7 +229,7 @@ specification contradiction by choosing one reading.
   resolve. Whether any does is established by running them, not by reading them.
 - `SPEC-MOK-002`, `SPEC-MOK-003` and `ARCH-MOK-002`: the amendments under *Lifecycle*, in their amendment records.
 - `docs/engineering/REPOSITORY_CONTEXT.md`: commands, architecture, and the test-placement sentence.
-- `docs/mokiterions/ROADMAP.md`, to record the restructure, if it records structural phases.
+- `../../../ROADMAP.md`, to record the restructure, if it records structural phases.
 - Work-order-keyed evidence under `docs/engineering/simulation/evidence/WO-MOK-006/`.
 - No other product domain and no harness-managed policy file.
 

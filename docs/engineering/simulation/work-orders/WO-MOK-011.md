@@ -311,7 +311,7 @@ The implementation agent may **not** decide:
 
 Every other existing test is expected to pass untouched, and the census is what demonstrates it.
 
-**Documentation:** `SIMULATION_RULES.md` and `docs/mokiterions/ROADMAP.md`.
+**Documentation:** `SIMULATION_RULES.md` and `../../../ROADMAP.md`.
 
 ## Required verification
 

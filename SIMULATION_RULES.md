@@ -461,7 +461,7 @@ Two honest consequences of this rule, both known and accepted:
   is High. Territories look full while the food anybody will actually walk to has run out. Over very
   long runs this is fatal: at the default density on seed 123, everyone is dead by tick 9,154. Nothing
   promised otherwise — the survivor target is about turn 1,000 — and fixing it is scheduled work,
-  recorded in `docs/mokiterions/ROADMAP.md`.
+  recorded in `docs/ROADMAP.md`.
 
 ### Bending the rule: waste tolerance
 
@@ -634,7 +634,7 @@ Worth stating plainly, because the project's eventual goals make people expect m
 - **No AI or language model.** All three deciders are a few lines of fixed rules.
 - **No graphics, no saved files, no network.** Text output only.
 
-All of these are planned. The order they arrive in, and why, is in `docs/mokiterions/ROADMAP.md`.
+All of these are planned. The order they arrive in, and why, is in `docs/ROADMAP.md`.
 
 ---
 
@@ -643,6 +643,6 @@ All of these are planned. The order they arrive in, and why, is in `docs/mokiter
 | To find out | Read |
 |---|---|
 | The exact, binding rules | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
-| What is planned, and in what order | `docs/mokiterions/ROADMAP.md` |
+| What is planned, and in what order | `docs/ROADMAP.md` |
 | What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/` and `.../WO-MOK-010/` |
 | How changes get approved here | `ENGINEERING_HARNESS.md` |

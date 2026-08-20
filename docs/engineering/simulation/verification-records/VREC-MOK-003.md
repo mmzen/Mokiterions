@@ -162,7 +162,7 @@ rediscovered. The Harness Explorer raises `W-HEX-001` against `WO-MOK-003`, repo
 document keyed to its ID. That is a detection mismatch, not a shortfall: `discover_evidence` in
 `scripts/generate_harness_dashboard.py` keys evidence on the *file name*, while this work order's
 evidence is retained in a *directory* named for the work order, so no file name matches the pattern.
-`docs/mokiterions/ROADMAP.md` already records the mismatch and the need to align the convention in one
+`../../../ROADMAP.md` already records the mismatch and the need to align the convention in one
 direction. It applies identically to `WO-MOK-001` and `WO-MOK-002`, whose records are also `verified`,
 and because the rule's status set includes `verified` and `released`, the observation does not clear on
 verification and would not clear on release. The 29 retained evidence files are enumerated in

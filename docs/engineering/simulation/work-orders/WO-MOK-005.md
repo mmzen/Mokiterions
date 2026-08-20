@@ -326,7 +326,7 @@ make a test easier to write.
 - A new `mokiterions-tui/` directory with its manifest, sources and tests.
 - Automated tests in both packages.
 - Work-order-keyed evidence under `docs/engineering/simulation/evidence/WO-MOK-005/`.
-- `docs/mokiterions/ROADMAP.md`, to record the observer phase.
+- `../../../ROADMAP.md`, to record the observer phase.
 - The amendments this work order's approval is conditioned on, applied in the artifacts they belong to and recorded in
   their amendment records with their approval status stated: `SPEC-MOK-002` rules 1, 3, 5 and 6; `ARCH-MOK-001`'s
   2026-08-18 row; and a dated note in `ADR-MOK-002`'s *Status* section, which refined-not-superseded is what

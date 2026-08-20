@@ -24,7 +24,7 @@ Components:
 
 Artifacts amended: `SPEC-MOK-001` (rule 5, third amendment), `REQ-MOK-014` (single declared
 density, floor raised to 8), `VER-MOK-002` (matrix, residual uncertainty, manual assessments),
-`WO-MOK-002` (scope, escalation resolutions, status). `docs/mokiterions/ROADMAP.md` records the
+`WO-MOK-002` (scope, escalation resolutions, status). `../../../../ROADMAP.md` records the
 one deferred item in Phase 2.
 
 ## 2. Authorized local decisions
@@ -132,7 +132,7 @@ All under `docs/engineering/simulation/evidence/WO-MOK-002/`:
 - The whole of this work is captured as **one candidate commit** on that branch, authorized by the
   repository owner on 2026-08-17. It contains:
   - modified `src/simulation.rs`, `src/cli.rs`, `src/main.rs`,
-    `docs/engineering/simulation/specifications/SPEC-MOK-001.md`, `docs/mokiterions/ROADMAP.md`;
+    `docs/engineering/simulation/specifications/SPEC-MOK-001.md`, `../../../../ROADMAP.md`;
   - new `INT-MOK-002`, `CAP-MOK-002`, `REQ-MOK-013`, `REQ-MOK-014`, `REQ-MOK-015`, `VER-MOK-002`,
     `WO-MOK-002`, and this evidence directory.
 - `Cargo.toml` and `Cargo.lock` are unmodified, and `master` is untouched.

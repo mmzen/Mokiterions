@@ -39,7 +39,7 @@ executable behaviour is different because of the renumbering. Only the name is.
 The rename was applied by byte substitution of the three identifiers across every tracked file, with one exclusion.
 
 **Rewritten — 45 files, 310 occurrences.** The three artifacts themselves; `SPEC-MOK-001` through `SPEC-MOK-004`,
-`REQ-MOK-032`, `REQ-MOK-034`, `SIMULATION_RULES.md`, `docs/mokiterions/ROADMAP.md` and the repository
+`REQ-MOK-032`, `REQ-MOK-034`, `SIMULATION_RULES.md`, `../../../../ROADMAP.md` and the repository
 `.gitattributes` comment; the doc comments and test comments in `mokiterions-core` and `mokiterions-tui` that cite the
 work order or the verification contract; and, in this packet, the six authored prose files — `README.md`,
 `completion-summary.md`, `escalation.md`, `manual-assessment.md`, `requirement-to-test-mapping.md`,
