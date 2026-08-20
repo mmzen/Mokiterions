@@ -160,3 +160,19 @@ re-running them chooses the layout and should not expect the tools to reproduce 
 the assurance owner against the commit that carries this implementation, and the implementation agent
 neither writes nor approves it. `VER-MOK-011` is not satisfied while manual assessment 5 is
 outstanding — see `manual-assessment.md`.
+
+> **Later fact, added 2026-08-20 without changing anything above.** `VREC-MOK-011` was transitioned from
+> `ready` to `verified` on that date by the repository owner as assurance owner. **It binds `9ddcf83` and
+> not the merged tree**, assessment 5 remains outstanding, and the sentence above about `VER-MOK-011` is
+> unchanged by the transition. `WO-MOK-011` was **not** moved and stays `in_progress`. The re-derivation
+> `merge/README.md` records as owed — oracles 1, 2 and 4 and the mutation control — is still owed, and a
+> record bound to the merge commit is still owed with it. `assurance-decision.md` records the decision,
+> what it accepted and what it left standing.
+>
+> **Corrected the same day, one commit later:** `WO-MOK-011` **did** move, to `implemented`, on a separate
+> instruction given as engineering owner. Everything else in this note stands — the record still binds
+> `9ddcf83`, assessment 5 is still outstanding, and the re-derivation and the merge-bound record are still
+> owed. `implemented` says the change is complete and its evidence retained; it says nothing about
+> verification. The work order's own *Transition to `implemented`* subsection records what moved with it,
+> including the `W-HEX-001` this packet now raises: evidence discovery keys on **file** names beginning
+> with the work-order identifier, and every file here is named for what it contains instead.
