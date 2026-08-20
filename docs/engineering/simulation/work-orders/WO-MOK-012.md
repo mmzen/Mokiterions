@@ -2,7 +2,7 @@
 id = "WO-MOK-012"
 type = "work_order"
 title = "Emit a structured record stream to an operator-named sink, leaving the observed run unchanged"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -129,6 +129,98 @@ Stated factually, at `ff3a155`, and taking no decision about any of it.
   resolve it in the same act that approves this chain's `ARCH-MOK-001` amendment**, because adding a row beneath an
   outstanding one leaves the record harder to read than it was. Whether to do so is the owner's call and this work
   order does not require it; `VER-MOK-012` oracle 7 records its state either way.
+
+### Transition to `implemented`
+
+**Status moved from `in_progress` to `implemented` on 2026-08-20**, on the repository owner's instruction given as
+engineering owner. The instruction was one of four answers to four framed questions in a single turn, the option
+selected reading **"Push, WO implemented, PR ready"**. The implementation agent measured the options, recorded the
+transition and did not decide it. The status had stood at `in_progress` through implementation, through the evidence
+capture, through the eight manual assessments being recorded, and through `VREC-MOK-012` moving to `verified` one
+commit earlier, because no earlier instruction covered a lifecycle transition and this work order's *Authorized
+decision envelope* does not place one inside the agent's local decisions.
+
+**The order follows `WO-MOK-011`'s pair rather than `WO-MOK-010`'s.** The verification record moved first, at
+`5634b6a`, while this file still read `in_progress` — and said so. Those statements are corrected in this same commit
+rather than left stale, each keeping what it said with the later fact beside it.
+
+**What is implemented.** Everything under *In scope*: `--events-path <path>` through the existing option machinery with
+its four rejection cases; the library target taking a sink as a `Write` implementation on one new optional parameter of
+`execute` and performing no filesystem operation; the binary target resolving the path, creating and truncating the
+file, supplying the buffered writer, flushing, closing and removing a file it created on failure; the header, event,
+metrics and run record kinds as `SPEC-MOK-006` rules 5 through 8 fix them, in rule 9's order with rule 2.3's field
+order; the projection placed at the single point every authoritative event already passes through; the cumulative
+counters, each saturating, private and read only by the record producer; per-Mokiterion death ticks as `Option<u64>`;
+the `final` object carrying the summary line's twelve figures; the closed value alphabet as a property of the code with
+oracle 5's exhaustive check; the twelve `ARCH-MOK-001`, nine `SPEC-MOK-001` and five `SPEC-MOK-002` provisions written
+as approved amendments with their amendment-record rows; every check, measurement and retained item `VER-MOK-012`
+requires; and `SIMULATION_RULES.md` and the roadmap entry.
+
+Between the base commit `de33d744` and the candidate, that is **8 files outside `docs/`, 3,090 insertions and 66
+deletions** — of which the source alone is 7 files, 3,028 insertions and 64 deletions, `SIMULATION_RULES.md` being the
+eighth at 62 and 2.
+
+The candidate commit is `50364a3719c68643f0b5354798b6d3084cff1c0e`, whose gates are recorded in `VREC-MOK-012` and
+reproduced from `evidence/WO-MOK-012/gates.txt`: **246 tests, 246 passed, 0 failed, 0 ignored, 0 filtered out** across
+22 targets in one workspace invocation; `cargo fmt --all -- --check` and
+`cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` clean in both packages with `Cargo.lock`
+not rewritten; `cargo tree -p Mokiterions` still a single line; the engine's public interface at 49 items, 43 public
+fields and 92 `pub` lines, growing by one parameter on `execute` and by no item; and validator PASS at 113 artifacts
+with 0 errors and 0 warnings across all four planes.
+
+**One figure in this file's own text is wrong and is not corrected here.** The `[assurance] rationale` above, and lines
+in *In scope*, *Expected change surface* and *Completion report format*, say **six** cumulative counters. There are
+**seven** `u64` counters in four struct fields. It is defect 4 of the nine in `evidence/WO-MOK-012/completion-summary.md`
+item 16, the owner's disposition of 2026-08-20 defers all nine to a correction work order in Phase 4b, and amending an
+approved work order is not this transition's act. The count is wrong in the artifact and right in the code.
+
+**What this status does not do.** It does not verify the work on `master`: `WORKFLOW.md` states that the verification
+record moves separately through an accountable human decision and that work-order status never substitutes for it, and
+`VREC-MOK-012` binds `50364a3` rather than a merged tree, so on a merged tree the gates, the census, the interface
+enumeration and oracles 1 through 6 need re-running rather than carrying over. It does not satisfy `VER-MOK-012` in
+every literal respect: two *Evidence retention* bullets are unmet as written and met by substitution, disclosed in the
+packet `README.md`. It does not correct a defect or resolve a carried-forward amendment row — `ARCH-MOK-001`
+2026-08-18, `SPEC-MOK-002` 2026-08-18 and `SPEC-MOK-004` 2026-08-19 all still stand. And it releases nothing: no
+release record binds this work.
+
+**The derived figures that move with the status are measured rather than predicted.** Both readings were taken in this
+clone with `HEAD` at `5634b6a`, the `in_progress` version restored to disk for the first and this version put back for
+the second, so the pair compares one input.
+
+| Reading | `in_progress` | `implemented` |
+|---|---|---|
+| `validate_engineering_artifacts.py` | PASS — 114 artifacts, 0 errors, 0 warnings across four planes | **identical** |
+| `generate_harness_dashboard.py` | PASS — 114 artifacts, 373 relations, 0 errors, **7** warnings | PASS — 114, 373, 0 errors, **8** warnings |
+| dashboard snapshot | `b02e79d4a6f490347f6aa2c4d5cce31e11ce7e039b11854de8aba4927444c6d6` | `4423982de1a866cccbd43f5685c2b9db79e89b37978b20756e2325925a875981` |
+| `inspect_engineering_artifacts.py` findings | **20** — error 0, warning 7, info 13 | **21** — error 0, warning **8**, info 13 |
+| `W-HEX-001` observations | 2 — `WO-MOK-010`, `WO-MOK-011` | **3** — and `WO-MOK-012` |
+| Active work | **1** — `WO-MOK-012` `[in_progress]` | **0 — none** |
+| Assurance pending | 0 | **0, unchanged** |
+| Decision required | 0 | 0 |
+| Definitions pending | 1 — `WO-MOK-008` `[draft]` | 1, unchanged |
+| Suggested next steps | 9 | **9** |
+
+**The one warning this transition adds is the expected one and is not a new problem discovered late.** `W-HEX-001`
+fires against an `implemented` work order whose evidence the inspector cannot discover, and it cannot discover this
+packet's because `discover_evidence` matches the work-order identifier against each **file's own name** while the
+identifier here belongs to the directory, `evidence/WO-MOK-012/`. Fifty-six files sit in it. `WO-MOK-010` and
+`WO-MOK-011` carry the same observation for the same reason, which is why the count moves 2 → 3 rather than 0 → 1.
+
+**Two figures that did not move are worth naming, because both could have.** *Assurance pending* stays at **0**: the
+inspector puts an `implemented` work order there when it is not actively covered by an assurance record, and
+`VREC-MOK-012` was moved to `verified` in the commit before this one, so this status arrives to a record that already
+covers it. *Suggested next steps* stays at **9** while its composition changes — the `active_work` step disappears and
+`W-HEX-001` gains an observation, netting zero.
+
+**Disclosed rather than repaired.** `evidence/WO-MOK-012/analysis/amendments.py` — oracle 7 — carries `WO-MOK-012` at
+`in_progress` in its own `CHAIN` constant and asserts it, which was true at the tree it was captured against. Re-run
+after this move, **it reports exactly that one control failing and nothing else**: exit 1, with a closing result block
+reading *RESULT: FAIL — 1 finding*, the finding being *WO-MOK-012 carries status `implemented`, expected
+`in_progress`*. Diffed against the retained report, two places move in 291 lines — the chain table's `WO-MOK-012` row, whose `ok` cell turns `**NO**`, and
+the closing result block. Every phrase control on every amendment row, the `OUTSTANDING` accounting and the eighteen
+must-not-move documents reproduce unchanged. **The retained `amendment-approvals.md` is not regenerated to track a
+status that moved after it was taken**; the re-run was written to a scratch file outside the repository, which was
+deleted, and the retained report shows no modification. It is the script measuring the tree it was written for.
 
 ### Why this chain is numbered 009, 042–046, 006, 005 and 012
 

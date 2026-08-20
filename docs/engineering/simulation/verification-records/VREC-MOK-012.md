@@ -252,6 +252,15 @@ engineering next — in the order `VREC-MOK-011`'s transition and `WO-MOK-011`'s
 permits it either way: `in_progress` and `implemented` are both in the set a `verified` record's work
 order may carry.
 
+> **Later fact, 2026-08-20, in the commit after this record's transition: `WO-MOK-012` is now
+> `implemented`.** The paragraph above is what stood when this record moved, and it stands unedited
+> because the sentence it makes — that the two are separate commits by separate accountable roles — is
+> only demonstrated by having been written while the first had happened and the second had not. The
+> engineering-owner act is recorded in that work order's *Transition to `implemented`* section with the
+> derived figures measured either side of it. **Nothing in this record's substance depends on which of
+> the two statuses the work order carries**, which is the reason the paragraph names the validator's set
+> rather than a single permitted value.
+
 At candidate commit `50364a3719c68643f0b5354798b6d3084cff1c0e`, **every automated case, oracle,
 scenario and static check in `VER-MOK-012` was executed and passed.** The contract's eight manual
 assessments had no author at that commit and were **recorded by the owner on 2026-08-20**, afterwards;

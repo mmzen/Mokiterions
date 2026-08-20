@@ -165,6 +165,16 @@ differently. This is `VREC-MOK-011`'s correction of the same table, reused rathe
 inspector raises a `W-HEX-001` evidence observation against a work order once it is `implemented`. Those
 figures are measured and recorded in the commit that moves them, not predicted here.
 
+> **Later fact, 2026-08-20, in the commit after this one: they were measured, and the prediction above
+> held in both halves.** *Active work* went 1 → 0 and a third `W-HEX-001` observation appeared against
+> `WO-MOK-012`, taking dashboard warnings 7 → 8 and inspector findings 20 → 21 with error counts
+> unmoved. The full pair is in `WO-MOK-012`'s *Transition to `implemented`* section, measured in this
+> clone at `HEAD` `5634b6a` with the work order's `status` as the only moving input. **One figure that
+> row did not attempt to predict is worth reading there**: *Assurance pending* stayed at **0**, because
+> the decision this note records had already put a `verified` record over that work order before its
+> status arrived. Had the two commits gone in the other order, the work order would have sat in
+> `assurance_pending` for a commit.
+
 ## Reported rather than repaired
 
 1. **Oracle 7's script is pinned to the candidate state and must not be re-run as a re-measurement after
@@ -173,6 +183,12 @@ figures are measured and recorded in the commit that moves them, not predicted h
    against the very transition that was authorized. That is the script measuring the tree it was written
    for, not a defect in either. The retained `amendment-approvals.md` is a measurement of the candidate
    tree; its own constants say so.
+
+   > **Later fact: it was re-run in the next commit and reported exactly that, and nothing more** — exit
+   > 1, one finding, *WO-MOK-012 carries status `implemented`, expected `in_progress`*, with two places
+   > moving in 291 lines. The output went to a scratch file outside the repository and the retained report
+   > shows no modification. Predicting the failure and then declining to observe it would have left the
+   > claim untested, so it was observed; what was not done is regenerate the report.
 2. **`amendment-approvals.md` still reports the eight manual assessments as `OUTSTANDING`.** It is
    generated, it is left as generated, and that is the state its own generation measured. The packet
    `README.md` discloses it. Hand-editing a generated artifact to agree with a later fact is what this
@@ -186,3 +202,10 @@ figures are measured and recorded in the commit that moves them, not predicted h
 It sets `status = "verified"` on `VREC-MOK-012`, adds this file, and records the decision in the record's
 body, the packet `README.md` and `manual-assessment.md`. It corrects no defect, resolves no amendment
 row, moves no work order, merges nothing, tags nothing and releases nothing.
+
+> **Later fact, 2026-08-20.** The three later-fact blockquotes above were added to this file in the
+> commit that followed, which moved `WO-MOK-012` to `implemented`. **The sentence above therefore
+> describes the commit that created this file and not the state of the branch**, and it is left as
+> written: this commit moved no work order, and the next one moved exactly one by a different accountable
+> role. What that commit still did **not** do is the rest of the list — no defect corrected, no amendment
+> row resolved, nothing merged, tagged or released.

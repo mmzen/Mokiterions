@@ -244,6 +244,15 @@ what it accepted includes the two retention deviations as they stand and the nin
 nine were **deferred to a correction work order in Phase 4b** — a disposition, not a repair: that work
 order does not exist yet, so six approved artifacts keep a known wrong statement until it lands.
 
+**A fourth act followed, by a fourth role.** `WO-MOK-012` moved from `in_progress` to `implemented`, the
+owner acting as engineering owner, in the commit after the transition. It changes nothing this packet
+measured — the packet binds `50364a3`, and the status of a work order is not an input to any oracle here —
+but it does change what the inspector reports about the packet: an `implemented` work order whose evidence
+is not discoverable by filename raises `W-HEX-001`, and this directory's fifty-six files are named for
+what they measure rather than for the work order, so the observation now names `WO-MOK-012` alongside
+`WO-MOK-010` and `WO-MOK-011`. That is a naming convention meeting a discovery heuristic, disclosed here
+rather than answered by renaming fifty-six files.
+
 **What still stands after all of it**: the two retention deviations, so `VER-MOK-012`'s *Evidence
 retention* list is answered in substance and not satisfied on bullets 3 and 4 as written; the nine
 defects, uncorrected; and the three carried-forward `OUTSTANDING` amendment rows — `ARCH-MOK-001`

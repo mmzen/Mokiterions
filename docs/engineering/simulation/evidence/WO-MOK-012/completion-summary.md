@@ -997,6 +997,13 @@ Before `VREC-MOK-012` can be written:
 > prepared as `ready` **before** items 1 through 4 were answered, and transitioned after. Preparing a
 > candidate needs none of them; deciding on it needs all of them, which is the distinction the two
 > statuses exist to carry.
+>
+> **`WO-MOK-012` is `implemented` as of the commit after that one**, on the owner's instruction as
+> engineering owner. Two statements in this report therefore describe a status that has moved: the header
+> table's *status `in_progress`* and the paragraph opening this section. **Both are left as written** —
+> they are what the candidate tree carried, this report measured that tree, and its own header names the
+> candidate commit. `implemented` does not mean closed either: `WORKFLOW.md` puts closure with the
+> verification record, and the merge and a record bound to it are still ahead.
 
 **What this file establishes:** that seven oracles were run over the declared matrix and pass, that the
 text stream and the entropy sequence are unmoved, that the gates are green, and that the amendments
