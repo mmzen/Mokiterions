@@ -263,7 +263,8 @@ substitutes for the other. Phase 4 remains where it is.
 
 **Artifact chain.** The packet drafted on 2026-08-17 is: `INT-MOK-004`, `CAP-MOK-004`, `REQ-MOK-019` through
 `REQ-MOK-027`, `SPEC-MOK-003`, `ARCH-MOK-002`, `ADR-MOK-003`, an in-place amendment of `ARCH-MOK-001`,
-`VER-MOK-005`, and `WO-MOK-005`. Every artifact is `draft` and awaits its accountable owner.
+`VER-MOK-005`, and `WO-MOK-005`. Every artifact was `draft` when that packet was drafted; the current lifecycle state
+of each is in its own metadata, and the **Status** paragraph below states where the chain now stands.
 
 Two of those artifacts are load-bearing rather than procedural. `REQ-MOK-026` is the approved requirement that
 `ARCH-MOK-001`'s prohibition on separate crates has always named as its own unlock. The `ARCH-MOK-001` amendment
@@ -278,6 +279,43 @@ events and final state, under heavy operator interaction, with identical per-tic
 package's dependency set is empty, proved per package. Rendering is asserted cell by cell from an in-memory
 buffer at each declared viewport, because a claim about a screen only a human has seen is the weakest evidence
 this project accepts — and the observer's whole value is being trusted about what it shows.
+
+**Status.** Implemented under `WO-MOK-005` and **verified**: `VREC-MOK-005` is `verified`, bound to commit `f361370`.
+But it was verified with its whole manual and amendment debt disclosed and outstanding, in its own words "with all
+seven manual assessments outstanding and unauthored, and eleven amendment provisions still `OUTSTANDING`" — so the
+record certified that the parts behave as specified and explicitly not that the instrument answers `INT-MOK-004`'s
+questions or that anything is legible on a real terminal.
+
+**That debt was discharged on 2026-08-20 under `WO-MOK-012`**, a governance-only work order that changes no executable
+behavior — the diff touches nothing under `mokiterions-core/` or `mokiterions-tui/`, and the workspace's 212 tests,
+formatter and linter are unmoved. In one interactive review the repository owner took fifteen decisions:
+
+- **All eleven amendment provisions ratified as written** — four in `SPEC-MOK-002`, one in `ARCH-MOK-001`, one in
+  `SPEC-MOK-003`, five in `SPEC-MOK-004`. The `ARCH-MOK-001` one is load-bearing: it is the provision that makes the
+  shipped observer legal, and ratifying it authorized what was already in the tree rather than permitting anything new.
+- **Six of the seven manual assessments performed and authored** by the owner, including the reference-viewport
+  legibility and colour-independence assessments the contract names.
+- **The seventh left outstanding by deliberate decision.** The shipped binary has no operator-reachable panic path, so
+  the live-terminal inspection cannot be performed by running the observer, and the contract's "rather than only by an
+  automated assertion" makes the retained automated result insufficient by construction. Closing it against a proxy
+  would have the record assert that a person inspected something no person had seen. **`VREC-MOK-005` continues to
+  disclose it, and a release record covering this chain inherits that disclosure.**
+- **Three restatements of `VER-MOK-005`**, whose subjects had moved since approval. One is notable as a defect in an
+  approved assurance artifact rather than in the implementation: assessment 3 asked for a run with colour disabled, and
+  the observer has no such flag and honours no such variable, so the assessment was unperformable on the shipped binary
+  from the day it was approved.
+
+**Three adverse observations came out of the live pass, and none is fixed.** The `?` key that opens the control
+documentation is advertised nowhere on screen; the roster's survival gauges are two columns wide, which draws three
+distinct states for 101 attribute values; and the hidden-pane notice — which does exist, is permanent and does
+conform — names the overlay key rather than saying the terminal is too small, and carries no visual emphasis. The
+product owner placed all three in a **separate chain** with the design settled in advance, on the reasoning that
+recording and fixing are different acts and folding a rule 4 redesign into this work order would keep the assessment
+obligation open past the next release record. That chain re-sweeps its own identifiers rather than trusting a record of
+what was free.
+
+`WO-MOK-012` is governance-only and stops at `implemented`. Everything decided, and the measurement behind each
+decision, is in `engineering/simulation/evidence/WO-MOK-012` — start with its `README.md`, then `closing-review.md`.
 
 ---
 
@@ -349,10 +387,12 @@ stand in the way of a verified record:
    owner overrode the gate on 2026-08-19 and authorized implementation over it, on the recorded mitigation that the
    two layers stay separable by inspection. **One half of that has since resolved and the other has not.**
    `VREC-MOK-005` is now `verified` on `master` and `WO-MOK-005` is `implemented`, so the gate's status condition is
-   met. Its substance is not: the record was verified with all seven of its manual assessments outstanding and
-   unauthored and eleven amendment provisions still `OUTSTANDING`, which the record states about itself. Phase 1.5's
-   obligations are therefore still open and still a prerequisite of *two* verification records rather than one — what
-   changed is that they are no longer also a blocked governance transition.
+   met. Its substance was not: the record was verified with all seven of its manual assessments outstanding and
+   unauthored and eleven amendment provisions still `OUTSTANDING`, which the record states about itself. **This is now
+   substantially resolved.** `WO-MOK-012` ratified all eleven provisions on 2026-08-20 and authored six of the seven
+   assessments; the seventh is outstanding by the assurance owner's deliberate decision, for a reason recorded in
+   Phase 1.5's status above, and it remains a disclosure any release record covering that chain inherits. What Phase 1.5
+   still owes this gate is that one assessment, not the whole debt the gate was overridden against.
 
 **The record predates the merge with `master` and has not been re-captured against it.** `VREC-MOK-010` binds
 `4f32a9f`, which is not this branch's tip. Everything it says was true of the tree it names, and item 3 above is the
@@ -418,7 +458,8 @@ could not preserve. **A second thing is still owed, and it is not about this wor
 predates `master`'s release-ci work, so oracle 3's census, oracle 4's frames and `SPEC-MOK-004`'s counted rules are
 re-derived when this branch merges `master`. Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
 `SPEC-MOK-004` — are approved by the repository owner's act of 2026-08-19; the rows marked `OUTSTANDING` in those
-specifications from earlier work are untouched and still outstanding. Everything measured is in
+specifications from earlier work were untouched by this work and outstanding when it completed, and were subsequently
+ratified on 2026-08-20 under `WO-MOK-012`. Everything measured is in
 `engineering/simulation/evidence/WO-MOK-011`.
 
 **It does not close anything Phase 2 left open.** `fear` is still read by nothing, the trait vector is still one

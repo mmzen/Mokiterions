@@ -5,7 +5,7 @@ title = "Terminal observer and component separation verification"
 status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-17"
-updated = "2026-08-19"
+updated = "2026-08-20"
 
 [relations]
 verifies = [
@@ -32,6 +32,7 @@ artifact is recorded where a reader looks for it rather than inferred from a dif
 | Date | Change | Approval |
 |---|---|---|
 | 2026-08-19 | Amended to follow `SPEC-MOK-003` rule 5's replacement of the tier table by one pane threshold per axis. The declared viewport set gains `160 × 40`, `140 × 43` and `120 × 30` — the sizes at which the previous tier table dropped the roster, the inspector and the log at once, and which the old set did not reach. The tier-selection case becomes a pane-presence case; the canvas-interior and whole-world cases are restated for the nine viewports, one figure having changed (`100 × 30`, 98 × 24 → 51 × 24). A **layout monotonicity** case and property are added, checked by sweeping every dimension pair in `34 ≤ W ≤ 200` and `22 ≤ H ≤ 60` rather than at named sizes. The third residual-uncertainty bullet is rewritten: the risk it disclosed — a defect just inside a tier boundary, invisible to a set of named viewports — is the risk that materialized, and saying so is worth more than leaving the bullet as a general caution. Evidence retention gains the sweep result. No case about non-perturbation, entropy attribution, the engine boundary, the dependency set, export, authority mapping or terminal restoration changes, and no seed changes. | Approved 2026-08-19 by the repository owner as assurance owner, in the same act as the `SPEC-MOK-003` rule 5 amendment this contract depends on and as the direction to implement both. The implementation agent drafted this text and recorded this approval on the owner's explicit instruction; it holds no authority over either. |
+| 2026-08-20 | **Three of the seven manual assessments restated, because each named a subject that has moved since approval.** *Assessment 3* asked for a confirmation "with colour disabled or on a monochrome terminal". The observer offers no way to disable colour — `mokiterions-tui` has no `--no-color` flag and honours no `NO_COLOR` variable — so the assessment as written could not be performed on the shipped binary at all, and its automated counterpart already reads a colourless projection. It is restated as the check that survives and that no test can reach: whether `UNDERLINED` and `REVERSED` render distinguishably on the assessor's terminal, including where both fall on one cell. That is the part `evidence/WO-MOK-005/manual-assessment.md` had already identified as a person's to answer. *Assessment 4* asked that a rejection read as an authority outcome; `VREC-MOK-005` disclosure 5 records that no shipped decision source ever has a proposal rejected over 400 ticks of both policies, so the state is unreachable in a live run. It is restated to name the `#[cfg(test)]` hook route explicitly, so a future assessor is not sent after a state that cannot occur. *Assessment 5* asked whether "the reserved fourth roster bar position reads as empty space"; the slot is no longer reserved, because rule 4 as amended on 2026-08-19 presents a computed `fear` there. It is restated against the slot as it now exists. **No obligation is weakened and none is added**: each restatement points an existing obligation at a subject that exists. No case, property, static check, security check, performance case, declared viewport, seed or retained-evidence item changes, and assessments 1, 2, 6 and 7 are untouched. | Approved 2026-08-20 by the repository owner acting as assurance owner, in the same review that recorded all seven assessments and ratified the eleven outstanding provisions, under `WO-MOK-012`. Each of the three was put as its own question, with the measurement that showed the subject had moved, and decided on its own. The implementation agent measured the three mismatches, wrote this text and decided none of the substance. `VREC-MOK-005` is not edited: it is `ready` and bound to its commit, and what it verified was correct there. |
 
 ## Independence
 
@@ -277,9 +278,22 @@ this contract is a defect in the observer or in the boundary, never evidence abo
 - Confirm on a real terminal, at the reference viewport, that the whole-world overview is legible: that resource dots
   and Mokiterion letters are distinguishable and that the territory boundary reads as a boundary. Buffer assertions
   prove the cells are correct; only a person can report that the result is readable.
-- Confirm the same with colour disabled or on a monochrome terminal, and confirm no distinction is lost.
-- Confirm that a rejection in the inspector reads as an ordinary authority outcome rather than as an error.
-- Confirm the reserved fourth roster bar position reads as empty space rather than as a missing or broken value.
+- Confirm that `UNDERLINED` and `REVERSED` render distinguishably from unstyled cells and from each other on the
+  assessor's terminal, including where both fall on one cell. These two modifiers carry the shared-cell mark and the
+  roster selection, and they are the whole of what a person must answer here: the automated counterpart,
+  `verification::every_distinction_survives_the_loss_of_colour`, reads a projection holding only `(symbol, modifier)`
+  per cell and so cannot pass by colour, but it also cannot know whether a terminal renders underline at all. **The
+  observer offers no way to disable colour** — no flag and no honoured environment variable — so this is stated as a
+  modifier-legibility check rather than as a monochrome run, which cannot be performed on the shipped binary.
+- Confirm that a rejection in the inspector reads as an ordinary authority outcome rather than as an error. **This
+  state cannot be reached by running the observer**: `verification::no_shipped_decision_source_has_a_proposal_rejected`
+  establishes over 400 ticks of both policies that no shipped decision source ever has a proposal rejected. Assess it
+  through the `#[cfg(test)]` hook `replace_decisions_for_test`, or from the rendering that
+  `verification::the_presented_verdict_is_the_snapshots_and_a_rejection_is_not_a_fault` produces. An assessor sent to
+  find this state in a live run will not find it, and that is a property of the engine rather than a defect.
+- Confirm the fourth roster bar position reads as a computed value rather than as a missing or broken one. Since the
+  `SPEC-MOK-003` rule 4 amendment of 2026-08-19 the slot is no longer reserved: it presents a computed `fear`, and
+  `fear 0` renders as `0` with an empty bar, which rule 4 requires be distinguishable from an absent value.
 - Assess whether the overview's cell-granularity Mokiterion glyph is materially misleading about position. It locates
   a subject to within a 2 × 4 block of world cells by construction. If an operator misreads a position because of it,
   that is an adverse observation about rule 2 requiring a specification decision, not a defect to patch in the
