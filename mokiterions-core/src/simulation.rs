@@ -825,7 +825,7 @@ impl Observation {
             .collect()
     }
 
-    /// The Mokiterion rule 26 branch 3 engages: the nearest one in contact, then the lowest
+    /// The Mokiterion rule 26 branch 4 engages: the nearest one in contact, then the lowest
     /// identifier.
     ///
     /// Rule 3 already sorted the list by ascending distance and then identifier and already
@@ -839,7 +839,7 @@ impl Observation {
             .find(|other| other.distance <= CONTACT_RADIUS)
     }
 
-    /// The Mokiterion rule 26 branch 4 closes on or avoids: the nearest one perceived at a
+    /// The Mokiterion rule 26 branch 5 closes on or avoids: the nearest one perceived at a
     /// distance of `2` or more, then the lowest identifier.
     fn nearest_beyond_contact(&self) -> Option<&PerceivedMokiterion> {
         self.perceived_mokiterions
@@ -1075,15 +1075,16 @@ impl DecisionSource for IndividualDecisionSource {
 /// `fear` and its suffered-attack record, both carried on the rule 3 observation, and returns
 /// the first applicable branch.
 ///
-/// **The branch order is normative and this function's order is it.** Branches 1, 3 and 4
-/// return without a draw; branch 2 returns `eat` or `sleep`, which rule 19 reaches without a
-/// draw; only branch 5 can draw, and it draws exactly what rule 19 draws. So this source
-/// takes at most one draw per opportunity and never for a social decision.
+/// **The branch order is normative and this function's order is it.** Branches 1, 4 and 5
+/// return without a draw; branch 2 returns `eat` or `sleep` and branch 3 a seek step, which
+/// rule 19 reaches without a draw; only branch 6 can draw, and it draws exactly what rule 19
+/// draws. So this source takes at most one draw per opportunity and never for a social
+/// decision.
 ///
-/// Branches 2 and 5 delegate to rule 19 rather than restating it, so a Mokiterion under this
-/// source that never meets another behaves exactly as it would under `--policy individual`,
-/// trait and all. It introduces no survival constant of its own: the three constants are the
-/// two answer thresholds and the engagement threshold, and nothing else.
+/// Branches 2, 3 and 6 delegate to rule 19 rather than restating it, so a Mokiterion under
+/// this source that never meets another behaves exactly as it would under `--policy
+/// individual`, trait and all. It introduces no survival constant of its own: the three
+/// constants are the two answer thresholds and the engagement threshold, and nothing else.
 ///
 /// Reading `fear` and the record grants the source no authority: it proposes, and the engine
 /// decides under rule 6 with no relaxation. That matters most in branch 1, which answers the
@@ -6106,10 +6107,15 @@ mod tests {
         assert_eq!(draws, 0);
     }
 
-    /// Rule 26 branches 3 and 4: contact is engaged and distance is closed on or fled, both
+    /// Rule 26 branches 4 and 5: contact is engaged and distance is closed on or fled, both
     /// sides of the choice turning on the one engagement threshold.
+    ///
+    /// The two branches were numbered 3 and 4 when this test was written and are 4 and 5 after
+    /// the 2026-08-20 amendment hoisted rule 19's case 3 above them. The name follows the rule
+    /// rather than the history: nothing about what is asserted has changed, and a name that
+    /// disagreed with the specification's numbering would cost every later reader the mapping.
     #[test]
-    fn branches_three_and_four_choose_by_distance_then_by_the_engagement_threshold() {
+    fn branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold() {
         for distance in [0, CONTACT_RADIUS, CONTACT_RADIUS + 1, 8, PERCEPTION_RADIUS] {
             for (fear, engaged, afraid) in [
                 (0u8, "attack", "approach"),
@@ -6150,7 +6156,7 @@ mod tests {
         }
 
         // Contact is engaged ahead of distance, and among equals the lowest identifier is
-        // named: rule 3 sorted the list by distance and then identifier, so branch 3's
+        // named: rule 3 sorted the list by distance and then identifier, so branch 4's
         // tie-break is the first entry rather than a search of its own.
         let mut simulation = encounter(7, Coordinate { x: 20, y: 20 }, Coordinate { x: 25, y: 20 });
         simulation.agents[2].position = Coordinate { x: 21, y: 20 };
@@ -6162,7 +6168,7 @@ mod tests {
             }
         );
 
-        // One cell beyond perception there is no company at all, and branch 5 hands the
+        // One cell beyond perception there is no company at all, and branch 6 hands the
         // opportunity to rule 19, which searches and draws its one selection.
         let simulation = encounter(
             7,
@@ -6180,9 +6186,9 @@ mod tests {
     /// Rule 26's entropy discipline: at most one draw per opportunity, and never for a
     /// targeted proposal.
     ///
-    /// The property is structural — branches 1, 3 and 4 derive their answer, branch 2
-    /// delegates to the half of rule 19 that cannot draw, and branch 5 to the half that draws
-    /// exactly once — and this walks real runs at every declared seed to check that the
+    /// The property is structural — branches 1, 4 and 5 derive their answer, branches 2 and 3
+    /// delegate to the two halves of rule 19 that cannot draw, and branch 6 to the half that
+    /// draws exactly once — and this walks real runs at every declared seed to check that the
     /// structure holds at every opportunity a run actually presents.
     #[test]
     fn the_social_source_draws_at_most_once_and_never_for_a_targeted_proposal() {

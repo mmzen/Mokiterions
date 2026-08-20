@@ -132,8 +132,8 @@ fn every_targeted_verb_applies_somewhere_in_the_declared_matrix() {
         .join("\n");
     println!("targeted verbs over the declared seeds under `social`:\n{table}");
 
-    // `REQ-MOK-048` branches 2 and 5 delegate to rule 19, which never waits, so neither does this
-    // source.
+    // `REQ-MOK-048` branches 2, 3 and 6 delegate to rule 19, which never waits, so neither does
+    // this source.
     assert_eq!(waits, 0, "the social source proposed a wait");
 
     let unreached: Vec<&str> = TARGETED_VERBS

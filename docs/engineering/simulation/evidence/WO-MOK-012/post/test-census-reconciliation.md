@@ -8,6 +8,7 @@
 | Exit code | `101` — three cases fail; see §4 |
 | Date | 2026-08-20 |
 | Re-taken | **§6** — the candidate has moved three times since; 250 names, exit `0`, and a second rename |
+| Re-taken again | **§7** — the branch-numbering correction; still 250 names and exit `0`, with a third rename |
 
 Row 248 states the obligation this file discharges: no case present before the change may be
 **removed, renamed away or `#[ignore]`d**. It groups the three because they are the same loss from a
@@ -213,3 +214,43 @@ assertion the suite did not have before.
 Both were added by this work order, both still assert what they were written to assert, and the second
 now asserts strictly more than it did — it narrows the expected width of a tick on a death before its
 holder's turn, which the old form could not have detected.
+
+## 7. The third rename: `branches_three_and_four` becomes `branches_four_and_five`
+
+Re-taken again at the commit that carries this section, whose parent is `ef4f8aa`. The occasion is not
+an oracle this time but the numbering: the amendment of 2026-08-20 hoisted rule 19's case 3 into rule 26
+as a new branch 3, so the two branches that engage contact and close distance became 4 and 5, and four
+doc comments and one **test name** still said 3 and 4.
+
+| Field | Value |
+|---|---|
+| Invocation | `cargo test --locked --workspace --no-fail-fast`, from the workspace root |
+| Exit code | **`0`** |
+| Names | **250** — 250 passed, 0 failed, 0 ignored |
+| Date | 2026-08-20 |
+
+The census differs from §6's in exactly one line, and the diff is the whole of it:
+
+    - unittests :: simulation::tests::branches_three_and_four_choose_by_distance_then_by_the_engagement_threshold :: ok
+    + unittests :: simulation::tests::branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold :: ok
+
+| | Count |
+|---|---:|
+| names at the candidate | **250** — unchanged |
+| names present in §6 and absent here | **1** — this rename |
+| names added | **1** — this rename |
+| present at the baseline, absent at the candidate | **1** — still the §3 rename, and no other |
+| `#[ignore]`d | **0** |
+| removed | **0** |
+| non-`ok` outcomes | **0** |
+
+**Row 248 does not reach this name either, and for the same reason as §6's**: rule 26 does not exist at
+the baseline, so every test of its branches was added by this work order. What the row forbids is losing
+a case that was checked before the change, and the count above shows none was.
+
+**The body is untouched.** Not one assertion was added, removed, restated or reordered: the diff of that
+test is its name, its doc comment, and two words in two inline comments. The doc comment now records that
+the branches were numbered 3 and 4 when the test was written, so the history is on the case rather than
+only in this file. The alternative — leaving a normatively numbered branch list disagreeing with the test
+names that check it — would have cost every later reader the mapping, and `SPEC-MOK-001` rule 26 states
+that the ordering is normative rather than illustrative.
