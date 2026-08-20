@@ -450,6 +450,29 @@ one of the two inputs to the identifier advantage `VER-MOK-012` bounds." A later
 tick, and `fight` resolves as a strike, so the same asymmetry that lets it answer sooner is what raises its
 applied count. Nothing reads an identifier; the advantage is turn order, exactly as `INT-MOK-009` anticipated.
 
+### Rule 25's answering is a contributor and not the cause, and that was measured
+
+The specification calls turn order "**one of the two inputs**" to the advantage, the other being rule 12's and
+rule 20's own within-tick asymmetries. Whether amending rule 25 would remove the advantage therefore matters to
+the decision, and it was not inferred from that sentence. A throwaway ablation was applied behind an
+environment switch — branch 1 never fires, so no suffered attack is ever answered — and 400 seeds were measured
+with the switch off and on. It was reverted, and the reverted tree reproduces the declared figures.
+
+| 400 seeds, pooled by turn position in own territory | 1st | 2nd | 3rd | 4th | 5th | 6th | Spearman |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| net strikes, branch 1 live (control) | −109 | −105 | −59 | −62 | +65 | +270 | **+0.943** |
+| net strikes, branch 1 ablated | −42 | −50 | −41 | −1 | +37 | +97 | **+0.943** |
+| attacks applied, branch 1 live | 481 | 552 | 563 | 597 | 682 | 792 | **+1.000** |
+| attacks applied, branch 1 ablated | 891 | 1,036 | 970 | 1,034 | 1,081 | 1,125 | **+0.829** |
+
+**Removing rule 25's answering altogether shrinks the advantage without removing it.** The net-strike spread
+falls from 379 to 139 — a little under two thirds of the magnitude is rule 25's — and the ordering is
+unchanged at `+0.943`. What survives is the plainer half of turn order: a Mokiterion acting later in the pass
+observes a world that earlier actors have already moved through, so it finds company already in contact at its
+own turn. Amending rule 25 would therefore reduce this finding and not close it, and this is the ablation's
+whole purpose — an option whose cost is an approved specification and every figure in this record should not be
+put without knowing that.
+
 ### What this leaves the owner, and what has deliberately not been done
 
 The band has **not** been widened, the seed set has **not** been changed, and the test has **not** been
@@ -473,6 +496,24 @@ not this record's:
 
 `WO-MOK-012` cannot reach `implemented` while this row fails, and `REQ-MOK-051` blocks it independently under
 the deferral of 2026-08-20 in any case.
+
+### The four options, each measured
+
+None is adopted. Each is stated with what it measures and what it costs, so that the decision is taken against
+figures rather than against this record's preferences.
+
+| | What changes | Measured result | What it costs |
+|---|---|---|---|
+| **A** | Nothing. Record the advantage as a measured and accepted property of the world, leave oracle 5 exactly as written | The row keeps failing at +0.586 and +0.731 | **`WO-MOK-012` can never reach `implemented`.** A work order cannot close on a failing obligation, so this is not an end state |
+| **B** | Widen the band on the existing covariate | ±0.75 admits both — +0.586, +0.731, and +0.601 over 1,000 seeds | **Stop condition 8**, and the threshold is selected from the five numbers it binds: 0.731 is what forces 0.75. `REQ-MOK-014`'s amendment record is the standing lesson against exactly this |
+| **C** | Re-scope oracle 5's covariate to turn position within territory, keep ±0.5 and the declared five | **The row passes**: applied +0.493, suffered +0.383, survivals −0.169, net strikes +0.058 | It passes by **0.007** on one series while the same statistic over 1,000 seeds is **+1.000**. It converts a loud correct failure into a quiet wrong pass, and would certify the absence of an advantage that exists |
+| **D** | Amend `SPEC-MOK-001` rule 25 so a suffered attack is answerable at the same latency for everyone | Ablation bounds the best case: ordering **unchanged** at +0.943, magnitude down about two thirds | A Phase 3 specification amendment that invalidates **every figure in this record**, including package A's own and the floor ratified hours earlier, and that does not close the finding it is for |
+
+The three whole answers this record can see are: **B**, taken knowingly as a widening with its lesson noted;
+**C** combined with a bound on the survival consequence rather than on strike counts, since survival is what an
+advantage means and its magnitude is measured at 4.8 percentage points; or **D** accepted as a re-opening of
+Phase 3's turn-order decision with the re-measurement that implies. **C on its own is the trap**, because it is
+the only option that makes the suite green while leaving the world exactly as it is.
 - No aggregate over the population was introduced to suppress combat when the population falls, which is the
   cheap route to `REQ-MOK-049` that `REQ-MOK-050` exists to forbid. `post/reads.md` enumerates every reader
   of a set in the engine and shows that none is reachable from a rule, a source or a validation.
