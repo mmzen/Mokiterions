@@ -9,7 +9,7 @@
 | Candidate commits | **two, and the difference matters.** `7c4aef3967406c05d80da963695898b77f5329e9` — the 90-cell three-source matrix and the first test log. `59d61b915630fd55f04bcdbb346aa22cdbfdfff6` — the 30 `social` cells and the amended suite, after the `REQ-MOK-048` amendment. `post/COMMIT.txt` holds the first; `post/capture-state.txt` §5 relates the two and measures the ninety cells as **unchanged** at the second, which is why they were not retaken |
 | Branch | `feature/phase-3-definition` |
 | Date opened | 2026-08-20 |
-| Packet size | 131 files, 2,319,732 bytes |
+| Packet size | 132 files, 2,345,063 bytes |
 
 **This packet is incomplete, and one requirement it measures is deliberately unimplemented.** Both are
 stated here so that neither can be mistaken for anything else:
@@ -18,7 +18,7 @@ stated here so that neither can be mistaken for anything else:
   what keeps `WO-MOK-012` out of `implemented`, it is why `post/byte-identity.txt` reads
   `RESULT: MIXED` — the 60-cell divergence that oracle 1 asks to be characterized does not exist to be
   characterized — and it is recorded rather than worked around.
-- **Eight of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
+- **Seven of `VER-MOK-012`'s retention items are not yet written**, and the table at the end of this
   file marks every one. Nothing is held back any more: the direction of 2026-08-20 that held the
   decision-dependent items until the `REQ-MOK-048` amendment was measured has been discharged — the
   amendment landed, and `post/runs.md`, `post/branches.md` and `identifier.md` are those items. What
@@ -55,10 +55,11 @@ would forfeit the oracle rather than satisfy it.
 | 9 | `post/world-rules-unchanged.txt` | `REQ-MOK-051`'s permitted-and-forbidden constraint measured both ways: 21 named regions byte-identical across the two commits, 3 controls measured as changed, and §4 on why the permitted regions are unchanged too |
 | 10 | `post/gates.txt` | the four gate commands with their exit codes, and the `allow`-attribute, manifest, target and test-independence enumerations of the same contract section |
 | 11 | `post/interface.txt` | the public surface enumerated at both commits, 186 entries, diffed against the amended rule 5's four growth rows — 15 declared, 15 measured — with rule 6's ten prohibited names checked and one wording defect in the spec recorded |
-| 12 | `baseline/capture-state.txt` | the baseline capture's provenance, on the same four columns — `RESULT: PASS` |
-| 13 | `baseline/pre-manifest.txt` | the 90-cell matrix by per-cell SHA-256, bytes, lines and exit code |
-| 14 | `baseline/cross-check.txt` | two free agreements with `WO-MOK-011`'s measurements — 90 of 90 cells, 212 of 212 test names — `RESULT: PASS` |
-| 15 | `baseline/census.txt` | the seven targeted verbs and both new `action_trace` fields at **zero occurrences in 110 MB**, which is this change's absence claim measured on the pre-change side |
+| 12 | `post/observer.md` | rule 11's fifteen rows against the code item for item, the compiler as what makes the mapping total, the five tests that run, and **five reverted one-line mutations** — three that fail, one of them at compile time, and two that pass and so bound what nothing checks |
+| 13 | `baseline/capture-state.txt` | the baseline capture's provenance, on the same four columns — `RESULT: PASS` |
+| 14 | `baseline/pre-manifest.txt` | the 90-cell matrix by per-cell SHA-256, bytes, lines and exit code |
+| 15 | `baseline/cross-check.txt` | two free agreements with `WO-MOK-011`'s measurements — 90 of 90 cells, 212 of 212 test names — `RESULT: PASS` |
+| 16 | `baseline/census.txt` | the seven targeted verbs and both new `action_trace` fields at **zero occurrences in 110 MB**, which is this change's absence claim measured on the pre-change side |
 
 ---
 
@@ -131,6 +132,7 @@ holds it. Every path either names is relative to this directory, as `post/byte-i
 | `world-rules-unchanged.txt` | `REQ-MOK-051`'s permitted-and-forbidden constraint measured both ways: 21 named regions of `simulation.rs` compared line for line against the baseline commit, 3 controls, and §4 on why the two permitted regions are unchanged too |
 | `gates.txt` | the four gate commands recorded with their exit codes — `fmt`, `clippy` from a cleaned target directory, `tree`, and `cargo test`'s three logs by reference — with the `allow`-attribute, manifest, target and test-independence enumerations of the same contract section |
 | `interface.txt` | the library target's public surface as a list, 186 entries at the candidate, the baseline as the diff from it, and every differing line matched to a row of rule 5's amended growth table: 14 entries added, 2 changed, 0 removed. Carries rule 6's ten prohibited names, the `cli::USAGE` value change the surface diff cannot show, and the measurement that both candidates' surfaces are byte-identical |
+| `observer.md` | rule 11's fifteen rows against `for_type`, `EventType::ALL` and the presented table, arm for arm, with the baseline's 15-rows-against-12-types explained as the artifacts-first ordering rather than a defect. **The mapping cannot omit a type because the match has no wildcard**, and control C is the `error[E0004]` that says so. Five one-line mutations, each stated exactly and each reverted: two that fail the named-pair assertion, and two that pass — a variant absent from `ALL`, and `social` dropped from the overlay's hand-written source row — recorded as bounded residuals of clauses this work order satisfies as written. Also carries `ALL`'s order against rule 11's, the three types' emission counts, and the overlay's 20 → 23 lines against the nine renderable viewports |
 
 `--no-fail-fast` is on both candidate invocations and was not on the baseline's, for a reason
 `test-census-reconciliation.md` §4 states: without it cargo stops after the first failing target and
@@ -209,14 +211,14 @@ generalized, so that both manifests are produced by one reader.
 | the enumeration of reads per rule, source and validation path | **held** — `post/reads.md` §§2, 4 and 6, with §5's seven readers of a set and the reason each is outside the obligation. Verdict: `REQ-MOK-050` met |
 | the enumeration of `fear`'s writers and of every path writing a second Mokiterion's state | **held** — `post/reads.md` §7: two `fear` writers, five paths writing a second Mokiterion, three functions |
 | the engine public-interface enumeration at both commits, against the approved `SPEC-MOK-002` amendment | **held** — `post/interface.txt`, from `analysis/interface.py` at exit `0`: 186 surface entries at the candidate, 172 at the baseline, 18 differing lines of which 2 are the reader's own headers. The 16 surface differences are 14 added and 2 changed in place, and they match the amendment's **four** growth rows at 15 declared units against 15 measured. Four rows and not three: the amendment gained one on 2026-08-20 for the `suffered` field on the already-public `ActionTrace` payload, and §4 measures why no reader that counts added items could have found it — 14 of the 15 units are new entries, the fifteenth is a field inside an entry that already existed. Rule 6's ten prohibited names are checked in §6, and §7 records a wording defect in rule 5 that this measurement found |
-| the observer authority table's new rows and the `EventType::ALL` exhaustiveness check | **owed** — `observer.md` |
+| the observer authority table's new rows and the `EventType::ALL` exhaustiveness check | **held** — `post/observer.md`: rule 11's fifteen rows against `for_type`, `EventType::ALL` and the presented table, and the five tests that cover them. The exhaustiveness half is measured in three directions rather than asserted in one. Every variant maps to an identifier because `for_type`'s match has **no wildcard** — control C is the `error[E0004]` a sixteenth variant produces, so the clause is compiler-enforced. A variant in `ALL` with no row in the named-pair table fails the new `expected.len() + 1 == ALL.len()` assertion, which is the contract clause's own sentence: control A measures it at `left: 14 right: 15`, and control B measures that a well-formed *wrong* identifier fails too, at `Some("REQ-MOK-047")` against `Some("REQ-MOK-046")`. Both controls also record which test did **not** fail. Two directions pass and are recorded as bounded residuals, not as contract failures: a variant absent from `ALL` (250 tests pass, clippy clean), and `social` dropped from the overlay's hand-written source row (128 pass, clippy clean). §8 measures that the three types are emitted unconditionally — 156, 620 and 95 over the traced cells — so "every type the observer can present" is not vacuous, and §9 records the overlay at 23 lines against a 16-line interior at the floor viewport |
 | the post-change test census, reconciled name by name | **held** — two log pairs and one reconciliation: 249 names with 3 failures at `7c4aef3`, 250 names all passing after the amendment, 211 retained from the baseline's 212, 39 added, 0 removed, 0 ignored, 0 non-`ok`, across three renames |
 | `cargo fmt`, `cargo clippy`, `cargo test`, `cargo tree -p Mokiterions` | **held** — `post/gates.txt`, all four at exit `0`, clippy run from a cleaned target directory so that its exit code is a statement about the code and not about the cache. `cargo test` is retained whole at three commits and referenced rather than restated. The same file carries the section's adjacent enumerations: three `allow` attributes, all pre-existing and all in the observer; the four manifests byte-identical to the baseline's; fifteen test targets unchanged; and zero `#[ignore]`, feature gate, environment read, spawned process or path reference in any test |
 | the 10,000-tick run's completion, composition and survivor figures | **owed** — `long-horizon.md` |
 | the eleven manual assessments, each with its accountable role and date | **owed, and not the implementation's to write** — `manual-assessment.md` will hold the prepared records and the measured evidence each assessment is taken against; the assessments themselves are the owner's acts |
 | the amendment-approval check of oracle 7, with the recorded state of the `VREC-MOK-005` gate | **owed** — `amendment-approvals.md` |
 
-**Eight items remain: seven wholly unwritten and one held in part.** Nothing is held back any more.
+**Seven items remain: six wholly unwritten and one held in part.** Nothing is held back any more.
 The direction of 2026-08-20 — that the decision-dependent items wait until the `REQ-MOK-048` amendment
 was measured, since the amendment moved all of them — has been discharged: the amendment landed, the
 thirty `social` cells were retaken at it, and the four items that were waiting on it are `post/runs.md`,
