@@ -2,7 +2,7 @@
 id = "VREC-MOK-013"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-013"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
@@ -40,12 +40,42 @@ verifies_work_order = ["WO-MOK-013"]
 conforms_to = ["VER-MOK-013"]
 +++
 
-# Verification Record Candidate
+# Verified Verification Record
 
-This `ready` record binds the retained evidence for `WO-MOK-013` — the declared dependency set that replaces the
-engine's empty-dependency rule — to candidate commit `65ac88b0076dc1044adb4e6e984256b4428892b4` on
-`governance/adr-mok-006-third-party-crates`. An accountable assurance owner must review the evidence and decide whether
-to transition it to `verified`. **Preparing it approved, verified, merged, tagged, released and published nothing.**
+**Transitioned from `ready` to `verified` on 2026-08-20 by the repository owner, acting as accountable assurance
+owner.** `DECISION_RIGHTS.md` reserves that transition to that role and states that record preparation never makes it;
+the implementation agent recorded the decision and did not take it. The instruction, verbatim: *"i validate
+VER-MOK-013, you can transition it, and commit + push"*. What the transition accepted and what it leaves standing is in
+*Scope of the transition taken* at the end of this record — **read that before relying on the status, and read *Read
+this first* below, because this record's own identifier now names two different records across two branches.**
+
+**The instruction names `VER-MOK-013`; the artifact transitioned is `VREC-MOK-013`.** That is a reading, it is recorded
+rather than smoothed over, and the quotation above is left exactly as it was given. `VER-MOK-013` is a verification
+contract, `approved` since 2026-08-20; all eleven verification contracts in this repository sit at `approved` and none
+has ever been transitioned to anything else. `VREC-MOK-013` was the repository's only record at `ready` — the other
+eleven are `verified` — and the only artifact in the inspector's `decision_required` queue, which is the queue a
+validation answers. The same owner's instruction for `VREC-MOK-011`, earlier the same day, read *"i validate the
+verification record VREC-MOK-011, you can transition it, commit and PR"*: the same three acts in the same order,
+against a record. This packet already handles a typed identifier this way rather than by correcting it — `WO-POK-013`
+appears verbatim in two files because that is what the instruction said.
+
+**`status` is the only front-matter field that changed, and `updated` did not move** — it already read `2026-08-20`,
+which is both the capture date and the decision date. `commit`, `git_object_format`, `worktree_state`, `verified_at`,
+`artifact_snapshot_sha256`, all twenty-one `evidence_paths`, both declared relations and the `title` — which still
+reads *candidate*, because the record was captured as one — are exactly as the capture produced them. The provenance is
+the capture's, not the decision's. **No path was added to `evidence_paths`**, and in particular not
+`evidence/WO-MOK-013/assurance-decision.md`, which records this decision, postdates the commit this record binds, and
+is the reasoning behind the status rather than evidence the status accepts. `VREC-MOK-011` set that precedent on
+2026-08-20.
+
+What this file said as a candidate is kept rather than overwritten: *"This `ready` record binds the retained evidence
+for `WO-MOK-013` — the declared dependency set that replaces the engine's empty-dependency rule — to candidate commit
+`65ac88b0076dc1044adb4e6e984256b4428892b4` on `governance/adr-mok-006-third-party-crates`. An accountable assurance
+owner must review the evidence and decide whether to transition it to `verified`. **Preparing it approved, verified,
+merged, tagged, released and published nothing.**"* That is still true of the preparation; the decision came afterwards
+and is recorded here. **Verification is not merge and not release.** Pull request #33 is open, has not merged, and
+conflicts with `master` in eight files; no release record binds this work; and `65ac88b` is an ancestor of neither
+`origin/master` nor `755db72`, the commit `RLS-MOK-001` released 0.1.0 from.
 
 **This record was first prepared against `d33ecb81062db005ee916fdb78be52bed7f142e4` and re-pointed on 2026-08-20**, on
 the repository owner's instruction, when the review gate on pull request #33 forced a correction to `WO-MOK-013`'s
@@ -59,18 +89,27 @@ Two sections are load-bearing for that decision and are not summary:
   this work order. None of the three is the digest of the commit it is presented against, this record's own
   `artifact_snapshot_sha256` is a fourth figure that none of them equals, and the reason is measured rather than
   argued. No earlier file is edited.
-- *The one reading this record does not take* states the single place where `VER-MOK-013`'s own wording makes
-  satisfaction a judgement instead of a count. `WO-MOK-013-manual-assessment.md:354` says a verification record against
-  this contract is where that reading would be taken. **This candidate states it and does not take it**, because taking
-  it is the transition and the transition is the assurance owner's.
+- *The one reading this record left open, and the reading the transition took* states the single place where
+  `VER-MOK-013`'s own wording makes satisfaction a judgement instead of a count.
+  `WO-MOK-013-manual-assessment.md:354` says a verification record against this contract is where that reading would be
+  taken. **This candidate states it and does not take it**, because taking it is the transition and the transition is
+  the assurance owner's.
+
+  > **Later fact, 2026-08-20.** The reading has been taken, and in the permissive direction. Asked which of the two the
+  > contract's wording carries, the owner answered *not yet due is not outstanding*, so assessment 7 leaves nothing
+  > outstanding and `VER-MOK-013` is satisfied at this commit. That answer was given before this transition and is what
+  > the transition rests on. The section is left as written, because what it put in front of the owner is the record of
+  > what the owner decided between.
 
 The record is written after the candidate commit it names, so its own commit metadata is not self-referential and no
 hash of its own commit appears in it, which is what `WORKFLOW.md` requires.
 
 **`verified_at` is the capture timestamp, not a verification decision.** The figures below were taken from the
 repository root at this commit with `git status --porcelain` empty, the harness figures at `2026-08-20T15:29:34Z` and
-the code gates on the tree this commit records, byte-identical to it. What a status change would record, and when, is
-not `verified_at`.
+the code gates on the tree this commit records, byte-identical to it. **It was left exactly as captured by the
+transition**, so it still names the moment the graph was measured rather than the moment the decision was taken — a
+decision does not re-measure provenance. What the status change records, and when, is the transition note at the top of
+this record; `verified_at` is not it.
 
 **`artifact_snapshot_sha256` is the digest of the graph this record reviews, which is the graph apart from this
 record.** At the first candidate that needed no saying: the record did not yet exist in the tree it measured. At this
@@ -81,6 +120,59 @@ stands, with this record present at its previous figures, is `dcb28212…` over 
 it is recorded here so that a reader who runs the command without holding anything out can tell which figure they have.
 Both are figures of a checkout whose leaf directory name is this repository's, for the reason *The snapshot figures*
 gives below.
+
+## Read this first: four of this chain's identifiers name something else in `master`
+
+**`WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047` each name two different artifacts across two branches,
+and the collision is open.** Of this chain's five identifiers only `ADR-MOK-006` is free. `origin/master` is at
+`798e5d5`, twelve commits past `ff3a155` — the base this branch was cut from and is seven commits ahead of — and the
+colliding chain reached it through pull request #32 while this one was in review. Master's `WO-MOK-013` is *"Make the
+observer's survival gauges resolve, its controls discoverable, and its hidden-pane notice actionable"*, a presentation
+work order with nothing to do with dependency declarations. Master's `VREC-MOK-013` is a `ready` record binding
+candidate `41c20cad`, captured at `2026-08-20T15:38:30Z` where this one was captured at `15:29:34Z`: **eight minutes and
+fifty-six seconds apart, from two clones, against commits neither of which is an ancestor of the other.**
+
+**The disposition is the owner's and it is on hold.** Asked on 2026-08-20 how to dispose of the collision, the owner
+answered *hold — decide nothing yet*, and separately that whatever is done belongs inside the existing work order and
+that integration is by merging `master` in. There is also a standing rule this record does not re-derive: decision 3 of
+the colliding chain's closing review, taken as engineering owner, reads *"Neither side renumbers now. The conflict is
+resolved by whichever of the two branches merges to `master` second."* Master merged first, so that rule points at this
+branch renumbering. `WO-MOK-014`, `VER-MOK-014`, `VREC-MOK-014` and `REQ-MOK-050` are available for it: zero path hits
+across all thirty local and remote refs, re-swept at `798e5d5`.
+
+**What the collision costs, measured rather than estimated.** At `ee0c086`, the commit before this transition, the four
+names occur **553 times across 35 files** under `docs/` — `WO-MOK-013` 309, `VER-MOK-013` 132, `REQ-MOK-047` 92,
+`VREC-MOK-013` 20 — in **25 tracked paths** whose filenames carry one, plus `mokiterions-core/Cargo.toml:43`,
+`scripts/check_declared_dependencies.py` and its test module. The text of this transition adds to that count. The other
+side priced its own renumbering at 430 occurrences across 31 files and 30 paths, in
+`evidence/WO-MOK-013/identifier-collision.md` on `master`, which sweeps every ref and takes no decision either.
+
+**Merging is where the collision surfaces, and one part of it does not surface at all.**
+`git merge-tree --write-tree --messages HEAD origin/master` reports **eight conflicts**: four add/add —
+`REQ-MOK-047`, `VER-MOK-013`, `VREC-MOK-013`, `WO-MOK-013`, which are the collision — and four content, in
+`ARCH-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003` and `SPEC-MOK-004`, where both chains added an amendment row and which
+are ordinary merge work. **The evidence directory raises no conflict and merges silently.** Both chains write
+`docs/engineering/simulation/evidence/WO-MOK-013/`; master's pack is 26 files under unprefixed names, this one is 21 all
+named `WO-MOK-013-*`, and `comm` reports **zero** paths in common — so a merge yields one 47-file directory holding two
+unrelated work orders' evidence with nothing reported. Neither `git merge-tree` nor the validator surfaces it, because
+every path in it is distinct.
+
+**What this transition does to the collision, stated rather than left to be discovered.** It makes this side's record
+`verified`. `VERIFICATION_RECORD.template.md:30` permits a separate governance decision to move only a **`ready`** record
+to `superseded`, and there is no stated route for a `verified` one; the repository's only renumbering precedent —
+`VREC-MOK-011`, moved from `010` to `011` on the owner's decision — was taken while that record was still a candidate.
+Master's homonym is still `ready` and still cheap to move. This one is not, and renumbering it would rewrite the subject
+of the decision recorded here. The collision was measured and put to the owner before this instruction was given; the
+owner held its disposition and then instructed this transition, and the hazard is written down here rather than left
+implicit.
+
+**Nothing here is renumbered and nothing here is decided.** This section measures the exposure and names who owns the
+disposition. Two consequences follow for the figures in this record and are not repaired by it. First, this record binds
+`65ac88b` on this branch and says nothing about any merged tree; a record bound to the merge commit is a new record, not
+an edit of this one. Second, every figure stated relative to `ff3a155` describes a base now twelve commits behind
+`master` and will need re-deriving against the merge — the amendment-row comparisons in `WO-MOK-013-amendments.md` and
+the `W-HEX-003` baseline in particular. One such figure was re-checked and holds: `Cargo.lock` at this commit is
+byte-identical to `798e5d5`'s as well as to `ff3a155`'s.
 
 ## What this record claims
 
@@ -331,8 +423,9 @@ clean final candidate commit. Re-pointing was the repository owner's instruction
 owner in the same answer that chose the narrowing.
 
 **What moved in the record, and what did not.** `commit`, `verified_at`, `artifact_snapshot_sha256` and one added
-`evidence_paths` entry moved; `status` is still `ready`, `worktree_state` still `clean`, `git_object_format` still
-`sha1`, and both declared relations are unchanged. Every figure in *The gates* was re-measured at the new candidate: the
+`evidence_paths` entry moved; `status` was still `ready` at the re-point — the transition recorded at the top of this
+record moved it to `verified` afterwards and moved nothing else — `worktree_state` still `clean`, `git_object_format`
+still `sha1`, and both declared relations are unchanged. Every figure in *The gates* was re-measured at the new candidate: the
 same 212 Rust tests, the same 126 Python tests, the same dependency-check verdict with both disclosed transitive matches
 still printed, the same 81 doctor PASS, the same validator PASS at 107 artifacts and 0/0, and the same dashboard 107 and
 7 warnings. **Two figures moved and neither was left to be inferred.** The dashboard's relation count is 357 where this record's
@@ -350,10 +443,10 @@ quoted for a tree holding this record. Two are now, both figures of `65ac88b` an
 the reason the section above gives. The figures for `d33ecb8` are kept in that section's table as figures of that
 commit.
 
-## What a `ready` record does to the graph
+## What the `ready` record did to the graph, and what the status change does
 
-This record is already in the tree at the candidate commit, so its effect is measured as the difference the file makes
-there rather than as a before-and-after across commits:
+Measured at the candidate commit, where this file was still a candidate. This record is already in the tree there, so
+its effect is measured as the difference the file makes there rather than as a before-and-after across commits:
 
 - the validator reports **107 artifacts, 0 errors, 0 warnings** across all four planes;
 - the dashboard reports **107 artifacts and 357 relations**, and **106 artifacts and 355 relations** with this file held
@@ -374,6 +467,17 @@ observations. Read from the commit that carries this text, or from any later one
 re-point does not resolve that finding and is not an attempt to**; it changes which commit the record is out of step
 with, and a reader at the branch tip should expect to see it fire. It is the same informational finding every other
 verification record in this repository carries, and the reason it exists.
+
+**The status change answers that signal, and it is measured in the decision rather than asserted here.** At `ee0c086`,
+the commit before the transition, the inspector's `decision_required` queue held this record at `[ready]` and its
+*Suggested next steps* numbered nine; with the status at `verified` the queue is empty and the steps are **eight**.
+Nothing else moves: the validator stays PASS at 107 artifacts and 0/0 across four planes, the dashboard stays at 107
+artifacts, 357 relations, 0 errors and **7** warnings, and the inspector's twenty findings stay 20 — `W-HEX-001` twice,
+`W-HEX-003` five times, `I-REV-001` thirteen times — because none of the three reads a record's status. `updated` did
+not move, so no new date observation appears. `evidence/WO-MOK-013/assurance-decision.md` records the pair, including
+the snapshot digest, and is deliberately **not** in `evidence_paths`. **`assurance_pending` stays empty for a different
+reason than before and the queue does not distinguish them:** the cover it looks for is a record at `ready` *or beyond*,
+which this was and remains.
 
 ## What this record does not claim
 
@@ -407,6 +511,12 @@ verification record in this repository carries, and the reason it exists.
 - **It does not verify the merge commit, and it is not a merge, a tag or a release.** Pull request #33 exists and is a
   **draft**; taking it out of draft is the owner's act, merging is a further one, and neither is this. `RLS-MOK-001` is
   untouched.
+
+  > **Later fact, 2026-08-20.** #33 was taken out of draft on the owner's instruction after this record was captured. It
+  > is `OPEN` and has not merged, and `gh pr view 33` reports `mergeable: CONFLICTING` with `mergeStateStatus: DIRTY`.
+  > Its five green checks were computed against `baseRefOid` `ff3a155`, which is no longer `master`, so they are not
+  > evidence of mergeability. The bullet's substance stands: taking it out of draft was the owner's act, merging is a
+  > further one, neither is this, and `RLS-MOK-001` is still untouched.
 - **It does not claim declared verification coverage for `REQ-MOK-026` or `REQ-MOK-036`.** After the correction at
   `65ac88b`, `WO-MOK-013` declares one requirement and this record conforms to the one contract that verifies it. The two
   amended requirements keep the text the product owner approved, and the coverage they are owed sits with `VER-MOK-005`
@@ -434,7 +544,7 @@ verification record in this repository carries, and the reason it exists.
   amendment rows from 2026-08-18 and 2026-08-19, and the verification record owed against an earlier merge commit
   predate this branch. None is cleared here and none is claimed as settled.
 
-## The one reading this record does not take
+## The one reading this record left open, and the reading the transition took
 
 `VER-MOK-013:219` states: *"An unrecorded assessment is an outstanding assessment, and this contract is not satisfied
 while any remains outstanding — as `VER-MOK-011`'s fifth still is."* Its own amendment row at `:21` states:
@@ -457,24 +567,59 @@ strict reading makes this contract unsatisfiable until some later work order adm
 plainly. It is not the same question as `VER-MOK-011`'s fifth assessment, which is genuinely unperformed and
 performable, and neither answer here touches it.
 
-## What must happen before this record can move to `verified`
+**The reading was taken on 2026-08-20, in the permissive direction, and it was taken before this transition rather than
+by it.** Asked which of the two the contract's wording carries, the owner answered that *not yet due is not
+outstanding*. So assessment 7 is not an outstanding assessment, five of six are recorded and the sixth is untriggered,
+and **`VER-MOK-013` is satisfied at commit `65ac88b`** — which is what the `verified` status rests on. Two things follow
+from taking it in that direction and not the other, and both are consequences of the decision rather than of this
+record:
 
-1. **An accountable assurance owner reviews the retained evidence and decides.** `DECISION_RIGHTS.md` reserves the
-   `ready → verified` transition to that role, and record preparation never makes it. The implementation agent wrote
-   every measurement in this packet and judged none.
-2. **That decision takes the reading above**, explicitly, in one direction.
-3. **The transition is its own act, recorded with its instruction quoted.** This packet's precedent is
-   `WO-MOK-011`'s: the status change travels in its own commit so that no statement is made false in the commit that
-   introduced it.
+1. **The contract stays satisfiable.** The strict reading would have made `VER-MOK-013` unsatisfiable until some later
+   work order admits a crate, since only an admission can close assessment 7. That outcome is avoided by the reading and
+   not by any evidence.
+2. **Assessment 7 is not discharged, only found not to be due.** It triggers at the first admission of a crate beyond
+   `ratatui`, and that admission still owes it, by name, along with assessments 1 and 2. *Scope of the transition taken*
+   repeats this, because it is the item most easily read as closed.
 
-Not authorized and not performed at this commit: any tag, any release, any assurance decision, and any change to this
-record's status. The pull request that carries this branch is a separate act from the transition, and creating one
-verifies nothing.
+`VER-MOK-011`'s fifth assessment is a different question and is untouched: it is genuinely unperformed and performable,
+`VER-MOK-011` is **not satisfied** on that count, and the answer here neither closes it nor bears on it. Nothing in the
+sections above was edited to agree with the reading — the section is left as it put the choice, which is the record of
+what the owner decided between, and `WO-MOK-013-manual-assessment.md:353-357` still says the file does not take it,
+because at the commit it belongs to it did not.
 
-## Scope a `verified` status would have
+## What had to happen before this record could be verified, and what still stands
 
-It would accept the evidence enumerated above as satisfying `VER-MOK-013` at commit
-`65ac88b0076dc1044adb4e6e984256b4428892b4`, and nothing beyond it:
+Three items stood here at the `ready` capture. **All three are discharged, and the list they were on has not become
+empty** — what remains is under *Scope of the transition taken*.
+
+1. **Discharged — an accountable assurance owner reviewed the retained evidence and decided.** What this record said as
+   a candidate: *"`DECISION_RIGHTS.md` reserves the `ready → verified` transition to that role, and record preparation
+   never makes it. The implementation agent wrote every measurement in this packet and judged none."* Both sentences
+   still hold. The repository owner holds that role and took the decision on 2026-08-20, on the instruction quoted at
+   the top of this record.
+2. **Discharged — the decision took the reading, explicitly and in one direction.** The permissive one: *not yet due is
+   not outstanding*. It was given as an answer to a direct question about `VER-MOK-013`'s wording, before this
+   transition, and it is recorded with its consequences under *The one reading this record left open*.
+3. **Discharged — the transition is its own act, with its instruction quoted.** It travels in its own commit, on
+   `WO-MOK-011`'s precedent, so that no statement is made false in the commit that introduced it. Every statement this
+   commit makes false is quoted rather than deleted, and the two that the pushed history put out of date — the draft
+   pull request and the reading — are marked as later facts where they stand.
+
+What the candidate said was not authorized at its commit was *"any tag, any release, any assurance decision, and any
+change to this record's status"*. **The last two of those four are now authorized and taken; the first two are
+not.** The assurance decision is this one and its scope is the next section; the status change is this record's, from
+`ready` to `verified`. No tag and no release is taken here, no other assurance decision is taken here, and the pull
+request that carries this branch is still a separate act: it has not merged, and merging it would be another.
+
+## Scope of the transition taken
+
+**What the `verified` status records is this: the accountable assurance owner accepts the evidence enumerated above as
+satisfying `VER-MOK-013` at commit `65ac88b0076dc1044adb4e6e984256b4428892b4`, on the reading that assessment 7 is not
+yet due and therefore not outstanding.** That is the whole of it, and it is stated in the same words the candidate used
+for what would be accepted, so the acceptance cannot be read as wider than what was put in front of the owner. The
+candidate's own sentence was: *"It would accept the evidence enumerated above as satisfying `VER-MOK-013` at commit
+`65ac88b0076dc1044adb4e6e984256b4428892b4`, and nothing beyond it"*. Its list of what that excludes is unchanged and is
+what the status still does not reach:
 
 - **not the merge**, and not whatever tree results from merging this branch;
 - **not a release**, which needs its own commit-bound record against `RLS-MOK-001`;
@@ -484,5 +629,32 @@ It would accept the evidence enumerated above as satisfying `VER-MOK-013` at com
 - **not any future admission of a crate**, each of which owes the seven-item evidence set `VER-MOK-013`'s *What an
   admission must retain* fixes, and owes manual assessments 1, 2 and 7 for that crate by name.
 
+Three of those are worth naming again, because they are the ones a `verified` status is most easily read as having
+closed:
+
+1. **`VER-MOK-005` and `VER-MOK-008` stay owed.** After the correction at `65ac88b` this record conforms to the one
+   contract that verifies the one requirement `WO-MOK-013` declares. `REQ-MOK-026` and `REQ-MOK-036` keep the text the
+   product owner approved and the coverage they are owed sits with those two contracts, in a separate work order the
+   owner scheduled for after #33 merges. **This status closes neither**, and the `W-HEX-003` observations that name them
+   are this change's own doing rather than inherited debt.
+2. **Assessment 7 is not discharged.** The reading found it not due, not done. The first admission of a crate beyond
+   `ratatui` owes it by name, with assessments 1 and 2, and owes the seven-item evidence set.
+3. **The identifier collision is untouched.** Four of this chain's names still name two artifacts each across two
+   branches, the disposition is on hold with the owner, and *Read this first* records what this status does to the cost
+   of resolving it. **Verifying this record is not a claim that these identifiers are this chain's.**
+
+**Nothing outstanding is retired by the status.** It performs no assessment, takes no technical owner's reading,
+re-derives no figure, moves no work order — `WO-MOK-013` is `implemented` and no instruction named it — creates no
+record for any merged tree, renumbers nothing, and merges nothing. It does not re-measure the gates: every figure above
+is the candidate commit's, and `verified_at` remains the capture timestamp.
+
+**What the status does not reach.** This record binds `65ac88b` on `governance/adr-mok-006-third-party-crates`, a commit
+that is an ancestor of neither `origin/master` nor `755db72`. `master` is twelve commits ahead of this branch's base and
+holds a different chain under the same four identifiers; pull request #33 is open, conflicts in eight files, and has not
+merged. **Verifying this record verifies the candidate commit and nothing downstream of it**, so `master` carries none of
+this work and a record bound to whatever merge commit results is a new record, owed and not created here. A reader who
+takes this `verified` status as a statement about `master` has read it wider than it was given.
+
 Every command behind every figure in this record is offline, reads no credential, secret, token or environment value,
-and none appears in the retained evidence.
+and none appears in the retained evidence. The transition adds no command and no figure of its own; what it measures is
+in `evidence/WO-MOK-013/assurance-decision.md`, under the same constraint.
