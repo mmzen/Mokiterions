@@ -13,7 +13,7 @@ rationale = "The load-bearing claim of this change is that relaxing a prohibitio
 decided_by = "engineering owner"
 
 [relations]
-implements = ["REQ-MOK-026", "REQ-MOK-036", "REQ-MOK-047"]
+implements = ["REQ-MOK-047"]
 specifications = ["SPEC-MOK-002", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-005"]
 architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-006"]
 verification = ["VER-MOK-013"]
@@ -30,10 +30,16 @@ completed change and the retained evidence. Verification and release require sep
 Commit-bound verification is classified `required` above.
 
 The `architecture` relation is declared and carries three identifiers, because unlike `WO-MOK-011` this change is
-architectural in the traceability rule's own terms: `ARCH-MOK-001` addresses `REQ-MOK-016` and `ARCH-MOK-002` addresses
-`REQ-MOK-026`, both of which this work order implements, and both architectures carry prohibitions and conformance
-checks whose text this change amends. `ADR-MOK-006` sits beside them as the deciding ADR, on the precedent of
-`WO-MOK-001`, `WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006`, each of which names its ADR in the same relation.
+architectural in the traceability rule's own terms: **`ARCH-MOK-001` and `ARCH-MOK-002` each directly `addresses`
+`REQ-MOK-047`**, the requirement this work order implements, and each shares a conforming specification with the set
+declared above — `ARCH-MOK-001` through `SPEC-MOK-002` and `ARCH-MOK-002` through `SPEC-MOK-003` and `SPEC-MOK-004` —
+which is what `TRACEABILITY.md` requires of a selected architecture. Both also carry prohibitions and conformance checks
+whose text this change amends. `ADR-MOK-006` sits beside them as the deciding ADR, on the precedent of `WO-MOK-001`,
+`WO-MOK-003`, `WO-MOK-005` and `WO-MOK-006`, each of which names its ADR in the same relation.
+
+This paragraph was re-derived on 2026-08-20 when the declared requirement set was corrected; the subsection *The
+declared requirement set, corrected* below records why, and records that the earlier derivation — through
+`REQ-MOK-026`, which `ARCH-MOK-002` also addresses — reached the same two architectures.
 
 **This work order cannot be approved before the artifacts it depends on are.** `REQ-MOK-047` is the product owner's
 act, `VER-MOK-013` is the assurance owner's, `ADR-MOK-006` is the technical owner's, and every amendment below is one
@@ -140,6 +146,51 @@ work order cannot approve its own verification record. The queue move it causes 
 `assurance_pending` — is recorded with the statements it makes stale in
 `evidence/WO-MOK-013/WO-MOK-013-transition.md`. No tag and no pull request are authorized by the instruction above,
 and neither is taken.
+
+### The declared requirement set, corrected
+
+On 2026-08-20 `implements` was narrowed from `["REQ-MOK-026", "REQ-MOK-036", "REQ-MOK-047"]` to `["REQ-MOK-047"]` by the
+repository owner acting as accountable **engineering owner**, choosing between three measured routes put to them. This
+is an edit to an approved and implemented work order's declared scope, which is why it is the owner's act and not the
+implementation agent's, and why it is recorded here rather than applied silently.
+
+**What forced it.** The pull request opened for this work order ran the harness's `review` phase for the first time —
+`preflight --phase review` runs only on `pull_request`, so four green pushes never reached it — and it failed with one
+diagnostic: *"`[W016]` … verification coverage is missing `REQ-MOK-026`, `REQ-MOK-036`"*. The rule is this repository's
+own: `TRACEABILITY.md` requires selected active verification coverage for every requirement selected for
+implementation, and `VER-MOK-013` verifies `REQ-MOK-047` alone. `REQ-MOK-026` is verified by `VER-MOK-005` and
+`REQ-MOK-036` by `VER-MOK-008`.
+
+**Why the other route was refused.** Declaring those two contracts here would have cleared the same diagnostic, and
+`VERIFICATION_RECORD.template.md` then requires a verification record's contract set to **equal** the union its work
+orders declare — so `VREC-MOK-013` would have had to conform to both. `VER-MOK-008` is the release contract, and its
+scenarios are checks on an actual release run: a published archive read by an independent reader, a checksum verified
+with a standard tool, two builds of one commit differing only by run identity. `VER-MOK-005` requires manual legibility
+and colour-independence assessments in a real terminal, which that contract itself states cannot be automated. Neither
+is evidenced in this packet, and no release is authorized. The narrowing is the route on which every declared set is
+equal and every claim is evidenced.
+
+**The reading it rests on.** What this change did to `REQ-MOK-026` and `REQ-MOK-036` was strike a clause from each under
+`ADR-MOK-006`'s product-owner authority. It did not implement their obligations; the obligation it implements is
+`REQ-MOK-047`'s, and both amendments remain among the twelve preconditions above, each carrying its own approved
+amendment row in its own artifact.
+
+**The cost, stated rather than mitigated.** `TRACEABILITY.md` holds that only declared relations in formal metadata
+establish authority, and that prose *"may aid discovery but do not satisfy formal coverage"*. After this correction no
+declared relation runs from either amended requirement to the work order that rewrote its text, and this model has no
+`amends` relation to carry one; what remains is the phrase *"Written under `WO-MOK-013`"* in each requirement's
+amendment row, which by that rule is discovery and not coverage.
+
+**What it does not do.** It does not withdraw, weaken or reword either amendment. It does not clear `W-HEX-003`, which
+names `REQ-MOK-026`, `REQ-MOK-036`, `VER-MOK-005` and `VER-MOK-008` in this tree exactly as it did before the
+correction — measured, not assumed, and the deferred debt stays visible there. It does not touch `VER-MOK-005` or
+`VER-MOK-008`, which stay owed on the owner's decision of 2026-08-20 to leave them for a separate change. No Rust
+source, manifest, lockfile, workflow or script changes, so no measured code figure in this packet can move.
+
+`evidence/WO-MOK-013/WO-MOK-013-review-gate.md` records the finding, the reproduction under the pinned runtime, all
+three routes with their measured figures, and the statements this correction makes stale. Because the correction moves
+the branch tip past the candidate commit `VREC-MOK-013` binds, the record is re-pointed to the commit that carries this
+subsection, in the following commit — `WORKFLOW.md` forbids a record containing the hash of its own commit.
 
 ### Why this chain is numbered 006, 047 and 013
 
