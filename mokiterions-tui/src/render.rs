@@ -760,15 +760,38 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
                     format!("died on tick {}", death.tick),
                     Style::new().fg(Color::Red),
                 )));
-                let mut final_values = format!("final health {}", death.health);
+                // Rule 10.6 presents the final attribute values, and fear is the fourth of
+                // them. Rule 4 presents fear only for the living, so these lines are the sole
+                // place a dead subject's last reported fear is reachable. It is unbanded here
+                // as it is there.
+                //
+                // The four pair across two lines the way rule 4 pairs its two bar lines under
+                // `REQ-MOK-047` — health with satiety, energy with fear — because four
+                // word-labelled values exceed the inspector's width at the reference
+                // viewport, and a value clipped off the pane is not a value presented.
+                //
                 // Rule 10.7: a value the engine did not compute is absent, not zero-filled.
+                // A pair with neither value emits no line at all, because a bare line reads
+                // as a field whose value was withheld.
+                let mut survival = format!("final health {}", death.health);
                 if let Some(satiety) = death.satiety {
-                    final_values.push_str(&format!("  satiety {satiety}"));
+                    survival.push_str(&format!("  satiety {satiety}"));
                 }
+                lines.push(Line::from(survival));
+
+                let mut second = String::new();
                 if let Some(energy) = death.energy {
-                    final_values.push_str(&format!("  energy {energy}"));
+                    second.push_str(&format!("energy {energy}"));
                 }
-                lines.push(Line::from(final_values));
+                if let Some(fear) = death.fear {
+                    if !second.is_empty() {
+                        second.push_str("  ");
+                    }
+                    second.push_str(&format!("fear {fear}"));
+                }
+                if !second.is_empty() {
+                    lines.push(Line::from(second));
+                }
             }
             None => lines.push(Line::from(
                 "no longer living, and no death record was retained",

@@ -1,0 +1,182 @@
+WO-MOK-018 â€” the declared gate set at the candidate
+
+Every command in the form the work order's *Required verification* item 6 names. Run on the
+implementing tree with both temporary oracles removed. `--locked` is not optional and is
+present where the form names it. The `se_harness` commands run from the pinned 0.4.0 venv at
+C:/Users/mathi/.harness040, because the machine-wide 0.4.1 install FAILs on template skew
+alone and would not be measuring this repository.
+
+$ cargo test --workspace
+exit=0
+     Doc-tests mokiterions_tui
+  
+  running 0 tests
+  
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+  
+
+$ cargo fmt --all -- --check
+exit=0
+
+$ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+exit=0
+      Checking mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-review-1787205128\mokiterions-tui)
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.33s
+
+$ cargo tree -p Mokiterions -e normal --locked --offline
+exit=0
+  Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-review-1787205128\mokiterions-core)
+
+$ python scripts/validate_engineering_artifacts.py
+exit=0
+  Engineering artifact validation: PASS
+  Artifacts: 133 | Errors: 0 | Warnings: 0
+  Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+
+$ bash scripts/check_engineering_harness.sh
+exit=0
+  Engineering artifact validation: PASS
+  Artifacts: 133 | Errors: 0 | Warnings: 0
+  Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+  Harness Explorer generation: PASS | Artifacts: 133 | Relations: 483 | Errors: 0 | Warnings: 15 | Output: target/harness-dashboard | Snapshot: e87883bbe740589f3acb5435465d15f892d50ed8d9c6142e7e125e89e666618b
+
+$ python scripts/check_declared_dependencies.py
+exit=0
+    mokiterions-tui on x86_64-unknown-linux-gnu: 9 build-script crates (instability 0.3.13, libc 0.2.189, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustix 1.1.4, rustversion 1.0.23, signal-hook 0.3.18, thiserror 2.0.20)
+    raw hit on aarch64-apple-darwin: mio 1.2.2 (network access)
+    raw hit on aarch64-apple-darwin: signal-hook-mio 0.2.5 (network access)
+    raw hit on x86_64-unknown-linux-gnu: mio 1.2.2 (network access)
+    raw hit on x86_64-unknown-linux-gnu: signal-hook-mio 0.2.5 (network access)
+    disclosed and accepted: mio 1.2.2 — the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+    disclosed and accepted: signal-hook-mio 0.2.5 — the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+  Every declared set matches its resolved graph. 8.4a-8.4d pass.
+
+$ python scripts/generate_harness_dashboard.py --root .
+exit=0
+  Harness Explorer generation: PASS | Artifacts: 133 | Relations: 483 | Errors: 0 | Warnings: 15 | Output: target/harness-dashboard | Snapshot: e87883bbe740589f3acb5435465d15f892d50ed8d9c6142e7e125e89e666618b
+
+$ python scripts/inspect_engineering_artifacts.py
+exit=0
+  
+  Suggested next steps (18):
+  - W-HEX-001 -> retain-work-order-evidence (engineering-owner): Retain evidence keyed to the implemented work order and reassess the observation. Repeated for 5 source observations. [WO-MOK-010, WO-MOK-011, WO-MOK-012, WO-MOK-013, WO-MOK-016]
+  - W-HEX-003 -> reassess-dependent-artifact (artifact-owner): Reassess the older source against its newer declared dependency or parent. Repeated for 10 source observations. [ADR-MOK-002, ADR-MOK-004, ARCH-MOK-001, ARCH-MOK-002, REL-MOK-001, REQ-MOK-005, REQ-MOK-034, REQ-MOK-036, +7 more]
+  - active_work -> continue-bounded-work (engineering-owner): Continue only the authorized scope and retain work-order-keyed evidence. [WO-MOK-018]
+  - definition_pending -> complete-or-dispose-definition (artifact-owner): Complete the definition or explicitly dispose of it through an allowed governed state. Repeated for 2 source observations. [WO-MOK-008, WO-MOK-017]
+  
+  Authority: repository-local, derived observation. Inspection does not validate by exit status, approve, authorize, verify, release, or remediate.
+
+$ se_harness validate (pinned 0.4.0 venv)
+exit=0
+  Engineering artifact validation: PASS
+  Artifacts: 133 | Errors: 0 | Warnings: 0
+  Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+
+$ se_harness preflight --work-order WO-MOK-018 --phase review (pinned 0.4.0 venv)
+exit=0
+  - docs/engineering/simulation/requirements/REQ-MOK-022.md
+  - docs/engineering/simulation/specifications/SPEC-MOK-003.md
+  - docs/engineering/simulation/specifications/SPEC-MOK-004.md
+  - docs/engineering/simulation/architecture/ARCH-MOK-002.md
+  - docs/engineering/simulation/architecture/adr/ADR-MOK-003.md
+  - docs/engineering/simulation/verification/VER-MOK-005.md
+  - docs/engineering/simulation/work-orders/WO-MOK-018.md
+  
+  Repository commands:
+  - additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. Each package's resolved dependency set must equal the set declared for it, at the declared versions and feature sets: `SPEC-MOK-002` rule 13 declares the engine's and `SPEC-MOK-003`'s *Declared dependency set* declares the observer's, `SPEC-MOK-005` rule 8.4 is the check, and `REQ-MOK-050` is the obligation. `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate is what that comparison predicts today, because the engine's declared set is empty; it is a measurement of the declaration and no longer a rule of its own. Behavior-specific verification must be added as simulation requirements are approved.
+  - build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+  - lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`. `--locked` is not optional: `.github/workflows/release.yml` passes it, so a lint run without it can resolve around `Cargo.lock` and pass locally against dependencies the release would refuse.
+  - setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
+  - test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+  
+  Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+
+=== NOTES ON THE CAPTURE
+
+Each block above shows the command, its exit code, and the tail of its output. `cargo test
+--workspace`'s tail is the doc-test target, which is the last of twenty-one result lines; the
+per-target totals are:
+
+       Running unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+  test result: ok. 82 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+       Running unittests src\main.rs (target\debug\deps\Mokiterions-c8f7f3eae82c82c7.exe)
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\cli.rs (target\debug\deps\cli-ea1fe31a556a11ea.exe)
+  test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\decisions.rs (target\debug\deps\decisions-c8ff5ce97e674eac.exe)
+  test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+       Running tests\density.rs (target\debug\deps\density-aa384b05c61f2961.exe)
+  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\naming.rs (target\debug\deps\naming-0344a3e53e41d1bb.exe)
+  test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+       Running tests\process.rs (target\debug\deps\process-44af230791f0b687.exe)
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+       Running tests\termination.rs (target\debug\deps\termination-3962b6ea9d95e5a7.exe)
+  test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.04s
+       Running tests\viability.rs (target\debug\deps\viability-6b215a30b755f00d.exe)
+  test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.40s
+       Running unittests src\lib.rs (target\debug\deps\mokiterions_tui-2fbcc6609753ce76.exe)
+  test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.13s
+       Running unittests src\main.rs (target\debug\deps\mokiterions_tui-cacaff985fad9c9e.exe)
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\authority.rs (target\debug\deps\authority-eff95bcdd131dbd9.exe)
+  test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\export.rs (target\debug\deps\export-a7c26a0bd291cfde.exe)
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+       Running tests\layout.rs (target\debug\deps\layout-428970b899246a03.exe)
+  test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\options.rs (target\debug\deps\options-9145103ef3454b8b.exe)
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\render.rs (target\debug\deps\render-672d1ffbd6e3eb65.exe)
+  test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.36s
+       Running tests\spatial.rs (target\debug\deps\spatial-6b42680631cd88b2.exe)
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+       Running tests\state.rs (target\debug\deps\state-269098bb3c362ab5.exe)
+  test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+       Running tests\verification.rs (target\debug\deps\verification-eddf947fada740f8.exe)
+  test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+     Doc-tests mokiterions
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Doc-tests mokiterions_tui
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+  workspace totals: 267 passed, 0 failed, 0 ignored
+
+The dashboard reports 15 warnings, which is its state on this branch and not a regression:
+W-HEX-001 and W-HEX-003 observations on earlier artifacts, plus the two `draft` definitions
+`WO-MOK-008` and `WO-MOK-017`, none of which this work order selects. The inspector names
+`WO-MOK-018` as active work under `continue-bounded-work`, which is the state it is in.
+
+`se_harness preflight` requires `--work-order`; the work order's *Required verification* item
+6 names the command without it, and the form actually run is recorded above. The bare form
+exits 2 on an argument error rather than on a finding.
+
+=== RE-RUN AFTER THE LAST DOCUMENT EDITS
+
+The blocks above were captured before two later changes to the tree, both documents only:
+`SPEC-MOK-004` rule 11's arrival arithmetic was corrected (the prose said "forty arrivals"
+and "39 arrivals against 1 departure" while its own table sums to 41; the measured truth is
+41 arrivals, 0 departures and 1 rename in neither figure), and the six `.md` files of this
+pack were written. Every document gate was therefore run again:
+
+  $ python scripts/validate_engineering_artifacts.py                exit=0
+  $ bash scripts/check_engineering_harness.sh                       exit=0
+  $ python scripts/check_declared_dependencies.py                   exit=0
+  $ python scripts/generate_harness_dashboard.py --root .           exit=0
+  $ python scripts/inspect_engineering_artifacts.py                 exit=0
+  $ se_harness validate                                             exit=0
+  $ se_harness preflight --work-order WO-MOK-018 --phase review     exit=0
+
+Every figure above is reproduced unchanged: 133 artifacts, 0 errors, 0 warnings on all four
+planes; 483 relations and 15 dashboard warnings; and the same snapshot digest
+e87883bbe740589f3acb5435465d15f892d50ed8d9c6142e7e125e89e666618b. The snapshot does not move
+because it covers declared and prefixed evidence paths rather than the bytes of this
+directory, and no artifact declares these files: this pack is retained evidence with no
+`VREC` binding it.
+
+The four cargo gates were not re-run, because neither change touches a file cargo reads. That
+is measured rather than assumed: SHA-256 of the two edited sources is unchanged from the tree
+they ran on --
+
+  cb642edd936b118928e015970857a84a5bfd507bac0cc48e2dbd4e402a57b7c3  mokiterions-tui/src/state.rs
+  83f182a5c8ed2030dfc1f0d2c53425df387e7d04691f3adca8d856ddd7b21e4c  mokiterions-tui/src/render.rs

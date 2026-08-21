@@ -1,0 +1,166 @@
+WO-MOK-018 — THE WITHDRAWN ONE-LINE FORM, captured as a counterfactual
+
+This is not the implemented presentation. It is the four values on one line — the form the
+implementation carried before rule 10.6's two-line pairing — rendered by the same oracle into
+the same panes, so that the pairing's justification is a measurement rather than an argument.
+The pairing is an OUTSTANDING provision awaiting the technical owner's ratification, and this
+file is the material for that decision. `inspector.txt` beside it is the implemented form.
+
+It was produced by temporarily replacing the two-line block in `mokiterions-tui/src/render.rs`
+with the one-line form, running the oracle, and reverting. The revert was verified by SHA-256
+against the file's digest before the edit, so the tree the gates were run on is byte-identical
+to the tree that produced this capture's counterpart.
+
+The banner below is the oracle's own and describes the amended rule, not this rendering.
+
+--------------------------------------------------------------------------------------------
+
+WO-MOK-018 — the inspector pane for a dead subject
+
+Captured by a temporary oracle, which asserts nothing. Every row below is read out of a
+rendered buffer cell by cell, including the pane's own border, so a value clipped off the
+pane is visible here as an absent character rather than as a shorter string.
+
+`SPEC-MOK-003` rule 10 item 6 as amended 2026-08-21 fixes four presented values for a
+dead subject and pairs them across two lines. Rule 10 item 7 makes an unreported value
+absent rather than zero-filled. The two cases below are those two provisions.
+
+=== CASE A — the engine reported this subject's survival before it died
+
+    subject M01   died on tick 119   health 0   satiety Some(0)   energy Some(81)   fear Some(90)
+
+    the one-line form of the same four values: 45 columns
+    "final health 0  satiety 0  energy 81  fear 90"
+
+--- CASE A at the reference viewport
+    viewport 160x48   inspector pane 44x38   interior width 42
+
+    ┌ inspector ───────────────────────────────┐
+    │Zug  M01                                  │
+    │died on tick 119                          │
+    │final health 0  satiety 0  energy 81  fear│
+    │90                                        │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    └──────────────────────────────────────────┘
+
+--- CASE A at the smallest viewport presenting the inspector
+    viewport 140x22   inspector pane 44x18   interior width 42
+
+    ┌ inspector ───────────────────────────────┐
+    │Zug  M01                                  │
+    │died on tick 119                          │
+    │final health 0  satiety 0  energy 81  fear│
+    │90                                        │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    └──────────────────────────────────────────┘
+
+=== CASE B — the engine never reported this subject's survival
+
+    subject M99   died on tick 7   health 0   satiety None   energy None   fear None
+
+--- CASE B at the reference viewport
+    viewport 160x48   inspector pane 44x38   interior width 42
+
+    ┌ inspector ───────────────────────────────┐
+    │M99                                       │
+    │died on tick 7                            │
+    │final health 0                            │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    └──────────────────────────────────────────┘
+
+--- CASE B at the smallest viewport presenting the inspector
+    viewport 140x22   inspector pane 44x18   interior width 42
+
+    ┌ inspector ───────────────────────────────┐
+    │M99                                       │
+    │died on tick 7                            │
+    │final health 0                            │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    │                                          │
+    └──────────────────────────────────────────┘
+

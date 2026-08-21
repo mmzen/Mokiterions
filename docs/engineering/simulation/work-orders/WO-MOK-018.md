@@ -2,7 +2,7 @@
 id = "WO-MOK-018"
 type = "work_order"
 title = "Close the two observer defects Phase 3.1 left: a stale filterable-type count, and a fourth attribute that becomes unreadable at death"
-status = "draft"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-21"
 updated = "2026-08-21"
@@ -26,6 +26,20 @@ verification = ["VER-MOK-005"]
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope
 below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
 completed change and the retained evidence. Verification and release require separate commit-bound records.
+
+**Approved and directed on 2026-08-21.** The repository owner, who holds every accountable role in this repository, was
+shown this work order with its two decisions and its four required amendments in full, approved the two-tier scope, and
+then directed implementation in one act. That act is read as covering the work order's own approval and the four
+amendments its *Required amendments* section tabulates, each of which names its acting owner — amendments 1, 2 and 3 the
+technical owner's and amendment 4 the assurance owner's — on the precedent of `WO-MOK-003`, where the same owner cleared
+a gate explicitly and directed the tabulated amendments to be applied. Nothing outside that tabulation is approved by
+it, and this section is the record of what it reaches.
+
+**A fifth amendment was found during implementation and is not covered by that act.** `SPEC-MOK-004` rule 6's figures
+move, which this work order predicted they would not; amendment 5 below states it, and it is **OUTSTANDING** for the
+technical owner's ratification. The same is true of two provisions inside amendments already approved: rule 10.6's
+two-line pairing, and `VER-MOK-005`'s correction of a stale `name`. Each is named in the completion report and marked
+where it is recorded, rather than presented as approved text.
 
 Commit-bound verification is classified `required` above.
 
@@ -124,6 +138,10 @@ Four amendments are required and **none of them is this work order's to make**. 
 approving this work order can approve the amendment it authorizes, on the precedent of `WO-MOK-016`'s own *Required
 amendments* section. Implementation begins after those acts and not before.
 
+**A fifth was found during implementation, is stated as amendment 5 below, and was not part of the approving act.** It
+is recorded here rather than in a later work order because rule 6's **Growth** clause requires the rule to be amended
+*in the same act* as the growth, so deferring it would leave the specification stating a figure the tree contradicts.
+
 ### 1. `SPEC-MOK-003` rule 9 item 2 — the figure (technical owner)
 
 `eleven` becomes `fourteen`. Nothing else in the item changes: `action_trace`'s separate mention, the subject filter,
@@ -175,6 +193,40 @@ that a dead subject's pane presents the engine's own last reported `fear`, and t
 engine reported none. Rule 9 item 2's corrected figure is a specification-text correction with no runtime subject and
 needs no case of its own; whether the contract nonetheless wants the filter's reachable set asserted at fifteen is the
 assurance owner's call at approval, and this work order does not presume it.
+
+### 5. `SPEC-MOK-004` rule 6 — one public field (technical owner) — OUTSTANDING, found during implementation
+
+**This amendment was not in the four the owner approved, and this work order asserted the opposite.** Its *Constraints*
+section said rule 6's "**94** items, **118** `pub` lines and **24** public fields stand. This is to be measured and not
+assumed." They were measured, at 118 before the change and 119 after, and they do not stand: `state::Death` gains
+`pub fear: Option<u8>`, so the pair reads **25** public fields and **119** `pub` lines. **The item count of 94 is
+unchanged**, which is why the prediction looked safe and why it was wrong — rule 6 counts a public field separately from
+the item that declares it, and the change was scoped by its effect on items.
+
+Two errors in this work order produced the wrong prediction, and both are recorded rather than corrected away:
+
+1. The *Authorized decision envelope* grants the agent "the field name and type on `Death`" on the stated ground that
+   it and `latest_survival` are "both private to `mokiterions-tui::state` and neither is a member of the interface
+   `SPEC-MOK-004` rule 6 counts". **`latest_survival` is private; `Death` is not.** `Death` is `pub` in a `pub mod` and
+   its `id`, `tick`, `health`, `satiety` and `energy` fields are all `pub`, so the grant rested on a false premise about
+   what the field is.
+2. The *Lifecycle* section states that "no member of the observer's public interface changes here". Under rule 6's own
+   counting that sentence is true — a member is an item, and no item is added — which is exactly why it did not catch
+   the field. **The first stop-and-escalate condition is not tripped**: it forbids closing defect 2 by way of "a member
+   of the observer's public interface", and the growth is a field rather than a member.
+
+Implementation continued rather than stopping, because the alternative that avoids the field is worse on this work
+order's own terms: an accessor on `Observer` would add a public **item** and move 94, which the first stop-and-escalate
+condition forbids outright. A `pub(crate)` field beside three `pub` siblings would make one struct partly opaque and
+relocate its public-tier case for no reason but visibility, and deriving the value in `render` is impossible because
+the state it comes from is private. So the narrowest available form was implemented and is reported here.
+
+The amendment as applied records the figures, names `REQ-MOK-021` by way of `SPEC-MOK-003` rule 10.6 as the requirement
+the **Growth** clause needs, states the three alternatives as measured and worse, and states that rule 7 is untouched
+because a field added to a struct whose fields are already public widens no existing item. It is **OUTSTANDING** for the
+technical owner's ratification, on the precedent of `SPEC-MOK-004`'s own 2026-08-19 row, which was outstanding for the
+same reason — an interface consequence found after the fact by measuring the rule — until the owner ratified it under
+`WO-MOK-012`.
 
 ## Objective
 
@@ -229,6 +281,12 @@ The implementation agent may decide locally:
 
 - the field name and type on `Death`, and whether `latest_survival` becomes a wider tuple or a small named struct —
   both are private to `mokiterions-tui::state` and neither is a member of the interface `SPEC-MOK-004` rule 6 counts;
+
+  **The stated ground is wrong for `Death` and right for `latest_survival`.** `Death` is `pub` in a `pub mod` and its
+  existing fields are `pub`, so a field added to it is part of rule 6's interface and moves that rule's public-field
+  and `pub`-line figures, though not its item count. The grant itself is not withdrawn — the field's name and type are
+  still the agent's, and `fear: Option<u8>` mirrors the two siblings it joins — but the consequence the ground denied is
+  real and is amendment 5.
 - the exact wording and spacing of the death line's `fear` segment, within amendment 2's attribute order and item 7's
   absent-not-zero-filled rule;
 - test names, and the tier each case lands in under `SPEC-MOK-004` rule 8, reporting the placement and its ground;
@@ -253,6 +311,12 @@ It may not decide:
   state at every declared seed. Widening a derived map consumes no entropy and must not.
 - No member of the observer's public interface is added, removed or reshaped, so `SPEC-MOK-004` rule 6's **94** items,
   **118** `pub` lines and **24** public fields stand. This is to be measured and not assumed.
+
+  **Measured, and the second half does not hold.** The item count of **94** stands and no member is added, removed or
+  reshaped, so the constraint's first clause is satisfied. The `pub` line and public field figures move to **119** and
+  **25**, because `Death` gains one public field and rule 6 counts a field separately from the item declaring it. This
+  constraint is left as written rather than edited to match the outcome: it is what the owner approved, and amendment 5
+  is where the consequence is recorded.
 - `SPEC-MOK-003` rule 10 item 7's rule holds: a value the engine did not compute is absent, never blank-labelled and
   never zero-filled.
 - No existing test is renamed or removed. `SPEC-MOK-004` rule 12 governs a rename and rule 11 makes a loss a defect.
@@ -300,6 +364,11 @@ Under `evidence/WO-MOK-018/`:
   and it is the file that makes the joint correction auditable.
 - `interface.md` — the enumeration establishing that rule 6's 94 items, 118 `pub` lines and 24 public fields are
   unmoved.
+
+  **The enumeration was made and it establishes the opposite of what this brief predicts.** 94 items stands; the `pub`
+  line and public field figures read 119 and 25. The file records the growth, the two errors in this work order that
+  produced the wrong prediction, and the three alternatives measured and worse. The brief is left as written because it
+  is what the owner approved, and amendment 5 is where the consequence is recorded.
 - `inspector.md` — the rendered death line at the reference viewport and at the smallest viewport presenting the
   inspector, in both the reported-`fear` and the no-record cases.
 - `non-perturbation.md` — the observed-versus-unobserved comparison at every declared seed.

@@ -1,0 +1,39 @@
+WO-MOK-018 non-perturbation comparison
+
+`REQ-MOK-025` at every declared seed. The observed run is drawn at a rotating viewport
+over the declared viewport set and interacted with on every round with the twelve-key
+script `tests/verification.rs` drives its own observed runs with; the unobserved run is
+`Simulation::run`, which is the engine binary's whole behaviour, writing into memory.
+
+Captured by a temporary oracle appended to that file, which asserts nothing. Every figure
+below is counted from the two streams.
+
+=== 60 ticks — the contract's depth
+
+  seed  unobserved    observed  identical  first difference  final state
+     0        1616        1616        yes              none  agrees
+     1        1622        1622        yes              none  agrees
+    42        1623        1623        yes              none  agrees
+   123        1615        1615        yes              none  agrees
+   777        1620        1620        yes              none  agrees
+
+=== 300 ticks — WO-MOK-013's depth
+
+  seed  unobserved    observed  identical  first difference  final state
+     0        7603        7603        yes              none  agrees
+     1        7589        7589        yes              none  agrees
+    42        7534        7534        yes              none  agrees
+   123        7301        7301        yes              none  agrees
+   777        7599        7599        yes              none  agrees
+
+=== seed 42, 300 ticks, in full
+
+engine summary line (unobserved):
+  summary reason=tick_limit ticks=300 survivors=11 deaths=1 territory_a=3 territory_b=8 food_a_low=10 food_a_medium=23 food_a_high=26 food_b_low=1 food_b_medium=8 food_b_high=25
+
+the same line reconstructed from the observer's final state:
+  summary reason=tick_limit ticks=300 survivors=11 deaths=1 territory_a=3 territory_b=8 food_a_low=10 food_a_medium=23 food_a_high=26 food_b_low=1 food_b_medium=8 food_b_high=25
+
+unobserved records          7534
+observed retained records   7534
+
