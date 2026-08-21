@@ -1,0 +1,71 @@
+=== C:/Users/mathi/mcap-sink ===
+cells 90, distinct string-valued field paths 23
+
+  field path                             values  distinct  domain as measured
+  agents[].id                              1080        12  12 values, 1 shapes: M<nn>
+  agents[].name                            1080        12  12 values, 12 shapes: Drix, Gorm, Hozz, Krul, Nurb, Quib, Sput, Trok, Vonk, Womp, Xob, Zug
+  agents[].territory                       1080         2  A, B
+  config.density                             90         3  0.15, 0.75, 1.50
+  config.policy                              90         3  baseline, individual, reference
+  engine                                     90         1  0.1.0
+  event                                  905157        12  12 values, 12 shapes: action_trace, agent_died, agent_initialized, decision_source_selected, food_consumed, food_initialized, food_regenerated, food_regeneration_skipped, simulation_ended, survival_changed, territory_crossed, world_initialized
+  reason                                     90         2  extinction, tick_limit
+  record                                 961105         4  event, header, metrics, run
+  result.class                            45640         3  high, low, medium
+  result.detail                          284409     18046  18046 values, 15 shapes: energy:<nn>-><nn>, energy:<nn>-><nnn>, food:F<nnnn>;class:high, food:F<nnnn>;class:low, food:F<nnnn>;class:medium, position:<n>:<n>, position:<n>:<nn>, position:<n>:<nnn>, position:<nn>:<n>, position:<nn>:<nn>, position:<nn>:<nnn>, position:<nnn>:<n>, position:<nnn>:<nn>, position:<nnn>:<nnn>, waited
+  result.food                             33940       640  640 values, 1 shapes: F<nnnn>
+  result.from                              1838         2  A, B
+  result.name                              1080        12  12 values, 12 shapes: Drix, Gorm, Hozz, Krul, Nurb, Quib, Sput, Trok, Vonk, Womp, Xob, Zug
+  result.proposal.action                 284409         4  eat, move, sleep, wait
+  result.proposal.direction              260904         4  east, north, south, west
+  result.proposal.food                     8838       623  623 values, 1 shapes: F<nnnn>
+  result.reason                            2540         3  capacity, extinction, tick_limit
+  result.source                              90         3  baseline, individual, reference
+  result.status                          284409         1  accepted
+  result.territory                       297189         2  A, B
+  result.to                                1838         2  A, B
+  subject                                905157       259  259 values, 5 shapes: A, B, F<nnnn>, M<nn>, world
+
+  characters used across every string value:
+    -.0123456789:;>ABDFGHKMNQSTVWXZ_abcdefghiklmnoprstuvwxyz
+  outside rule 3.3's union: none
+  result: PASS
+
+=== C:/Users/mathi/msoc-sink ===
+cells 30, distinct string-valued field paths 28
+
+  field path                             values  distinct  domain as measured
+  agents[].id                               360        12  12 values, 1 shapes: M<nn>
+  agents[].name                             360        12  12 values, 12 shapes: Drix, Gorm, Hozz, Krul, Nurb, Quib, Sput, Trok, Vonk, Womp, Xob, Zug
+  agents[].territory                        360         2  A, B
+  config.density                             30         3  0.15, 0.75, 1.50
+  config.policy                              30         1  social
+  engine                                     30         1  0.1.0
+  event                                  378897        15  15 values, 15 shapes: action_trace, agent_died, agent_initialized, attack_resolved, decision_source_selected, food_consumed, food_initialized, food_regenerated, food_regeneration_skipped, simulation_ended, surrender_resolved, survival_changed, territory_crossed, threat_resolved, world_initialized
+  reason                                     30         2  extinction, tick_limit
+  record                                 404779         4  event, header, metrics, run
+  result.class                            20420         3  high, low, medium
+  result.detail                          118201     17703  17703 values, 18 shapes: damage:<nn>, energy:<nn>-><nn>, food:F<nnnn>;class:high, food:F<nnnn>;class:low, food:F<nnnn>;class:medium, increase:<n>, out_of_bounds, position:<n>:<n>, position:<n>:<nn>, position:<n>:<nnn>, position:<nn>:<n>, position:<nn>:<nn>, position:<nn>:<nnn>, position:<nnn>:<n>, position:<nnn>:<nn>, position:<nnn>:<nnn>, transferred:<n>, transferred:<nn>
+  result.food                             16520       640  640 values, 1 shapes: F<nnnn>
+  result.from                               668         2  A, B
+  result.name                               360        12  12 values, 12 shapes: Drix, Gorm, Hozz, Krul, Nurb, Quib, Sput, Trok, Vonk, Womp, Xob, Zug
+  result.proposal.action                 118201        10  10 values, 10 shapes: approach, attack, avoid, eat, fight, move, retreat, sleep, surrender, threaten
+  result.proposal.direction               96416         4  east, north, south, west
+  result.proposal.food                     4230       619  619 values, 1 shapes: F<nnnn>
+  result.proposal.target                  14206        12  12 values, 1 shapes: M<nn>
+  result.reason                             888         3  capacity, extinction, tick_limit
+  result.recipient                          190        12  12 values, 1 shapes: M<nn>
+  result.source                              30         1  social
+  result.status                          118201         2  accepted, rejected
+  result.suffered[].attacker                135        12  12 values, 1 shapes: M<nn>
+  result.target                            1552        12  12 values, 1 shapes: M<nn>
+  result.target_died                        312         2  no, yes
+  result.territory                       122461         2  A, B
+  result.to                                 668         2  A, B
+  subject                                378897       259  259 values, 5 shapes: A, B, F<nnnn>, M<nn>, world
+
+  characters used across every string value:
+    -.0123456789:;>ABDFGHKMNQSTVWXZ_abcdefghijklmnoprstuvwxyz
+  outside rule 3.3's union: none
+  result: PASS
+

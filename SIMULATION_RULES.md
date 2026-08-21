@@ -695,6 +695,7 @@ cargo run --bin Mokiterions -- --policy baseline           # watch the random de
 cargo run --bin Mokiterions -- --policy individual         # the trait-aware decider
 cargo run --bin Mokiterions -- --density 1.5               # a kinder world
 cargo run --bin Mokiterions -- --ticks 40 --trace-actions  # show every single decision
+cargo run --bin Mokiterions -- --events-path run.jsonl     # also write the run to a file, for a program
 ```
 
 `--bin Mokiterions` says which program to run. There are two: this one, which prints the run as
@@ -777,6 +778,60 @@ seven in the other, and the food left over broken down by half and by size. The 
 is `extinction`. Note that this early the three sizes are still roughly even — it is over hundreds of
 turns that the High pieces pile up, for the reason in section 12.
 
+### The same run, written for a program
+
+Everything above is written for a person to read. `--events-path` writes the same run a second time,
+to a file, in a shape a program can read:
+
+```bash
+cargo run --bin Mokiterions -- --seed 42 --ticks 40 --events-path run.jsonl
+```
+
+One record per line, each line a self-contained JSON object, and the `record` field says which of the
+four kinds it is. All four, from that exact run, with the long ones cut short:
+
+```
+{"record":"header","schema":1,"engine":"0.1.0","config":{"seed":42,"ticks":40,"policy":"reference","density":"0.75","trace_actions":false}}
+{"record":"event","tick":10,"subject":"A","event":"food_regeneration_skipped","result":{"reason":"capacity","count":61}}
+{"record":"metrics","tick":40,"living":12,"deaths":0,"population":{"A":5,"B":7},"health":{"sum":1200,"min":100}, … }
+{"record":"run","reason":"tick_limit","ticks":40,"survivors":12,"deaths":0,"crossings":1,"consumed":{"low":12,"medium":1,"high":0}, … }
+```
+
+- **`header`**, once, at the top: the settings the run actually used — not the ones you typed, the ones
+  it resolved, with every default filled in. `schema` is the version of the record shape itself, so a
+  program can tell whether it understands the file before it reads it.
+- **`event`**, one for every `tick=` line the text stream printed, in the same order, carrying the same
+  values. The second line above is the `food_regeneration_skipped` line from the five earlier in this
+  section. Nothing is added and nothing is dropped, so either stream can be rebuilt from the other.
+- **`metrics`**, one at the end of every completed turn: how many are alive, how many have died, where
+  the living ones are, the totals and the extremes of the four attributes, and how much food is standing
+  in each half and whether it has run out. This is the one thing the text stream never had — getting it
+  out of the text meant adding event lines up yourself, and getting it right meant knowing every rule.
+- **`run`**, once, at the bottom: the scoreboard line's twelve figures, plus the totals for the whole
+  run — crossings, pieces eaten by size, regrowths, regrowths skipped and why — plus all twelve
+  creatures by name with the turn each died on, or `null` for the ones that did not.
+
+Two things the file deliberately does not contain. **No judgement.** Nothing in it says a run went well
+or badly, or calls a number high, low, healthy or concerning. It states what happened and stops.
+Deciding what that means is the reader's job, and that is a rule rather than an oversight — the
+moment a file starts labelling its own numbers, everyone downstream inherits somebody else's opinion.
+**No clocks.** No timestamps, no durations, nothing about how long anything took. So the same seed and
+settings, from the same build, produce a byte-for-byte identical file on any machine on any day, which
+makes comparing two files a real test: anything that differs is a difference in the simulation.
+
+Four practical things:
+
+- The text output is unchanged, byte for byte, whether you ask for a file or not. The file is added;
+  nothing is traded away for it.
+- The file replaces whatever was already at that path.
+- If something goes wrong while the run is going — the disk fills up, the terminal you were printing to
+  goes away — the run stops, the exit code is `1`, and the half-written file is deleted. A file that
+  exists is a whole run. The one exception: if a file was already sitting at that path before this run
+  started, it is left where it is rather than deleted, and the reason is printed. Deleting somebody
+  else's file is a worse outcome than leaving a partial one behind.
+- A path that cannot be opened at all is reported and then nothing runs — not one turn. A run that
+  cannot be recorded is not run.
+
 ---
 
 ## 16. What the simulation does *not* do yet
@@ -798,7 +853,11 @@ Worth stating plainly, because the project's eventual goals make people expect m
   Everything else in a decision comes from what is visible right now — including how afraid you were,
   which nobody stores because it is a live attribute rather than a recollection.
 - **No AI or language model.** All four deciders are a few lines of fixed rules.
-- **No graphics, no saved files, no network.** Text output only.
+- **No graphics and no network.** A run can now write itself to a file, as the end of section 15
+  describes, but that file is a record of one run and nothing reads it back: there is no saved state,
+  nothing to resume, and no way to start a run from anything other than a seed and a handful of options.
+- **Nothing that reads the file.** The record stream exists so that something can be built on it. That
+  something is not here yet — no reader, no analysis, no comparison across runs, no batch of seeds.
 
 All of these are planned. The order they arrive in, and why, is in `docs/ROADMAP.md`.
 
@@ -809,6 +868,7 @@ All of these are planned. The order they arrive in, and why, is in `docs/ROADMAP
 | To find out | Read |
 |---|---|
 | The exact, binding rules | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
+| The exact shape of every record in the file | `docs/engineering/simulation/specifications/SPEC-MOK-006.md` |
 | What is planned, and in what order | `docs/ROADMAP.md` |
-| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/`, `.../WO-MOK-010/` and `.../WO-MOK-016/` |
+| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/`, `.../WO-MOK-010/`, `.../WO-MOK-016/` and `.../WO-MOK-019/` |
 | How changes get approved here | `ENGINEERING_HARNESS.md` |

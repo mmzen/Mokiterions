@@ -1,0 +1,101 @@
+# oracle 1, comparison B re-derived: the merge with no sink against the merge with a sink
+# left:  C:/Users/mathi/m-nosink-manifest.txt
+# right: C:/Users/mathi/m-sink-manifest.txt
+#
+# Compared columns: sha256(stdout), bytes, lines, sha256(stderr), stderr bytes, exit code.
+# No projection, no normalization, no tolerance. VER-MOK-012 oracle 1.
+
+seed0-baseline-d0.15-traceoff      identical
+seed0-baseline-d0.15-traceon       identical
+seed0-baseline-d0.75-traceoff      identical
+seed0-baseline-d0.75-traceon       identical
+seed0-baseline-d1.50-traceoff      identical
+seed0-baseline-d1.50-traceon       identical
+seed0-individual-d0.15-traceoff    identical
+seed0-individual-d0.15-traceon     identical
+seed0-individual-d0.75-traceoff    identical
+seed0-individual-d0.75-traceon     identical
+seed0-individual-d1.50-traceoff    identical
+seed0-individual-d1.50-traceon     identical
+seed0-reference-d0.15-traceoff     identical
+seed0-reference-d0.15-traceon      identical
+seed0-reference-d0.75-traceoff     identical
+seed0-reference-d0.75-traceon      identical
+seed0-reference-d1.50-traceoff     identical
+seed0-reference-d1.50-traceon      identical
+seed1-baseline-d0.15-traceoff      identical
+seed1-baseline-d0.15-traceon       identical
+seed1-baseline-d0.75-traceoff      identical
+seed1-baseline-d0.75-traceon       identical
+seed1-baseline-d1.50-traceoff      identical
+seed1-baseline-d1.50-traceon       identical
+seed1-individual-d0.15-traceoff    identical
+seed1-individual-d0.15-traceon     identical
+seed1-individual-d0.75-traceoff    identical
+seed1-individual-d0.75-traceon     identical
+seed1-individual-d1.50-traceoff    identical
+seed1-individual-d1.50-traceon     identical
+seed1-reference-d0.15-traceoff     identical
+seed1-reference-d0.15-traceon      identical
+seed1-reference-d0.75-traceoff     identical
+seed1-reference-d0.75-traceon      identical
+seed1-reference-d1.50-traceoff     identical
+seed1-reference-d1.50-traceon      identical
+seed123-baseline-d0.15-traceoff    identical
+seed123-baseline-d0.15-traceon     identical
+seed123-baseline-d0.75-traceoff    identical
+seed123-baseline-d0.75-traceon     identical
+seed123-baseline-d1.50-traceoff    identical
+seed123-baseline-d1.50-traceon     identical
+seed123-individual-d0.15-traceoff  identical
+seed123-individual-d0.15-traceon   identical
+seed123-individual-d0.75-traceoff  identical
+seed123-individual-d0.75-traceon   identical
+seed123-individual-d1.50-traceoff  identical
+seed123-individual-d1.50-traceon   identical
+seed123-reference-d0.15-traceoff   identical
+seed123-reference-d0.15-traceon    identical
+seed123-reference-d0.75-traceoff   identical
+seed123-reference-d0.75-traceon    identical
+seed123-reference-d1.50-traceoff   identical
+seed123-reference-d1.50-traceon    identical
+seed42-baseline-d0.15-traceoff     identical
+seed42-baseline-d0.15-traceon      identical
+seed42-baseline-d0.75-traceoff     identical
+seed42-baseline-d0.75-traceon      identical
+seed42-baseline-d1.50-traceoff     identical
+seed42-baseline-d1.50-traceon      identical
+seed42-individual-d0.15-traceoff   identical
+seed42-individual-d0.15-traceon    identical
+seed42-individual-d0.75-traceoff   identical
+seed42-individual-d0.75-traceon    identical
+seed42-individual-d1.50-traceoff   identical
+seed42-individual-d1.50-traceon    identical
+seed42-reference-d0.15-traceoff    identical
+seed42-reference-d0.15-traceon     identical
+seed42-reference-d0.75-traceoff    identical
+seed42-reference-d0.75-traceon     identical
+seed42-reference-d1.50-traceoff    identical
+seed42-reference-d1.50-traceon     identical
+seed777-baseline-d0.15-traceoff    identical
+seed777-baseline-d0.15-traceon     identical
+seed777-baseline-d0.75-traceoff    identical
+seed777-baseline-d0.75-traceon     identical
+seed777-baseline-d1.50-traceoff    identical
+seed777-baseline-d1.50-traceon     identical
+seed777-individual-d0.15-traceoff  identical
+seed777-individual-d0.15-traceon   identical
+seed777-individual-d0.75-traceoff  identical
+seed777-individual-d0.75-traceon   identical
+seed777-individual-d1.50-traceoff  identical
+seed777-individual-d1.50-traceon   identical
+seed777-reference-d0.15-traceoff   identical
+seed777-reference-d0.15-traceon    identical
+seed777-reference-d0.75-traceoff   identical
+seed777-reference-d0.75-traceon    identical
+seed777-reference-d1.50-traceoff   identical
+seed777-reference-d1.50-traceon    identical
+
+# 90 cells compared, 0 differing
+# result: PASS
+# 90 right-hand cells additionally carry a record stream, not compared here

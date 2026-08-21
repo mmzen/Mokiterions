@@ -225,6 +225,16 @@ pub enum Territory {
 
 impl Territory {
     const ALL: [Self; 2] = [Self::A, Self::B];
+
+    /// The slot this territory occupies in a per-territory array, matching [`Self::ALL`]'s
+    /// order so that an array built by index and a record written by iteration cannot
+    /// disagree about which territory a figure belongs to.
+    fn index(self) -> usize {
+        match self {
+            Self::A => 0,
+            Self::B => 1,
+        }
+    }
 }
 
 impl fmt::Display for Territory {
@@ -492,6 +502,14 @@ struct Mokiterion {
     /// under those sources.
     suffered: Vec<SufferedAttack>,
     alive: bool,
+    /// `SPEC-MOK-006`'s *State model*: absent until this Mokiterion dies and thereafter the
+    /// tick at which it died. Written in the same statement sequence as the `agent_died`
+    /// event, read only by the run record, and reported as `null` for a survivor because
+    /// tick `0` is a legitimate death tick and a sentinel would collide with it.
+    ///
+    /// No rule reads it. It is not an attribute, is not bounded, is not decayed and does not
+    /// reach the text stream, so it cannot move a decision, a draw or a byte of output.
+    died_at: Option<u64>,
 }
 
 /// The twelve names of `SPEC-MOK-001`'s *Name*, in identifier order: index `n - 1` is `Mn`'s.
@@ -1256,6 +1274,22 @@ pub enum RegenerationSkipReason {
     Capacity,
 }
 
+impl RegenerationSkipReason {
+    /// Every reason, in the order `SPEC-MOK-006` rule 8.2's `regeneration_skipped` object
+    /// states them. Private: it exists to key the two skip counters and to enumerate the
+    /// domain for the alphabet check, and neither is a public concern.
+    const ALL: [Self; 2] = [Self::Depleted, Self::Capacity];
+
+    /// The counter this reason increments, matching [`Self::ALL`]'s order the way
+    /// [`FoodClass::index`] matches [`FoodClass::ALL`]'s.
+    fn index(self) -> usize {
+        match self {
+            Self::Depleted => 0,
+            Self::Capacity => 1,
+        }
+    }
+}
+
 impl fmt::Display for RegenerationSkipReason {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1754,6 +1788,52 @@ pub struct TickOutcome {
     pub reason: Option<TerminationReason>,
 }
 
+/// The schema version of the structured record stream, `SPEC-MOK-006` rule 10.
+///
+/// It is the stream's own version and not the engine's: `engine` in the header record
+/// identifies the producer and this identifies the contract, so an engine release that
+/// changes no byte any conforming writer produces does not move it. Rule 10.2 fixes what
+/// does move it, and it is a declared compatibility surface of this product.
+const RECORD_SCHEMA_VERSION: u32 = 1;
+
+/// The two streams a run writes: the text stream `SPEC-MOK-001` fixes, and the optional
+/// structured record stream `SPEC-MOK-006` fixes.
+///
+/// The pair is threaded through the tick rather than held on [`Simulation`], because a sink
+/// belongs to the caller for the duration of one call and holding it would make it state.
+/// The text stream is a type parameter, as it was before there was a second stream; the
+/// record sink is a trait object so that a caller with no sink passes `None` and leaves
+/// nothing to infer.
+///
+/// `'sink` is the trait object's own lifetime and is deliberately separate from `'a`, the
+/// lifetime of the borrows this struct holds. `&mut dyn Write` is invariant in the trait
+/// object's lifetime, so a single lifetime would force `execute`'s two independent borrows to
+/// be provably equal in length, which they are not and which no caller should have to
+/// arrange. With the two separated, `'a` shortens freely and `'sink` stays put.
+struct Sinks<'a, 'sink, W: Write> {
+    text: &'a mut W,
+    records: Option<&'a mut (dyn Write + 'sink)>,
+}
+
+impl<'sink, W: Write> Sinks<'_, 'sink, W> {
+    /// The record sink, reborrowed for one record. `None` is the whole of rule 1.1's
+    /// "no sink-related code path runs": every producer below asks for the sink first and
+    /// computes nothing when the answer is `None`.
+    fn records(&mut self) -> Option<&mut (dyn Write + 'sink)> {
+        self.records.as_deref_mut()
+    }
+}
+
+/// Distinguishes a record-sink failure from a text-stream failure, which `SPEC-MOK-006`
+/// rule 13.5 requires of the diagnostic.
+///
+/// The form is fixed and carries two things: that the sink was the stream that failed, and
+/// the platform's own reason. It carries no path, because the library target never learns
+/// one.
+fn sink_error(error: io::Error) -> io::Error {
+    io::Error::new(error.kind(), format!("record sink: {error}"))
+}
+
 pub struct Simulation {
     config: Config,
     tick: u64,
@@ -1770,6 +1850,27 @@ pub struct Simulation {
     /// Present only while [`Simulation::advance_tick`] is collecting. The text-stream host
     /// leaves it absent, so a long run retains nothing it does not need.
     collected_events: Option<Vec<Event>>,
+    /// `SPEC-MOK-006`'s *State model*: the run's cumulative counters, one per phenomenon the
+    /// run record states and no text line does.
+    ///
+    /// Each is incremented at exactly the point its event is emitted, in the same statement
+    /// sequence, so a counter and the event stream cannot disagree. Each saturates: `u64`
+    /// cannot be exhausted by any run the tick limit admits, and saturating arithmetic makes
+    /// that a stated property rather than an assumption. **They exist whether or not a sink
+    /// is configured** — a counter that existed only under an option would make the option a
+    /// behavior change — and no counter is derived from a draw, participates in a rule, a
+    /// decision, a proposal, a validation or an applied action, or reaches the text stream.
+    ///
+    /// All are private and the type exposes no accessor for any of them, so `SPEC-MOK-002`
+    /// rule 6 needs no relaxation to admit them.
+    /// Every territory crossing over the run.
+    crossings: u64,
+    /// Every consumption over the run, by resource class, keyed by [`FoodClass::index`].
+    consumed: [u64; 3],
+    /// Every resource the run regenerated.
+    regenerated: u64,
+    /// Every skipped regeneration, by reason, keyed by [`RegenerationSkipReason::index`].
+    regeneration_skipped: [u64; 2],
 }
 
 impl Simulation {
@@ -1832,6 +1933,7 @@ impl Simulation {
                 // Rule 25's window starts empty: nobody has been struck before tick 1.
                 suffered: Vec::new(),
                 alive: true,
+                died_at: None,
             });
         }
 
@@ -1845,33 +1947,61 @@ impl Simulation {
             outcome: None,
             decisions: Vec::new(),
             collected_events: None,
+            crossings: 0,
+            consumed: [0; 3],
+            regenerated: 0,
+            regeneration_skipped: [0; 2],
         })
     }
 
+    /// Runs to termination, writing the `SPEC-MOK-001` text record to `output`.
+    ///
+    /// The signature `SPEC-MOK-002` rule 5 enumerates, unchanged by the record stream: a host
+    /// that wants no records calls this and passes nothing extra.
     pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+        self.run_recording(output, None)
+    }
+
+    /// [`Simulation::run`], additionally projecting every record `SPEC-MOK-006` fixes onto
+    /// `records` when a sink is supplied.
+    ///
+    /// `pub(crate)` rather than `pub`: the only caller is `execute`, the sink is the *host's*
+    /// to open, and `SPEC-MOK-006` rule 12.2 grows the public interface by nothing beyond
+    /// `execute`'s one parameter. With no sink this is [`Simulation::run`] exactly — the same
+    /// text bytes, the same draws, the same outcome — which is rule 11 stated as a call graph
+    /// rather than as a promise.
+    pub(crate) fn run_recording<W: Write>(
+        &mut self,
+        output: &mut W,
+        records: Option<&mut dyn Write>,
+    ) -> io::Result<RunSummary> {
+        let mut sinks = Sinks {
+            text: output,
+            records,
+        };
         match self.config.policy {
             Policy::Baseline => {
                 let mut source = BaselineDecisionSource;
-                self.run_with_source(output, &mut source)
+                self.run_with_source(&mut sinks, &mut source)
             }
             Policy::Reference => {
                 let mut source = ReferenceDecisionSource;
-                self.run_with_source(output, &mut source)
+                self.run_with_source(&mut sinks, &mut source)
             }
             Policy::Individual => {
                 let mut source = IndividualDecisionSource;
-                self.run_with_source(output, &mut source)
+                self.run_with_source(&mut sinks, &mut source)
             }
             Policy::Social => {
                 let mut source = SocialDecisionSource;
-                self.run_with_source(output, &mut source)
+                self.run_with_source(&mut sinks, &mut source)
             }
         }
     }
 
     fn run_with_source<W: Write, D: DecisionSource>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
     ) -> io::Result<RunSummary> {
         if self.tick != 0 {
@@ -1881,8 +2011,14 @@ impl Simulation {
             ));
         }
 
+        // Rule 5.1: the header is first in the stream, before the first tick and before any
+        // other record. A refused run is refused above and writes nothing at all.
+        if let Some(sink) = sinks.records() {
+            write_header_record(sink, &self.config).map_err(sink_error)?;
+        }
+
         for event in self.entity_initialization_events() {
-            self.emit(output, event)?;
+            self.emit(sinks, event)?;
         }
         let event = Event::new(
             0,
@@ -1891,12 +2027,19 @@ impl Simulation {
                 source: decision_source.name().to_string(),
             },
         );
-        self.emit(output, event)?;
+        self.emit(sinks, event)?;
 
         loop {
-            if let Some(reason) = self.step(output, decision_source)? {
+            if let Some(reason) = self.step(sinks, decision_source)? {
                 let summary = self.summary(reason);
-                self.emit_summary(output, &summary)?;
+                self.emit_summary(&mut *sinks.text, &summary)?;
+                // Rule 8.1: one run record per run, last in the stream, after the final
+                // tick's metrics record. Rule 9.3 pairs it with the summary line above, which
+                // is why it is written here and not inside `emit_summary`: the text stream has
+                // one authority and this record is the other stream's counterpart to it.
+                if let Some(sink) = sinks.records() {
+                    self.write_run_record(sink, &summary).map_err(sink_error)?;
+                }
                 return Ok(summary);
             }
         }
@@ -1946,7 +2089,14 @@ impl Simulation {
         decision_source: &mut D,
     ) -> Result<TickOutcome, String> {
         self.collected_events = Some(Vec::new());
-        let stepped = self.step(&mut io::sink(), decision_source);
+        // The observer host reads events structurally and writes neither stream, so both
+        // sinks are absent here: the text stream goes nowhere and no record is produced.
+        let mut discarded = io::sink();
+        let mut sinks = Sinks {
+            text: &mut discarded,
+            records: None,
+        };
+        let stepped = self.step(&mut sinks, decision_source);
         let events = self.collected_events.take().unwrap_or_default();
         match stepped {
             Ok(reason) => Ok(TickOutcome {
@@ -2111,11 +2261,11 @@ impl Simulation {
     /// the same sequence whether it was watched or not.
     fn step<W: Write, D: DecisionSource>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
     ) -> io::Result<Option<TerminationReason>> {
         self.tick += 1;
-        self.run_tick(output, decision_source)?;
+        self.run_tick(sinks, decision_source)?;
 
         let extinct = self.agents.iter().all(|agent| !agent.alive);
         let tick_limit_reached = self.tick >= self.config.tick_limit;
@@ -2127,17 +2277,33 @@ impl Simulation {
             };
             self.outcome = Some(reason);
             let event = Event::new(self.tick, "world", EventDetail::SimulationEnded { reason });
-            self.emit(output, event)?;
+            self.emit(sinks, event)?;
+            // Rule 7.1: a tick that terminates the run is a completed tick and carries its
+            // metrics record, after that tick's `simulation_ended` event.
+            self.write_metrics(sinks)?;
             return Ok(Some(reason));
         }
+        self.write_metrics(sinks)?;
         Ok(None)
     }
 
-    /// Writes one authoritative event to the host's sink and retains it when a host is
-    /// collecting. Every event passes through here, which is why a collected `TickOutcome`
-    /// and the `REQ-MOK-010` record cannot disagree about order or content.
-    fn emit<W: Write>(&mut self, output: &mut W, event: Event) -> io::Result<()> {
-        writeln!(output, "{event}")?;
+    /// Writes one authoritative event to the host's sink, projects it onto the record stream
+    /// when one is configured, and retains it when a host is collecting.
+    ///
+    /// **Every event passes through here, and this is the record stream's only emission
+    /// site.** That is why a collected `TickOutcome`, the `REQ-MOK-010` text record and the
+    /// `SPEC-MOK-006` record stream cannot disagree about order or content, and why
+    /// `REQ-MOK-042`'s one-to-one correspondence is structural rather than maintained. A
+    /// second emission site would make rule 9.3 a thing to keep true; adding one is a defect.
+    ///
+    /// The text stream is written first, so a run whose record sink fails has already written
+    /// the text line the record would have accompanied, and the two streams are never
+    /// inconsistent in the surviving direction.
+    fn emit<W: Write>(&mut self, sinks: &mut Sinks<'_, '_, W>, event: Event) -> io::Result<()> {
+        writeln!(sinks.text, "{event}")?;
+        if let Some(sink) = sinks.records() {
+            write_event_record(sink, &event).map_err(sink_error)?;
+        }
         if let Some(collected) = &mut self.collected_events {
             collected.push(event);
         }
@@ -2146,7 +2312,7 @@ impl Simulation {
 
     fn run_tick<W: Write, D: DecisionSource>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
     ) -> io::Result<()> {
         self.decisions.clear();
@@ -2163,7 +2329,7 @@ impl Simulation {
                 let mut entropy = DecisionEntropy::new(&mut self.entropy);
                 decision_source.decide(&observation, &mut entropy)
             };
-            let result = self.apply_action(output, agent_index, &proposal)?;
+            let result = self.apply_action(sinks, agent_index, &proposal)?;
             self.decisions.push(DecisionSnapshot {
                 agent_id: self.agents[agent_index].id.clone(),
                 outcome: if result.accepted {
@@ -2178,7 +2344,7 @@ impl Simulation {
             });
 
             if self.config.trace_actions {
-                self.emit_action_trace(output, agent_index, &proposal, &result)?;
+                self.emit_action_trace(sinks, agent_index, &proposal, &result)?;
             }
 
             // Rule 25 closes the window when the opportunity is taken rather than when it is
@@ -2189,12 +2355,12 @@ impl Simulation {
             // sometimes happens would make `--trace-actions` change simulation state.
             self.agents[agent_index].suffered.clear();
 
-            self.apply_survival(output, agent_index, perceived_company)?;
+            self.apply_survival(sinks, agent_index, perceived_company)?;
         }
 
         if self.tick.is_multiple_of(REGENERATION_INTERVAL) {
             for territory in Territory::ALL {
-                self.regenerate_food(output, territory)?;
+                self.regenerate_food(sinks, territory)?;
             }
         }
         Ok(())
@@ -2287,7 +2453,7 @@ impl Simulation {
 
     fn apply_action<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         agent_index: usize,
         action: &Action,
     ) -> io::Result<ActionResult> {
@@ -2318,7 +2484,7 @@ impl Simulation {
                     detail: format!("energy:{before}->{}", agent.energy),
                 })
             }
-            Action::Move { direction } => self.apply_move(output, agent_index, *direction),
+            Action::Move { direction } => self.apply_move(sinks, agent_index, *direction),
             Action::Eat { food_id } => {
                 let agent_position = self.agents[agent_index].position;
                 let Some(food_index) = self
@@ -2357,7 +2523,9 @@ impl Simulation {
                         },
                     )
                 };
-                self.emit(output, event)?;
+                let class_index = food.class.index();
+                self.consumed[class_index] = self.consumed[class_index].saturating_add(1);
+                self.emit(sinks, event)?;
                 Ok(ActionResult {
                     accepted: true,
                     detail: format!("food:{};class:{}", food.id, food.class),
@@ -2369,7 +2537,7 @@ impl Simulation {
             | Action::Retreat { .. }
             | Action::Surrender { .. }
             | Action::Approach { .. }
-            | Action::Avoid { .. } => self.apply_targeted_action(output, agent_index, action),
+            | Action::Avoid { .. } => self.apply_targeted_action(sinks, agent_index, action),
         }
     }
 
@@ -2379,7 +2547,7 @@ impl Simulation {
     /// bounds test.
     fn apply_move<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         agent_index: usize,
         direction: Direction,
     ) -> io::Result<ActionResult> {
@@ -2402,7 +2570,12 @@ impl Simulation {
                     to: current_territory,
                 },
             );
-            self.emit(output, event)?;
+            // The counter moves in the same statement sequence as the event it counts, so
+            // rule 8.6's equality between the two is a property of this block rather than of
+            // a later reconciliation. Both routes to a crossing pass through here, so a
+            // targeted move's crossing is counted on the same terms as a `move` proposal's.
+            self.crossings = self.crossings.saturating_add(1);
+            self.emit(sinks, event)?;
         }
         Ok(ActionResult {
             accepted: true,
@@ -2504,7 +2677,7 @@ impl Simulation {
     /// choosing between candidates is rule 26's, and applying is this function's.
     fn apply_targeted_action<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         agent_index: usize,
         action: &Action,
     ) -> io::Result<ActionResult> {
@@ -2520,16 +2693,16 @@ impl Simulation {
 
         match action {
             Action::Approach { .. } => {
-                self.apply_targeted_move(output, agent_index, target_index, false)
+                self.apply_targeted_move(sinks, agent_index, target_index, false)
             }
             Action::Avoid { .. } | Action::Retreat { .. } => {
-                self.apply_targeted_move(output, agent_index, target_index, true)
+                self.apply_targeted_move(sinks, agent_index, target_index, true)
             }
             Action::Attack { .. } | Action::Fight { .. } => {
-                self.resolve_strike(output, agent_index, target_index)
+                self.resolve_strike(sinks, agent_index, target_index)
             }
-            Action::Threaten { .. } => self.resolve_threat(output, agent_index, target_index),
-            Action::Surrender { .. } => self.resolve_surrender(output, agent_index, target_index),
+            Action::Threaten { .. } => self.resolve_threat(sinks, agent_index, target_index),
+            Action::Surrender { .. } => self.resolve_surrender(sinks, agent_index, target_index),
             _ => {
                 debug_assert!(
                     false,
@@ -2554,7 +2727,7 @@ impl Simulation {
     /// reason reached by a targeted verb.
     fn apply_targeted_move<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         agent_index: usize,
         target_index: usize,
         away: bool,
@@ -2590,7 +2763,7 @@ impl Simulation {
 
         for candidate in candidates {
             if position.moved(candidate).is_some() {
-                return self.apply_move(output, agent_index, candidate);
+                return self.apply_move(sinks, agent_index, candidate);
             }
         }
 
@@ -2612,7 +2785,7 @@ impl Simulation {
     /// entropy is drawn by any part of this.
     fn resolve_strike<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         striker_index: usize,
         target_index: usize,
     ) -> io::Result<ActionResult> {
@@ -2658,7 +2831,7 @@ impl Simulation {
                 target_died: died,
             },
         );
-        self.emit(output, event)?;
+        self.emit(sinks, event)?;
 
         // Rule 13's path, event and finality. There is no second death and no combat-specific
         // death event; what differs is only that this one happens inside another Mokiterion's
@@ -2669,7 +2842,7 @@ impl Simulation {
                 self.agents[target_index].id.clone(),
                 EventDetail::AgentDied { health: 0 },
             );
-            self.emit(output, event)?;
+            self.emit(sinks, event)?;
         }
 
         Ok(ActionResult {
@@ -2691,7 +2864,7 @@ impl Simulation {
     /// recoverable from the pair of `fear` values the same event carries.
     fn resolve_threat<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         threatener_index: usize,
         target_index: usize,
     ) -> io::Result<ActionResult> {
@@ -2713,7 +2886,7 @@ impl Simulation {
                 target_fear: (fear_before, fear_after),
             },
         );
-        self.emit(output, event)?;
+        self.emit(sinks, event)?;
 
         Ok(ActionResult {
             accepted: true,
@@ -2733,7 +2906,7 @@ impl Simulation {
     /// through the survival path and not through this one.
     fn resolve_surrender<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         subject_index: usize,
         recipient_index: usize,
     ) -> io::Result<ActionResult> {
@@ -2764,7 +2937,7 @@ impl Simulation {
                 recipient_satiety: (recipient_satiety_before, recipient_satiety_after),
             },
         );
-        self.emit(output, event)?;
+        self.emit(sinks, event)?;
 
         Ok(ActionResult {
             accepted: true,
@@ -2774,7 +2947,7 @@ impl Simulation {
 
     fn emit_action_trace<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         agent_index: usize,
         action: &Action,
         result: &ActionResult,
@@ -2807,7 +2980,7 @@ impl Simulation {
                 },
             )
         };
-        self.emit(output, event)
+        self.emit(sinks, event)
     }
 
     /// Rule 12: survival decay, then rule 12's `fear` update from the same tick's rule 3
@@ -2816,7 +2989,7 @@ impl Simulation {
     /// because rule 3's list is already bounded by the perception radius.
     fn apply_survival<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         agent_index: usize,
         perceived_company: bool,
     ) -> io::Result<()> {
@@ -2857,22 +3030,26 @@ impl Simulation {
             }
             (event, died)
         };
-        self.emit(output, event)?;
+        self.emit(sinks, event)?;
 
         if died {
+            // The death tick is recorded in the same statement sequence as the event that
+            // reports the death, and is written exactly once because `alive` is already
+            // `false` by the time this tick's loop could reach this Mokiterion again.
+            self.agents[agent_index].died_at = Some(self.tick);
             let event = Event::new(
                 self.tick,
                 self.agents[agent_index].id.clone(),
                 EventDetail::AgentDied { health: 0 },
             );
-            self.emit(output, event)?;
+            self.emit(sinks, event)?;
         }
         Ok(())
     }
 
     fn regenerate_food<W: Write>(
         &mut self,
-        output: &mut W,
+        sinks: &mut Sinks<'_, '_, W>,
         territory: Territory,
     ) -> io::Result<()> {
         let capacity = self.config.density.resources_per_territory();
@@ -2896,7 +3073,10 @@ impl Simulation {
                     count: current_count,
                 },
             );
-            return self.emit(output, event);
+            let reason_index = reason.index();
+            self.regeneration_skipped[reason_index] =
+                self.regeneration_skipped[reason_index].saturating_add(1);
+            return self.emit(sinks, event);
         }
 
         // Add the specified yield, or only as many as the remaining capacity allows.
@@ -2927,7 +3107,8 @@ impl Simulation {
                     position,
                 },
             );
-            self.emit(output, event)?;
+            self.regenerated = self.regenerated.saturating_add(1);
+            self.emit(sinks, event)?;
         }
         Ok(())
     }
@@ -2982,6 +3163,187 @@ impl Simulation {
             summary.food_b[2]
         )
     }
+
+    /// One metrics record for the tick just completed, `SPEC-MOK-006` rule 7.
+    ///
+    /// Every figure describes the state at the end of the tick the record names, and all of
+    /// them are read in the single pass below, so rule 7.3's "no figure is read at a different
+    /// point in the tick from any other" is a property of the loop rather than a convention.
+    /// Nothing here draws against the entropy stream and nothing here is retained.
+    ///
+    /// The sink is asked for first: with no sink this returns before reading any state, which
+    /// is rule 1.1's "no sink-related code path runs". The record itself is written by
+    /// [`Simulation::metrics_record`], so that every failure inside it is labelled once here
+    /// rather than at each `write!` — rule 13.5 wants one form of diagnostic, not several.
+    fn write_metrics<W: Write>(&self, sinks: &mut Sinks<'_, '_, W>) -> io::Result<()> {
+        let Some(sink) = sinks.records() else {
+            return Ok(());
+        };
+        self.metrics_record(sink).map_err(sink_error)
+    }
+
+    /// The metrics record's bytes. See [`Simulation::write_metrics`] for the rules it serves.
+    fn metrics_record(&self, sink: &mut dyn Write) -> io::Result<()> {
+        let mut living = 0usize;
+        let mut population = [0usize; 2];
+        // Sums are `u64` over twelve `u8` terms, so no accumulation here can overflow in any
+        // build. Rule 4.2: a sum, and in the same record the count that divides it.
+        let mut health_sum = 0u64;
+        let mut satiety_sum = 0u64;
+        let mut energy_sum = 0u64;
+        let mut fear_sum = 0u64;
+        // Rule 7.5's one extremum per attribute: `min` for the three whose depletion threatens
+        // survival, `max` for the one whose accumulation is its own direction of harm.
+        let mut health_min: Option<u8> = None;
+        let mut satiety_min: Option<u8> = None;
+        let mut energy_min: Option<u8> = None;
+        let mut fear_max: Option<u8> = None;
+        for agent in self.agents.iter().filter(|agent| agent.alive) {
+            living += 1;
+            population[agent.position.territory().index()] += 1;
+            health_sum += u64::from(agent.health);
+            satiety_sum += u64::from(agent.satiety);
+            energy_sum += u64::from(agent.energy);
+            fear_sum += u64::from(agent.fear);
+            health_min = Some(health_min.map_or(agent.health, |seen| seen.min(agent.health)));
+            satiety_min = Some(satiety_min.map_or(agent.satiety, |seen| seen.min(agent.satiety)));
+            energy_min = Some(energy_min.map_or(agent.energy, |seen| seen.min(agent.energy)));
+            fear_max = Some(fear_max.map_or(agent.fear, |seen| seen.max(agent.fear)));
+        }
+        // Rule 7.4: the two sum to the roster size at every tick.
+        let deaths = self.agents.len() - living;
+
+        write!(
+            sink,
+            "{{\"record\":\"metrics\",\"tick\":{},\"living\":{living},\"deaths\":{deaths},\"population\":{{\"A\":{},\"B\":{}}}",
+            self.tick, population[0], population[1]
+        )?;
+        write_attribute(sink, "health", health_sum, "min", health_min)?;
+        write_attribute(sink, "satiety", satiety_sum, "min", satiety_min)?;
+        write_attribute(sink, "energy", energy_sum, "min", energy_min)?;
+        write_attribute(sink, "fear", fear_sum, "max", fear_max)?;
+        write!(sink, ",\"territories\":{{")?;
+        for (position, territory) in Territory::ALL.into_iter().enumerate() {
+            if position > 0 {
+                write!(sink, ",")?;
+            }
+            self.write_metrics_territory(sink, territory)?;
+        }
+        writeln!(sink, "}}}}")
+    }
+
+    /// One territory's object inside a metrics record, rule 7.6.
+    ///
+    /// `capacity` does not vary within a run and is stated every tick regardless, so that a
+    /// single record is interpretable alone. `depleted` is stated beside `standing` even
+    /// though this engine derives the one from the other, because a consumer must not have to
+    /// know which derivation the engine uses.
+    fn write_metrics_territory(
+        &self,
+        sink: &mut dyn Write,
+        territory: Territory,
+    ) -> io::Result<()> {
+        let counts = self.food_counts(territory);
+        let standing = counts[0] + counts[1] + counts[2];
+        write!(
+            sink,
+            "\"{territory}\":{{\"standing\":{standing},\"low\":{},\"medium\":{},\"high\":{},\"capacity\":{},\"depleted\":{}}}",
+            counts[0],
+            counts[1],
+            counts[2],
+            self.config.density.resources_per_territory(),
+            standing == 0
+        )
+    }
+
+    /// The run record, `SPEC-MOK-006` rule 8: the twelve figures the summary line carries,
+    /// plus the five facts the cumulative counters hold and no text line states.
+    fn write_run_record(&self, sink: &mut dyn Write, summary: &RunSummary) -> io::Result<()> {
+        write!(
+            sink,
+            "{{\"record\":\"run\",\"reason\":\"{}\",\"ticks\":{},\"survivors\":{},\"deaths\":{},\"crossings\":{}",
+            summary.reason, summary.ticks, summary.survivors, summary.deaths, self.crossings
+        )?;
+
+        write!(sink, ",\"consumed\":{{")?;
+        for (position, class) in FoodClass::ALL.into_iter().enumerate() {
+            if position > 0 {
+                write!(sink, ",")?;
+            }
+            write!(sink, "\"{class}\":{}", self.consumed[class.index()])?;
+        }
+        write!(sink, "}},\"regenerated\":{}", self.regenerated)?;
+
+        // Rule 8.5: the two skip reasons stay distinguished. Collapsing them would lose the
+        // difference between a world at capacity and a world that can never restock.
+        write!(sink, ",\"regeneration_skipped\":{{")?;
+        for (position, reason) in RegenerationSkipReason::ALL.into_iter().enumerate() {
+            if position > 0 {
+                write!(sink, ",")?;
+            }
+            write!(
+                sink,
+                "\"{reason}\":{}",
+                self.regeneration_skipped[reason.index()]
+            )?;
+        }
+        write!(sink, "}}")?;
+
+        // Rule 8.3: `final` carries the per-territory figures the summary line carries, so
+        // the summary line is reconstructible from this record alone.
+        write!(
+            sink,
+            ",\"final\":{{\"territories\":{{\"A\":{{\"population\":{},\"low\":{},\"medium\":{},\"high\":{}}},\"B\":{{\"population\":{},\"low\":{},\"medium\":{},\"high\":{}}}}}}}",
+            summary.territory_a,
+            summary.food_a[0],
+            summary.food_a[1],
+            summary.food_a[2],
+            summary.territory_b,
+            summary.food_b[0],
+            summary.food_b[1],
+            summary.food_b[2]
+        )?;
+
+        // Rule 8.4: one entry per Mokiterion the run created, living or dead, in ascending
+        // identifier order. **The order is imposed here rather than inherited** from the
+        // roster's traversal, because an ordering that came from a collection's iteration
+        // order is a determinism defect waiting to manifest, and rule 11.5 names this as the
+        // one place a traversal order would otherwise have been visible.
+        let mut roster: Vec<&Mokiterion> = self.agents.iter().collect();
+        roster.sort_by(|left, right| left.id.cmp(&right.id));
+        write!(sink, ",\"agents\":[")?;
+        for (position, agent) in roster.into_iter().enumerate() {
+            if position > 0 {
+                write!(sink, ",")?;
+            }
+            write!(
+                sink,
+                "{{\"id\":\"{}\",\"name\":\"{}\",\"territory\":\"{}\",\"died_at\":",
+                agent.id,
+                agent.name,
+                agent.position.territory()
+            )?;
+            // Rule 4.4: `null`, never `0` and never omitted. Tick `0` is a legitimate death
+            // tick, so a sentinel would be indistinguishable from a measurement.
+            match agent.died_at {
+                Some(tick) => write!(sink, "{tick}")?,
+                None => write!(sink, "null")?,
+            }
+            write!(sink, "}}")?;
+        }
+        writeln!(sink, "]}}")
+    }
+
+    /// The shared entropy stream's state, for `VER-MOK-012` oracle 4.
+    ///
+    /// An owned `u64` and nothing else: `SPEC-MOK-002` rule 6 forbids a reference into the
+    /// entropy state in *any* build configuration, so a test build gets a copy too.
+    /// `#[cfg(test)]` in the merged tree, and named only by tests in this module — the
+    /// public tier cannot reach it, which is the point.
+    #[cfg(test)]
+    fn entropy_state(&self) -> u64 {
+        self.entropy.state
+    }
 }
 
 fn choose_free_coordinate(
@@ -3010,6 +3372,361 @@ fn food_id(number: u32) -> String {
     format!("F{number:04}")
 }
 
+// ---------------------------------------------------------------------------------------
+// The structured record stream, `SPEC-MOK-006`.
+//
+// Every function below writes one complete line, or part of one, and retains nothing. None
+// of them takes `&mut self`, none draws against the entropy stream, and none is reachable
+// from a run that was given no sink — `Sinks::records` returns `None` and each caller
+// returns before reaching here, which is rule 1.1.
+//
+// The records are written by `write!`, not by a serializer, and that is `ARCH-MOK-001`'s
+// standing decision rather than an omission: the engine's dependency table is empty and
+// `SPEC-MOK-006` rule 12.4 keeps it empty. What makes hand-writing safe here is rule 3.3's
+// closed value alphabet — `A-Z a-z 0-9 _ . - + : ; >` and nothing else, in particular no
+// quotation mark, no backslash and no code point below U+0020. **There is therefore no
+// escaping function, and the absence is deliberate.** A value outside that alphabet could
+// not be written correctly by these functions, so any change that admits one must add
+// escaping in the same act; `tests/records.rs` enumerates the alphabet exhaustively so that
+// such a change fails a test rather than corrupting a stream.
+// ---------------------------------------------------------------------------------------
+
+/// The header record, `SPEC-MOK-006` rule 5: one per run, before the first tick.
+///
+/// Rule 5.4 states the configuration as resolved, never as given, so a stream carries the
+/// run that happened rather than the arguments that asked for it. Rule 5.5 keeps the sink's
+/// own path out of it, in every form — a stream is a description of a run, and where the
+/// stream was put is not part of that run.
+fn write_header_record(sink: &mut dyn Write, config: &Config) -> io::Result<()> {
+    writeln!(
+        sink,
+        "{{\"record\":\"header\",\"schema\":{RECORD_SCHEMA_VERSION},\"engine\":\"{}\",\"config\":{{\"seed\":{},\"ticks\":{},\"policy\":\"{}\",\"density\":\"{}\",\"trace_actions\":{}}}}}",
+        env!("CARGO_PKG_VERSION"),
+        config.seed,
+        config.tick_limit,
+        config.policy,
+        // Rule 4.3: a string, holding the same two-decimal rendering the text stream and the
+        // help text carry. A density is a decimal quantity and rule 4.1 admits no decimal
+        // number, so the choice is between a string and a pair of integers, and the string is
+        // the figure a reader already recognizes.
+        config.density,
+        config.trace_actions
+    )
+}
+
+/// One event record, `SPEC-MOK-006` rule 6: one per emitted text event line, in the same
+/// order, with the same identity, the same event type and the same values.
+///
+/// The record is written from the same [`Event`] the text line is written from, at the same
+/// point, which is what makes `REQ-MOK-042`'s correspondence structural rather than
+/// maintained.
+fn write_event_record(sink: &mut dyn Write, event: &Event) -> io::Result<()> {
+    write!(
+        sink,
+        "{{\"record\":\"event\",\"tick\":{},\"subject\":\"{}\",\"event\":\"{}\",\"result\":{{",
+        event.tick,
+        event.subject,
+        event.detail.event_type()
+    )?;
+    write_event_result(sink, &event.detail)?;
+    writeln!(sink, "}}}}")
+}
+
+/// The `result` object's fields for one event, in the order the text line states them.
+///
+/// This match mirrors [`EventDetail`]'s `Display` field for field. It is exhaustive by
+/// construction, so a thirteenth variant fails to compile here rather than reaching a stream
+/// without its fields — rule 6.3's guarantee that every field of every event kind appears.
+/// Rule 6.7's `"result":{}` for a fieldless event needs no arm: no variant is fieldless
+/// today, and one added later would write nothing between the braces the caller wrote.
+fn write_event_result(sink: &mut dyn Write, detail: &EventDetail) -> io::Result<()> {
+    match detail {
+        EventDetail::WorldInitialized {
+            width,
+            height,
+            territories,
+        } => write!(
+            sink,
+            "\"width\":{width},\"height\":{height},\"territories\":{territories}"
+        ),
+        EventDetail::FoodInitialized {
+            class,
+            position,
+            territory,
+        } => {
+            write!(sink, "\"class\":\"{class}\",\"position\":")?;
+            write_coordinate(sink, *position)?;
+            write!(sink, ",\"territory\":\"{territory}\"")
+        }
+        EventDetail::AgentInitialized {
+            name,
+            position,
+            territory,
+            health,
+            satiety,
+            energy,
+            fear,
+            waste_tolerance,
+        } => {
+            write!(sink, "\"name\":\"{name}\",\"position\":")?;
+            write_coordinate(sink, *position)?;
+            write!(
+                sink,
+                ",\"territory\":\"{territory}\",\"health\":{health},\"satiety\":{satiety},\"energy\":{energy},\"fear\":{fear},\"waste_tolerance\":{waste_tolerance}"
+            )
+        }
+        EventDetail::DecisionSourceSelected { source } => write!(sink, "\"source\":\"{source}\""),
+        EventDetail::SurvivalChanged {
+            health,
+            satiety,
+            energy,
+            fear,
+        } => {
+            write!(sink, "\"health\":")?;
+            write_transition(sink, *health)?;
+            write!(sink, ",\"satiety\":")?;
+            write_transition(sink, *satiety)?;
+            write!(sink, ",\"energy\":")?;
+            write_transition(sink, *energy)?;
+            write!(sink, ",\"fear\":")?;
+            write_transition(sink, *fear)
+        }
+        EventDetail::AgentDied { health } => write!(sink, "\"health\":{health}"),
+        EventDetail::FoodConsumed {
+            food,
+            class,
+            satiety,
+            energy,
+        } => {
+            write!(
+                sink,
+                "\"food\":\"{food}\",\"class\":\"{class}\",\"satiety\":"
+            )?;
+            write_transition(sink, *satiety)?;
+            write!(sink, ",\"energy\":")?;
+            write_transition(sink, *energy)
+        }
+        EventDetail::FoodRegenerated {
+            food,
+            class,
+            position,
+        } => {
+            write!(
+                sink,
+                "\"food\":\"{food}\",\"class\":\"{class}\",\"position\":"
+            )?;
+            write_coordinate(sink, *position)
+        }
+        EventDetail::FoodRegenerationSkipped { reason, count } => {
+            write!(sink, "\"reason\":\"{reason}\",\"count\":{count}")
+        }
+        EventDetail::TerritoryCrossed { from, to } => {
+            write!(sink, "\"from\":\"{from}\",\"to\":\"{to}\"")
+        }
+        // Rule 22's resolution, for `attack` and `fight` alike. `damage` is stated beside the
+        // transition rather than left to be recovered from it, because saturation at zero makes
+        // the subtraction lossy — which is rule 4.2's sum-and-count reasoning applied to a
+        // transition rather than to an average.
+        EventDetail::AttackResolved {
+            target,
+            damage,
+            target_health,
+            striker_energy,
+            target_died,
+        } => {
+            write!(
+                sink,
+                "\"target\":\"{target}\",\"damage\":{damage},\"target_health\":"
+            )?;
+            write_transition(sink, *target_health)?;
+            write!(sink, ",\"striker_energy\":")?;
+            write_transition(sink, *striker_energy)?;
+            // The text stream's own `yes`/`no`, as a string, and not the `bool` the engine
+            // holds. This follows `status` below, which is `"accepted"` here rather than `true`
+            // for the same reason: rule 6.3 makes every scalar in this stream the text
+            // stream's own rendering of the same value, and a boolean here would be the only
+            // scalar in the stream that is not. Rule 4.5's two booleans cost nothing to that
+            // rule because neither `config.trace_actions` nor a territory's `depleted` appears
+            // in the text stream at all — this is the first `bool` on a field that does, so it
+            // is the first place the two rules could disagree, and rule 6.3 wins.
+            write!(
+                sink,
+                ",\"target_died\":\"{}\"",
+                if *target_died { "yes" } else { "no" }
+            )
+        }
+        // Rule 23's resolution. `increase` is the amount *applied*, so `0` against a target
+        // already at `ATTRIBUTE_MAX`; the transition states the same fact from the other side
+        // and neither is derived from the other here.
+        EventDetail::ThreatResolved {
+            target,
+            increase,
+            target_fear,
+        } => {
+            write!(
+                sink,
+                "\"target\":\"{target}\",\"increase\":{increase},\"target_fear\":"
+            )?;
+            write_transition(sink, *target_fear)
+        }
+        // Rule 24's resolution. `transferred` and `discarded` are both stated because their sum
+        // is what the forfeit cost and neither alone shows where conservation failed.
+        EventDetail::SurrenderResolved {
+            recipient,
+            transferred,
+            discarded,
+            subject_satiety,
+            recipient_satiety,
+        } => {
+            write!(
+                sink,
+                "\"recipient\":\"{recipient}\",\"transferred\":{transferred},\"discarded\":{discarded},\"subject_satiety\":"
+            )?;
+            write_transition(sink, *subject_satiety)?;
+            write!(sink, ",\"recipient_satiety\":")?;
+            write_transition(sink, *recipient_satiety)
+        }
+        EventDetail::SimulationEnded { reason } => write!(sink, "\"reason\":\"{reason}\""),
+        EventDetail::ActionTrace {
+            proposal,
+            accepted,
+            detail,
+            position,
+            territory,
+            health,
+            satiety,
+            energy,
+            fear,
+            suffered,
+        } => {
+            write!(sink, "\"proposal\":")?;
+            write_proposal(sink, proposal)?;
+            // Rule 6.4: the text line's `status:accepted` is the string `"accepted"` here, not
+            // `true`. Rule 4.5 admits exactly two booleans and this is not one of them, because
+            // a verdict that gains a third outcome must not have to change a field's type.
+            //
+            // `detail` is the engine's own ground, verbatim. It is on the alphabet because
+            // `SPEC-MOK-001` composes it from the same words and separators every other value
+            // uses, which is why it needs no treatment a class name does not.
+            write!(
+                sink,
+                ",\"status\":\"{}\",\"detail\":\"{detail}\",\"position\":",
+                if *accepted { "accepted" } else { "rejected" }
+            )?;
+            write_coordinate(sink, *position)?;
+            write!(
+                sink,
+                ",\"territory\":\"{territory}\",\"health\":{health},\"satiety\":{satiety},\"energy\":{energy},\"fear\":{fear}"
+            )?;
+            // Rule 25's record, always present and empty where nothing was suffered. The text
+            // line omits it when empty and this stream does not, which rule 4.4 requires: the
+            // absence of an attack is an empty record rather than a missing fact, and a
+            // consumer that had to distinguish "no attacks" from "field not written" would be
+            // reading the writer's convenience instead of the world. Rule 6.6's reconstruction
+            // carries the mapping in the one direction it runs — an empty array renders no
+            // `suffered` clause on the text line.
+            write!(sink, ",\"suffered\":[")?;
+            for (index, (attacker, damage)) in suffered.iter().enumerate() {
+                if index > 0 {
+                    write!(sink, ",")?;
+                }
+                write!(sink, "{{\"attacker\":\"{attacker}\",\"damage\":{damage}}}")?;
+            }
+            write!(sink, "]")
+        }
+    }
+}
+
+/// Rule 6.5's first composite shape: a coordinate, `x:y` in the text stream.
+///
+/// An object rather than the text's colon-joined pair, because a consumer that wants one axis
+/// should not have to split a string, and rule 6.5 requires exactly this.
+fn write_coordinate(sink: &mut dyn Write, position: Coordinate) -> io::Result<()> {
+    write!(sink, "{{\"x\":{},\"y\":{}}}", position.x, position.y)
+}
+
+/// Rule 6.5's second composite shape: a before-and-after pair, `before->after` in the text
+/// stream. `from` and `to` are the two field names rule 6.5 fixes.
+///
+/// Rule 4.2 forbids the delta this pair implies. Both endpoints are stated and neither is
+/// subtracted from the other here, so a consumer that wants the difference computes it and
+/// owns it.
+fn write_transition(sink: &mut dyn Write, transition: (u8, u8)) -> io::Result<()> {
+    write!(
+        sink,
+        "{{\"from\":{},\"to\":{}}}",
+        transition.0, transition.1
+    )
+}
+
+/// Rule 6.5's third composite shape: a proposed action, `wait`, `sleep`, `eat:<food>` or
+/// `move:<direction>` in the text stream.
+///
+/// The action word under `action`, then the one further value the action carries where it
+/// carries one, under the name that value has. Rule 6.6's reconstruction walk reverses
+/// exactly this: the action word, then a colon and the remaining value if there is one.
+fn write_proposal(sink: &mut dyn Write, proposal: &Action) -> io::Result<()> {
+    match proposal {
+        Action::Wait => write!(sink, "{{\"action\":\"wait\"}}"),
+        Action::Sleep => write!(sink, "{{\"action\":\"sleep\"}}"),
+        Action::Eat { food_id } => write!(sink, "{{\"action\":\"eat\",\"food\":\"{food_id}\"}}"),
+        Action::Move { direction } => {
+            write!(
+                sink,
+                "{{\"action\":\"move\",\"direction\":\"{direction}\"}}"
+            )
+        }
+        // The seven targeted verbs of `CAP-MOK-010`, each carrying its one further value under
+        // the name that value has, exactly as `eat` carries `food`. The text stream renders the
+        // target as a field beside `proposal` rather than inside it, so that the verb and the
+        // target cannot disagree on a line a parser reads positionally; here they cannot
+        // disagree for a stronger reason — both are read from the same `Action` in one arm.
+        Action::Attack { target } => {
+            write!(sink, "{{\"action\":\"attack\",\"target\":\"{target}\"}}")
+        }
+        Action::Threaten { target } => {
+            write!(sink, "{{\"action\":\"threaten\",\"target\":\"{target}\"}}")
+        }
+        Action::Fight { target } => {
+            write!(sink, "{{\"action\":\"fight\",\"target\":\"{target}\"}}")
+        }
+        Action::Retreat { target } => {
+            write!(sink, "{{\"action\":\"retreat\",\"target\":\"{target}\"}}")
+        }
+        Action::Surrender { target } => {
+            write!(sink, "{{\"action\":\"surrender\",\"target\":\"{target}\"}}")
+        }
+        Action::Approach { target } => {
+            write!(sink, "{{\"action\":\"approach\",\"target\":\"{target}\"}}")
+        }
+        Action::Avoid { target } => {
+            write!(sink, "{{\"action\":\"avoid\",\"target\":\"{target}\"}}")
+        }
+    }
+}
+
+/// One attribute's `{"sum":…,"<extremum>":…}` object inside a metrics record, rule 7.5.
+///
+/// The extremum is `null` over an empty living population, under rule 4.4. A sentinel is not
+/// available: `0` is a legitimate health, satiety and energy for a living Mokiterion, and `0`
+/// is the ordinary fear of an unthreatened one, so any in-band value would be
+/// indistinguishable from a measurement. Rule 4.2 forbids the mean the sum would otherwise
+/// invite, which is why the sum appears beside `living` and not divided by it.
+fn write_attribute(
+    sink: &mut dyn Write,
+    name: &str,
+    sum: u64,
+    extremum_name: &str,
+    extremum: Option<u8>,
+) -> io::Result<()> {
+    write!(sink, ",\"{name}\":{{\"sum\":{sum},\"{extremum_name}\":")?;
+    match extremum {
+        Some(value) => write!(sink, "{value}")?,
+        None => write!(sink, "null")?,
+    }
+    write!(sink, "}}")
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -3026,6 +3743,19 @@ mod tests {
             policy: Policy::Baseline,
             density: Density::DEFAULT,
             trace_actions,
+        }
+    }
+
+    /// The stream pair over a text stream alone.
+    ///
+    /// Every test written before `SPEC-MOK-006` asserts about text and about nothing else, so
+    /// `None` here leaves each of them asserting exactly what it asserted before: no sink, and
+    /// by rule 1.1 no sink-related code path. The tests that do exercise a sink build the pair
+    /// themselves, so that a test which passes a sink says so at the call.
+    fn text_only<W: Write>(text: &mut W) -> Sinks<'_, '_, W> {
+        Sinks {
+            text,
+            records: None,
         }
     }
 
@@ -3204,7 +3934,7 @@ mod tests {
 
         let result = simulation
             .apply_action(
-                &mut output,
+                &mut text_only(&mut output),
                 0,
                 &Action::Move {
                     direction: Direction::North,
@@ -3228,7 +3958,7 @@ mod tests {
 
         let result = simulation
             .apply_action(
-                &mut output,
+                &mut text_only(&mut output),
                 0,
                 &Action::Move {
                     direction: Direction::South,
@@ -3249,7 +3979,7 @@ mod tests {
         simulation.agents[0].energy = 90;
 
         let result = simulation
-            .apply_action(&mut Vec::new(), 0, &Action::Sleep)
+            .apply_action(&mut text_only(&mut Vec::new()), 0, &Action::Sleep)
             .unwrap();
 
         assert!(result.accepted);
@@ -3275,9 +4005,13 @@ mod tests {
         };
         let mut output = Vec::new();
 
-        let first = simulation.apply_action(&mut output, 0, &action).unwrap();
+        let first = simulation
+            .apply_action(&mut text_only(&mut output), 0, &action)
+            .unwrap();
         let second_before = simulation.agents[1].clone();
-        let second = simulation.apply_action(&mut output, 1, &action).unwrap();
+        let second = simulation
+            .apply_action(&mut text_only(&mut output), 1, &action)
+            .unwrap();
 
         assert!(first.accepted);
         assert_eq!(simulation.agents[0].satiety, 100);
@@ -3306,7 +4040,9 @@ mod tests {
         // The third argument is rule 12's `fear` driver, whose own saturation is asserted in
         // `fear_saturates_at_both_bounds_and_is_reported_every_tick`. Passing `false` keeps
         // this test's subject the decay of the three attributes it was written for.
-        simulation.apply_survival(&mut output, 0, false).unwrap();
+        simulation
+            .apply_survival(&mut text_only(&mut output), 0, false)
+            .unwrap();
 
         assert_eq!(simulation.agents[0].health, 0);
         assert_eq!(simulation.agents[0].satiety, 0);
@@ -3334,10 +4070,10 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .regenerate_food(&mut output, Territory::A)
+            .regenerate_food(&mut text_only(&mut output), Territory::A)
             .unwrap();
         simulation
-            .regenerate_food(&mut output, Territory::B)
+            .regenerate_food(&mut text_only(&mut output), Territory::B)
             .unwrap();
 
         assert_eq!(
@@ -3374,7 +4110,7 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .regenerate_food(&mut output, Territory::A)
+            .regenerate_food(&mut text_only(&mut output), Territory::A)
             .unwrap();
 
         assert_eq!(simulation.food_counts(Territory::A)[0], capacity);
@@ -3418,7 +4154,7 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .run_with_source(&mut output, &mut source)
+            .run_with_source(&mut text_only(&mut output), &mut source)
             .unwrap();
 
         assert_eq!(
@@ -3473,7 +4209,7 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .regenerate_food(&mut output, Territory::A)
+            .regenerate_food(&mut text_only(&mut output), Territory::A)
             .unwrap();
 
         assert_eq!(
@@ -3766,7 +4502,7 @@ mod tests {
         for tick in 1..=(resolved * REGENERATION_INTERVAL as usize) {
             simulation.tick = tick as u64 * REGENERATION_INTERVAL;
             simulation
-                .regenerate_food(&mut io::sink(), Territory::A)
+                .regenerate_food(&mut text_only(&mut io::sink()), Territory::A)
                 .unwrap();
         }
         assert_eq!(
@@ -4089,6 +4825,15 @@ mod tests {
     /// The verification seed set `VER-MOK-002` declares, reused unchanged by `VER-MOK-010` so
     /// that this change's measurements and the control's are taken on the same worlds.
     const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
+
+    /// The densities `WO-MOK-019`'s evidence capture sweeps: the default, the `1.50%` sweep
+    /// `VER-MOK-002` declares, and `0.15%`.
+    ///
+    /// `VER-MOK-012` requires the default and `1.50%`. `0.15%` is added because each density is a
+    /// distinct world rather than the same world with more food — initialization performs a
+    /// different number of coordinate draws — so a draw taken per resource would show at a scarce
+    /// density and not at a generous one. The byte captures sweep the same three.
+    const SWEPT_DENSITIES: [&str; 3] = ["0.15", "0.75", "1.50"];
 
     /// The twelve `waste_tolerance` values per declared seed, `M01` first, in the order of
     /// [`DECLARED_SEEDS`].
@@ -4631,7 +5376,7 @@ mod tests {
             let mut output = Vec::new();
 
             simulation
-                .run_tick(&mut output, &mut IndividualDecisionSource)
+                .run_tick(&mut text_only(&mut output), &mut IndividualDecisionSource)
                 .unwrap();
 
             let output = String::from_utf8(output).unwrap();
@@ -4682,7 +5427,7 @@ mod tests {
             let mut output = Vec::new();
 
             simulation
-                .run_tick(&mut output, &mut IndividualDecisionSource)
+                .run_tick(&mut text_only(&mut output), &mut IndividualDecisionSource)
                 .unwrap();
 
             let output = String::from_utf8(output).unwrap();
@@ -4706,7 +5451,9 @@ mod tests {
 
         // Ten increments of ten reach the upper bound; the eleventh tick must hold there.
         for _ in 0..11 {
-            simulation.apply_survival(&mut output, 0, true).unwrap();
+            simulation
+                .apply_survival(&mut text_only(&mut output), 0, true)
+                .unwrap();
             assert!(simulation.agents[0].fear <= ATTRIBUTE_MAX);
         }
         assert_eq!(simulation.agents[0].fear, ATTRIBUTE_MAX);
@@ -4714,7 +5461,9 @@ mod tests {
         // Twenty decrements of five reach the lower bound; the twenty-first must hold there
         // rather than wrap to 251.
         for _ in 0..21 {
-            simulation.apply_survival(&mut output, 0, false).unwrap();
+            simulation
+                .apply_survival(&mut text_only(&mut output), 0, false)
+                .unwrap();
             assert!(simulation.agents[0].fear <= ATTRIBUTE_MAX);
         }
         assert_eq!(simulation.agents[0].fear, 0);
@@ -4756,7 +5505,7 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .run_tick(&mut output, &mut IndividualDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut IndividualDecisionSource)
             .unwrap();
 
         let output = String::from_utf8(output).unwrap();
@@ -4786,7 +5535,9 @@ mod tests {
         simulation.agents[0].satiety = 1;
         let mut output = Vec::new();
 
-        simulation.apply_survival(&mut output, 0, true).unwrap();
+        simulation
+            .apply_survival(&mut text_only(&mut output), 0, true)
+            .unwrap();
         assert!(!simulation.agents[0].alive);
         assert!(
             String::from_utf8(output)
@@ -4797,7 +5548,7 @@ mod tests {
         simulation.tick = 2;
         let mut output = Vec::new();
         simulation
-            .run_tick(&mut output, &mut IndividualDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut IndividualDecisionSource)
             .unwrap();
 
         let output = String::from_utf8(output).unwrap();
@@ -5392,7 +6143,9 @@ mod tests {
             ),
         ] {
             let mut output = Vec::new();
-            let result = simulation.apply_action(&mut output, 0, &action).unwrap();
+            let result = simulation
+                .apply_action(&mut text_only(&mut output), 0, &action)
+                .unwrap();
 
             assert!(!result.accepted, "{action} was accepted");
             assert_eq!(result.detail, ground, "{action}");
@@ -5429,7 +6182,7 @@ mod tests {
 
             let result = simulation
                 .apply_action(
-                    &mut output,
+                    &mut text_only(&mut output),
                     0,
                     &Action::Attack {
                         target: "M02".into(),
@@ -5494,7 +6247,7 @@ mod tests {
 
             let result = simulation
                 .apply_action(
-                    &mut Vec::new(),
+                    &mut text_only(&mut Vec::new()),
                     0,
                     &Action::Attack {
                         target: "M02".into(),
@@ -5518,7 +6271,7 @@ mod tests {
 
         let result = simulation
             .apply_action(
-                &mut output,
+                &mut text_only(&mut output),
                 0,
                 &Action::Attack {
                     target: "M02".into(),
@@ -5585,7 +6338,7 @@ mod tests {
 
             let result = simulation
                 .apply_action(
-                    &mut output,
+                    &mut text_only(&mut output),
                     0,
                     &Action::Threaten {
                         target: "M02".into(),
@@ -5667,7 +6420,7 @@ mod tests {
 
             let result = simulation
                 .apply_action(
-                    &mut output,
+                    &mut text_only(&mut output),
                     0,
                     &Action::Surrender {
                         target: "M02".into(),
@@ -5768,7 +6521,9 @@ mod tests {
                 let destination = origin.moved(step).unwrap();
                 let mut output = Vec::new();
 
-                let result = simulation.apply_action(&mut output, 0, &action).unwrap();
+                let result = simulation
+                    .apply_action(&mut text_only(&mut output), 0, &action)
+                    .unwrap();
 
                 assert!(result.accepted, "{action} at {offset_x},{offset_y}");
                 assert_eq!(result.detail, format!("position:{destination}"));
@@ -5799,7 +6554,7 @@ mod tests {
             encounter(3, Coordinate { x: 127, y: 10 }, Coordinate { x: 115, y: 5 });
         let result = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Avoid {
                     target: "M02".into(),
@@ -5818,7 +6573,7 @@ mod tests {
         let before = state_snapshot(&simulation);
         let result = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Avoid {
                     target: "M02".into(),
@@ -5835,7 +6590,7 @@ mod tests {
         let before = state_snapshot(&simulation);
         let result = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Approach {
                     target: "M02".into(),
@@ -5848,7 +6603,7 @@ mod tests {
 
         let result = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Avoid {
                     target: "M02".into(),
@@ -5865,7 +6620,7 @@ mod tests {
         let stream = simulation.entropy;
         let result = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Retreat {
                     target: "M02".into(),
@@ -5882,7 +6637,7 @@ mod tests {
         let mut output = Vec::new();
         let result = simulation
             .apply_action(
-                &mut output,
+                &mut text_only(&mut output),
                 0,
                 &Action::Avoid {
                     target: "M02".into(),
@@ -5912,7 +6667,7 @@ mod tests {
         for striker in [0, 2] {
             simulation
                 .apply_action(
-                    &mut Vec::new(),
+                    &mut text_only(&mut Vec::new()),
                     striker,
                     &Action::Attack {
                         target: "M02".into(),
@@ -5953,7 +6708,7 @@ mod tests {
         simulation.config.trace_actions = true;
         let mut output = Vec::new();
         simulation
-            .run_tick(&mut output, &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut SocialDecisionSource)
             .unwrap();
 
         assert!(
@@ -6300,6 +7055,631 @@ mod tests {
         }
     }
 
+    // -----------------------------------------------------------------------------------
+    // The structured record stream, `SPEC-MOK-006`.
+    //
+    // These are the internal tier: they assert about the private record writers, the private
+    // cumulative counters and the entropy state, none of which the public interface exposes
+    // and none of which rule 12.2 or 12.3 permits it to. `tests/records.rs` asserts the same
+    // stream from outside, over the built binary, and the two tiers are deliberately not
+    // redundant — this one reaches the shapes a run cannot be made to produce.
+    // -----------------------------------------------------------------------------------
+
+    /// Rule 6.2 and rule 6.5: the exact bytes of one event record, for every event kind.
+    ///
+    /// All fifteen kinds, and two of the rows are shapes no shipped decision source produces —
+    /// a rejected proposal and a `depleted` regeneration skip. A shape only a contrived state
+    /// reaches is exactly the shape a capture cannot cover, so it is covered here instead.
+    ///
+    /// The rows are asserted against [`EventType::ALL`], once each, so a sixteenth event kind
+    /// fails this test as well as failing to compile in `write_event_result`.
+    #[test]
+    fn every_event_kind_has_its_exact_record_shape() {
+        let cases: [(u64, &str, EventDetail, &str); 15] = [
+            (
+                0,
+                "world",
+                EventDetail::WorldInitialized {
+                    width: 128,
+                    height: 128,
+                    territories: 2,
+                },
+                "{\"record\":\"event\",\"tick\":0,\"subject\":\"world\",\"event\":\"world_initialized\",\"result\":{\"width\":128,\"height\":128,\"territories\":2}}\n",
+            ),
+            (
+                0,
+                "F0001",
+                EventDetail::FoodInitialized {
+                    class: FoodClass::High,
+                    position: Coordinate { x: 41, y: 63 },
+                    territory: Territory::A,
+                },
+                "{\"record\":\"event\",\"tick\":0,\"subject\":\"F0001\",\"event\":\"food_initialized\",\"result\":{\"class\":\"high\",\"position\":{\"x\":41,\"y\":63},\"territory\":\"A\"}}\n",
+            ),
+            (
+                0,
+                "M01",
+                EventDetail::AgentInitialized {
+                    name: "Zug".to_string(),
+                    position: Coordinate { x: 89, y: 34 },
+                    territory: Territory::A,
+                    health: 100,
+                    satiety: 100,
+                    energy: 100,
+                    fear: 0,
+                    waste_tolerance: 6,
+                },
+                "{\"record\":\"event\",\"tick\":0,\"subject\":\"M01\",\"event\":\"agent_initialized\",\"result\":{\"name\":\"Zug\",\"position\":{\"x\":89,\"y\":34},\"territory\":\"A\",\"health\":100,\"satiety\":100,\"energy\":100,\"fear\":0,\"waste_tolerance\":6}}\n",
+            ),
+            (
+                0,
+                "world",
+                EventDetail::DecisionSourceSelected {
+                    source: "individual".to_string(),
+                },
+                "{\"record\":\"event\",\"tick\":0,\"subject\":\"world\",\"event\":\"decision_source_selected\",\"result\":{\"source\":\"individual\"}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::SurvivalChanged {
+                    health: (100, 99),
+                    satiety: (97, 96),
+                    energy: (97, 96),
+                    fear: (0, 10),
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"survival_changed\",\"result\":{\"health\":{\"from\":100,\"to\":99},\"satiety\":{\"from\":97,\"to\":96},\"energy\":{\"from\":97,\"to\":96},\"fear\":{\"from\":0,\"to\":10}}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::AgentDied { health: 0 },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"agent_died\",\"result\":{\"health\":0}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::FoodConsumed {
+                    food: "F0002".to_string(),
+                    class: FoodClass::Medium,
+                    satiety: (60, 90),
+                    energy: (70, 80),
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"food_consumed\",\"result\":{\"food\":\"F0002\",\"class\":\"medium\",\"satiety\":{\"from\":60,\"to\":90},\"energy\":{\"from\":70,\"to\":80}}}\n",
+            ),
+            (
+                3,
+                "A",
+                EventDetail::FoodRegenerated {
+                    food: "F0123".to_string(),
+                    class: FoodClass::Low,
+                    position: Coordinate { x: 7, y: 8 },
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"A\",\"event\":\"food_regenerated\",\"result\":{\"food\":\"F0123\",\"class\":\"low\",\"position\":{\"x\":7,\"y\":8}}}\n",
+            ),
+            (
+                3,
+                "B",
+                EventDetail::FoodRegenerationSkipped {
+                    reason: RegenerationSkipReason::Depleted,
+                    count: 0,
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"B\",\"event\":\"food_regeneration_skipped\",\"result\":{\"reason\":\"depleted\",\"count\":0}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::TerritoryCrossed {
+                    from: Territory::A,
+                    to: Territory::B,
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"territory_crossed\",\"result\":{\"from\":\"A\",\"to\":\"B\"}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::AttackResolved {
+                    target: "M07".to_string(),
+                    damage: 12,
+                    target_health: (100, 88),
+                    striker_energy: (60, 52),
+                    target_died: false,
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"attack_resolved\",\"result\":{\"target\":\"M07\",\"damage\":12,\"target_health\":{\"from\":100,\"to\":88},\"striker_energy\":{\"from\":60,\"to\":52},\"target_died\":\"no\"}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::ThreatResolved {
+                    target: "M07".to_string(),
+                    increase: 10,
+                    target_fear: (5, 15),
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"threat_resolved\",\"result\":{\"target\":\"M07\",\"increase\":10,\"target_fear\":{\"from\":5,\"to\":15}}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::SurrenderResolved {
+                    recipient: "M07".to_string(),
+                    transferred: 20,
+                    discarded: 5,
+                    subject_satiety: (25, 0),
+                    recipient_satiety: (80, 100),
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"surrender_resolved\",\"result\":{\"recipient\":\"M07\",\"transferred\":20,\"discarded\":5,\"subject_satiety\":{\"from\":25,\"to\":0},\"recipient_satiety\":{\"from\":80,\"to\":100}}}\n",
+            ),
+            (
+                3,
+                "world",
+                EventDetail::SimulationEnded {
+                    reason: TerminationReason::Extinction,
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"world\",\"event\":\"simulation_ended\",\"result\":{\"reason\":\"extinction\"}}\n",
+            ),
+            (
+                3,
+                "M04",
+                EventDetail::ActionTrace {
+                    proposal: Action::Move {
+                        direction: Direction::North,
+                    },
+                    accepted: false,
+                    detail: "out_of_bounds".to_string(),
+                    position: Coordinate { x: 41, y: 63 },
+                    territory: Territory::A,
+                    health: 100,
+                    satiety: 97,
+                    energy: 97,
+                    fear: 0,
+                    suffered: Vec::new(),
+                },
+                "{\"record\":\"event\",\"tick\":3,\"subject\":\"M04\",\"event\":\"action_trace\",\"result\":{\"proposal\":{\"action\":\"move\",\"direction\":\"north\"},\"status\":\"rejected\",\"detail\":\"out_of_bounds\",\"position\":{\"x\":41,\"y\":63},\"territory\":\"A\",\"health\":100,\"satiety\":97,\"energy\":97,\"fear\":0,\"suffered\":[]}}\n",
+            ),
+        ];
+
+        assert_eq!(cases.len(), EventType::ALL.len());
+        for kind in EventType::ALL {
+            assert_eq!(
+                cases
+                    .iter()
+                    .filter(|(_, _, detail, _)| detail.event_type() == kind)
+                    .count(),
+                1,
+                "exactly one row per event kind, and {kind} is not covered once"
+            );
+        }
+
+        for (tick, subject, detail, expected) in cases {
+            let kind = detail.event_type();
+            let event = Event::new(tick, subject, detail);
+            let mut records = Vec::new();
+            write_event_record(&mut records, &event).unwrap();
+            assert_eq!(String::from_utf8(records).unwrap(), expected, "{kind}");
+        }
+    }
+
+    /// Rule 6.5's third composite shape, for all eleven actions.
+    ///
+    /// The match below is exhaustive without a wildcard, so a twelfth action fails to compile
+    /// here as well as in `write_proposal`, and the count keeps the table honest.
+    ///
+    /// The seven targeted verbs each carry a target and nothing else, and the target is a field
+    /// *of* the proposal object rather than a sibling of it. The text stream places it beside
+    /// `proposal=` because that line has no nesting to place it in; rule 6.5's "the one value it
+    /// carries" is what decides it here, on the same terms as `eat`'s `food` and `move`'s
+    /// `direction`.
+    #[test]
+    fn every_proposal_shape_is_the_action_word_and_the_one_value_it_carries() {
+        let cases = [
+            (Action::Wait, "{\"action\":\"wait\"}"),
+            (Action::Sleep, "{\"action\":\"sleep\"}"),
+            (
+                Action::Eat {
+                    food_id: "F0002".to_string(),
+                },
+                "{\"action\":\"eat\",\"food\":\"F0002\"}",
+            ),
+            (
+                Action::Move {
+                    direction: Direction::North,
+                },
+                "{\"action\":\"move\",\"direction\":\"north\"}",
+            ),
+            (
+                Action::Approach {
+                    target: "M01".to_string(),
+                },
+                "{\"action\":\"approach\",\"target\":\"M01\"}",
+            ),
+            (
+                Action::Avoid {
+                    target: "M02".to_string(),
+                },
+                "{\"action\":\"avoid\",\"target\":\"M02\"}",
+            ),
+            (
+                Action::Threaten {
+                    target: "M03".to_string(),
+                },
+                "{\"action\":\"threaten\",\"target\":\"M03\"}",
+            ),
+            (
+                Action::Attack {
+                    target: "M04".to_string(),
+                },
+                "{\"action\":\"attack\",\"target\":\"M04\"}",
+            ),
+            (
+                Action::Fight {
+                    target: "M05".to_string(),
+                },
+                "{\"action\":\"fight\",\"target\":\"M05\"}",
+            ),
+            (
+                Action::Retreat {
+                    target: "M06".to_string(),
+                },
+                "{\"action\":\"retreat\",\"target\":\"M06\"}",
+            ),
+            (
+                Action::Surrender {
+                    target: "M07".to_string(),
+                },
+                "{\"action\":\"surrender\",\"target\":\"M07\"}",
+            ),
+        ];
+
+        for (action, expected) in &cases {
+            match action {
+                Action::Wait
+                | Action::Sleep
+                | Action::Eat { .. }
+                | Action::Move { .. }
+                | Action::Approach { .. }
+                | Action::Avoid { .. }
+                | Action::Threaten { .. }
+                | Action::Attack { .. }
+                | Action::Fight { .. }
+                | Action::Retreat { .. }
+                | Action::Surrender { .. } => {}
+            }
+            let mut records = Vec::new();
+            write_proposal(&mut records, action).unwrap();
+            assert_eq!(String::from_utf8(records).unwrap(), *expected);
+        }
+
+        // Every direction, so that the one action carrying a further closed domain covers it.
+        for direction in Direction::ORDERED {
+            let mut records = Vec::new();
+            write_proposal(&mut records, &Action::Move { direction }).unwrap();
+            assert_eq!(
+                String::from_utf8(records).unwrap(),
+                format!("{{\"action\":\"move\",\"direction\":\"{direction}\"}}")
+            );
+        }
+    }
+
+    /// Rule 5: the header states the configuration as resolved, and states no path.
+    #[test]
+    fn the_header_record_states_the_resolved_configuration_and_never_a_path() {
+        let mut records = Vec::new();
+        write_header_record(
+            &mut records,
+            &Config {
+                seed: 777,
+                tick_limit: 1000,
+                policy: Policy::Individual,
+                density: Density::parse("1.50").unwrap(),
+                trace_actions: true,
+            },
+        )
+        .unwrap();
+        let record = String::from_utf8(records).unwrap();
+
+        assert_eq!(
+            record,
+            "{\"record\":\"header\",\"schema\":1,\"engine\":\"0.1.0\",\
+             \"config\":{\"seed\":777,\"ticks\":1000,\"policy\":\"individual\",\
+             \"density\":\"1.50\",\"trace_actions\":true}}\n"
+        );
+        // Rule 5.5 in the only form a test can state it: the writer is given no path, so a
+        // path cannot appear. The separators are asserted anyway, because the cheapest way for
+        // one to arrive later is a well-meant addition to this record.
+        assert!(!record.contains('/'));
+        assert!(!record.contains('\\'));
+        // Rule 4.3: the density is the two-decimal rendering, as a string, and rule 4.1 leaves
+        // every other figure a bare integer.
+        assert!(record.contains("\"density\":\"1.50\""));
+        assert!(!record.contains("\"density\":1"));
+    }
+
+    /// Rule 7.5 and rule 4.4 over an empty living population.
+    ///
+    /// Zero is a legitimate health, satiety and energy for a living Mokiterion, and zero is the
+    /// ordinary fear of an unthreatened one, so no in-band value can mean "there is no
+    /// population". `null` is the only correct rendering. The whole record is asserted rather
+    /// than the four fields, so a change that also moved a neighbouring field is caught here.
+    #[test]
+    fn a_metrics_record_over_an_empty_living_population_reports_null_extrema() {
+        let mut simulation = Simulation::new(config(0, 10, false)).unwrap();
+        simulation.tick = 7;
+        for agent in &mut simulation.agents {
+            agent.alive = false;
+        }
+        simulation.foods.clear();
+
+        let mut records = Vec::new();
+        simulation.metrics_record(&mut records).unwrap();
+
+        assert_eq!(
+            String::from_utf8(records).unwrap(),
+            "{\"record\":\"metrics\",\"tick\":7,\"living\":0,\"deaths\":12,\
+             \"population\":{\"A\":0,\"B\":0},\
+             \"health\":{\"sum\":0,\"min\":null},\"satiety\":{\"sum\":0,\"min\":null},\
+             \"energy\":{\"sum\":0,\"min\":null},\"fear\":{\"sum\":0,\"max\":null},\
+             \"territories\":{\
+             \"A\":{\"standing\":0,\"low\":0,\"medium\":0,\"high\":0,\"capacity\":61,\"depleted\":true},\
+             \"B\":{\"standing\":0,\"low\":0,\"medium\":0,\"high\":0,\"capacity\":61,\"depleted\":true}}}\n"
+        );
+    }
+
+    /// Rule 8.6: every cumulative figure equals the number of corresponding event records.
+    ///
+    /// The counts are taken from the **text** stream, which predates the counters and which
+    /// `SPEC-MOK-001` makes authoritative, so this compares the new state against the older
+    /// authority rather than against itself. A counter incremented at a different point in the
+    /// tick from its event, incremented twice, or attributed to the wrong class fails here.
+    #[test]
+    fn every_cumulative_counter_equals_its_event_count_in_the_text_stream() {
+        for seed in [0, 1, 42, 123, 777] {
+            let mut simulation = Simulation::new(reference_config(seed, 300, false)).unwrap();
+            let mut text = Vec::new();
+            simulation.run(&mut text).unwrap();
+            let text = String::from_utf8(text).unwrap();
+
+            let occurrences = |event: &str, containing: &str| {
+                text.lines()
+                    .filter(|line| line.contains(event) && line.contains(containing))
+                    .count() as u64
+            };
+
+            assert_eq!(
+                simulation.crossings,
+                occurrences("event=territory_crossed", ""),
+                "crossings, seed {seed}"
+            );
+            for class in FoodClass::ALL {
+                assert_eq!(
+                    simulation.consumed[class.index()],
+                    occurrences("event=food_consumed", &format!(",class:{class},")),
+                    "consumed {class}, seed {seed}"
+                );
+            }
+            assert_eq!(
+                simulation.regenerated,
+                occurrences("event=food_regenerated", ""),
+                "regenerated, seed {seed}"
+            );
+            for reason in RegenerationSkipReason::ALL {
+                assert_eq!(
+                    simulation.regeneration_skipped[reason.index()],
+                    occurrences(
+                        "event=food_regeneration_skipped",
+                        &format!("result=reason:{reason},")
+                    ),
+                    "regeneration_skipped {reason}, seed {seed}"
+                );
+            }
+
+            // The per-Mokiterion death tick, on the same principle: the tick the run record
+            // will state is the tick the text stream already stated.
+            for agent in &simulation.agents {
+                let died_at = text
+                    .lines()
+                    .find(|line| line.contains(&format!("subject={} event=agent_died", agent.id)))
+                    .map(|line| {
+                        line.trim_start_matches("tick=")
+                            .split(' ')
+                            .next()
+                            .unwrap()
+                            .parse::<u64>()
+                            .unwrap()
+                    });
+                assert_eq!(agent.died_at, died_at, "{} died_at, seed {seed}", agent.id);
+                assert_eq!(agent.alive, died_at.is_none(), "{}", agent.id);
+            }
+        }
+    }
+
+    /// `REQ-MOK-045` and rule 11.2: a record sink moves no entropy draw.
+    ///
+    /// The state is compared at **every** tick boundary rather than only at the end, because two
+    /// runs that drew differently in the middle and reconverged would pass an end-state
+    /// comparison. `SplitMix64` holds one `u64` and advances it by a fixed gamma, so equal
+    /// states after equal tick counts is equal draw counts — the comparison is exact, not
+    /// statistical.
+    fn assert_a_sink_is_entropy_neutral<D: DecisionSource>(config: Config, source: impl Fn() -> D) {
+        let (plain_states, plain_text) = entropy_trace(config, source(), false);
+        let (recorded_states, recorded_text) = entropy_trace(config, source(), true);
+
+        assert!(plain_states.len() > 2, "the trace must cover several ticks");
+        assert_eq!(plain_states, recorded_states, "{:?}", config.policy);
+        assert_eq!(plain_text, recorded_text, "{:?}", config.policy);
+
+        // `VER-MOK-012` retains this comparison per tick, per seed, per policy, with and without a
+        // sink. It is printed from inside the assertion rather than measured again elsewhere, so the
+        // retained figures cannot disagree with the figures that were asserted. Boundary `0` is
+        // before initialization, `1` is after it, and boundary `n + 1` is after tick `n`.
+        for (boundary, (plain, recorded)) in plain_states.iter().zip(&recorded_states).enumerate() {
+            println!(
+                "seed={} density={} policy={} trace={} boundary={boundary} \
+                 nosink={plain:#018x} sink={recorded:#018x} {}",
+                config.seed,
+                config.density,
+                config.policy,
+                config.trace_actions,
+                if plain == recorded {
+                    "equal"
+                } else {
+                    "DIFFERS"
+                },
+            );
+        }
+    }
+
+    /// The entropy state once initialization is complete, with and without a sink.
+    ///
+    /// Initialization only: the additivity property is about the state a run *starts* from, and
+    /// running further would measure the decision source as well as the seed and the density.
+    fn state_after_initialization(config: Config, record: bool) -> u64 {
+        let mut simulation = Simulation::new(config).unwrap();
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        {
+            let mut sinks = Sinks {
+                text: &mut text,
+                records: if record {
+                    Some(&mut records as &mut dyn Write)
+                } else {
+                    None
+                },
+            };
+            if let Some(sink) = sinks.records() {
+                write_header_record(sink, &config).unwrap();
+            }
+            for event in simulation.entity_initialization_events() {
+                simulation.emit(&mut sinks, event).unwrap();
+            }
+        }
+        assert_eq!(record, !records.is_empty());
+        simulation.entropy_state()
+    }
+
+    /// The entropy state at every tick boundary of a run, and the text the run wrote.
+    ///
+    /// The header is written here too when a sink is present, because it is part of the sink
+    /// path and a trace that skipped it would leave that path unexercised.
+    fn entropy_trace<D: DecisionSource>(
+        config: Config,
+        mut source: D,
+        record: bool,
+    ) -> (Vec<u64>, Vec<u8>) {
+        let mut simulation = Simulation::new(config).unwrap();
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        let mut states = vec![simulation.entropy_state()];
+        {
+            let mut sinks = Sinks {
+                text: &mut text,
+                records: if record {
+                    Some(&mut records as &mut dyn Write)
+                } else {
+                    None
+                },
+            };
+            if let Some(sink) = sinks.records() {
+                write_header_record(sink, &config).unwrap();
+            }
+            for event in simulation.entity_initialization_events() {
+                simulation.emit(&mut sinks, event).unwrap();
+            }
+            states.push(simulation.entropy_state());
+            while simulation.outcome.is_none() {
+                simulation.step(&mut sinks, &mut source).unwrap();
+                states.push(simulation.entropy_state());
+            }
+        }
+        assert_eq!(record, !records.is_empty());
+        (states, text)
+    }
+
+    #[test]
+    fn a_record_sink_moves_no_entropy_draw_at_any_tick_boundary() {
+        for seed in DECLARED_SEEDS {
+            for trace_actions in [false, true] {
+                let base = Config {
+                    seed,
+                    tick_limit: 150,
+                    policy: Policy::Baseline,
+                    density: Density::DEFAULT,
+                    trace_actions,
+                };
+                assert_a_sink_is_entropy_neutral(
+                    Config {
+                        policy: Policy::Baseline,
+                        ..base
+                    },
+                    || BaselineDecisionSource,
+                );
+                assert_a_sink_is_entropy_neutral(
+                    Config {
+                        policy: Policy::Reference,
+                        ..base
+                    },
+                    || ReferenceDecisionSource,
+                );
+                assert_a_sink_is_entropy_neutral(
+                    Config {
+                        policy: Policy::Individual,
+                        ..base
+                    },
+                    || IndividualDecisionSource,
+                );
+            }
+        }
+    }
+
+    /// Rule 11.1's additivity: the state a run starts from is the seed and the density, and nothing
+    /// else.
+    ///
+    /// The sink configuration, the policy and the tracing setting are all varied against a fixed
+    /// seed and density, and the state after initialization must be one value across all twelve
+    /// combinations. This is the property that makes the pre-change comparison meaningful: if the
+    /// starting state depended on the policy, an unchanged output at one policy would say nothing
+    /// about another.
+    ///
+    /// The swept densities are `VER-MOK-002`'s, because the record path resolves capacity from the
+    /// density and a draw taken per resource would show at a density the default does not reach.
+    #[test]
+    fn the_entropy_state_after_initialization_is_the_seed_and_the_density_alone() {
+        for seed in DECLARED_SEEDS {
+            for density in SWEPT_DENSITIES {
+                let mut observed = Vec::new();
+                for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+                    for trace_actions in [false, true] {
+                        for record in [false, true] {
+                            let config = Config {
+                                seed,
+                                tick_limit: 1000,
+                                policy,
+                                density: Density::parse(density).unwrap(),
+                                trace_actions,
+                            };
+                            observed.push((
+                                (policy, trace_actions, record),
+                                state_after_initialization(config, record),
+                            ));
+                        }
+                    }
+                }
+
+                let (_, first) = observed[0];
+                for (combination, state) in &observed {
+                    assert_eq!(
+                        *state, first,
+                        "seed {seed} density {density} moved at {combination:?}"
+                    );
+                }
+                println!(
+                    "seed={seed} density={density} after_initialization={first:#018x} \
+                     combinations={} all_equal=yes",
+                    observed.len(),
+                );
+            }
+        }
+    }
+
     /// Rule 21's closed vocabulary: eleven kinds, seven of which name a target and four of
     /// which cannot.
     #[test]
@@ -6392,10 +7772,93 @@ mod tests {
                 let before = simulation.entropy;
 
                 simulation
-                    .apply_action(&mut Vec::new(), 0, &action)
+                    .apply_action(&mut text_only(&mut Vec::new()), 0, &action)
                     .unwrap();
 
                 assert_eq!(simulation.entropy, before, "{action} moved the stream");
+            }
+        }
+    }
+
+    /// The state at the thousandth tick, printed per declared seed, swept density and policy.
+    ///
+    /// The figures `VER-MOK-012` compares against the pre-change build. Unlike the state after
+    /// initialization this one *is* a function of the policy, because deciding draws; so the sink
+    /// comparison is made within a combination and the policy is part of the row's identity.
+    #[test]
+    fn the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink() {
+        for seed in DECLARED_SEEDS {
+            for density in SWEPT_DENSITIES {
+                for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+                    let config = Config {
+                        seed,
+                        tick_limit: 1000,
+                        policy,
+                        density: Density::parse(density).unwrap(),
+                        trace_actions: false,
+                    };
+
+                    let mut plain = Simulation::new(config).unwrap();
+                    let mut plain_text = Vec::new();
+                    let plain_summary = plain.run(&mut plain_text).unwrap();
+
+                    let mut recorded = Simulation::new(config).unwrap();
+                    let mut recorded_text = Vec::new();
+                    let mut records = Vec::new();
+                    let recorded_summary = recorded
+                        .run_recording(&mut recorded_text, Some(&mut records))
+                        .unwrap();
+
+                    assert_eq!(plain_text, recorded_text, "{seed} {density} {policy}");
+                    assert_eq!(plain_summary, recorded_summary);
+                    assert_eq!(plain.entropy_state(), recorded.entropy_state());
+
+                    println!(
+                        "seed={seed} density={density} policy={policy} ticks={} reason={} \
+                         nosink={:#018x} sink={:#018x} equal",
+                        plain_summary.ticks,
+                        plain_summary.reason,
+                        plain.entropy_state(),
+                        recorded.entropy_state(),
+                    );
+                }
+            }
+        }
+    }
+
+    /// Rule 11.1 across the whole run, including the header and the run record.
+    ///
+    /// [`Simulation::run`] and [`Simulation::run_recording`] with no sink are the same call, and
+    /// with a sink the text bytes and the final entropy state are unchanged. Every policy, and
+    /// tracing on, because tracing multiplies the event records by an order of magnitude and is
+    /// therefore where a projection that cost a draw would show first.
+    #[test]
+    fn a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one() {
+        for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+            for trace_actions in [false, true] {
+                let config = Config {
+                    seed: 123,
+                    tick_limit: 200,
+                    policy,
+                    density: Density::DEFAULT,
+                    trace_actions,
+                };
+
+                let mut plain = Simulation::new(config).unwrap();
+                let mut plain_text = Vec::new();
+                let plain_summary = plain.run(&mut plain_text).unwrap();
+
+                let mut recorded = Simulation::new(config).unwrap();
+                let mut recorded_text = Vec::new();
+                let mut records = Vec::new();
+                let recorded_summary = recorded
+                    .run_recording(&mut recorded_text, Some(&mut records))
+                    .unwrap();
+
+                assert_eq!(plain_text, recorded_text, "{policy:?} {trace_actions}");
+                assert_eq!(plain_summary, recorded_summary);
+                assert_eq!(plain.entropy_state(), recorded.entropy_state());
+                assert!(!records.is_empty());
             }
         }
     }
@@ -6421,7 +7884,7 @@ mod tests {
 
             let result = simulation
                 .apply_action(
-                    &mut Vec::new(),
+                    &mut text_only(&mut Vec::new()),
                     striker,
                     &Action::Attack { target: target_id },
                 )
@@ -6462,7 +7925,7 @@ mod tests {
                 simulation.agents[0].health = health;
                 let result = simulation
                     .apply_action(
-                        &mut Vec::new(),
+                        &mut text_only(&mut Vec::new()),
                         0,
                         &Action::Attack {
                             target: "M02".into(),
@@ -6493,7 +7956,7 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .run_tick(&mut output, &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut SocialDecisionSource)
             .unwrap();
 
         assert!(!simulation.agents[1].alive);
@@ -6528,7 +7991,7 @@ mod tests {
         for (striker, target) in [(0, "M02"), (2, "M01")] {
             simulation
                 .apply_action(
-                    &mut output,
+                    &mut text_only(&mut output),
                     striker,
                     &Action::Attack {
                         target: target.to_string(),
@@ -6585,7 +8048,7 @@ mod tests {
         let mut output = Vec::new();
 
         simulation
-            .run_tick(&mut output, &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut SocialDecisionSource)
             .unwrap();
 
         // `M02` carries the composition, and it is the half that proves the ordering: it was
@@ -6627,7 +8090,7 @@ mod tests {
         simulation.agents[1].fear = ATTRIBUTE_MAX;
 
         simulation
-            .run_tick(&mut Vec::new(), &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut Vec::new()), &mut SocialDecisionSource)
             .unwrap();
 
         assert!(
@@ -6643,7 +8106,7 @@ mod tests {
             encounter(11, Coordinate { x: 70, y: 70 }, Coordinate { x: 70, y: 71 });
         simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Threaten {
                     target: "M02".into(),
@@ -6657,7 +8120,7 @@ mod tests {
 
         for expected in [25, 20, 15, 10, 5, 0] {
             simulation
-                .run_tick(&mut Vec::new(), &mut SocialDecisionSource)
+                .run_tick(&mut text_only(&mut Vec::new()), &mut SocialDecisionSource)
                 .unwrap();
             assert_eq!(
                 simulation.agents[1].fear, expected,
@@ -6679,7 +8142,7 @@ mod tests {
 
         let first = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Surrender {
                     target: "M02".into(),
@@ -6694,7 +8157,7 @@ mod tests {
         // surrendering Mokiterion from being struck.
         let struck = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 1,
                 &Action::Attack {
                     target: "M01".into(),
@@ -6710,7 +8173,7 @@ mod tests {
         simulation.agents[0].suffered = suffered_from("M02");
         let second = simulation
             .apply_action(
-                &mut Vec::new(),
+                &mut text_only(&mut Vec::new()),
                 0,
                 &Action::Surrender {
                     target: "M02".into(),
@@ -6736,7 +8199,7 @@ mod tests {
             let foods = simulation.foods.clone();
 
             let result = simulation
-                .apply_action(&mut Vec::new(), 0, &action)
+                .apply_action(&mut text_only(&mut Vec::new()), 0, &action)
                 .unwrap();
 
             assert!(result.accepted, "{action}");
@@ -6760,7 +8223,7 @@ mod tests {
         let mut output = Vec::new();
         simulation
             .apply_action(
-                &mut output,
+                &mut text_only(&mut output),
                 0,
                 &Action::Attack {
                     target: "M02".into(),
@@ -6788,7 +8251,7 @@ mod tests {
         // Tick one: `M01` strikes, `M02` answers within the tick, and the reply lands in
         // `M01`'s record after `M01`'s opportunity has passed.
         simulation
-            .run_tick(&mut Vec::new(), &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut Vec::new()), &mut SocialDecisionSource)
             .unwrap();
         assert_eq!(simulation.agents[0].suffered.len(), 1);
 
@@ -6797,7 +8260,7 @@ mod tests {
         // fight.
         let mut output = Vec::new();
         simulation
-            .run_tick(&mut output, &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut SocialDecisionSource)
             .unwrap();
 
         let output = String::from_utf8(output).unwrap();
@@ -6837,7 +8300,7 @@ mod tests {
 
         let mut output = Vec::new();
         simulation
-            .run_tick(&mut output, &mut SocialDecisionSource)
+            .run_tick(&mut text_only(&mut output), &mut SocialDecisionSource)
             .unwrap();
 
         // `M01` answered `M02` and the entry naming `M03` is gone with it: rule 25 closes the
@@ -6860,6 +8323,336 @@ mod tests {
                 .iter()
                 .all(|attack| attack.attacker != "M03"),
             "the unanswered entry survived the opportunity"
+        );
+    }
+
+    /// The *State model*'s counters are written to and read only by the run record.
+    ///
+    /// Asserted behaviorally rather than by reading the source: the two runs are identical
+    /// except that one starts with every counter pre-loaded with a value no run reaches. Were
+    /// any rule to consult a counter, the runs would diverge in text or in draws. The run
+    /// records are expected to differ, and that difference is what shows the pre-loading
+    /// reached the one place a counter is read.
+    #[test]
+    fn no_rule_reads_a_cumulative_counter() {
+        let config = reference_config(42, 200, true);
+        let mut plain = Simulation::new(config).unwrap();
+        let mut loaded = Simulation::new(config).unwrap();
+        loaded.crossings = 900_000;
+        loaded.consumed = [900_001, 900_002, 900_003];
+        loaded.regenerated = 900_004;
+        loaded.regeneration_skipped = [900_005, 900_006];
+
+        let mut plain_text = Vec::new();
+        let mut plain_records = Vec::new();
+        plain
+            .run_recording(&mut plain_text, Some(&mut plain_records))
+            .unwrap();
+        let mut loaded_text = Vec::new();
+        let mut loaded_records = Vec::new();
+        loaded
+            .run_recording(&mut loaded_text, Some(&mut loaded_records))
+            .unwrap();
+
+        assert_eq!(plain_text, loaded_text);
+        assert_eq!(plain.entropy_state(), loaded.entropy_state());
+
+        let plain_records = String::from_utf8(plain_records).unwrap();
+        let loaded_records = String::from_utf8(loaded_records).unwrap();
+        let plain_lines: Vec<&str> = plain_records.lines().collect();
+        let loaded_lines: Vec<&str> = loaded_records.lines().collect();
+        assert_eq!(
+            plain_lines[..plain_lines.len() - 1],
+            loaded_lines[..loaded_lines.len() - 1],
+            "only the run record may differ"
+        );
+        assert_ne!(plain_lines.last(), loaded_lines.last());
+        assert!(
+            loaded_lines
+                .last()
+                .unwrap()
+                .contains(&format!("\"crossings\":{}", 900_000 + plain.crossings))
+        );
+    }
+
+    /// Every counter saturates.
+    ///
+    /// A counter at its maximum is not a state any run reaches, and it must still not be the
+    /// state that ends one: an overflow panic in a debug build would turn a statistic into a
+    /// crash, and the statistic is the least important thing in the process.
+    #[test]
+    fn a_saturated_counter_neither_wraps_nor_panics() {
+        let mut simulation = Simulation::new(reference_config(42, 80, false)).unwrap();
+        simulation.crossings = u64::MAX;
+        simulation.consumed = [u64::MAX; 3];
+        simulation.regenerated = u64::MAX;
+        simulation.regeneration_skipped = [u64::MAX; 2];
+
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        simulation
+            .run_recording(&mut text, Some(&mut records))
+            .unwrap();
+
+        assert_eq!(simulation.crossings, u64::MAX);
+        assert_eq!(simulation.consumed, [u64::MAX; 3]);
+        assert_eq!(simulation.regenerated, u64::MAX);
+        assert_eq!(simulation.regeneration_skipped, [u64::MAX; 2]);
+    }
+
+    /// A sink that fails on its first write. Rules 13.3 and 13.5, and rule 13.2's principle
+    /// that a run which cannot be recorded is not run: the header is the first record, so the
+    /// failure precedes the first tick and the text stream stays empty.
+    #[test]
+    fn a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written() {
+        let mut simulation = Simulation::new(reference_config(0, 10, false)).unwrap();
+        let mut text = Vec::new();
+        let mut sink = FailingSink::after(0);
+        let error = simulation
+            .run_recording(&mut text, Some(&mut sink))
+            .unwrap_err();
+
+        // Rule 13.5: distinguishable from a text-stream failure, deterministic in form, and
+        // carrying the sink's identity and the platform's reason and nothing else. The library
+        // knows no path, so no path can appear.
+        assert_eq!(error.to_string(), "record sink: closed");
+        assert_eq!(error.kind(), io::ErrorKind::BrokenPipe);
+        assert!(text.is_empty());
+        assert_eq!(simulation.tick, 0);
+    }
+
+    /// A sink that fails partway through. Rule 8.9: no run record for a run that failed a
+    /// write, so a truncated stream cannot be read as a complete run even before the host
+    /// removes the file.
+    #[test]
+    fn a_record_sink_that_fails_mid_run_leaves_no_run_record() {
+        let mut simulation = Simulation::new(reference_config(0, 50, false)).unwrap();
+        let mut text = Vec::new();
+        let mut sink = FailingSink::after(2000);
+        let error = simulation
+            .run_recording(&mut text, Some(&mut sink))
+            .unwrap_err();
+
+        assert_eq!(error.to_string(), "record sink: closed");
+        let written = String::from_utf8(sink.written).unwrap();
+        assert!(written.starts_with("{\"record\":\"header\""));
+        assert!(!written.contains("\"record\":\"run\""));
+        // The text stream got as far as the record stream did, and no further: the run did not
+        // reach its summary line, so nothing downstream can mistake it for a completed run.
+        assert!(!String::from_utf8(text).unwrap().contains("summary reason="));
+    }
+
+    /// A sink that accepts writes until it has taken a fixed number of bytes and then fails
+    /// every write, retaining what it took.
+    ///
+    /// Bytes rather than calls: one `write!` produces one call per formatting fragment, so a
+    /// call budget would be a budget over an implementation detail of `core::fmt`. `flush`
+    /// succeeds, so the failure this produces is unambiguously a write failure.
+    struct FailingSink {
+        budget: usize,
+        written: Vec<u8>,
+    }
+
+    impl FailingSink {
+        fn after(budget: usize) -> Self {
+            Self {
+                budget,
+                written: Vec::new(),
+            }
+        }
+    }
+
+    impl Write for FailingSink {
+        fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
+            if self.written.len() >= self.budget {
+                return Err(io::Error::new(io::ErrorKind::BrokenPipe, "closed"));
+            }
+            self.written.extend_from_slice(buffer);
+            Ok(buffer.len())
+        }
+
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
+    }
+
+    /// Rule 3.3's closed value alphabet, enumerated over every domain that reaches a record.
+    ///
+    /// The union is `A-Z a-z 0-9 _ . - + : ; >`. **No quotation mark, no backslash, no code
+    /// point below U+0020 — and that is the entire reason the writers in this module need no
+    /// escaping function.** Each domain is enumerated completely and its size asserted, so a
+    /// fifth direction or a sixteenth event type fails here rather than reaching a stream a
+    /// consumer cannot parse. The matches are exhaustive without a wildcard, so for the domains
+    /// that have no `ALL` a new variant fails to compile instead.
+    #[test]
+    fn every_closed_domain_that_reaches_a_record_is_on_the_alphabet() {
+        fn on_alphabet(value: &str) -> bool {
+            !value.is_empty()
+                && value.chars().all(|character| {
+                    character.is_ascii_alphanumeric()
+                        || matches!(character, '_' | '.' | '-' | '+' | ':' | ';' | '>')
+                })
+        }
+
+        /// One member, asserted and recorded in the same call.
+        ///
+        /// `VER-MOK-012` retains this enumeration with each domain's members, its size and the
+        /// emitted bytes. Recording it here rather than in a separate pass is what stops the
+        /// retained list from naming a member the assertion never saw.
+        fn member(
+            evidence: &mut Vec<(&'static str, String, String)>,
+            domain: &'static str,
+            value: &str,
+        ) {
+            assert!(on_alphabet(value), "{domain}: {value:?}");
+            let bytes = value
+                .as_bytes()
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<Vec<_>>()
+                .join(" ");
+            evidence.push((domain, value.to_string(), bytes));
+        }
+
+        // The alphabet's own definition, checked against the characters it must exclude, so
+        // that a later widening of `on_alphabet` cannot pass silently.
+        for excluded in ['"', '\\', '\n', '\r', '\t', ' ', ',', '{', '}', '[', ']'] {
+            assert!(
+                !on_alphabet(&excluded.to_string()),
+                "{excluded:?} is not on the alphabet"
+            );
+        }
+
+        let mut evidence = Vec::new();
+        let mut sizes: Vec<(&str, usize)> = Vec::new();
+
+        assert_eq!(EventType::ALL.len(), 15);
+        sizes.push(("event", EventType::ALL.len()));
+        for kind in EventType::ALL {
+            member(&mut evidence, "event", kind.as_str());
+        }
+
+        assert_eq!(Territory::ALL.len(), 2);
+        sizes.push(("territory", Territory::ALL.len()));
+        for territory in Territory::ALL {
+            member(&mut evidence, "territory", &territory.to_string());
+        }
+
+        assert_eq!(FoodClass::ALL.len(), 3);
+        sizes.push(("class", FoodClass::ALL.len()));
+        for class in FoodClass::ALL {
+            member(&mut evidence, "class", &class.to_string());
+        }
+
+        assert_eq!(RegenerationSkipReason::ALL.len(), 2);
+        sizes.push(("reason.skip", RegenerationSkipReason::ALL.len()));
+        for reason in RegenerationSkipReason::ALL {
+            member(&mut evidence, "reason.skip", &reason.to_string());
+        }
+
+        assert_eq!(Direction::ORDERED.len(), 4);
+        sizes.push(("direction", Direction::ORDERED.len()));
+        for direction in Direction::ORDERED {
+            member(&mut evidence, "direction", &direction.to_string());
+        }
+
+        sizes.push(("reason.termination", 2));
+        for reason in [TerminationReason::TickLimit, TerminationReason::Extinction] {
+            match reason {
+                TerminationReason::TickLimit | TerminationReason::Extinction => {}
+            }
+            member(&mut evidence, "reason.termination", &reason.to_string());
+        }
+
+        sizes.push(("policy", 4));
+        for policy in [
+            Policy::Baseline,
+            Policy::Reference,
+            Policy::Individual,
+            Policy::Social,
+        ] {
+            match policy {
+                Policy::Baseline | Policy::Reference | Policy::Individual | Policy::Social => {}
+            }
+            member(&mut evidence, "policy", &policy.to_string());
+        }
+
+        // The `status` and `target_died` fields' two values each, and the `source` field's
+        // four, which are the three string domains that have no type of their own. `target_died`
+        // is one of them because rule 6.3 carries it as the text stream's own word rather than
+        // as the `bool` the engine holds, on the same terms as `status`.
+        sizes.push(("status", 2));
+        for status in ["accepted", "rejected"] {
+            member(&mut evidence, "status", status);
+        }
+        sizes.push(("target_died", 2));
+        for died in [true, false] {
+            member(
+                &mut evidence,
+                "target_died",
+                if died { "yes" } else { "no" },
+            );
+        }
+        sizes.push(("source", 4));
+        for source in [
+            BaselineDecisionSource.name(),
+            ReferenceDecisionSource.name(),
+            IndividualDecisionSource.name(),
+            SocialDecisionSource.name(),
+        ] {
+            member(&mut evidence, "source", source);
+        }
+
+        // Every identifier a `subject`, `id`, `name`, `food` or `detail` field can carry, from
+        // the widest configuration the requirements declare.
+        assert_eq!(NAMES.len(), 12);
+        sizes.push(("name", NAMES.len()));
+        for name in NAMES {
+            member(&mut evidence, "name", name);
+        }
+        let simulation = Simulation::new(Config {
+            seed: 0,
+            tick_limit: 1,
+            policy: Policy::Reference,
+            density: Density::parse("1.50").unwrap(),
+            trace_actions: true,
+        })
+        .unwrap();
+        sizes.push(("subject.agent", simulation.agents.len()));
+        for agent in &simulation.agents {
+            member(&mut evidence, "subject.agent", &agent.id);
+            assert!(on_alphabet(agent.name), "{}", agent.name);
+        }
+        sizes.push(("subject.food", simulation.foods.len()));
+        for food in &simulation.foods {
+            member(&mut evidence, "subject.food", &food.id);
+        }
+
+        // Every density the requirements declare, and the two bounds, since rule 4.3 puts this
+        // rendering into the header as a string.
+        sizes.push(("density", 5));
+        for density in ["0.02", "0.15", "0.75", "1.50", "100.00"] {
+            member(
+                &mut evidence,
+                "density",
+                &Density::parse(density).unwrap().to_string(),
+            );
+        }
+
+        // Retained as oracle 5's evidence. The `subject.food` domain is a run's resource
+        // identifiers at the widest declared density rather than a closed set the specification
+        // names, so its size is the count observed and is reported as such.
+        for (domain, size) in &sizes {
+            let observed = evidence.iter().filter(|(name, ..)| name == domain).count();
+            println!("domain={domain} size={size} enumerated={observed}");
+        }
+        for (domain, value, bytes) in &evidence {
+            println!("domain={domain} member={value} bytes={bytes}");
+        }
+        println!(
+            "domains={} members={} off_alphabet=0",
+            sizes.len(),
+            evidence.len(),
         );
     }
 }

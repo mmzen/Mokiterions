@@ -1,0 +1,104 @@
+VER-MOK-012 — the item census of mokiterions-tui/src/render.rs, on three trees
+=============================================================================
+
+Merge         master fa065cc into the Phase 4a chain fa0bfd9, as merge commit 1e09f85
+Measured at   e8114ad; the file is byte-identical at 1e09f85 and at e8114ad
+Subject       SPEC-MOK-004 rule 10's table row for `mokiterions-tui/src/render.rs`
+Date          2026-08-21
+
+Rule 10's table row records, alongside that module's test count, how many items the module
+declares and how they split. Act 3 corrects that figure from **48 to 49**, and this file is the
+measurement it corrects to.
+
+## The measurement
+
+Top-level item declarations above the `#[cfg(test)]` module — the `#[cfg(test)]` attribute is at
+line 1150 of 2046 in the merge's copy — counted by their declaring keyword at column zero:
+
+    tree      total   public   private   private fns   private consts   `action_text`
+    master       51        2        49            31               18   present
+    branch       48        2        46            30               16   absent
+    merge        51        2        49            31               18   present
+
+The two public items are `pub const COMMIT` and `pub fn draw`, on all three trees. No item's
+visibility differs anywhere in the table, which is the clause rule 10 cares about most.
+
+`mokiterions-tui/src/render.rs` at the merge is **byte-identical to master's**: a whole-file diff
+against `fa065cc` produces zero differing lines. So `49 / 31 / 18` is not a figure the merge
+creates. It is master's own figure, measured on master's own file, and the merge inherits both the
+file and the figure.
+
+## What the recorded figure said, and on which tree it was wrong
+
+    master's SPEC-MOK-004, rule 10 table row:
+      "the module declares 48 private items — 30 functions and 18 constants — against 2 public ones"
+
+    master's tree:
+      49 private items — 31 functions and 18 constants — against 2 public ones
+
+30 + 18 = 48, and the tree has 31 + 18 = 49. The functions column is one low and the constants
+column is right. The single unaccounted function is the private
+
+    fn action_text(action: &Action) -> String {
+
+which `WO-MOK-016` added to `render.rs` — it renders an action for the roster entry — without
+correcting rule 10's row. That is the same class of defect the rule's own history already records
+twice: the 2026-08-19 `WO-MOK-010`/`WO-MOK-007` row corrected two work orders that "added tests
+without correcting them", and the 2026-08-20 `WO-MOK-013` row corrected a private-item figure that
+"was itself one high". This is the third instance and it is reported the same way — as a
+`WO-MOK-016` conformance defect, not as an arrival of this work order.
+
+Act 3's corrected row reads:
+
+    "the module declares 49 private items — 31 functions and 18 constants — against 2 public ones,
+     and 7 of the 20 additionally reach a hook"
+
+The hook figure and the test count are untouched at 7 of 20. Neither moves: `action_text` is not a
+test, and no observer test is added, removed or relocated by this merge.
+
+## Why the branch's 46 is not a third figure to reconcile
+
+The branch reads 46 — 30 functions and 16 constants — and that is not a discrepancy. The Phase 4a
+chain predates `WO-MOK-013` entirely: its `SPEC-MOK-004` carries no `WO-MOK-013` row, and its
+`render.rs` has neither of that work order's two hint constants. Measured, branch against merge,
+over the top-level item lines alone:
+
+    const BAR_ROW_OVERHEAD: usize = 35;   ->   const BAR_ROW_OVERHEAD: usize = 19;
+                                          +>   const HINT_LONG: &str = "? keys";
+                                          +>   const HINT_SHORT: &str = "?";
+    fn announcement_text(panes: &Panes, width: usize)
+                                          ->   fn announcement_text(panes: &Panes, room: usize)
+                                          +>   fn action_text(action: &Action) -> String {
+
+Five differences: one constant's value, two constants arriving, one parameter renamed, one function
+arriving. 46 + 2 constants + 1 function = 49. `BAR_ROW_OVERHEAD` changes value and not kind and
+`announcement_text` changes a parameter name and not its arity, so neither moves a count — which is
+exactly the accounting the `WO-MOK-013` row applied to the first four of those five differences when
+they were master's arrivals. The fifth, `action_text`, is the one nobody counted.
+
+So the three trees hold two figures, not three: the branch's 46 is `WO-MOK-013`'s starting point and
+master's and the merge's 49 is its endpoint plus `action_text`'s function — where the recorded
+figure stopped at 48.
+
+## Reproducing it
+
+From any of the three trees' roots:
+
+    cut=$(grep -n 'cfg(test)' mokiterions-tui/src/render.rs | head -1 | cut -d: -f1)
+    head -n $((cut-1)) mokiterions-tui/src/render.rs > above-the-tests.rs
+
+    grep -c  '^pub \(fn\|const\|static\|struct\|enum\|type\|trait\) ' above-the-tests.rs   ->  2
+    grep -cE '^(pub )?(fn|const|static|struct|enum|type|trait) '      above-the-tests.rs   -> 51
+    grep -c  '^fn '                                                   above-the-tests.rs   -> 31
+    grep -c  '^const '                                                above-the-tests.rs   -> 18
+
+`#[cfg(test)]` is at line 1150 of 2046 in the merge's copy, so `cut` is 1150 and the truncation is
+what restricts the count to non-test declarations. The four figures reconcile in both directions:
+51 - 2 = 49 and 31 + 18 = 49. The counts above were taken that way on each tree, with
+`git show <commit>:mokiterions-tui/src/render.rs` supplying each tree's copy so that one
+measurement procedure reads all three. The column-zero anchor is what makes the count mean
+"declared by this module": an item inside an `impl` block or inside the test module is indented and
+is not a module-level declaration, and rule 10's row counts module-level declarations.
+
+The whole-file identity against master was taken as a plain `diff` of the two extracted copies and
+returned no differing line.

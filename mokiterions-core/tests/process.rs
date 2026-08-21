@@ -27,7 +27,7 @@ fn help_exits_successfully() {
     let mut output = Vec::new();
     let mut errors = Vec::new();
 
-    let code = execute(["--help"], &mut output, &mut errors);
+    let code = execute(["--help"], &mut output, &mut errors, None);
 
     assert_eq!(code, 0);
     assert_eq!(String::from_utf8(output).unwrap(), cli::USAGE);
@@ -39,7 +39,7 @@ fn invalid_configuration_exits_with_code_two() {
     let mut output = Vec::new();
     let mut errors = Vec::new();
 
-    let code = execute(["--ticks", "0"], &mut output, &mut errors);
+    let code = execute(["--ticks", "0"], &mut output, &mut errors, None);
 
     assert_eq!(code, 2);
     assert!(output.is_empty());
@@ -57,7 +57,7 @@ fn the_diagnostic_path_appends_the_whole_usage_text() {
     let mut output = Vec::new();
     let mut errors = Vec::new();
 
-    let code = execute(["--ticks", "0"], &mut output, &mut errors);
+    let code = execute(["--ticks", "0"], &mut output, &mut errors, None);
 
     assert_eq!(code, 2);
     assert!(output.is_empty());
@@ -71,7 +71,7 @@ fn a_density_resolving_to_no_resources_exits_with_code_two_before_initialization
     let mut output = Vec::new();
     let mut errors = Vec::new();
 
-    let code = execute(["--density", "0.01"], &mut output, &mut errors);
+    let code = execute(["--density", "0.01"], &mut output, &mut errors, None);
 
     assert_eq!(code, 2);
     assert!(
@@ -101,6 +101,7 @@ fn the_trait_aware_source_runs_to_completion_and_reports_each_trait_once() {
         ["--policy", "individual", "--ticks", "50", "--seed", "42"],
         &mut output,
         &mut errors,
+        None,
     );
 
     assert_eq!(code, 0);
@@ -159,6 +160,7 @@ fn the_social_source_runs_to_completion_and_exits_successfully() {
         ["--policy", "social", "--ticks", "200", "--seed", "42"],
         &mut output,
         &mut errors,
+        None,
     );
 
     assert_eq!(code, 0);
@@ -186,7 +188,7 @@ fn output_failure_exits_with_code_one() {
     let mut output = FailingWriter;
     let mut errors = Vec::new();
 
-    let code = execute(["--ticks", "1"], &mut output, &mut errors);
+    let code = execute(["--ticks", "1"], &mut output, &mut errors, None);
 
     assert_eq!(code, 1);
     assert!(String::from_utf8(errors).unwrap().contains("runtime error"));
