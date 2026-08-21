@@ -1,0 +1,81 @@
+WO-MOK-018 — the test census, three trees
+
+Counted as `#[test]` attributes, then paired name by name with the first `fn` that follows
+each, so an arrival and a rename are distinguishable rather than inferred from a total. Three
+trees are measured, because the figures `SPEC-MOK-004` rules 9 to 11 state were last correct at
+the first of them and this work order corrects them for two work orders at once:
+
+  f82cd3d   the tree whose figures rules 9 to 11 state (226 tests)
+  f2a79e1   this branch HEAD: WO-MOK-016 merged, this work order still a draft document
+  worktree  the implementing tree, with the temporary oracle removed
+
+=== PER FILE
+
+file                                        f82cd3d  f2a79e1 worktree
+mokiterions-core/src/simulation.rs               54       82       82
+mokiterions-core/tests/cli.rs                    13       15       15
+mokiterions-core/tests/decisions.rs               1        3        3
+mokiterions-core/tests/density.rs                 2        2        2
+mokiterions-core/tests/naming.rs                  3        3        3
+mokiterions-core/tests/process.rs                 6        7        7
+mokiterions-core/tests/termination.rs             4        5        5
+mokiterions-core/tests/viability.rs               2        5        5
+mokiterions-tui/src/main.rs                       8        8        8
+mokiterions-tui/src/render.rs                    20       20       20
+mokiterions-tui/src/state.rs                      4        4        5
+mokiterions-tui/src/verification.rs               9        9        9
+mokiterions-tui/tests/authority.rs                4        4        4
+mokiterions-tui/tests/export.rs                   7        7        7
+mokiterions-tui/tests/layout.rs                  11       11       11
+mokiterions-tui/tests/options.rs                  8        8        8
+mokiterions-tui/tests/render.rs                  22       22       22
+mokiterions-tui/tests/spatial.rs                  7        7        7
+mokiterions-tui/tests/state.rs                   21       21       22
+mokiterions-tui/tests/verification.rs            20       21       22
+
+TOTALS f82cd3d    engine=85    observer=141   workspace=226
+TOTALS HEAD       engine=122   observer=142   workspace=264
+TOTALS worktree   engine=122   observer=145   workspace=267
+
+=== THE OBSERVER, TIER BY TIER, ON THE IMPLEMENTING TREE
+
+internal tier (SPEC-MOK-004 rule 10)
+  mokiterions-tui/src/render.rs              20
+  mokiterions-tui/src/state.rs               5
+  mokiterions-tui/src/verification.rs        9
+  mokiterions-tui/src/main.rs                8
+  TOTAL                                      42
+
+public tier (SPEC-MOK-004 rule 9)
+  mokiterions-tui/tests/authority.rs         4
+  mokiterions-tui/tests/export.rs            7
+  mokiterions-tui/tests/layout.rs            11
+  mokiterions-tui/tests/options.rs           8
+  mokiterions-tui/tests/render.rs            22
+  mokiterions-tui/tests/spatial.rs           7
+  mokiterions-tui/tests/state.rs             22
+  mokiterions-tui/tests/verification.rs      22
+  TOTAL                                      103
+
+  internal + public = 145
+
+=== NAME-BY-NAME, THE OBSERVER PACKAGE
+
+f82cd3d -> f2a79e1 (WO-MOK-016)
+  73c73
+  < no_shipped_decision_source_has_a_proposal_rejected
+  ---
+  > no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+  130a131
+  > the_social_source_is_rejected_only_as_the_specification_admits
+
+f2a79e1 -> worktree (WO-MOK-018)
+  5a6,7
+  > a_death_carries_no_attribute_the_engine_never_reported_for_its_subject
+  > a_death_carries_the_fear_the_engine_last_reported_for_its_subject
+  117a120
+  > the_inspector_presents_a_dead_subject_s_final_fear
+
+=== `#[ignore]` ANYWHERE IN THE WORKSPACE
+
+  occurrences = 0

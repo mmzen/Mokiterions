@@ -121,9 +121,10 @@ impl EventBuffer {
 
 /// What the engine computed for a Mokiterion at the tick its death was applied.
 ///
-/// Satiety and energy are read from the same tick's `survival_changed` payload rather than
-/// invented, and stay absent if that record was never seen, because rule 10.7 forbids
-/// presenting a value the engine did not compute.
+/// Satiety, energy and fear are read from the same tick's `survival_changed` payload rather
+/// than invented, and stay absent if that record was never seen, because rule 10.7 forbids
+/// presenting a value the engine did not compute. All three travel together under one
+/// `Option` per field for that reason: none is defaulted when the record is missing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Death {
     pub id: String,
@@ -131,6 +132,7 @@ pub struct Death {
     pub health: u8,
     pub satiety: Option<u8>,
     pub energy: Option<u8>,
+    pub fear: Option<u8>,
 }
 
 /// What the observer does after a key press.
@@ -163,7 +165,11 @@ pub struct Observer {
     /// derivation from an identifier here: an identifier absent from this map has no name to
     /// present, which is why the map is consulted rather than a name being constructed.
     names: BTreeMap<String, String>,
-    latest_survival: BTreeMap<String, (u8, u8)>,
+    /// The satiety, energy and fear the engine last reported for each identifier, in that
+    /// order. Fear is retained alongside the other two because rule 10.6 presents the final
+    /// attribute values of a dead subject, and a dead subject has left the roster where
+    /// rule 4 presents fear for the living.
+    latest_survival: BTreeMap<String, (u8, u8, u8)>,
     export_path: Option<String>,
     notice: Option<String>,
     ended_early: bool,
@@ -231,10 +237,13 @@ impl Observer {
                     self.names.insert(event.subject.clone(), name.clone());
                 }
                 EventDetail::SurvivalChanged {
-                    satiety, energy, ..
+                    satiety,
+                    energy,
+                    fear,
+                    ..
                 } => {
                     self.latest_survival
-                        .insert(event.subject.clone(), (satiety.1, energy.1));
+                        .insert(event.subject.clone(), (satiety.1, energy.1, fear.1));
                 }
                 EventDetail::AgentDied { health } => {
                     let survival = self.latest_survival.get(&event.subject).copied();
@@ -242,8 +251,9 @@ impl Observer {
                         id: event.subject.clone(),
                         tick: event.tick,
                         health: *health,
-                        satiety: survival.map(|(satiety, _)| satiety),
-                        energy: survival.map(|(_, energy)| energy),
+                        satiety: survival.map(|(satiety, _, _)| satiety),
+                        energy: survival.map(|(_, energy, _)| energy),
+                        fear: survival.map(|(_, _, fear)| fear),
                     });
                 }
                 _ => {}
@@ -778,5 +788,114 @@ mod tests {
             observer.death_of("M01").is_some(),
             "the death is still retained"
         );
+    }
+
+    /// Rule 10.7's standing rule, asserted on the one attribute for which a run cannot
+    /// produce the negative case: every death a run reaches is preceded by a
+    /// `survival_changed` record for the same subject, so satiety, energy and fear are
+    /// always present there. The absence branch is reachable only by ingesting a death for
+    /// a subject the observer never saw a survival record for.
+    ///
+    /// This test lives beside the code because `ingest` is private and `ARCH-MOK-002`
+    /// forbids widening an item's visibility to reach it from a test and fixes the observer's
+    /// four `#[cfg(test)]` hooks at four. Both subjects are ingested in one call so that the
+    /// assertion discriminates between the two branches rather than observing a uniform
+    /// absence.
+    ///
+    /// Living here also puts the frame within reach, so the absence is asserted where rule 10.7
+    /// binds — on the rendered pane — and not only on the derived value. The one part of rule
+    /// 10.6 no frame assertion can carry is the suppression of the empty second line: the death
+    /// branch returns with that line last, so a line the code declined to emit and the pane's own
+    /// unwritten rows are the same cells. That guard is asserted by the code's shape, not measured.
+    #[test]
+    fn a_death_carries_no_attribute_the_engine_never_reported_for_its_subject() {
+        let mut observer = start(&["--start-paused"]);
+
+        let reported = "M01";
+        let unreported = "M99";
+        observer.ingest(vec![
+            Event {
+                tick: 7,
+                subject: reported.to_string(),
+                detail: EventDetail::SurvivalChanged {
+                    health: (10, 0),
+                    satiety: (40, 38),
+                    energy: (30, 29),
+                    fear: (55, 61),
+                },
+            },
+            Event {
+                tick: 7,
+                subject: reported.to_string(),
+                detail: EventDetail::AgentDied { health: 0 },
+            },
+            Event {
+                tick: 7,
+                subject: unreported.to_string(),
+                detail: EventDetail::AgentDied { health: 0 },
+            },
+        ]);
+
+        let carried = observer.death_of(reported).unwrap();
+        assert_eq!(carried.satiety, Some(38));
+        assert_eq!(carried.energy, Some(29));
+        assert_eq!(
+            carried.fear,
+            Some(61),
+            "fear is the value the engine reported, not the value it moved from"
+        );
+
+        let absent = observer.death_of(unreported).unwrap();
+        assert_eq!(absent.health, 0, "the death record's own payload is read");
+        assert_eq!(absent.satiety, None);
+        assert_eq!(absent.energy, None);
+        assert_eq!(
+            absent.fear, None,
+            "an unreported attribute is absent, never zero-filled"
+        );
+
+        // The same claim at the frame, which is where rule 10.7 is an obligation rather than a
+        // property of a derived value. It is asserted here and not in a public-tier file for the
+        // reason the state above exists at all: reaching it needs the private `ingest`.
+        observer.select_for_test(unreported);
+        let inspector = inspector_text(&mut observer, 160, 48);
+        assert!(
+            inspector.contains("final health 0"),
+            "the death line is not presented:\n{inspector}"
+        );
+        for withheld in ["satiety", "energy", "fear"] {
+            assert!(
+                !inspector.contains(withheld),
+                "`{withheld}` is presented for a subject the engine never reported it for, which \
+                 rule 10.7 forbids as directly as a zero would:\n{inspector}"
+            );
+        }
+    }
+
+    /// The inspector pane's rows at one viewport, joined.
+    ///
+    /// `tests/verification.rs` has its own copy of this projection. Restating it across the two
+    /// tiers is what `SPEC-MOK-004` rule 9's split already requires, since an integration test
+    /// links the crate's public interface and a helper inside the crate is not part of it.
+    fn inspector_text(observer: &mut Observer, width: u16, height: u16) -> String {
+        use ratatui::Terminal;
+        use ratatui::backend::TestBackend;
+
+        let mut terminal = Terminal::new(TestBackend::new(width, height)).expect("a test backend");
+        terminal
+            .draw(|target| crate::render::draw(target, observer))
+            .expect("drawing into a buffer");
+        let buffer = terminal.backend().buffer().clone();
+        let area = crate::layout::resolve(*buffer.area())
+            .inspector
+            .expect("this viewport presents the inspector");
+        (area.y..area.y + area.height)
+            .map(|y| {
+                (area.x..area.x + area.width)
+                    .map(|x| buffer.cell((x, y)).expect("inside the area").symbol())
+                    .collect::<String>()
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
