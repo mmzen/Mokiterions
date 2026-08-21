@@ -1,0 +1,558 @@
+VER-MOK-016 oracle 8: the delegation equality, the divergence, and the draw count
+=================================================================================
+
+Work order   WO-MOK-016 (Phase 3.1, encounters)
+Retains      "the per-observation comparison of social against individual at every
+             opportunity where no living Mokiterion is perceived and no attack is
+             unanswered, carrying both proposals and the shared stream's position either
+             side, together with the total draw count per run under each source at
+             matched seeds"
+Authority    VER-MOK-016 oracle 8, in both the narrow and the widened form, and oracle
+             8's stated consequence that a social run takes fewer draws than an
+             individual run at the same seed; REQ-MOK-057
+Candidate    7c4aef3967406c05d80da963695898b77f5329e9   (the 90-cell matrix)
+             59d61b915630fd55f04bcdbb346aa22cdbfdfff6   (the 30 social cells)
+Reader       analysis/delegation.py
+Date         2026-08-21
+
+Oracle 8 states its equality per observation and never per run, and section 6 measures
+why: the two sources part inside the first tick at all fifteen matched pairs, and at
+every one of them the parting is where oracle 8 says it will be. Sections 3 to 5 decode
+the precondition from the released bytes and check the decode against a count another
+reader produced differently; section 6 carries both proposals and the stream's position
+either side of the parting; sections 7 to 12 recover the draw total per run, which
+nothing in the release reports, and check the recovery against two counts that were
+arrived at without it; section 13 says what none of it settles.
+
+1. The cells this reads, and the digests that say which
+-------------------------------------------------------
+    cells read                    120
+    manifest rows they match      120
+    90-cell three-source matrix   post/post-manifest.txt, 90 rows
+    30 social cells               post/social-manifest.txt, 30 rows
+
+Every cell is digested and compared against its row in `post/post-manifest.txt` or
+`post/social-manifest.txt`, so the bytes measured below are the bytes the packet retains.
+The two capture directories are arguments and are deliberately not printed: a path is
+this machine's and the digests are not, and this file has to be reproducible from the
+retained manifests on a verifier's machine rather than only on the author's.
+
+2. The initialization replay, checked against the suite's recorded counts
+-------------------------------------------------------------------------
+    density seed  replayed  INITIALIZATION_DRAWS  state after initialization
+       0.15    0        72                    72  0x7F9A3C2BCCF2E5E8
+       0.15    1        72                    72  0x7F9A3C2BCCF2E5E9
+       0.15   42        72                    72  0x7F9A3C2BCCF2E612
+       0.15  123        72                    72  0x7F9A3C2BCCF2E663
+       0.15  777        72                    72  0x7F9A3C2BCCF2E8F1
+       0.75    0       270                   270  0xDE8261A4408EDE26
+       0.75    1       268                   268  0xA2136E3141F9E5FD
+       0.75   42       268                   268  0xA2136E3141F9E626
+       0.75  123       268                   268  0xA2136E3141F9E677
+       0.75  777       268                   268  0xA2136E3141F9E905
+       1.50    0       516                   516  0xE7D159E492221A54
+       1.50    1       516                   516  0xE7D159E492221A55
+       1.50   42       516                   516  0xE7D159E492221A7E
+       1.50  123       514                   514  0xAB626671938D22A5
+       1.50  777       516                   516  0xE7D159E492221D5D
+
+The placement replay is copied from `analysis/entropy.py`, and it is checked here rather
+than trusted: the two readers must agree about where a run starts, because everything
+below counts forward from it. The state column is `entropy.txt` §3's, recomputed.
+
+3. Rule 12's fear pair decodes the precondition's first half
+------------------------------------------------------------
+`apply_survival` takes rule 12's driver from the same observation the decision was taken
+on -- `run_tick` reads `perceived_company` before consulting the source and carries it --
+and `survival_changed` prints `fear` either side of the update. So the pair says what the
+observation held:
+
+    company perceived        fear rises by 10, or holds at 100
+    no company perceived     fear falls by 5, or holds at 0
+
+The equal case is not an ambiguity. `fear` is unchanged only where the update saturates,
+and the two saturations are at opposite ends: unchanged at 100 is company, unchanged at 0
+is none. Rule 23's threat increase of 30 cannot confuse this, because the pair is read
+inside one call and any threat this tick landed before it, in the value on the left.
+
+The decode is also exhaustive over opportunities, which is what makes a census from it a
+census and not a sample. `apply_survival` emits unconditionally and `run_tick` calls it
+for every agent it consults, with no path between the two, so there is exactly one
+`survival_changed` record per opportunity -- and in a traced cell exactly one
+`action_trace` beside it. Section 12 is where those two counts are checked against each
+other in all 120 cells.
+
+The record's half needs no reconstruction: rule 17 renders the trace's `suffered` field
+only when the record is non-empty, so its absence is the empty record.
+
+4. The precondition census, fifteen traced social cells, whole runs
+-------------------------------------------------------------------
+    density seed  opportunities  company  record  precondition holds  targeted there
+       0.15    0           4408      862       4                3546               0
+       0.15    1           2507      525       4                1982               0
+       0.15   42           2668      808      11                1860               0
+       0.15  123           2881     1076       3                1805               0
+       0.15  777           2498      396      13                2102               0
+       0.75    0          10847     3649       7                7198               0
+       0.75    1          10019     2443      12                7576               0
+       0.75   42           9279     2281      15                6998               0
+       0.75  123           9021     2384      18                6637               0
+       0.75  777          11009     4114       7                6895               0
+       1.50    0          11009     3244       4                7765               0
+       1.50    1          10018     2738       9                7280               0
+       1.50   42          11009     3359       6                7650               0
+       1.50  123          11008     3681      12                7327               0
+       1.50  777          10020     2984      10                7036               0
+        all              118201    34544     135               83657               0
+
+The narrow form's precondition holds at 70.8% of all opportunities in the fifteen
+traced `social` cells, so the equality oracle 8 buys is asserted over a population that
+is most of the matrix rather than a corner of it. The proposals at those opportunities
+are rule 19's vocabulary and nothing else -- no targeted verb appears at any of them,
+which is what delegation to rule 19 predicts and is checked above rather than assumed:
+
+    move          78331
+    eat            2927
+    sleep          2399
+
+**The widened form's population is larger and is not decoded here.** Oracle 8's amendment
+of 2026-08-20 widened the equality to any observation where a tolerated resource is
+perceived and the record is empty, whether or not a Mokiterion is perceived. That
+precondition is a predicate over reconstructed positions and the acting Mokiterion's own
+waste tolerance, not a rendered field, so this reader does not decode it. It is already
+measured: rule 26's branch 3 is reached only where a tolerated resource is perceived and
+branch 1 did not pre-empt, so `post/branches.md` §2's branch-3 count is a population the
+widened form covers, with thirteen checks against the engine behind it.
+
+    branch 3, fifteen traced cells      58441 of 118201 decisions
+    narrow precondition, same cells     83657 of 118201
+
+5. The decode's three checks, each from a direction the decode does not use
+---------------------------------------------------------------------------
+A targeted proposal can only come from a branch that requires perceived company or a
+standing record, and a resolution can only follow a targeted proposal, so both must land
+at opportunities the fear pair agrees about:
+
+    targeted proposals with neither company nor record   0
+    resolutions where the decode denies company          0
+
+The third check is the strongest, because the number it is checked against is another
+reader's. `post/branches.md` reconstructed rule 26's branch for every decision from
+positions, traits and geometry, and branch 1 is the branch a non-empty record takes. This
+reader counts a rendered field. Two properties, two readers, one number, and they agree
+cell for cell:
+
+    density seed  `,suffered:` rendered  branches.md branch 1  agree
+       0.15    0                      4                     4  yes
+       0.15    1                      4                     4  yes
+       0.15   42                     11                    11  yes
+       0.15  123                      3                     3  yes
+       0.15  777                     13                    13  yes
+       0.75    0                      7                     7  yes
+       0.75    1                     12                    12  yes
+       0.75   42                     15                    15  yes
+       0.75  123                     18                    18  yes
+       0.75  777                      7                     7  yes
+       1.50    0                      4                     4  yes
+       1.50    1                      9                     9  yes
+       1.50   42                      6                     6  yes
+       1.50  123                     12                    12  yes
+       1.50  777                     10                    10  yes
+        all                         135                   135
+
+    cells where the two readers agree   15 of 15
+
+6. The parting, all fifteen matched pairs, with the stream's position either side
+---------------------------------------------------------------------------------
+    density seed  agreed  tick  subject  social proposal    individual proposal
+       0.15    0       0     1      M01  approach -> M06    move:north
+       0.15    1       9     1      M10  approach -> M09    move:east
+       0.15   42       1     1      M02  approach -> M04    move:north
+       0.15  123       0     1      M01  approach -> M02    move:east
+       0.15  777       0     1      M01  approach -> M03    move:north
+       0.75    0       0     1      M01  approach -> M04    move:west
+       0.75    1       1     1      M02  approach -> M01    move:east
+       0.75   42       1     1      M02  approach -> M03    move:north
+       0.75  123       0     1      M01  approach -> M03    move:south
+       0.75  777       3     1      M04  approach -> M06    move:north
+       1.50    0       2     1      M03  approach -> M06    move:east
+       1.50    1       0     1      M01  approach -> M02    move:west
+       1.50   42       2     1      M03  approach -> M04    move:south
+       1.50  123       1     1      M02  approach -> M03    move:south
+       1.50  777       1     1      M02  approach -> M06    move:north
+
+    partings where social proposed approach or avoid     15 of 15
+    partings where individual proposed a plain move      15 of 15
+    partings at an opportunity with company or a record  15 of 15
+
+**This is exactly where oracle 8 says the parting will be.** Oracle 8 has the two sources
+diverging "at the first opportunity where one Mokiterion perceives another and no
+tolerated resource is perceived". Both halves are readable off the two proposals.
+`approach` and `avoid` are rule 26 branch 5's verbs and no rule-19 case proposes either,
+so social's proposal says a Mokiterion was perceived; and branch 5 is reached only past
+branch 3, so the same proposal says no tolerated resource was perceived. Individual, on
+the identical observation, fell through rule 19's cases 1 to 3 to case 4's random step,
+which is the plain move it printed. Fifteen pairs, fifteen partings, every one of that
+shape, and none of it asserted anywhere else in the packet.
+
+**The stream's position either side follows from the same two proposals.** Branch 5 draws
+nothing -- `entropy.txt` §7 shows each of branches 1 to 5 returning before the source's
+single `entropy` use -- and rule 19's case 4 draws exactly once. So at the parting the
+social stream stands still and the individual stream advances by one value. The position
+it advances *from* is the post-initialization state plus one value for each earlier
+opportunity that drew, and among those only a plain move can have drawn:
+
+    density seed  agreed  of them plain moves  the stream's position before the parting
+       0.15    0       0                    0  0x7F9A3C2BCCF2E5E8                        exact
+       0.15    1       9                    9  0x7F9A3C2BCCF2E5E9 .. 0x0F8D83B1469142A6   10 candidates
+       0.15   42       1                    1  0x7F9A3C2BCCF2E612 .. 0x1DD1B5E54C3D6227   2 candidates
+       0.15  123       0                    0  0x7F9A3C2BCCF2E663                        exact
+       0.15  777       0                    0  0x7F9A3C2BCCF2E8F1                        exact
+       0.75    0       0                    0  0xDE8261A4408EDE26                        exact
+       0.75    1       1                    1  0xA2136E3141F9E5FD .. 0x404AE7EAC1446212   2 candidates
+       0.75   42       1                    1  0xA2136E3141F9E626 .. 0x404AE7EAC144623B   2 candidates
+       0.75  123       0                    0  0xA2136E3141F9E677                        exact
+       0.75  777       3                    3  0xA2136E3141F9E905 .. 0x7CB9DB5DBFD95D44   4 candidates
+       1.50    0       2                    2  0xE7D159E492221A54 .. 0x24404D5790B7127E   3 candidates
+       1.50    1       0                    0  0xE7D159E492221A55                        exact
+       1.50   42       2                    2  0xE7D159E492221A7E .. 0x24404D5790B712A8   3 candidates
+       1.50  123       1                    1  0xAB626671938D22A5 .. 0x4999E02B12D79EBA   2 candidates
+       1.50  777       1                    1  0xE7D159E492221D5D .. 0x8608D39E116C9972   2 candidates
+
+    pairs where the position before the parting is exact   6 of 15
+
+Where the agreed prefix is empty or carries no plain move, the position before the
+parting is the post-initialization state of section 2 exactly, and the position after it
+is that state under `social` and that state plus GAMMA under `individual`. Where the
+prefix carries plain moves, each of them is either rule 19's case 3 -- a step toward a
+tolerated resource, no draw -- or its case 4, and the released line does not distinguish
+them, so the position is given as the window they span. `post/branches.md`'s
+reconstruction is what separates cases 3 and 4, and this file does not duplicate it.
+
+The agreed prefixes carry only rule 19's own verbs, which is the equality holding for as
+long as it is defined to:
+
+    move         21
+
+7. The draw accounting, and what pins it
+----------------------------------------
+Rule 16 regenerates on a fixed interval and prints what it drew: the class, and the
+coordinate it settled on. `choose_free_coordinate` retries on an occupied cell, and the
+cells occupied at that moment are reconstructible -- every food's position arrives in a
+`food_initialized` or `food_regenerated` record and leaves in a `food_consumed` one. So a
+candidate stream position either reproduces the printed class and coordinate or it does
+not, and the accounting is pinned at every addition.
+
+Between two pins the only other consumer is the decision source, at no more than one
+value per opportunity, and every opportunity emits one `survival_changed` record. The
+number of values in between is therefore bounded above by a count the stream gives, and
+is solved for rather than assumed. A skipped regeneration draws nothing at all --
+`regenerate_food` returns before its first draw -- so it pins nothing either.
+
+**Section 8 reports the run's last addition, always, and never an earlier one.** That is
+what makes its tail a bound rather than an estimate: the opportunities after the reported
+point are worth at most one value each, and no addition follows to spend three or more
+without being counted. Reporting an earlier addition -- the last one whose survivors all
+agreed, say -- with the same tail would understate the position instead of widening it.
+Where the last addition leaves several positions standing, the report is all of them.
+
+    regeneration interval    every 10 ticks, territories A then B
+    additions per territory  at most 2, and fewer near capacity
+    values per addition      1 class + 2 per coordinate attempt
+    classes                  3 -- low, medium, high
+
+Two of the bounds are exact rather than probabilistic, and the difference matters. The
+coordinate bounds 128 and 64 divide 2^64, so `choose_index` never rejects for modulo bias
+there and a coordinate attempt costs exactly two values -- `entropy.txt` §1 derives that
+and gives the control. The class bound 3 does not divide 2^64: its rejection threshold is
+1, so a class draw could in principle cost more than one value, and so could a decision
+at a bound that does not divide either. Neither is assumed away. A rejection anywhere
+would push the true consumption past the bound the solver searches, and the pin would
+then find no consistent position at all -- which is the `stream lost` line of section 8
+reading zero, and is a detection rather than a silent wrong figure.
+
+8. The draw total per run, sixty cells, four sources at matched seeds
+---------------------------------------------------------------------
+    `initial` is initialization, replayed exactly. The rest is recovered to the run's
+    last regeneration addition: `total` is the stream's absolute position there in values
+    drawn, `regen` the part of it regeneration spent and `decisions` the part the decision
+    source spent. `tail` is the opportunities after that addition, each of which may or
+    may not have drawn, and no addition follows it, so the run's own total is `total` plus
+    something in `0..=tail`. A figure shown as a range is a set of whole hypotheses the
+    evidence does not separate: where only `regen` and `decisions` are ranged the total
+    beside them is still exact.
+
+    source      density seed  opps  initial  decisions  regen  total  tail  last addition
+    baseline       0.15    0  1428       72          0      0     72  1428  initialization
+    baseline       0.15    1  1428       72          0      0     72  1428  initialization
+    baseline       0.15   42  1428       72          0      0     72  1428  initialization
+    baseline       0.15  123  1428       72          0      0     72  1428  initialization
+    baseline       0.15  777  1428       72          0      0     72  1428  initialization
+    baseline       0.75    0  1428      270          0      0    270  1428  initialization
+    baseline       0.75    1  1428      268          0      0    268  1428  initialization
+    baseline       0.75   42  1451      268        360      3    631  1091  tick 30
+    baseline       0.75  123  1477      268       1320      3   1591   157  tick 110
+    baseline       0.75  777  1443      268   576-1080      3 847-1351   363  tick 90
+    baseline       1.50    0  1576      516       1539     18   2073    37  tick 160
+    baseline       1.50    1  1443      516       1080      3   1599   363  tick 90
+    baseline       1.50   42  1598      516        960     15   1491   638  tick 80
+    baseline       1.50  123  1428      514          0      0    514  1428  initialization
+    baseline       1.50  777  1459      516        360      6    882  1099  tick 30
+    reference      0.15    0  2342       72       1637     96   1805   109  tick 300
+    reference      0.15    1  3504       72       1933    207   2212   109  tick 600
+    reference      0.15   42  2992       72       1861    153   2086    99  tick 470
+    reference      0.15  123  3171       72       1895    162   2129    79  tick 390
+    reference      0.15  777  4438       72       2606    252   2930    87  tick 840
+    reference      0.75    0 10990      270       4470   1123   5863     0  tick 1000
+    reference      0.75    1 11824      268       4839   1154   6261     0  tick 1000
+    reference      0.75   42 10363      268  4482-4484 974-976   5726     0  tick 1000
+    reference      0.75  123  9765      268       4272    971   5511     0  tick 1000
+    reference      0.75  777 11474      268  5182-5186 1052-1056   6506     0  tick 1000
+    reference      1.50    0 11884      516       5255   1085   6856     0  tick 1000
+    reference      1.50    1 12000      516  5000-5002 1195-1197   6713     0  tick 1000
+    reference      1.50   42 12000      516  5108-5110 1187-1189   6813     0  tick 1000
+    reference      1.50  123 11828      514  5021-5023 1182-1184   6719     0  tick 1000
+    reference      1.50  777 12000      516  4692-4694 1190-1192   6400     0  tick 1000
+    individual     0.15    0  3237       72       1910    183   2165    94  tick 580
+    individual     0.15    1  3830       72       1893    246   2211    87  tick 670
+    individual     0.15   42  3168       72       1715    171   1958   118  tick 400
+    individual     0.15  123  2755       72       1706    132   1910   113  tick 350
+    individual     0.15  777  2400       72       1502     87   1661   198  tick 280
+    individual     0.75    0 11924      270       5418   1139   6827     0  tick 1000
+    individual     0.75    1 11018      268       4660   1097   6025     0  tick 1000
+    individual     0.75   42 11067      268       4768   1139   6175     0  tick 1000
+    individual     0.75  123 11179      268       4705   1136   6109     0  tick 1000
+    individual     0.75  777 12000      268       4749   1184   6201     0  tick 1000
+    individual     1.50    0 12000      516  5033-5035 1185-1187   6736     0  tick 1000
+    individual     1.50    1 12000      516  4940-4942 1196-1198   6654     0  tick 1000
+    individual     1.50   42 12000      516  5050-5052 1192-1194   6760     0  tick 1000
+    individual     1.50  123 11940      514       4978   1186   6678     0  tick 1000
+    individual     1.50  777 11445      516       4949   1189   6654     0  tick 1000
+    social         0.15    0  4408       72       1698    333   2103    40  tick 960
+    social         0.15    1  2507       72       1209    126   1407   151  tick 310
+    social         0.15   42  2668       72       1173    135   1380    73  tick 510
+    social         0.15  123  2881       72        952    165   1189   136  tick 440
+    social         0.15  777  2498       72       1204    132   1408   171  tick 340
+    social         0.75    0 10847      270       3197   1073   4540     0  tick 1000
+    social         0.75    1 10019      268  3074-3076 1113-1115   4457     0  tick 1000
+    social         0.75   42  9279      268  3102-3108 1011-1017   4387     0  tick 1000
+    social         0.75  123  9021      268  3055-3057 965-967   4290     0  tick 1000
+    social         0.75  777 11009      268  3061-3063 1149-1151   4480     0  tick 1000
+    social         1.50    0 11009      516  3468-3472 1193-1197   5181     0  tick 1000
+    social         1.50    1 10018      516  3196-3198 1187-1189   4901     0  tick 1000
+    social         1.50   42 11009      516  3219-3223 1201-1205   4940     0  tick 1000
+    social         1.50  123 11008      514  2934-2936 1208-1210   4658     0  tick 1000
+    social         1.50  777 10020      516       2933   1171   4620     0  tick 1000
+
+    cells whose total is exact for the whole run     30 of 60
+    cells whose decision/regeneration split is exact 43 of 60
+    cells whose total is open at the last addition   1 of 60
+    cells reaching no addition at all                8 of 60
+    cells where the stream was lost                  0 of 60
+    additions leaving two totals open                20
+    additions leaving only the split open            4139
+    widest candidate set at any addition             6
+
+Four readings, and three of them are limitations rather than findings:
+
+- **30 of the sixty cells give an exact whole-run total, and they are exactly the thirty cells
+  at density `0.75` or `1.50` under `reference`, `individual` and `social`.** Their last
+  regeneration is at tick 1,000 and regeneration is the last thing a tick does, so nothing
+  follows it to be uncertain about, and for those cells the retention item's third clause is
+  discharged with no residual at all. The other thirty are the twenty sparse cells and the ten
+  remaining `baseline` cells, and it is the same reason in both: regeneration is what pins the
+  stream, and it is scarce where resources are scarce and where nothing eats them. Section 10
+  closes the `social` cells among those thirty anyway, with an instrument that is not this one.
+- **8 cells reach no addition at all, and every one of them is `baseline`.** Regeneration is
+  skipped while a territory is at capacity, and rule 4 selects uniformly rather than seeking
+  food, so nothing is eaten, no cell is freed and nothing is added. What ends those runs is
+  extinction rather than the tick limit -- `step` stops at either, and the event says which --
+  and they end early enough that the whole regeneration record of the run is a couple of dozen
+  skips. For those cells this reader reports initialization and a tail the width of the run,
+  and claims nothing further. They are named below, with the tick they ended at and why, rather
+  than dropped.
+- **An open split is not an open total.** Two positions that print the same class at the same
+  coordinate agree on where the stream ends and disagree on which consumer spent which part of
+  it, and nothing printed later separates them, so the split stays open for the rest of the run
+  while the total does not.
+- **An open *total* closes at the next addition, where there is one.** A position that survives
+  one addition by coincidence has to survive the next one too, and the addition after it, so
+  the totals converge and the cost is tail width rather than accuracy. Across the sixty cells
+  20 additions left two totals open, and in 1 of the sixty the ambiguous addition is the run's
+  last, so nothing follows to close it. There section 9's control does more than agree with the
+  solver: `baseline`'s known count is one of the hypotheses and is not the others, so it
+  selects between them, and it could have matched none of them.
+
+    the cells reaching no addition, named:
+      baseline    d0.15  seed 0      22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d0.15  seed 1      22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d0.15  seed 42     22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d0.15  seed 123    22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d0.15  seed 777    22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d0.75  seed 0      22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d0.75  seed 1      22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+      baseline    d1.50  seed 123    22 skipped, 0 added, 1428 opportunities, extinction at tick 119
+
+    the cells whose total is open at the last addition, named, with every hypothesis:
+      baseline    d0.75  seed 777   1 added, last at tick 90
+        total    847  regeneration    3  decisions    576
+        total   1351  regeneration    3  decisions   1080
+
+9. The control: `baseline` draws once per opportunity, and the solver finds it
+------------------------------------------------------------------------------
+Rule 4 selects uniformly over the valid-action list at every opportunity,
+unconditionally, so `baseline`'s decision total is its opportunity count -- known without
+any solving. The solver is not told this. Where the two disagree, the solver is wrong.
+
+    density seed  opportunities to the pin  recovered decisions  agree
+       0.75   42                      360                  360  yes
+       0.75  123                     1320                 1320  yes
+       0.75  777                     1080             576-1080  yes
+       1.50    0                     1539                 1539  yes
+       1.50    1                     1080                 1080  yes
+       1.50   42                      960                  960  yes
+       1.50  777                      360                  360  yes
+
+    baseline cells carrying a pin                        7 of 15
+    cells where the known count is a recovered count     7 of 7
+    cells where it is the only recovered count           6 of 7
+
+The `baseline` cells that reach no addition are not silent: section 8 names them, and they
+carry no pin because nothing regenerated. The 7 that do are what the control is for, and it is
+a strong one -- 6 of them recover the known count with no slack at all, over hundreds of
+opportunities and dozens of additions, from a stream that reports neither of the two
+quantities.
+
+That leaves 1 of the 7, which section 8 names: cells whose last addition left more than one
+hypothesis standing. The known count is one of those hypotheses and not the others, so there
+the control selects rather than merely agrees -- a solver wrong about the tail would have left
+it matching none of them -- and the hypothesis it selects is the position this record reads for
+that cell.
+
+10. The second control, and the strongest: branch 6 is the social source's draw count
+-------------------------------------------------------------------------------------
+`entropy.txt` §7 enumerates every draw site in the shipped engine and shows that the only
+one a `social` decision can reach is rule 19's case 4, through branch 6: each of branches
+1 to 5 returns before the source's single `entropy` use. So under `social` the decision
+source's whole-run draw count *is* rule 26's branch-6 count.
+
+That count already exists, measured by an unrelated instrument. `post/branches.md`
+reconstructed the branch of all 118,201 decisions from positions, traits and geometry,
+with thirteen checks against the engine, and never once looked at the entropy stream.
+This reader replayed the stream and never once looked at a branch. The two numbers are
+the same number, and here they meet:
+
+    density seed  recovered decision draws  branches.md branch 6  agrees
+       0.15    0                1698..1738                  1726  yes
+       0.15    1                1209..1360                  1312  yes
+       0.15   42                1173..1246                  1243  yes
+       0.15  123                 952..1088                  1082  yes
+       0.15  777                1204..1375                  1365  yes
+       0.75    0                      3197                  3197  yes
+       0.75    1                3074..3076                  3076  yes
+       0.75   42                3102..3108                  3102  yes
+       0.75  123                3055..3057                  3057  yes
+       0.75  777                3061..3063                  3061  yes
+       1.50    0                3468..3472                  3468  yes
+       1.50    1                3196..3198                  3198  yes
+       1.50   42                3219..3223                  3221  yes
+       1.50  123                2934..2936                  2934  yes
+       1.50  777                      2933                  2933  yes
+
+    cells where branch 6's count is inside the recovered interval   15 of 15
+    cells where the two are one number with no interval at all      2 of 15
+    cells where branch 6's count resolves this reader's interval    13 of 15
+
+**This is the check that makes the accounting evidence rather than arithmetic.** The
+solver could have been wrong in a way no internal consistency would show -- a miscounted
+opportunity, a draw site missed, a rejection unaccounted for -- and every one of those
+would move these figures away from a number computed without the stream. None of them do.
+It also runs the other way: the agreement is a check on `post/branches.md`'s branch-3 and
+branch-6 split, which is the one part of that reconstruction no rendered field
+distinguishes and which §1 of that file says rests on its thirteen checks. It now rests
+on the entropy stream too.
+
+And it closes the intervals. Where this reader reports a range -- because a coincidence
+left the decision/regeneration split open, or because a tail is open -- branch 6's count
+is a single number inside it, so the run's decision draw count is that number and the
+regeneration figure beside it in section 8 is the total less that number less
+initialization.
+
+11. Oracle 8's stated consequence: social takes fewer draws than individual
+---------------------------------------------------------------------------
+Oracle 8: "Because `REQ-MOK-057`'s branches 4 and 5 pre-empt rule 19's case 4, a
+`social` run takes **fewer** draws than an `individual` run on the same seed." The two
+runs are different worlds past the parting, so this is a comparison of totals and not of
+positions -- which is how oracle 8 states it, and why. Where a tail is open the
+comparison is made on the whole interval, and it reads as holding only if the whole
+interval holds it.
+
+    density seed   social total      individual total    social fewer
+       0.15    0    2103..2143       2165..2259      yes
+       0.15    1    1407..1558       2211..2298      yes
+       0.15   42    1380..1453       1958..2076      yes
+       0.15  123    1189..1325       1910..2023      yes
+       0.15  777    1408..1579       1661..1859      yes
+       0.75    0    4540..4540       6827..6827      yes
+       0.75    1    4457..4457       6025..6025      yes
+       0.75   42    4387..4387       6175..6175      yes
+       0.75  123    4290..4290       6109..6109      yes
+       0.75  777    4480..4480       6201..6201      yes
+       1.50    0    5181..5181       6736..6736      yes
+       1.50    1    4901..4901       6654..6654      yes
+       1.50   42    4940..4940       6760..6760      yes
+       1.50  123    4658..4658       6678..6678      yes
+       1.50  777    4620..4620       6654..6654      yes
+
+    matched pairs where the social total is strictly lower   15 of 15
+    matched pairs the open tails leave undecided             0 of 15
+    matched pairs where the consequence is contradicted      0 of 15
+
+The mechanism is section 4's census read as arithmetic. `social` spends a value only at
+branch 6, and `post/branches.md` §2 counts 37,975 of 118,201
+decisions there; every branch-4 and branch-5 decision is an opportunity where
+`individual` would have reached rule 19's case 4 and drawn. The comparison above is that
+same difference measured on the stream rather than counted on the branches, which is why
+it is worth having beside it and not instead of it.
+
+12. The control: the trace setting moves no draw
+------------------------------------------------
+    trace pairs compared                               60
+    pairs agreeing on total, opportunities, additions  60
+
+`--trace-actions` adds a record and must move nothing else. The two cells of a triple are
+accounted independently and must reach the same position from the same opportunity count.
+This is also where the traced cell's `action_trace` count is checked against its
+`survival_changed` count and the untraced cell's against zero, which is section 3's
+exhaustiveness claim measured in all 120 cells rather than argued from the source.
+
+13. What this reader does not establish
+---------------------------------------
+It does not consult the two sources on one observation. That is the crate's own
+assertion, and past the parting it is the only instrument that can: past the parting
+there is no shared observation to consult them on. Section 4 measures the population the
+assertion runs over and section 6 measures why the released streams cannot reach further;
+neither restates the assertion as a measurement of its own.
+
+It does not decode the widened form's precondition. Section 4 says why, and where the
+population it covers is already measured.
+
+It does not close every tail *by itself*. The cells named in section 8 are exact for the
+whole run; the rest are exact to a stated pin, with the remaining opportunities carried as
+a range rather than folded into the figure. Closing them from the stream alone would need
+a position the engine does not print, which is `entropy.txt` §8's recorded residual and
+not a new one. What does close them, where it reaches, is section 10: `post/branches.md`'s
+branch-6 count is a single number inside every `social` interval this reader leaves open,
+so for that source the range is a property of this instrument and not of the evidence. The
+`reference` and `individual` ranges at density `0.15` have no such second instrument and
+stay open as printed.
+
+It does not separate rule 19's case 3 from its case 4 on a released line. Section 6's
+windows are that limitation stated where it bites, and `post/branches.md`'s
+reconstruction is where the separation is made.
+
+It is not a verification verdict. `VER-MOK-016` is the contract and `VREC-MOK-016` the
+record.
+
+==========================================================================
+RESULT: PASS -- every check above holds
