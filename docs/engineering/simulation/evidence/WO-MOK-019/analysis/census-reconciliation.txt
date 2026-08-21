@@ -1,0 +1,227 @@
+VER-MOK-012 — the test census, reconciled name by name
+======================================================
+
+Work order   WO-MOK-019 (Phase 4A, the record stream)
+Baseline     de33d7440c323a98ac88db3fabaf87bea48ebf4e, measured at bb4a21491eff321cbfd14ba3ea794e34535e3033
+Branch       feature/phase-4a-definition
+Date         2026-08-20
+Inputs       baseline/test-run.txt   `cargo test` at the baseline, 212 names
+             post/test-run.txt       `cargo test` at the candidate, 246 names
+Tool         WO-MOK-011/analysis/census.py, reused unmodified, which qualifies every test name by
+             the target that ran it; and analysis/census-by-target.py, a second pass by test binary
+
+Both logs come from one `cargo test` invocation at the workspace root, which is the gate
+SPEC-MOK-004 rule 11 states. Neither is assembled from per-package runs, and the sources were
+touched before each so that nothing reported a cached result.
+
+The baseline log was taken in a separate worktree at `bb4a214`, the governance commit, rather than at
+`de33d744` itself. The two are code-identical, and that is measured rather than asserted:
+
+    git diff --stat de33d74 bb4a214 -- mokiterions-core mokiterions-tui Cargo.toml Cargo.lock
+    (no output)
+
+`bb4a214` carries the packet's three amendments and the pre-change capture, all documents. Oracle 1's
+byte comparison uses `de33d744`'s own capture, taken from a tracked-clean worktree before the first
+code change, and is unaffected by this.
+
+    grep -v '^#' baseline/test-census.txt | sed 's/ :: ok$//' | sort > pre.txt       212 lines
+    grep -v '^#' post/test-census.txt | sed 's/ :: ok$//' | sort > post.txt          246 lines
+    comm -13 pre.txt post.txt      the additions
+    comm -23 pre.txt post.txt      the removals
+
+
+Result
+------
+
+    212 before, 246 after, 34 additions, 0 removals, 0 renames.
+    246 passed, 0 failed, 0 ignored, 0 filtered out. No `#[ignore]` anywhere in either package.
+
+The reconciliation is by qualified name, not by count: a case that moved between tiers or between
+targets would appear here as one addition and one removal even with the total unchanged. None does,
+and 0 removals is what makes 0 renames a fact rather than an assumption — a rename cannot hide in an
+addition-only diff.
+
+A limitation of the primary tool, disclosed rather than worked around. `census.py` qualifies every
+test by the first word after `Running`, which for a unit-test target is the literal word `unittests`.
+The workspace has four unit-test targets — the engine's library and binary, the observer's library
+and binary — so all four collapse into one qualifier there. That is the collision the tool's own
+docstring warns about and `WO-MOK-011`'s retained census has it too. `analysis/census-by-target.py`
+runs the same two logs again, qualifying by the test binary Cargo names on the same line, which
+distinguishes all four. It reports the same 34 additions and the same 0 removals, so the collapse
+changed nothing here; had a test moved between the four collapsed targets under one name, the finer
+pass would have shown it and the primary one could not. `analysis/census-by-target.txt` is that pass.
+
+
+The thirty-four additions
+-------------------------
+
+Engine, internal tier — `mokiterions-core/src/simulation.rs`, fourteen:
+
+    unittests :: simulation::tests::the_header_record_states_the_resolved_configuration_and_never_a_path
+        SPEC-MOK-006 rule 5's nine fields, each against the authority that declares its value, and
+        the absence of the destination among them. Rule 5.4's counterexample key `events_path` is
+        checked absent by name.
+    unittests :: simulation::tests::every_event_kind_has_its_exact_record_shape
+        All twelve kinds of rule 3.2's enumeration, each compared to the shape rule 6.5 fixes for
+        it, including two shapes no shipped decision source produces.
+    unittests :: simulation::tests::every_proposal_shape_is_the_action_word_and_the_one_value_it_carries
+        Rule 6.5's third composite shape, by exhaustive match over the proposal enumeration, so a
+        member added later cannot be omitted from the check.
+    unittests :: simulation::tests::a_metrics_record_over_an_empty_living_population_reports_null_extrema
+        Rules 7.5 and 4.4 at the one boundary where a fact does not exist: the whole record is
+        asserted, not only the two null fields.
+    unittests :: simulation::tests::every_cumulative_counter_equals_its_event_count_in_the_text_stream
+        Rule 8.6, with the counts taken from the run's own *text* stream rather than from the
+        records, so the two witnesses are independent.
+    unittests :: simulation::tests::a_saturated_counter_neither_wraps_nor_panics
+        The counters are `saturating_add`, and this pins the behaviour at the ceiling rather than
+        leaving it to the type.
+    unittests :: simulation::tests::no_rule_reads_a_cumulative_counter
+        Behavioural, not structural: the counters are pre-loaded with arbitrary values and the run
+        must not diverge. A rule that read one would.
+    unittests :: simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet
+        Oracle 5. Thirteen domains enumerated member by member, each member's characters checked
+        against the union rule 3.3 fixes, and each domain's *size* checked against the number
+        SPEC-MOK-006 states — which is what makes the totality argument hold and what
+        `negative-controls.txt` scenario 6 breaks.
+    unittests :: simulation::tests::a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one
+        Rule 11.1 from inside, at every policy with tracing on.
+    unittests :: simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary
+        Oracle 4, and REQ-MOK-045's substance. Retained in `entropy.txt` Part 5 and broken
+        deliberately in `negative-controls.txt` scenario 4.
+    unittests :: simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone
+        Rule 11.1's additivity: one value across all twelve combinations of policy, tracing and
+        sink, per declared seed and swept density. `entropy.txt` Part 1.
+    unittests :: simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink
+        The same comparison at the end of a full run rather than at a boundary. `entropy.txt` Part 2.
+    unittests :: simulation::tests::a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written
+        Rules 13.3, 13.5 and 13.2 together: a sink that fails on its first write stops the run
+        before the text stream has a line, and the diagnostic says which stream failed.
+    unittests :: simulation::tests::a_record_sink_that_fails_mid_run_leaves_no_run_record
+        Rule 8.9. A truncated stream must not carry a run record, because a run record is a claim
+        that the run finished.
+
+        All fourteen are inside the crate because each one names something the interface does not
+        expose: the `#[cfg(test)]` entropy accessor, the record writers, the counter array, or a
+        `Sinks` value built over a failing writer. `static-checks.txt` item 11 enumerates the nine
+        private items the internal tier reaches for, and none of them is reached by the public tier;
+        item 9 does the same for the entropy accessor alone, which is the one item this work order
+        added for a test's sake. That is SPEC-MOK-002 rule 7's test applied rather than a judgement
+        recorded.
+
+Engine, public tier — `mokiterions-core/tests/cli.rs`, three:
+
+    tests/cli.rs :: the_sink_option_is_validated_and_its_value_is_not_retained
+        SPEC-MOK-006 rule 1.2: the option is parsed and validated, and its value appears in no
+        diagnostic and no record.
+    tests/cli.rs :: the_sink_option_states_what_it_writes_and_what_it_replaces
+        The help text names both, and states no default — a default would print a path.
+    tests/cli.rs :: the_binary_and_the_parser_spell_the_sink_option_the_same_way
+        The spelling exists in two targets because the option is split between them, so the two
+        spellings are compared. This is the extension of the existing USAGE-versus-parser test that
+        WO-MOK-019's *What may change* admits, and the only pre-existing test whose body this work
+        order touched.
+
+Engine, public tier — `mokiterions-core/tests/records.rs`, seventeen (a new target):
+
+    tests/records.rs :: the_stream_is_one_record_per_line_in_the_order_the_specification_fixes
+        Rules 2.1, 2.2 and 9.1: one JSON object per line, LF-terminated, header first, run record
+        last, metrics before the events of the tick they summarise.
+    tests/records.rs :: every_key_in_the_stream_is_a_key_the_specification_names
+        A closed key set rather than a forbid-list: every key of every record in a full run is
+        looked up in the set SPEC-MOK-006 declares, and an unknown key fails.
+    tests/records.rs :: null_appears_only_where_a_fact_does_not_exist
+        Rule 4.4. Over a full run there are exactly two absences, and both are the extrema of an
+        empty living population.
+    tests/records.rs :: no_record_carries_a_path_or_the_sinks_own_destination
+        At the process boundary, against a destination whose own path is a marker string.
+    tests/records.rs :: every_text_event_line_is_reconstructible_from_its_event_record
+        Rule 6.6's walk, applied to every event of a full run and compared byte for byte with the
+        text line the same run wrote.
+    tests/records.rs :: the_run_record_reconstructs_the_summary_line
+        Rule 8.3's twelve figures, likewise byte-compared with the run's own summary line.
+    tests/records.rs :: every_cumulative_figure_equals_its_event_record_count
+        Rule 8.6 again, at the process boundary and counted from the event records this time.
+    tests/records.rs :: every_metrics_record_is_internally_consistent
+        Rules 7.4 and 7.5: the per-territory figures sum to the totals and the extrema are drawn
+        from the population the same record counts.
+    tests/records.rs :: the_text_stream_is_byte_identical_with_and_without_a_sink
+        Rule 11.1 at the process boundary. Oracle 1 establishes the same thing across a revision;
+        this establishes it within one build, where a difference would be a defect rather than a
+        regression.
+    tests/records.rs :: the_record_stream_is_byte_identical_across_runs
+        Two runs of one configuration to two destinations.
+    tests/records.rs :: a_malformed_sink_argument_exits_two_and_writes_nothing
+        Rule 13.1.
+    tests/records.rs :: an_unopenable_destination_exits_one_and_runs_no_tick
+        Rule 13.2: the failure is detected before the first tick, so the text stream has no line.
+    tests/records.rs :: help_opens_no_file
+        `--help` with a sink argument creates nothing.
+    tests/records.rs :: an_existing_destination_is_replaced_by_the_new_run
+        The documented overwrite, with the prior contents gone rather than appended to.
+    tests/records.rs :: a_failed_run_removes_the_destination_it_created
+        Rule 13.4.
+    tests/records.rs :: a_destination_the_process_did_not_create_is_not_removed
+        Rule 13.4's bound, which is the half of it that could be got wrong silently.
+    tests/records.rs :: a_sink_diagnostic_is_distinguishable_from_a_text_stream_diagnostic
+        Rule 13.5. One sink failure produces a two-layer diagnostic and the outer layer names the
+        stream.
+
+        All seventeen are writable through the engine's public interface — the binary — with their
+        assertions unchanged, so SPEC-MOK-002 rule 8 places them outside the crate. The file is a
+        new public-tier target, admitted by that rule's closing sentence, "A further file may be
+        added when a further public subject appears", exactly as `tests/naming.rs` was under
+        WO-MOK-011 and `tests/decisions.rs` before it. It obliges no entry in that rule's
+        initial-arrangement table. The file carries its own JSON reader, which is what lets it
+        enforce rule 3.3 on every string it reads and rule 4.1 on every number: a reader that
+        accepted more than the specification permits would make every assertion above weaker.
+
+
+Per-target counts after the change
+----------------------------------
+
+    Engine — mokiterions-core                     Observer — mokiterions-tui
+
+    unittests src/lib.rs      68                  unittests src/lib.rs      31
+    unittests src/main.rs      0                  unittests src/main.rs      8
+    tests/cli.rs              16                  tests/authority.rs         4
+    tests/decisions.rs         1                  tests/export.rs            7
+    tests/density.rs           2                  tests/layout.rs           10
+    tests/naming.rs            3                  tests/options.rs           8
+    tests/process.rs           6                  tests/render.rs           12
+    tests/records.rs          17                  tests/spatial.rs           7
+    tests/termination.rs       4                  tests/state.rs            21
+    tests/viability.rs         2                  tests/verification.rs     19
+
+    engine total             119                  observer total           127
+      internal tier           68                    internal tier           39
+      public tier             51                    public tier             88
+
+    doc-tests, both packages   0
+
+                                                              WORKSPACE    246
+
+Only three targets moved: the engine's library by +14, `tests/cli.rs` by +3, and `tests/records.rs`
+from nothing to 17. Every other target is unchanged to the test. The observer is untouched at 127:
+this work order adds a stream the observer does not read, and `interface.txt` records that the
+observer's interface is unchanged as well.
+
+SPEC-MOK-004 rule 11 records the workspace total, and its own text delegates the correction: "a work
+order that adds a test corrects these figures here, and one that loses a test has a defect." The
+figures it carried were observer 127, engine 85, workspace 212, measured on the merge at `2157f77`.
+They become observer 127 unchanged, engine 119, workspace 246, and the correction is written into
+that rule. It is disclosed in `completion-summary.md` because SPEC-MOK-004 is not one of the three
+amendments the approved packet named, and an amendment nobody approved is not made quietly even when
+the rule being amended asks for it.
+
+
+A note on the one pre-existing test that changed
+------------------------------------------------
+
+`mokiterions-core/tests/cli.rs`'s USAGE-versus-parser test gained the sink option, which is the
+extension WO-MOK-019's *What may change* admits by name. No other pre-existing test's body or
+assertions changed, which is WO-MOK-019 stop-and-escalate condition 4: "Any existing test's
+assertions would have to change, beyond the mechanical `execute` call sites and the extended
+`USAGE`-versus-parser test." The `execute` call sites that condition anticipates in
+`mokiterions-tui` do not exist — the observer does not call it — and `completion-summary.md` records
+that as a defect in the work order rather than a change made silently.

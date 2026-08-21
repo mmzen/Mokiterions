@@ -4826,7 +4826,7 @@ mod tests {
     /// that this change's measurements and the control's are taken on the same worlds.
     const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
 
-    /// The densities `WO-MOK-018`'s evidence capture sweeps: the default, the `1.50%` sweep
+    /// The densities `WO-MOK-019`'s evidence capture sweeps: the default, the `1.50%` sweep
     /// `VER-MOK-002` declares, and `0.15%`.
     ///
     /// `VER-MOK-012` requires the default and `1.50%`. `0.15%` is added because each density is a

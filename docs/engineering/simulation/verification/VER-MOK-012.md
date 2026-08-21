@@ -118,7 +118,7 @@ Seven independent oracles are used.
 
    `ARCH-MOK-001`'s amendment record additionally carries a row dated 2026-08-18 recorded **OUTSTANDING** and
    predating this chain. This contract records its state at verification rather than requiring its resolution: it is
-   not this chain's amendment, and `WO-MOK-018` does not claim it.
+   not this chain's amendment, and `WO-MOK-019` does not claim it.
 
 The declared verification seed set is `0`, `1`, `42`, `123` and `777`, fixed by `VER-MOK-002` and reused unchanged so
 that this change's measurements and the control's are taken on the same worlds.
@@ -369,7 +369,7 @@ outstanding assessment, and this contract is not satisfied while any remains out
 
 ## Evidence retention
 
-Retained under `docs/engineering/simulation/evidence/WO-MOK-018/`:
+Retained under `docs/engineering/simulation/evidence/WO-MOK-019/`:
 
 - the pre-change baseline capture of the declared matrix, captured before any code change, with the commit it was
   taken at recorded;

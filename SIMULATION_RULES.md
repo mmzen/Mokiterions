@@ -870,5 +870,5 @@ All of these are planned. The order they arrive in, and why, is in `docs/ROADMAP
 | The exact, binding rules | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
 | The exact shape of every record in the file | `docs/engineering/simulation/specifications/SPEC-MOK-006.md` |
 | What is planned, and in what order | `docs/ROADMAP.md` |
-| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/`, `.../WO-MOK-010/`, `.../WO-MOK-016/` and `.../WO-MOK-018/` |
+| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/`, `.../WO-MOK-010/`, `.../WO-MOK-016/` and `.../WO-MOK-019/` |
 | How changes get approved here | `ENGINEERING_HARNESS.md` |
