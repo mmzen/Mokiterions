@@ -416,6 +416,17 @@ there is no front matter of this record in that tree to normalize.
 `git rev-parse HEAD` into the hashed document, so that digest does not exist until the commit does, and a figure
 measured beforehand would be a working-tree figure presented as a commit figure.
 
+**The digest is reproducible from a full-depth checkout and from no other kind, and that is measured rather than
+assumed.** `.github/workflows/engineering-harness.yml` uses `actions/checkout@v4` with no `fetch-depth`, so CI reads
+this tree at depth 1 and its dashboard reports **29 warnings** where the same tree at full depth reports 13. A depth-1
+clone of this repository reproduces CI's number exactly — 131 artifacts, 473 relations, 0 errors, **29 warnings** — and
+the inspector run in that clone names the difference: **`W-REV-003` at 16 observations**, one for each of the fifteen
+verification records and `RLS-MOK-001`, every one of them declaring a candidate commit a shallow clone cannot reach.
+`W-REV-003`'s own remedy is *"make the declared candidate commit available for assessment without changing its recorded
+identity"*, which is a statement about the checkout and not about any record. **A reader comparing this record's digest
+against a shallow clone will not reproduce it, and the discrepancy will be the clone's.** No workflow was edited to
+change this, because the managed harness is not this work order's to amend.
+
 ## The re-classification this record carries
 
 `post/byte-identity.txt` records `RESULT: MIXED`, and `WO-MOK-016`'s scope amendment of 2026-08-21 places the
