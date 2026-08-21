@@ -2,7 +2,7 @@
 id = "VREC-MOK-019"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-019 at the second merge commit"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-21"
 updated = "2026-08-21"
@@ -74,6 +74,73 @@ conforms_to = ["VER-MOK-012"]
 +++
 
 # Verification Record Candidate
+
+## The assurance decision, taken 2026-08-21
+
+**This record is `verified`.** The accountable assurance owner reviewed the fifty-four declared evidence files for
+`WO-MOK-019` at candidate commit `e96648a2a6524a80c761b791378ca91289f02ba2` and transitioned this record from `ready`
+to `verified` on 2026-08-21, in the words *"i validate the verification record, you can transition, commit and
+push"*. The decision was taken on this record exactly as the candidate wrote it, including every disclosure, every
+residual and both readings of `W-REV-004` below. `evidence/WO-MOK-019/merge/second/assurance-decision.md` records the
+decision, the before-and-after readings and what the decision does not retire; it is deliberately **not** added to
+`evidence_paths`, on the rule this record's own *deliberately not declared* section states.
+
+**Exactly one front-matter field moved, and it is `status`.** `commit`, `git_object_format`, `worktree_state`,
+`verified_at`, `artifact_snapshot_sha256`, all fifty-four `evidence_paths`, both declared relations, `owners`, `title`
+and `updated` are unchanged. `verified_at = "2026-08-21T17:04:11Z"` remains **the capture timestamp, not the decision
+time** — the decision is necessarily later than the capture, and the field is provenance rather than a record of the
+act. What is verified is the tree at `e96648a`; `WORKFLOW.md` provides no re-pointing of a record at a later commit
+and none is attempted.
+
+**The title still reads *candidate*, and the heading above it does too. Both are deliberate.** Fourteen of the
+fifteen `verified` records in this repository keep the word, because it is what the capture said; only
+`VREC-MOK-017`, which was hand-composed with no capture behind it, says *record*. This record was hand-composed but
+its front matter is a re-measurement of a capture's fields, so it keeps the capture's vocabulary.
+`VREC-MOK-018` retained its heading under the same status change and is the precedent followed here.
+
+**Everything below this section is retained as the candidate wrote it.** That is a departure from `VREC-MOK-015`,
+whose transition rewrote the sentences its new status falsified, and it follows the later and now-settled practice of
+`VREC-MOK-018` instead: a record binds a commit and stays true of that commit, so the sentences are named here rather
+than edited in place. Three are falsified by the two acts the owner authorized in the same instruction:
+
+1. ***"This record is `ready`. … **It decides nothing.**"*** — and with it *"What the transition **would** accept"*
+   two sentences later. Both were true when written and are superseded by this section. `decision_required` is now
+   empty where it held `VREC-MOK-019 [ready] assurance-review`; that queue entry was the whole of what the candidate
+   accomplished and it is discharged.
+2. **The `status` row of the field-measurement table** — *"`ready`. The tool cannot emit anything else and neither
+   can record preparation"*. The claim about the tool and about *preparation* still stands: `capture-verification`
+   emits only `ready`, and no preparation moved this field. A decision did.
+3. ***"This record's preparation took no decision and created no commit, tag or publication."*** The preparation
+   itself took none, and the sentence's substance stands for the acts it names — no tag and no publication exists.
+   But the record was committed as `e6dfc78` before the decision was given, and the same instruction that
+   transitioned it authorized the push of both commits to
+   **`origin/feature/phase-4a-definition`**. So a commit and a push do follow this record; neither is a merge, a tag
+   or a release, and no commit becomes release-eligible by this status.
+
+**`W-REV-004` is silenced by this transition and it is not answered.** Its predicate is `ready`, so it stops being
+raised the moment the status moves — the warning count falls from 18 to 17 and the finding total from 37 to 36 for
+that reason alone. The owner was shown both readings, in the section below and in words, before the instruction was
+given, and chose the transition; no supersession was assessed and none was taken. Two consequences are disclosed
+rather than left to be found. First, `VERIFICATION_RECORD.template.md` permits supersession of a **`ready`** record
+only, so this transition forecloses the supersession route for this record permanently — the same exposure
+`evidence/WO-MOK-014/merge/assurance-decision.md` priced when `VREC-MOK-015` was transitioned. Second, `WO-MOK-019`
+is now covered by two `verified` records bound to two different commits, `50364a3` and `e96648a`, which is the
+`VREC-MOK-014`/`VREC-MOK-015` shape and which the graph accepts: no finding replaced `W-REV-004` and no error or
+queue entry appeared.
+
+**What this decision does not reach.** It is a decision on the evidence at one commit and nothing more.
+
+- **The nine residuals in *What this record does not discharge* are carried, not closed.** In particular the
+  twelve-versus-fifteen event-kind gap in `VER-MOK-012`'s per-kind oracle, and assessment 1's answer being stale in
+  substance, are unchanged by the status. This decision does not re-record a product-owner judgement.
+- **The two `OUTSTANDING` amendment rows are not ratified by it** — the 2026-08-21 `SPEC-MOK-006` row and the
+  2026-08-21 `SPEC-MOK-004` row. Both are the artifact owner's separate acts and both still read `OUTSTANDING`.
+- **`WO-MOK-019` stays `implemented`.** `WORKFLOW.md` uses work-order status `verified` only where configured
+  provenance requires it; the precedent is `WO-MOK-016`, still `implemented` under the `verified` `VREC-MOK-017`.
+- **No merge, tag or release follows.** `origin/master` already carries this work through `fac152f`, taken on other
+  grounds and before this record existed, as the paragraph below records. No release record binds it and this status
+  makes no commit release-eligible.
+- **The method question on the swept captures is not answered**, and `VREC-MOK-012`'s `title` still rides on it.
 
 This record is `ready`. It names commit `e96648a2a6524a80c761b791378ca91289f02ba2` — the second merge of
 `origin/master` into this chain — as the candidate satisfying `VER-MOK-012`, and the fifty-four retained files
