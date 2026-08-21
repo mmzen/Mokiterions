@@ -1,0 +1,105 @@
+# oracle 1, comparison H: the candidate commit's record streams against the merge's
+# left:  ../post-sink-manifest.txt
+# right: C:/Users/mathi/m-sink-manifest.txt
+#
+# Compared columns: sha256(sink), sink bytes, sink lines.
+# Where the digests differ the byte difference is accounted for as occurrences of
+# `,"suffered":[]` (14 bytes) on action_trace records, and the line counts must be
+# equal. No projection, no normalization, no tolerance.
+
+seed0-baseline-d0.15-traceoff      identical
+seed0-baseline-d0.15-traceon       differs, +19992 bytes = 14 x 1428
+seed0-baseline-d0.75-traceoff      identical
+seed0-baseline-d0.75-traceon       differs, +19992 bytes = 14 x 1428
+seed0-baseline-d1.50-traceoff      identical
+seed0-baseline-d1.50-traceon       differs, +22064 bytes = 14 x 1576
+seed0-individual-d0.15-traceoff    identical
+seed0-individual-d0.15-traceon     differs, +45318 bytes = 14 x 3237
+seed0-individual-d0.75-traceoff    identical
+seed0-individual-d0.75-traceon     differs, +166936 bytes = 14 x 11924
+seed0-individual-d1.50-traceoff    identical
+seed0-individual-d1.50-traceon     differs, +168000 bytes = 14 x 12000
+seed0-reference-d0.15-traceoff     identical
+seed0-reference-d0.15-traceon      differs, +32788 bytes = 14 x 2342
+seed0-reference-d0.75-traceoff     identical
+seed0-reference-d0.75-traceon      differs, +153860 bytes = 14 x 10990
+seed0-reference-d1.50-traceoff     identical
+seed0-reference-d1.50-traceon      differs, +166376 bytes = 14 x 11884
+seed1-baseline-d0.15-traceoff      identical
+seed1-baseline-d0.15-traceon       differs, +19992 bytes = 14 x 1428
+seed1-baseline-d0.75-traceoff      identical
+seed1-baseline-d0.75-traceon       differs, +19992 bytes = 14 x 1428
+seed1-baseline-d1.50-traceoff      identical
+seed1-baseline-d1.50-traceon       differs, +20202 bytes = 14 x 1443
+seed1-individual-d0.15-traceoff    identical
+seed1-individual-d0.15-traceon     differs, +53620 bytes = 14 x 3830
+seed1-individual-d0.75-traceoff    identical
+seed1-individual-d0.75-traceon     differs, +154252 bytes = 14 x 11018
+seed1-individual-d1.50-traceoff    identical
+seed1-individual-d1.50-traceon     differs, +168000 bytes = 14 x 12000
+seed1-reference-d0.15-traceoff     identical
+seed1-reference-d0.15-traceon      differs, +49056 bytes = 14 x 3504
+seed1-reference-d0.75-traceoff     identical
+seed1-reference-d0.75-traceon      differs, +165536 bytes = 14 x 11824
+seed1-reference-d1.50-traceoff     identical
+seed1-reference-d1.50-traceon      differs, +168000 bytes = 14 x 12000
+seed123-baseline-d0.15-traceoff    identical
+seed123-baseline-d0.15-traceon     differs, +19992 bytes = 14 x 1428
+seed123-baseline-d0.75-traceoff    identical
+seed123-baseline-d0.75-traceon     differs, +20678 bytes = 14 x 1477
+seed123-baseline-d1.50-traceoff    identical
+seed123-baseline-d1.50-traceon     differs, +19992 bytes = 14 x 1428
+seed123-individual-d0.15-traceoff  identical
+seed123-individual-d0.15-traceon   differs, +38570 bytes = 14 x 2755
+seed123-individual-d0.75-traceoff  identical
+seed123-individual-d0.75-traceon   differs, +156506 bytes = 14 x 11179
+seed123-individual-d1.50-traceoff  identical
+seed123-individual-d1.50-traceon   differs, +167160 bytes = 14 x 11940
+seed123-reference-d0.15-traceoff   identical
+seed123-reference-d0.15-traceon    differs, +44394 bytes = 14 x 3171
+seed123-reference-d0.75-traceoff   identical
+seed123-reference-d0.75-traceon    differs, +136710 bytes = 14 x 9765
+seed123-reference-d1.50-traceoff   identical
+seed123-reference-d1.50-traceon    differs, +165592 bytes = 14 x 11828
+seed42-baseline-d0.15-traceoff     identical
+seed42-baseline-d0.15-traceon      differs, +19992 bytes = 14 x 1428
+seed42-baseline-d0.75-traceoff     identical
+seed42-baseline-d0.75-traceon      differs, +20314 bytes = 14 x 1451
+seed42-baseline-d1.50-traceoff     identical
+seed42-baseline-d1.50-traceon      differs, +22372 bytes = 14 x 1598
+seed42-individual-d0.15-traceoff   identical
+seed42-individual-d0.15-traceon    differs, +44352 bytes = 14 x 3168
+seed42-individual-d0.75-traceoff   identical
+seed42-individual-d0.75-traceon    differs, +154938 bytes = 14 x 11067
+seed42-individual-d1.50-traceoff   identical
+seed42-individual-d1.50-traceon    differs, +168000 bytes = 14 x 12000
+seed42-reference-d0.15-traceoff    identical
+seed42-reference-d0.15-traceon     differs, +41888 bytes = 14 x 2992
+seed42-reference-d0.75-traceoff    identical
+seed42-reference-d0.75-traceon     differs, +145082 bytes = 14 x 10363
+seed42-reference-d1.50-traceoff    identical
+seed42-reference-d1.50-traceon     differs, +168000 bytes = 14 x 12000
+seed777-baseline-d0.15-traceoff    identical
+seed777-baseline-d0.15-traceon     differs, +19992 bytes = 14 x 1428
+seed777-baseline-d0.75-traceoff    identical
+seed777-baseline-d0.75-traceon     differs, +20202 bytes = 14 x 1443
+seed777-baseline-d1.50-traceoff    identical
+seed777-baseline-d1.50-traceon     differs, +20426 bytes = 14 x 1459
+seed777-individual-d0.15-traceoff  identical
+seed777-individual-d0.15-traceon   differs, +33600 bytes = 14 x 2400
+seed777-individual-d0.75-traceoff  identical
+seed777-individual-d0.75-traceon   differs, +168000 bytes = 14 x 12000
+seed777-individual-d1.50-traceoff  identical
+seed777-individual-d1.50-traceon   differs, +160230 bytes = 14 x 11445
+seed777-reference-d0.15-traceoff   identical
+seed777-reference-d0.15-traceon    differs, +62132 bytes = 14 x 4438
+seed777-reference-d0.75-traceoff   identical
+seed777-reference-d0.75-traceon    differs, +160636 bytes = 14 x 11474
+seed777-reference-d1.50-traceoff   identical
+seed777-reference-d1.50-traceon    differs, +168000 bytes = 14 x 12000
+
+# 90 cells compared: 45 record streams byte-identical, 45 differing
+# 45 of the 45 differing accounted for exactly by the field insertion
+# action_trace records across the capture: 284409
+# total byte difference: 3981726 = 14 x 284409
+# result: PASS

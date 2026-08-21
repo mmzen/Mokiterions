@@ -11,6 +11,7 @@ pub const USAGE: &str = concat!(
     "Usage: Mokiterions [--seed <u64>] [--ticks <u64>]\n",
     "                   [--policy <baseline|reference|individual|social>]\n",
     "                   [--density <percent>] [--trace-actions]\n",
+    "                   [--events-path <path>]\n",
     "       Mokiterions --help\n",
     "\n",
     "Options:\n",
@@ -23,6 +24,9 @@ pub const USAGE: &str = concat!(
     "                                 decimal places. Default: 0.75.\n",
     "  --trace-actions                Emit one action trace per living-agent decision\n",
     "                                 opportunity. Off unless given.\n",
+    "  --events-path <path>           Write the structured record stream to the named\n",
+    "                                 file, replacing any file already there. No\n",
+    "                                 record stream is written unless given.\n",
     "  --help                         Print this usage and exit without running.\n",
     "\n",
     "Options may appear in any order and at most once.\n",
@@ -61,6 +65,11 @@ where
     let mut policy = None;
     let mut density = None;
     let mut trace_actions = false;
+    // A `bool` rather than the value, because nothing retains the value. `SPEC-MOK-006`
+    // rule 1.2 keeps every path out of the library target, so this parser validates the
+    // option and forgets it; the binary target reads the argument it will open. The flag
+    // exists only to enforce the at-most-once rule every other option follows.
+    let mut events_path = false;
     let mut help = false;
     let mut index = 0;
 
@@ -121,6 +130,27 @@ where
                 }
                 trace_actions = true;
                 index += 1;
+            }
+            "--events-path" => {
+                if events_path {
+                    return Err("--events-path may appear at most once".into());
+                }
+                // `option_value` unchanged, so a missing value and a value beginning with
+                // `--` are both a missing value here for the same reason they are elsewhere.
+                let value = option_value(&args, index, "--events-path")?;
+                // `SPEC-MOK-006`'s *Inputs*: both spellings conventionally denote a standard
+                // stream, and a sink interleaved with the text stream cannot leave that
+                // stream's bytes unchanged. Rejecting the spelling is cheaper than defining
+                // a behavior for it. Every other property of the value is the platform's,
+                // and a path the platform refuses is a runtime failure rather than invalid
+                // configuration, under rule 13.2.
+                if value.is_empty() || value == "-" {
+                    return Err(format!(
+                        "invalid --events-path value: {value}; expected a file path, and no path denotes a standard stream"
+                    ));
+                }
+                events_path = true;
+                index += 2;
             }
             "--help" => {
                 if help {

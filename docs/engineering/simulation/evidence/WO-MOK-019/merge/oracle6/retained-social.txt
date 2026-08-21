@@ -1,0 +1,852 @@
+# VER-MOK-012 oracle 6: the metrics and run records reconciled against an event replay
+#
+# capture directory: C:/Users/mathi/msoc-sink
+# command: python docs/engineering/simulation/evidence/WO-MOK-019/analysis/replay.py <capture-dir> <output-file>
+#
+# The replay rebuilds the world from the event records using SPEC-MOK-001's rules and
+# compares it against the metrics record at every tick and the run record at the end. The two
+# figures reach the stream by different code paths -- events from transitions as applied,
+# metrics from authoritative state read at the tick boundary -- so a disagreement means one of
+# them is wrong and this oracle does not presume which.
+#
+# Reconciled per tick: living, deaths, population per territory, standing per class per
+# territory, capacity against the density, permanent depletion, and the sum and extremum of
+# each of the four attributes. Reconciled per regeneration opportunity: rule 15's outcome
+# predicted from the replay's own standing count. Reconciled per run: every cumulative
+# counter against its event count, the final territory figures, and the twelve-Mokiterion
+# roster with each died_at against the tick of its agent_died event.
+
+seed0-social-d0.15-traceoff.jsonl          1000 ticks  5 FINDINGS
+seed0-social-d0.15-traceon.jsonl           1000 ticks  5 FINDINGS
+seed0-social-d0.75-traceoff.jsonl          1000 ticks  10 FINDINGS
+seed0-social-d0.75-traceon.jsonl           1000 ticks  10 FINDINGS
+seed0-social-d1.50-traceoff.jsonl          1000 ticks  7 FINDINGS
+seed0-social-d1.50-traceon.jsonl           1000 ticks  7 FINDINGS
+seed1-social-d0.15-traceoff.jsonl           393 ticks  5 FINDINGS
+seed1-social-d0.15-traceon.jsonl            393 ticks  5 FINDINGS
+seed1-social-d0.75-traceoff.jsonl          1000 ticks  16 FINDINGS
+seed1-social-d0.75-traceon.jsonl           1000 ticks  16 FINDINGS
+seed1-social-d1.50-traceoff.jsonl          1000 ticks  12 FINDINGS
+seed1-social-d1.50-traceon.jsonl           1000 ticks  12 FINDINGS
+seed123-social-d0.15-traceoff.jsonl         509 ticks  7 FINDINGS
+seed123-social-d0.15-traceon.jsonl          509 ticks  7 FINDINGS
+seed123-social-d0.75-traceoff.jsonl        1000 ticks  18 FINDINGS
+seed123-social-d0.75-traceon.jsonl         1000 ticks  18 FINDINGS
+seed123-social-d1.50-traceoff.jsonl        1000 ticks  11 FINDINGS
+seed123-social-d1.50-traceon.jsonl         1000 ticks  11 FINDINGS
+seed42-social-d0.15-traceoff.jsonl          583 ticks  9 FINDINGS
+seed42-social-d0.15-traceon.jsonl           583 ticks  9 FINDINGS
+seed42-social-d0.75-traceoff.jsonl         1000 ticks  14 FINDINGS
+seed42-social-d0.75-traceon.jsonl          1000 ticks  14 FINDINGS
+seed42-social-d1.50-traceoff.jsonl         1000 ticks  9 FINDINGS
+seed42-social-d1.50-traceon.jsonl          1000 ticks  9 FINDINGS
+seed777-social-d0.15-traceoff.jsonl         426 ticks  12 FINDINGS
+seed777-social-d0.15-traceon.jsonl          426 ticks  12 FINDINGS
+seed777-social-d0.75-traceoff.jsonl        1000 ticks  8 FINDINGS
+seed777-social-d0.75-traceon.jsonl         1000 ticks  8 FINDINGS
+seed777-social-d1.50-traceoff.jsonl        1000 ticks  9 FINDINGS
+seed777-social-d1.50-traceon.jsonl         1000 ticks  9 FINDINGS
+
+# 30 streams, 25822 tick boundaries reconciled, 304 findings
+# result: FAIL
+
+# findings
+seed0-social-d0.15-traceoff.jsonl: tick 9: health sum 1171 against replay 1200
+seed0-social-d0.15-traceoff.jsonl: tick 9: health min 71 against replay 100
+seed0-social-d0.15-traceoff.jsonl: tick 10: health sum 1114 against replay 1171
+seed0-social-d0.15-traceoff.jsonl: tick 10: health min 43 against replay 71
+seed0-social-d0.15-traceoff.jsonl: tick 119: health sum 1000 against replay 1023
+seed0-social-d0.15-traceon.jsonl: tick 9: health sum 1171 against replay 1200
+seed0-social-d0.15-traceon.jsonl: tick 9: health min 71 against replay 100
+seed0-social-d0.15-traceon.jsonl: tick 10: health sum 1114 against replay 1171
+seed0-social-d0.15-traceon.jsonl: tick 10: health min 43 against replay 71
+seed0-social-d0.15-traceon.jsonl: tick 119: health sum 1000 against replay 1023
+seed0-social-d0.75-traceoff.jsonl: tick 4: health sum 1171 against replay 1200
+seed0-social-d0.75-traceoff.jsonl: tick 4: health min 71 against replay 100
+seed0-social-d0.75-traceoff.jsonl: tick 7: health sum 1119 against replay 1145
+seed0-social-d0.75-traceoff.jsonl: tick 7: health min 45 against replay 71
+seed0-social-d0.75-traceoff.jsonl: tick 8: health sum 1094 against replay 1119
+seed0-social-d0.75-traceoff.jsonl: tick 8: health min 20 against replay 45
+seed0-social-d0.75-traceoff.jsonl: tick 10: satiety sum 963 against replay 953
+seed0-social-d0.75-traceoff.jsonl: tick 13: satiety sum 899 against replay 886
+seed0-social-d0.75-traceoff.jsonl: tick 14: satiety sum 883 against replay 882
+seed0-social-d0.75-traceoff.jsonl: run record M09 died_at None against replay 9
+seed0-social-d0.75-traceon.jsonl: tick 4: health sum 1171 against replay 1200
+seed0-social-d0.75-traceon.jsonl: tick 4: health min 71 against replay 100
+seed0-social-d0.75-traceon.jsonl: tick 7: health sum 1119 against replay 1145
+seed0-social-d0.75-traceon.jsonl: tick 7: health min 45 against replay 71
+seed0-social-d0.75-traceon.jsonl: tick 8: health sum 1094 against replay 1119
+seed0-social-d0.75-traceon.jsonl: tick 8: health min 20 against replay 45
+seed0-social-d0.75-traceon.jsonl: tick 10: satiety sum 963 against replay 953
+seed0-social-d0.75-traceon.jsonl: tick 13: satiety sum 899 against replay 886
+seed0-social-d0.75-traceon.jsonl: tick 14: satiety sum 883 against replay 882
+seed0-social-d0.75-traceon.jsonl: run record M09 died_at None against replay 9
+seed0-social-d1.50-traceoff.jsonl: tick 4: health sum 1171 against replay 1200
+seed0-social-d1.50-traceoff.jsonl: tick 4: health min 71 against replay 100
+seed0-social-d1.50-traceoff.jsonl: tick 7: health sum 1119 against replay 1145
+seed0-social-d1.50-traceoff.jsonl: tick 7: health min 45 against replay 71
+seed0-social-d1.50-traceoff.jsonl: tick 8: health sum 1094 against replay 1119
+seed0-social-d1.50-traceoff.jsonl: tick 8: health min 20 against replay 45
+seed0-social-d1.50-traceoff.jsonl: run record M08 died_at None against replay 9
+seed0-social-d1.50-traceon.jsonl: tick 4: health sum 1171 against replay 1200
+seed0-social-d1.50-traceon.jsonl: tick 4: health min 71 against replay 100
+seed0-social-d1.50-traceon.jsonl: tick 7: health sum 1119 against replay 1145
+seed0-social-d1.50-traceon.jsonl: tick 7: health min 45 against replay 71
+seed0-social-d1.50-traceon.jsonl: tick 8: health sum 1094 against replay 1119
+seed0-social-d1.50-traceon.jsonl: tick 8: health min 20 against replay 45
+seed0-social-d1.50-traceon.jsonl: run record M08 died_at None against replay 9
+seed1-social-d0.15-traceoff.jsonl: tick 9: satiety sum 1055 against replay 1046
+seed1-social-d0.15-traceoff.jsonl: tick 10: satiety sum 1022 against replay 1021
+seed1-social-d0.15-traceoff.jsonl: tick 11: satiety sum 1000 against replay 999
+seed1-social-d0.15-traceoff.jsonl: tick 221: health sum 437 against replay 460
+seed1-social-d0.15-traceoff.jsonl: run record M07 died_at None against replay 132
+seed1-social-d0.15-traceon.jsonl: tick 9: satiety sum 1055 against replay 1046
+seed1-social-d0.15-traceon.jsonl: tick 10: satiety sum 1022 against replay 1021
+seed1-social-d0.15-traceon.jsonl: tick 11: satiety sum 1000 against replay 999
+seed1-social-d0.15-traceon.jsonl: tick 221: health sum 437 against replay 460
+seed1-social-d0.15-traceon.jsonl: run record M07 died_at None against replay 132
+seed1-social-d0.75-traceoff.jsonl: tick 4: health sum 1171 against replay 1200
+seed1-social-d0.75-traceoff.jsonl: tick 4: health min 71 against replay 100
+seed1-social-d0.75-traceoff.jsonl: tick 7: health sum 1090 against replay 1145
+seed1-social-d0.75-traceoff.jsonl: tick 7: health min 45 against replay 71
+seed1-social-d0.75-traceoff.jsonl: tick 8: health sum 1037 against replay 1090
+seed1-social-d0.75-traceoff.jsonl: tick 8: health min 20 against replay 45
+seed1-social-d0.75-traceoff.jsonl: tick 9: health sum 989 against replay 1017
+seed1-social-d0.75-traceoff.jsonl: tick 9: health min 15 against replay 43
+seed1-social-d0.75-traceoff.jsonl: tick 647: satiety sum 780 against replay 736
+seed1-social-d0.75-traceoff.jsonl: tick 658: health sum 929 against replay 952
+seed1-social-d0.75-traceoff.jsonl: tick 659: health sum 907 against replay 929
+seed1-social-d0.75-traceoff.jsonl: tick 659: health min 55 against replay 74
+seed1-social-d0.75-traceoff.jsonl: tick 829: satiety sum 641 against replay 627
+seed1-social-d0.75-traceoff.jsonl: tick 830: satiety sum 616 against replay 615
+seed1-social-d0.75-traceoff.jsonl: run record M03 died_at None against replay 10
+seed1-social-d0.75-traceoff.jsonl: run record M08 died_at None against replay 9
+seed1-social-d0.75-traceon.jsonl: tick 4: health sum 1171 against replay 1200
+seed1-social-d0.75-traceon.jsonl: tick 4: health min 71 against replay 100
+seed1-social-d0.75-traceon.jsonl: tick 7: health sum 1090 against replay 1145
+seed1-social-d0.75-traceon.jsonl: tick 7: health min 45 against replay 71
+seed1-social-d0.75-traceon.jsonl: tick 8: health sum 1037 against replay 1090
+seed1-social-d0.75-traceon.jsonl: tick 8: health min 20 against replay 45
+seed1-social-d0.75-traceon.jsonl: tick 9: health sum 989 against replay 1017
+seed1-social-d0.75-traceon.jsonl: tick 9: health min 15 against replay 43
+seed1-social-d0.75-traceon.jsonl: tick 647: satiety sum 780 against replay 736
+seed1-social-d0.75-traceon.jsonl: tick 658: health sum 929 against replay 952
+seed1-social-d0.75-traceon.jsonl: tick 659: health sum 907 against replay 929
+seed1-social-d0.75-traceon.jsonl: tick 659: health min 55 against replay 74
+seed1-social-d0.75-traceon.jsonl: tick 829: satiety sum 641 against replay 627
+seed1-social-d0.75-traceon.jsonl: tick 830: satiety sum 616 against replay 615
+seed1-social-d0.75-traceon.jsonl: run record M03 died_at None against replay 10
+seed1-social-d0.75-traceon.jsonl: run record M08 died_at None against replay 9
+seed1-social-d1.50-traceoff.jsonl: tick 4: health sum 1171 against replay 1200
+seed1-social-d1.50-traceoff.jsonl: tick 4: health min 71 against replay 100
+seed1-social-d1.50-traceoff.jsonl: tick 7: health sum 1090 against replay 1116
+seed1-social-d1.50-traceoff.jsonl: tick 7: health min 45 against replay 71
+seed1-social-d1.50-traceoff.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed1-social-d1.50-traceoff.jsonl: tick 8: health sum 1037 against replay 1062
+seed1-social-d1.50-traceoff.jsonl: tick 8: health min 20 against replay 43
+seed1-social-d1.50-traceoff.jsonl: tick 8: satiety sum 1003 against replay 1002
+seed1-social-d1.50-traceoff.jsonl: tick 9: satiety sum 900 against replay 890
+seed1-social-d1.50-traceoff.jsonl: tick 10: satiety sum 859 against replay 858
+seed1-social-d1.50-traceoff.jsonl: run record M01 died_at None against replay 9
+seed1-social-d1.50-traceoff.jsonl: run record M10 died_at None against replay 10
+seed1-social-d1.50-traceon.jsonl: tick 4: health sum 1171 against replay 1200
+seed1-social-d1.50-traceon.jsonl: tick 4: health min 71 against replay 100
+seed1-social-d1.50-traceon.jsonl: tick 7: health sum 1090 against replay 1116
+seed1-social-d1.50-traceon.jsonl: tick 7: health min 45 against replay 71
+seed1-social-d1.50-traceon.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed1-social-d1.50-traceon.jsonl: tick 8: health sum 1037 against replay 1062
+seed1-social-d1.50-traceon.jsonl: tick 8: health min 20 against replay 43
+seed1-social-d1.50-traceon.jsonl: tick 8: satiety sum 1003 against replay 1002
+seed1-social-d1.50-traceon.jsonl: tick 9: satiety sum 900 against replay 890
+seed1-social-d1.50-traceon.jsonl: tick 10: satiety sum 859 against replay 858
+seed1-social-d1.50-traceon.jsonl: run record M01 died_at None against replay 9
+seed1-social-d1.50-traceon.jsonl: run record M10 died_at None against replay 10
+seed123-social-d0.15-traceoff.jsonl: tick 7: health sum 1171 against replay 1200
+seed123-social-d0.15-traceoff.jsonl: tick 7: health min 71 against replay 100
+seed123-social-d0.15-traceoff.jsonl: tick 8: health sum 1143 against replay 1171
+seed123-social-d0.15-traceoff.jsonl: tick 8: health min 43 against replay 71
+seed123-social-d0.15-traceoff.jsonl: tick 9: health sum 1115 against replay 1143
+seed123-social-d0.15-traceoff.jsonl: tick 9: health min 15 against replay 43
+seed123-social-d0.15-traceoff.jsonl: run record M08 died_at None against replay 10
+seed123-social-d0.15-traceon.jsonl: tick 7: health sum 1171 against replay 1200
+seed123-social-d0.15-traceon.jsonl: tick 7: health min 71 against replay 100
+seed123-social-d0.15-traceon.jsonl: tick 8: health sum 1143 against replay 1171
+seed123-social-d0.15-traceon.jsonl: tick 8: health min 43 against replay 71
+seed123-social-d0.15-traceon.jsonl: tick 9: health sum 1115 against replay 1143
+seed123-social-d0.15-traceon.jsonl: tick 9: health min 15 against replay 43
+seed123-social-d0.15-traceon.jsonl: run record M08 died_at None against replay 10
+seed123-social-d0.75-traceoff.jsonl: tick 1: health sum 1170 against replay 1200
+seed123-social-d0.75-traceoff.jsonl: tick 1: health min 70 against replay 100
+seed123-social-d0.75-traceoff.jsonl: tick 2: health sum 1089 against replay 1144
+seed123-social-d0.75-traceoff.jsonl: tick 2: health min 44 against replay 70
+seed123-social-d0.75-traceoff.jsonl: tick 3: health sum 991 against replay 1040
+seed123-social-d0.75-traceoff.jsonl: tick 3: health min 21 against replay 44
+seed123-social-d0.75-traceoff.jsonl: tick 5: health sum 893 against replay 919
+seed123-social-d0.75-traceoff.jsonl: tick 6: health sum 849 against replay 872
+seed123-social-d0.75-traceoff.jsonl: tick 6: health min 22 against replay 31
+seed123-social-d0.75-traceoff.jsonl: tick 7: satiety sum 896 against replay 889
+seed123-social-d0.75-traceoff.jsonl: tick 8: health sum 747 against replay 776
+seed123-social-d0.75-traceoff.jsonl: tick 8: satiety sum 864 against replay 863
+seed123-social-d0.75-traceoff.jsonl: tick 9: health sum 699 against replay 727
+seed123-social-d0.75-traceoff.jsonl: tick 10: health sum 671 against replay 699
+seed123-social-d0.75-traceoff.jsonl: tick 10: health min 15 against replay 31
+seed123-social-d0.75-traceoff.jsonl: run record M06 died_at None against replay 9
+seed123-social-d0.75-traceoff.jsonl: run record M08 died_at None against replay 7
+seed123-social-d0.75-traceoff.jsonl: run record M10 died_at None against replay 6
+seed123-social-d0.75-traceon.jsonl: tick 1: health sum 1170 against replay 1200
+seed123-social-d0.75-traceon.jsonl: tick 1: health min 70 against replay 100
+seed123-social-d0.75-traceon.jsonl: tick 2: health sum 1089 against replay 1144
+seed123-social-d0.75-traceon.jsonl: tick 2: health min 44 against replay 70
+seed123-social-d0.75-traceon.jsonl: tick 3: health sum 991 against replay 1040
+seed123-social-d0.75-traceon.jsonl: tick 3: health min 21 against replay 44
+seed123-social-d0.75-traceon.jsonl: tick 5: health sum 893 against replay 919
+seed123-social-d0.75-traceon.jsonl: tick 6: health sum 849 against replay 872
+seed123-social-d0.75-traceon.jsonl: tick 6: health min 22 against replay 31
+seed123-social-d0.75-traceon.jsonl: tick 7: satiety sum 896 against replay 889
+seed123-social-d0.75-traceon.jsonl: tick 8: health sum 747 against replay 776
+seed123-social-d0.75-traceon.jsonl: tick 8: satiety sum 864 against replay 863
+seed123-social-d0.75-traceon.jsonl: tick 9: health sum 699 against replay 727
+seed123-social-d0.75-traceon.jsonl: tick 10: health sum 671 against replay 699
+seed123-social-d0.75-traceon.jsonl: tick 10: health min 15 against replay 31
+seed123-social-d0.75-traceon.jsonl: run record M06 died_at None against replay 9
+seed123-social-d0.75-traceon.jsonl: run record M08 died_at None against replay 7
+seed123-social-d0.75-traceon.jsonl: run record M10 died_at None against replay 6
+seed123-social-d1.50-traceoff.jsonl: tick 2: health sum 1144 against replay 1171
+seed123-social-d1.50-traceoff.jsonl: tick 3: health sum 1095 against replay 1118
+seed123-social-d1.50-traceoff.jsonl: tick 6: health sum 1052 against replay 1072
+seed123-social-d1.50-traceoff.jsonl: tick 7: health sum 1032 against replay 1052
+seed123-social-d1.50-traceoff.jsonl: tick 7: health min 10 against replay 22
+seed123-social-d1.50-traceoff.jsonl: tick 8: health sum 993 against replay 1022
+seed123-social-d1.50-traceoff.jsonl: tick 9: health sum 965 against replay 993
+seed123-social-d1.50-traceoff.jsonl: tick 10: health sum 890 against replay 936
+seed123-social-d1.50-traceoff.jsonl: tick 10: health min 15 against replay 22
+seed123-social-d1.50-traceoff.jsonl: tick 10: satiety sum 903 against replay 893
+seed123-social-d1.50-traceoff.jsonl: run record M09 died_at None against replay 8
+seed123-social-d1.50-traceon.jsonl: tick 2: health sum 1144 against replay 1171
+seed123-social-d1.50-traceon.jsonl: tick 3: health sum 1095 against replay 1118
+seed123-social-d1.50-traceon.jsonl: tick 6: health sum 1052 against replay 1072
+seed123-social-d1.50-traceon.jsonl: tick 7: health sum 1032 against replay 1052
+seed123-social-d1.50-traceon.jsonl: tick 7: health min 10 against replay 22
+seed123-social-d1.50-traceon.jsonl: tick 8: health sum 993 against replay 1022
+seed123-social-d1.50-traceon.jsonl: tick 9: health sum 965 against replay 993
+seed123-social-d1.50-traceon.jsonl: tick 10: health sum 890 against replay 936
+seed123-social-d1.50-traceon.jsonl: tick 10: health min 15 against replay 22
+seed123-social-d1.50-traceon.jsonl: tick 10: satiety sum 903 against replay 893
+seed123-social-d1.50-traceon.jsonl: run record M09 died_at None against replay 8
+seed42-social-d0.15-traceoff.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed42-social-d0.15-traceoff.jsonl: tick 8: satiety sum 966 against replay 949
+seed42-social-d0.15-traceoff.jsonl: tick 9: satiety sum 900 against replay 897
+seed42-social-d0.15-traceoff.jsonl: tick 10: satiety sum 859 against replay 857
+seed42-social-d0.15-traceoff.jsonl: tick 149: health sum 677 against replay 700
+seed42-social-d0.15-traceoff.jsonl: tick 149: health min 77 against replay 100
+seed42-social-d0.15-traceoff.jsonl: tick 150: health sum 654 against replay 677
+seed42-social-d0.15-traceoff.jsonl: tick 150: health min 54 against replay 77
+seed42-social-d0.15-traceoff.jsonl: run record M11 died_at None against replay 10
+seed42-social-d0.15-traceon.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed42-social-d0.15-traceon.jsonl: tick 8: satiety sum 966 against replay 949
+seed42-social-d0.15-traceon.jsonl: tick 9: satiety sum 900 against replay 897
+seed42-social-d0.15-traceon.jsonl: tick 10: satiety sum 859 against replay 857
+seed42-social-d0.15-traceon.jsonl: tick 149: health sum 677 against replay 700
+seed42-social-d0.15-traceon.jsonl: tick 149: health min 77 against replay 100
+seed42-social-d0.15-traceon.jsonl: tick 150: health sum 654 against replay 677
+seed42-social-d0.15-traceon.jsonl: tick 150: health min 54 against replay 77
+seed42-social-d0.15-traceon.jsonl: run record M11 died_at None against replay 10
+seed42-social-d0.75-traceoff.jsonl: tick 2: health sum 1144 against replay 1171
+seed42-social-d0.75-traceoff.jsonl: tick 3: health sum 1095 against replay 1118
+seed42-social-d0.75-traceoff.jsonl: tick 5: health sum 1017 against replay 1043
+seed42-social-d0.75-traceoff.jsonl: tick 6: health sum 997 against replay 1017
+seed42-social-d0.75-traceoff.jsonl: tick 7: health sum 951 against replay 971
+seed42-social-d0.75-traceoff.jsonl: tick 7: health min 10 against replay 22
+seed42-social-d0.75-traceoff.jsonl: tick 7: satiety sum 1035 against replay 1028
+seed42-social-d0.75-traceoff.jsonl: tick 8: satiety sum 957 against replay 956
+seed42-social-d0.75-traceoff.jsonl: tick 10: health sum 867 against replay 896
+seed42-social-d0.75-traceoff.jsonl: tick 438: health sum 747 against replay 767
+seed42-social-d0.75-traceoff.jsonl: tick 439: health sum 728 against replay 747
+seed42-social-d0.75-traceoff.jsonl: tick 825: satiety sum 617 against replay 596
+seed42-social-d0.75-traceoff.jsonl: run record M07 died_at None against replay 8
+seed42-social-d0.75-traceoff.jsonl: run record M11 died_at None against replay 9
+seed42-social-d0.75-traceon.jsonl: tick 2: health sum 1144 against replay 1171
+seed42-social-d0.75-traceon.jsonl: tick 3: health sum 1095 against replay 1118
+seed42-social-d0.75-traceon.jsonl: tick 5: health sum 1017 against replay 1043
+seed42-social-d0.75-traceon.jsonl: tick 6: health sum 997 against replay 1017
+seed42-social-d0.75-traceon.jsonl: tick 7: health sum 951 against replay 971
+seed42-social-d0.75-traceon.jsonl: tick 7: health min 10 against replay 22
+seed42-social-d0.75-traceon.jsonl: tick 7: satiety sum 1035 against replay 1028
+seed42-social-d0.75-traceon.jsonl: tick 8: satiety sum 957 against replay 956
+seed42-social-d0.75-traceon.jsonl: tick 10: health sum 867 against replay 896
+seed42-social-d0.75-traceon.jsonl: tick 438: health sum 747 against replay 767
+seed42-social-d0.75-traceon.jsonl: tick 439: health sum 728 against replay 747
+seed42-social-d0.75-traceon.jsonl: tick 825: satiety sum 617 against replay 596
+seed42-social-d0.75-traceon.jsonl: run record M07 died_at None against replay 8
+seed42-social-d0.75-traceon.jsonl: run record M11 died_at None against replay 9
+seed42-social-d1.50-traceoff.jsonl: tick 5: health sum 1171 against replay 1200
+seed42-social-d1.50-traceoff.jsonl: tick 5: health min 71 against replay 100
+seed42-social-d1.50-traceoff.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed42-social-d1.50-traceoff.jsonl: tick 8: satiety sum 1042 against replay 1041
+seed42-social-d1.50-traceoff.jsonl: tick 9: health sum 1066 against replay 1095
+seed42-social-d1.50-traceoff.jsonl: tick 9: satiety sum 1020 against replay 1019
+seed42-social-d1.50-traceoff.jsonl: tick 10: health sum 1014 against replay 1042
+seed42-social-d1.50-traceoff.jsonl: tick 10: health min 43 against replay 71
+seed42-social-d1.50-traceoff.jsonl: run record M04 died_at None against replay 10
+seed42-social-d1.50-traceon.jsonl: tick 5: health sum 1171 against replay 1200
+seed42-social-d1.50-traceon.jsonl: tick 5: health min 71 against replay 100
+seed42-social-d1.50-traceon.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed42-social-d1.50-traceon.jsonl: tick 8: satiety sum 1042 against replay 1041
+seed42-social-d1.50-traceon.jsonl: tick 9: health sum 1066 against replay 1095
+seed42-social-d1.50-traceon.jsonl: tick 9: satiety sum 1020 against replay 1019
+seed42-social-d1.50-traceon.jsonl: tick 10: health sum 1014 against replay 1042
+seed42-social-d1.50-traceon.jsonl: tick 10: health min 43 against replay 71
+seed42-social-d1.50-traceon.jsonl: run record M04 died_at None against replay 10
+seed777-social-d0.15-traceoff.jsonl: tick 3: health sum 1116 against replay 1171
+seed777-social-d0.15-traceoff.jsonl: tick 6: health sum 1015 against replay 1064
+seed777-social-d0.15-traceoff.jsonl: tick 7: health sum 968 against replay 1015
+seed777-social-d0.15-traceoff.jsonl: tick 7: health min 20 against replay 45
+seed777-social-d0.15-traceoff.jsonl: tick 8: health sum 897 against replay 948
+seed777-social-d0.15-traceoff.jsonl: tick 8: health min 7 against replay 29
+seed777-social-d0.15-traceoff.jsonl: tick 9: health sum 862 against replay 890
+seed777-social-d0.15-traceoff.jsonl: tick 9: health min 43 against replay 45
+seed777-social-d0.15-traceoff.jsonl: tick 10: health sum 834 against replay 862
+seed777-social-d0.15-traceoff.jsonl: tick 10: health min 15 against replay 43
+seed777-social-d0.15-traceoff.jsonl: run record M01 died_at None against replay 8
+seed777-social-d0.15-traceoff.jsonl: run record M09 died_at None against replay 9
+seed777-social-d0.15-traceon.jsonl: tick 3: health sum 1116 against replay 1171
+seed777-social-d0.15-traceon.jsonl: tick 6: health sum 1015 against replay 1064
+seed777-social-d0.15-traceon.jsonl: tick 7: health sum 968 against replay 1015
+seed777-social-d0.15-traceon.jsonl: tick 7: health min 20 against replay 45
+seed777-social-d0.15-traceon.jsonl: tick 8: health sum 897 against replay 948
+seed777-social-d0.15-traceon.jsonl: tick 8: health min 7 against replay 29
+seed777-social-d0.15-traceon.jsonl: tick 9: health sum 862 against replay 890
+seed777-social-d0.15-traceon.jsonl: tick 9: health min 43 against replay 45
+seed777-social-d0.15-traceon.jsonl: tick 10: health sum 834 against replay 862
+seed777-social-d0.15-traceon.jsonl: tick 10: health min 15 against replay 43
+seed777-social-d0.15-traceon.jsonl: run record M01 died_at None against replay 8
+seed777-social-d0.15-traceon.jsonl: run record M09 died_at None against replay 9
+seed777-social-d0.75-traceoff.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed777-social-d0.75-traceoff.jsonl: tick 8: satiety sum 1042 against replay 1041
+seed777-social-d0.75-traceoff.jsonl: tick 9: satiety sum 1020 against replay 1019
+seed777-social-d0.75-traceoff.jsonl: tick 74: satiety sum 895 against replay 881
+seed777-social-d0.75-traceoff.jsonl: tick 75: satiety sum 868 against replay 867
+seed777-social-d0.75-traceoff.jsonl: tick 443: health sum 1024 against replay 1042
+seed777-social-d0.75-traceoff.jsonl: tick 444: health sum 1007 against replay 1024
+seed777-social-d0.75-traceoff.jsonl: run record M12 died_at None against replay 10
+seed777-social-d0.75-traceon.jsonl: tick 7: satiety sum 1076 against replay 1069
+seed777-social-d0.75-traceon.jsonl: tick 8: satiety sum 1042 against replay 1041
+seed777-social-d0.75-traceon.jsonl: tick 9: satiety sum 1020 against replay 1019
+seed777-social-d0.75-traceon.jsonl: tick 74: satiety sum 895 against replay 881
+seed777-social-d0.75-traceon.jsonl: tick 75: satiety sum 868 against replay 867
+seed777-social-d0.75-traceon.jsonl: tick 443: health sum 1024 against replay 1042
+seed777-social-d0.75-traceon.jsonl: tick 444: health sum 1007 against replay 1024
+seed777-social-d0.75-traceon.jsonl: run record M12 died_at None against replay 10
+seed777-social-d1.50-traceoff.jsonl: tick 7: health sum 1090 against replay 1142
+seed777-social-d1.50-traceoff.jsonl: tick 8: health sum 1040 against replay 1090
+seed777-social-d1.50-traceoff.jsonl: tick 8: health min 49 against replay 71
+seed777-social-d1.50-traceoff.jsonl: tick 9: health sum 990 against replay 1040
+seed777-social-d1.50-traceoff.jsonl: tick 9: health min 24 against replay 49
+seed777-social-d1.50-traceoff.jsonl: tick 385: satiety sum 737 against replay 717
+seed777-social-d1.50-traceoff.jsonl: tick 929: health sum 895 against replay 918
+seed777-social-d1.50-traceoff.jsonl: run record M02 died_at None against replay 10
+seed777-social-d1.50-traceoff.jsonl: run record M07 died_at None against replay 10
+seed777-social-d1.50-traceon.jsonl: tick 7: health sum 1090 against replay 1142
+seed777-social-d1.50-traceon.jsonl: tick 8: health sum 1040 against replay 1090
+seed777-social-d1.50-traceon.jsonl: tick 8: health min 49 against replay 71
+seed777-social-d1.50-traceon.jsonl: tick 9: health sum 990 against replay 1040
+seed777-social-d1.50-traceon.jsonl: tick 9: health min 24 against replay 49
+seed777-social-d1.50-traceon.jsonl: tick 385: satiety sum 737 against replay 717
+seed777-social-d1.50-traceon.jsonl: tick 929: health sum 895 against replay 918
+seed777-social-d1.50-traceon.jsonl: run record M02 died_at None against replay 10
+seed777-social-d1.50-traceon.jsonl: run record M07 died_at None against replay 10
+
+# ---- full text of the replay consumer, retained as VER-MOK-012 requires ----
+
+"""VER-MOK-012 oracle 6: replay the event records and reconcile them against the metrics records.
+
+Usage, from the repository root:
+
+    python docs/engineering/simulation/evidence/WO-MOK-019/analysis/replay.py \
+        <capture-dir> <output-file>
+
+This is a consumer written for verification. It reads a run's event records, rebuilds the world those
+events describe, and compares its reconstruction against the metrics records and the run record of the
+same stream.
+
+## Why this is an oracle and not a restatement
+
+The two figures reach the record by different code paths. The events come from transitions as they are
+applied; the metrics come from authoritative state read at the tick boundary. A disagreement means one of
+them is wrong, and this script does not presume which. The run record's cumulative counters are the case
+that matters most, because a counter has no other witness in the stream: nothing else in the engine reads
+one, so a counter incremented in the wrong branch would be invisible to every other check in the
+contract.
+
+## Where every rule in this script comes from
+
+The reconstruction is written from `SPEC-MOK-001` and not from the engine's source. Each rule is cited at
+the point it is applied, so a reviewer can check the derivation rather than trust it:
+
+- *Resource density*: a territory holds `128 * 64 = 8192` cells and its resource count is
+  `hundredths * 8192 / 10000` under integer division truncating toward zero. That count binds three roles
+  at once -- the initial level, the capacity, and the level regeneration replenishes toward -- so this
+  script derives `capacity` from the header's density string rather than reading it from the metrics
+  record it is checking.
+- Rule 8, **move**: crossing `y=63/64` updates the derived territory and emits a crossing event.
+- Rule 9, **eat**: a valid eat removes one co-located resource.
+- Rule 12, **survival decay and fear**: after the action opportunity every living Mokiterion's attributes
+  are updated once per tick, and the result is emitted in the `survival_changed` line. That line's `to`
+  values are therefore the end-of-tick attributes, which is what a tick-boundary metrics record reports.
+- Rule 13, **death**: when health becomes zero the Mokiterion is dead and receives no later observation,
+  decision, action, trace or survival update. This script asserts that consequence rather than assuming
+  it: an event for a Mokiterion after its death tick is a finding.
+- Rules 14 to 16, **regeneration**: on ticks divisible by ten each territory receives one opportunity. A
+  territory holding at least one resource and fewer than capacity adds two, or fewer when fewer free
+  slots remain. A territory at zero adds none and reports a skip; a territory at capacity adds none and
+  reports a skip. This script **predicts** each opportunity's outcome from its own reconstructed standing
+  count and compares the prediction against the events, so the regeneration rule is checked and not
+  merely tallied.
+- Rule 18, **final summary**: the termination reason, ticks, survivors, deaths, population by territory
+  and remaining food by territory and class are stated once, which is what the run record must agree with.
+
+The consumption events carry the resource's class but not its territory, so the territory of every
+resource is tracked from where it entered the world: `food_initialized` states it in the result,
+`food_regenerated` carries it as the event's subject. That mapping is this script's own bookkeeping and
+is the one place it holds state the stream does not restate.
+
+`SPEC-MOK-006` rule 7's field names are used to read the metrics record. Nothing else about the engine is
+assumed.
+"""
+
+import io
+import json
+import os
+import sys
+
+CELLS_PER_TERRITORY = 128 * 64
+TERRITORIES = ('A', 'B')
+CLASSES = ('low', 'medium', 'high')
+POPULATION = 12
+
+
+def capacity_from_density(density):
+    """*Resource density*: `hundredths * 8192 / 10000`, truncating toward zero.
+
+    The density reaches the header as a string with exactly two decimal places, which is an exact count
+    of hundredths of a percent. It is read as an integer count of hundredths and never as a float,
+    because the specification forbids floating-point arithmetic anywhere in this conversion.
+    """
+    whole, _, fraction = density.partition('.')
+    hundredths = int(whole) * 100 + int(fraction)
+    return hundredths * CELLS_PER_TERRITORY // 10000
+
+
+class Replay:
+    """One run's world, rebuilt from its event records."""
+
+    def __init__(self, header, name):
+        self.name = name
+        self.findings = []
+        self.capacity = capacity_from_density(header['config']['density'])
+        self.tick = 0
+
+        # Resources: where each one is, and how many stand per territory per class.
+        self.food_place = {}
+        self.standing = {t: {c: 0 for c in CLASSES} for t in TERRITORIES}
+
+        # Mokiterions: where each one is, whether it lives, and its end-of-tick attributes.
+        self.territory_of = {}
+        self.died_at = {}
+        self.attributes = {}
+
+        # Cumulative counters, rebuilt from the events so the run record has something to disagree
+        # with. Each is counted here and nowhere else in this script.
+        self.crossings = 0
+        self.consumed = {c: 0 for c in CLASSES}
+        self.regenerated = 0
+        self.skipped = {'depleted': 0, 'capacity': 0}
+
+        # Regeneration events seen so far this tick, per territory, for the rule 15 prediction.
+        #
+        # `pre_opportunity` is the standing count at the moment the opportunity arose, which is *not*
+        # the count at the tick's start: rule 14 places regeneration after all scheduled agents are
+        # processed, so a resource eaten during the tick has already left the territory and freed a
+        # capacity slot. It is snapshotted lazily, at the tick's first regeneration or skip event for
+        # that territory, because rule 14 also guarantees no consumption can fall between a
+        # territory's opportunity and the events that report it.
+        self.added_this_tick = {t: 0 for t in TERRITORIES}
+        self.skips_this_tick = {}
+        self.pre_opportunity = {}
+
+        self.ticks_reconciled = 0
+
+    def note(self, message):
+        self.findings.append(f'{self.name}: {message}')
+
+    def total_standing(self, territory):
+        return sum(self.standing[territory].values())
+
+    # ---- events ---------------------------------------------------------------------------------
+
+    def event(self, record):
+        tick, subject, kind, result = (
+            record['tick'],
+            record['subject'],
+            record['event'],
+            record['result'],
+        )
+
+        if tick != self.tick:
+            self.open_tick(tick)
+
+        # Rule 13's consequence, asserted rather than assumed.
+        if subject in self.died_at and tick > self.died_at[subject]:
+            self.note(
+                f'tick {tick}: {subject} has a {kind} event after dying at tick '
+                f'{self.died_at[subject]}'
+            )
+
+        if kind == 'food_initialized':
+            self.food_place[subject] = (result['territory'], result['class'])
+            self.standing[result['territory']][result['class']] += 1
+        elif kind == 'food_consumed':
+            self.consume(tick, result)
+        elif kind == 'food_regenerated':
+            # Rule 16: the subject is the territory the resource was added to.
+            self.open_opportunity(subject)
+            self.food_place[result['food']] = (subject, result['class'])
+            self.standing[subject][result['class']] += 1
+            self.regenerated += 1
+            self.added_this_tick[subject] += 1
+        elif kind == 'food_regeneration_skipped':
+            self.open_opportunity(subject)
+            self.skipped[result['reason']] += 1
+            self.skips_this_tick[subject] = result
+        elif kind == 'agent_initialized':
+            self.territory_of[subject] = result['territory']
+            self.attributes[subject] = {
+                key: result[key] for key in ('health', 'satiety', 'energy', 'fear')
+            }
+        elif kind == 'territory_crossed':
+            # Rule 8: the crossing is the territory change, and the counter counts these events.
+            if self.territory_of.get(subject) != result['from']:
+                self.note(
+                    f'tick {tick}: {subject} crossed from {result["from"]} but stood in '
+                    f'{self.territory_of.get(subject)}'
+                )
+            self.territory_of[subject] = result['to']
+            self.crossings += 1
+        elif kind == 'survival_changed':
+            # Rule 12: the `to` values are this tick's end-of-tick attributes.
+            self.attributes[subject] = {key: result[key]['to'] for key in result}
+        elif kind == 'agent_died':
+            self.died_at[subject] = tick
+            if result['health'] != 0:
+                self.note(f'tick {tick}: {subject} died at health {result["health"]}')
+
+    def consume(self, tick, result):
+        """Rule 9: the resource is removed. Its territory is where it entered the world."""
+        food = result['food']
+        placed = self.food_place.pop(food, None)
+        if placed is None:
+            self.note(f'tick {tick}: {food} was consumed but never entered the world')
+            return
+        territory, cls = placed
+        if cls != result['class']:
+            self.note(f'tick {tick}: {food} entered as {cls} and was consumed as {result["class"]}')
+        self.standing[territory][cls] -= 1
+        self.consumed[result['class']] += 1
+
+    # ---- tick boundaries ------------------------------------------------------------------------
+
+    def open_tick(self, tick):
+        self.tick = tick
+        self.added_this_tick = {t: 0 for t in TERRITORIES}
+        self.skips_this_tick = {}
+        self.pre_opportunity = {}
+
+    def open_opportunity(self, territory):
+        """The standing count as the territory's regeneration opportunity found it."""
+        if territory not in self.pre_opportunity:
+            self.pre_opportunity[territory] = self.total_standing(territory)
+
+    def living(self):
+        return [name for name in self.territory_of if name not in self.died_at]
+
+    def metrics(self, record):
+        """One metrics record, against the world the events rebuilt."""
+        tick = record['tick']
+        if tick != self.tick:
+            # No event fell on this tick, so no `open_tick` ran for it.
+            self.open_tick(tick)
+        self.ticks_reconciled += 1
+        living = self.living()
+
+        if record['living'] != len(living):
+            self.note(f'tick {tick}: living {record["living"]} against replay {len(living)}')
+        if record['deaths'] != len(self.died_at):
+            self.note(f'tick {tick}: deaths {record["deaths"]} against replay {len(self.died_at)}')
+
+        for territory in TERRITORIES:
+            standing = record['territories'][territory]
+            replayed = self.total_standing(territory)
+            if standing['standing'] != replayed:
+                self.note(
+                    f'tick {tick}: {territory} standing {standing["standing"]} against replay '
+                    f'{replayed}'
+                )
+            for cls in CLASSES:
+                if standing[cls] != self.standing[territory][cls]:
+                    self.note(
+                        f'tick {tick}: {territory} {cls} {standing[cls]} against replay '
+                        f'{self.standing[territory][cls]}'
+                    )
+            # Capacity is derived from the density by *Resource density*, not read from the record.
+            if standing['capacity'] != self.capacity:
+                self.note(
+                    f'tick {tick}: {territory} capacity {standing["capacity"]} against the density\'s '
+                    f'{self.capacity}'
+                )
+            # A territory at zero adds none for the rest of the run under rule 15, so being at zero
+            # and being permanently depleted are the same state.
+            if standing['depleted'] != (replayed == 0):
+                self.note(
+                    f'tick {tick}: {territory} depleted {standing["depleted"]} at standing {replayed}'
+                )
+
+            # Rule 7's population is stated per territory at the top of the record, beside `living`,
+            # rather than inside the territory's resource object.
+            population = sum(1 for name in living if self.territory_of[name] == territory)
+            if record['population'][territory] != population:
+                self.note(
+                    f'tick {tick}: {territory} population {record["population"][territory]} against '
+                    f'replay {population}'
+                )
+
+        self.check_attributes(tick, record, living)
+        self.check_regeneration(tick)
+
+    def check_attributes(self, tick, record, living):
+        """Rule 12's end-of-tick attributes, summed and extremised over the living population."""
+        for attribute, bound in (
+            ('health', 'min'),
+            ('satiety', 'min'),
+            ('energy', 'min'),
+            ('fear', 'max'),
+        ):
+            values = [self.attributes[name][attribute] for name in living]
+            stated = record[attribute]
+            if stated['sum'] != sum(values):
+                self.note(
+                    f'tick {tick}: {attribute} sum {stated["sum"]} against replay {sum(values)}'
+                )
+            expected = (min(values) if bound == 'min' else max(values)) if values else None
+            if stated[bound] != expected:
+                self.note(
+                    f'tick {tick}: {attribute} {bound} {stated[bound]!r} against replay {expected!r}'
+                )
+
+    def check_regeneration(self, tick):
+        """Rules 14 to 16, predicted from the standing count this replay held at the tick's start."""
+        opportunity = tick > 0 and tick % 10 == 0
+        for territory in TERRITORIES:
+            added = self.added_this_tick[territory]
+            skip = self.skips_this_tick.get(territory)
+            if not opportunity:
+                if added or skip:
+                    self.note(
+                        f'tick {tick}: {territory} regenerated on a tick with no opportunity '
+                        f'(added {added}, skip {skip})'
+                    )
+                continue
+
+            standing = self.pre_opportunity.get(territory)
+            if standing is None:
+                # Rule 15 gives every opportunity an outcome and every outcome an event: an addition,
+                # or a skip naming its reason. Silence is a finding.
+                self.note(
+                    f'tick {tick}: {territory} had a regeneration opportunity and reported neither an '
+                    f'addition nor a skip'
+                )
+                continue
+
+            if standing == 0:
+                expected, reason = 0, 'depleted'
+            elif standing >= self.capacity:
+                expected, reason = 0, 'capacity'
+            else:
+                expected, reason = min(2, self.capacity - standing), None
+
+            if added != expected:
+                self.note(
+                    f'tick {tick}: {territory} added {added} at standing {standing} of capacity '
+                    f'{self.capacity}, where rule 15 gives {expected}'
+                )
+            if reason is None:
+                if skip is not None:
+                    self.note(f'tick {tick}: {territory} reported a skip at standing {standing}')
+            elif skip is None:
+                self.note(
+                    f'tick {tick}: {territory} reported no skip at standing {standing}, where rule '
+                    f'15 gives {reason}'
+                )
+            else:
+                if skip['reason'] != reason:
+                    self.note(
+                        f'tick {tick}: {territory} skipped for {skip["reason"]} at standing '
+                        f'{standing}, where rule 15 gives {reason}'
+                    )
+                if skip['count'] != standing:
+                    self.note(
+                        f'tick {tick}: {territory} skip reported count {skip["count"]} against '
+                        f'replay {standing}'
+                    )
+
+    # ---- the run record -------------------------------------------------------------------------
+
+    def run(self, record):
+        """Rule 18's summary and `SPEC-MOK-006` rule 8.6's counters, against the event counts."""
+        living = self.living()
+
+        for field, replayed in (
+            ('survivors', len(living)),
+            ('deaths', len(self.died_at)),
+            ('crossings', self.crossings),
+            ('regenerated', self.regenerated),
+        ):
+            if record[field] != replayed:
+                self.note(f'run record {field} {record[field]} against replay {replayed}')
+
+        for cls in CLASSES:
+            if record['consumed'][cls] != self.consumed[cls]:
+                self.note(
+                    f'run record consumed {cls} {record["consumed"][cls]} against replay '
+                    f'{self.consumed[cls]}'
+                )
+        for reason, count in self.skipped.items():
+            if record['regeneration_skipped'][reason] != count:
+                self.note(
+                    f'run record regeneration_skipped {reason} '
+                    f'{record["regeneration_skipped"][reason]} against replay {count}'
+                )
+
+        for territory in TERRITORIES:
+            final = record['final']['territories'][territory]
+            population = sum(1 for name in living if self.territory_of[name] == territory)
+            if final['population'] != population:
+                self.note(
+                    f'run record final {territory} population {final["population"]} against replay '
+                    f'{population}'
+                )
+            for cls in CLASSES:
+                if final[cls] != self.standing[territory][cls]:
+                    self.note(
+                        f'run record final {territory} {cls} {final[cls]} against replay '
+                        f'{self.standing[territory][cls]}'
+                    )
+
+        # Rule 8.4's roster, against the deaths the events reported.
+        agents = record['agents']
+        if [agent['id'] for agent in agents] != sorted(agent['id'] for agent in agents):
+            self.note('run record roster is not in ascending identifier order')
+        if len(agents) != POPULATION:
+            self.note(f'run record names {len(agents)} Mokiterions, not {POPULATION}')
+        for agent in agents:
+            expected = self.died_at.get(agent['id'])
+            if agent['died_at'] != expected:
+                self.note(
+                    f'run record {agent["id"]} died_at {agent["died_at"]!r} against replay '
+                    f'{expected!r}'
+                )
+            if agent['territory'] != self.territory_of.get(agent['id']):
+                self.note(
+                    f'run record {agent["id"]} territory {agent["territory"]} against replay '
+                    f'{self.territory_of.get(agent["id"])}'
+                )
+
+
+def replay(path):
+    """One record stream, reconciled. Returns the replay."""
+    name = os.path.basename(path)
+    state = None
+    with io.open(path, 'r', encoding='utf-8', newline='') as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            kind = record['record']
+            if kind == 'header':
+                state = Replay(record, name)
+            elif kind == 'event':
+                state.event(record)
+            elif kind == 'metrics':
+                state.metrics(record)
+            elif kind == 'run':
+                state.run(record)
+    return state
+
+
+def main():
+    capture_dir, output_file = sys.argv[1:3]
+    streams = sorted(name for name in os.listdir(capture_dir) if name.endswith('.jsonl'))
+    if not streams:
+        print(f'no record stream in {capture_dir}', file=sys.stderr)
+        return 1
+
+    source = io.open(__file__, 'r', encoding='utf-8').read()
+
+    rows = []
+    findings = []
+    for stream in streams:
+        state = replay(os.path.join(capture_dir, stream))
+        rows.append((stream, state.ticks_reconciled, len(state.findings)))
+        findings.extend(state.findings)
+
+    total = sum(ticks for _, ticks, _ in rows)
+    lines = [
+        '# VER-MOK-012 oracle 6: the metrics and run records reconciled against an event replay',
+        '#',
+        f'# capture directory: {capture_dir}',
+        '# command: python docs/engineering/simulation/evidence/WO-MOK-019/analysis/replay.py '
+        '<capture-dir> <output-file>',
+        '#',
+        '# The replay rebuilds the world from the event records using SPEC-MOK-001\'s rules and',
+        '# compares it against the metrics record at every tick and the run record at the end. The two',
+        '# figures reach the stream by different code paths -- events from transitions as applied,',
+        '# metrics from authoritative state read at the tick boundary -- so a disagreement means one of',
+        '# them is wrong and this oracle does not presume which.',
+        '#',
+        '# Reconciled per tick: living, deaths, population per territory, standing per class per',
+        '# territory, capacity against the density, permanent depletion, and the sum and extremum of',
+        '# each of the four attributes. Reconciled per regeneration opportunity: rule 15\'s outcome',
+        '# predicted from the replay\'s own standing count. Reconciled per run: every cumulative',
+        '# counter against its event count, the final territory figures, and the twelve-Mokiterion',
+        '# roster with each died_at against the tick of its agent_died event.',
+        '',
+    ]
+    for stream, ticks, count in rows:
+        verdict = 'reconciled' if count == 0 else f'{count} FINDINGS'
+        lines.append(f'{stream:<41} {ticks:>5} ticks  {verdict}')
+
+    lines.append('')
+    lines.append(f'# {len(streams)} streams, {total} tick boundaries reconciled, {len(findings)} findings')
+    lines.append(f'# result: {"FAIL" if findings else "PASS"}')
+    if findings:
+        lines.append('')
+        lines.append('# findings')
+        lines.extend(findings[:500])
+        if len(findings) > 500:
+            lines.append(f'# ... and {len(findings) - 500} more')
+    lines.append('')
+    lines.append('# ---- full text of the replay consumer, retained as VER-MOK-012 requires ----')
+    lines.append('')
+    lines.extend(source.split('\n'))
+
+    with io.open(output_file, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(lines) + '\n')
+
+    print(
+        f'{len(streams)} streams, {total} tick boundaries reconciled, {len(findings)} findings'
+    )
+    return 1 if findings else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+

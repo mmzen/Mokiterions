@@ -1,0 +1,45 @@
+=== C:/Users/mathi/mcap-sink ===
+cells 90, distinct event kinds 12, record types event, header, metrics, run
+
+  event kind                    cells   records
+  action_trace                     45    284409
+  agent_died                       76       652
+  agent_initialized                90      1080
+  decision_source_selected         90        90
+  food_consumed                    74     17676
+  food_initialized                 90     11700
+  food_regenerated                 74     16264
+  food_regeneration_skipped        90      2450
+  simulation_ended                 90        90
+  survival_changed                 90    568818
+  territory_crossed                76      1838
+  world_initialized                90        90
+
+  attack_resolved        in 0 of 90 cells
+  threat_resolved        in 0 of 90 cells
+  surrender_resolved     in 0 of 90 cells
+
+=== C:/Users/mathi/msoc-sink ===
+cells 30, distinct event kinds 15, record types event, header, metrics, run
+
+  event kind                    cells   records
+  action_trace                     15    118201
+  agent_died                       30       156
+  agent_initialized                30       360
+  attack_resolved                  30       312
+  decision_source_selected         30        30
+  food_consumed                    30      8460
+  food_initialized                 30      3900
+  food_regenerated                 30      8060
+  food_regeneration_skipped        30       858
+  simulation_ended                 30        30
+  surrender_resolved               30       190
+  survival_changed                 30    236402
+  territory_crossed                30       668
+  threat_resolved                  30      1240
+  world_initialized                30        30
+
+  attack_resolved        in 30 of 30 cells
+  threat_resolved        in 30 of 30 cells
+  surrender_resolved     in 30 of 30 cells
+

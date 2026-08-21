@@ -36,7 +36,8 @@ Added and verified under `VREC-MOK-002` (commit `68163ac`), completing Phase 1:
 - A deterministic reference decision source (eat → sustain → approach → search), selectable by `--policy`
 - A measured population viability floor of eight of twelve survivors at 1,000 ticks on five declared seeds
 
-Added under `WO-MOK-010` (implemented, **not verified** — see Phase 2's status below):
+Added under `WO-MOK-010` (implemented and verified under `VREC-MOK-010` at commit `1a937a1` — see Phase 2's
+status below for the one matrix row that record leaves unsatisfied):
 
 - One behavioral trait per Mokiterion, `waste_tolerance` in `0..=40`, derived from the seed and the identifier by a
   generator of its own and fixed for the run
@@ -46,7 +47,8 @@ Added under `WO-MOK-010` (implemented, **not verified** — see Phase 2's status
   proposal-identical to rule 5 at tolerance zero
 - A fourth roster gauge in the observer
 
-Added under `WO-MOK-011` (implemented, **not verified** — see Phase 2.5's status below):
+Added under `WO-MOK-011` (implemented and verified under `VREC-MOK-011` at commit `9ddcf83` — see Phase 2.5's
+status below for the manual assessment that record accepts unperformed):
 
 - A name per Mokiterion, one of twelve the specification fixes, assigned by identifier number and reported once on
   `agent_initialized` ahead of every other field
@@ -84,8 +86,24 @@ Added under `WO-MOK-017` (implemented, **not verified** — see Phase 3's status
   re-measured rather than argued: `REQ-MOK-014`'s eight and `REQ-MOK-034`'s eight are met on every declared
   seed, with no margin on the worst of them, and `REQ-MOK-058`'s five is met by two
 
-Not yet implemented: per-agent entropy substreams, any second trait, LLM-backed decisions, structured
-observability.
+Added under `WO-MOK-019` (implemented and verified under `VREC-MOK-012` at commit `50364a3` — see Phase 4a's
+status below for what that record accepts rather than satisfies, and for the merge it does not cover):
+
+- A structured record stream, `SPEC-MOK-006`, written to a file named by `--events-path` and to nothing by default:
+  one record per line, four kinds — `header`, `event`, `metrics`, `run` — with every event record in one-to-one
+  correspondence with a line of the text stream, in the same order and carrying the same values
+- Per-tick world metrics the text stream never carried: living and dead counts, population per territory, the sums
+  and extremes of the four attributes, and standing food per territory by class against capacity
+- Seven cumulative counters and a per-Mokiterion death tick, retained by the engine, read only by the record
+  producer, and reported in the `run` record together with the summary line's twelve figures
+- The binary target owning every filesystem operation, the library owning none: it resolves the path, opens the
+  destination, and removes only a file it created itself when a run fails
+
+
+Not yet implemented: per-agent entropy substreams, any second trait, LLM-backed decisions, and anything that reads
+the record stream — no batch runner, no distribution across seeds, no outcome classification. `fear`, social and
+combat behavior and structured observability each appeared on this list until 2026-08-20 and are struck from it: the
+first three arrived under `WO-MOK-016` and the fourth under `WO-MOK-019`.
 
 Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
 restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
@@ -157,9 +175,14 @@ Phase 2  Individuality: traits and fear
    │
    ├──────────────┬───────────────┐
    ▼              ▼               │
-Phase 3        Phase 4            │   (3 and 4 are independent
-Conflict       Analytical         │    and may run in parallel)
-   │           observability      │
+Phase 3        Phase 4a           │   (3 and 4 are independent
+Conflict       Structured         │    and may run in parallel)
+   │           measurement        │
+   │              │               │
+   │              ▼               │
+   │           Phase 4b           │   (4b consumes 4a, and is
+   │           Distribution and   │    deferred until it does)
+   │           classification     │
    │              │               │
    └──────┬───────┘               │
           ▼                       │
@@ -518,10 +541,23 @@ it did: **no per-Mokiterion trait display** in the observer, and **no trait in t
 already narrowed to 2, and adding trait fields to further event types would have widened the record format for
 values that never change.
 
-**Status.** Implemented under `WO-MOK-010`, which is left at `in_progress`. **Not verified.**
-`VREC-MOK-010` is a `ready` candidate bound to commit `4f32a9f`; it takes no decision, states that
-`VER-MOK-010` is *not* satisfied at that commit, and should not be transitioned as it stands. Three things
-stand in the way of a verified record:
+**Status.** Implemented under `WO-MOK-010`, which is `implemented`, and **verified** under `VREC-MOK-010` at
+commit `1a937a1`, on `master`. The record was verified with **one matrix row unsatisfied** — the
+`VREC-MOK-005` gate, item 3 below — and says so about itself.
+
+> **What this section said while the record was a candidate, and what has since moved.** It read: *"Implemented
+> under `WO-MOK-010`, which is left at `in_progress`. **Not verified.** `VREC-MOK-010` is a `ready` candidate
+> bound to commit `4f32a9f`; it takes no decision, states that `VER-MOK-010` is *not* satisfied at that commit,
+> and should not be transitioned as it stands."* Two of the three obstacles below were then cleared and the
+> third was not. **Item 1 is discharged**: the repository owner recorded all seven of `VER-MOK-010`'s manual
+> assessments on 2026-08-19, and the record's own comparison table reads *7 of 7 recorded*. **Item 2 is
+> discharged**: four amendments were ratified by the technical owner on the same day, one was approved under a
+> stop condition and two needed none. **Item 3 stands**, which is why the record is verified with one
+> unsatisfied row rather than none. The bound commit also moved — `4f32a9f` and then `035a001` were retired and
+> the candidate was **re-captured** at `1a937a1` rather than corrected in place. The three items are left as
+> written because the reasoning in them is what the closing review answered.
+
+Three things stood in the way of a verified record:
 
 1. Five of `VER-MOK-010`'s seven manual assessments are outstanding and a sixth is unsigned.
 2. Two amendments written during implementation are unratified — a `SPEC-MOK-001` *Help output* correction and three
@@ -538,15 +574,18 @@ stand in the way of a verified record:
    Phase 1.5's status above, and it remains a disclosure any release record covering that chain inherits. What Phase 1.5
    still owes this gate is that one assessment, not the whole debt the gate was overridden against.
 
-**The record predates the merge with `master` and has not been re-captured against it.** `VREC-MOK-010` binds
-`4f32a9f`, which is not this branch's tip. Everything it says was true of the tree it names, and item 3 above is the
-part a reader would otherwise carry forward wrongly. Two of its figures are now measurements of code `master` has
-replaced: `WO-MOK-005`'s rule 5 amendment withdrew the layout tier table the oracle-4 frame capture enumerated its
-viewports from, so the roster is now presented at eight of nine declared viewports rather than four, and the workspace
-test census reconciles 169 → 190 where the merged tree runs 193. The bar arithmetic itself is unaffected, because the
-roster pane is 47 columns wide under both versions of rule 5. Re-capturing the record and re-deriving oracle 4 against
-the merged commit is outstanding work under `WO-MOK-010`, on the precedent `VREC-MOK-005` set when `master` moved
-under its own first candidate.
+**The record was re-captured against the merged tree, and the re-derivation this section demanded is discharged.**
+This paragraph previously read *"The record predates the merge with `master` and has not been re-captured against it"*,
+and named two figures as measurements of code `master` had replaced: the oracle-4 frame capture enumerated its
+viewports from the layout tier table that `WO-MOK-005`'s rule 5 amendment withdrew, and the test census reconciled
+169 → 190 where the merged tree ran 193. **Both were answered by re-measurement rather than by adjustment.**
+`VREC-MOK-010` was re-captured twice — `4f32a9f`, then `035a001`, then the verified candidate at `1a937a1`, each
+retirement stated rather than corrected in place — and oracle 4 was re-derived against the merged tree at **996 bar
+rows over the 85 of 157 probed frames that draw a roster, across all eight roster-drawing viewports**, where the
+retired capture had 864 rows over 134 frames at four. The record calls that re-derivation *discharged at this commit*
+and does not edit the amendment row that named it outstanding, because a row is never edited once written. The bar
+arithmetic was unaffected throughout, the roster pane being 47 columns wide under both versions of rule 5. What
+remains open under `WO-MOK-010` is item 3 above and nothing from this paragraph.
 
 Everything measured, and everything it does not establish, is in
 `engineering/simulation/evidence/WO-MOK-010` — start with its `../README.md`, then `completion-summary.md`.
@@ -591,16 +630,39 @@ all — not even a side-generator draw, which is what the trait costs — so eve
 decisions in the same order and the only difference in its output is the name at the front of twelve lines. That is
 checked across 90 recorded runs with the names projected back out, against the pre-change capture of the same 90.
 
-**Status.** Implemented under `WO-MOK-011`. **Not verified.** `VREC-MOK-011` exists as a `ready` candidate bound to the
-commit that carries the implementation; it takes no decision, and the implementation agent can neither make nor
-approve one. One of `VER-MOK-011`'s seven manual assessments — the fifth, on the projection — has no author, and the
-contract is not satisfied while it is outstanding. **This chain was renumbered from `010` to `011`** on the owner's
+**Status.** Implemented under `WO-MOK-011`, which is `implemented`, and **verified** under `VREC-MOK-011` at commit
+`9ddcf83`, on `master`.
+
+> **What this section said while the record was a candidate, and what the verification actually did with it.** It
+> read: *"**Not verified.** `VREC-MOK-011` exists as a `ready` candidate bound to the commit that carries the
+> implementation; it takes no decision, and the implementation agent can neither make nor approve one. One of
+> `VER-MOK-011`'s seven manual assessments — the fifth, on the projection — has no author, and the contract is not
+> satisfied while it is outstanding."* **The fifth assessment was never performed, and the record was verified
+> anyway** — accepted unperformed by the assurance owner, which is the second of the two paths the candidate itself
+> named. `manual-assessment.md` still reads `OUTSTANDING` and was not edited to suit the decision. So the sentence
+> above is not stale in its substance: the contract is still not satisfied on that clause, and what changed is that
+> an accountable owner decided on the record in that state and recorded what is accepted in its place. The
+> re-derivation against the merged tree is **partly done and still standing** as that record's own closing review
+> states.
+
+**This chain was renumbered from `010` to `011`** on the owner's
 decision, because `feature/phase-2-individuality` renumbered its own chain from 007 to 010 while this branch was
 unpushed and the two claims met as eighteen merge conflicts. `011` is free on every remote ref, no measurement
 changed, and `evidence/WO-MOK-011/renumbering.md` records what the rewrite touched and the one recorded digest it
 could not preserve. **A second thing is still owed, and it is not about this work's substance either**: the packet
 predates `master`'s release-ci work, so oracle 3's census, oracle 4's frames and `SPEC-MOK-004`'s counted rules are
-re-derived when this branch merges `master`. Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
+re-derived when this branch merges `master`.
+
+> **What the merge settled and what it left.** Re-measured on the merge rather than edited into agreement with it:
+> **oracle 3's census, oracle 5's two halves, `SPEC-MOK-004`'s three rules, `render.rs`'s item counts, the declared
+> gates and the harness state.** **Not re-derived: oracles 1 and 2, oracle 4's rendered buffers, and the mutation
+> control** — `evidence/WO-MOK-011/merge/README.md` records those three as owed, and the sentence above expected
+> oracle 4's frames among the settled ones, which they are not. A fourth item stands with them: one reading of stop
+> condition 1 on the inline tests, the merge having widened it from two call sites to six plus one expected string,
+> and the technical owner has not taken it. `VREC-MOK-011`'s `verified` status extends none of this — it binds
+> `9ddcf83` and says so.
+
+Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
 `SPEC-MOK-004` — are approved by the repository owner's act of 2026-08-19; the rows marked `OUTSTANDING` in those
 specifications from earlier work were untouched by this work and outstanding when it completed, and were subsequently
 ratified on 2026-08-20 under `WO-MOK-012`. Everything measured is in
@@ -713,7 +775,7 @@ before the code did.
 It requires outcome distributions across many seeds. **This phase is independent of Phase 3** — different
 modules, no shared dependency — so the two may proceed in parallel.
 
-**In scope**
+**In scope, as originally written**
 
 - Structured event stream (for example JSONL) alongside the existing text stream
 - World-level metrics: surviving population, population per territory, available food, consumption and
@@ -724,12 +786,82 @@ modules, no shared dependency — so the two may proceed in parallel.
 
 **Constraint.** Preserve the existing text output so `REQ-MOK-010` remains satisfied. Add, do not replace.
 
+**Split into 4a and 4b on 2026-08-20**, in `docs/PHASE_4_PROPOSAL.md` and authorized as drafted. The four items
+above are not one deliverable: the first two are a change to the engine, the last two are a consumer of that
+change, and the consumer's shape depends on a measurement the engine has to produce first. The split is between
+producing measurable output and consuming it.
+
 **Relationship to Phase 1.5.** Phase 1.5's terminal observer does not deliver any part of this phase, and this
 phase does not make it redundant. Phase 1.5 answers *what is happening in this run*; this phase answers *what
 happens across many runs*. Phase 1.5's event export is a per-run record in the existing text format, deliberately
 not a structured stream, so the structured output this phase adds is still new work. If Phase 1.5's snapshot
 contract turns out to be the natural source for structured output, that is a convenience to exploit rather than a
 dependency to rely on.
+
+### Phase 4a — Structured measurement in the engine
+
+**Status: implemented under `WO-MOK-019` and verified under `VREC-MOK-012` at commit `50364a3`. Not merged and not
+released.** The artifact packet — `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`,
+`ADR-MOK-005`, `WO-MOK-019` and `VER-MOK-012` — was drafted, reviewed and validated by the owner on 2026-08-20, and
+the whole chain was implemented, evidenced, verified and closed the same day in seven commits, one act each.
+
+`VER-MOK-012`'s seven oracles are executed and passing, its eight manual assessments are recorded, and its evidence is
+retained as a 56-file packet. **The three conditions this section set for completeness are met.** What the record
+accepts rather than satisfies is stated in it and is not smoothed over here:
+
+- **Two *Evidence retention* bullets are met by substitution rather than as written** — post-change standard output is
+  held as digests, and four full sink streams are retained where the bullet asks for thirty. Nothing was re-captured
+  and nothing deleted, so the contract is answered in substance and unsatisfied on those two bullets literally.
+- **Nine defects measured in six approved artifacts are deferred, not corrected**, to a Phase 4b correction work order
+  **that does not exist yet**. One of them — `SPEC-MOK-006` rule 3.2's direction domain — is why oracle 5's size
+  assertion compares the engine against itself for one domain of thirteen; the measured residual is 0 diagonal
+  direction words in any of the seven retained streams.
+- **Three carried-forward `OUTSTANDING` amendment rows stand untouched**, none of them this chain's to pay.
+
+**Not merged.** `50364a3` is on `feature/phase-4a-definition` and is not yet an ancestor of `master`; pull request #31
+is open, out of draft and green. By the precedent of `VREC-MOK-009` through `VREC-MOK-011` — one record per work
+order, each binding a branch commit that became an ancestor of `master` through its merge — the merge does not call
+for a second record. **Not released**: no release record binds this work, and `WO-MOK-008`, the release-authorization
+chain, is unrelated and still `draft`.
+
+**What was built**
+
+- One record per line, four kinds, each self-describing through a leading `record` field: `header` once at the top
+  with the resolved configuration and a schema version, `event` for every text event line, `metrics` at the end of
+  every completed tick, `run` once at the bottom
+- The event projection placed at the single point every authoritative event already passes through, so the
+  one-to-one correspondence with the text stream is structural rather than maintained by discipline
+- Per-tick metrics that answer the roadmap's list without interpreting it, and the run-level totals that a reader
+  would otherwise have had to derive by re-implementing the rules: crossings, consumption by class, regeneration,
+  regenerations skipped and why, and each Mokiterion's death tick
+- `--events-path`, and the destination's whole lifetime owned by the binary target: the library resolves no path,
+  opens no file and removes none, which keeps the engine's prohibition on interpreting input as a path true of the
+  library rather than merely observed by it
+
+**What was deliberately not built**
+
+| Considered | Decided | Why |
+|---|---|---|
+| A JSON library | **Hand-written writers, no dependency** | `ARCH-MOK-001` keeps the engine's dependency table empty and the owner declined to open it for this. The closed value alphabet is what makes that safe: no value can contain a quotation mark or a backslash, so there is nothing to escape |
+| Any floating-point figure | **Integers only, sums rather than averages** | An average is a float, a float's text form is platform-sensitive, and the whole value of the stream is that two files can be compared byte for byte. A consumer that wants a mean has the sum and the count |
+| An outcome label of any kind | **Prohibited, not deferred** | This was named in `WO-MOK-019` as the most tempting scope creep in the work. A file that labels its own numbers hands everyone downstream somebody else's opinion, and Phase 6's evaluation is where a classification is argued on evidence |
+| A timestamp or a duration | **Neither, anywhere** | The same seed and build must produce an identical file on any machine on any day, so that a diff between two runs is a statement about the simulation |
+| A reader, a schema file or an example analysis script | **None, in this phase** | 4a produces; 4b consumes. A consumer written here would be written before the measurement that decides 4b's shape |
+
+### Phase 4b — Distribution and classification
+
+**Deferred, and cheaper once 4a exists.** Multi-seed batch execution, run persistence across runs, distribution
+across seeds, and outcome classification stated as a table over 4a's `run` records.
+
+**What it needs before it can be specified honestly**, and what 4a produces toward it: a measured answer to whether
+a batch loop needs to be a program at all. If a shell loop over the existing binary plus a script under `scripts/`
+— where the Python instruments and their tests already live — produces the distribution evidence Phase 6 needs,
+then 4b is a runbook and a verification contract, and `ARCH-MOK-001`'s third-package prohibition is never touched.
+If it does not, the third package is argued on that finding. Deciding it now would be deciding it without the
+measurement.
+
+Phase 4a is independent of Phase 3 and does not block it. If Phase 3 lands first, its events join the projection
+for free and its metrics arrive as `schema: 2`.
 
 ---
 
@@ -805,7 +937,8 @@ means to the same risk reduction.
 | 1.5 | `ARCH-MOK-001` amended in place to scope its one-crate, empty-dependency and UI-framework rules to the engine package; new intent, capability, nine requirements, specification, architecture and ADR added; `ADR-MOK-001` not superseded; `SPEC-MOK-001` unchanged |
 | 2 | New intent, capability and four requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `ARCH-MOK-001` confirmed unchanged; no existing requirement changed; observation contract extended. Broader than this row anticipated: the trait had to be stated in `SPEC-MOK-001`, the new tests' tiers in `SPEC-MOK-002`, and the fourth gauge in `SPEC-MOK-003` |
 | 3 | `REQ-MOK-005` amended in place rather than superseded; new intent, capability and ten requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `REQ-MOK-034` amended because a fourth source must not be read as extending the floor it freezes; `ARCH-MOK-001` confirmed unchanged. Broader than this row anticipated in the same way Phase 2 was: the carried floors had to be re-measured, `REQ-MOK-057`'s branch order and engagement threshold had to be amended after the first measurement, and `REQ-MOK-060`'s numeric ceiling took the second amendment it was deferred to — made under `WO-MOK-017` on 2026-08-21, after the requirement was descoped out of `WO-MOK-016` |
-| 4 | `REQ-MOK-010` preserved, extended additively |
+| 4a | New intent, capability and five requirements added; new specification `SPEC-MOK-006` and new `ADR-MOK-005`; `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amended in place; `REQ-MOK-010` preserved and extended additively — not one byte of the text stream changed; no existing requirement changed. Broader than this row anticipated by one artifact: **`SPEC-MOK-004` rule 11 was amended too**, beyond `ADR-MOK-005`'s approved list, because rule 11 obliges a work order that changes the test census to correct the recorded figures — 212 → 246 in the workspace, 85 → 119 in the engine. That row was approved separately by the technical owner on 2026-08-20 |
+| 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
 | 6 | New verification contract; no existing artifact changed |
 
@@ -817,7 +950,10 @@ Two decisions are cheaper to settle now than at the phase in which they bind:
    at 1,000 ticks under the reference source, recorded as `REQ-MOK-014` and measured on the seed set declared in
    `VER-MOK-002`. All twelve surviving on every declared seed is an adverse observation, not a success.
 2. **Determinism strategy for Phase 5.** Record/replay is recommended. This propagates into Phase 4's output
-   format, so deciding it before Phase 4 avoids rework.
+   format, so deciding it before Phase 4 avoids rework. *Still open after Phase 4a, and no longer urgent for this
+   reason:* 4a's stream is a complete, ordered, byte-reproducible record of everything the engine did, so it can
+   already be replayed against. Whether Phase 5 replays *this* stream or records provider exchanges separately is a
+   Phase 5 decision that 4a does not foreclose either way.
 
 A third was settled during Phase 2 rather than before it, and is recorded here because the phase order did not
 anticipate it:

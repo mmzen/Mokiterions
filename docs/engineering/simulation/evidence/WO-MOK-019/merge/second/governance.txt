@@ -1,0 +1,184 @@
+VER-MOK-012 — the governance graph across the second merge
+==========================================================
+
+Trees measured, all four with se-harness 0.4.0 from C:\Users\mathi\harness-venv-040:
+
+    base     fa065cc27aa250bd93c586b0c61da789dab49e33   the merge base, and master's tip at the
+                                                        first merge
+    master   7f4792a                                    second parent, master's tip, "Merge pull
+                                                        request #37 from mmzen/feature/
+                                                        observer-fear-and-filter-count"
+    branch   efe20e3                                    first parent, this chain renumbered from
+                                                        WO-MOK-018 to WO-MOK-019
+    merge    e96648a                                    the merge commit itself
+
+`gates.txt` records the commands and their exit codes. This file records what the merge does to
+the artifact graph. It exists for the reason `../governance.txt` gives for the first merge — a
+merge is the one operation that can lose a governed artifact without any file conflicting, and
+validation still passes on what remains — and for a second reason particular to this one: the
+merge that preceded it renumbered an identifier, and a renumbering that half-succeeded is a
+duplicate rather than an error.
+
+--------------------------------------------------------------------------
+### Artifacts and relations reconcile exactly, and the renumbering is what the sum proves
+
+    tree      artifacts   relations
+    base            131         473
+    master          134         485      +3 artifacts, +12 relations over the base
+    branch          143         511     +12 artifacts, +38 relations over the base
+    merge           146         523
+
+    131 + 3 + 12 = 146      473 + 12 + 38 = 523
+
+Both sums are exact, in both directions:
+
+    master + branch - base:  134 + 143 - 131 = 146     485 + 511 - 473 = 523
+
+Nothing was lost: had the resolution dropped one artifact the sum would be 145. Nothing arrived
+from outside either parent. And the relation count reconciling too means no declared edge was
+silently rewritten to a different target, which the artifact count alone would not catch.
+
+**145 is also what the sum would read had the renumbering not been applied, and that is the point
+of stating it.** `master`'s three new artifacts are `WO-MOK-018`, `VREC-MOK-017` and
+`VREC-MOK-018`. Its `WO-MOK-018` is a different work order from the one this chain carried under
+that identifier until `efe20e3`: *"Close the two observer defects Phase 3.1 left"* against *"Emit
+a structured record stream to an operator-named sink"*. Had the chain still been `WO-MOK-018`
+here, the two files would have collided — one add/add conflict resolved either way absorbs two
+work orders into one identifier, one evidence directory into one path, and the graph would count
+145 artifacts while both work orders' requirements, verification and records still declared edges
+into it. The graph would have validated. **This is the check no single-tree gate can make**: at
+`efe20e3` there is exactly one `WO-MOK-018` and at `7f4792a` there is exactly one, and `validate`
+reports 0 errors on each. The collision existed only in the union, and 146 is the measurement that
+it no longer does.
+
+--------------------------------------------------------------------------
+### Validation: PASS on all four trees
+
+    base      PASS   131 artifacts | Errors 0 | Warnings 0 | all four planes E0/W0
+    master    PASS   134 artifacts | Errors 0 | Warnings 0 | all four planes E0/W0
+    branch    PASS   143 artifacts | Errors 0 | Warnings 0 | all four planes E0/W0
+    merge     PASS   146 artifacts | Errors 0 | Warnings 0 | all four planes E0/W0
+
+--------------------------------------------------------------------------
+### The lifecycle queues: decision_required empties, and not by this merge
+
+    tree      decision_required        definition_pending              active   assurance
+    base      VREC-MOK-016 [ready]     WO-MOK-008, WO-MOK-017 [draft]  none     none
+    master    none                     WO-MOK-008, WO-MOK-017 [draft]  none     none
+    branch    VREC-MOK-016 [ready]     WO-MOK-008, WO-MOK-017 [draft]  none     none
+    merge     none                     WO-MOK-008, WO-MOK-017 [draft]  none     none
+
+The merge's four queues are `master`'s four queues.
+
+**`decision_required` is empty, and this merge did not empty it.** `VREC-MOK-016` sat in it as a
+`ready` candidate on the base and therefore on this branch, which inherited it at the first merge.
+`master` transitioned it to `superseded` at 2026-08-21T12:57:39Z on the assurance owner's
+authority, `superseded_by = ["VREC-MOK-017"]`, that successor verifying `WO-MOK-016` at `ecba9fe`;
+`master` then added `VREC-MOK-018`, verified for its own `WO-MOK-018`. The merge inherits both
+decisions. `../governance.txt`'s queue table measures trees that predate the supersession and
+stays as measured; this one is the current reading.
+
+    That distinction is worth keeping sharp, because an empty `decision_required` queue is the
+    kind of thing a reader credits to the tree in front of them. Nothing in this chain approved,
+    verified or superseded anything. Two assurance decisions were taken on `master` by their
+    owner and this merge carries them; the decision this chain still owes is its own, and it is
+    the one this queue cannot show, because `VREC-MOK-019` is not written.
+
+`WO-MOK-017` is `master`'s draft work order for the resource composition drift, unrelated to this
+chain. `WO-MOK-008` is the provenance-footer definition. Both were pending on every tree above and
+are untouched.
+
+`active_work` is empty on all four trees. `WO-MOK-019` is `implemented`, not `in_progress`, which
+is why review-phase preflight passes and start-phase preflight refuses.
+
+--------------------------------------------------------------------------
+### Findings: not additive, and W-HEX-001 is where the renumbering shows
+
+    tree      findings   error   warning   info
+    base            29       0        13     16
+    master          33       0        16     17
+    branch          32       0        15     17
+    merge           35       0        17     18
+
+Errors are zero everywhere. Findings do not reconcile the way artifacts and relations do, and
+should not: two of the three rules are relational staleness tests, so a finding can close because
+the other end of the relation moved. Rule by rule at the merge:
+
+    rule         master   branch   merge   union of the parents
+    W-HEX-001         6        6       7                      7
+    W-HEX-003         9        9      10                     10
+    I-REV-001        18       17      18                     18
+
+`W-HEX-001` — an implemented work order with no evidence document keyed to its ID — is the exact
+union of the parents, seven observations:
+
+    WO-MOK-010, WO-MOK-011, WO-MOK-012, WO-MOK-013, WO-MOK-016, WO-MOK-018, WO-MOK-019
+                                                                master's        this chain's
+
+**Both `018` and `019` appear, and that is the renumbering measured in the findings rather than in
+the counts.** Six on each parent, seven in the union: each parent fires on its own six, the two
+sets differ in exactly one member, and the merge fires on both. Had the identifiers still
+collided the merge would report six. It is a pre-existing packet-shape warning and not a claim
+that evidence is missing — every one of the seven has a retained evidence *directory*; what the
+rule looks for is a document keyed to the identifier.
+
+`I-REV-001` is informational and is the exact union at eighteen: `RLS-MOK-001` and `VREC-MOK-001`
+through `VREC-MOK-018`, less this chain's unmerged `VREC-MOK-012`'s absence from `master` and
+`master`'s `VREC-MOK-017` and `VREC-MOK-018`' absence from the branch, which is why the parents
+read 18 and 17 and the union 18.
+
+`W-HEX-003` — an artifact predating a newer artifact it declares a dependency on — reads 10, one
+more than either parent, and the arrival is the one this chain's own correction opens:
+
+    ARCH-MOK-002 predates newer declared conforms_to target SPEC-MOK-004 and may require
+    reassessment.
+
+It is the same finding `../governance.txt` reports at `e8114ad` and for the same cause: this
+chain's `SPEC-MOK-004` correction carries that document's `updated` date to 2026-08-21 while
+`ARCH-MOK-002` stays at 2026-08-20, so same-day becomes earlier-than. `master` does not fire it
+because `master`'s own 2026-08-21 amendments to `SPEC-MOK-004` are accompanied by no such date
+gap on its side. **It is not noise to be dismissed as a date artefact.** `ARCH-MOK-002` declares
+`conforms_to SPEC-MOK-004`, and what changed in `SPEC-MOK-004` here is substantive: rule 10's
+private-item figure, rule 11's three totals, and a new amendment row. The obligation the harness
+names — reassess `ARCH-MOK-002` against `SPEC-MOK-004` as amended — is owed to its owner and is
+owed whether or not the warning appeared. It is not discharged here and this packet does not touch
+`ARCH-MOK-002`.
+
+--------------------------------------------------------------------------
+### Managed-file integrity
+
+`doctor .` reports 81 lines, every one PASS, with every managed file `unchanged`: the five
+artifact templates, the six managed scripts, the explorer template, the configuration and the
+distribution stamp.
+
+That check earns its place here specifically. This merge resolves the observer's entire source
+directory in `master`'s favour, and `master`'s contribution also includes governance and workflow
+material; a merge of that shape is where a managed file is most likely to be resolved by hand and
+drift from the distribution it must match byte for byte. None did.
+
+--------------------------------------------------------------------------
+### The dashboard snapshot
+
+    tree      snapshot
+    merge     c4da6a5e5bd727bc087d117d0101446a526553cbe6c09f2199fe8c131101c4e9
+
+Warnings alongside it: 17, the same figure `inspect` reports, from the same graph.
+
+Generated with `--output` pointing outside the checkout, so this tree acquired no generated file
+to produce it. It is not the digest of a commit and no record binds it.
+
+Read it with the caveat `../governance.txt` states, which this merge makes sharper: the snapshot
+digest covers evidence *paths* that artifacts declare, not evidence *bytes*. Against `52652ca4…`
+at `e8114ad` it moves for three reasons at once and the digest separates none of them —
+`master`'s three new artifacts, this chain's renumbering of an evidence directory from
+`WO-MOK-018/` to `WO-MOK-019/`, and `HEAD` itself, which the digest covers. It will move again
+when `VREC-MOK-019` declares the paths in this directory, and that change is expected rather than
+a discrepancy.
+
+--------------------------------------------------------------------------
+### Authority
+
+Every command in this file is derived, read-only evidence, and each prints its own boundary.
+Validation does not approve. Inspection does not validate by exit status, approve, authorize,
+verify, release or remediate. Nothing here records a decision; `VREC-MOK-019`, at the merge
+commit, is where a decision is recorded, and it binds a commit.

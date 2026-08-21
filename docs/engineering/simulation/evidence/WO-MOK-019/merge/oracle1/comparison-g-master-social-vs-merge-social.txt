@@ -1,0 +1,42 @@
+# oracle 1, comparison G: the fourth policy on `master` against the fourth policy on the merge
+# left:  C:/Users/mathi/wt-master/docs/engineering/simulation/evidence/WO-MOK-016/post/social-manifest.txt
+# right: C:/Users/mathi/m-social-nosink-manifest.txt
+#
+# Compared columns: sha256(stdout), bytes, lines, exit code.
+# The left-hand manifest carries no standard-error column, so the right-hand one's two are
+# reported below rather than compared. No projection, no normalization, no tolerance.
+
+seed0-social-d0.15-traceoff        identical
+seed0-social-d0.15-traceon         identical
+seed0-social-d0.75-traceoff        identical
+seed0-social-d0.75-traceon         identical
+seed0-social-d1.50-traceoff        identical
+seed0-social-d1.50-traceon         identical
+seed1-social-d0.15-traceoff        identical
+seed1-social-d0.15-traceon         identical
+seed1-social-d0.75-traceoff        identical
+seed1-social-d0.75-traceon         identical
+seed1-social-d1.50-traceoff        identical
+seed1-social-d1.50-traceon         identical
+seed123-social-d0.15-traceoff      identical
+seed123-social-d0.15-traceon       identical
+seed123-social-d0.75-traceoff      identical
+seed123-social-d0.75-traceon       identical
+seed123-social-d1.50-traceoff      identical
+seed123-social-d1.50-traceon       identical
+seed42-social-d0.15-traceoff       identical
+seed42-social-d0.15-traceon        identical
+seed42-social-d0.75-traceoff       identical
+seed42-social-d0.75-traceon        identical
+seed42-social-d1.50-traceoff       identical
+seed42-social-d1.50-traceon        identical
+seed777-social-d0.15-traceoff      identical
+seed777-social-d0.15-traceon       identical
+seed777-social-d0.75-traceoff      identical
+seed777-social-d0.75-traceon       identical
+seed777-social-d1.50-traceoff      identical
+seed777-social-d1.50-traceon       identical
+
+# 30 cells compared, 0 differing
+# result: PASS
+# 30 of 30 right-hand cells wrote nothing to standard error, which the left-hand manifest does not record

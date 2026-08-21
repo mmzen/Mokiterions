@@ -1,0 +1,190 @@
+# VER-MOK-012: the deliberate perturbations, and the three oracles they were required to break
+#
+# work order: WO-MOK-019
+# commit:     bb4a21491eff321cbfd14ba3ea794e34535e3033 (working tree, WO-MOK-019 implementation)
+# date:       2026-08-20
+#
+# WO-MOK-019's *Obligations worth restating* names this the second of three: "Oracles 4, 5 and 6
+# must each be demonstrated to fail. A check that has never failed has not been shown to work,
+# and these three are the checks the whole contract's strength rests on."
+#
+# Each perturbation was applied to the working tree, the oracle was run, its failure was captured,
+# and the perturbation was reverted. Nothing here is in the shipped source: the reverted state is
+# the state the gates in gates.txt were run against, and `git diff` at the recorded commit shows
+# no perturbation surviving.
+#
+# The scenario numbers are VER-MOK-012's and the oracle numbers are the contract's, and they do
+# not line up. The mapping, stated once so that nothing below has to be read twice:
+#
+#   scenario 4  ->  oracle 4, the entropy state at every tick boundary   (a draw on the sink path)
+#   scenario 5  ->  oracle 6, the counter/event reconciliation           (a counter in the wrong
+#                                                                        branch)
+#   scenario 6  ->  oracle 5, the closed-domain alphabet and its size    (a thirteenth event type)
+#
+# Why a perturbation and not an argument. Each of these three oracles is the only check in the
+# contract that can see one class of defect, and each one passes cleanly on the shipped source.
+# A check that passes on correct code and has never been shown to fail on incorrect code is
+# indistinguishable from a check that passes unconditionally. So each was made to fail on the
+# smallest defect in its own class, and what the *other* oracles saw at the same time is recorded
+# too -- in scenario 5 that is the whole point, because every other oracle sees nothing at all.
+#
+# Cross-references below are to this directory: `entropy-per-tick.txt`, `alphabet.txt` and
+# `oracle6/reconciliation.txt` carry the unperturbed results for the same commands.
+
+============================================================================================================
+# VER-MOK-012 acceptance scenario 4: oracle 4 demonstrated able to fail
+#
+# "A check that cannot be made to fail has not been demonstrated to work." The record path was
+# perturbed to take exactly one entropy draw per emitted record, the entropy oracle was run,
+# and the perturbation was then reverted. The perturbation applied to Simulation::emit was:
+#
+#       writeln!(sinks.text, "{event}")?;
+#       if let Some(sink) = sinks.records() {
+#   +       let _ = self.entropy.next_u64();   // one draw, only when a sink is configured
+#           write_event_record(sink, &event).map_err(sink_error)?;
+#       }
+#
+# One draw on a path reachable only with a sink configured is precisely the defect
+# REQ-MOK-045 is written against, and precisely the defect oracle 1 cannot see: the text line
+# is written before the draw, so the run's own text is unchanged until the divergence works
+# its way through a decision. Oracle 4 does not wait for that. It fails at boundary 1 -- the
+# state immediately after initialization, before tick 1 begins -- because the initialization
+# events are themselves records and the draw has already been taken twelve times over.
+#
+# command: cargo test -p Mokiterions --lib -- --exact \
+#            simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary
+#
+# Reduced from the raw panic, which prints both 121-element state vectors in full:
+
+test simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary ... FAILED
+panicked at mokiterions-core\src\simulation.rs:5183:9:
+  assertion `left == right` failed: Baseline
+  vector lengths: 121 and 121
+  first differing boundary: index 1
+    without a sink: 0xde8261a4408ede26
+    with a sink:    0x4dc3927660d64d39
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 67 filtered out; finished in 0.03s
+
+# Line numbers are the perturbed build's, which is one line longer than the reverted source.
+#
+# Boundary 0 is the state after `Simulation::new` and before the initialization events are
+# emitted, and it is equal by construction: no sink exists yet at that point, so the perturbed
+# path is unreachable. Boundary 1 is the first boundary at which a draw taken on the record path
+# can show, and it shows. It is worth being exact about what boundary 0 is not: it is not the
+# seed. Placement draws are taken inside `Simulation::new`, so boundary 0 is already the seed
+# advanced some hundreds of times, and `entropy.txt` Part 4 recovers the count for every seed
+# and density. What boundary 0 and boundary 1 share -- equality with each other on the
+# unperturbed source -- is the separate fact that emitting the initialization events draws
+# nothing, because those events report placements that construction already made.
+#
+# The perturbation was reverted. The unperturbed result for the same command is in
+# entropy-per-tick.txt: 4388 boundary comparisons, every one equal.
+
+============================================================================================================
+# VER-MOK-012 acceptance scenario 5: oracle 6 demonstrated able to fail
+#
+# One cumulative counter's increment was moved into the wrong branch, oracle 6 was run, and the
+# perturbation was then reverted. The perturbation applied to the regeneration-skip path was:
+#
+#       let reason = if current_count == 0 { Depleted } else { Capacity };
+#       let event = Event::new(.., FoodRegenerationSkipped { reason, count: current_count });
+#   -   let reason_index = reason.index();
+#   +   let reason_index = 1 - reason.index();
+#       self.regeneration_skipped[reason_index] = .. .saturating_add(1);
+#
+# This is the defect VER-MOK-012 calls "the most likely defect in the whole change, because a
+# counter has no other witness". The emitted event still names the correct reason, so the text
+# stream, the event records and every metrics record are untouched. Only the run record's two
+# skip counters are wrong, and they are wrong by being each other.
+#
+# What the other oracles see:
+#
+#   command: ./target/debug/Mokiterions --seed 42 --ticks 1000 --policy reference \
+#              --density 0.75 --events-path <destination>
+#   exit code 0, standard error empty.
+#
+#   The standard output of the perturbed build, compared byte for byte against the retained
+#   unperturbed capture of the same configuration:
+#     IDENTICAL. Oracle 1 sees nothing, and could not: no text line states a counter.
+#
+#   Oracle 3 sees nothing either: the stream is still valid JSON with integer values only,
+#   every key a field the specification names. A swapped counter is well-formed.
+#
+#   Oracle 2 sees nothing: the run record still reconstructs the summary line, because rule
+#   8.3's twelve summary figures do not include a skip counter.
+#
+#   The two run records, side by side:
+#     perturbed    regeneration_skipped = {"depleted":17,"capacity":0}
+#     unperturbed  regeneration_skipped = {"depleted":0,"capacity":17}
+#
+# What oracle 6 sees:
+#
+#   command: python docs/engineering/simulation/evidence/WO-MOK-019/analysis/replay.py \
+#              <directory holding the perturbed stream> <output>
+
+# 1 streams, 1000 tick boundaries reconciled, 2 findings
+# result: FAIL
+# findings
+perturbed.jsonl: run record regeneration_skipped depleted 17 against replay 0
+perturbed.jsonl: run record regeneration_skipped capacity 0 against replay 17
+
+# The replay counted the skip events itself, by reason, from the event records. The counter and
+# the events it is supposed to count disagree, and oracle 6 is the only check in this contract
+# that compares them.
+#
+# The perturbation was reverted. The unperturbed result over the whole capture is in
+# oracle6/reconciliation.txt: 90 streams, 55768 tick boundaries, 0 findings.
+
+============================================================================================================
+# VER-MOK-012 acceptance scenario 6: oracle 5's size assertion demonstrated able to fail
+#
+# A hypothetical thirteenth event type was added to the engine without adding it to
+# SPEC-MOK-006 rule 3.2's enumeration, the alphabet oracle was run, and the change was then
+# reverted. The perturbation was:
+#
+#     enum EventType { .., ActionTrace,
+#   +     ThirteenthProbe,
+#     }
+#   - pub const ALL: [Self; 12] = [ .., Self::ActionTrace ];
+#   + pub const ALL: [Self; 13] = [ .., Self::ActionTrace, Self::ThirteenthProbe ];
+#     fn as_str(self) -> &'static str { match self {
+#   +     Self::ThirteenthProbe => "thirteenth_probe",
+#
+# Note what the perturbation had to do to get this far. The new member is *on* the alphabet:
+# "thirteenth_probe" is lowercase letters and an underscore, so a check that tested only the
+# characters would pass it. VER-MOK-012 requires the enumeration's *size* asserted against the
+# specification's for exactly this reason -- rule 3.3's totality argument is only as good as the
+# enumeration's completeness, so a domain gaining a member without the specification gaining a
+# row has to fail even when the new member is harmless.
+#
+# command: cargo test -p Mokiterions --lib -- --exact \
+#            simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet
+
+test simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet ... FAILED
+panicked at mokiterions-core\src\simulation.rs:5644:9:
+  assertion `left == right` failed
+  assertion `left == right` failed
+  left: 13
+  right: 12
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 67 filtered out; finished in 0.00s
+
+# left is the enumerated size, right is the size SPEC-MOK-006 states. Line numbers are the
+# perturbed build's, which is three lines longer than the reverted source.
+#
+# A second, independent check fails on the same perturbation, and it is worth recording because
+# nobody wrote it for this purpose:
+
+## cargo build --workspace
+     Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\mokiterions-20260820-075225-1684\mokiterions-tui)
+  error[E0004]: non-exhaustive patterns: `EventType::ThirteenthProbe` not covered
+      --> mokiterions-tui\src\authority.rs:20:16
+       |
+    20 |     Some(match event_type {
+
+# The observer matches exhaustively over EventType with no wildcard arm, so the workspace does
+# not compile. The event vocabulary cannot grow silently in either package: the engine's own
+# size assertion fails, and the only consumer in the workspace stops building.
+#
+# The perturbation was reverted. The unperturbed result for the same command is in
+# alphabet.txt: 13 domains, 306 members, none off the alphabet.
+

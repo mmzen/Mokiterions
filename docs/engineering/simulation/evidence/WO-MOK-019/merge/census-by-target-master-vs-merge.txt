@@ -1,0 +1,240 @@
+# VER-MOK-012: the test census, split by the binary that ran each test
+#
+# baseline log:  C:/Users/mathi/m-test-run-master.txt
+# candidate log: C:/Users/mathi/m-test-run.txt
+# command: python docs/engineering/simulation/evidence/WO-MOK-019/analysis/census-by-target.py \
+#              <baseline-test-log> <candidate-test-log> <output-file>
+#
+# The primary census, from WO-MOK-011/analysis/census.py reused unmodified, qualifies every
+# unit-test target as `unittests` and so collapses four targets into one. This pass qualifies
+# by the test binary instead. Both are reported so that the collapse is visible rather than
+# assumed harmless.
+
+  target                                                      before   after   delta
+  mokiterions  unittests src/lib.rs                               82      96     +14
+  Mokiterions  unittests src/main.rs                               0       0      +0
+  cli  tests/cli.rs                                               15      18      +3
+  decisions  tests/decisions.rs                                    3       3      +0
+  density  tests/density.rs                                        2       2      +0
+  naming  tests/naming.rs                                          3       3      +0
+  process  tests/process.rs                                        7       7      +0
+  termination  tests/termination.rs                                5       5      +0
+  viability  tests/viability.rs                                    5       5      +0
+  mokiterions_tui  unittests src/lib.rs                           33      33      +0
+  mokiterions_tui  unittests src/main.rs                           8       8      +0
+  authority  tests/authority.rs                                    4       4      +0
+  export  tests/export.rs                                          7       7      +0
+  layout  tests/layout.rs                                         11      11      +0
+  options  tests/options.rs                                        8       8      +0
+  render  tests/render.rs                                         22      22      +0
+  spatial  tests/spatial.rs                                        7       7      +0
+  state  tests/state.rs                                           21      21      +0
+  verification  tests/verification.rs                             21      21      +0
+  doc-tests mokiterions                                            0       0      +0
+  doc-tests mokiterions_tui                                        0       0      +0
+  records  tests/records.rs                                        0      17     +17
+  TOTAL                                                          264     298     +34
+
+# 34 addition(s), 0 removal(s) under this qualifier
+
+  + cli                the_binary_and_the_parser_spell_the_sink_option_the_same_way
+  + cli                the_sink_option_is_validated_and_its_value_is_not_retained
+  + cli                the_sink_option_states_what_it_writes_and_what_it_replaces
+  + mokiterions        simulation::tests::a_metrics_record_over_an_empty_living_population_reports_null_extrema
+  + mokiterions        simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary
+  + mokiterions        simulation::tests::a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written
+  + mokiterions        simulation::tests::a_record_sink_that_fails_mid_run_leaves_no_run_record
+  + mokiterions        simulation::tests::a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one
+  + mokiterions        simulation::tests::a_saturated_counter_neither_wraps_nor_panics
+  + mokiterions        simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet
+  + mokiterions        simulation::tests::every_cumulative_counter_equals_its_event_count_in_the_text_stream
+  + mokiterions        simulation::tests::every_event_kind_has_its_exact_record_shape
+  + mokiterions        simulation::tests::every_proposal_shape_is_the_action_word_and_the_one_value_it_carries
+  + mokiterions        simulation::tests::no_rule_reads_a_cumulative_counter
+  + mokiterions        simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone
+  + mokiterions        simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink
+  + mokiterions        simulation::tests::the_header_record_states_the_resolved_configuration_and_never_a_path
+  + records            a_destination_the_process_did_not_create_is_not_removed
+  + records            a_failed_run_removes_the_destination_it_created
+  + records            a_malformed_sink_argument_exits_two_and_writes_nothing
+  + records            a_sink_diagnostic_is_distinguishable_from_a_text_stream_diagnostic
+  + records            an_existing_destination_is_replaced_by_the_new_run
+  + records            an_unopenable_destination_exits_one_and_runs_no_tick
+  + records            every_cumulative_figure_equals_its_event_record_count
+  + records            every_key_in_the_stream_is_a_key_the_specification_names
+  + records            every_metrics_record_is_internally_consistent
+  + records            every_text_event_line_is_reconstructible_from_its_event_record
+  + records            help_opens_no_file
+  + records            no_record_carries_a_path_or_the_sinks_own_destination
+  + records            null_appears_only_where_a_fact_does_not_exist
+  + records            the_record_stream_is_byte_identical_across_runs
+  + records            the_run_record_reconstructs_the_summary_line
+  + records            the_stream_is_one_record_per_line_in_the_order_the_specification_fixes
+  + records            the_text_stream_is_byte_identical_with_and_without_a_sink
+
+# A rename would appear here as one addition and one removal. There is no removal, so no
+# baseline test was renamed, moved between targets, or deleted: every one of them is still
+# present under its own name in its own binary.
+
+# ---- full text of this script, retained as VER-MOK-012 requires ----
+
+"""VER-MOK-012: the test census split by the binary that ran it, and reconciled per target.
+
+Usage, from the repository root:
+
+    python docs/engineering/simulation/evidence/WO-MOK-019/analysis/census-by-target.py \
+        <baseline-test-log> <candidate-test-log> <output-file>
+
+## Why a second pass over the same two logs
+
+The census this packet retains is produced by `WO-MOK-011/analysis/census.py`, reused unmodified, so
+that the two packets' censuses are comparable line for line. That tool qualifies each test name by the
+first word after `Running`, which for a unit-test target is the literal word `unittests`. The
+workspace has four unit-test targets -- the engine's library and binary and the observer's library and
+binary -- so all four collapse into one qualifier, which is exactly the collision the tool's own
+docstring warns about. It is a pre-existing limitation and `WO-MOK-011`'s retained census has it too.
+
+This pass qualifies by the test binary Cargo names on the same line, which distinguishes all four, and
+reports:
+
+  * every target's test count before and after, with the delta;
+  * the additions and removals under that finer qualifier.
+
+If the finer pass agrees with the primary one on the additions and removals, the collapse changed
+nothing here, and that agreement is the point of running both. If it disagrees, a test moved between
+targets under one name and the primary census could not have seen it.
+
+The build hash in each binary's file name is dropped: it is a function of the compilation, not of the
+test, and comparing two trees would otherwise report every target as removed and re-added.
+"""
+
+import io
+import re
+import sys
+
+RUNNING = re.compile(r'^\s+(Running|Doc-tests)\s+(.*)$')
+RESULT = re.compile(r'^test result: \w+\. (\d+) passed')
+TEST = re.compile(r'^test (\S+) \.\.\. \w+')
+BINARY = re.compile(r'deps/([A-Za-z_]+)-[0-9a-f]+\.exe')
+
+
+def read(path):
+    """(per-target reported counts, per-target test names) for one `cargo test` log."""
+    label, counts, names = None, [], []
+    for line in io.open(path, encoding='utf-8', errors='replace'):
+        line = line.rstrip('\n')
+        running = RUNNING.match(line)
+        if running:
+            kind, text = running.group(1), running.group(2).replace('\\', '/')
+            binary = BINARY.search(text)
+            source = text.split(' (')[0]
+            if kind == 'Doc-tests':
+                label = f'doc-tests {source}'
+            else:
+                label = f'{binary.group(1)}  {source}' if binary else source
+            continue
+        test = TEST.match(line)
+        if test:
+            names.append((label, test.group(1)))
+            continue
+        result = RESULT.match(line)
+        if result:
+            counts.append((label, int(result.group(1))))
+    return counts, names
+
+
+def main():
+    baseline_log, candidate_log, output_file = sys.argv[1:4]
+    before, before_names = read(baseline_log)
+    after, after_names = read(candidate_log)
+
+    ordered, seen = [], set()
+    for label, _ in before + after:
+        if label not in seen:
+            seen.add(label)
+            ordered.append(label)
+    b, a = dict(before), dict(after)
+
+    added = sorted(set(after_names) - set(before_names))
+    removed = sorted(set(before_names) - set(after_names))
+
+    lines = [
+        '# VER-MOK-012: the test census, split by the binary that ran each test',
+        '#',
+        f'# baseline log:  {baseline_log}',
+        f'# candidate log: {candidate_log}',
+        '# command: python docs/engineering/simulation/evidence/WO-MOK-019/analysis/'
+        'census-by-target.py \\',
+        '#              <baseline-test-log> <candidate-test-log> <output-file>',
+        '#',
+        '# The primary census, from WO-MOK-011/analysis/census.py reused unmodified, qualifies every',
+        '# unit-test target as `unittests` and so collapses four targets into one. This pass qualifies',
+        '# by the test binary instead. Both are reported so that the collapse is visible rather than',
+        '# assumed harmless.',
+        '',
+        f'  {"target":<58} {"before":>7} {"after":>7} {"delta":>7}',
+    ]
+    for label in ordered:
+        lines.append(
+            f'  {label:<58} {b.get(label, 0):>7} {a.get(label, 0):>7} '
+            f'{a.get(label, 0) - b.get(label, 0):>+7}'
+        )
+    lines.append(
+        f'  {"TOTAL":<58} {sum(b.values()):>7} {sum(a.values()):>7} '
+        f'{sum(a.values()) - sum(b.values()):>+7}'
+    )
+    lines.append('')
+    lines.append(f'# {len(added)} addition(s), {len(removed)} removal(s) under this qualifier')
+    lines.append('')
+    for label, name in added:
+        lines.append(f'  + {label.split("  ")[0]:<18} {name}')
+    for label, name in removed:
+        lines.append(f'  - {label.split("  ")[0]:<18} {name}')
+    lines.append('')
+    # The no-removal sentence was written unconditionally when this script was first used, because
+    # the only comparison it had then been asked for had no removal. Comparing a merge against the
+    # parent whose renames it inherits does have removals, and the sentence was then a false claim
+    # printed by a verification instrument -- which is worse than a wrong figure in a document,
+    # because a reader has no reason to doubt it. It is a condition now, and the no-removal branch is
+    # word for word what it was, so every output taken before this correction reproduces byte for
+    # byte from the logs it was taken from.
+    if removed:
+        lines.append(
+            f'# A rename appears here as one addition and one removal, and this comparison has'
+        )
+        lines.append(
+            f'# {len(removed)} removal(s), named above. Each is a baseline test that is renamed,'
+        )
+        lines.append(
+            '# moved between targets, or deleted; which of the three it is does not follow from two'
+        )
+        lines.append(
+            '# logs and is not asserted here. Where a rename is the explanation, its new name is one'
+        )
+        lines.append('# of the additions above and the pair is a rename rather than a loss.')
+    else:
+        lines.append(
+            '# A rename would appear here as one addition and one removal. There is no removal, so no'
+        )
+        lines.append(
+            '# baseline test was renamed, moved between targets, or deleted: every one of them is still'
+        )
+        lines.append('# present under its own name in its own binary.')
+    lines.append('')
+    lines.append('# ---- full text of this script, retained as VER-MOK-012 requires ----')
+    lines.append('')
+    lines.extend(io.open(__file__, encoding='utf-8').read().split('\n'))
+
+    with io.open(output_file, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(lines) + '\n')
+
+    print(
+        f'{sum(b.values())} before, {sum(a.values())} after, {len(added)} added, '
+        f'{len(removed)} removed, over {len(ordered)} targets; written to {output_file}'
+    )
+    return 1 if removed else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+
