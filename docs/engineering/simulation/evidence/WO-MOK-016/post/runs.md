@@ -233,7 +233,7 @@ distribution and rules 23 and 24 at their boundaries.
 
 ## 7. What this file does not establish
 
-- It is not a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-012` will be the record,
+- It is not a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-016` will be the record,
   and neither is written by the implementation.
 - The encounter definition is this reader's, stated because the specification has none. A different
   maximal-run rule — pairs by tick rather than by moment, say — would move the 115 and the 8.94 without

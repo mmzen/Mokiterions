@@ -240,4 +240,4 @@ exists to force.
 What this does not settle: it is a static examination of one commit, it is manual, and it goes stale the
 moment a rule or a source moves. It establishes nothing about whether the reads are *correct* — only
 about what is read. And it is not a verification verdict: `VER-MOK-016` is the contract and
-`VREC-MOK-012` will be the record.
+`VREC-MOK-016` will be the record.

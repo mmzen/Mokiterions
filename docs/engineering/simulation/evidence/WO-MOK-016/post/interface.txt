@@ -562,7 +562,7 @@ enumeration in section 2 also holds at `13906153`, where the amended test log wa
 9. What this file does not establish
 -------------------------------------
 
-- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-012 the record.
+- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-016 the record.
 - The enumeration is of the engine's library target. The observer's public surface is not in it,
   and neither is the engine's binary target, which declares no item of its own.
 - Surface identity is not behavioural identity. `EventDetail::event_type` and the `Display`

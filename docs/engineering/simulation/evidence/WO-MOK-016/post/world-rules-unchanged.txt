@@ -200,7 +200,7 @@ differing and all thirteen forbidden ones unchanged, and that run is the one tha
 5. What this file does not establish
 -------------------------------------
 
-- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-012 the record.
+- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-016 the record.
 - The region table is a list, and a list can omit. What bounds the omission is not this file but
   post/byte-identity.txt: all 30 `baseline` cells are byte-identical across the two commits,
   unprojected, so no world rule reachable under `baseline` moved -- whether or not it is named here.

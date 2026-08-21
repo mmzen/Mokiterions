@@ -238,7 +238,7 @@ by name, and this file does not answer it.
 
 ## 7. What this file does not establish
 
-- Nothing here is a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-012` the record.
+- Nothing here is a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-016` the record.
 - The branch classification is a reconstruction with thirteen checks against the engine, not a reading of
   the engine's own internal state. Its correctness rests on those checks and on the reader this packet
   retains, both of which a verifier can re-run over the same digested bytes.

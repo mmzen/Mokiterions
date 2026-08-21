@@ -256,7 +256,7 @@ known targets rather than gaining a target column.
 6. What this file does not establish
 -------------------------------------
 
-- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-012 the record.
+- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-016 the record.
 - The engine's public-interface enumeration against the approved SPEC-MOK-002 amendment is a separate
   retention item and is not in this file. `cargo tree` bounds what the engine depends on; it says
   nothing about what the engine exports. post/interface.txt is that enumeration.

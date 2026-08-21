@@ -336,7 +336,7 @@ this retention item.
 
 ## 10. What this file does not establish
 
-- Nothing here is a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-012` the record.
+- Nothing here is a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-016` the record.
 - The five controls are mutations of retained source, applied one at a time, each reverted immediately.
   `git status` was empty after the last of them. They are reproducible from the edits stated above and
   from nothing else; no instrumented build survives, and no figure in this file depends on one.

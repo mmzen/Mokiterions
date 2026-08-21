@@ -30,7 +30,7 @@ Commit-bound verification is classified `required` above.
 
 **This work order cannot be approved before its governing artifacts are.** It depends on `INT-MOK-010` and `CAP-MOK-010`
 and on `REQ-MOK-051` through `REQ-MOK-060` being approved by their accountable owners — the product owner for
-`REQ-MOK-051`, `043`, `044`, `046`, `047`, `049` and `051`, the technical owner for `REQ-MOK-054` and `REQ-MOK-057`, and
+`REQ-MOK-051`, `052`, `053`, `055`, `056`, `058` and `060`, the technical owner for `REQ-MOK-054` and `REQ-MOK-057`, and
 the assurance owner for `REQ-MOK-059` — and on `VER-MOK-016` being approved by the assurance owner. All of those roles are
 held by the repository owner, which means every approval is a separate act by the same person and **none is implied by
 any other**.
@@ -127,24 +127,49 @@ intent's risk text is a decision **stop condition 11** reserves to the intent ow
 
 **What still blocks `implemented` is `REQ-MOK-060` alone**, unimplemented under the approved deferral of 2026-08-20.
 
-### Why this chain is numbered 009, 042 through 051, and 012
+### Why this chain is numbered 010, 051 through 060, and 016
 
 The identifier space is shared across branches and sessions in this repository, and `WO-MOK-011` records the owner
 resolving a collision once already: `evidence/WO-MOK-007/renumbering.md` states that renaming approved artifacts is the
 owner's act and not an implementation agent's.
 
-The numbers here were therefore chosen by reading every ref, not the local maximum. Across all local and remote branches
-the highest artifact of each family in use is `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-041`, `SPEC-MOK-005`,
-`ARCH-MOK-002`, `ADR-MOK-004`, `VER-MOK-011`, `WO-MOK-011`, `VREC-MOK-011`, `REL-MOK-001` and `RLS-MOK-001`. This chain
-takes the next number above each: `INT-MOK-010`, `CAP-MOK-010`, `REQ-MOK-051` through `REQ-MOK-060`, `VER-MOK-016`,
-`WO-MOK-016`, and `VREC-MOK-012` when the verification record is written. `ADR-MOK-005` was reserved for the architecture
-decision and is **not** used, because that decision was taken as a confirmation instead; the number stays free for
-whatever needs it next, and the survey above is what a later chain should repeat rather than trust.
+**This chain was numbered twice, and the numbers above are the second numbering.** It was first drafted as `INT-MOK-009`,
+`CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-051`, `VER-MOK-012`, `WO-MOK-012` and `VREC-MOK-016`, chosen by reading
+every ref rather than the local maximum: on 2026-08-20 the highest artifact of each family in use across all local and
+remote branches was `INT-MOK-008`, `CAP-MOK-008`, `REQ-MOK-041`, `SPEC-MOK-005`, `ARCH-MOK-002`, `ADR-MOK-004`,
+`VER-MOK-011`, `WO-MOK-011`, `VREC-MOK-011`, `REL-MOK-001` and `RLS-MOK-001`, and the chain took the next number above
+each.
 
-Two notes on what that survey found, recorded so a later reader does not have to repeat it. `VER-MOK-009` does not exist
-as an artifact on any branch, so the verification family has a gap at `009` that this chain does not fill and should not.
-And a `git grep` for `VER-MOK-0NN` across refs reports a maximum of `034`, which is not an artifact: it is a typographic
-citation of `REQ-MOK-034` inside `evidence/WO-MOK-010/completion-summary.md`, corrected on the
+**The survey was repeated before publishing and had gone stale in every family it touched.** Between the draft and the
+push `master` advanced thirty commits, merging `WO-MOK-012` — a different work order, "Record `VER-MOK-005`'s seven
+manual assessments", already `implemented` — together with `REQ-MOK-047` through `REQ-MOK-049` from `CAP-MOK-004`;
+`feature/phase-4a-definition` took `INT-MOK-009`, `CAP-MOK-009` and `REQ-MOK-042` through `REQ-MOK-046`; and
+`governance/adr-mok-006-third-party-crates` took `REQ-MOK-050`, `WO-MOK-014`, `VER-MOK-014`, `VREC-MOK-014` and
+`VREC-MOK-015`. Of the fourteen identifiers this chain had drafted, exactly one — `REQ-MOK-051` — was still free. Nothing
+in the first survey was wrong when it was taken; a survey of a shared space is true only of the moment it is taken, which
+is why it is repeated immediately before publishing rather than trusted from the draft.
+
+**Part of that collision was hidden by the survey's own method, and the method is the finding worth keeping.**
+`git log --all --diff-filter=A` is rename-blind: a branch that renames `WO-MOK-013.md` to `WO-MOK-014.md` records an `R`
+and not an `A`, so the number reads as free. `governance/adr-mok-006-third-party-crates` had done exactly that, for this
+same reason, so a scan by added paths reported `WO-MOK-014` available when that branch held it along with `VER-MOK-014`,
+`VREC-MOK-014` and `VREC-MOK-015`. Only a tree scan — `git ls-tree -r` per ref — is sound. That is what the renumbering
+used and what a later chain should use.
+
+The chain was therefore renumbered to `INT-MOK-010`, `CAP-MOK-010`, `REQ-MOK-051` through `REQ-MOK-060`, `VER-MOK-016`,
+`WO-MOK-016` and `VREC-MOK-016`, in one commit taken before the merge with `master` so that the identifier collisions
+collapsed instead of arriving as add/add conflicts. `evidence/WO-MOK-016/README.md` carries the full map, the reference
+count and the verification. `016` is the lowest number at which the work order, the verification requirement and the
+verification record are free together, which is what keeping the three paired resolves to. The repository owner chose a
+full renumber over the alternatives on 2026-08-21; the number put to them was `014`, and it was corrected to `016` by
+measurement before anything was renamed, the rename-blind scan having reported `014` free. `ADR-MOK-005` was reserved for
+the architecture decision and is **not** used, because that decision was taken as a confirmation instead; the number stays
+free for whatever needs it next.
+
+Two notes on what the first survey found, recorded so a later reader does not have to repeat them. `VER-MOK-009` does not
+exist as an artifact on any branch, so the verification family has a gap at `009` that this chain does not fill and should
+not. And a `git grep` for `VER-MOK-0NN` across refs reports a maximum of `034`, which is not an artifact: it is a
+typographic citation of `REQ-MOK-034` inside `evidence/WO-MOK-010/completion-summary.md`, corrected on the
 `bugfix/documentation-corrections` branch. A survey by grep alone would have numbered this contract `VER-MOK-035`.
 
 ### Decision record
@@ -889,4 +914,4 @@ The completion summary records, in this order:
     requirement amendments — each row quoted, with the approval each carries;
 16. the eleven manual assessments, or an explicit statement of which are outstanding and who owes them;
 17. residual uncertainty, including everything under *Stop and escalate conditions* that remains open, and the statement
-    that `VREC-MOK-012` is a separate commit-bound record that this work order does not write and cannot self-approve.
+    that `VREC-MOK-016` is a separate commit-bound record that this work order does not write and cannot self-approve.

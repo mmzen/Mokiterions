@@ -480,7 +480,7 @@ its capture removed after measurement; nothing in this packet depends on either.
 
 ## 12. What this file does not establish
 
-**It is not a verification verdict.** `VER-MOK-016` is the contract, `VREC-MOK-012` will be the record,
+**It is not a verification verdict.** `VER-MOK-016` is the contract, `VREC-MOK-016` will be the record,
 and neither is written by the implementation.
 
 **The paper column is a hand transcription of four sentences.** A transcription error the engine does

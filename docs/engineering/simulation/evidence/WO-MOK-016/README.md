@@ -10,7 +10,7 @@
 | Branch | `feature/phase-3-definition` |
 | Date opened | 2026-08-20 |
 | Packet size | 141 files, 2,514,146 bytes |
-| Renumbered | on 2026-08-21, from `WO-MOK-012` / `VER-MOK-012` / `INT-MOK-009` / `CAP-MOK-009` / `REQ-MOK-042`–`051`. See the note immediately below |
+| Renumbered | on 2026-08-21, from `WO-MOK-012` / `VER-MOK-012` / `VREC-MOK-012` / `INT-MOK-009` / `CAP-MOK-009` / `REQ-MOK-042`–`051`. See the note immediately below |
 
 **This chain was renumbered after the evidence was captured, and the packet says so wherever it shows.**
 The chain was numbered on 2026-08-19 from the highest identifier then visible on `master`. By 2026-08-21
@@ -29,13 +29,24 @@ local maximum was never the free number. This chain is the unpushed one, so this
 | `REQ-MOK-042` | `REQ-MOK-051` | | `REQ-MOK-050` | `REQ-MOK-059` |
 | `REQ-MOK-043` | `REQ-MOK-052` | | `REQ-MOK-051` | `REQ-MOK-060` |
 | `REQ-MOK-044` | `REQ-MOK-053` | | *evidence directory* | `evidence/WO-MOK-016/` |
-| `REQ-MOK-045` | `REQ-MOK-054` | | | |
+| `REQ-MOK-045` | `REQ-MOK-054` | | `VREC-MOK-012` | `VREC-MOK-016` |
 
 **981 identifier references were rewritten, and the rewrite was verified rather than trusted.** Every
 reader in this packet whose output names the evidence path was **re-run at the new path**, and each
 reproduced its retained output byte for byte: `analysis/test-census.py` over all three test logs, and
 `analysis/horizon.py` over the ten long-horizon cells at exit `0`. A substitution that changed a figure
 would have shown up as a difference there and did not.
+
+**Eighteen further references were found after that commit and corrected in the merge that follows it, and
+both misses have the same shape: a reference that names an identifier without spelling it.** Twelve are
+forward references to `VREC-MOK-012`, the record this packet is written for, which no substitution of
+`VER-MOK-012` could reach because `VREC` is not `VER` — nine of them in this packet, one in
+`SPEC-MOK-001`'s amendment record and two in `WO-MOK-016`. Six are bare-number back-references in
+`WO-MOK-016`'s lifecycle sentence — `043`, `044`, `046`, `047`, `049` and `051`, naming requirements whose
+prefix the sentence had already given once — which no substitution of a full identifier could reach either.
+A substitution keyed on whole identifiers is blind to both forms, so the sweep that found them was keyed on
+the shape of the reference instead: every `VREC-MOK-0NN` in the tree, and every backtick-quoted bare
+three-digit number in every artifact this branch touched. The running total is **999**.
 
 One reader was not re-run, for the reason it exists to record. `analysis/peak.py` does not reproduce its
 own figures from one invocation to the next — that is `post/long-horizon.md` §12's finding, not a defect
@@ -288,5 +299,5 @@ adjustment, and it is retained here because the same conditions forbid the alter
 **is** on the table, twice: `WO-MOK-016` names it as a deliverable and `VER-MOK-016` retains what it
 holds.
 
-Nothing here is a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-012` will be the
+Nothing here is a verification verdict. `VER-MOK-016` is the contract, `VREC-MOK-016` will be the
 record, and neither is written by the implementation.
