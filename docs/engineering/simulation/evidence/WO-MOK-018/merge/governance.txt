@@ -72,10 +72,28 @@ output rather than by reading the rendered text: the `queues` object at `1e09f85
 Two things follow, and both are decisions the merge does not make and must not appear to make.
 
 `VREC-MOK-016` is still `ready`, still awaiting the assurance owner. The merge does not touch
-it and act 4 does not touch it: `VREC-MOK-017` is a new record at the merge commit, and
-`VREC-MOK-012` (verified at `50364a3`) and `VREC-MOK-016` (verified at `4539601`) keep the
-commits they bind. That is the owner's decision of this session — a new record at the merge
-commit, nothing else moves — and `VREC-MOK-015` is the precedent for it.
+it and act 4 does not touch it: the new record at the merge commit — provisionally
+`VREC-MOK-019`, see the correction below — leaves `VREC-MOK-012` (`verified` at `50364a3`) and
+`VREC-MOK-016` (a `ready` candidate at `4539601`) on the commits they bind. That is the owner's
+decision of this session — a new record at the merge commit, nothing else moves — and
+`VREC-MOK-015` is the precedent for it.
+
+    Corrected after the capture, and both corrections are dated later than every figure above.
+    This paragraph first read "`VREC-MOK-012` (verified at `50364a3`) and `VREC-MOK-016`
+    (verified at `4539601`)". `VREC-MOK-016` is not verified and never was: the queue table
+    directly above measures it `[ready]` on all three trees, and its populated `verified_at`
+    of 2026-08-21T11:55:45Z is a candidate's capture timestamp. The measured table was right
+    and the prose beneath it was wrong.
+
+    `master` then moved to `aeca808` and superseded the record: `ready` to `superseded` at
+    2026-08-21T12:57:39Z on the assurance owner's authority, `superseded_by =
+    ["VREC-MOK-017"]`, with that successor verifying `WO-MOK-016` at `ecba9fe`. So the queue
+    table above is a measurement of trees that predate the supersession, and it stays as
+    measured; `master`'s `decision_required` queue no longer holds `VREC-MOK-016` today. The
+    identifier `VREC-MOK-017`, which this file used for act 4's record, is `master`'s;
+    `VREC-MOK-018` was taken by a third branch; act 4's number is provisionally
+    `VREC-MOK-019` and is to be re-derived across every ref when the record is written.
+    `README.md` finding 10 is the account.
 
 `WO-MOK-017` is master's draft work order for the resource composition drift. It is unrelated to
 the Phase 4a chain and it is not the identifier act 1 renumbered away from: act 1 moved the
@@ -217,7 +235,8 @@ against, which is the only claim `WO-MOK-011/merge/gates.txt` makes for its own 
 
 The measured tree's snapshot is a figure to read with one caveat stated plainly: the snapshot
 digest covers evidence *paths* that artifacts declare, not evidence *bytes*. This sub-packet's
-files are not declared by any artifact yet — `VREC-MOK-017` is what will declare them — so
+files are not declared by any artifact yet — act 4's record, provisionally `VREC-MOK-019`, is
+what will declare them — so
 `52652ca4` was computed over a graph in which `merge/` is invisible. It will change when act 4
 declares these paths, and that change is expected rather than a discrepancy.
 
@@ -228,4 +247,5 @@ Every command in this file is derived, read-only evidence, and each prints its o
 Validation does not approve. Inspection does not validate by exit status, approve, authorize,
 verify, release or remediate. Preflight does not approve artifacts, authorize a diff, verify
 work, release software, commit, push, tag, publish or deploy. Nothing here records a decision;
-`VREC-MOK-017` is where a decision is recorded, and it binds a commit.
+act 4's record at the merge commit, provisionally `VREC-MOK-019`, is where a decision is
+recorded, and it binds a commit.

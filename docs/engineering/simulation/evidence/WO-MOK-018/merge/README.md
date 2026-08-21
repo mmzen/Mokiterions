@@ -21,14 +21,23 @@ figure is equally a figure at the merge commit, and `gates.txt` says so where it
 
 Nothing here approves the merge, accepts a resolution, ratifies a figure or closes an obligation.
 Every file in this directory is derived, read-only evidence: a command, its output, and the
-reasoning needed to read the output. `VREC-MOK-017`, bound to the merge, is where a decision about
+reasoning needed to read the output. **`VREC-MOK-019`**, bound to the merge, is where a decision about
 this tree is recorded, and it is not written yet — item 1 of *What is still owed* below.
 
-The nine numbered findings below are worded as reports to the owner rather than as measurements, and
-none of them is acted on here. Two of the nine are non-conformances of the merged engine against the
+**That identifier is provisional, and finding 10 is why.** This packet was drafted naming
+`VREC-MOK-017`, which was free when act 1 renumbered the chain and was taken by `master` a few hours
+later; `VREC-MOK-018` was then taken by a third branch while this packet was being corrected. `019`
+is the lowest number free across all five remote heads as of the correcting commit, and it is not
+reserved by anything. The number is to be re-derived across every ref at the moment the record is
+written, never from this file and never from the local maximum.
+
+The ten numbered findings below are worded as reports to the owner rather than as measurements, and
+none of them is acted on here. Two of the ten are non-conformances of the merged engine against the
 `SPEC-MOK-006` amendment this branch drafts — findings 8 and 9 — and the engine is deliberately left
 as it is: the amendment reads OUTSTANDING, and changing the product to match an unratified
-specification would be the wrong order.
+specification would be the wrong order. Finding 10 is not a property of this tree at all: it is a
+collision between two branches, and it is recorded here because act 4 cannot be written without
+resolving it.
 
 ## Why the merge is against `master`, and where it sits in the four acts
 
@@ -147,7 +156,7 @@ itself contributed no test.
 | Governance graph | `validate`, `inspect`, `doctor`, `dashboard` on both parents, the merge and the measured tree | Artifacts and relations reconcile exactly in both directions; validation PASS on all five trees; every managed file `unchanged` — `governance.txt` |
 | `preflight` | `--work-order WO-MOK-018 --phase review`, from the pinned 0.4.0 venv | PASS |
 
-## Nine things reported rather than fixed
+## Ten things reported rather than fixed
 
 ### 1. `SPEC-MOK-004` rule 11's recorded workspace total, which `WO-MOK-016` measured and left owed
 
@@ -198,6 +207,28 @@ follow and both are stated in the row:
 - no record bound to a commit is re-opened. `VREC-MOK-012` measured 246 at `50364a3` and
   `VREC-MOK-016` measured 264 at `4539601`; each was correct where it was taken, and the merge's
   figures are carried by a new record rather than by editing either.
+
+**Two corrections to the second of those citations, both dated after this packet's capture.** They are
+placed here rather than in a footnote because finding 1 rests on `WO-MOK-016`'s measurement and a
+reader will go looking for the record that carries it.
+
+`VREC-MOK-016` is **not** a verified record and never was. Its status in this tree is `ready`; its
+populated `verified_at` of `2026-08-21T11:55:45Z` is the capture timestamp of a candidate, not a
+verification. The queue table in `governance.txt` measured it correctly as `VREC-MOK-016 [ready]` at
+all three trees, so this packet contradicted itself: three files and the drafted `SPEC-MOK-004` row
+described it as "verified at `4539601`", and that phrase was wrong when it was written. All four are
+corrected in the same commit as this paragraph. **The 264 figure is unaffected** — it is a
+`cargo test` count that `WO-MOK-016`'s own census reproduces independently, and finding 1's argument
+never needed the record's status.
+
+`VREC-MOK-016` has since been **superseded**. `master` at `aeca808` (PR #36, merged after this
+packet's capture) transitioned it from `ready` to `superseded` at `2026-08-21T12:57:39Z` on the
+assurance owner's authority, with `superseded_by = ["VREC-MOK-017"]`, and wrote that successor
+verifying `WO-MOK-016` at `ecba9fe` — the commit carrying the eight manual assessments whose absence
+is the stated reason the candidate could not be verified where it stood. So the current record for
+`WO-MOK-016` is `VREC-MOK-017` at `ecba9fe`, not `VREC-MOK-016` at `4539601`. This tree still holds
+the pre-supersession copy, because the merge predates it; that is a fact about when the capture was
+taken and not a disagreement with `master`.
 
 ### 2. `SPEC-MOK-004` rule 10's private-item count for `src/render.rs`, which no packet has reported
 
@@ -384,13 +415,52 @@ the product disagreeing with the specification; this is the specification's reas
 the tree while its rule stays right. A packet that reported only the first would leave a reader
 believing the absence itself was in doubt.
 
+### 10. `WO-MOK-018` names two different work orders on two branches, and act 4's identifier moved twice
+
+Act 1 renumbered this chain from `WO-MOK-012` to `WO-MOK-018` on the owner's decision of 2026-08-21,
+"018, nothing else moves", because `master` held `013` through `017`. `018` was free when that decision
+was taken. It is not free now.
+
+    ref                                        WO-MOK-018 is                              VREC ids present
+    feature/phase-4a-definition (this branch)  "Emit a structured record stream ..."       001-016
+    feature/observer-fear-and-filter-count     "Close the two observer defects Phase 3.1   001-011, 013-018
+                                                left ..." (PR #37, opened 2026-08-21)
+    master (aeca808)                           absent                                      001-011, 013-017
+
+Both are `status = "implemented"`, both target `master`, and **both declare evidence under the same
+path**, `docs/engineering/simulation/evidence/WO-MOK-018/`, with entirely different contents — this
+packet's merge measurements on one side, `filter-vocabulary`, `inspector` and `non-perturbation` files
+on the other. That other branch also carries `VREC-MOK-018`, a `ready` candidate for *its* `WO-MOK-018`
+bound to `6051ef21`.
+
+**Nothing here is wrong about either branch in isolation; the collision exists only in the union.**
+Whichever merges second inherits an identifier clash that `validate` on a single tree cannot see,
+because on each tree alone there is exactly one `WO-MOK-018` and the graph is consistent — this
+packet's own `governance.txt` reports PASS with 0 errors on all four trees it measures, and that
+remains true.
+
+The same shared space moved act 4's record identifier twice in one day: this packet was drafted naming
+`VREC-MOK-017`, which `master` assigned to `WO-MOK-016`'s successor a few hours later; `VREC-MOK-018`
+was taken by the third branch while these corrections were being written. The eight references are now
+`VREC-MOK-019`, the lowest free across all five remote heads at this commit, and the identifier is
+marked provisional at the top of this file for that reason.
+
+**Two decisions follow and neither is an implementation agent's.** Which work order keeps `018` and
+which renumbers — with the evidence directory, this packet's own path, moving with it. And whether
+`VREC-MOK-019` is the number act 4 uses, re-derived across every ref at the moment it is written
+rather than taken from this file. *Owner: the engineering owner, and the assurance owner for the
+record.*
+
 ## What is still owed before anything binds this merge
 
-1. **`VREC-MOK-017`, at the merge commit** — the owner's decision of 2026-08-21 was "New record at
-   merge commit", leaving `VREC-MOK-012` (verified at `50364a3`) and `VREC-MOK-016` (verified at
-   `4539601`) untouched, on `VREC-MOK-015`'s precedent. It declares the paths in this directory, and
-   `governance.txt` records the consequence: the dashboard snapshot digest `52652ca4…` moves when it
-   does, because that digest covers declared evidence paths. *Owner: the verifier.*
+1. **A new verification record at the merge commit, provisionally `VREC-MOK-019`** — the owner's
+   decision of 2026-08-21 was "New record at merge commit", leaving `VREC-MOK-012` (`verified` at
+   `50364a3`) and `VREC-MOK-016` (a `ready` candidate at `4539601`, never verified, and superseded on
+   `master` after this capture) untouched, on `VREC-MOK-015`'s precedent. It declares the paths in this
+   directory, and `governance.txt` records the consequence: the dashboard snapshot digest `52652ca4…`
+   moves when it does, because that digest covers declared evidence paths. The identifier must be
+   re-derived across every remote ref at the moment of writing and not read off this file — finding 10.
+   *Owner: the verifier.*
 2. **Ratification of the 2026-08-21 `SPEC-MOK-006` row**, which is written in this commit and reads
    OUTSTANDING. Three things in it are the owner's to decide and are put separately in the row itself
    rather than buried in its field list: the `schema` increment together with finding 8's two-line
@@ -411,9 +481,14 @@ believing the absence itself was in doubt.
 6. **The `WO-MOK-013` clause of finding 3**, and the `ARCH-MOK-002` reassessment of finding 7.
    *Owners: the technical owner and `ARCH-MOK-002`'s owner respectively.*
 7. **PR #31's body trailer**, which must read `Harness-Work-Order: WO-MOK-018` after act 1's
-   renumbering. CI reads the trailer from the stored event payload, so the check stays red until the
-   next push after the edit. Not done: an edit to the PR and a push are outward-facing acts and the
-   owner has not authorized them in this session.
+   renumbering, and its title, which still names `WO-MOK-012` and `VREC-MOK-012`. CI reads the trailer
+   from the stored event payload, so a body edit takes effect only on the next push. **The stale trailer
+   does not fail the check — it passes it against the wrong work order**, which is worse: the merge
+   brought `master`'s own unrelated `WO-MOK-012` into the tree, so at the push of the `SPEC-MOK-006`
+   amendment the `Review preflight` step reported "Work order: WO-MOK-012 (implemented)" and PASS, and
+   all five checks were green without any of them having examined `WO-MOK-018`. A green rollup on this
+   PR is therefore not evidence that this work order passed review preflight; the `Work order:` line in
+   the job log is. Not done: an edit to the PR is an outward-facing act the owner has not authorized.
 
 > Two facts a later reader will want, recorded here because they are easy to mis-derive.
 > **The observer's whole source directory at the merge is byte-identical to `master`'s** —
@@ -439,8 +514,8 @@ All files in this directory are **LF** and are committed verbatim: `.gitattribut
 |---|---:|---|
 | `README.md` | this file | The packet index, the resolution account and the nine findings |
 | `COMMIT.txt` | 41 | `e8114ad…`, the commit every figure here is measured at |
-| `gates.txt` | 23,712 | `fmt`, `clippy`, the 298-test run, `inspect`, `validate`, `doctor`, `preflight` |
-| `governance.txt` | 13,399 | The governance graph on both parents, the merge and the measured tree |
+| `gates.txt` | 24,412 | `fmt`, `clippy`, the 298-test run, `inspect`, `validate`, `doctor`, `preflight` |
+| `governance.txt` | 14,787 | The governance graph on both parents, the merge and the measured tree |
 | `interface.txt` | 56,440 | Rule 6 and `SPEC-MOK-002` rules 4–5, eight revisions, six full enumerations |
 | `render-items.txt` | 6,078 | `src/render.rs`'s items on all three trees, and finding 2's measurement |
 | `census-reconciliation.txt` | 11,849 | The three censuses reconciled by qualified name, 0 removals |
@@ -454,7 +529,7 @@ All files in this directory are **LF** and are committed verbatim: `.gitattribut
 | `oracle1/comparison-h-candidate-vs-merge-records.txt` | 5,865 | The record-stream comparison E and F disclosed as not made |
 | `oracle1/record-kinds.txt` | 1,871 | Twelve kinds, then fifteen, measured in the emitted bytes |
 | `oracle1/suffered-field.txt` | 1,032 | The field on 402,610 records, with list lengths and entry key sets |
-| `oracle1/suffered-accounting.txt` | 17,540 | Comparison H read in three parts, every string value by field path, and finding 6 stated |
+| `oracle1/suffered-accounting.txt` | 17,661 | Comparison H read in three parts, every string value by field path, and finding 6 stated |
 | `oracle1/value-domains.txt` | 6,211 | Every string value's measured domain, and rule 3.3's character union holding across 1,365,884 records |
 | `oracle2/`, `oracle3/`, `oracle6/` | four files each | The retained, drafted and extended matrices for each oracle |
 | `record-field-accounting.py` | 14,579 | The retained instrument behind comparison H and the value domains: `kinds`, `field`, `compare`, `alphabet` |
@@ -474,6 +549,15 @@ Every command in this directory is read-only and derived. Validation does not ap
 does not authorize; a passing gate is not a verdict. `SPEC-MOK-004`'s figures are corrected by the
 2026-08-21 amendment row and not by any file here, and that row reads OUTSTANDING until the technical
 owner ratifies it; the same is true of `SPEC-MOK-006`'s 2026-08-21 row, which this commit writes and
-does not approve. The nine findings are reported to the owner; none is acted on, and in particular the
-engine is not changed to satisfy an unratified specification. The decision about this tree is
-`VREC-MOK-017`'s, and it is not written yet.
+does not approve. The ten findings are reported to the owner; none is acted on, and in particular the
+engine is not changed to satisfy an unratified specification, and neither work order claiming
+`WO-MOK-018` is renumbered by this file. The decision about this tree belongs to a new verification
+record at the merge commit, provisionally `VREC-MOK-019`, and it is not written yet.
+
+**Two dates apply to this directory and a reader needs both.** Every measurement is at `e8114ad`,
+2026-08-21. The corrections in the commit that added finding 10 are later than that and are stated as
+later: `master` moved to `aeca808`, `VREC-MOK-016` was superseded, and two identifiers this packet had
+named were taken by other branches. No measured figure was re-taken for them, because none of them
+touches a source file — `aeca808` is documentation only, and `git merge-tree HEAD aeca808` reports no
+conflict. What changed is what this packet says about records and identifiers, not what it measured
+about the tree.

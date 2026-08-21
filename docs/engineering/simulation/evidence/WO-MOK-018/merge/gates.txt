@@ -373,5 +373,13 @@ silently partial.
 It does not verify. Every command above is derived, read-only evidence, and the harness says so
 itself in the line it prints at the foot of `preflight` and `inspect`: preflight and inspection
 do not approve artifacts, authorize a diff, verify work, release software, commit, push, tag,
-publish or deploy. `VREC-MOK-017` is where the accountable decision is recorded, and it binds a
-commit.
+publish or deploy. Act 4's record at the merge commit — provisionally `VREC-MOK-019`, the
+identifier having moved twice under `README.md` finding 10 — is where the accountable decision is
+recorded, and it binds a commit.
+
+One line of the `preflight` capture above is worth reading against that boundary rather than as a
+result. This capture ran `preflight --work-order WO-MOK-018 --phase review`, naming the work order
+on the command line. CI does not: it reads the work order out of the pull request's body trailer,
+which still names `WO-MOK-012`, and the merge brought `master`'s own unrelated `WO-MOK-012` into
+this tree. So CI's review preflight passes against that work order rather than this one, and its
+green is not this capture's green. `README.md`'s *What is still owed* item 7 records it.

@@ -274,6 +274,7 @@ Authority
 ---------
 
 Every figure here is derived, read-only evidence from a capture of a tree. It records what the
-merge's record stream is, not that it is acceptable. `VREC-MOK-017` is where that decision is
-recorded, and the `SPEC-MOK-006` amendment this file's last section motivates is drafted for the
-owner's ratification and is not applied by this measurement.
+merge's record stream is, not that it is acceptable. Act 4's record at the merge commit —
+provisionally `VREC-MOK-019`, the identifier having moved twice under `README.md` finding 10 — is
+where that decision is recorded, and the `SPEC-MOK-006` amendment this file's last section motivates
+is drafted for the owner's ratification and is not applied by this measurement.
