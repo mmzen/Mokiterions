@@ -7,8 +7,9 @@
 | Verification contract | `VER-MOK-016`, which already carries `REQ-MOK-060`. No new verification requirement was created |
 | Pre-change commit | `pre/COMMIT.txt` — `1ba5a3aabe775c9cdee29a04b399af3bb82dde90`, this work order's own governance-only approval commit |
 | Candidate commit | `post/COMMIT.txt` — `26ae6ba648be4eecf6234da15c0beb763b403a0a`, on `feature/resource-composition-ceiling` off `origin/master` `7f4792a` |
+| Merge commit | `merge/COMMIT.txt` — `ae2e44f2382fe89f2daf78a8e8aca37febb8bd0f`, the merge of `master` at `3f47743`. Added after the candidate; see `merge/README.md` |
 | Toolchain | cargo 1.97.1, rustc 1.97.1, clippy 0.1.97, host `x86_64-pc-windows-msvc` |
-| Verdicts | **13 reader reports, 13 `RESULT: PASS`, 0 `FAIL`** |
+| Verdicts | **13 reader reports at the candidate, 13 `RESULT: PASS`, 0 `FAIL`.** On the merged tree, 11 hold by byte-identical inputs and the 2 source-side readers print `FAIL`, retained and read in `merge/` |
 | Outstanding | **3 manual assessments**, prepared and unsigned in `manual-assessment.md`, plus **9 findings** raised there |
 | Date | 2026-08-21 |
 
@@ -188,6 +189,18 @@ correction costs outside the declared set.
 speak to the same quantity, `post/composition.txt` §6 and `post/survivors.txt` §3 record the agreement
 and are the ones that bind.
 
+### `merge/` — 14 files, the merge of `master` at `3f47743`
+
+Added after the candidate, when `master` moved and pull request #39 stopped being mergeable. **Nothing
+above this line is re-measured or re-written by it**, because the merged tree's own 120-cell capture is
+byte-identical to `post/post-manifest.txt` on all 120 cells and all four columns — which is the licence,
+measured rather than argued, and it is what carries this packet's figures forward to the merge commit
+`ae2e44f`. `merge/README.md` is the account and `merge/gates.txt` is every command; between them they
+record the two conflicts and their resolution, test conservation at 302 in both directions, the two
+source-side readers that **do** print `RESULT: FAIL` on the merged tree and why neither is a world rule
+moving, and the `SPEC-MOK-004` rule 11 correction this work order owes, measured and drafted in full and
+deliberately not applied.
+
 ---
 
 ## Conventions
@@ -197,7 +210,8 @@ and are the ones that bind.
   reader gets the sentences as well as the figures and can diff the whole thing.
 * **`RESULT:` is the last line of every report**, and it is the reader's own verdict on its own checks.
   A reader that finds a problem prints `RESULT: FAIL`, lists the failed checks and exits non-zero. None
-  of the thirteen does here.
+  of the thirteen does at the candidate commit. Two of them do on the merged tree, and `merge/` retains
+  both reports as they printed rather than repairing the reader — see `merge/README.md`.
 * **LF and UTF-8 throughout, except `approval/raw-*.txt`.** `.gitattributes` pins
   `docs/engineering/simulation/evidence/** -text`, so the committed bytes are the bytes, and a Windows
   clone does not rewrite a retained stream to CRLF and invalidate every recorded digest. The seven

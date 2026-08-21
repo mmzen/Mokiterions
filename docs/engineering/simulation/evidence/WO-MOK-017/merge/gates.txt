@@ -1,0 +1,261 @@
+WO-MOK-017, the merge of master: every command run on the merged tree, with its exit code
+=========================================================================================
+
+Work order    WO-MOK-017 (the resource composition drift)
+Merge commit  merge/COMMIT.txt   ae2e44f2382fe89f2daf78a8e8aca37febb8bd0f
+First parent  51f44cf5def92d36903da43386b80d5caddf9f26   this branch, the evidence packet
+Second parent 3f47743bf1db9577af39c72be9742381ae77b296   master, "Merge pull request #38 from
+                                                         mmzen/feature/phase-4a-definition"
+Merge base    7f4792a8e4de9bb0e2ce1a53a35bb9f5c5fb10a3   master's tip when this branch was cut
+Branch        feature/resource-composition-ceiling
+Toolchain     cargo 1.97.1 (c980f4866 2026-06-30), rustc 1.97.1 (8bab26f4f 2026-07-14),
+              clippy 0.1.97 (8bab26f4f6 2026-07-14), host x86_64-pc-windows-msvc
+Harness       se-harness 0.4.0, from C:\Users\mathi\harness-venv-040 -- the version this
+              repository's workflows pin. Python 3.14.6
+Date          2026-08-22
+
+Absolute paths are shortened to the workspace member's or the packet's own directory name wherever a
+tool prints them. Nothing else is edited and every exit code is its own.
+
+This file takes no decision. It is a list of commands, their outputs and the reasoning needed to read
+them. VREC preparation and verification are the assurance owner's acts, on a commit, and no record binds
+this one.
+
+
+1. Why this is a short file and not a second full packet
+--------------------------------------------------------
+
+The candidate packet's thirteen readers measure two 120-cell captures. A merge that changed the streams
+would invalidate every figure read from them and would owe all thirteen again. This merge does not
+change them, and section 2 is that measurement rather than that assertion: the merged tree's own
+capture is byte-identical to the candidate's on all 120 cells and all four columns.
+
+The precedent this follows is WO-MOK-019's merge/second/, which established its own carry-forward
+licence with two empty diffs -- one half of that merge was byte-identical to master and the other to its
+own chain. **Neither empty diff is available here**, and the difference matters enough to state: master
+rewrote about two thousand lines of mokiterions-core/src/simulation.rs for the record stream while this
+branch corrected the non-waste condition inside the same file, so both halves of this merge are genuinely
+merged text. The licence is therefore the output equality of section 2, which is measured on the streams
+the packet's figures are read from, and it is weaker in exactly one way that section 5 makes explicit:
+it says nothing about source-level claims.
+
+
+2. The capture, from the merge commit's own archived tree
+---------------------------------------------------------
+
+    $ git archive ae2e44f | tar -x -C <scratch>/tree
+    $ cd <scratch>/tree && cargo build --release --offline -p Mokiterions
+        Compiling Mokiterions v0.1.0 (<scratch>/tree/mokiterions-core)
+         Finished `release` profile [optimized] target(s) in 3.87s
+    exit 0
+
+    $ bash <packet>/capture.sh <scratch>/cells
+    captured 120 streams into <scratch>/cells
+    real 0m5.604s
+    exit 0
+
+    $ python <packet>/analysis/manifest.py <scratch>/cells <packet>/merge/merge-manifest.txt \
+        "merge capture at ae2e44f..., 120 cells, all four sources, from the merge commit's own
+         archived tree"
+    ... 120 cells, exit codes ['0']
+    exit 0
+
+    $ python <packet>/merge/compare-to-candidate.py <packet>/post/post-manifest.txt \
+        <packet>/merge/merge-manifest.txt > <packet>/merge/capture-comparison.txt
+    exit 0
+    RESULT: PASS -- 120 of 120 cells identical on all four columns, 0 differing
+
+The capture is taken from `git archive ae2e44f` and not from the working tree, which is the discipline
+post/capture-state.txt sets and the reason that file exists: a capture from a working tree is not
+evidence about a commit. Recorded because it was done in the other order first and the cross-check is
+worth more than the tidier story: a capture taken from the merged working tree before the merge was
+committed agrees with the archived tree's on all 120 cells and all four columns, 0 rows differing. That
+manifest is not retained, because this packet does not cite working-tree captures as evidence.
+
+capture-comparison.txt is the report and its sections 3 and 4 are the licence, stated positively and
+negatively. Section 4's third bullet is the one to read before quoting this table anywhere:
+capture.sh never passes --events-path, so these 120 cells exercise the default path and say nothing
+about master's record sink. VREC-MOK-019 is where the stream itself is verified.
+
+
+3. The three gates
+------------------
+
+    $ cargo fmt --all -- --check
+    (no output)
+    exit 0
+
+    $ cargo clean
+    Removed 4895 files, 922.3MiB total
+    $ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+    (60 lines, every one a Compiling or Checking line)
+       Compiling proc-macro2 v1.0.107
+       ...
+        Checking mokiterions-tui v0.1.0 (<workspace>/mokiterions-tui)
+        Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.36s
+    exit 0
+
+    $ cargo test --locked --workspace
+    (merge/test-run.txt in full)
+    test result: ok. 302 passed; 0 failed; 0 ignored   -- summed across the eighteen targets
+    exit 0
+
+clippy is run from a cleaned target directory for the reason post/gates.txt records: a warm cache
+replays a previous run's verdict on unchanged crates, and a merge that brings two thousand new lines of
+engine source is exactly the case where that matters. Sixty lines and not one diagnostic.
+
+`--locked` is not optional, and it is the flag that makes section 6's dependency check meaningful:
+`.github/workflows/release.yml` passes it, so a run without it can resolve around Cargo.lock and pass
+locally against a graph the release would refuse.
+
+
+4. Test conservation, name by name
+----------------------------------
+
+    $ python <packet>/analysis/test-census.py <packet>/merge/test-run.txt \
+        <packet>/merge/test-census.txt
+    302 names; 302 passed, 0 failed, 0 ignored
+    exit 0
+
+    $ python <packet>/merge/census-conservation.py \
+        <evidence>/WO-MOK-019/merge/second/test-census.txt \
+        <packet>/merge/test-census.txt <packet>/post/test-census.txt \
+        > <packet>/merge/census-conservation.txt
+    exit 0
+    RESULT: PASS -- 302 names on the merged tree, 0 lost, 1 added and accounted for
+
+The reconciliation runs in both directions and each catches a different failure. **268 + 34**: this
+branch's candidate plus the thirty-four engine tests that arrive with master -- the same thirty-four
+SPEC-MOK-004 rule 11's 2026-08-20 paragraph names. **301 + 1**: master's own census, taken by the other
+chain at e96648a and committed in its packet, plus this work order's one test. The first direction would
+fail if the resolution had lost an observer test, the second if it had lost an engine test. Neither
+does, and every one of the 302 reports `ok`.
+
+The comparison is against the other chain's committed artifact rather than against a figure quoted from
+a specification, so neither count is this packet's assertion.
+
+**SPEC-MOK-004 rule 11's figures are not corrected, and they are owed.** The rule says a work order that
+adds a test corrects its figures there; this one adds a test and never touched the file, at the
+candidate as well as at the merge. merge/SPEC-MOK-004-rule-11.md measures what the figures are, drafts
+the paragraph and the amendment-record row in full, and states why an implementation agent does not
+apply them.
+
+
+5. The two source-side readers, which do not carry forward
+----------------------------------------------------------
+
+Both read mokiterions-core/src/simulation.rs rather than a capture. master changed that file, so both
+are re-run and both print RESULT: FAIL. The failures are retained in full, and neither is a world rule
+moving.
+
+    $ git show 1ba5a3a:mokiterions-core/src/simulation.rs > <scratch>/pre-simulation.rs
+    $ python <packet>/analysis/world-rules.py <scratch>/pre-simulation.rs \
+        mokiterions-core/src/simulation.rs > <packet>/merge/world-rules-merged.txt
+    exit 1
+    RESULT: FAIL -- 3 check(s) failed:
+      61 changed engine block(s) outside the condition family
+      Simulation::apply_action, the eat arm differs between the two commits
+      Simulation::regenerate_food differs between the two commits
+
+The 61 blocks are the record stream. The two that bear on a world rule were diffed region by region,
+with the reader's own extractors, and the whole of each difference is master's instrumentation:
+
+    apply_action, the eat arm          candidate 44 lines, merged 46
+      + let class_index = food.class.index();
+      + self.consumed[class_index] = self.consumed[class_index].saturating_add(1);
+      - self.emit(output, event)?;          + self.emit(sinks, event)?;
+
+    regenerate_food                    candidate 61 lines, merged 65
+      - output: &mut W,                     + sinks: &mut Sinks<'_, '_, W>,
+      + let reason_index = reason.index();
+      + self.regeneration_skipped[reason_index] =
+      +     self.regeneration_skipped[reason_index].saturating_add(1);
+      + self.regenerated = self.regenerated.saturating_add(1);
+      - return self.emit(output, event);    + return self.emit(sinks, event);
+      - self.emit(output, event)?;          + self.emit(sinks, event)?;
+
+A sink parameter and three saturating counters. The restoration, the clip, the food table and the
+regeneration decision are untouched, which section 2 establishes from the other end and for every rule
+at once: identical streams cannot come from a changed rule.
+
+    $ python <packet>/analysis/reads.py mokiterions-core/src/simulation.rs \
+        > <packet>/merge/reads-merged.md
+    exit 1
+    RESULT: FAIL -- 1 check(s) failed:
+      Simulation::write_metrics_territory calls food_counts and is not classified
+
+A new caller of food_counts arrived with master and the reader has a hand-written classification for
+every caller it knows. write_metrics_territory takes `&self` and a `&mut dyn Write`, has exactly one
+caller -- write_metrics, the metrics record of SPEC-MOK-006 rule 7.6 -- and writes JSON. It is on the
+observation side of INT-MOK-010, which is the side that is allowed to read composition. **The oracle
+holds**: the reader's other checks pass, including that each of the four DecisionSource::decide
+functions takes only an Observation and that Observation carries no composition field. What fails is
+the completeness check, and it is asking for a classification only a human can write. Writing one into
+analysis/reads.py would edit a reader whose output is retained evidence at the candidate commit, so it
+is left failing and disclosed here.
+
+
+6. The harness, and the pull-request check that never ran
+---------------------------------------------------------
+
+    $ python -m se_harness validate .
+    Engineering artifact validation: PASS
+    Artifacts: 147 | Errors: 0 | Warnings: 0
+    Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+    exit 0
+
+    $ python -m se_harness doctor .
+    81 lines, every one PASS
+    exit 0
+
+    $ python -m se_harness preflight . --work-order WO-MOK-017 --phase review
+    Harness preflight: PASS
+    Phase: review
+    Work order: WO-MOK-017 (in_progress)
+    Assurance classification:
+    - Commit-bound verification: required
+    - Decided by: engineering owner
+    exit 0
+
+    $ python -m se_harness dashboard . --output <outside the checkout>
+    Harness Explorer generation: PASS | Artifacts: 147 | Relations: 525 | Errors: 0 | Warnings: 18
+    exit 0
+
+    $ python scripts/check_declared_dependencies.py
+    (merge/declared-dependencies.txt in full)
+    Every declared set matches its resolved graph. 8.4a-8.4d pass.
+    exit 0
+
+The artifact count across the four trees, each measured by running validate on that tree rather than by
+counting a diff:
+
+    7f4792a  merge base                    134 artifacts, 0 errors, 0 warnings
+    51f44cf  this branch, pre-merge        134
+    3f47743  master                        147
+    ae2e44f  this merge                    147
+
+**This branch creates no artifact.** WO-MOK-017.md already existed at the merge base -- master created
+it as a draft when REQ-MOK-060 was descoped from WO-MOK-016 -- and this branch approved it in place and
+edited three other documents. So there is no identifier to collide, the merge adds master's thirteen and
+nothing else, and 134 + 13 = 147 is the whole of the arithmetic. The four documents this branch
+contributes on top of master are REQ-MOK-060.md, SPEC-MOK-001.md, VER-MOK-016.md and WO-MOK-017.md,
+plus SIMULATION_RULES.md and docs/ROADMAP.md outside docs/engineering.
+
+`preflight` reports the work order `in_progress`, which is what it is: transitioning it is the
+engineering owner's act and this packet does not take it.
+
+`dashboard` reports 18 warnings where `validate` reports 0. The two commands run different planes;
+the dashboard's warnings are its own review-plane observations and no digest from it is quoted here,
+because the snapshot digest moves with the checkout's directory name and clone depth and is therefore
+not a property of the tree.
+
+**check_declared_dependencies.py is the check the pull request never ran.**
+.github/workflows/dependency-declarations.yml is `pull_request`-only, and no `pull_request` run has
+fired on PR #39: the branch was pushed before the PR was opened, so only the push run exists, and
+engineering-harness.yml's own work-order selection and review preflight are gated
+`if: github.event_name == 'pull_request'` and were skipped with it. Two green checks on the PR, neither
+of which read the work-order trailer, the preflight or the dependency graph. Running the repository's
+own program locally is not a substitute for the run -- it is the same program on the same tree, but the
+merge commit GitHub would test is its own -- and the push that carries this merge is what makes the
+`pull_request` run fire. That the local run passes is recorded here so that a red check, if one
+appears, is known to be about the prospective merge rather than about this tree.

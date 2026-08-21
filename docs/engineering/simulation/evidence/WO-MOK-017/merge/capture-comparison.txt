@@ -1,0 +1,74 @@
+The merged tree measured against the candidate, cell for cell
+============================================================
+
+candidate manifest  docs/engineering/simulation/evidence/WO-MOK-017/post/post-manifest.txt
+                    post-change capture at 26ae6ba648be4eecf6234da15c0beb763b403a0a, 120 cells, all four sources
+merge manifest      docs/engineering/simulation/evidence/WO-MOK-017/merge/merge-manifest.txt
+                    merge capture at ae2e44f2382fe89f2daf78a8e8aca37febb8bd0f, 120 cells, all four sources, from the merge commit's own archived tree
+
+1. The two captures cover the same matrix
+-----------------------------------------
+A comparison over an unequal cell set would report agreement on the intersection and say
+nothing about the difference, so the sets are compared before the contents are.
+
+    candidate cells   120
+    merge cells       120
+    only in candidate 0
+    only in merge     0
+
+2. Every cell, on all four columns
+----------------------------------
+Each row is the raw SHA-256 of the stream, its byte count, its line count and the exit code
+of the run that produced it. The digest alone would settle the question; the other three are
+kept because a digest mismatch says only that something moved, and the columns say what.
+
+    source        cells  identical  differing
+    baseline         30         30          0
+    reference        30         30          0
+    individual       30         30          0
+    social           30         30          0
+    all             120        120          0
+
+3. What this licenses
+---------------------
+Every capture-derived figure in this packet is read from these 120 streams, so each of them
+is a figure at the merge commit as well as at the candidate:
+
+  * `post/composition.txt`  -- `REQ-MOK-060` at three fifths, worst 54.1% of 61 on 30 of 30
+    territory evaluations, and the one-half comparison beside it.
+  * `post/survivors.txt`    -- `REQ-MOK-014` 8, `REQ-MOK-034` 8 and `REQ-MOK-058` 5, at
+    margins 0, 0 and 2, with combat deaths per seed unchanged.
+  * `post/byte-identity.txt` and `post/divergence.txt` -- the 30 identical `baseline` cells
+    and the 90 obligated divergences with 0 unattributed.
+  * `post/entropy.txt`      -- no entropy consumed by the correction.
+  * `post/health-falls.txt`, `post/dead-neighbours.txt` -- the two observer-side test
+    amendments measured from the streams.
+  * `{pre,post}/{init/,full/,summary.txt,census.txt,eaten.txt}` -- the retained subset, which
+    is a projection of these streams and moves only if they move.
+
+None of those readers is re-run here, and re-running them would measure this same equality a
+second time rather than measure anything new.
+
+4. What this does not license
+-----------------------------
+  * **The two source-side readers.** `analysis/world-rules.py` and `analysis/reads.py` read
+    `mokiterions-core/src/simulation.rs` rather than a capture, and `master` changed that
+    file. Both are re-run on the merged source and both print `RESULT: FAIL`;
+    `world-rules-merged.txt` and `reads-merged.md` are those runs in full, and `gates.txt`
+    says what each failure is and why neither is a world rule moving.
+  * **`post/docs-figures.txt` in part.** Its capture-derived figures carry forward with the
+    streams above; the seven out-of-matrix runs in its section 10 are not re-taken here, and
+    neither is the pass over `SIMULATION_RULES.md` and `docs/ROADMAP.md`, both of which this
+    merge edits in their evidence-directory list and their Phase 3 blocks. What moved there
+    is prose and a table of work-order identifiers, not a figure.
+  * **The record stream `master` added.** `capture.sh` never passes `--events-path`, so these
+    120 cells exercise the default path and say nothing about the sink. That is deliberate:
+    it is what makes the equality above the right measurement, and `SPEC-MOK-006`'s own
+    obligation -- that configuring a sink leaves standard output byte-identical -- is
+    corroborated by this table from the other side. `VREC-MOK-019` is where the stream itself
+    is verified.
+  * **Anything about `master`'s own tree.** This compares the merge against this branch's
+    candidate. It does not measure what `master` emitted before the merge, and it is not
+    evidence about `WO-MOK-018` or `WO-MOK-019`.
+
+RESULT: PASS -- 120 of 120 cells identical on all four columns, 0 differing

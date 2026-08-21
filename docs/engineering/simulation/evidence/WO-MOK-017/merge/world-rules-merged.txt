@@ -1,0 +1,277 @@
+WO-MOK-017: the world rules the correction does not touch, compared line for line
+=================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Retains      "the line-for-line comparison showing rule 4, rule 9's eat effect, the food
+             table and rules 14 to 16 unchanged"
+Pre-change   pre/COMMIT.txt      Candidate  post/COMMIT.txt
+Reader       analysis/world-rules.py
+Date         2026-08-21
+
+    pre-change engine lines, ahead of `#[cfg(test)]` at line 3013     3012
+    candidate engine lines, ahead of it at line 3773                 3772
+    pre-change engine SHA-256   8f8c14bc82ba858ab7047c4b020820c23961f1e530394d5e3978e95e63bdfc20
+    candidate  engine SHA-256   7fe42881fdf75f7cb8be49549d70e1f00e25d174f977bd9001be0d83a4e79370
+
+The two digests differ, which they must -- this work order changes the engine. What follows is
+where, and where not. The test module is excluded from every comparison here and accounted for
+separately in `post/test-census-reconciliation.md`, so that expected test churn cannot bury
+the claim that the engine moved in exactly one place.
+
+1. Every changed engine line, and the one place they all sit
+------------------------------------------------------------
+This is the general claim, and it is made first because the four named rules are corollaries
+of it. The two engine texts are aligned by `difflib.SequenceMatcher` and every non-equal
+block is listed. Each is then tested for containment in the non-waste condition family.
+
+    the only functions this work order may change   pre-change    candidate
+    Observation::fits_within                         new here      732-766
+    Observation::fits                                 714-725      768-788
+    Observation::fits_within_tolerance                759-781      822-842
+
+    `fits_within` is new at the candidate, so it has no pre-change extent, and that absence is
+    asserted rather than tolerated: `REQ-MOK-060` introduced it, so finding it in the
+    pre-change text would mean the two sources are not the two commits they claim to be.
+    Each extent includes the function's own documentation, because a doc comment belongs to
+    the item it documents and all three were rewritten with the arithmetic they describe.
+    Containment is tested against the union of the three rather than against one at a time: a
+    single aligned block can straddle two of them, and it does here, where `fits_within` was
+    inserted immediately above `fits`. It is also tested on both sides, so a world rule
+    deleted inside a `replace` block cannot pass by having an innocent candidate range.
+
+    kind       pre-change lines  candidate lines   inside
+    insert                    -          228-237   *** OUTSIDE ***
+    insert                    -          505-512   *** OUTSIDE ***
+    replace             714-714          732-769   fits_within, fits
+    insert                    -          778-785   fits
+    replace             724-724          787-787   fits
+    replace             760-760          823-823   fits_within_tolerance
+    replace             762-766          825-825   fits_within_tolerance
+    replace             768-772          827-839   fits_within_tolerance
+    replace             774-780          841-841   fits_within_tolerance
+    insert                    -        1318-1333   *** OUTSIDE ***
+    insert                    -        1834-1879   *** OUTSIDE ***
+    insert                    -        1896-1916   *** OUTSIDE ***
+    insert                    -        1979-1979   *** OUTSIDE ***
+    insert                    -        1993-1996   *** OUTSIDE ***
+    insert                    -        2000-2003   *** OUTSIDE ***
+    insert                    -        2005-2024   *** OUTSIDE ***
+    replace           1855-1855        2028-2028   *** OUTSIDE ***
+    replace           1859-1859        2032-2032   *** OUTSIDE ***
+    replace           1863-1863        2036-2036   *** OUTSIDE ***
+    replace           1867-1867        2040-2040   *** OUTSIDE ***
+    replace           1874-1874        2047-2047   *** OUTSIDE ***
+    insert                    -        2057-2062   *** OUTSIDE ***
+    replace           1885-1885        2064-2064   *** OUTSIDE ***
+    replace           1894-1894        2073-2073   *** OUTSIDE ***
+    replace           1897-1897        2076-2076   *** OUTSIDE ***
+    replace           1899-1899        2078-2085   *** OUTSIDE ***
+    replace           1949-1949        2135-2142   *** OUTSIDE ***
+    replace           2114-2114        2307-2307   *** OUTSIDE ***
+    replace           2118-2118        2311-2311   *** OUTSIDE ***
+    replace           2130-2130        2323-2326   *** OUTSIDE ***
+    insert                    -        2329-2329   *** OUTSIDE ***
+    replace           2136-2140        2333-2349   *** OUTSIDE ***
+    replace           2149-2149        2358-2358   *** OUTSIDE ***
+    replace           2166-2166        2375-2375   *** OUTSIDE ***
+    replace           2181-2181        2390-2390   *** OUTSIDE ***
+    replace           2192-2192        2401-2401   *** OUTSIDE ***
+    replace           2197-2197        2406-2406   *** OUTSIDE ***
+    replace           2290-2290        2499-2499   *** OUTSIDE ***
+    replace           2321-2321        2530-2530   *** OUTSIDE ***
+    replace           2360-2360        2569-2571   *** OUTSIDE ***
+    replace           2372-2372        2583-2583   *** OUTSIDE ***
+    replace           2382-2382        2593-2593   *** OUTSIDE ***
+    replace           2405-2405        2616-2621   *** OUTSIDE ***
+    replace           2507-2507        2723-2723   *** OUTSIDE ***
+    replace           2523-2523        2739-2739   *** OUTSIDE ***
+    replace           2526-2526        2742-2742   *** OUTSIDE ***
+    replace           2529-2529        2745-2745   *** OUTSIDE ***
+    replace           2531-2532        2747-2748   *** OUTSIDE ***
+    replace           2557-2557        2773-2773   *** OUTSIDE ***
+    replace           2593-2593        2809-2809   *** OUTSIDE ***
+    replace           2615-2615        2831-2831   *** OUTSIDE ***
+    replace           2661-2661        2877-2877   *** OUTSIDE ***
+    replace           2672-2672        2888-2888   *** OUTSIDE ***
+    replace           2694-2694        2910-2910   *** OUTSIDE ***
+    replace           2716-2716        2932-2932   *** OUTSIDE ***
+    replace           2736-2736        2952-2952   *** OUTSIDE ***
+    replace           2767-2767        2983-2983   *** OUTSIDE ***
+    replace           2777-2777        2993-2993   *** OUTSIDE ***
+    replace           2810-2810        3026-3026   *** OUTSIDE ***
+    replace           2819-2819        3035-3035   *** OUTSIDE ***
+    replace           2860-2860        3076-3076   *** OUTSIDE ***
+    insert                    -        3079-3082   *** OUTSIDE ***
+    replace           2868-2868        3088-3088   *** OUTSIDE ***
+    replace           2875-2875        3095-3095   *** OUTSIDE ***
+    replace           2899-2899        3119-3122   *** OUTSIDE ***
+    replace           2930-2930        3153-3154   *** OUTSIDE ***
+    insert                    -        3209-3389   *** OUTSIDE ***
+    insert                    -        3418-3772   *** OUTSIDE ***
+
+    changed blocks in the engine                                68
+    changed blocks outside the non-waste condition              61
+    THE CHANGE ESCAPED ITS SCOPE. Nothing below can be relied on until this is resolved.
+
+2. Rule 4: the baseline candidate list, and the source that draws from it
+-------------------------------------------------------------------------
+Rule 4 applies no waste condition, so `fits` is not reachable from it. That is what makes
+`INT-MOK-010`'s byte-identity promise for `--policy baseline` survivable across a change to
+the waste arithmetic, and `post/byte-identity.txt` measures the promise kept in all thirty
+baseline cells. This section is the reason it was kept rather than the evidence that it was.
+
+    Simulation::observation, where rule 3 assembles the candidate list
+      pre-change lines 2253-2269, candidate lines 2462-2478, 17 lines
+      SHA-256 pre-change  4f479ab244fb0cf12a1986f3d5e8fd20f3c4a26161dd20234ab3365a05598f22
+      SHA-256 candidate   4f479ab244fb0cf12a1986f3d5e8fd20f3c4a26161dd20234ab3365a05598f22
+      line for line       IDENTICAL
+
+     2462          let mut valid_actions = vec![Action::Wait];
+     2463          if agent.energy < ATTRIBUTE_MAX {
+     2464              valid_actions.push(Action::Sleep);
+     2465          }
+     2466          valid_actions.extend(
+     2467              co_located_food
+     2468                  .iter()
+     2469                  .cloned()
+     2470                  .map(|food_id| Action::Eat { food_id }),
+     2471          );
+     2472          valid_actions.extend(
+     2473              Direction::ORDERED
+     2474                  .into_iter()
+     2475                  .filter(|direction| agent.position.moved(*direction).is_some())
+     2476                  .map(|direction| Action::Move { direction }),
+     2477          );
+     2478  
+
+    BaselineDecisionSource::decide, rule 4 itself
+      pre-change lines 899-913, candidate lines 960-974, 15 lines
+      SHA-256 pre-change  0468954a80d94debba84c1ea92db4e1684473f0024faccd458d1b10613b7f9c2
+      SHA-256 candidate   0468954a80d94debba84c1ea92db4e1684473f0024faccd458d1b10613b7f9c2
+      line for line       IDENTICAL
+
+      960  impl DecisionSource for BaselineDecisionSource {
+      961      fn name(&self) -> &str {
+      962          "baseline"
+      963      }
+      964  
+      965      fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action {
+      966          debug_assert!(observation.is_consistent());
+      967          let choice = entropy.choose_index(observation.valid_actions.len());
+      968          observation
+      969              .valid_actions
+      970              .get(choice)
+      971              .cloned()
+      972              .unwrap_or(Action::Wait)
+      973      }
+      974  }
+
+3. Rule 9: what consuming a resource does
+-----------------------------------------
+`REQ-MOK-060` changes whether a resource is eaten and never what eating restores. The clip is
+still here and still unconditional -- `saturating_add` then `min(ATTRIBUTE_MAX)`, on satiety
+and on energy alike, printed below inside the identical region. That is the whole relationship
+between this rule and the correction: the corrected condition decides that a resource whose
+restoration will be clipped is worth taking anyway, and this code goes on clipping it. The
+waste `REQ-MOK-060` tolerates is real waste, not waste the effect was quietly changed to
+avoid. Nothing here needed to change for the correction to work, and nothing did.
+
+    Simulation::apply_action, the eat arm
+      pre-change lines 2322-2365, candidate lines 2531-2576, 46 lines
+      SHA-256 pre-change  b7b8bdb10e9962dfeb50f6b80d796740d4b79738a52593873e7a43709abcab77
+      SHA-256 candidate   42531bbad0abd914ff4af7eb3018bde8c3e9765e8f8f6cf612358ecaa671153f
+      line for line       *** DIFFERS ***
+
+    --- pre-change
+    +++ candidate
+    @@ -37,5 +37,7 @@
+                         )
+                     };
+    -                self.emit(output, event)?;
+    +                let class_index = food.class.index();
+    +                self.consumed[class_index] = self.consumed[class_index].saturating_add(1);
+    +                self.emit(sinks, event)?;
+                     Ok(ActionResult {
+                         accepted: true,
+
+4. The food table
+-----------------
+This table is the input to the corrected allowance. `R * R / 100` is `2`, `9` and `25` for the
+three classes because `R` is `15`, `30` and `50` here, so the specification's boundaries of
+`87`, `79` and `75` are derived from these six numbers. Had the table moved, the engine and
+the specification could agree while both were wrong.
+
+    FoodClass::restoration
+      pre-change lines 406-412, candidate lines 416-422, 7 lines
+      SHA-256 pre-change  ddbc088cd39ea4bbf7a5781150c879d919cb8b81ca065dcf014f05cbfaf3bb3d
+      SHA-256 candidate   ddbc088cd39ea4bbf7a5781150c879d919cb8b81ca065dcf014f05cbfaf3bb3d
+      line for line       IDENTICAL
+
+      416      fn restoration(self) -> (u8, u8) {
+      417          match self {
+      418              Self::Low => (15, 5),
+      419              Self::Medium => (30, 10),
+      420              Self::High => (50, 20),
+      421          }
+      422      }
+
+5. Rules 14 to 16: regeneration
+-------------------------------
+The composition curve in `post/composition.txt` is the joint product of what regenerates and
+what is eaten, and `REQ-MOK-060` is the claim that consumption alone explains the drift. That
+claim is only testable with regeneration held fixed -- including rule 16's uniform class
+selection, which is what would otherwise be suspected of favouring high class.
+
+    Simulation::regenerate_food
+      pre-change lines 2873-2933, candidate lines 3093-3157, 65 lines
+      SHA-256 pre-change  661289da76f27802c1f946d0918470c6b7da4b27ced0860298a1d8085fca1033
+      SHA-256 candidate   542d68cb782129d39fcd1bd9078a72c8fd4401a8011afeee7aa5741e9ff72e36
+      line for line       *** DIFFERS ***
+
+    --- pre-change
+    +++ candidate
+    @@ -1,5 +1,5 @@
+         fn regenerate_food<W: Write>(
+             &mut self,
+    -        output: &mut W,
+    +        sinks: &mut Sinks<'_, '_, W>,
+             territory: Territory,
+         ) -> io::Result<()> {
+    @@ -25,5 +25,8 @@
+                     },
+                 );
+    -            return self.emit(output, event);
+    +            let reason_index = reason.index();
+    +            self.regeneration_skipped[reason_index] =
+    +                self.regeneration_skipped[reason_index].saturating_add(1);
+    +            return self.emit(sinks, event);
+             }
+     
+    @@ -56,5 +59,6 @@
+                     },
+                 );
+    -            self.emit(output, event)?;
+    +            self.regenerated = self.regenerated.saturating_add(1);
+    +            self.emit(sinks, event)?;
+             }
+             Ok(())
+
+6. What this comparison does not settle
+---------------------------------------
+  * That the engine changed in one place is not that the change is right. The condition's own
+    correctness is `post/divergence.txt` and the suite's new boundary test, not this file.
+  * The regions above shift by a line count between the two texts, because the condition
+    family gained lines ahead of them. Shifted is not changed, and the digests are computed
+    on the text rather than on the line numbers, so a pure move reads as identical here -- as
+    it should.
+  * The test module is excluded throughout. Its changes are real and are reconciled name by
+    name in `post/test-census-reconciliation.md`, with the two consequential TUI fixes in
+    `post/updated-tests.md`.
+  * Two crates outside this module changed and are not compared here: `mokiterions-tui`'s
+    state and render tests, both of which are test-side and both accounted for in
+    `post/updated-tests.md`. No `mokiterions-tui` source rule is a world rule.
+
+RESULT: FAIL -- 3 check(s) failed:
+  61 changed engine block(s) outside the condition family
+  Simulation::apply_action, the eat arm differs between the two commits
+  Simulation::regenerate_food differs between the two commits
