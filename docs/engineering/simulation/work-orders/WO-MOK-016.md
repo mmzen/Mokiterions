@@ -2,7 +2,7 @@
 id = "WO-MOK-016"
 type = "work_order"
 title = "Let Mokiterions act on each other: contact, seven targeted actions, a defender's own answer, a source that reads fear, and the resource composition corrected"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-20"
 updated = "2026-08-21"
@@ -169,6 +169,40 @@ still the one to make. What changes is which work order owes it.
    verification requirement is the assurance owner's act, and the owner's decision of 2026-08-21 was a scope amendment to
    this work order. `VREC-MOK-016` therefore reports `REQ-MOK-060`'s five coverage rows as carried to `WO-MOK-017`, names
    them, and claims no coverage it does not have.
+
+### Transition to `implemented`, 2026-08-21
+
+**Set to `implemented` on 2026-08-21 by the repository owner acting as engineering owner.** The instruction, verbatim and
+complete:
+
+> you can push and create the PR, set WO-MOK-012 as implemented and then create the verification record
+
+**It names `WO-MOK-012`, and it means this work order.** The instruction was given while this chain still carried its
+first numbering, in which this file was `WO-MOK-012`; the renumber recorded below was decided afterwards, in the same
+session. A `WO-MOK-012` also exists and is a different work order — "Record `VER-MOK-005`'s seven manual assessments",
+already `implemented` on `master` before this branch was merged with it — so the identifier in the instruction is
+ambiguous on its face and is resolved by what the instruction asks for: that work order is governance-only, terminal at
+`implemented`, and takes no verification record, so neither the transition nor the record the instruction asks for could
+be about it. Nothing was transitioned on the strength of a matching string.
+
+**The transition was not taken on that instruction alone.** It named a status it could not have known was blocked:
+`REQ-MOK-060` stood approved and unimplemented in this work order's scope, and the *Scope amendment* above is the act
+that cleared it. That amendment was put to the owner with its two alternatives and their costs, and answered on
+2026-08-21 before this status changed. The transition also postdates the merge of `master` at `259859d`, the re-taken
+test census of §9, and the retained evidence packet under `evidence/WO-MOK-016/`, which is what the lifecycle clause
+above requires of it.
+
+**What the instruction authorized and what it did not.** It authorized four acts: the push, the pull request, this
+transition, and the composition of the verification record. It did not authorize any decision inside those acts — the
+verification record is composed as `ready` and not as `verified`, because `VER-MOK-016`'s eleven manual assessments are
+each their own accountable role's to sign, **eight of those acts are outstanding** — five for the product owner, two for
+the technical owner and one for the assurance owner — and the transition to `verified` is a further act of the assurance
+owner that this instruction does not name; it did not authorize a tag, a release or a merge; and it did not authorize the
+amendments this packet reports as owed. Those are named in
+`evidence/WO-MOK-016/amendment-approvals.md` and left for their owners.
+
+**This is not the terminal status.** Commit-bound verification is classified `required`, so `VREC-MOK-016` closes this
+work order and does so against a commit that includes this transition.
 
 ### Why this chain is numbered 010, 051 through 060, and 016
 
