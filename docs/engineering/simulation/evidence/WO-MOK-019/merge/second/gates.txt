@@ -1,0 +1,104 @@
+VER-MOK-012 — the gates on the second merge
+===========================================
+
+Merge         master 7f4792a into the renumbered Phase 4a chain efe20e3, as merge commit e96648a
+Merge base    fa065cc27aa250bd93c586b0c61da789dab49e33
+Date          2026-08-21
+Toolchain     cargo 1.97.1 (c980f4866 2026-06-30); rustc 1.97.1 (8bab26f4f 2026-07-14)
+Harness       se-harness 0.4.0, from C:\Users\mathi\harness-venv-040 — the version this
+              repository's workflows pin. The machine-wide 0.4.1 FAILs on template skew alone
+              and is not a governing verdict here.
+
+This is the second merge of `master` into this chain. The first took `fa065cc` and is `1e09f85`;
+`../gates.txt` is its record and remains the record of that tree. This file exists because
+`master` moved again — pull request #37, merged as `7f4792a` — while the first merge's evidence
+was being corrected, and because that pull request brought the `WO-MOK-018` identifier this
+chain had renumbered itself into. The renumbering to `WO-MOK-019` is `efe20e3`; `../../renumbering.md`
+is its record.
+
+
+Why this is a short file and not a second full packet
+-----------------------------------------------------
+
+The first merge's packet measures 120 capture cells, six oracles and 303 MB of stream. None of
+it is re-taken here, and the reason is one measurement rather than a judgement:
+
+    git diff efe20e3 -- mokiterions-core          empty
+    git diff origin/master -- mokiterions-tui     empty
+
+`mokiterions-core` in this tree is byte-identical to this chain's at `efe20e3`, and
+`mokiterions-tui` is byte-identical to `master`'s at `7f4792a`. Pull request #37 changed four
+files, all of them the observer's — `src/render.rs`, `src/state.rs`, `tests/state.rs`,
+`tests/verification.rs` — and no file of the engine. The record stream is the engine's output.
+So every stream figure in `../oracle1/` through `../oracle6/` is a figure at this tree as well,
+and re-capturing 120 cells would reproduce the same bytes at a cost of 303 MB to demonstrate a
+diff that is already empty.
+
+    Stated as a boundary rather than as a result: the two empty diffs are what license the
+    carry-forward, and they are the whole of the licence. Had either been non-empty this file
+    would not exist and the captures would have had to be re-taken. The claim is not "the
+    engine probably did not change"; it is that no byte of it did, on a comparison that names
+    the two trees and prints nothing.
+
+What the observer's byte-identity licenses in the other direction is the figure side of
+`SPEC-MOK-004`: rules 9, 10 and 6 count the observer, so their figures on this tree are
+`master`'s approved figures and are not this chain's to re-derive. They were re-measured rather
+than carried over, and they agree.
+
+
+The gates
+---------
+
+    cargo test --workspace                       ok. 301 passed; 0 failed; 0 ignored
+    validate .                                   PASS   146 artifacts | Errors 0 | Warnings 0
+    doctor .                                     PASS   81 lines, every one PASS
+    preflight . --work-order WO-MOK-019
+              --phase review                     PASS   Work order: WO-MOK-019 (implemented)
+    dashboard . --output <outside the checkout>  PASS   146 artifacts | 523 relations
+                                                        Errors 0 | Warnings 17
+
+`test-run.txt` and `test-census.txt` in this directory are the full output of the first two
+forms; `governance.txt` is the account of the graph.
+
+**301 of 301, and the figure is reached by structure.** 145 observer plus 156 engine, or 42 + 103
++ 96 + 60 from the four tiers. Each half is byte-identical to a tree that measured it
+independently, so neither half's total is a product of this resolution. It reconciles from both
+predecessors too: 298 + 3, the three arrivals `master`'s `WO-MOK-018` brings, one in each of
+`tests/verification.rs`, `tests/state.rs` and `src/state.rs`; and 267 + 34, this chain's engine
+additions, unchanged in number and in name. The first direction would fail had the resolution
+lost an engine test, the second had it lost an observer test.
+
+**`preflight` names `WO-MOK-019`, and that line is the check that matters here.** The command
+resolves the work order from the identifier it is given, finds it `implemented`, and reaches the
+review phase; a renumbering that had left a dangling reference anywhere in the artifact set would
+have failed to resolve it. The `Work order:` line is quoted above verbatim for the reason
+`../README.md` gives in *What is still owed*: a green rollup is not evidence that this work order
+was the one examined.
+
+**`doctor` reports 81 lines, every one PASS, every managed file `unchanged`.** This merge takes
+`master`'s observer wholesale, which is the shape in which a managed file is most easily resolved
+by hand and drifted from the distribution it must match byte for byte. None did.
+
+**The dashboard snapshot is** `c4da6a5e5bd727bc087d117d0101446a526553cbe6c09f2199fe8c131101c4e9`,
+against `52652ca4…` at `e8114ad`. It was generated with `--output` pointing outside the checkout,
+so this tree acquired no generated file to produce it. It is not the digest of a commit and no
+record binds it. It differs from `52652ca4…` for three reasons at once and the digest cannot
+separate them: `master`'s three new artifacts, this chain's renumbering, and `HEAD` itself, which
+that digest covers. It is written down so a later run at this commit has something to compare
+against, which is the only claim `../gates.txt` and `WO-MOK-011/merge/gates.txt` make for theirs.
+
+**`validate` reports 0 errors and 0 warnings on all four planes** — structure, governance, policy
+and maintenance. Both parents validate clean and so does the merge. That is worth stating
+separately from the counts, because formal validation is what refuses a chain whose requirement no
+longer reaches a specification, and this merge joins two chains extended independently.
+
+
+Authority
+---------
+
+Every command in this file is derived, read-only evidence, and each prints its own boundary.
+Validation does not approve. Inspection does not validate by exit status, approve, authorize,
+verify, release or remediate. Preflight does not approve artifacts, authorize a diff, verify work,
+release software, commit, push, tag, publish or deploy. Nothing here records a decision. The
+verification record at the merge commit — `VREC-MOK-019`, not yet written — is where a decision
+about this tree is recorded, and it binds a commit.

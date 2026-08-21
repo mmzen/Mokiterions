@@ -17,6 +17,19 @@ clone: other agents work on this repository concurrently, so the clone is per-se
 absolute path appears in cargo's own output below, as it does in `gates.txt` and in
 `WO-MOK-011/merge/gates.txt`, and nothing in this capture depends on it.
 
+## The identifier in this file, and the four places it was restored
+
+This chain was called `WO-MOK-018` when every command below was run, and was renumbered to
+`WO-MOK-019` afterwards, at `efe20e3`. A byte sweep rewrote the identifier throughout this file.
+**Four places have been restored to what the tools actually emitted**, because in each the text
+asserts a verbatim transcript: the three `git status --porcelain` paths below, the `preflight`
+command line and its `Work order:` line, the `[W005]` diagnostic, and the two prose sentences that
+quote the `preflight` invocation. Each restoration is marked at the site.
+
+Everywhere else the sweep stands, so this file names the work order by its current identifier while
+quoting output that named it by its previous one. `../renumbering.md` states the reading rule in full
+and puts to the owner the question of whether sweeping captures was the right choice at all.
+
 ## What tree this is, and why it is not the merge commit
 
 `1e09f85` is the merge. `e8114ad` is that merge plus one commit: act 3's correction to
@@ -32,9 +45,11 @@ figure below is equally a figure at `1e09f85`.
 
 `git status --porcelain` is not empty. At the moment of the cargo capture it held three paths:
 
-     M docs/engineering/simulation/evidence/WO-MOK-019/analysis/census-by-target.py
-     M docs/engineering/simulation/evidence/WO-MOK-019/analysis/census-by-target.txt
-    ?? docs/engineering/simulation/evidence/WO-MOK-019/merge/
+     M docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.py
+     M docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.txt
+    ?? docs/engineering/simulation/evidence/WO-MOK-018/merge/
+
+    [restored verbatim: the directory was renamed to WO-MOK-019/ at efe20e3, after this capture]
 
 That is this evidence packet writing itself, plus the instrument correction described in
 `README.md`. None of the three is a source file, a manifest, a lockfile or a governed
@@ -57,7 +72,8 @@ specification is added, removed or reworded.
 
 Two gates were re-run against the amended file and both are the outcomes recorded below:
 `validate` reports PASS with 143 artifacts, 0 errors and 0 warnings, and
-`preflight --work-order WO-MOK-019 --phase review` reports PASS. The cargo gates cannot depend on it
+`preflight --work-order WO-MOK-018 --phase review` reports PASS — the identifier as invoked, restored;
+the chain is now `WO-MOK-019`. The cargo gates cannot depend on it
 for the reason the paragraph above gives. The `cargo test` capture in
 `test-run.txt` was taken earlier still, with `git status --porcelain` empty, and its own header
 records that. A verification record binding a commit re-runs all of it against a clean tree;
@@ -76,7 +92,8 @@ source file and no test**, so no cargo figure in this capture moves, and the two
 non-conformances the row exposes are reported in `README.md` and deliberately not fixed. The two
 harness gates were re-run against the amended tree and both report the outcomes recorded below
 unchanged: `validate` PASS with 143 artifacts, 0 errors and 0 warnings, and
-`preflight --work-order WO-MOK-019 --phase review` PASS. `validate`'s figures being identical is
+`preflight --work-order WO-MOK-018 --phase review` PASS — again the identifier as invoked, restored.
+`validate`'s figures being identical is
 worth stating rather than assuming — the amendment adds a section to an artifact and could have
 moved the artifact count or raised a warning, and it does neither.
 
@@ -327,18 +344,23 @@ Every finding is a warning or an info and every one of them is inherited. `gover
 compares the three finding sets artifact by artifact and shows which are the union of the two
 parents' and which the merge closes or opens.
 
-$ python -m se_harness preflight --work-order WO-MOK-019 --phase review
+$ python -m se_harness preflight --work-order WO-MOK-018 --phase review
 Harness preflight: PASS
 Phase: review
-Work order: WO-MOK-019 (implemented)
+Work order: WO-MOK-018 (implemented)
 Diagnostics: (none)
 exit=0
+
+    [restored verbatim: the chain was WO-MOK-018 when this ran and is WO-MOK-019 from efe20e3.
+     The same command against WO-MOK-019 on the merged tree is in second/gates.txt, and it also
+     reports PASS with status implemented.]
 
 `--phase review` is the phase, and it is not a detail. The default phase is `start`, and at
 `start` this command returns FAIL with
 
-    [W005] docs/engineering/simulation/work-orders/WO-MOK-019.md: status 'implemented' is not
+    [W005] docs/engineering/simulation/work-orders/WO-MOK-018.md: status 'implemented' is not
            eligible for start; expected one of approved, in_progress
+           [restored verbatim; the path is work-orders/WO-MOK-019.md from efe20e3]
 
 which is the harness correctly refusing to authorize the start of work that is already done,
 not a defect in the tree. `review` is the phase
@@ -373,12 +395,15 @@ silently partial.
 It does not verify. Every command above is derived, read-only evidence, and the harness says so
 itself in the line it prints at the foot of `preflight` and `inspect`: preflight and inspection
 do not approve artifacts, authorize a diff, verify work, release software, commit, push, tag,
-publish or deploy. Act 4's record at the merge commit — provisionally `VREC-MOK-019`, the
-identifier having moved twice under `README.md` finding 10 — is where the accountable decision is
-recorded, and it binds a commit.
+publish or deploy. Act 4's record — `VREC-MOK-019`, the identifier having moved twice under
+`README.md` finding 10 before settling, and the work order itself having moved twice as well — is
+where the accountable decision is recorded, and it binds a commit. **The commit it binds is `e96648a`,
+the second merge, not `1e09f85`**, because `master` moved again after this capture; `second/gates.txt`
+is that tree's gate record and `README.md`'s *What is still owed* item 1 states the consequence.
 
 One line of the `preflight` capture above is worth reading against that boundary rather than as a
-result. This capture ran `preflight --work-order WO-MOK-019 --phase review`, naming the work order
+result. This capture ran `preflight --work-order WO-MOK-018 --phase review` — the identifier as
+invoked, restored — naming the work order
 on the command line. CI does not: it reads the work order out of the pull request's body trailer,
 which still names `WO-MOK-012`, and the merge brought `master`'s own unrelated `WO-MOK-012` into
 this tree. So CI's review preflight passes against that work order rather than this one, and its

@@ -275,6 +275,11 @@ Authority
 
 Every figure here is derived, read-only evidence from a capture of a tree. It records what the
 merge's record stream is, not that it is acceptable. Act 4's record at the merge commit —
-provisionally `VREC-MOK-019`, the identifier having moved twice under `README.md` finding 10 — is
+`VREC-MOK-019`, the identifier having moved twice under `README.md` finding 10 before settling, and
+now owed at `e96648a`, the second merge, rather than at the merge this file measures — is
 where that decision is recorded, and the `SPEC-MOK-006` amendment this file's last section motivates
 is drafted for the owner's ratification and is not applied by this measurement.
+
+Every figure in this file carries forward to `e96648a` unchanged, and the licence is a measurement
+rather than an assumption: `git diff efe20e3 -- mokiterions-core` is empty, so the engine that wrote
+this record stream is byte-identical on both trees. `../second/gates.txt` states the boundary.
