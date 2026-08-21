@@ -233,8 +233,12 @@ assessments, its two entries for `manual-assessment.md`, and the closing paragra
 item not held — and `completion-summary.md`, at item 16 and §17.5. Read at this commit those passages are stale in one
 direction only: they state as owed a set of acts that have since been taken, and the acts are in the file they point at.
 
-**This is not the terminal status.** Commit-bound verification is classified `required`, so `VREC-MOK-016` closes this
-work order and does so against a commit that includes this transition.
+**This is not the terminal status.** Commit-bound verification is classified `required`, so a verification record closes
+this work order and does so against a commit that includes this transition. **The record that closes it is
+`VREC-MOK-017`**, `verified` and bound to `ecba9fe`, the commit that carries the eight assessments above.
+`VREC-MOK-016` was the candidate for `4539601`, where those eight blocks are blank; it is `superseded` and retained, and
+its own opening states the transition. This work order stays `implemented`, because verification does not move a work
+order's status.
 
 ### Why this chain is numbered 010, 051 through 060, and 016
 
