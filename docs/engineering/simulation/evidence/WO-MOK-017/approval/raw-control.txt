@@ -1,0 +1,17 @@
+PROBE ONLY. Control: master's behavior reproduced through the parameterized build.
+  reference   seed   0  surv  8  A  73.8% high 7/9/45     B  58.2% high 7/16/32
+  reference   seed   1  surv 11  A  75.4% high 4/10/43    B  64.1% high 7/7/25
+  reference   seed  42  surv  8  A  62.3% high 6/17/38    B  63.4% high 8/7/26
+  reference   seed 777  surv 11  A  45.9% high 13/20/28   B  46.2% high 8/13/18
+  reference   seed 123  surv  9  A  68.9% high 8/11/42    B  73.3% high 4/12/44
+  individual  seed   0  surv 11  A  58.5% high 7/10/24    B  61.7% high 10/13/37
+  individual  seed   1  surv  9  A  70.0% high 7/11/42    B  37.3% low  22/16/21
+  individual  seed  42  surv  9  A  50.8% high 13/17/31   B  60.0% high 13/11/36
+  individual  seed 777  surv 12  A  77.4% high 6/6/41     B  59.1% high 10/8/26
+  individual  seed 123  surv 10  A  66.7% high 9/11/40    B  63.9% high 8/14/39
+  social      seed   0  surv  9  A  59.0% high 9/16/36    B  81.6% high 2/7/40
+  social      seed   1  surv 10  A  70.5% high 6/12/43    B  75.4% high 5/10/46
+  social      seed  42  surv  9  A  68.3% high 6/13/41    B  63.9% high 7/15/39
+  social      seed 777  surv 11  A  69.6% high 6/11/39    B  68.3% high 10/9/41
+  social      seed 123  surv  9  A  58.9% high 12/11/33   B  67.2% high 7/13/41
+control (K=0, no floor, unshared) = master's behavior: breaching cells 14/15, worst share 81.6% at ('social', 0, 'high'), floor misses none

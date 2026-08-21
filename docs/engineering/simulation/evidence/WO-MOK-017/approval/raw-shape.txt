@@ -1,0 +1,11 @@
+ceiling under test: 60.0%  floors: reference 8, individual 8, social 5
+
+single term  R*R/60                eat-up-to satiety {'low': 88, 'med': 85, 'high': 91}  over-60% 0/15  worst  57.6%  floor misses 9  -> no
+single term  R*R/80                eat-up-to satiety {'low': 87, 'med': 81, 'high': 81}  over-60% 0/15  worst  54.5%  floor misses 4  -> no
+single term  R*R/100               eat-up-to satiety {'low': 87, 'med': 79, 'high': 75}  over-60% 0/15  worst  54.1%  floor misses 0  -> MEETS 60% AND ALL FLOORS
+single term  R*R/120               eat-up-to satiety {'low': 86, 'med': 77, 'high': 70}  over-60% 4/15  worst  67.2%  floor misses 2  -> no
+single term  R*R/150               eat-up-to satiety {'low': 86, 'med': 76, 'high': 66}  over-60% 9/15  worst  73.8%  floor misses 1  -> no
+
+two term     25R/100 + 10 on high  eat-up-to satiety {'low': 88, 'med': 77, 'high': 72}  over-60% 0/15  worst  59.3%  floor misses 0  -> MEETS 60% AND ALL FLOORS
+two term     20R/100 + 10 on high  eat-up-to satiety {'low': 88, 'med': 76, 'high': 70}  over-60% 5/15  worst  63.9%  floor misses 3  -> no
+two term     25R/100 +  8 on high  eat-up-to satiety {'low': 88, 'med': 77, 'high': 70}  over-60% 5/15  worst  65.6%  floor misses 1  -> no
