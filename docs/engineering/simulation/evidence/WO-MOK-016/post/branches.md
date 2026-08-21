@@ -110,7 +110,15 @@ Four readings, each of which the numbers support directly:
 **Entropy, from the same table.** Only branch 6 draws, and it draws exactly once, so the source consumed
 **37,975 draws** across the fifteen traced cells for 118,201 decisions — 0.32 draws per decision. The
 other 80,226 decisions are derived. `entropy.txt` is where that claim is made against
-`REQ-MOK-055`'s constraint; here it is only the count.
+`REQ-MOK-057`'s constraint; here it is only the count.
+
+**A corrected citation.** Until 2026-08-21 the sentence above cited `REQ-MOK-055`, which is the
+threaten resolution's *No entropy draw* clause and not this claim's requirement. The constraint that
+branches 1 to 5 draw nothing and branch 6 draws exactly what rule 19's case 4 draws is
+`REQ-MOK-057`'s, as line 13 of this file already had it. No figure changes: the count above and every
+table it is read from are untouched, and only the requirement the count answers to is renamed.
+`entropy.txt` §7 is where the structural side is measured — every draw site in the shipped engine
+enumerated, and every `return` in this source's body shown to precede its one `entropy` use.
 
 ## 3. The answer branch's three choices
 
