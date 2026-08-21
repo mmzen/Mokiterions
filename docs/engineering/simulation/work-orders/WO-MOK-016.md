@@ -195,14 +195,50 @@ above requires of it.
 **What the instruction authorized and what it did not.** It authorized four acts: the push, the pull request, this
 transition, and the composition of the verification record. It did not authorize any decision inside those acts — the
 verification record is composed as `ready` and not as `verified`, because `VER-MOK-016`'s eleven manual assessments are
-each their own accountable role's to sign, **eight of those acts are outstanding** — five for the product owner, two for
-the technical owner and one for the assurance owner — and the transition to `verified` is a further act of the assurance
-owner that this instruction does not name; it did not authorize a tag, a release or a merge; and it did not authorize the
-amendments this packet reports as owed. Those are named in
+each their own accountable role's to sign, **eight of those acts were outstanding when the record was composed** — five
+for the product owner, two for the technical owner and one for the assurance owner — and the transition to `verified` is a
+further act of the assurance owner that this instruction does not name; it did not authorize a tag, a release or a merge;
+and it did not authorize the amendments this packet reports as owed. Those are named in
 `evidence/WO-MOK-016/amendment-approvals.md` and left for their owners.
 
-**This is not the terminal status.** Commit-bound verification is classified `required`, so `VREC-MOK-016` closes this
-work order and does so against a commit that includes this transition.
+### The eight manual assessments, recorded 2026-08-21
+
+The owner took all eight in one interactive session, after `VREC-MOK-016` was composed and pushed, each against the
+measured evidence `evidence/WO-MOK-016/manual-assessment.md` cites for it. The blocks in that file are the records; this
+is the log of the acts.
+
+| # | Role | Decision |
+|---|---|---|
+| 1 | product owner | the damage function and the flat `5` strike cost **ratified as decided** — the weak brake ratified as weak, on 1.36 strikes per encounter, 58.3% of contacts bloodless and 21 of 156 strikes fatal |
+| 2 | product owner | `satiety / 2` **ratified**, and the destruction of the unheld part **recorded as intended in both cases** the arithmetic admits, neither of which the declared matrix reached |
+| 3 | product owner | the threat constant `30` **ratified**, and its measured behavioural inertness **accepted** — 620 of 620 threats applied, all 1,240 `threat_resolved` events at `increase:0` |
+| 6, second half | product owner | the additivity cost **recorded as not assessable at this candidate** and carried to `WO-MOK-017` with `REQ-MOK-060`, its premise being false at 60 of 60 cells identical |
+| 7 | product owner | the name `social` **confirmed** to have landed identically in all three places, the absence clause discharged in closed-set form at 210 of 210 policy tokens |
+| 8 | technical owner | the six-branch ordering and four thresholds **ratified**, no `INT-MOK-010` degeneracy finding owed; and on the question `REQ-MOK-057` left open, **branch 1 may not decline to answer** |
+| 9 | technical owner | `ARCH-MOK-001` **confirmed satisfied unchanged** — no boundary moves, so the decision does not revert to an `ADR` |
+| 10 | assurance owner | oracle 6's read enumeration **confirmed complete** at all 48 reads classified and all seven aggregate readers justified |
+
+**No decision was an amendment, so this changes no requirement.** Every one of the eight either ratified the value
+already recorded or confirmed a state already measured; `REQ-MOK-053`, `-054`, `-055`, `-057` and `ARCH-MOK-001` are
+unamended, and no `ADR` is created. Three findings the ratifications carry rather than close are already in
+`evidence/WO-MOK-016/completion-summary.md` §17.4: the asymmetric `debug_assert!` at `simulation.rs:2624`, rule 23's
+behaviourally inert constant, and the untested `--policy` diagnostic at `cli.rs:102`. Rule 26's accepted cost stays a
+residual, recorded as **not observed** at 0 of 135 answers and not as unreachable.
+
+**What the signatures leave stale, stated rather than edited.** `manual-assessment.md` is the one retained record the
+packet's format expects to be written into after capture, so its blocks and its own count of them are updated together.
+Two other records in the packet describe the assessments as they stood at the candidate and are **not** edited, because
+evidence is re-run and not edited: `evidence/WO-MOK-016/README.md` — the packet index, at its *What is owed* row for the
+assessments, its two entries for `manual-assessment.md`, and the closing paragraph that names eight judgements as the one
+item not held — and `completion-summary.md`, at item 16 and §17.5. Read at this commit those passages are stale in one
+direction only: they state as owed a set of acts that have since been taken, and the acts are in the file they point at.
+
+**This is not the terminal status.** Commit-bound verification is classified `required`, so a verification record closes
+this work order and does so against a commit that includes this transition. **The record that closes it is
+`VREC-MOK-017`**, `verified` and bound to `ecba9fe`, the commit that carries the eight assessments above.
+`VREC-MOK-016` was the candidate for `4539601`, where those eight blocks are blank; it is `superseded` and retained, and
+its own opening states the transition. This work order stays `implemented`, because verification does not move a work
+order's status.
 
 ### Why this chain is numbered 010, 051 through 060, and 016
 

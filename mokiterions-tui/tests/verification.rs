@@ -1071,15 +1071,17 @@ fn every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms() {
     }
 }
 
-/// `REQ-MOK-041` with `SPEC-MOK-003` rule 10.6: the inspector identifies a dead subject by name and
-/// identifier, the same way it identified it living.
+/// An observer holding a selection on a Mokiterion that has just died, with that subject's
+/// identifier and the name the engine reported for it.
 ///
 /// The subject has to be selected before it dies, because a dead subject cannot be selected — it is
 /// out of the roster. So the run is taken twice: once to find which Mokiterion dies first and when,
 /// and once to select that subject and hold the selection through its death. Both runs are the same
 /// seed and configuration, so the second reaches the same death on the same tick.
-#[test]
-fn the_inspector_identifies_a_dead_subject_by_name_and_identifier() {
+///
+/// Two rule 10.6 cases need this state, and it is constructed here once rather than twice so that
+/// they cannot drift onto different deaths.
+fn observer_holding_a_dead_selection() -> (Observer, String, String) {
     let arguments = ["--policy", "baseline", "--ticks", "400", "--start-paused"];
 
     let mut scout = observer_for(&arguments);
@@ -1132,16 +1134,58 @@ fn the_inspector_identifies_a_dead_subject_by_name_and_identifier() {
         "rule 10.6's selection did not survive the death"
     );
 
-    let buffer = frame(&mut observer, 160, 48).expect("above the floor");
+    (observer, victim, name)
+}
+
+/// The inspector's region on the reference viewport, as text.
+fn inspector_text(observer: &mut Observer) -> String {
+    let buffer = frame(observer, 160, 48).expect("above the floor");
     let inspector = layout::resolve(*buffer.area())
         .inspector
         .expect("the reference viewport shows the inspector");
-    let text = region(&buffer, inspector);
+    region(&buffer, inspector)
+}
+
+/// `REQ-MOK-041` with `SPEC-MOK-003` rule 10.6: the inspector identifies a dead subject by name and
+/// identifier, the same way it identified it living.
+#[test]
+fn the_inspector_identifies_a_dead_subject_by_name_and_identifier() {
+    let (mut observer, victim, name) = observer_holding_a_dead_selection();
+
+    let text = inspector_text(&mut observer);
     assert!(
         text.contains(&format!("{name}  {victim}")),
         "the inspector does not identify the dead {victim} as {name}:\n{text}"
     );
     assert!(text.contains("died on tick"), "{text}");
+}
+
+/// `SPEC-MOK-003` rule 10.6 as amended by `WO-MOK-018`: the fourth attribute is on the death line.
+///
+/// Rule 4 presents fear for every living Mokiterion on the roster's second bar line, and a dead
+/// subject is not on the roster. Before this case the value became unreachable at the moment it
+/// stopped changing, which rule 10.7's own justification had assumed could not happen.
+///
+/// The presented number is compared against the death record the state derived, and that record is
+/// compared against the engine's own report by `tests/state.rs`, so no tier restates a constant.
+#[test]
+fn the_inspector_presents_a_dead_subject_s_final_fear() {
+    let (mut observer, victim, _) = observer_holding_a_dead_selection();
+    let death = observer.death_of(&victim).expect("the death was retained");
+    let fear = death
+        .fear
+        .expect("a death a run reaches follows a survival record for the same subject");
+    let expected = format!("fear {fear}");
+
+    let text = inspector_text(&mut observer);
+    assert!(
+        text.contains(&expected),
+        "the dead {victim}'s final fear is not presented as `{expected}`:\n{text}"
+    );
+
+    // Rule 4's banded gauges belong to the roster's living rows. The death line states the four
+    // values plainly, so finding this one there is not finding a gauge that leaked into the pane.
+    assert!(text.contains("final health"), "{text}");
 }
 
 // ---- WO-MOK-013: the notice that names the remedy, without colour ---------------------------

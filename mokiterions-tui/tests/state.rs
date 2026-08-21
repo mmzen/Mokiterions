@@ -406,6 +406,47 @@ fn a_death_carries_the_tick_and_the_engine_computed_final_values() {
     assert!(observer.snapshot().deaths >= 1);
 }
 
+/// Rule 10.6 presents a dead subject's final attribute values, and rule 4 presents fear only
+/// for the living. So the death record is where a dead subject's fear has to be, and the value
+/// it carries has to be the engine's own last reported one: the observer does not re-derive a
+/// presented value (`REQ-MOK-021`). The comparison is against the engine's `survival_changed`
+/// payload in the event buffer rather than against a constant, so nothing here restates a
+/// number the observer produced.
+#[test]
+fn a_death_carries_the_fear_the_engine_last_reported_for_its_subject() {
+    let mut observer = start(&["--policy", "baseline", "--ticks", "400", "--start-paused"]);
+    while !observer.is_finished() && observer.deaths().is_empty() {
+        observer.advance().unwrap();
+    }
+    let death = observer
+        .deaths()
+        .first()
+        .expect("the baseline policy starves its population well inside 400 ticks")
+        .clone();
+
+    let last_reported = observer
+        .events()
+        .iter()
+        .filter(|event| event.subject == death.id && event.tick <= death.tick)
+        .filter_map(|event| match &event.detail {
+            EventDetail::SurvivalChanged { fear, .. } => Some(fear.1),
+            _ => None,
+        })
+        .next_back()
+        .expect("the engine reports survival before it applies a death");
+
+    assert_eq!(
+        death.fear,
+        Some(last_reported),
+        "the death carries the engine's last reported fear, unaltered"
+    );
+
+    // The three attributes read from that record travel together: none is defaulted when the
+    // others are present, which is what makes the absence in rule 10.7 informative.
+    assert!(death.satiety.is_some());
+    assert!(death.energy.is_some());
+}
+
 #[test]
 fn shared_cells_are_counted_at_the_rendered_granularity() {
     let mut observer = start(&[]);

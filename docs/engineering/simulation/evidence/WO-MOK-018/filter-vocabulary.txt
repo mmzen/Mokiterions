@@ -1,0 +1,25 @@
+WO-MOK-018 — the event-type vocabulary
+
+`EventType::ALL` enumerated in its declared order, with the `event=` string each renders
+to. `SPEC-MOK-003` rule 9 item 2's figure counts the stable core types and excludes the
+optional per-action trace, which `SPEC-MOK-001` lists separately.
+
+EventType::ALL.len() = 15
+
+   1  world_initialized            core
+   2  food_initialized             core
+   3  agent_initialized            core
+   4  decision_source_selected     core
+   5  survival_changed             core
+   6  agent_died                   core
+   7  food_consumed                core
+   8  food_regenerated             core
+   9  food_regeneration_skipped    core
+  10  territory_crossed            core
+  11  attack_resolved              core
+  12  threat_resolved              core
+  13  surrender_resolved           core
+  14  simulation_ended             core
+  15  action_trace                 optional
+
+core = 14   optional = 1   total = 15

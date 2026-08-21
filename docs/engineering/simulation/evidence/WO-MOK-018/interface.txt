@@ -1,0 +1,52 @@
+WO-MOK-018 — SPEC-MOK-004 rule 6 re-counted, before and after
+
+Measured on the implementing tree with the temporary oracle removed, and again on the tree at
+f2a79e1 (this branch's only commit, which carries the draft work order and no code), so the
+before figures are read off a tree rather than quoted from the rule they are checking.
+
+Rule 6 counts the observer package only. `SPEC-MOK-002` rule 5 closes the engine's interface
+and is not this figure. `mokiterions-tui/src/lib.rs`'s seven `pub mod` lines are the module
+declarations themselves and are in neither figure, which is what makes the table below sum to
+the rule's own total. The four `#[cfg(test)]` hooks on the observer's state type are excluded
+from the `pub`-line figure, as rule 6 requires.
+
+Counting rule, verbatim from rule 6: one item is one declaration written `pub` outside every
+`#[cfg(test)]` block; a public field is part of the item that declares it and is not counted
+again as an item; the `pub`-line figure is one line per item plus one per public field.
+
+=== AFTER — the implementing tree
+
+module       pub-lines   hooks    items    fields   items+fields
+authority    5           0        5        0        5
+export       3           0        3        0        3
+layout       17          0        10       7        17
+options      12          0        8        4        12
+render       2           0        2        0        2
+spatial      25          0        19       6        25
+state        55          4        47       8        55
+TOTAL        119         4        94       25       119
+
+=== BEFORE — the tree at f2a79e1
+
+module       pub-lines   hooks    items    fields   items+fields
+authority    5           0        5        0        5
+export       3           0        3        0        3
+layout       17          0        10       7        17
+options      12          0        8        4        12
+render       2           0        2        0        2
+spatial      25          0        19       6        25
+state        54          4        47       7        54
+TOTAL        118         4        94       24       118
+
+=== THE DIFFERENCE
+
+  items      94 -> 94
+  fields     24 -> 25
+  pub lines  118 -> 119
+
+The one arrival, from `git diff` restricted to `pub` lines in the observer package:
+
+  +    pub fear: Option<u8>,
+
+Every `pub` line the rule counts is one of the two figures' components, so the two agree by
+construction rather than by coincidence: 94 + 25 = 119.
