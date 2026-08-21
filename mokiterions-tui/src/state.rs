@@ -732,18 +732,43 @@ mod tests {
 
     #[test]
     fn a_dead_selection_is_retained_and_the_next_control_finds_a_living_neighbour() {
-        // The reference policy loses its first Mokiterion at tick 604 with eleven still living,
-        // which is the state rule 10.6 describes. The baseline policy cannot serve here: it
-        // starves the whole population on one tick, leaving no living neighbour to move to.
+        // Rule 10.6's state, and both directions of it: a dead Mokiterion with a living
+        // identifier on each side, so that Tab and BackTab are asserted on direction rather
+        // than on the wrap. The baseline policy cannot serve here: it starves the whole
+        // population on one tick, leaving no living neighbour to move to.
+        //
+        // The run is advanced until such a death appears rather than until the first one,
+        // because *which* identifier dies first is a property of the world and not of the
+        // observer. Under the reference policy it was an interior identifier at tick 604 until
+        // `REQ-MOK-060` corrected the waste condition on 2026-08-21, and is `M01` now. Searching
+        // for the state the rule describes keeps both assertions below exactly as written; a
+        // scenario pinned to the first death would have had to accept a wrap, which is a weaker
+        // claim about a different behavior.
         let mut observer = start(&["--policy", "reference", "--ticks", "700", "--start-paused"]);
-        while !observer.is_finished() && observer.deaths().is_empty() {
+        let dead = loop {
+            let living: Vec<String> = observer
+                .snapshot()
+                .agents
+                .iter()
+                .map(|agent| agent.id.clone())
+                .collect();
+            let interior = observer
+                .deaths()
+                .iter()
+                .map(|death| &death.id)
+                .find(|dead| {
+                    living.iter().any(|id| id < *dead) && living.iter().any(|id| id > *dead)
+                });
+            if let Some(dead) = interior {
+                break dead.clone();
+            }
+            assert!(
+                !observer.is_finished(),
+                "the run ended without a dead Mokiterion holding living identifiers on both \
+                 sides, so rule 10.6's state was never reached"
+            );
             observer.advance().unwrap();
-        }
-        let dead = observer.deaths()[0].id.clone();
-        assert!(
-            !observer.snapshot().agents.is_empty(),
-            "the scenario needs a living neighbour"
-        );
+        };
         observer.select_for_test(&dead);
 
         assert_eq!(observer.selection(), Some(dead.as_str()));
