@@ -16,10 +16,23 @@ path = "src/lib.rs"
 name = "mokiterions-tui"
 path = "src/main.rs"
 
-# `SPEC-MOK-003` fixes this dependency, its version and its feature set, and
-# `ADR-MOK-003` decides them. Changing any of the three is a specification amendment,
-# not an implementation choice. Every user-interface dependency lives here and nowhere
-# else; `Mokiterions` depends on nothing.
+# `SPEC-MOK-003`'s *Declared dependency set* fixes this entry, its version and its feature
+# set, and `ADR-MOK-003` decides them. Changing any of the three is a specification amendment,
+# not an implementation choice, and `SPEC-MOK-005` rule 8.4 refuses a commit where this table
+# and that section differ in either direction — `python scripts/check_declared_dependencies.py`
+# is the check.
+#
+# Every user-interface dependency lives here and nowhere else, which is `REQ-MOK-026`. Amended
+# 2026-08-20 under `ADR-MOK-006`: the earlier comment added that `Mokiterions` depends on
+# nothing, which was a statement of policy and is now a measurement — the engine's declared set
+# is empty today, and `mokiterions-core/Cargo.toml` says what admitting an entry there would
+# take. The prohibition that remains absolute is the direction: no user-interface crate may
+# become an entry of the engine's set, however stable it is.
+#
+# `default-features = false` is not tidiness. The resolved feature set is compared against the
+# declaration exactly, so a feature arriving by unification is a mismatch rather than a
+# plausible implication, and `std` — which these three features activate and this manifest does
+# not ask for — is recorded as implied in `SPEC-MOK-003` for that reason.
 [dependencies]
 Mokiterions = { path = "../mokiterions-core" }
 ratatui = { version = "0.30.2", default-features = false, features = [

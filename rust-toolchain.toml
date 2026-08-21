@@ -15,9 +15,12 @@
 #     gate in every work order. A new stable adds lints, so on a floating channel that gate
 #     can fail on an unchanged commit — the release candidate would stop verifying without
 #     anyone changing it.
-#   - The engine package's dependency table is required to stay empty and the observer has
-#     exactly one dependency, so a toolchain bump is the only thing that can change what is
-#     compiled without a source change.
+#   - The engine package declares no dependency and the observer declares exactly one, so a
+#     toolchain bump is close to the only thing that can change what is compiled without a
+#     source change. Amended 2026-08-20 under `ADR-MOK-006`: the engine's empty table is a
+#     declared set that `SPEC-MOK-005` rule 8.4 compares against, not a table required to stay
+#     empty, and either declared set may be amended by the technical owner. A lockfile change
+#     is the other way the compiled set moves, and rule 8.4 is what makes that visible.
 #
 # Both packages declare `edition = "2024"` and the workspace declares `resolver = "3"`, so
 # the floor is well above what any currently supported toolchain provides; this pin is about

@@ -1,0 +1,200 @@
+================ authority overlay (t) ================
+HELD  x8  overview  sel M01  filter none                                                                                                                        
+A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
+B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
+┌ authority mapping ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│highlighted    food_regenerated                                                                                                                               │
+│authorized by  REQ-MOK-007                                                                                                                                    │
+│                                                                                                                                                              │
+│world_initialized          REQ-MOK-001                                                                                                                        │
+│food_initialized           REQ-MOK-001                                                                                                                        │
+│agent_initialized          REQ-MOK-002                                                                                                                        │
+│decision_source_selected   REQ-MOK-008 baseline / REQ-MOK-015 reference / REQ-MOK-033 individual                                                              │
+│survival_changed           REQ-MOK-003                                                                                                                        │
+│agent_died                 REQ-MOK-003                                                                                                                        │
+│food_consumed              REQ-MOK-006                                                                                                                        │
+│food_regenerated           REQ-MOK-007                                                                                                                        │
+│food_regeneration_skipped  REQ-MOK-007                                                                                                                        │
+│territory_crossed          REQ-MOK-005                                                                                                                        │
+│simulation_ended           REQ-MOK-011                                                                                                                        │
+│action_trace               REQ-MOK-012                                                                                                                        │
+│                                                                                                                                                              │
+│decision proposal/outcome  REQ-MOK-004                                                                                                                        │
+│perceived entities         REQ-MOK-013                                                                                                                        │
+│                                                                                                                                                              │
+│Identifiers only. Requirement text lives in the artifact that holds it.                                                                                       │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 300  density 0.75%  source reference  tick 200  events 5095                                                                                      
+
+================ key-binding overlay (?) ================
+HELD  x8  overview  sel M01  filter none                                                                                                                        
+A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
+B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
+┌ key bindings ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│Space                hold or release progression                                                                                                              │
+│.                    advance exactly one tick; only while held                                                                                                │
+│+ / -                next faster / slower speed step                                                                                                          │
+│Tab / Shift-Tab      select next / previous Mokiterion                                                                                                        │
+│Esc                  close an overlay, else clear the selection                                                                                               │
+│f                    toggle follow                                                                                                                            │
+│z                    toggle overview and detail zoom                                                                                                          │
+│h j k l / arrows     pan one world cell                                                                                                                       │
+│PageUp / PageDown    pan one visible region vertically                                                                                                        │
+│j k PageUp PageDown  scroll the log while its overlay is open                                                                                                 │
+│e                    cycle the event-type filter                                                                                                              │
+│u                    filter the log to the selected Mokiterion                                                                                                │
+│c                    clear the filter                                                                                                                         │
+│x                    export every retained event                                                                                                              │
+│t                    authority of the highlighted event type                                                                                                  │
+│r / L / i            roster / log / inspector overlay                                                                                                         │
+│q                    quit                                                                                                                                     │
+│?                    this overlay                                                                                                                             │
+│                                                                                                                                                              │
+│No binding mutates world state.                                                                                                                               │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 300  density 0.75%  source reference  tick 200  events 5095                                                                                      
+
+================ detail zoom (z) ================
+HELD  x8  detail  sel M01  filter none                                                                                                                          
+A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
+B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  detail  x0-66 y0-31  region ────────────────────────────────┐┌ inspector ───────────────────────────────┐
+│Zug   M01  A  4:3           move:north       ││                                                                   ││Zug  M01                                  │
+│     h ██ 100  s █░  60  e ░░  20  f ░░   0  ││                                                                   ││position  4:3  territory A                │
+│Krul  M02  B  8:119         move:west        ││                                                                   ││sharing   1 in this rendered cell         │
+│     h ██ 100  s █░  65  e ░░  35  f █░  95  ││    Z                                                              ││health 100  satiety 60  energy 20         │
+│Quib  M03  A  0:26          move:south       ││                                                                ◎  ││                                          │
+│     h ██ 100  s ░░  45  e ░░  35  f ░░   0  ││                                                          ●        ││decision, tick 200                        │
+│Sput  M04  A  60:63         move:east        ││                                                                   ││proposed  move:north                      │
+│     h ██ 100  s █░  85  e ░░  45  f ░░   0  ││                                                                   ││outcome   + accepted                      │
+│Trok  M05  A  118:40        move:east        ││                                                                 ◎ ││applied   move:north                      │
+│     h ██ 100  s █░  65  e ░░  35  f ░░   0  ││                                                                   ││authority REQ-MOK-004                     │
+│Womp  M06  B  12:71         eat:F0174        ││                                                   ◎               ││                                          │
+│     h ██ 100  s █░  80  e ░░  40  f ░░   0  ││                                                    ◎○             ││                                          │
+│Hozz  M07  B  26:124        move:north       ││                                                                   ││                                          │
+│     h ██ 100  s █░  65  e ░░  35  f █░  90  ││                                                                   ││                                          │
+│Nurb  M08  B  118:120       move:east        ││                                               ●                   ││                                          │
+│     h ██ 100  s ░░  40  e ░░  30  f ██ 100  ││                                                                   ││                                          │
+│Vonk  M09  B  36:92         move:west        ││                                                                   ││                                          │
+│     h ██ 100  s █░  70  e ░░  40  f ░░   0  ││                                                                   ││                                          │
+│Gorm  M10  B  112:81        move:east        ││                                                                   ││                                          │
+│     h ██ 100  s ░░  40  e ░░  30  f ██ 100  ││                  ●                                         ○      ││                                          │
+│Xob   M11  B  111:78        eat:F0172        ││                                                                   ││                                          │
+│     h ██ 100  s █░  55  e ░░  35  f ██ 100  ││                                                                   ││                                          │
+│Drix  M12  B  118:124       move:east        ││                                                                   ││                                          │
+│     h █░  65  s █░  61  e ░░  35  f ██ 100  ││                                          ●             ●          ││                                          │
+│                                             ││                                                                   ││                                          │
+│                                             ││                                                  ○                ││                                          │
+│                                             ││Q                                                                  ││                                          │
+│                                             ││                                    ●                    ○  ○      ││                                          │
+│                                             ││                                                                   ││                                          │
+│                                             ││                              ●                                    ││                                          │
+│                                             ││                                                                   ││                                          │
+│                                             ││                                                     ◎             ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=200 subject=M11 event=food_consumed result=food:F0172,class:low,satiety:41->56,energy:31->36                                                             │
+│tick=200 subject=M11 event=action_trace result=proposal:eat:F0172,status:accepted,detail:food:F0172;class:low,position:111:78,territory:B,health:100,satiety:5│
+│tick=200 subject=M11 event=survival_changed result=health:100->100,satiety:56->55,energy:36->35,fear:100->100                                                 │
+│tick=200 subject=M12 event=action_trace result=proposal:move:east,status:accepted,detail:position:118:124,position:118:124,territory:B,health:65,satiety:62,en│
+│tick=200 subject=M12 event=survival_changed result=health:65->65,satiety:62->61,energy:36->35,fear:100->100                                                   │
+│tick=200 subject=A event=food_regeneration_skipped result=reason:capacity,count:61                                                                            │
+│tick=200 subject=B event=food_regenerated result=food:F0187,class:low,position:3:84                                                                           │
+│tick=200 subject=B event=food_regenerated result=food:F0188,class:medium,position:33:88                                                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 300  density 0.75%  source reference  tick 200  events 5095                                                                                      
+
+================ detail zoom, following the selection (z then f) ================
+HELD  x8  detail  sel M01  follow  filter none                                                                                                                  
+A  standing 61/61  low 14  medium 23  high 24                                                                                                                   
+B  standing 44/61  low 8  medium 13  high 23                                                                                                                    
+┌ roster  living 12  deaths 0 ────────────────┐┌ view  detail  x0-66 y0-31  region ────────────────────────────────┐┌ inspector ───────────────────────────────┐
+│Zug   M01  A  4:3           move:north       ││                                                                   ││Zug  M01                                  │
+│     h ██ 100  s █░  60  e ░░  20  f ░░   0  ││                                                                   ││position  4:3  territory A                │
+│Krul  M02  B  8:119         move:west        ││                                                                   ││sharing   1 in this rendered cell         │
+│     h ██ 100  s █░  65  e ░░  35  f █░  95  ││    Z                                                              ││health 100  satiety 60  energy 20         │
+│Quib  M03  A  0:26          move:south       ││                                                                ◎  ││                                          │
+│     h ██ 100  s ░░  45  e ░░  35  f ░░   0  ││                                                          ●        ││decision, tick 200                        │
+│Sput  M04  A  60:63         move:east        ││                                                                   ││proposed  move:north                      │
+│     h ██ 100  s █░  85  e ░░  45  f ░░   0  ││                                                                   ││outcome   + accepted                      │
+│Trok  M05  A  118:40        move:east        ││                                                                 ◎ ││applied   move:north                      │
+│     h ██ 100  s █░  65  e ░░  35  f ░░   0  ││                                                                   ││authority REQ-MOK-004                     │
+│Womp  M06  B  12:71         eat:F0174        ││                                                   ◎               ││                                          │
+│     h ██ 100  s █░  80  e ░░  40  f ░░   0  ││                                                    ◎○             ││                                          │
+│Hozz  M07  B  26:124        move:north       ││                                                                   ││                                          │
+│     h ██ 100  s █░  65  e ░░  35  f █░  90  ││                                                                   ││                                          │
+│Nurb  M08  B  118:120       move:east        ││                                               ●                   ││                                          │
+│     h ██ 100  s ░░  40  e ░░  30  f ██ 100  ││                                                                   ││                                          │
+│Vonk  M09  B  36:92         move:west        ││                                                                   ││                                          │
+│     h ██ 100  s █░  70  e ░░  40  f ░░   0  ││                                                                   ││                                          │
+│Gorm  M10  B  112:81        move:east        ││                                                                   ││                                          │
+│     h ██ 100  s ░░  40  e ░░  30  f ██ 100  ││                  ●                                         ○      ││                                          │
+│Xob   M11  B  111:78        eat:F0172        ││                                                                   ││                                          │
+│     h ██ 100  s █░  55  e ░░  35  f ██ 100  ││                                                                   ││                                          │
+│Drix  M12  B  118:124       move:east        ││                                                                   ││                                          │
+│     h █░  65  s █░  61  e ░░  35  f ██ 100  ││                                          ●             ●          ││                                          │
+│                                             ││                                                                   ││                                          │
+│                                             ││                                                  ○                ││                                          │
+│                                             ││Q                                                                  ││                                          │
+│                                             ││                                    ●                    ○  ○      ││                                          │
+│                                             ││                                                                   ││                                          │
+│                                             ││                              ●                                    ││                                          │
+│                                             ││                                                                   ││                                          │
+│                                             ││                                                     ◎             ││                                          │
+└─────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────┘└──────────────────────────────────────────┘
+┌ log  retained 5095 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│tick=200 subject=M11 event=food_consumed result=food:F0172,class:low,satiety:41->56,energy:31->36                                                             │
+│tick=200 subject=M11 event=action_trace result=proposal:eat:F0172,status:accepted,detail:food:F0172;class:low,position:111:78,territory:B,health:100,satiety:5│
+│tick=200 subject=M11 event=survival_changed result=health:100->100,satiety:56->55,energy:36->35,fear:100->100                                                 │
+│tick=200 subject=M12 event=action_trace result=proposal:move:east,status:accepted,detail:position:118:124,position:118:124,territory:B,health:65,satiety:62,en│
+│tick=200 subject=M12 event=survival_changed result=health:65->65,satiety:62->61,energy:36->35,fear:100->100                                                   │
+│tick=200 subject=A event=food_regeneration_skipped result=reason:capacity,count:61                                                                            │
+│tick=200 subject=B event=food_regenerated result=food:F0187,class:low,position:3:84                                                                           │
+│tick=200 subject=B event=food_regenerated result=food:F0188,class:medium,position:33:88                                                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+seed 42  ticks 300  density 0.75%  source reference  tick 200  events 5095                                                                                      
+

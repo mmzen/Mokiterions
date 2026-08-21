@@ -59,14 +59,24 @@ const BAND_HIGH_FLOOR: u8 = 80;
 const BAND_MIDDLE_FLOOR: u8 = 40;
 
 /// Columns a roster bar row spends on labels, values and separators, so the bars themselves get
-/// `(interior − this) / 4`. Derived from rule 4's form as amended on 2026-08-19: five leading
-/// columns, then four groups of `label`, space, bar, space and a three-column value, separated
-/// by two columns — `5 + 4 × 6 + 3 × 2`. It was `27` for three groups until `WO-MOK-010` filled
-/// rule 4.5's reserved slot with `fear`.
-const BAR_ROW_OVERHEAD: usize = 35;
+/// `(interior − this) / 2`. Derived from rule 4's form as amended on 2026-08-20: five leading
+/// columns, then two groups of `label`, space, bar, space and a three-column value, separated by
+/// two columns — `5 + 2 × 6 + 1 × 2`. It was `27` for three gauges on one line, then `35` for four
+/// once `WO-MOK-010` filled rule 4.5's reserved slot with `fear`, and four gauges on a 45-column
+/// interior left each bar two cells: a gauge that could not carry a ten-point change, which is the
+/// defect `REQ-MOK-047` states and this figure answers.
+const BAR_ROW_OVERHEAD: usize = 19;
 
 /// The bar length rule 4's mockup uses, and the maximum this implementation draws.
 const FULL_BAR: usize = 20;
+
+/// Rule 5's permanent affordance as amended 2026-08-20, in its two forms: the key that opens the
+/// key-binding overlay, named beside the run state in every frame the observer draws. `SPEC-MOK-003`
+/// rule 7 binds the key and this only states it. The long form says what the key is for, which is
+/// what `REQ-MOK-048` is about; the short form is what the floor carries, and it keeps the key
+/// itself rather than dropping the affordance.
+const HINT_LONG: &str = "? keys";
+const HINT_SHORT: &str = "?";
 
 /// Composes one frame.
 ///
@@ -113,15 +123,20 @@ fn draw_header(frame: &mut Frame, area: Rect, observer: &Observer, panes: &Panes
     frame.render_widget(Paragraph::new(lines), area);
 }
 
-/// Run state, the announcement of rule 5, and any reported failure.
+/// Run state, rule 5's permanent hint, the announcement of rule 5, and any reported failure.
 ///
-/// The announcement is reserved before the optional segments, because it is an obligation and
-/// they are not: a narrow viewport drops speed or filter before it drops the statement that a
-/// pane is only reachable as an overlay.
+/// Two obligations share this line with optional detail. The announcement says a pane is reachable
+/// only as an overlay; the hint says which key opens the overlay that lists the keys. Both are
+/// reserved before any optional segment is measured, because a narrow viewport drops speed or
+/// filter before it drops either of them.
+///
+/// Neither is satisfied out of the other's reservation. The announcement takes the longest rung of
+/// its ladder that still leaves the hint its shortest form, and the hint then takes the longest
+/// form the remainder carries — so the hint cannot cost the announcement a rung, and the
+/// announcement cannot cost the hint the key. At the floor `34 × 22` with all three panes excluded
+/// that is `RUNNING`, `?`, and each pane's initial, axis and value: 31 of 34 columns.
 fn status_line(observer: &Observer, panes: &Panes, width: u16) -> Line<'static> {
     let width = usize::from(width);
-    let announcement = announcement_text(panes, width);
-    let reserved = announcement.as_ref().map_or(0, |text| count(text) + 2);
 
     let progression = observer.progression();
     let head = Span::styled(
@@ -135,6 +150,21 @@ fn status_line(observer: &Observer, panes: &Panes, width: u16) -> Line<'static> 
     );
     let mut used = count(progression.label());
     let mut left = vec![head];
+
+    // Two columns separate a segment from what precedes it, and `justified` keeps at least one
+    // column between the left group and the announcement, so a form costs its own width plus two.
+    let announcement = announcement_text(panes, width.saturating_sub(used + count(HINT_SHORT) + 4));
+    let reserved = announcement.as_ref().map_or(0, |text| count(text) + 2);
+    let hint = if used + count(HINT_LONG) + 2 + reserved <= width {
+        HINT_LONG
+    } else {
+        HINT_SHORT
+    };
+    used += count(hint) + 2;
+    left.push(Span::styled(
+        format!("  {hint}"),
+        Style::new().add_modifier(Modifier::BOLD),
+    ));
 
     // A failure is reported in the header (rule 9.6 and the error table), ahead of the run
     // state's optional detail, and clipped rather than allowed to displace the announcement.
@@ -175,16 +205,32 @@ fn status_line(observer: &Observer, panes: &Panes, width: u16) -> Line<'static> 
         }
     }
 
-    let right = announcement.map(Span::raw).into_iter().collect();
+    // Rule 5 as amended 2026-08-20: the notice carries emphasis distinguishing it from the
+    // optional segments on the same line. A modifier rather than a colour, so rule 2.5's
+    // colour-blind reading keeps the distinction, and never `REVERSED`, which rule 4.6 spends on
+    // the roster's selection.
+    let right = announcement
+        .map(|text| Span::styled(text, Style::new().add_modifier(Modifier::BOLD)))
+        .into_iter()
+        .collect();
     justified(left, right, width)
 }
 
-/// The panes this viewport offers only as overlays, named with the keys that open them.
+/// The panes this viewport offers only as overlays: for each one the axis that excludes it, the
+/// value at which it returns, and the key that opens it meanwhile.
 ///
-/// This is the whole account of a missing pane. Rule 5 excludes a pane on one threshold in one
-/// axis, so naming the panes is more use to an operator than naming the configuration would be:
-/// it says which key restores what, and it does not require knowing a table to read.
-fn announcement_text(panes: &Panes, width: usize) -> Option<String> {
+/// This is the whole account of a missing pane, and as amended 2026-08-20 it names the remedy. Rule
+/// 5 excludes a pane on one threshold in one axis, so the axis and the value are what an operator
+/// can act on — the overlay key reaches the pane's content and only enlarging the terminal puts the
+/// pane back. Both are read from `layout`, which is where `resolve` reads them, so this states no
+/// threshold of its own.
+///
+/// The ladder's order of loss is rule 5's and not this function's: the joining words go first, then
+/// the pane's full name in favour of its initial, and the axis and the value are never dropped
+/// while any part of the notice is drawn. The short forms within that order are this
+/// implementation's. A rung that fits nowhere is not silently truncated: the shortest is drawn,
+/// which is the case `VER-MOK-013`'s plane sweep exists to prove never arises.
+fn announcement_text(panes: &Panes, room: usize) -> Option<String> {
     let excluded = panes.overlay_only();
     if excluded.is_empty() {
         return None;
@@ -194,13 +240,50 @@ fn announcement_text(panes: &Panes, width: usize) -> Option<String> {
         Pane::Log => "L",
         Pane::Inspector => "i",
     };
-    let long: Vec<String> = excluded
+    // The axis's own initial, so the abbreviation carries the axis rather than replacing it.
+    let axis = |pane: Pane| {
+        pane.axis().chars().next().map_or(String::new(), |initial| {
+            initial.to_uppercase().collect::<String>()
+        })
+    };
+    let spelled: Vec<String> = excluded
         .iter()
-        .map(|pane| format!("{} {}", pane.label(), key(*pane)))
+        .map(|pane| {
+            format!(
+                "{} {} at {} {}",
+                pane.label(),
+                key(*pane),
+                pane.axis(),
+                pane.threshold()
+            )
+        })
         .collect();
-    let long = format!("overlays: {}", long.join("  "));
-    let short: Vec<&str> = excluded.iter().map(|pane| key(*pane)).collect();
-    Some(fit(long, format!("ovl {}", short.join(" ")), width))
+    let named: Vec<String> = excluded
+        .iter()
+        .map(|pane| {
+            format!(
+                "{} {} {}{}",
+                pane.label(),
+                key(*pane),
+                axis(*pane),
+                pane.threshold()
+            )
+        })
+        .collect();
+    let initials: Vec<String> = excluded
+        .iter()
+        .map(|pane| format!("{} {}{}", key(*pane), axis(*pane), pane.threshold()))
+        .collect();
+    let mut rungs = vec![
+        format!("overlays: {}", spelled.join("  ")),
+        named.join("  "),
+        initials.join("  "),
+    ];
+    let chosen = rungs
+        .iter()
+        .position(|rung| count(rung) <= room)
+        .unwrap_or(rungs.len() - 1);
+    Some(rungs.swap_remove(chosen))
 }
 
 /// Rule 3's headline for one territory.
@@ -425,8 +508,11 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
     let snapshot = observer.snapshot();
     let interior_width = area.width.saturating_sub(2);
     let interior_height = usize::from(area.height.saturating_sub(2));
-    let two_line = area.width >= layout::ROSTER_TWO_LINE_WIDTH;
-    let rows_per_entry = if two_line { 2 } else { 1 };
+    // Rule 4 as amended 2026-08-20: an identity line and two bar lines, so two gauges fit on a
+    // line wide enough to resolve a ten-point change. Twelve entries need 36 interior rows, which
+    // is exactly what the reference viewport has once rule 5's log is six rows.
+    let multi_line = area.width >= layout::ROSTER_TWO_LINE_WIDTH;
+    let rows_per_entry = if multi_line { 3 } else { 1 };
     let capacity = interior_height / rows_per_entry;
 
     let agents = &snapshot.agents;
@@ -458,7 +544,7 @@ fn draw_roster(frame: &mut Frame, area: Rect, observer: &Observer) {
             agent,
             observer.name_of(&agent.id).unwrap_or_default(),
             bar,
-            two_line,
+            multi_line,
         ) {
             lines.push(line.style(style));
         }
@@ -515,16 +601,16 @@ fn action_text(action: &Action) -> String {
     }
 }
 
-/// Rule 4's entry form. Two lines at 47 columns or more, one line below.
+/// Rule 4's entry form. Three lines at 47 columns or more, one line below.
 ///
 /// `name` is what the engine reported for this Mokiterion, or empty where it reported none, in
 /// which case the field is blank rather than filled with the identifier (`REQ-MOK-041`). It takes
-/// six columns of line one only, so the bar row's 35-column overhead and `bar_width` are untouched.
+/// six columns of line one only, so the bar rows' 19-column overhead and `bar_width` are untouched.
 fn entry_lines(
     agent: &AgentSnapshot,
     name: &str,
     bar: usize,
-    two_line: bool,
+    multi_line: bool,
 ) -> Vec<Line<'static>> {
     let applied = agent
         .applied_action
@@ -534,7 +620,7 @@ fn entry_lines(
     // to be applied to the rendered string rather than to the value.
     let territory = agent.territory.to_string();
     let position = agent.position.to_string();
-    if !two_line {
+    if !multi_line {
         // Rule 4.7: the collapsed form has no bars and takes no band. It exists to keep the
         // numbers legible where the bar cells will not fit, and the numbers carry the level.
         // Rule 4.5 as amended makes that four numbers rather than three.
@@ -557,12 +643,19 @@ fn entry_lines(
         // five-column indent and the two-column separators are unstyled, which is what keeps a
         // band the property of one gauge rather than of the row. The fourth gauge is unbanded --
         // the three bands are a survival scale on which high is good, and `fear` inverts it.
+        //
+        // Two gauges to a line, in the order rule 4 as amended 2026-08-20 fixes: `health` and
+        // `satiety` first, `energy` and `fear` second, which is the left-to-right order the one-line
+        // form had, so a capture taken before the amendment reads against one taken after it. Each
+        // line takes the same five-column indent, and `BAR_ROW_OVERHEAD` accounts for one line.
         Line::from(vec![
             Span::raw("     "),
             gauge('h', agent.health, bar),
             Span::raw("  "),
             gauge('s', agent.satiety, bar),
-            Span::raw("  "),
+        ]),
+        Line::from(vec![
+            Span::raw("     "),
             gauge('e', agent.energy, bar),
             Span::raw("  "),
             unbanded_gauge('f', agent.fear, bar),
@@ -570,9 +663,9 @@ fn entry_lines(
     ]
 }
 
-/// The bar length that fits four bars in an interior of this width, capped at rule 4's twenty.
+/// The bar length that fits two bars in an interior of this width, capped at rule 4's twenty.
 fn bar_width(interior_width: u16) -> usize {
-    (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 4).min(FULL_BAR)
+    (usize::from(interior_width).saturating_sub(BAR_ROW_OVERHEAD) / 2).min(FULL_BAR)
 }
 
 /// One survival gauge: a proportional bar and its numeric value, in rule 4.7's band for that
@@ -1056,6 +1149,8 @@ fn justified(left: Vec<Span<'static>>, right: Vec<Span<'static>>, width: usize) 
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use super::*;
     use crate::options::{self, Startup};
     use mokiterions::simulation::{Action, Coordinate};
@@ -1152,9 +1247,16 @@ mod tests {
             .map(ToString::to_string)
             .collect();
 
+        // Rule 4 as amended 2026-08-20 puts two gauges on each of two lines, in the order the one
+        // line had. The characters of each gauge are the mockup's unchanged; what moves is where
+        // the third and fourth sit, which is the whole of what the amendment does to this form.
         assert_eq!(
             lines[1],
-            "     h ████████████████████ 100  s ████████████████░░░░  81  e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20"
+            "     h ████████████████████ 100  s ████████████████░░░░  81"
+        );
+        assert_eq!(
+            lines[2],
+            "     e ██████████████░░░░░░  72  f ████░░░░░░░░░░░░░░░░  20"
         );
         // Line one carries the name, identifier, territory, position and the applied action, in
         // the mockup's columns. The action uses the engine's own rendering, `eat:F0058`. The bar
@@ -1171,10 +1273,13 @@ mod tests {
         );
         assert!(lines[0].ends_with("eat:F0058"));
 
-        // The fourth slot rule 4.5 reserved now carries `fear`, and the row ends there: no fifth
-        // group and no trailing padding follow it.
-        assert_eq!(lines[1].trim_end(), lines[1]);
-        assert_eq!(count(&lines[1]), 4 * FULL_BAR + BAR_ROW_OVERHEAD);
+        // The fourth slot rule 4.5 reserved now carries `fear`, and each row ends at its second
+        // gauge: no third group and no trailing padding follow it.
+        for row in &lines[1..] {
+            assert_eq!(row.trim_end(), row);
+            assert_eq!(count(row), 2 * FULL_BAR + BAR_ROW_OVERHEAD);
+        }
+        assert_eq!(lines.len(), 3);
 
         // Rule 4.7 on the mockup's own values: 100 and 81 are high, 72 is middle. Two gauges
         // sharing a band and one differing is the shape a band read from the row rather than from
@@ -1183,32 +1288,30 @@ mod tests {
         // The fourth gauge takes no band, so its span carries no foreground -- the same `None` a
         // separator carries. Its content is asserted alongside the vector, because the vector
         // alone cannot tell an unbanded gauge from the space in front of it.
-        let spans = entry_lines(&agent, "Blip", FULL_BAR, true).remove(1).spans;
-        let bands: Vec<Option<Color>> = spans.iter().map(|span| span.style.fg).collect();
+        let rows = entry_lines(&agent, "Blip", FULL_BAR, true);
+        let bands = |row: &Line<'static>| -> Vec<Option<Color>> {
+            row.spans.iter().map(|span| span.style.fg).collect()
+        };
         assert_eq!(
-            bands,
-            vec![
-                None,
-                Some(Color::Green),
-                None,
-                Some(Color::Green),
-                None,
-                Some(Color::Indexed(208)),
-                None,
-                None
-            ]
+            bands(&rows[1]),
+            vec![None, Some(Color::Green), None, Some(Color::Green)]
         );
-        assert!(spans[7].content.starts_with('f'), "{}", spans[7].content);
+        assert_eq!(
+            bands(&rows[2]),
+            vec![None, Some(Color::Indexed(208)), None, None]
+        );
+        let fear = &rows[2].spans[3];
+        assert!(fear.content.starts_with('f'), "{}", fear.content);
     }
 
     #[test]
     fn a_bar_row_shrinks_to_its_pane_and_never_overflows_it() {
-        // The 47-column roster pane has a 45-column interior. Four groups narrow the bars to two
-        // cells where three groups gave six — rule 4 as amended on 2026-08-19 accepts that.
-        assert_eq!(bar_width(45), 2);
-        // `45 − 35` is not a multiple of four, so two interior columns stay unused. The row is
-        // shorter than the interior rather than wider than it, which is the property that matters.
-        assert_eq!(4 * bar_width(45) + BAR_ROW_OVERHEAD, 43);
+        // The 47-column roster pane has a 45-column interior. Two groups to a line give thirteen
+        // cells where four on one line gave two — `REQ-MOK-047` and rule 4 as amended 2026-08-20.
+        assert_eq!(bar_width(45), 13);
+        // `45 − 19` is a multiple of two, so the row fills the interior exactly. The property that
+        // matters is that it is never wider than the interior, which the sweep below holds.
+        assert_eq!(2 * bar_width(45) + BAR_ROW_OVERHEAD, 45);
         // A full-width overlay reaches the mockup's twenty.
         assert_eq!(bar_width(158), FULL_BAR);
         // A pane too narrow for any bar asks for none rather than for a negative width.
@@ -1221,7 +1324,7 @@ mod tests {
                 assert_eq!(bar, 0, "interior {interior} asked for a bar it cannot hold");
             } else {
                 assert!(
-                    4 * bar + BAR_ROW_OVERHEAD <= usize::from(interior),
+                    2 * bar + BAR_ROW_OVERHEAD <= usize::from(interior),
                     "interior {interior} overflows with a bar of {bar}"
                 );
             }
@@ -1324,12 +1427,19 @@ mod tests {
             fear: 33,
             applied_action: Some(Action::Sleep),
         };
+        let entry = entry_lines(&agent, "Ort", FULL_BAR, true);
         assert_eq!(
-            entry_lines(&agent, "Ort", FULL_BAR, true)[1].to_string(),
+            entry[1].to_string(),
             format!(
-                "     {}  {}  {}  {}",
+                "     {}  {}",
                 unbanded('h', 12, FULL_BAR),
-                unbanded('s', 55, FULL_BAR),
+                unbanded('s', 55, FULL_BAR)
+            )
+        );
+        assert_eq!(
+            entry[2].to_string(),
+            format!(
+                "     {}  {}",
                 unbanded('e', 88, FULL_BAR),
                 unbanded('f', 33, FULL_BAR)
             )
@@ -1353,21 +1463,24 @@ mod tests {
             fear: 7,
             applied_action: Some(Action::Sleep),
         };
-        let row = entry_lines(&agent, "Ort", FULL_BAR, true).remove(1);
+        let entry = entry_lines(&agent, "Ort", FULL_BAR, true);
+        let (first, second) = (&entry[1], &entry[2]);
 
-        // Indent, gauge, separator, gauge, separator, gauge, separator, gauge.
-        assert_eq!(row.spans.len(), 8);
-        assert_eq!(row.spans[0].style.fg, None, "the indent carries a band");
-        assert_eq!(row.spans[2].style.fg, None, "a separator carries a band");
-        assert_eq!(row.spans[4].style.fg, None, "a separator carries a band");
-        assert_eq!(row.spans[6].style.fg, None, "a separator carries a band");
-        assert_eq!(row.spans[1].style.fg, Some(Color::Red));
-        assert_eq!(row.spans[3].style.fg, Some(Color::Indexed(208)));
-        assert_eq!(row.spans[5].style.fg, Some(Color::Green));
+        // Each bar line is indent, gauge, separator, gauge — the same four spans, so the band is
+        // the property of a gauge on both of the lines rule 4 as amended draws.
+        assert_eq!(first.spans.len(), 4);
+        assert_eq!(second.spans.len(), 4);
+        assert_eq!(first.spans[0].style.fg, None, "the indent carries a band");
+        assert_eq!(second.spans[0].style.fg, None, "the indent carries a band");
+        assert_eq!(first.spans[2].style.fg, None, "a separator carries a band");
+        assert_eq!(second.spans[2].style.fg, None, "a separator carries a band");
+        assert_eq!(first.spans[1].style.fg, Some(Color::Red));
+        assert_eq!(first.spans[3].style.fg, Some(Color::Indexed(208)));
+        assert_eq!(second.spans[1].style.fg, Some(Color::Green));
 
         // Three distinct bands, and no modifier anywhere: rule 4.6 owns reversed video and rule
         // 4.7 adds no emphasis of its own.
-        for span in &row.spans {
+        for span in first.spans.iter().chain(second.spans.iter()) {
             assert_eq!(span.style.add_modifier, Modifier::empty(), "{span:?}");
         }
 
@@ -1375,15 +1488,15 @@ mod tests {
         // fills it no band. This is the one span that carries characters and no colour, so the
         // vector alone cannot tell it from a separator: its content is asserted with its style.
         assert_eq!(
-            row.spans[7].style.fg, None,
+            second.spans[3].style.fg, None,
             "the fourth gauge carries a band"
         );
         assert!(
-            row.spans[7].content.starts_with('f'),
+            second.spans[3].content.starts_with('f'),
             "{}",
-            row.spans[7].content
+            second.spans[3].content
         );
-        assert!(row.to_string().ends_with("  7"));
+        assert!(second.to_string().ends_with("  7"));
     }
 
     /// Rule 4.7 reads the current value and nothing else. No previous tick is retained, so
@@ -1464,16 +1577,18 @@ mod tests {
         assert!(lines[0].ends_with(ABSENT), "{}", lines[0]);
         assert!(lines[1].contains("h ░░░░   0"), "{}", lines[1]);
         // Rule 4.4 governs the fourth gauge on the same terms: a computed zero is a zero and an
-        // empty bar, which is also every Mokiterion's initial `fear`.
-        assert!(lines[1].contains("f ░░░░   0"), "{}", lines[1]);
+        // empty bar, which is also every Mokiterion's initial `fear`. It is on the second bar line
+        // as of rule 4 as amended 2026-08-20.
+        assert!(lines[2].contains("f ░░░░   0"), "{}", lines[2]);
         // Rule 4.7 puts zero in the low band. It stays a `0` with an empty bar, so what
         // distinguishes it from an absent value is still the character and not the colour. The
         // fourth gauge is outside that scale entirely: `fear 0` is the best state `fear` has
         // rather than the worst, and it takes no band at all.
-        let spans = entry_lines(&agent, "Ort", 4, true).remove(1).spans;
-        assert_eq!(spans[1].style.fg, Some(Color::Red));
-        assert_eq!(spans[7].style.fg, None);
-        assert!(spans[7].content.starts_with('f'), "{}", spans[7].content);
+        let entry = entry_lines(&agent, "Ort", 4, true);
+        assert_eq!(entry[1].spans[1].style.fg, Some(Color::Red));
+        let fear = &entry[2].spans[3];
+        assert_eq!(fear.style.fg, None);
+        assert!(fear.content.starts_with('f'), "{}", fear.content);
 
         agent.applied_action = Some(Action::Wait);
         assert!(
@@ -1721,5 +1836,211 @@ mod tests {
             ),
             before
         );
+    }
+
+    // ---- `REQ-MOK-047`: a ten-point step moves the fill ---------------------------------------
+
+    /// Every gauge the roster draws in this frame, as its label, its filled cells and its bar cells.
+    ///
+    /// Read out of the roster pane's own columns rather than out of the whole buffer, so that a
+    /// block character drawn anywhere else cannot be counted as a bar. The bar is counted off the
+    /// row: nothing here states a width, which is what lets the same reader be used at every
+    /// viewport and lets a viewport that draws no bar at all be recognised as drawing none.
+    fn drawn_gauges(buffer: &Buffer) -> Vec<(char, usize, usize)> {
+        const FILLED: &str = "\u{2588}";
+        const SHADED: &str = "\u{2591}";
+
+        let Some(roster) = layout::resolve(*buffer.area()).roster else {
+            return Vec::new();
+        };
+        let mut gauges = Vec::new();
+        for y in roster.y + 1..roster.y + roster.height - 1 {
+            let cells: Vec<&str> = (roster.x + 1..roster.x + roster.width - 1)
+                .map(|x| buffer.cell((x, y)).expect("inside the pane").symbol())
+                .collect();
+            let mut index = 0;
+            while index + 2 < cells.len() {
+                let label = cells[index].chars().next().unwrap_or(' ');
+                let opens = cells[index + 1] == " "
+                    && (cells[index + 2] == FILLED || cells[index + 2] == SHADED);
+                if !matches!(label, 'h' | 's' | 'e' | 'f') || !opens {
+                    index += 1;
+                    continue;
+                }
+                let bar = cells[index + 2..]
+                    .iter()
+                    .copied()
+                    .take_while(|symbol| *symbol == FILLED || *symbol == SHADED)
+                    .count();
+                let filled = cells[index + 2..index + 2 + bar]
+                    .iter()
+                    .copied()
+                    .take_while(|symbol| *symbol == FILLED)
+                    .count();
+                gauges.push((label, filled, bar));
+                index += 2 + bar;
+            }
+        }
+        gauges
+    }
+
+    /// Gives every living Mokiterion the same value in all four attributes.
+    ///
+    /// `REQ-MOK-047` is a property of the whole value range and a run reaches only the values it
+    /// reaches, so the range is presented to the frame through the snapshot hook. This is what makes
+    /// the case a property of the presentation rather than of one seed's trajectory.
+    fn hold_every_attribute_at(observer: &mut Observer, value: u8) {
+        let mut snapshot = observer.snapshot().clone();
+        for agent in &mut snapshot.agents {
+            agent.health = value;
+            agent.satiety = value;
+            agent.energy = value;
+            agent.fear = value;
+        }
+        observer.replace_snapshot_for_test(snapshot);
+    }
+
+    /// The filled-cell count of each gauge at every value in `0..=100`, as the frame draws it.
+    ///
+    /// Every entry holds the same value, so every entry's gauges must present the same fill; a
+    /// disagreement between two entries is reported here rather than averaged away. The bar width is
+    /// returned alongside because the ladder is a property of the width, and the widths the
+    /// implementation can produce are what the sweep below enumerates.
+    fn fill_ladder(observer: &mut Observer, width: u16, height: u16) -> (usize, Vec<Vec<usize>>) {
+        let mut bar_width = 0;
+        let ladder = (0..=100u8)
+            .map(|value| {
+                hold_every_attribute_at(observer, value);
+                let buffer = frame_of(observer, width, height);
+                let mut fills = Vec::new();
+                for label in ['h', 's', 'e', 'f'] {
+                    let drawn: Vec<(usize, usize)> = drawn_gauges(&buffer)
+                        .into_iter()
+                        .filter(|(drawn, _, _)| *drawn == label)
+                        .map(|(_, filled, bar)| (filled, bar))
+                        .collect();
+                    assert!(
+                        !drawn.is_empty(),
+                        "{width}x{height} draws no {label} gauge at {value}"
+                    );
+                    for (filled, bar) in &drawn {
+                        assert_eq!(
+                            (*filled, *bar),
+                            drawn[0],
+                            "{width}x{height} draws two {label} gauges of {value} as \
+                             {filled}/{bar} and {:?}",
+                            drawn[0]
+                        );
+                    }
+                    bar_width = drawn[0].1;
+                    fills.push(drawn[0].0);
+                }
+                fills
+            })
+            .collect();
+        (bar_width, ladder)
+    }
+
+    /// Asserts `REQ-MOK-047` over a ladder: ten more points is always at least one more cell.
+    fn every_ten_point_step_moves_the_fill(bar: usize, ladder: &[Vec<usize>], where_: &str) {
+        for value in 0..=90usize {
+            for (slot, label) in ['h', 's', 'e', 'f'].into_iter().enumerate() {
+                let low = ladder[value][slot];
+                let high = ladder[value + 10][slot];
+                assert!(
+                    high > low,
+                    "{where_} fills the {label} gauge with {low} cells at {value} and {high} at \
+                     {} — a ten-point change an operator cannot see",
+                    value + 10
+                );
+            }
+        }
+        // The ends, which the steps above do not pin: nothing filled at nothing, and a full bar at
+        // the maximum. A gauge satisfying the steps while never emptying or never filling would be
+        // proportional to the value over a range narrower than the value's own.
+        assert_eq!(ladder[0], vec![0; 4], "{where_} at zero");
+        assert_eq!(ladder[100], vec![bar; 4], "{where_} at the maximum");
+    }
+
+    /// `REQ-MOK-047` at the reference viewport, over the whole value range.
+    ///
+    /// This is the case the two-cell gauge failed: at `ff3a155` the roster's bar was two cells, so
+    /// the fill changed twice over `0..=100` and a fall from 99 to 50 changed nothing at all. It is
+    /// asserted at every value rather than at the ten multiples of ten, because the obligation is
+    /// that *any* ten-point change moves the fill and not that the round ones do.
+    ///
+    /// Rule 8 places it here: the value range is reached through the snapshot hook, which no test
+    /// outside the crate can link.
+    #[test]
+    fn a_ten_point_step_moves_the_fill_at_the_reference_viewport() {
+        let mut observer = start(&[]);
+        observer.advance().unwrap();
+        let (bar, ladder) = fill_ladder(&mut observer, 160, 48);
+        every_ten_point_step_moves_the_fill(bar, &ladder, "the reference viewport");
+    }
+
+    /// `VER-MOK-013`'s plane property: no viewport draws a bar too coarse to resolve a ten-point
+    /// change.
+    ///
+    /// The plane rather than the declared viewports, on the model of rule 5's monotonicity
+    /// obligation, because a named-size check is exactly what let the two-cell gauge pass. A viewport
+    /// that draws no bar — because rule 5 gives it no roster, or rule 4 collapses the entry — is
+    /// vacant rather than passing by absence, and it is drawn here to establish that it draws none.
+    ///
+    /// The plane is swept in full at the layout, and a frame is drawn at every viewport the layout
+    /// gives no roster and at one viewport per distinct roster geometry the layout produces. Two
+    /// viewports resolving the same roster pane present the same rectangle to the same drawing code,
+    /// so the second measures what the first did; the ladder then runs once per distinct bar width,
+    /// because the fill is a function of the value and the width. What this trades away is the case
+    /// of a bar that reads the viewport behind its pane's back, and
+    /// `a_bar_row_shrinks_to_its_pane_and_never_overflows_it` covers the pane's interior widths from
+    /// 1 to 200 directly.
+    #[test]
+    fn every_bar_width_the_roster_can_produce_resolves_a_ten_point_step() {
+        let mut observer = start(&[]);
+        observer.advance().unwrap();
+
+        let mut representative: BTreeMap<usize, (u16, u16)> = BTreeMap::new();
+        let mut geometries: BTreeMap<(u16, u16, u16, u16), (u16, u16)> = BTreeMap::new();
+        let mut drawing = 0usize;
+        for width in layout::MIN_WIDTH..=200u16 {
+            for height in layout::MIN_HEIGHT..=60u16 {
+                let Some(roster) = layout::resolve(Rect::new(0, 0, width, height)).roster else {
+                    let buffer = frame_of(&mut observer, width, height);
+                    assert!(
+                        drawn_gauges(&buffer).is_empty(),
+                        "{width}x{height} has no roster and draws a gauge"
+                    );
+                    continue;
+                };
+                let geometry = (roster.x, roster.y, roster.width, roster.height);
+                if geometries.insert(geometry, (width, height)).is_some() {
+                    continue;
+                }
+                let buffer = frame_of(&mut observer, width, height);
+                let gauges = drawn_gauges(&buffer);
+                if gauges.is_empty() {
+                    continue;
+                }
+                drawing += 1;
+                for (_, _, bar) in gauges {
+                    representative.entry(bar).or_insert((width, height));
+                }
+            }
+        }
+        assert!(
+            drawing > 0,
+            "no viewport on the plane draws a gauge, so this proves nothing"
+        );
+        assert!(
+            !representative.contains_key(&0),
+            "a bar of no cells is drawn"
+        );
+
+        for (bar, (width, height)) in representative {
+            let (measured, ladder) = fill_ladder(&mut observer, width, height);
+            assert_eq!(measured, bar, "{width}x{height} changed its bar width");
+            every_ten_point_step_moves_the_fill(bar, &ladder, &format!("a bar of {bar} cells"));
+        }
     }
 }

@@ -22,8 +22,12 @@ const HEADER_HEIGHT: u16 = 3;
 const FOOTER_HEIGHT: u16 = 1;
 const ROSTER_WIDTH: u16 = 47;
 const INSPECTOR_WIDTH: u16 = 44;
-const FULL_LOG_HEIGHT: u16 = 10;
-const COMPACT_LOG_HEIGHT: u16 = 6;
+
+/// The rows the log occupies wherever rule 5 admits it, as amended 2026-08-20: six, at every
+/// viewport that has a log at all. The growth to ten at `W >= 140` and `H >= 48` is withdrawn,
+/// because those four rows are the four the roster needs to keep `REQ-MOK-020`'s twelve entries
+/// once `REQ-MOK-047` makes an entry three lines tall.
+const LOG_HEIGHT: u16 = 6;
 
 /// Rule 5's pane thresholds. The roster is a vertical list in a fixed-width column and the
 /// inspector needs width for the roster and a usable view beside it, so both read the width;
@@ -31,10 +35,13 @@ const COMPACT_LOG_HEIGHT: u16 = 6;
 const ROSTER_MIN_WIDTH: u16 = 100;
 const INSPECTOR_MIN_WIDTH: u16 = 140;
 const LOG_MIN_HEIGHT: u16 = 38;
-const FULL_LOG_MIN_WIDTH: u16 = 140;
-const FULL_LOG_MIN_HEIGHT: u16 = 48;
 
-/// The pane width at or above which a roster entry occupies two lines (rule 4).
+/// The pane width at or above which a roster entry occupies rule 4's multi-line form: an identity
+/// line and the bar lines under it. Below it the entry collapses to one line of numeric values.
+///
+/// The name predates the 2026-08-20 amendment that made the form three lines rather than two. It
+/// is a member of `SPEC-MOK-004` rule 6's interface, so renaming it is a **Reduction** and an
+/// addition under that rule and not this work order's to take; the misnomer is reported instead.
 pub const ROSTER_TWO_LINE_WIDTH: u16 = 47;
 
 /// A pane the current viewport may exclude from the body. Every excluded pane is reachable as
@@ -52,6 +59,28 @@ impl Pane {
             Self::Roster => "roster",
             Self::Inspector => "inspector",
             Self::Log => "log",
+        }
+    }
+
+    /// The axis rule 5 decides this pane on, named as the announcement states it.
+    ///
+    /// The announcement of rule 5 as amended 2026-08-20 states the axis and the threshold value at
+    /// which each excluded pane returns. Both are read from here — from the same constants
+    /// `resolve` decides presence from — so the presentation layer restates neither and a
+    /// threshold that moves moves in one place.
+    pub(crate) fn axis(self) -> &'static str {
+        match self {
+            Self::Roster | Self::Inspector => "width",
+            Self::Log => "height",
+        }
+    }
+
+    /// The one threshold on that axis at or above which this pane is part of the body.
+    pub(crate) fn threshold(self) -> u16 {
+        match self {
+            Self::Roster => ROSTER_MIN_WIDTH,
+            Self::Inspector => INSPECTOR_MIN_WIDTH,
+            Self::Log => LOG_MIN_HEIGHT,
         }
     }
 }
@@ -93,19 +122,20 @@ pub fn below_floor(width: u16, height: u16) -> bool {
 }
 
 /// The rows the log occupies, `0` when the height excludes it.
-fn log_rows(width: u16, height: u16) -> u16 {
+///
+/// One threshold and one height, as amended 2026-08-20. The pane's presence still reads
+/// `LOG_MIN_HEIGHT` and nothing else, so no viewport gains or loses a log here.
+fn log_rows(height: u16) -> u16 {
     if height < LOG_MIN_HEIGHT {
         0
-    } else if width >= FULL_LOG_MIN_WIDTH && height >= FULL_LOG_MIN_HEIGHT {
-        FULL_LOG_HEIGHT
     } else {
-        COMPACT_LOG_HEIGHT
+        LOG_HEIGHT
     }
 }
 
 /// Resolves every region for a viewport above the floor.
 pub fn resolve(area: Rect) -> Panes {
-    let log_height = log_rows(area.width, area.height);
+    let log_height = log_rows(area.height);
 
     let header = Rect {
         height: HEADER_HEIGHT.min(area.height),

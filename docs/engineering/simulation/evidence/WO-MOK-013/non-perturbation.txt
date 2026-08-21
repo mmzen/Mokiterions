@@ -1,0 +1,25 @@
+WO-MOK-013 non-perturbation comparison
+
+Configuration: --seed 42 --ticks 300 --policy reference --density 0.75
+
+The observed run was drawn at a rotating viewport over the nine renderable declared
+viewports and interacted with on every round, using the twelve-key script
+tests/verification.rs drives its own observed runs with, plus the speed controls. The
+unobserved run is the engine's `Simulation::run`, which is the engine binary's whole
+behaviour, writing into memory.
+
+unobserved records          7534
+observed retained records   7534
+records identical, in order yes
+first difference            none
+
+engine summary line (unobserved):
+  summary reason=tick_limit ticks=300 survivors=11 deaths=1 territory_a=3 territory_b=8 food_a_low=10 food_a_medium=23 food_a_high=26 food_b_low=1 food_b_medium=8 food_b_high=25
+
+export trailer (observed):
+  # retained=7534 truncated=false
+
+The two streams are retained beside this file as `non-perturbation-unobserved.txt` and
+`non-perturbation-observed-export.txt`, so the comparison is reproducible with `diff`
+rather than only stated here.
+

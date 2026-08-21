@@ -164,3 +164,9 @@ census path. `DecisionSource::name` is pre-existing and names a policy, not a Mo
 `VER-MOK-011` is therefore **not yet satisfied**, on one count and one only, and `VREC-MOK-011`
 cannot be written as satisfied until the assurance owner records assessment 5. Nothing in the code
 or the evidence is blocked on it; the outstanding item is a judgement, not a measurement.
+
+> **Later fact, added 2026-08-20 without changing anything above.** `VREC-MOK-011` was transitioned to
+> `verified` on that date, and **assessment 5 is still OUTSTANDING** — the owner decided on the record
+> rather than performing the assessment, so what the `verified` status records is an acceptance of this
+> evidence with this row unperformed. Both sentences above therefore still hold: `VER-MOK-011` is not
+> satisfied, and the record does not claim it is. See `assurance-decision.md`.
