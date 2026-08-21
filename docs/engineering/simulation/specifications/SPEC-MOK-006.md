@@ -19,6 +19,13 @@ specifies = [
 
 # Specification: Structured record stream
 
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-20 | Original content for `REQ-MOK-042` through `REQ-MOK-046`. | Approved 2026-08-20 by the repository owner acting as technical owner, in the act that also approved `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `ADR-MOK-005`, `VER-MOK-012` and the work order. Written under `WO-MOK-018`, which was `WO-MOK-012` until the 2026-08-21 renumbering `evidence/WO-MOK-012/identifier-collision.md` decision 3 required of whichever branch reached `master` second. |
+| 2026-08-21 | **This section is added, and the stream's vocabulary is extended from twelve event kinds to fifteen.** The merge of `master` at `fa065cc` into this branch at `fa0bfd9`, as `1e09f85`, is the first tree in which `CAP-MOK-010`'s combat and this stream both exist, and it emits fourteen field names this specification does not name. Rule 3.4 is the provision that makes this an amendment rather than an implementation detail: a string field added to the stream "must either be added to that enumeration or arrive together with an escaping function and its own verification". **Rule 3.2**: `config.policy` and `result.source` gain `social`; the `event` row reads **fifteen** event types rather than twelve; `result.proposal.action` gains the seven targeted verbs `attack`, `threaten`, `fight`, `retreat`, `surrender`, `approach` and `avoid`, making eleven; one new row gives `result.target`, `result.recipient`, `result.proposal.target` and `result.suffered[].attacker` the domain `M[0-9]{2}`; a new row gives `result.target_died` the **closed two-value domain** `yes`, `no`; and `result.detail` gains eleven members — the eight words master's targeted validation and its co-located rejection can produce (`target_unknown`, `target_dead`, `target_is_actor`, `target_not_perceived`, `target_not_in_contact`, `target_not_in_record`, `target_co_located`, and `target_missing`, which sits on two arms guarded by `debug_assert!` and is unreachable while the invariant holds) and the three patterns `damage:<u8>`, `increase:<u8>` and `transferred:<u8>`. **Rule 3.3's union does not move, and that is measured rather than argued**: every value the enumeration gains is an identifier, a fixed word or a colon-joined integer, and no character outside `A`–`Z`, `a`–`z`, `0`–`9` and `_ . - + : ; >` appears in the 1,365,884 records of the two captures `VER-MOK-012` oracle 1 took at this merge. So the stream still needs no escaping function, for the reason rule 3.3 gives and for no other. **Rules 4.4 and 4.5 do not move either**: there are still two absences and still exactly two booleans, because `target_died` is the string `yes` or `no` on `status`'s precedent rather than a JSON boolean, and no field of the new vocabulary is ever `null` in either capture; rule 4.5 gains one sentence saying so. **Rules 5.3 and 10: `schema` becomes `2`.** Rule 10.2 requires the increment when a field is added and when a value's domain in rule 3.2 gains a member, and this amendment does the first fourteen times and the second thirteen. `VER-MOK-012` recorded that whether rule 10.2's triggers are complete "cannot be verified before a second version exists" and that "the first increment will be the first real test"; this is that increment. **The engine does not conform until it is changed**: at `1e09f85` and at `e8114ad` it writes `"schema":1` on the header of a stream carrying every field this row adds. The change is `RECORD_SCHEMA_VERSION` and one asserted literal in the header unit test, and it is **not made here**, because it is a product change and this row is a specification correction the owner has not ratified. **Rule 6.5 admits a fourth shape**: a targeted proposal is `{"action":"attack","target":"M03"}`, the target nested inside the proposal object where the text line states it as a field beside `proposal`. That is what the merge emits — measured at `result.proposal.target` and at no `result` sibling of it on any `action_trace` record — and it is the one place rule 6.4's "one key per text field" does not hold, so 6.5 and 6.6 carry the exception explicitly instead of leaving a reader to find it. **Rule 6.6's walk is extended** in exactly the two places the record and its text line differ: a proposal object carrying `target` renders as two text fields rather than one `:`-joined value, and `suffered` renders as `;`-joined `attacker:damage` pairs and renders no field at all when empty. **New rule 6.9, and rule 6.8 qualified by it**: `result.suffered` is present on every `action_trace` record and empty where nothing was suffered, although the text line omits it when empty — `,"suffered":[]` on 402,475 of the two captures' 402,610 traced actions. It is the only field in the stream present where its text field is absent, and the reason is rule 4.4's: the absence of an attack is an empty record rather than a missing fact, and a consumer that had to tell "no attacks" from "not written" would be reading the writer's convenience instead of the world. **Rule 7.8's absence is unchanged and its stated reason is corrected**: at this merge the engine does compute conflict, threat responses, retreats and surrenders, so "absent for that reason" is no longer true of them; the metrics record still carries no field for any of them, and the reason is now rule 10.4's — no approved requirement needs them there, and a field whose arrival is expected is not reserved. The *reserved field* counterexample is corrected the same way and still holds. **Rule 12 does not move, measured rather than asserted**: no new type is exported to carry a record, because `suffered` rides `Vec<(String, u8)>` on the already-public `EventDetail::ActionTrace` and the engine's own `SufferedAttack` stays private; the dependency table is still empty; and rule 12.3's borrow prohibition is untouched. The three new event kinds' **field orders are not restated here**: rule 6.4 defers them to `SPEC-MOK-001`, which fixes all three, so they reach this stream through that deference. The record kinds stay **four**, rule 9.1's order is untouched, and the `run` record gains nothing — the three new kinds have no cumulative counter, so rule 8.6's equalities are unaffected. *Explicitly unspecified decisions* corrects its **Conflict, combat and social metrics** bullet: Phase 3 has approved the phenomena and they are emitted as events, and what remains unspecified is their aggregation into the metrics and run records. Two examples are added, taken verbatim from a capture rather than composed and both quoted byte for byte — the three resolution records, and an `action_trace` that carries both a nested target and an absorbed strike together with the text line it reconstructs to. The existing action trace example gains `"suffered":[]` under rule 6.9, which its text line does not gain, and the three `"schema":1` literals in the specification's examples become `"schema":2`. | **OUTSTANDING** as of 2026-08-21. Drafted by the implementation agent under `WO-MOK-018`, on the repository owner's direction of 2026-08-21 to amend this specification rather than restate the record shapes elsewhere, and on that owner's instruction that the agent drafts and the owner ratifies each correction. **It carries three things the owner has not decided**, and each is put separately rather than buried in the field list: the `schema` increment and the two-line product change ratifying it obliges, in the same commit as the ratification on `SPEC-MOK-005`'s 2026-08-20 precedent, so that no commit carries one without the other; the record's **nesting** of a targeted verb's `target` inside `proposal` where the text line states it beside, against the available alternative of a sibling key that would match the text field for field and would be a product change; and the **unconditional presence** of `suffered`. Every field name in this row was measured rather than read off master's source: `VER-MOK-012` oracle 3 was run with this field set against both captures and reports PASS with no field of either stream left unnamed and, on the social capture, no drafted name left unexercised — `evidence/WO-MOK-018/merge/oracle3/drafted-social.txt` and `oracle1/value-domains.txt`. What was **not** measured is disclosed in the same evidence: neither capture rejects a targeted proposal, so the eight `detail` words are enumerated from the engine's source and from the unit tests that assert every one, and from no stream. No record bound to a commit is re-opened: `VREC-MOK-012` is verified at `50364a3`, whose stream carries none of this. |
+
 ## Scope
 
 This specification fixes the exact behavior of the engine's structured record stream: the option that configures a
@@ -157,21 +164,23 @@ stream is supplied by the operator, read from the environment, or derived from a
 |---|---|
 | `record` | `header`, `event`, `metrics`, `run` |
 | `engine` | the package version, a compile-time constant of this repository, matching `[0-9A-Za-z.+-]+` |
-| `config.policy` | `baseline`, `reference`, `individual` |
+| `config.policy` | `baseline`, `reference`, `individual`, `social` |
 | `config.density` | `[0-9]+\.[0-9]{2}` |
 | `subject` | `world`, `A`, `B`, `M[0-9]{2}`, `F[0-9]{4}` |
-| `event` | the twelve event types `SPEC-MOK-001` fixes, in their existing snake_case spellings |
+| `event` | the fifteen event types `SPEC-MOK-001` fixes, in their existing snake_case spellings |
 | `result.name` | one of the twelve fixed Mokiterion names, letters only |
 | `result.territory`, `result.from`, `result.to`, territory keys, `agents[].territory` | `A`, `B` |
 | `result.class`, consumption keys | `low`, `medium`, `high` |
-| `result.source` | `baseline`, `reference`, `individual` |
+| `result.source` | `baseline`, `reference`, `individual`, `social` |
 | `result.reason` (regeneration skipped), skip keys | `depleted`, `capacity` |
 | `result.reason` (simulation ended), `run.reason` | `tick_limit`, `extinction` |
 | `result.status` | `accepted`, `rejected` |
-| `result.proposal.action` | `wait`, `sleep`, `eat`, `move` |
+| `result.target`, `result.recipient`, `result.proposal.target`, `result.suffered[].attacker` | `M[0-9]{2}` |
+| `result.target_died` | `yes`, `no` |
+| `result.proposal.action` | `wait`, `sleep`, `eat`, `move`, `attack`, `threaten`, `fight`, `retreat`, `surrender`, `approach`, `avoid` |
 | `result.proposal.direction` | the eight fixed direction words, in their existing snake_case spellings |
 | `result.proposal.food`, `result.food` | `F[0-9]{4}` |
-| `result.detail` | one of `agent_dead`, `waited`, `energy_full`, `out_of_bounds`, `food_unavailable`, `energy:<u8>-><u8>`, `position:<u8>:<u8>`, `food:F[0-9]{4};class:(low|medium|high)` |
+| `result.detail` | one of `agent_dead`, `waited`, `energy_full`, `out_of_bounds`, `food_unavailable`, `target_unknown`, `target_dead`, `target_is_actor`, `target_not_perceived`, `target_not_in_contact`, `target_not_in_record`, `target_co_located`, `target_missing`, `energy:<u8>-><u8>`, `position:<u8>:<u8>`, `damage:<u8>`, `increase:<u8>`, `transferred:<u8>`, `food:F[0-9]{4};class:(low|medium|high)` |
 | `agents[].id` | `M[0-9]{2}` |
 | `agents[].name` | one of the twelve fixed names, letters only |
 
@@ -215,6 +224,10 @@ Mokiterion, and tick `0` is a legitimate death tick — so `null` is a correctne
 4.5 `true` and `false` are JSON booleans. There are two boolean fields at this schema version:
 `config.trace_actions` and a territory's `depleted`.
 
+`target_died` is not a third. Rule 22's verdict is the string `yes` or `no`, exactly as `status` is the string
+`accepted` or `rejected`, because that is what the text field carries and rule 6.6 requires the record to reproduce
+it — and because a verdict that later gains a third outcome must not have to change a field's type to say so.
+
 ### 5. The header record
 
 5.1 Exactly one header record per run, first in the stream, written before the first tick and before any other
@@ -223,10 +236,11 @@ record.
 5.2 Its shape:
 
 ```json
-{"record":"header","schema":1,"engine":"0.1.0","config":{"seed":0,"ticks":200,"policy":"reference","density":"0.75","trace_actions":false}}
+{"record":"header","schema":2,"engine":"0.1.0","config":{"seed":0,"ticks":200,"policy":"reference","density":"0.75","trace_actions":false}}
 ```
 
-5.3 `schema` is the stream's schema version, an integer, `1` at this specification. Rule 10 governs it.
+5.3 `schema` is the stream's schema version, an integer, `2` at this specification. Rule 10 governs it, and the
+2026-08-21 amendment record states what moved it from `1`.
 
 5.4 `engine` is the engine package's version, taken from the package metadata at compile time.
 
@@ -258,31 +272,63 @@ field, for the event type in question. The event types and their field orders ar
 restated here; adding, removing, renaming or reordering a field is an amendment to `SPEC-MOK-001` and reaches this
 stream through rule 6.4 automatically.
 
-6.5 Three value shapes differ from the text rendering, and only these three:
+6.5 Four value shapes differ from the text rendering, and only these four:
 
 - A coordinate, rendered `x:y` in text, is the object `{"x":<int>,"y":<int>}`.
 - A before-and-after pair, rendered `before->after` in text, is the object `{"from":<int>,"to":<int>}`.
 - A proposed action, rendered `wait`, `sleep`, `eat:<food>` or `move:<direction>` in text, is the object
   `{"action":"wait"}`, `{"action":"sleep"}`, `{"action":"eat","food":"F0001"}` or
   `{"action":"move","direction":"north"}`.
+- A proposed **targeted** action, one of `CAP-MOK-010`'s seven verbs, is the object
+  `{"action":"attack","target":"M03"}` — the target inside the proposal object, under the name that value has,
+  exactly as `eat` carries `food`. **This is the one place a record nests what the text line states beside it.**
+  `SPEC-MOK-001` renders the target as a field of its own immediately after `proposal`, by the technical owner's
+  decision of 2026-08-20, so a text line carries two fields where the record carries one object; rule 6.4's
+  key-for-key correspondence does not hold here and rule 6.6's walk maps the difference. The two cannot disagree,
+  because both are read from one `Action` in one arm of the writer.
 
 Every other value is the same scalar the text carries, as an integer where it is an integer and as a string where
 rule 3.2 lists it as a string. The action trace's `accepted` boolean is a string, `accepted` or `rejected`, because
-that is what the text field `status:` carries and rule 6.6 requires the record to reproduce it.
+that is what the text field `status:` carries and rule 6.6 requires the record to reproduce it. `target_died` is a
+string for the same reason, under rule 4.5.
 
 6.6 A text event line is reconstructible from its event record by a walk that needs no per-event-type knowledge:
 render `tick=`, `subject=`, `event=` and `result=`, then the result's keys in order joined by `,`, each as
 `key:value`, with a coordinate rendered `x:y`, a pair rendered `from->to`, and a proposed action rendered by its
-`action` word optionally followed by `:` and its one remaining value. Rule 6.5's three shapes are exactly the three
-cases this walk needs, which is why there are three and not more.
+`action` word optionally followed by `:` and its one remaining value. Two further cases complete the walk, and both
+belong to the two places the record's shape is not the text line's:
+
+- A proposal object carrying a `target` renders as **two** text fields, `proposal:<verb>` and then `target:<id>`, not
+  as one `:`-joined value. `eat` and `move` keep the `:` form they have always had.
+- `suffered` renders as its entries' `attacker:damage` pairs joined by `;`, in the array's own order, and an **empty
+  array renders no text field at all**. This is the one place the walk drops a record field rather than rewriting it,
+  and rule 6.9 is why.
+
+The walk runs in one direction, from record to text line, and each case above is a mapping rather than an
+equivalence. Rule 6.5's four shapes plus these two cases are exactly what it needs, which is why there are six and
+not more.
 
 6.7 An event whose text result carries no field carries `"result":{}`. It is not omitted and it is given no invented
 field. No such event type exists at this schema version; the rule fixes the answer in advance so that adding one is
 not a design question.
 
-6.8 An event record carries no value the text line does not carry. In particular it does not enrich an event with
-state read elsewhere in the tick, because a record and its text line must state the same facts about the same
-instant.
+6.8 An event record carries no value the text line does not carry, with the single exception rule 6.9 states. In
+particular it does not enrich an event with state read elsewhere in the tick, because a record and its text line must
+state the same facts about the same instant.
+
+6.9 `result.suffered` is present on every `action_trace` record, as an array, and is `[]` where the subject absorbed
+nothing. The text line omits the field when the record is empty and this stream does not, and the asymmetry is
+required rather than tolerated: it is rule 4.4's reasoning applied to a collection. An absence is not a sentinel and
+not an omission — a consumer that had to distinguish "no attacks were absorbed" from "the writer had nothing to say"
+would be reading the writer's convenience instead of the world, and it could not tell an empty window from a stream
+written before the window existed. `SPEC-MOK-001` states the text line's own reason for omitting it: appending the
+field unconditionally there would change every `action_trace` line of every `baseline` run, which `CAP-MOK-010` holds
+byte-identical. The two rules therefore differ deliberately and neither is a defect in the other.
+
+Each entry is the object `{"attacker":"M[0-9]{2}","damage":<u8>}`, and the array carries the entries in the order the
+attacks resolved. **It is not capped at one.** One entry per non-empty array is what every capture taken so far
+produces, because no measured window has been struck into twice; a window that two attackers reach carries two, and
+nothing in this specification limits the length.
 
 ### 7. The metrics record
 
@@ -318,9 +364,15 @@ the record states both regardless, because a consumer must not have to know whic
 7.7 The record states no rate, no delta and no trend. A change between ticks is the consumer's subtraction.
 
 7.8 The record carries no field for a phenomenon the engine does not compute, and does not carry such a field at zero.
-Conflict frequency, threat responses, retreats and surrenders are absent for that reason. `SPEC-MOK-003` rule 4.5
-established this repository's precedent by refusing to render a gauge for an attribute nothing yet consumed; a field
-fixed at zero reads to a consumer as a measurement.
+`SPEC-MOK-003` rule 4.5 established this repository's precedent by refusing to render a gauge for an attribute nothing
+yet consumed; a field fixed at zero reads to a consumer as a measurement.
+
+Conflict frequency, threat responses, retreats and surrenders are absent from this record, and **they are no longer
+absent for that reason**. The engine computes all four: `CAP-MOK-010`'s rules resolve them and the stream reports each
+as an event. What is absent is their *aggregation* — no approved requirement asks the metrics record to count them, and
+rule 10.4 forbids reserving a field for a figure nobody has approved. A consumer that wants a per-tick conflict count
+derives it from the event records of that tick, exactly as it derives a change between ticks by subtraction under rule
+7.7.
 
 7.9 Computing a metrics record reads authoritative state and draws no entropy. It exposes no borrow of that state:
 `SPEC-MOK-002` rule 6 is not relaxed by anything in this rule group.
@@ -428,6 +480,12 @@ enumerates, under that rule's growth clause, because `REQ-MOK-042` cannot be sat
 needs; no new type is exported to carry a record, and no record type is public unless a relocated test requires it
 under `SPEC-MOK-002`'s test-placement rules.
 
+That still holds of the fifteen-kind vocabulary, and it holds by measurement rather than by assertion. `Action`,
+`EventDetail` and `EventType` gain variants under `CAP-MOK-010` and `SPEC-MOK-002`'s own enumerated growth, which is
+that specification's business and not this one's, and **this specification exports nothing to carry the additions**:
+rule 6.9's window rides `Vec<(String, u8)>` on the already-public `EventDetail::ActionTrace`, both halves of a pair
+being already-public values, and the engine's own `SufferedAttack` stays private.
+
 12.3 `SPEC-MOK-002` rule 6 is not relaxed. Nothing this specification adds yields a mutable borrow of, or a reference
 into, the world grid, the agent collection, the resource collection, the tick counter, the entropy state, the event
 log or any counter the *State model* adds, in any build configuration including test builds.
@@ -523,7 +581,7 @@ reported if possible and the exit code is `1` either way, so no precedence quest
 ### Example: a run's stream, abbreviated
 
 ```json
-{"record":"header","schema":1,"engine":"0.1.0","config":{"seed":0,"ticks":2,"policy":"reference","density":"0.75","trace_actions":false}}
+{"record":"header","schema":2,"engine":"0.1.0","config":{"seed":0,"ticks":2,"policy":"reference","density":"0.75","trace_actions":false}}
 {"record":"event","tick":0,"subject":"world","event":"world_initialized","result":{"width":128,"height":128,"territories":2}}
 {"record":"event","tick":0,"subject":"F0001","event":"food_initialized","result":{"class":"low","position":{"x":12,"y":7},"territory":"A"}}
 {"record":"event","tick":0,"subject":"M01","event":"agent_initialized","result":{"name":"Zug","position":{"x":89,"y":34},"territory":"B","health":100,"satiety":100,"energy":100,"fear":0,"waste_tolerance":6}}
@@ -538,11 +596,61 @@ reported if possible and the exit code is `1` either way, so no precedence quest
 ### Example: an action trace record
 
 ```json
-{"record":"event","tick":3,"subject":"M04","event":"action_trace","result":{"proposal":{"action":"move","direction":"north_east"},"status":"accepted","detail":"position:41:63","position":{"x":41,"y":63},"territory":"A","health":100,"satiety":97,"energy":97,"fear":0}}
+{"record":"event","tick":3,"subject":"M04","event":"action_trace","result":{"proposal":{"action":"move","direction":"north_east"},"status":"accepted","detail":"position:41:63","position":{"x":41,"y":63},"territory":"A","health":100,"satiety":97,"energy":97,"fear":0,"suffered":[]}}
 ```
 
 Its text line reconstructs, by rule 6.6, as
 `tick=3 subject=M04 event=action_trace result=proposal:move:north_east,status:accepted,detail:position:41:63,position:41:63,territory:A,health:100,satiety:97,energy:97,fear:0`.
+
+The trailing `"suffered":[]` is rule 6.9's, and this is the record that shows what rule 6.8's exception costs: the
+text line carries no `suffered` field, so the reconstruction above ends at `fear:0` and the record still ends at the
+empty list. Nothing else about the example moves.
+
+### Example: the three resolution records
+
+```json
+{"record":"event","tick":9,"subject":"M05","event":"attack_resolved","result":{"target":"M02","damage":29,"target_health":{"from":100,"to":71},"striker_energy":{"from":92,"to":87},"target_died":"no"}}
+{"record":"event","tick":10,"subject":"M02","event":"surrender_resolved","result":{"recipient":"M05","transferred":9,"discarded":36,"subject_satiety":{"from":91,"to":46},"recipient_satiety":{"from":91,"to":100}}}
+{"record":"event","tick":11,"subject":"M05","event":"threat_resolved","result":{"target":"M02","increase":0,"target_fear":{"from":100,"to":100}}}
+```
+
+Three lines from one stream, not composed: the first occurrence of each of the three kinds in a capture at the fourth
+policy, quoted byte for byte and in the order that stream carries them, which is why they are not adjacent in it and
+why the ticks run 9, 10, 11. Four things in them are rules of this specification rather than of the engine. Each
+`from`/`to`
+pair is rule 6.5's second shape, so the three transitions read the same way `survival_changed`'s do. `target_died` is
+the string `no` under rule 3.2's closed two-value domain and not a JSON boolean, on `status`'s precedent, which is why
+rule 4.5 still admits exactly two. `increase` is `0` on a `target_fear` that was already at its ceiling — a resolution
+that changed nothing is still a resolution and is still recorded, under rule 6.3. And `discarded` is `36` against a
+`transferred` of `9`: the record carries both halves of the transfer, because a consumer that saw only the delivered
+figure could not tell a small surrender from a wasteful one, and rule 6.8 forbids the record from carrying the
+difference as its own field when the text line does not.
+
+Their field orders are not fixed here. Rule 6.4 defers every event's order to `SPEC-MOK-001`, which fixes all three,
+and these lines exhibit that order rather than establishing it.
+
+### Example: an action trace that carries a target and an absorbed strike
+
+```json
+{"record":"event","tick":10,"subject":"M02","event":"action_trace","result":{"proposal":{"action":"surrender","target":"M05"},"status":"accepted","detail":"transferred:9","position":{"x":57,"y":23},"territory":"A","health":71,"satiety":46,"energy":91,"fear":90,"suffered":[{"attacker":"M05","damage":29}]}}
+```
+
+Its text line, verbatim from the same stream, is
+
+`tick=10 subject=M02 event=action_trace result=proposal:surrender,target:M05,status:accepted,detail:transferred:9,position:57:23,territory:A,health:71,satiety:46,energy:91,fear:90,suffered:M05:29`
+
+and it is the record that exercises both places where rule 6.4's key-for-key projection does not hold. The proposal
+object is rule 6.5's fourth shape and renders as **two** text fields, `proposal:surrender` and `target:M05`; the
+`suffered` list is rule 6.9's and renders as `suffered:M05:29`, one `;`-joined pair per absorbed strike. Both
+departures are rule 6.6's walk, and this line is the reconstruction that walk must produce.
+
+It is the same subject and the same tick as the surrender record above, which is the point of showing the two
+together: the resolution record states what the surrender did to both agents, and the trace states the state the
+subject was in when it proposed it, including the strike it had absorbed inside the window. The `29` appears in both
+and means the same thing in both, and neither record is derivable from the other.
+
+`suffered` holds one entry here because one attacker struck. Rule 6.9 does not cap it, and a window that two
+attackers struck into would carry two entries in resolution order.
 
 ### Example: an extinct population
 
@@ -568,12 +676,14 @@ observable output.
 
 ### Counterexample: a reserved field
 
-`{"record":"metrics","tick":1,"conflicts":0}` — violates rules 7.8 and 10.4. The engine computes no conflict, and a
-field fixed at zero reads as a measurement of none.
+`{"record":"metrics","tick":1,"conflicts":0}` — violates rules 7.8 and 10.4. It violated them when the engine computed
+no conflict, and it still violates them now that it does: the figure is an aggregation no approved requirement asks
+this record to carry, and a field fixed at zero reads as a measurement of none. The tick's own event records are where
+a conflict count comes from.
 
 ### Counterexample: a path in the stream
 
-`{"record":"header","schema":1,"events_path":"/tmp/run.jsonl"}` — violates rules 3.4, 5.5 and the *Security and
+`{"record":"header","schema":2,"events_path":"/tmp/run.jsonl"}` — violates rules 3.4, 5.5 and the *Security and
 privacy properties*. The value is operator-supplied, so rule 3.3's totality argument does not cover it, and it is not
 a fact about the simulation.
 
@@ -586,7 +696,12 @@ a fact about the simulation.
 - **The consumer.** No reader, parser, library, schema file, or example script is specified or required. A consumer
   written for verification purposes is `VER-MOK-012`'s to describe and is evidence, not product.
 - **Batch execution, run persistence beyond one stream, and outcome classification.** Unauthorized. Phase 4b.
-- **Conflict, combat and social metrics.** Absent until Phase 3 approves the phenomena, arriving under rule 10.2.
+- **Conflict, combat and social metrics.** The phenomena are approved and the engine resolves them, and the stream
+  carries them as the three resolution event kinds rule 3.2 enumerates. What is unspecified is their *aggregation*: no
+  field of the metrics record and no field of the run record counts an attack, a threat, a retreat or a surrender, for
+  rule 10.4's reason rather than for the engine's — no approved requirement asks either record to carry the figure. A
+  tick's own event records are where such a count comes from, and adding one to either record would arrive under rule
+  10.2 with a `schema` increment. Rule 7.8 and the *reserved field* counterexample state the same absence.
 - **Typing the action trace's `detail`.** It stays rendered text under rule 3.5. Making it a typed value would change
   the engine's action result, which no approved requirement needs. Recorded as a residual.
 - **Compression, framing alternatives, and a binary encoding.** Not specified and not needed; the format is

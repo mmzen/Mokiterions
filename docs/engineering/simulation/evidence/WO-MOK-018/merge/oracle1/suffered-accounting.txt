@@ -168,6 +168,85 @@ from the streams measured here rather than from reading master's source. `README
 a finding of this packet.
 
 
+Every string value in the stream, by field path
+-----------------------------------------------
+
+`value-domains.txt`, both captures. `SPEC-MOK-006` rule 3.2 is an enumeration of every string
+value the stream may carry and rule 3.3 is the closure argument that makes the stream
+escaping-free — "**this is why the stream needs no escaping function, and it is the only reason**".
+Master's combat adds string-valued fields, so the closure argument is a claim about the merge and
+not only about the branch. This is that claim measured over 1,365,884 records.
+
+**No character outside rule 3.3's union appears in either capture.** The union is `A`–`Z`, `a`–`z`,
+`0`–`9` and `_ . - + : ; >`; the characters the two streams actually use are
+
+    -.0123456789:;>ABDFGHKMNQSTVWXZ_abcdefghiklmnoprstuvwxyz          90 cells
+    -.0123456789:;>ABDFGHKMNQSTVWXZ_abcdefghijklmnoprstuvwxyz         30 cells
+
+with no quotation mark, no reverse solidus, no space and no code point below U+0020 in either. The
+instrument FAILs the capture on any character outside the union and names it; there were none. That
+is rule 3.3 holding across the merge, and it holds for the reason the rule gives rather than by
+luck: every added value is an identifier, a fixed word, or a colon-joined integer.
+
+**The merge adds five string-valued field paths, and all five are confined to the fourth policy.**
+Twenty-three paths under `baseline`, `reference` and `individual`; twenty-eight under `social`; the
+difference is exactly
+
+    result.proposal.target        14,206 occurrences   12 values, all M[0-9]{2}
+    result.target                  1,552               12 values, all M[0-9]{2}
+    result.recipient                 190               12 values, all M[0-9]{2}
+    result.target_died               312                2 values, `no` and `yes`
+    result.suffered[].attacker       135               12 values, all M[0-9]{2}
+
+and none of the five occurs once in the ninety cells. `target_died`'s domain is measured closed at
+two words, which is what lets the amendment state it as a closed domain rather than as a rendering
+of a boolean: it is the string form `SPEC-MOK-001` fixes for that field, exactly as `status` is
+`accepted` or `rejected` rather than `true` or `false`, so rule 4.5 still admits exactly two
+booleans.
+
+**`result.proposal.target` is measured inside the proposal object, not beside it.** The path is
+`result.proposal.target` and there is no `result` sibling of `proposal` carrying a target on an
+`action_trace` record. The three new field paths that are `result`'s own siblings account for
+themselves exactly against `record-kinds.txt`: `result.target` occurs 1,552 times, which is
+`attack_resolved`'s 312 plus `threat_resolved`'s 1,240; `result.target_died` occurs 312 times, which
+is `attack_resolved`'s alone; and `result.recipient` occurs 190 times, which is
+`surrender_resolved`'s. Not one of the three occurs on an `action_trace` record, and the trace's own
+target is reached only as `result.proposal.target`. The text line renders the two as
+adjacent fields and the record nests one inside the other, so the projection rule 6.4 states
+key-for-key has one place where a record field and a text field do not correspond one to one. The
+engine's own `every_text_event_line_is_reconstructible_from_its_event_record` covers it from the
+other end, over both captures, line for line as bytes.
+
+**`result.proposal.action` carries eleven verbs across the two captures and never more than ten in
+one.** Four under the older policies — `eat`, `move`, `sleep`, `wait` — and ten under `social`, which
+is the seven targeted verbs plus `eat`, `move` and `sleep`. `wait` is proposed by no social
+opportunity and no targeted verb is proposed under the other three, so the union is eleven and the
+two halves overlap in three.
+
+**`result.detail` gains three patterns and reaches one word it had not reached before.** Eighteen
+digit-generalized shapes under `social` against fifteen under the older policies; the arrivals are
+`damage:<u8>`, `increase:<u8>` and `transferred:<u8>`, and the word `out_of_bounds`, which rule 3.2
+already enumerates, is reached for the first time in these captures by a targeted move with no valid
+axis. `waited` appears in the ninety cells and in no social cell, for the same reason `wait` does not.
+
+    Stated as a limit rather than as a result, because it is the sharpest gap in this measurement:
+    **the eight words master's targeted validation can put in `detail` are exercised by neither
+    capture.** They are `target_unknown`, `target_dead`, `target_is_actor`, `target_not_perceived`,
+    `target_not_in_contact`, `target_not_in_record`, `target_co_located`, and `target_missing`,
+    which sits on two arms guarded by `debug_assert!` and is unreachable while the invariant holds.
+    The ninety cells carry 284,409 traces and reject none of them; the thirty social cells carry
+    118,201 and reject 44, every one of them `out_of_bounds`. So the amendment enumerates those
+    eight words from the engine's source and from its unit tests, which do assert every one, and
+    not from either stream. Three words rule 3.2 already enumerates — `agent_dead`, `energy_full`
+    and `food_unavailable` — are likewise unexercised by both captures and were unexercised before
+    the merge; that is a pre-existing property of the enumeration, which is a superset of what a
+    capture reaches, and it is safe in that direction under rule 3.3.
+
+`result.proposal.direction` is measured at four values in both captures, `east`, `north`, `south`
+and `west`, against the eight rule 3.2 enumerates. A proposal's move is cardinal; the diagonals are
+perception's. That, too, is the enumeration being a superset and is not a defect.
+
+
 Reproducing it
 --------------
 
@@ -178,8 +257,9 @@ what comparison H reads.
 
     python merge/record-field-accounting.py compare \
         WO-MOK-018/post-sink-manifest.txt  <this session's sink manifest>  <capture dir>
-    python merge/record-field-accounting.py field  <capture dir> [<capture dir> ...]
-    python merge/record-field-accounting.py kinds  <capture dir> [<capture dir> ...]
+    python merge/record-field-accounting.py field    <capture dir> [<capture dir> ...]
+    python merge/record-field-accounting.py kinds    <capture dir> [<capture dir> ...]
+    python merge/record-field-accounting.py alphabet <capture dir> [<capture dir> ...]
 
 `compare` needs the capture directory as well as the two manifests, because the expected byte
 difference per cell is fourteen times a figure only the stream itself carries. It exits by printing

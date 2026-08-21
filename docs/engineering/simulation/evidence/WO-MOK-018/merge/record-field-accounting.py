@@ -25,6 +25,15 @@ This instrument says why, three ways, and each mode is a separate claim:
               inserted into records that already exist and adds none. A cell that differs by any
               other amount, or by any line, is a FAIL and is named.
 
+    alphabet  <capture-dir> ...
+              Every string value in the stream, by field path: how many occurrences, how many
+              distinct values, the distinct values where they are few and their digit-generalized
+              shapes where they are many, and the union of characters the whole stream's string
+              values use. `SPEC-MOK-006` rule 3.2 is an enumeration and rule 3.3 is the closure
+              argument that makes the stream escaping-free; both are claims about the emitted
+              bytes, so both are measured here rather than read off the specification. A character
+              outside rule 3.3's union is a FAIL and is named.
+
 No projection, no normalization, no tolerance: every comparison is over bytes, counts and exact
 key sets.
 
@@ -34,9 +43,10 @@ Manifest columns, as `capture.sh` and `capture-social.sh` write them:
 
 Usage, from any directory:
 
-    python record-field-accounting.py kinds   <dir> [<dir> ...]
-    python record-field-accounting.py field   <dir> [<dir> ...]
-    python record-field-accounting.py compare <left.txt> <right.txt> <dir>
+    python record-field-accounting.py kinds    <dir> [<dir> ...]
+    python record-field-accounting.py field    <dir> [<dir> ...]
+    python record-field-accounting.py alphabet <dir> [<dir> ...]
+    python record-field-accounting.py compare  <left.txt> <right.txt> <dir>
 """
 
 import glob
@@ -47,6 +57,10 @@ import sys
 
 EMPTY = ',"suffered":[]'
 COMBAT = ('attack_resolved', 'threat_resolved', 'surrender_resolved')
+
+# `SPEC-MOK-006` rule 3.3's union, verbatim: A-Z, a-z, 0-9, and `_ . - + : ; >`.
+ALPHABET = set(
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-+:;>')
 
 
 def streams(directory):
@@ -161,6 +175,82 @@ def mode_field(directories):
         print()
 
 
+# --------------------------------------------------------------------------- alphabet
+
+def shape(value):
+    """The value with its digit runs generalized, so a domain reads as a pattern.
+
+    `M05` becomes `M<nn>`, `F0123` becomes `F<nnnn>`, `energy:97->96` becomes
+    `energy:<n>-><n>`. Nothing else is altered: the separators are the part rule 3.3's closure
+    argument turns on, so they are never collapsed.
+    """
+    out = []
+    run = 0
+    for character in value:
+        if character.isdigit():
+            run += 1
+            continue
+        if run:
+            out.append('<' + 'n' * run + '>' if run < 5 else '<n>')
+            run = 0
+        out.append(character)
+    if run:
+        out.append('<' + 'n' * run + '>' if run < 5 else '<n>')
+    return ''.join(out)
+
+
+def strings(value, path, into):
+    """Every string value below `value`, keyed by its dotted field path."""
+    if isinstance(value, dict):
+        for key, inner in value.items():
+            strings(inner, path + '.' + key if path else key, into)
+    elif isinstance(value, list):
+        for inner in value:
+            strings(inner, path + '[]', into)
+    elif isinstance(value, str):
+        into.setdefault(path, {})
+        into[path][value] = into[path].get(value, 0) + 1
+
+
+def mode_alphabet(directories):
+    for directory in directories:
+        paths = {}
+        cells = 0
+        for _cell, records in streams(directory):
+            cells += 1
+            for record in records:
+                strings(record, '', paths)
+        characters = set()
+        for values in paths.values():
+            for value in values:
+                characters |= set(value)
+        outside = sorted(characters - ALPHABET)
+        print('=== %s ===' % directory)
+        print('cells %d, distinct string-valued field paths %d' % (cells, len(paths)))
+        print()
+        print('  %-34s %10s %9s  %s'
+              % ('field path', 'values', 'distinct', 'domain as measured'))
+        for path in sorted(paths):
+            values = paths[path]
+            total = sum(values.values())
+            distinct = sorted(values)
+            if len(distinct) <= 8:
+                domain = ', '.join(distinct)
+            else:
+                shapes = sorted({shape(v) for v in distinct})
+                domain = ('%d values, %d shapes: %s'
+                          % (len(distinct), len(shapes), ', '.join(shapes)))
+            print('  %-34s %10d %9d  %s' % (path, total, len(distinct), domain))
+        print()
+        print('  characters used across every string value:')
+        print('    %s' % ''.join(sorted(characters)))
+        print('  outside rule 3.3\'s union: %s'
+              % (', '.join('U+%04X (%s)' % (ord(c), c) for c in outside) if outside
+                 else 'none'))
+        print('  result: %s' % ('PASS' if not outside else 'FAIL'))
+        print()
+
+
 # --------------------------------------------------------------------------- compare
 
 def manifest(path):
@@ -260,6 +350,8 @@ if __name__ == '__main__':
         mode_kinds(sys.argv[2:])
     elif mode == 'field':
         mode_field(sys.argv[2:])
+    elif mode == 'alphabet':
+        mode_alphabet(sys.argv[2:])
     elif mode == 'compare':
         mode_compare(sys.argv[2], sys.argv[3], sys.argv[4])
     else:

@@ -24,8 +24,11 @@ Every file in this directory is derived, read-only evidence: a command, its outp
 reasoning needed to read the output. `VREC-MOK-017`, bound to the merge, is where a decision about
 this tree is recorded, and it is not written yet — item 1 of *What is still owed* below.
 
-Two things in this packet are worded as findings rather than as measurements. Both are reports to
-the owner and neither is acted on here.
+The nine numbered findings below are worded as reports to the owner rather than as measurements, and
+none of them is acted on here. Two of the nine are non-conformances of the merged engine against the
+`SPEC-MOK-006` amendment this branch drafts — findings 8 and 9 — and the engine is deliberately left
+as it is: the amendment reads OUTSTANDING, and changing the product to match an unratified
+specification would be the wrong order.
 
 ## Why the merge is against `master`, and where it sits in the four acts
 
@@ -139,11 +142,12 @@ itself contributed no test.
 | `VER-MOK-012` oracle 1, text streams | Comparisons A, B, D, E, F, G over 90 + 30 cells | PASS on every cell — `oracle1/comparison-*.txt` |
 | `VER-MOK-012` oracle 1, record streams | **Comparison H**, the gap E and F disclosed: 90 record streams, candidate vs. merge | 45 byte-identical, 45 differing, every differing byte `= 14 × action_trace`, total **3,981,726 = 14 × 284,409**, line counts equal on all 90 — PASS |
 | The record stream's event domain | Distinct event kinds in the emitted bytes, both directions | **12** across the 90 non-social cells with the three combat kinds in 0 of them; **15** across the 30 social cells with all three in 30 of 30 — `oracle1/record-kinds.txt` |
+| `SPEC-MOK-006` rules 3.2 and 3.3 | Every string value in both captures, by field path: occurrences, distinct values and digit-generalized shapes, and the union of characters the streams use | 23 string-valued paths under the three older policies and 28 under the fourth; **no character outside rule 3.3's union in 1,365,884 records** — PASS, `oracle1/value-domains.txt` |
 | Oracles 2, 3 and 6 | Re-taken against the drafted and extended matrices | `oracle2/`, `oracle3/`, `oracle6/` |
 | Governance graph | `validate`, `inspect`, `doctor`, `dashboard` on both parents, the merge and the measured tree | Artifacts and relations reconcile exactly in both directions; validation PASS on all five trees; every managed file `unchanged` — `governance.txt` |
 | `preflight` | `--work-order WO-MOK-018 --phase review`, from the pinned 0.4.0 venv | PASS |
 
-## Seven things reported rather than fixed
+## Nine things reported rather than fixed
 
 ### 1. `SPEC-MOK-004` rule 11's recorded workspace total, which `WO-MOK-016` measured and left owed
 
@@ -294,12 +298,24 @@ shape for each kind. `master`'s Phase 3 takes it to `[Self; 15]`, and
 
 **The code covers all fifteen and the specification does not.** The engine's own
 `every_event_kind_has_its_exact_record_shape` passes at the merge — it is one of the 298 — because it
-reads `EventType::ALL`; the document is what has not moved. `oracle1/suffered-accounting.txt`
-enumerates the gap: three record shapes, fourteen field rows, five `result.detail` values, a closed
-two-value `target_died` domain, and `suffered` on `action_trace` as a key always present with a
-possibly-empty list. The owner's decision of 2026-08-21 is "Amend `SPEC-MOK-006`", and the amendment
-is drafted from the streams measured here rather than from reading `master`'s source. It is item 2 of
-*What is still owed*.
+reads `EventType::ALL`; the document is what has not moved. `oracle1/suffered-accounting.txt` and
+`oracle1/value-domains.txt` enumerate the gap: three record shapes, fourteen field names, eleven
+additions to `result.detail` — eight words master's targeted validation can produce and the three
+patterns `damage:<u8>`, `increase:<u8>` and `transferred:<u8>` — seven added `proposal.action` verbs,
+a closed two-value `target_died` domain, and `suffered` on `action_trace` as a key always present
+with a possibly-empty list.
+
+The owner's decision of 2026-08-21 is "Amend `SPEC-MOK-006`", and **the amendment is written in this
+commit**, as a 2026-08-21 row of a new `## Amendment record` section whose approval cell reads
+OUTSTANDING — `SPEC-MOK-006` was the one specification of the six carrying no such section, and it
+now has one. Every field name in the row was measured rather than read off master's source:
+`oracle3/drafted-social.txt` runs the drafted field set against both captures and reports PASS with
+no field of either stream unnamed and no drafted name unexercised on the social capture, and
+`oracle1/value-domains.txt` measures every string value's domain and confirms rule 3.3's character
+union holds across all 1,365,884 records. What was **not** measured is disclosed in the same row:
+neither capture rejects a targeted proposal, so the eight `detail` words come from the engine's
+source and its unit tests and from no stream. Ratification is item 2 of *What is still owed*, and
+findings 8 and 9 are the two non-conformances the drafting exposed.
 
 One shape question in it is a decision and not a measurement, and it is put to the owner as one:
 whether a targeted verb's `target` is a field **of** the proposal object (Option A, which is what the
@@ -322,6 +338,52 @@ three totals. An architecture declaring conformance to a specification whose mea
 moved is what the rule exists to catch, and the obligation is owed whether or not the warning fired.
 `governance.txt` records it; this packet does not touch `ARCH-MOK-002`.
 
+### 8. The engine writes `"schema":1` on a stream carrying fourteen fields version 1 does not have
+
+`SPEC-MOK-006` rule 10.2 requires the `schema` integer to be incremented "when a record kind is added
+or removed, a field is added, removed or renamed, a field's type changes, or a value's enumerated
+domain in rule 3.2 gains a member". The 2026-08-21 amendment does the second fourteen times and the
+last thirteen. The merged engine writes `1`: `RECORD_SCHEMA_VERSION` at
+`mokiterions-core/src/simulation.rs` is unchanged from Phase 4a, so every header record in both
+captures reads `"schema":1` on a stream that carries `suffered`, `target_died`, the three resolution
+kinds and the rest. The constant is `const RECORD_SCHEMA_VERSION: u32 = 1;` at `:1797`, under the doc
+comment at `:1790` that names rule 10 as its authority.
+
+**This is the first test of rule 10.2, and `VER-MOK-012` predicted it in those words.** That
+verification's own residual records that the schema version "is verified to be present, not to be
+right" and that whether rule 10.2's triggers are complete "cannot be verified before a second version
+exists — the first increment will be the first real test". This is that increment.
+
+**The product change is two lines**, and it is not made here. `RECORD_SCHEMA_VERSION` becomes `2`, and
+the one asserted literal that hard-codes the value — `simulation.rs:7382`, in the header unit test —
+becomes `"schema":2` with it. Every other reference in the engine reads the constant. The reason for
+not making it is the ordering: the specification row reads OUTSTANDING, and an engine that emits `2`
+against a specification that has not been ratified as saying `2` is a worse state than the one this
+finding reports. `SPEC-MOK-005`'s 2026-08-20 row is the precedent for making the obliged product
+change **in the same commit as the ratification**, so that no commit in the history carries one
+without the other, and that is what is proposed. *Owner: the technical owner, with the ratification.*
+
+### 9. Rule 7.8's stated absence is still right and its stated reason is now false
+
+`SPEC-MOK-006` rule 7.8 gave the metrics record no conflict, combat or social field, and gave as its
+reason that the engine does not compute those phenomena. At the merge the engine does compute all
+four of them — attacks, threats, retreats and surrenders resolve, and `oracle1/record-kinds.txt`
+measures the three resolution kinds in 30 of 30 social cells — so the reason is false while the
+absence it justifies is still correct.
+
+The correct reason is rule 10.4's, which the specification already states elsewhere: no approved
+requirement asks the metrics or run record to carry an aggregation of those events, and a field whose
+arrival is merely expected is not reserved. The 2026-08-21 amendment corrects the reason, leaves the
+absence, and corrects the *reserved field* counterexample and the *Conflict, combat and social
+metrics* bullet of *Explicitly unspecified decisions* the same way. **No provision changes and no
+field arrives**; what changes is a justification that a reader could have checked against the tree and
+found untrue.
+
+It is reported separately from finding 8 because the two are different kinds of defect. Finding 8 is
+the product disagreeing with the specification; this is the specification's reasoning disagreeing with
+the tree while its rule stays right. A packet that reported only the first would leave a reader
+believing the absence itself was in doubt.
+
 ## What is still owed before anything binds this merge
 
 1. **`VREC-MOK-017`, at the merge commit** — the owner's decision of 2026-08-21 was "New record at
@@ -329,18 +391,26 @@ moved is what the rule exists to catch, and the obligation is owed whether or no
    `4539601`) untouched, on `VREC-MOK-015`'s precedent. It declares the paths in this directory, and
    `governance.txt` records the consequence: the dashboard snapshot digest `52652ca4…` moves when it
    does, because that digest covers declared evidence paths. *Owner: the verifier.*
-2. **The `SPEC-MOK-006` amendment** — drafted from finding 6's measurements, to be carried with an
-   OUTSTANDING approval row, together with the extension of `VER-MOK-012`'s per-kind oracle from
-   twelve to fifteen. *Owner: the technical owner, on the owner's "Amend `SPEC-MOK-006`" of
-   2026-08-21.*
-3. **Ratification of the 2026-08-21 `SPEC-MOK-004` row**, which reads OUTSTANDING. It is where
+2. **Ratification of the 2026-08-21 `SPEC-MOK-006` row**, which is written in this commit and reads
+   OUTSTANDING. Three things in it are the owner's to decide and are put separately in the row itself
+   rather than buried in its field list: the `schema` increment together with finding 8's two-line
+   product change, both in the ratifying commit on `SPEC-MOK-005`'s precedent; the record's nesting of
+   a targeted verb's `target` inside `proposal` where the text line states it beside (Option A, which
+   the merge emits and `tests/records.rs` binds) against Option B's sibling key, which would match the
+   text field for field and would be a product change; and the unconditional presence of `suffered`.
+   *Owner: the technical owner, on the owner's "Amend `SPEC-MOK-006`" of 2026-08-21.*
+3. **The extension of `VER-MOK-012`'s per-kind oracle from twelve event kinds to fifteen**, which is a
+   change to a verification contract and is named in the amendment row as one this row does not make.
+   The measurement exists — `oracle3/drafted-social.txt` runs the fifteen-kind field set against both
+   captures — but the contract still specifies twelve. *Owner: the technical owner.*
+4. **Ratification of the 2026-08-21 `SPEC-MOK-004` row**, which reads OUTSTANDING. It is where
    findings 1 and 2 are corrected, and where `WO-MOK-016`'s referral of the timing is answered.
    *Owner: the technical owner, under the "I draft, you ratify each" procedure of 2026-08-21.*
-4. **The `died_at` fix and the test strengthening of finding 4.** *Owner: the technical owner, as a
+5. **The `died_at` fix and the test strengthening of finding 4.** *Owner: the technical owner, as a
    scope decision — it is an engine change and no act authorized one.*
-5. **The `WO-MOK-013` clause of finding 3**, and the `ARCH-MOK-002` reassessment of finding 7.
+6. **The `WO-MOK-013` clause of finding 3**, and the `ARCH-MOK-002` reassessment of finding 7.
    *Owners: the technical owner and `ARCH-MOK-002`'s owner respectively.*
-6. **PR #31's body trailer**, which must read `Harness-Work-Order: WO-MOK-018` after act 1's
+7. **PR #31's body trailer**, which must read `Harness-Work-Order: WO-MOK-018` after act 1's
    renumbering. CI reads the trailer from the stored event payload, so the check stays red until the
    next push after the edit. Not done: an edit to the PR and a push are outward-facing acts and the
    owner has not authorized them in this session.
@@ -367,9 +437,9 @@ All files in this directory are **LF** and are committed verbatim: `.gitattribut
 
 | File | Bytes | What it is |
 |---|---:|---|
-| `README.md` | this file | The packet index, the resolution account and the seven findings |
+| `README.md` | this file | The packet index, the resolution account and the nine findings |
 | `COMMIT.txt` | 41 | `e8114ad…`, the commit every figure here is measured at |
-| `gates.txt` | 21,323 | `fmt`, `clippy`, the 298-test run, `inspect`, `validate`, `doctor`, `preflight` |
+| `gates.txt` | 23,712 | `fmt`, `clippy`, the 298-test run, `inspect`, `validate`, `doctor`, `preflight` |
 | `governance.txt` | 13,399 | The governance graph on both parents, the merge and the measured tree |
 | `interface.txt` | 56,440 | Rule 6 and `SPEC-MOK-002` rules 4–5, eight revisions, six full enumerations |
 | `render-items.txt` | 6,078 | `src/render.rs`'s items on all three trees, and finding 2's measurement |
@@ -384,9 +454,10 @@ All files in this directory are **LF** and are committed verbatim: `.gitattribut
 | `oracle1/comparison-h-candidate-vs-merge-records.txt` | 5,865 | The record-stream comparison E and F disclosed as not made |
 | `oracle1/record-kinds.txt` | 1,871 | Twelve kinds, then fifteen, measured in the emitted bytes |
 | `oracle1/suffered-field.txt` | 1,032 | The field on 402,610 records, with list lengths and entry key sets |
-| `oracle1/suffered-accounting.txt` | 11,699 | Comparison H read in three parts, and finding 6 stated |
+| `oracle1/suffered-accounting.txt` | 17,540 | Comparison H read in three parts, every string value by field path, and finding 6 stated |
+| `oracle1/value-domains.txt` | 6,211 | Every string value's measured domain, and rule 3.3's character union holding across 1,365,884 records |
 | `oracle2/`, `oracle3/`, `oracle6/` | four files each | The retained, drafted and extended matrices for each oracle |
-| `record-field-accounting.py` | 10,734 | The retained instrument behind comparison H: `kinds`, `field`, `compare` |
+| `record-field-accounting.py` | 14,579 | The retained instrument behind comparison H and the value domains: `kinds`, `field`, `compare`, `alphabet` |
 | `capture-social.sh` | 2,179 | The 30-cell social capture; the 90-cell one is `WO-MOK-018/capture.sh` |
 | `social-vs-master.py` | 4,324 | The social streams against `master`'s, for oracle 1's comparison G |
 | `reconstruct-combat.py` | 11,697 | Every combat text line rebuilt from its record |
@@ -402,5 +473,7 @@ The captures the manifests describe are not retained: 303 MB of record stream ac
 Every command in this directory is read-only and derived. Validation does not approve; inspection
 does not authorize; a passing gate is not a verdict. `SPEC-MOK-004`'s figures are corrected by the
 2026-08-21 amendment row and not by any file here, and that row reads OUTSTANDING until the technical
-owner ratifies it. The seven findings are reported to the owner; none is acted on. The decision about
-this tree is `VREC-MOK-017`'s, and it is not written yet.
+owner ratifies it; the same is true of `SPEC-MOK-006`'s 2026-08-21 row, which this commit writes and
+does not approve. The nine findings are reported to the owner; none is acted on, and in particular the
+engine is not changed to satisfy an unratified specification. The decision about this tree is
+`VREC-MOK-017`'s, and it is not written yet.

@@ -64,6 +64,22 @@ records that. A verification record binding a commit re-runs all of it against a
 this capture exists so that the packet is not assembled on the strength of an unmeasured tree,
 and it is not a record.
 
+A second governed specification is amended after this capture, in the commit that carries the
+`README.md` findings 8 and 9 refer to:
+
+     M docs/engineering/simulation/specifications/SPEC-MOK-006.md
+
+That is the 2026-08-21 amendment row the owner's "Amend `SPEC-MOK-006`" of the same date directs,
+and unlike `SPEC-MOK-004`'s it is not prose alone: rules 3.2, 4.5, 5.2, 5.3, 6.5, 6.6, 6.8, 7.8 and
+12.2 change, rule 6.9 is added, and the examples move `"schema"` from `1` to `2`. **It changes no
+source file and no test**, so no cargo figure in this capture moves, and the two engine
+non-conformances the row exposes are reported in `README.md` and deliberately not fixed. The two
+harness gates were re-run against the amended tree and both report the outcomes recorded below
+unchanged: `validate` PASS with 143 artifacts, 0 errors and 0 warnings, and
+`preflight --work-order WO-MOK-018 --phase review` PASS. `validate`'s figures being identical is
+worth stating rather than assuming — the amendment adds a section to an artifact and could have
+moved the artifact count or raised a warning, and it does neither.
+
 The sources of both crates were touched before clippy and before the test run so that neither
 reports a cached result. `WO-MOK-011/merge/gates.txt` explains why that matters: with a warm
 cache and untouched roots clippy prints `Finished` alone and would report a clean lint it never
