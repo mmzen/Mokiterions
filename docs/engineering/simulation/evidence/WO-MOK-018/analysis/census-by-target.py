@@ -111,13 +111,35 @@ def main():
     for label, name in removed:
         lines.append(f'  - {label.split("  ")[0]:<18} {name}')
     lines.append('')
-    lines.append(
-        '# A rename would appear here as one addition and one removal. There is no removal, so no'
-    )
-    lines.append(
-        '# baseline test was renamed, moved between targets, or deleted: every one of them is still'
-    )
-    lines.append('# present under its own name in its own binary.')
+    # The no-removal sentence was written unconditionally when this script was first used, because
+    # the only comparison it had then been asked for had no removal. Comparing a merge against the
+    # parent whose renames it inherits does have removals, and the sentence was then a false claim
+    # printed by a verification instrument -- which is worse than a wrong figure in a document,
+    # because a reader has no reason to doubt it. It is a condition now, and the no-removal branch is
+    # word for word what it was, so every output taken before this correction reproduces byte for
+    # byte from the logs it was taken from.
+    if removed:
+        lines.append(
+            f'# A rename appears here as one addition and one removal, and this comparison has'
+        )
+        lines.append(
+            f'# {len(removed)} removal(s), named above. Each is a baseline test that is renamed,'
+        )
+        lines.append(
+            '# moved between targets, or deleted; which of the three it is does not follow from two'
+        )
+        lines.append(
+            '# logs and is not asserted here. Where a rename is the explanation, its new name is one'
+        )
+        lines.append('# of the additions above and the pair is a rename rather than a loss.')
+    else:
+        lines.append(
+            '# A rename would appear here as one addition and one removal. There is no removal, so no'
+        )
+        lines.append(
+            '# baseline test was renamed, moved between targets, or deleted: every one of them is still'
+        )
+        lines.append('# present under its own name in its own binary.')
     lines.append('')
     lines.append('# ---- full text of this script, retained as VER-MOK-012 requires ----')
     lines.append('')

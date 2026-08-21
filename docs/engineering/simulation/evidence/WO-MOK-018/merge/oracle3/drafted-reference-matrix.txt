@@ -1,0 +1,349 @@
+# VER-MOK-012 oracle 3, against the DRAFTED SPEC-MOK-006 amendment
+#
+# capture directory: C:/Users/mathi/mcap-sink
+# parser: Python 3.14.6 standard-library json module
+# command: python docs/engineering/simulation/evidence/WO-MOK-018/merge/validate-drafted.py <capture-dir> <output-file>
+#
+# The retained analysis/validate.py is imported unmodified. One constant is rebound:
+# NAMED_FIELDS, which the specification approves at 61 names, is run here at
+# 75 -- the 14 of the drafted amendment added to it. Every other
+# property is the retained oracle's and is checked over every line unchanged: parses as an
+# object with "record" first, every number an int, every key and string value on rule 3.3's
+# alphabet, every null one of the three permitted absences, no duplicate key.
+#
+# THIS IS A MEASUREMENT OF A DRAFT. SPEC-MOK-006 names none of the fourteen fields, so the
+# retained oracle's FAIL is the governing result until the amendment is approved.
+
+seed0-baseline-d0.15-traceoff.jsonl          1638 records parsed
+seed0-baseline-d0.15-traceon.jsonl           3066 records parsed
+seed0-baseline-d0.75-traceoff.jsonl          1724 records parsed
+seed0-baseline-d0.75-traceon.jsonl           3152 records parsed
+seed0-baseline-d1.50-traceoff.jsonl          2086 records parsed
+seed0-baseline-d1.50-traceon.jsonl           3662 records parsed
+seed0-individual-d0.15-traceoff.jsonl        4192 records parsed
+seed0-individual-d0.15-traceon.jsonl         7429 records parsed
+seed0-individual-d0.75-traceoff.jsonl       13885 records parsed
+seed0-individual-d0.75-traceon.jsonl        25809 records parsed
+seed0-individual-d1.50-traceoff.jsonl       14124 records parsed
+seed0-individual-d1.50-traceon.jsonl        26124 records parsed
+seed0-reference-d0.15-traceoff.jsonl         2933 records parsed
+seed0-reference-d0.15-traceon.jsonl          5275 records parsed
+seed0-reference-d0.75-traceoff.jsonl        12915 records parsed
+seed0-reference-d0.75-traceon.jsonl         23905 records parsed
+seed0-reference-d1.50-traceoff.jsonl        13981 records parsed
+seed0-reference-d1.50-traceon.jsonl         25865 records parsed
+seed1-baseline-d0.15-traceoff.jsonl          1622 records parsed
+seed1-baseline-d0.15-traceon.jsonl           3050 records parsed
+seed1-baseline-d0.75-traceoff.jsonl          1720 records parsed
+seed1-baseline-d0.75-traceon.jsonl           3148 records parsed
+seed1-baseline-d1.50-traceoff.jsonl          1877 records parsed
+seed1-baseline-d1.50-traceon.jsonl           3320 records parsed
+seed1-individual-d0.15-traceoff.jsonl        4905 records parsed
+seed1-individual-d0.15-traceon.jsonl         8735 records parsed
+seed1-individual-d0.75-traceoff.jsonl       12962 records parsed
+seed1-individual-d0.75-traceon.jsonl        23980 records parsed
+seed1-individual-d1.50-traceoff.jsonl       14164 records parsed
+seed1-individual-d1.50-traceon.jsonl        26164 records parsed
+seed1-reference-d0.15-traceoff.jsonl         4497 records parsed
+seed1-reference-d0.15-traceon.jsonl          8001 records parsed
+seed1-reference-d0.75-traceoff.jsonl        13799 records parsed
+seed1-reference-d0.75-traceon.jsonl         25623 records parsed
+seed1-reference-d1.50-traceoff.jsonl        14167 records parsed
+seed1-reference-d1.50-traceon.jsonl         26167 records parsed
+seed123-baseline-d0.15-traceoff.jsonl        1634 records parsed
+seed123-baseline-d0.15-traceon.jsonl         3062 records parsed
+seed123-baseline-d0.75-traceoff.jsonl        1829 records parsed
+seed123-baseline-d0.75-traceon.jsonl         3306 records parsed
+seed123-baseline-d1.50-traceoff.jsonl        1847 records parsed
+seed123-baseline-d1.50-traceon.jsonl         3275 records parsed
+seed123-individual-d0.15-traceoff.jsonl      3428 records parsed
+seed123-individual-d0.15-traceon.jsonl       6183 records parsed
+seed123-individual-d0.75-traceoff.jsonl     13127 records parsed
+seed123-individual-d0.75-traceon.jsonl      24306 records parsed
+seed123-individual-d1.50-traceoff.jsonl     14102 records parsed
+seed123-individual-d1.50-traceon.jsonl      26042 records parsed
+seed123-reference-d0.15-traceoff.jsonl       3868 records parsed
+seed123-reference-d0.15-traceon.jsonl        7039 records parsed
+seed123-reference-d0.75-traceoff.jsonl      11610 records parsed
+seed123-reference-d0.75-traceon.jsonl       21375 records parsed
+seed123-reference-d1.50-traceoff.jsonl      13950 records parsed
+seed123-reference-d1.50-traceon.jsonl       25778 records parsed
+seed42-baseline-d0.15-traceoff.jsonl         1626 records parsed
+seed42-baseline-d0.15-traceon.jsonl          3054 records parsed
+seed42-baseline-d0.75-traceoff.jsonl         1774 records parsed
+seed42-baseline-d0.75-traceon.jsonl          3225 records parsed
+seed42-baseline-d1.50-traceoff.jsonl         2077 records parsed
+seed42-baseline-d1.50-traceon.jsonl          3675 records parsed
+seed42-individual-d0.15-traceoff.jsonl       3906 records parsed
+seed42-individual-d0.15-traceon.jsonl        7074 records parsed
+seed42-individual-d0.75-traceoff.jsonl      12993 records parsed
+seed42-individual-d0.75-traceon.jsonl       24060 records parsed
+seed42-individual-d1.50-traceoff.jsonl      14168 records parsed
+seed42-individual-d1.50-traceon.jsonl       26168 records parsed
+seed42-reference-d0.15-traceoff.jsonl        3819 records parsed
+seed42-reference-d0.15-traceon.jsonl         6811 records parsed
+seed42-reference-d0.75-traceoff.jsonl       12223 records parsed
+seed42-reference-d0.75-traceon.jsonl        22586 records parsed
+seed42-reference-d1.50-traceoff.jsonl       14141 records parsed
+seed42-reference-d1.50-traceon.jsonl        26141 records parsed
+seed777-baseline-d0.15-traceoff.jsonl        1625 records parsed
+seed777-baseline-d0.15-traceon.jsonl         3053 records parsed
+seed777-baseline-d0.75-traceoff.jsonl        1755 records parsed
+seed777-baseline-d0.75-traceon.jsonl         3198 records parsed
+seed777-baseline-d1.50-traceoff.jsonl        1912 records parsed
+seed777-baseline-d1.50-traceon.jsonl         3371 records parsed
+seed777-individual-d0.15-traceoff.jsonl      2942 records parsed
+seed777-individual-d0.15-traceon.jsonl       5342 records parsed
+seed777-individual-d0.75-traceoff.jsonl     13982 records parsed
+seed777-individual-d0.75-traceon.jsonl      25982 records parsed
+seed777-individual-d1.50-traceoff.jsonl     13573 records parsed
+seed777-individual-d1.50-traceon.jsonl      25018 records parsed
+seed777-reference-d0.15-traceoff.jsonl       5711 records parsed
+seed777-reference-d0.15-traceon.jsonl       10149 records parsed
+seed777-reference-d0.75-traceoff.jsonl      13387 records parsed
+seed777-reference-d0.75-traceon.jsonl       24861 records parsed
+seed777-reference-d1.50-traceoff.jsonl      14148 records parsed
+seed777-reference-d1.50-traceon.jsonl       26148 records parsed
+
+# 90 streams, 961105 records, 0 findings
+# result against the drafted field set: PASS
+
+# Every field name in this capture that the APPROVED SPEC-MOK-006 does not name,
+# exhaustively, with the number of records each appears in:
+#   suffered                284409  drafted
+
+# Every field name in this capture that the DRAFTED field set does not name:
+#   (none) -- the draft is complete for this capture
+
+# Drafted names this capture does not exercise: ['attacker', 'damage', 'discarded', 'increase', 'recipient', 'recipient_satiety', 'striker_energy', 'subject_satiety', 'target', 'target_died', 'target_fear', 'target_health', 'transferred']
+# That is not a defect on its own -- a capture need not reach every field -- but a name
+# no capture anywhere reaches is a name the amendment should not add.
+
+# ---- full text of this driver ----
+
+"""VER-MOK-012 oracle 3, run against the **drafted** SPEC-MOK-006 amendment rather than the approved
+specification.
+
+Usage, from the repository root:
+
+    python docs/engineering/simulation/evidence/WO-MOK-018/merge/validate-drafted.py \
+        <capture-dir> <output-file>
+
+## What this file is and is not
+
+`analysis/validate.py` is the retained oracle and it is **not modified**: it is imported here by path
+and its `check`, `walk` and `names_a_statistic` are the ones that run. One module-level constant is
+rebound before the walk -- `NAMED_FIELDS`, whose whole purpose is to be *transcribed from the
+specification rather than gathered from the streams*, so that the check fails for any field the engine
+emits that the specification has not named.
+
+That is exactly why the retained oracle FAILS on this branch's merge, and why the failure is a result
+and not a problem with the run. Over the ninety cells of the reference matrix it reports 284,409
+findings, every one of them the single field `suffered`, which is one per traced action. Over the
+thirty `social` cells it reports 138,907, across fourteen field names. Rule 26's vocabulary reaches
+the record stream on this merge for the first time and `SPEC-MOK-006` has not yet named any of it.
+
+The field set below is the **drafted** amendment's, not an approved one. Nothing here ratifies
+anything: this file measures whether the drafted amendment is *complete* -- whether the fourteen names
+it adds are exactly the fields the merge emits and not a name more or fewer -- so that the owner is
+asked to approve a field set that has been checked rather than one that has been guessed. A PASS here
+is evidence about the draft. It is not evidence about the specification, which still names none of
+these fields, and the retained oracle's FAIL remains the governing measurement until the amendment is
+approved.
+
+The complete union of every field name the captures carry that `SPEC-MOK-006` does not name is
+reported below in full, independently of the pass or fail, because the retained oracle truncates its
+findings at five hundred and a reader of a truncated list cannot tell whether it is exhaustive.
+
+## The fourteen names, and the rule each belongs to
+
+    suffered, attacker, damage        rule 25's window, on the action trace, and its two element keys
+    target                            the seven targeted verbs of CAP-MOK-010, and the three
+                                      resolutions that name whom they resolved against
+    target_health, striker_energy,    rule 22's before-and-after pairs
+    target_died                       rule 22's verdict, `yes` or `no` as a string, on the `status`
+                                      precedent of rule 6.4
+    increase, target_fear             rule 23's effective increase and its pair
+    recipient, transferred,           rule 24's counterparty and the two halves of its arithmetic
+    discarded
+    subject_satiety,                  rule 24's two before-and-after pairs
+    recipient_satiety
+
+No new absence is introduced: `PERMITTED_NULLS` is untouched, and no field of rule 26's vocabulary is
+ever null in 1,365,884 records across both captures. No new alphabet character is introduced either --
+`ALPHABET` is untouched and the retained oracle's rule 3.3 check runs unchanged over every one of
+these values.
+"""
+
+import importlib.util
+import io
+import json
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+RETAINED = os.path.join(HERE, os.pardir, 'analysis', 'validate.py')
+
+# The fourteen names the drafted amendment adds, kept as their own set so that a reader can see the
+# draft's whole extent without diffing two field sets.
+DRAFTED_ADDITIONS = {
+    # Rule 25's suffered-attack window, on the action trace, and the two keys of its elements.
+    'suffered', 'attacker', 'damage',
+    # The target of a targeted verb, in the proposal and in each resolution.
+    'target',
+    # Rule 22.
+    'target_health', 'striker_energy', 'target_died',
+    # Rule 23.
+    'increase', 'target_fear',
+    # Rule 24.
+    'recipient', 'transferred', 'discarded', 'subject_satiety', 'recipient_satiety',
+}
+
+
+def load_retained():
+    """The retained oracle, imported from its own file and left unmodified on disk."""
+    specification = importlib.util.spec_from_file_location('validate_retained', RETAINED)
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module
+
+
+def unnamed_fields(capture_dir, named):
+    """Every field name the captures carry that `named` does not, exhaustively and with a count."""
+    seen = {}
+
+    def walk(value):
+        if isinstance(value, dict):
+            for key, nested in value.items():
+                if key not in named:
+                    seen[key] = seen.get(key, 0) + 1
+                walk(nested)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+
+    for name in sorted(os.listdir(capture_dir)):
+        if not name.endswith('.jsonl'):
+            continue
+        with io.open(os.path.join(capture_dir, name), 'r', encoding='utf-8', newline='') as handle:
+            for line in handle:
+                if line.strip():
+                    walk(json.loads(line))
+    return seen
+
+
+def main():
+    capture_dir, output_file = sys.argv[1:3]
+    retained = load_retained()
+
+    approved = set(retained.NAMED_FIELDS)
+    already = sorted(DRAFTED_ADDITIONS & approved)
+    retained.NAMED_FIELDS = approved | DRAFTED_ADDITIONS
+
+    streams = sorted(name for name in os.listdir(capture_dir) if name.endswith('.jsonl'))
+    if not streams:
+        print(f'no record stream in {capture_dir}', file=sys.stderr)
+        return 1
+
+    findings = []
+    if already:
+        findings.append(
+            f'the drafted amendment adds {already}, which SPEC-MOK-006 already names'
+        )
+
+    # Rule 4.2 over the drafted set, on the retained oracle's own test: a statistic admitted into the
+    # specification must fail here rather than pass by being on the allow-list.
+    for field in sorted(retained.NAMED_FIELDS):
+        statistic = retained.names_a_statistic(field)
+        if statistic:
+            findings.append(
+                f'the drafted field set names {field!r}, a derived statistic {statistic}'
+            )
+
+    total = 0
+    per_stream = []
+    for name in streams:
+        parsed = retained.check(os.path.join(capture_dir, name), findings)
+        total += parsed
+        per_stream.append((name, parsed))
+
+    against_approved = unnamed_fields(capture_dir, approved)
+    against_drafted = unnamed_fields(capture_dir, retained.NAMED_FIELDS)
+    unused = sorted(DRAFTED_ADDITIONS - set(against_approved))
+
+    lines = [
+        '# VER-MOK-012 oracle 3, against the DRAFTED SPEC-MOK-006 amendment',
+        '#',
+        f'# capture directory: {capture_dir}',
+        f'# parser: Python {sys.version.split()[0]} standard-library json module',
+        '# command: python docs/engineering/simulation/evidence/WO-MOK-018/merge/validate-drafted.py '
+        '<capture-dir> <output-file>',
+        '#',
+        '# The retained analysis/validate.py is imported unmodified. One constant is rebound:',
+        f'# NAMED_FIELDS, which the specification approves at {len(approved)} names, is run here at',
+        f'# {len(retained.NAMED_FIELDS)} -- the {len(DRAFTED_ADDITIONS)} of the drafted amendment added to it. Every other',
+        '# property is the retained oracle\'s and is checked over every line unchanged: parses as an',
+        '# object with "record" first, every number an int, every key and string value on rule 3.3\'s',
+        '# alphabet, every null one of the three permitted absences, no duplicate key.',
+        '#',
+        '# THIS IS A MEASUREMENT OF A DRAFT. SPEC-MOK-006 names none of the fourteen fields, so the',
+        '# retained oracle\'s FAIL is the governing result until the amendment is approved.',
+        '',
+    ]
+    for name, parsed in per_stream:
+        lines.append(f'{name:<41} {parsed:>7} records parsed')
+    lines.append('')
+    lines.append(f'# {len(streams)} streams, {total} records, {len(findings)} findings')
+    lines.append(f'# result against the drafted field set: {"FAIL" if findings else "PASS"}')
+    lines.append('')
+    lines.append('# Every field name in this capture that the APPROVED SPEC-MOK-006 does not name,')
+    lines.append('# exhaustively, with the number of records each appears in:')
+    for field, count in sorted(against_approved.items()):
+        marked = 'drafted' if field in DRAFTED_ADDITIONS else 'NOT IN THE DRAFT'
+        lines.append(f'#   {field:<22} {count:>7}  {marked}')
+    if not against_approved:
+        lines.append('#   (none)')
+    lines.append('')
+    lines.append('# Every field name in this capture that the DRAFTED field set does not name:')
+    for field, count in sorted(against_drafted.items()):
+        lines.append(f'#   {field:<22} {count:>7}')
+    if not against_drafted:
+        lines.append('#   (none) -- the draft is complete for this capture')
+    lines.append('')
+    if unused:
+        lines.append(
+            f'# Drafted names this capture does not exercise: {unused}'
+        )
+        lines.append(
+            '# That is not a defect on its own -- a capture need not reach every field -- but a name'
+        )
+        lines.append(
+            '# no capture anywhere reaches is a name the amendment should not add.'
+        )
+    else:
+        lines.append('# Every drafted name is exercised by this capture.')
+    if findings:
+        lines.append('')
+        lines.append('# findings')
+        lines.extend(findings[:500])
+        if len(findings) > 500:
+            lines.append(f'# ... and {len(findings) - 500} more')
+    lines.append('')
+    lines.append('# ---- full text of this driver ----')
+    lines.append('')
+    lines.extend(io.open(os.path.abspath(__file__), 'r', encoding='utf-8').read().split('\n'))
+
+    with io.open(output_file, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(lines) + '\n')
+
+    print(
+        f'{len(streams)} streams, {total} records parsed, {len(findings)} findings; '
+        f'{len(against_approved)} field names unnamed by the approved specification, '
+        f'{len(against_drafted)} by the draft'
+    )
+    return 1 if findings else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+

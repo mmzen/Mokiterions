@@ -1,7 +1,7 @@
 # VER-MOK-012: the test census, split by the binary that ran each test
 #
-# baseline log:  docs/engineering/simulation/evidence/WO-MOK-018/baseline/test-run.txt
-# candidate log: docs/engineering/simulation/evidence/WO-MOK-018/post/test-run.txt
+# baseline log:  C:/Users/mathi/m-test-run-master.txt
+# candidate log: C:/Users/mathi/m-test-run.txt
 # command: python docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.py \
 #              <baseline-test-log> <candidate-test-log> <output-file>
 #
@@ -11,29 +11,29 @@
 # assumed harmless.
 
   target                                                      before   after   delta
-  mokiterions  unittests src/lib.rs                               54      68     +14
+  mokiterions  unittests src/lib.rs                               82      96     +14
   Mokiterions  unittests src/main.rs                               0       0      +0
-  cli  tests/cli.rs                                               13      16      +3
-  decisions  tests/decisions.rs                                    1       1      +0
+  cli  tests/cli.rs                                               15      18      +3
+  decisions  tests/decisions.rs                                    3       3      +0
   density  tests/density.rs                                        2       2      +0
   naming  tests/naming.rs                                          3       3      +0
-  process  tests/process.rs                                        6       6      +0
-  termination  tests/termination.rs                                4       4      +0
-  viability  tests/viability.rs                                    2       2      +0
-  mokiterions_tui  unittests src/lib.rs                           31      31      +0
+  process  tests/process.rs                                        7       7      +0
+  termination  tests/termination.rs                                5       5      +0
+  viability  tests/viability.rs                                    5       5      +0
+  mokiterions_tui  unittests src/lib.rs                           33      33      +0
   mokiterions_tui  unittests src/main.rs                           8       8      +0
   authority  tests/authority.rs                                    4       4      +0
   export  tests/export.rs                                          7       7      +0
-  layout  tests/layout.rs                                         10      10      +0
+  layout  tests/layout.rs                                         11      11      +0
   options  tests/options.rs                                        8       8      +0
-  render  tests/render.rs                                         12      12      +0
+  render  tests/render.rs                                         22      22      +0
   spatial  tests/spatial.rs                                        7       7      +0
   state  tests/state.rs                                           21      21      +0
-  verification  tests/verification.rs                             19      19      +0
+  verification  tests/verification.rs                             21      21      +0
   doc-tests mokiterions                                            0       0      +0
   doc-tests mokiterions_tui                                        0       0      +0
   records  tests/records.rs                                        0      17     +17
-  TOTAL                                                          212     246     +34
+  TOTAL                                                          264     298     +34
 
 # 34 addition(s), 0 removal(s) under this qualifier
 

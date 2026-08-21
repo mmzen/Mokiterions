@@ -1,0 +1,28 @@
+=== C:/Users/mathi/mcap-sink ===
+  cells                          90
+  records, all kinds             961105
+  action_trace records           284409
+  ... carrying result.suffered   284409
+  ... suffered == []             284409
+  ... suffered non-empty         0
+  entries across non-empty lists 0
+  list lengths seen              none
+  entry key sets seen            none
+  bytes, `,"suffered":[]`  3981726 = 14 x 284409
+  bytes, non-empty occurrences   0
+  suffered on any other kind     none
+
+=== C:/Users/mathi/msoc-sink ===
+  cells                          30
+  records, all kinds             404779
+  action_trace records           118201
+  ... carrying result.suffered   118201
+  ... suffered == []             118066
+  ... suffered non-empty         135
+  entries across non-empty lists 135
+  list lengths seen              {1: 135}
+  entry key sets seen            {('attacker', 'damage'): 135}
+  bytes, `,"suffered":[]`  1652924 = 14 x 118066
+  bytes, non-empty occurrences   5940
+  suffered on any other kind     none
+

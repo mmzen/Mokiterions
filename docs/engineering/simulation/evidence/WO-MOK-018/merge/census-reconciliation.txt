@@ -1,0 +1,204 @@
+VER-MOK-012 — the test census, reconciled three ways across the merge
+====================================================================
+
+Merge         master fa065cc into the Phase 4a chain fa0bfd9, as merge commit 1e09f85
+Measured at   e8114ad (the merge plus act 3's SPEC-MOK-004 correction; no source file differs)
+Instruments   WO-MOK-011/analysis/census.py, reused unmodified, over one `cargo test
+              --workspace --locked` invocation per tree
+              WO-MOK-018/analysis/census-by-target.py, the finer per-binary split
+Date          2026-08-21
+
+Three logs, one invocation each, all three retained in this directory:
+
+    test-run-master.txt   master fa065cc          264 names; 264 passed, 0 failed, 0 ignored
+    test-run-branch.txt   the branch fa0bfd9      246 names; 246 passed, 0 failed, 0 ignored
+    test-run.txt          the merge, at e8114ad   298 names; 298 passed, 0 failed, 0 ignored
+
+and the censuses taken from them, by the same script, are `test-census-master.txt`,
+`test-census-branch.txt` and `test-census.txt`.
+
+## Why three and not two
+
+`SPEC-MOK-004` rule 11 records one-invocation totals, and rule 11's delegating clause says a work
+order that adds a test corrects these figures here and one that loses a test has a defect. A merge
+can do both at once and a two-way comparison cannot tell them apart. Against master alone the
+merge looks like +34 with nothing lost; against the branch alone it looks like +52 with two lost.
+Neither reading is wrong and neither is sufficient. The three-way set arithmetic is what settles
+it, and it is set arithmetic over target-qualified names rather than over counts.
+
+--------------------------------------------------------------------------
+### The arithmetic
+
+Writing M for master's 264 names, B for the branch's 246 and G for the merge's 298, each name
+qualified by the binary that ran it:
+
+    |M| = 264      |B| = 246
+    |M ∩ B| = 210          the two chains share 210 tests, the base's inheritance
+    |M ∪ B| = 300          264 + 246 - 210
+    |M \ B| =  54          master brings 54 the branch never had
+    |B \ M| =  36          the branch brings 36 master never had
+
+    |G| = 298 = |M ∪ B| - 2
+
+    G \ (M ∪ B) = ∅        the merge invents no test
+    M \ G       = ∅        the merge loses nothing of master's
+    B \ G       = 2        exactly two of the branch's names are absent
+    G \ M       = 34       and 34 of the branch's 36 arrive: 36 - 2 = 34
+
+Every figure above is a set difference over the three logs, not a subtraction of totals. The two
+identities that carry the weight are `M \ G = ∅` and `G \ (M ∪ B) = ∅`: the first says the merge
+dropped none of master's tests, the second says it fabricated none. Between them the only thing
+left to account for is the two names in `B \ G`, and they are the subject of the next section but
+one.
+
+Per target, master to the merge, from `census-by-target-master-vs-merge.txt`:
+
+    mokiterions  unittests src/lib.rs      82 ->  96   +14
+    cli  tests/cli.rs                      15 ->  18    +3
+    records  tests/records.rs               0 ->  17   +17
+    every other target of the twenty-two   unchanged, to the test
+    TOTAL                                 264 -> 298   +34
+
+Nineteen of the twenty-two targets are unchanged to the test, one is new, and two grew. That is
+rule 11's conservation clause measured against master rather than argued.
+
+--------------------------------------------------------------------------
+### The 34 arrivals: Phase 4a's, name by name
+
+One new target, `tests/records.rs`, seventeen names — the engine's public tier for the record
+stream:
+
+    records  a_destination_the_process_did_not_create_is_not_removed
+    records  a_failed_run_removes_the_destination_it_created
+    records  a_malformed_sink_argument_exits_two_and_writes_nothing
+    records  a_sink_diagnostic_is_distinguishable_from_a_text_stream_diagnostic
+    records  an_existing_destination_is_replaced_by_the_new_run
+    records  an_unopenable_destination_exits_one_and_runs_no_tick
+    records  every_cumulative_figure_equals_its_event_record_count
+    records  every_key_in_the_stream_is_a_key_the_specification_names
+    records  every_metrics_record_is_internally_consistent
+    records  every_text_event_line_is_reconstructible_from_its_event_record
+    records  help_opens_no_file
+    records  no_record_carries_a_path_or_the_sinks_own_destination
+    records  null_appears_only_where_a_fact_does_not_exist
+    records  the_record_stream_is_byte_identical_across_runs
+    records  the_run_record_reconstructs_the_summary_line
+    records  the_stream_is_one_record_per_line_in_the_order_the_specification_fixes
+    records  the_text_stream_is_byte_identical_with_and_without_a_sink
+
+Fourteen in the engine's internal tier:
+
+    mokiterions  simulation::tests::a_metrics_record_over_an_empty_living_population_reports_null_extrema
+    mokiterions  simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary
+    mokiterions  simulation::tests::a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written
+    mokiterions  simulation::tests::a_record_sink_that_fails_mid_run_leaves_no_run_record
+    mokiterions  simulation::tests::a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one
+    mokiterions  simulation::tests::a_saturated_counter_neither_wraps_nor_panics
+    mokiterions  simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet
+    mokiterions  simulation::tests::every_cumulative_counter_equals_its_event_count_in_the_text_stream
+    mokiterions  simulation::tests::every_event_kind_has_its_exact_record_shape
+    mokiterions  simulation::tests::every_proposal_shape_is_the_action_word_and_the_one_value_it_carries
+    mokiterions  simulation::tests::no_rule_reads_a_cumulative_counter
+    mokiterions  simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone
+    mokiterions  simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink
+    mokiterions  simulation::tests::the_header_record_states_the_resolved_configuration_and_never_a_path
+
+Three in the engine's option-parsing target:
+
+    cli  the_binary_and_the_parser_spell_the_sink_option_the_same_way
+    cli  the_sink_option_is_validated_and_its_value_is_not_retained
+    cli  the_sink_option_states_what_it_writes_and_what_it_replaces
+
+17 + 14 + 3 = 34, and every one is a Phase 4a name. The observer's ten targets contribute nothing
+to this column and are unchanged at 142: Phase 4a adds a stream the observer does not read.
+
+`every_cumulative_counter_equals_its_event_count_in_the_text_stream` is worth marking as it passes
+by. It is the test that asserts `agent.died_at` agrees with the text stream, and it passes here —
+but it is fixed to `Policy::Reference`, under which no attack occurs. The merge is the first tree
+in which that matters. `README.md` records what the oracles found and what is drafted about it;
+this file only records that the test is present, is in the merge, and passes in the form it has.
+
+--------------------------------------------------------------------------
+### The 54 arrivals from master's side, and why they are not listed as this merge's work
+
+`|M \ B| = 54`. Those 54 are master's — Phase 3's social decision source, its combat resolution,
+the observer's announcement and hint work, and the two renames below. They arrive in the merge
+because the merge takes master, and `census-by-target-branch-vs-merge.txt` lists all 54 by name
+against the branch's log. They are not repeated here: this file reconciles what the merge does,
+and against master the merge adds 34 and removes none. The 54 are already reconciled in master's
+own packets.
+
+The reason both directions are retained rather than only the one that flatters the change is rule
+12 and the two names below. A packet that only compared against master would show zero removals
+and would never have to explain them.
+
+--------------------------------------------------------------------------
+### The two absences, and why neither is a loss
+
+    absent from the merge, present on the branch:
+
+      layout        the_log_is_ten_rows_only_where_both_thresholds_are_met
+      verification  no_shipped_decision_source_has_a_proposal_rejected
+
+Both are renames master performed, and both are renames in the precise sense `SPEC-MOK-004` rule
+12 fixes: a test renamed with its assertion strengthened is not a departure and its new name is
+not an arrival. The pairs, with the new name measured as present in master's log and in the
+merge's, in the same binary:
+
+    layout        the_log_is_ten_rows_only_where_both_thresholds_are_met
+              ->  the_log_is_six_rows_wherever_it_is_present                    (in master: layout)
+
+    verification  no_shipped_decision_source_has_a_proposal_rejected
+              ->  no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+                                                                          (in master: verification)
+
+Neither new name is in `B`, both are in `M`, and both are in `G`. So each pair is one name leaving
+and one arriving *on master's side of the merge*, and the merge inherits the result. The two
+absences are therefore accounted for as master's renames, already recorded in `SPEC-MOK-004`'s own
+rows, and the merge neither performed them nor lost anything by taking them.
+
+That is the whole of `B \ G`. There is no third absence, and no absence anywhere in `M \ G`.
+
+A note on the instrument, because it bears on how these two lines are reported. The
+`census-by-target.py` retained in `analysis/` printed, unconditionally, *"There is no removal, so
+no baseline test was renamed, moved between targets, or deleted"*. Against the branch-to-merge
+comparison that sentence is false, and a verification instrument printing a false claim is worse
+than a wrong figure in a document, because a reader has no reason to doubt it. It is a condition
+now, and the no-removal branch is word for word what it was, so `analysis/census-by-target.txt`
+regenerates byte for byte above its own embedded script text. `README.md` records the correction
+as a finding against this packet's own instruments.
+
+--------------------------------------------------------------------------
+### The figures this reconciliation licenses
+
+The three totals act 3 wrote into `SPEC-MOK-004`'s 2026-08-21 amendment row, each a sum over the
+merge's per-target rows in `gates.txt`:
+
+    observer   142        rule 9's public tier and rule 10's internal tier, unchanged by the merge
+    engine     156        122 on master's side, +34
+    workspace  298        one invocation at the workspace root
+
+    52 arrivals against the branch, 34 against master, 2 absences both explained as master's
+    renames, union 300, intersection 210, 22 targets
+
+Rule 6's interface figures — 94 items, 118 `pub` lines, 24 public fields — are unchanged, and that
+is measured rather than assumed: `interface.txt` enumerates the public surface of both packages on
+all three trees and the observer's enumeration is byte-identical to master's.
+
+--------------------------------------------------------------------------
+### Reproducing it
+
+Per tree, from that tree's root:
+
+    cargo test --workspace --locked > <log>
+    python docs/engineering/simulation/evidence/WO-MOK-011/analysis/census.py <log> <census>
+
+and for the finer split, from the merge tree's root:
+
+    python docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.py \
+        <baseline-log> <candidate-log> <output>
+
+Both parents were measured in `git worktree` checkouts of their exact commits, at
+`C:\Users\mathi\wt-master` and `C:\Users\mathi\wt-pr31`, each with an empty
+`git status --porcelain`. Their absolute paths appear in the retained logs and nothing depends on
+them.

@@ -1,7 +1,7 @@
 # VER-MOK-012: the test census, split by the binary that ran each test
 #
-# baseline log:  docs/engineering/simulation/evidence/WO-MOK-018/baseline/test-run.txt
-# candidate log: docs/engineering/simulation/evidence/WO-MOK-018/post/test-run.txt
+# baseline log:  C:/Users/mathi/m-test-run-pr31.txt
+# candidate log: C:/Users/mathi/m-test-run.txt
 # command: python docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.py \
 #              <baseline-test-log> <candidate-test-log> <output-file>
 #
@@ -11,70 +11,94 @@
 # assumed harmless.
 
   target                                                      before   after   delta
-  mokiterions  unittests src/lib.rs                               54      68     +14
+  mokiterions  unittests src/lib.rs                               68      96     +28
   Mokiterions  unittests src/main.rs                               0       0      +0
-  cli  tests/cli.rs                                               13      16      +3
-  decisions  tests/decisions.rs                                    1       1      +0
+  cli  tests/cli.rs                                               16      18      +2
+  decisions  tests/decisions.rs                                    1       3      +2
   density  tests/density.rs                                        2       2      +0
   naming  tests/naming.rs                                          3       3      +0
-  process  tests/process.rs                                        6       6      +0
-  termination  tests/termination.rs                                4       4      +0
-  viability  tests/viability.rs                                    2       2      +0
-  mokiterions_tui  unittests src/lib.rs                           31      31      +0
+  process  tests/process.rs                                        6       7      +1
+  records  tests/records.rs                                       17      17      +0
+  termination  tests/termination.rs                                4       5      +1
+  viability  tests/viability.rs                                    2       5      +3
+  mokiterions_tui  unittests src/lib.rs                           31      33      +2
   mokiterions_tui  unittests src/main.rs                           8       8      +0
   authority  tests/authority.rs                                    4       4      +0
   export  tests/export.rs                                          7       7      +0
-  layout  tests/layout.rs                                         10      10      +0
+  layout  tests/layout.rs                                         10      11      +1
   options  tests/options.rs                                        8       8      +0
-  render  tests/render.rs                                         12      12      +0
+  render  tests/render.rs                                         12      22     +10
   spatial  tests/spatial.rs                                        7       7      +0
   state  tests/state.rs                                           21      21      +0
-  verification  tests/verification.rs                             19      19      +0
+  verification  tests/verification.rs                             19      21      +2
   doc-tests mokiterions                                            0       0      +0
   doc-tests mokiterions_tui                                        0       0      +0
-  records  tests/records.rs                                        0      17     +17
-  TOTAL                                                          212     246     +34
+  TOTAL                                                          246     298     +52
 
-# 34 addition(s), 0 removal(s) under this qualifier
+# 54 addition(s), 2 removal(s) under this qualifier
 
-  + cli                the_binary_and_the_parser_spell_the_sink_option_the_same_way
-  + cli                the_sink_option_is_validated_and_its_value_is_not_retained
-  + cli                the_sink_option_states_what_it_writes_and_what_it_replaces
-  + mokiterions        simulation::tests::a_metrics_record_over_an_empty_living_population_reports_null_extrema
-  + mokiterions        simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary
-  + mokiterions        simulation::tests::a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written
-  + mokiterions        simulation::tests::a_record_sink_that_fails_mid_run_leaves_no_run_record
-  + mokiterions        simulation::tests::a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one
-  + mokiterions        simulation::tests::a_saturated_counter_neither_wraps_nor_panics
-  + mokiterions        simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet
-  + mokiterions        simulation::tests::every_cumulative_counter_equals_its_event_count_in_the_text_stream
-  + mokiterions        simulation::tests::every_event_kind_has_its_exact_record_shape
-  + mokiterions        simulation::tests::every_proposal_shape_is_the_action_word_and_the_one_value_it_carries
-  + mokiterions        simulation::tests::no_rule_reads_a_cumulative_counter
-  + mokiterions        simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone
-  + mokiterions        simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink
-  + mokiterions        simulation::tests::the_header_record_states_the_resolved_configuration_and_never_a_path
-  + records            a_destination_the_process_did_not_create_is_not_removed
-  + records            a_failed_run_removes_the_destination_it_created
-  + records            a_malformed_sink_argument_exits_two_and_writes_nothing
-  + records            a_sink_diagnostic_is_distinguishable_from_a_text_stream_diagnostic
-  + records            an_existing_destination_is_replaced_by_the_new_run
-  + records            an_unopenable_destination_exits_one_and_runs_no_tick
-  + records            every_cumulative_figure_equals_its_event_record_count
-  + records            every_key_in_the_stream_is_a_key_the_specification_names
-  + records            every_metrics_record_is_internally_consistent
-  + records            every_text_event_line_is_reconstructible_from_its_event_record
-  + records            help_opens_no_file
-  + records            no_record_carries_a_path_or_the_sinks_own_destination
-  + records            null_appears_only_where_a_fact_does_not_exist
-  + records            the_record_stream_is_byte_identical_across_runs
-  + records            the_run_record_reconstructs_the_summary_line
-  + records            the_stream_is_one_record_per_line_in_the_order_the_specification_fixes
-  + records            the_text_stream_is_byte_identical_with_and_without_a_sink
+  + cli                the_social_policy_is_selectable_and_does_not_become_the_default
+  + cli                the_unknown_policy_diagnostic_names_every_accepted_value
+  + decisions          every_targeted_verb_applies_somewhere_in_the_declared_matrix
+  + decisions          the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source
+  + layout             the_log_is_six_rows_wherever_it_is_present
+  + layout             the_reference_roster_interior_holds_the_whole_population
+  + mokiterions        simulation::tests::a_defender_below_its_attackers_identifier_answers_on_the_next_tick
+  + mokiterions        simulation::tests::a_full_health_mokiterion_falls_in_four_strikes_at_most_and_ten_at_least
+  + mokiterions        simulation::tests::a_mokiterion_killed_mid_tick_takes_no_further_opportunity
+  + mokiterions        simulation::tests::a_rejected_targeted_proposal_mutates_nothing_and_reports_nothing
+  + mokiterions        simulation::tests::a_resolution_touches_nobody_but_its_two_parties
+  + mokiterions        simulation::tests::a_strike_that_empties_health_kills_through_rule_13_and_no_other_path
+  + mokiterions        simulation::tests::a_surrender_buys_no_immunity_and_is_paid_again
+  + mokiterions        simulation::tests::a_surrender_forfeits_half_its_own_satiety_and_discards_what_does_not_fit
+  + mokiterions        simulation::tests::a_targeted_move_is_a_rule_8_move_on_rule_5s_axis
+  + mokiterions        simulation::tests::a_threat_composes_with_rule_12_in_turn_order_and_outlasts_its_tick
+  + mokiterions        simulation::tests::a_threat_moves_the_targets_fear_and_nothing_else
+  + mokiterions        simulation::tests::answering_one_attack_closes_the_window_on_every_attack_in_it
+  + mokiterions        simulation::tests::both_parties_may_die_within_one_tick
+  + mokiterions        simulation::tests::branch_one_answers_the_earliest_attacker_and_precedes_every_other_branch
+  + mokiterions        simulation::tests::branch_one_answers_the_first_attack_at_the_specified_fear_thresholds
+  + mokiterions        simulation::tests::branch_two_puts_survival_before_society_and_draws_nothing
+  + mokiterions        simulation::tests::branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold
+  + mokiterions        simulation::tests::contact_and_resolution_span_the_territory_boundary
+  + mokiterions        simulation::tests::contact_is_recomputed_from_position_and_needs_two_living_neighbors
+  + mokiterions        simulation::tests::every_targeted_rejection_names_the_first_unmet_condition
+  + mokiterions        simulation::tests::exchanging_the_two_identifiers_changes_no_outcome
+  + mokiterions        simulation::tests::no_resolution_and_no_targeted_move_touches_the_shared_stream
+  + mokiterions        simulation::tests::no_source_but_rule_26s_opens_the_suffered_window
+  + mokiterions        simulation::tests::strike_damage_is_the_strikers_own_condition_and_the_cost_is_flat
+  + mokiterions        simulation::tests::the_action_vocabulary_is_eleven_kinds_and_seven_name_a_target
+  + mokiterions        simulation::tests::the_social_source_draws_at_most_once_and_never_for_a_targeted_proposal
+  + mokiterions        simulation::tests::the_suffered_window_opens_in_resolution_order_and_closes_at_the_next_opportunity
+  + mokiterions        simulation::tests::with_no_company_and_an_empty_record_the_social_source_is_the_individual_source
+  + mokiterions_tui    render::tests::a_ten_point_step_moves_the_fill_at_the_reference_viewport
+  + mokiterions_tui    render::tests::every_bar_width_the_roster_can_produce_resolves_a_ten_point_step
+  + process            the_social_source_runs_to_completion_and_exits_successfully
+  + render             a_declining_mokiterion_shows_a_declining_bar
+  + render             every_living_mokiterion_has_an_entry_at_the_reference_viewport
+  + render             no_entry_is_lost_silently_at_any_viewport_presenting_the_roster
+  + render             the_announcement_and_the_hint_read_nothing_but_the_viewport
+  + render             the_announcement_appears_and_disappears_with_the_pane_it_names
+  + render             the_announcement_is_emphasised_and_the_optional_segments_are_not
+  + render             the_announcement_states_the_axis_and_the_value_the_layout_decides_presence_from
+  + render             the_hint_displaces_neither_the_announcement_nor_the_footer
+  + render             the_hint_is_present_after_two_hundred_ticks_in_both_run_states
+  + render             the_key_binding_hint_is_on_screen_in_the_first_frame_at_every_viewport
+  + termination        a_long_run_is_bounded_under_the_social_source
+  + verification       no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+  + verification       the_announcement_and_the_hint_survive_the_loss_of_colour
+  + verification       the_social_source_is_rejected_only_as_the_specification_admits
+  + viability          no_identifier_series_is_monotone_in_identifier
+  + viability          survival_by_turn_position_stays_inside_the_stated_bound
+  + viability          the_social_source_keeps_the_world_habitable_and_combat_lethal
+  - layout             the_log_is_ten_rows_only_where_both_thresholds_are_met
+  - verification       no_shipped_decision_source_has_a_proposal_rejected
 
-# A rename would appear here as one addition and one removal. There is no removal, so no
-# baseline test was renamed, moved between targets, or deleted: every one of them is still
-# present under its own name in its own binary.
+# A rename appears here as one addition and one removal, and this comparison has
+# 2 removal(s), named above. Each is a baseline test that is renamed,
+# moved between targets, or deleted; which of the three it is does not follow from two
+# logs and is not asserted here. Where a rename is the explanation, its new name is one
+# of the additions above and the pair is a rename rather than a loss.
 
 # ---- full text of this script, retained as VER-MOK-012 requires ----
 
