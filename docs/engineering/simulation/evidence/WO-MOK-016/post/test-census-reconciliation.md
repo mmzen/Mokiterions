@@ -332,3 +332,181 @@ slowest target, because the turn-position bound is evaluated over the declared 2
 1,000 ticks each. `VER-MOK-016` states no time bound on the suite and this section sets none; it records
 what one invocation now costs, so that a later reader who finds `cargo test` slow knows which target to
 look at and why it is expected.
+
+## 9. The baseline moved: the census re-taken against `master`'s tip
+
+Sections 1 to 8 all compare against `baseline/test-census.txt`, which holds **212** names. On 2026-08-21
+`master` was merged into this branch at `259859d`, and that merge moved the before side of every
+comparison above: `master`'s tip carries `WO-MOK-013`, which this branch had never seen, so the tree this
+work order's additions sit on holds **226** names and not 212.
+
+Nothing above is edited. `SPEC-MOK-004` rule 11 fixes the form this correction takes, because the
+situation has arisen once before in this repository and the rule records how it was resolved:
+
+> `WO-MOK-010`'s 21 additions and 0 removals are reconciled name by name in its `test-census.txt`, which
+> was re-taken on 2026-08-19 against `master`'s tip and reads **179 before, 200 after**; `master`'s ten
+> arrivals sit on its before side rather than among this work order's additions. It was not edited to
+> reach that figure — the earlier capture, taken at `4f32a9f` against the branch point, reached 190, and
+> a capture is re-run rather than corrected.
+
+So `master`'s arrivals belong on the before side, the earlier captures stay as they are, and this section
+is a fourth measurement rather than a revision of the first three.
+
+**On the two commit names for one baseline.** The table at the head of this file names the baseline
+`39662d13`, while the merge's own base against `master` is `dac9bac3`. They are different commits and
+both hold 212 names, because `git diff 39662d1 dac9bac -- mokiterions-core mokiterions-tui` is empty:
+no line either crate compiles differs between them. The baseline census is valid against either, and
+both names are recorded here so that a reader who computes the merge base does not read the difference
+as a discrepancy.
+
+### 9.1 The two runs
+
+| | Before | After |
+|---|---|---|
+| Commit | `d8e207941f99ee47ae6c7f3ffeb1769f560fd4dc` — `master`'s tip, the merge's second parent | `af78b9d`'s tree, tracked-clean, nothing untracked |
+| Invocation | `cargo test --locked --workspace --no-fail-fast`, from the workspace root | the same |
+| Exit code | **`0`** | **`0`** |
+| Names | **226** — 226 passed, 0 failed, 0 ignored | **264** — 264 passed, 0 failed, 0 ignored |
+| Log | `post/test-run-master.txt` — 412 lines, 22,428 bytes | `post/test-run-merged.txt` — 391 lines, 23,777 bytes |
+| Census | `post/test-census-master.txt` — 229 lines, 19,000 bytes | `post/test-census-merged.txt` — 267 lines, 22,669 bytes |
+| Reader | `analysis/test-census.py`, unchanged — the same reader that wrote every census in this file | the same |
+| Date | 2026-08-21 | 2026-08-21 |
+
+    176d2dc3d7a556799a43f462cca6f98e6a5abfa3fcf9ee25b04a2b8be2525f03  post/test-run-master.txt
+    258179955a9b50a6356d2921b3e00663da4f3e4fe867b1feda79027c4719a6f8  post/test-census-master.txt
+    9042aa847fa671730ab9c9d550e2019bb4b188ae0f4e905f8732f7a2b9cd4932  post/test-run-merged.txt
+    0cacbbe3162555159c5bdb670a032137e976644c1c1b8486d29c29e86b6c4706  post/test-census-merged.txt
+
+**The after run is the merge's suite, not this commit's.** Between `259859d` and the tree it was taken
+at, twelve files changed and **every one of them is under `docs/`**: `git diff --name-only 259859d
+af78b9d | grep -v '^docs/'` is empty. So no line the workspace compiles differs, and this log is the
+merge commit's suite, on the same reasoning §8 gives for naming its own.
+
+**The before run was built in a detached worktree, and its log says so.** `post/test-run-master.txt`
+lines 4 and 59 read `Compiling Mokiterions v0.1.0 (C:\Users\mathi\mok-master-census\mokiterions-core)`
+and the observer's equivalent, because `master`'s tip was checked out with `git worktree add --detach`
+rather than by moving this branch's checkout. Those two lines are **kept**. A log rewritten to look as
+though it came from somewhere else is not a log, and the path is the disclosure that the before side was
+measured on a tree this branch never had checked out, which is the whole point of measuring it.
+
+### 9.2 The reconciliation
+
+    $ names() { grep -v '^#' "$1" | grep -v '^$' | sed 's/ :: [^:]*$//' | sort; }
+    $ comm -23 <(names post/test-census-master.txt) <(names post/test-census-merged.txt)
+    tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+| | Count |
+|---|---:|
+| names at `master`'s tip | 226 |
+| retained, target-qualified name unchanged | **225** |
+| present at `master`'s tip, absent at the merge | **1** — still the §3 rename, and no other |
+| added at the merge | **39** |
+| names at the merge | **264** |
+| `#[ignore]`d, either side | **0** |
+| removed | **0** |
+| non-`ok` outcomes, either side | **0** |
+
+225 + 1 = 226 and 225 + 39 = 264, so every name on both sides sits in exactly one row.
+
+### 9.3 What re-basing the comparison did not change
+
+The two reconciliations agree line for line on this work order's own side:
+
+| | §8, against the branch point | §9, against `master`'s tip |
+|---|---:|---:|
+| names before | 212 | 226 |
+| present before, absent after | **1** — `no_shipped_decision_source_has_a_proposal_rejected` | **1** — the same name |
+| added | **39** | **39** — the same 39 names |
+| names after | 250 | 264 |
+
+That is the outcome rule 11's `WO-MOK-010` paragraph anticipates: `master`'s arrivals land wholly on the
+before side and none of them is absorbed into this work order's additions. The 39 are the same names in
+both comparisons, so §§1 to 8 stand unaltered as statements about what this work order added, and only
+the totals either side of them move.
+
+The complement is also computable, and it is the check that the merge introduced nothing of its own:
+
+    $ comm -13 <(names post/test-census-amended.txt) <(names post/test-census-merged.txt)   # 15 names
+    $ comm -23 <(names post/test-census-amended.txt) <(names post/test-census-merged.txt)   # 1 name
+
+Those sixteen lines are exactly `master`'s own additions and its one rename, enumerated in §9.5. The
+merge added no test of its own and lost none, which is consistent with the merge commit's finding that
+`master` changed no line of `mokiterions-core/src/simulation.rs` in its thirty commits.
+
+**The suite's cost moved again.** `tests/viability.rs` now runs **35.46 s** of the invocation's wall time
+against **4.47 s** for the next slowest target, which is the engine's unit tier. §8 recorded 37.88 s
+against 2.08 s; the ordering is unchanged and the second figure roughly doubled because the engine's
+internal tier grew by 28 cases. No time bound is set here either.
+
+### 9.4 The figures `SPEC-MOK-004` rule 11 states, measured at both commits
+
+Rule 11 states one test-count figure per package and one for the workspace, and it obliges their
+correction directly: *"a work order that adds a test corrects these figures here, and one that loses a
+test has a defect."* `SPEC-MOK-002` states **no** test-count figure at all — its rules 7 to 9 fix the
+placement rule and the target arrangement and no count — so rule 11 is the only place these figures live,
+which is what its own text says when it records a split "because this paragraph is the only place the
+workspace total is stated".
+
+Both censuses are classified by package and tier, engine internal being the `unittests` names under
+`simulation::`, engine public the seven `tests/` targets of `mokiterions-core`, and the observer's the
+remainder:
+
+| | `master`'s tip | rule 11 as recorded | The merge | Owed |
+|---|---:|---:|---:|---:|
+| engine, internal tier | 54 | 54 | **82** | +28 |
+| engine, public tier | 31 | 31 | **40** | +9 |
+| **engine total** | **85** | **85** | **122** | **+37** |
+| observer, internal tier | 41 | 41 | **41** | 0 |
+| observer, public tier | 100 | 100 | **101** | +1 |
+| **observer total** | **141** | **141** | **142** | **+1** |
+| **workspace total** | **226** | **226** | **264** | **+38** |
+
+**The middle column is rule 11's own text and the left column is a measurement, and they agree in all
+seven rows.** That agreement is why the right-hand column can be trusted: the classification used here
+reproduces the specification's recorded figures exactly at the commit those figures were written for, so
+it is the specification's own division of the corpus and not a second one invented to fit.
+
+So the figures rule 11 owes are the observer's **142**, the engine's **122** and the workspace's **264**,
+with the engine's split 82 internal and 40 public and the observer's 41 and 101. The 39 arrivals and one
+rename that produce them are enumerated in §9.2's `comm` output and reconciled name by name in §§1 to 8.
+
+**This section does not write that correction.** Amending `SPEC-MOK-004` is an act of the accountable
+technical owner, not of an implementation agent, and rule 11's precedent is that the correction is
+approved together with the work order rather than assumed by it — `SPEC-MOK-002`'s amendment record shows
+the same shape, its 2026-08-19 row reading "Approved 2026-08-19 by the repository owner acting as
+technical owner, together with `WO-MOK-010`. The implementation agent wrote the text and did not decide
+the substance." The measurement above is what that decision is taken on, and the amendment is prepared
+for the owner's signature in `amendment-approvals.md` rather than written into the specification here.
+
+### 9.5 A defect in rule 11's `WO-MOK-013` row, reported and not absorbed
+
+Measuring `master`'s tip against the branch point makes `WO-MOK-013`'s own arrivals visible, and they do
+not match the row rule 11 records for them. The row reads *"The fourteen arrivals, each measured from the
+target that runs it and none departing"*, over a table giving `tests/render.rs` 10, `src/render.rs` 2,
+`tests/layout.rs` 1 and `tests/verification.rs` 1.
+
+    $ comm -13 <(names baseline/test-census.txt) <(names post/test-census-master.txt)   # 15 names
+    $ comm -23 <(names baseline/test-census.txt) <(names post/test-census-master.txt)   # 1 name
+    tests/layout.rs :: the_log_is_ten_rows_only_where_both_thresholds_are_met
+
+| Target | Recorded | Measured | |
+|---|---:|---|---|
+| `mokiterions-tui/tests/render.rs` | 10 | **+10** | agrees |
+| `mokiterions-tui/src/render.rs` | 2 | **+2** | agrees |
+| `mokiterions-tui/tests/verification.rs` | 1 | **+1** | agrees |
+| `mokiterions-tui/tests/layout.rs` | 1 | **+2 −1** | `the_log_is_six_rows_wherever_it_is_present` and `the_reference_roster_interior_holds_the_whole_population` arrive; `the_log_is_ten_rows_only_where_both_thresholds_are_met` departs |
+| **Total** | **14, none departing** | **15 added, 1 departed, net 14** | the net agrees; the composition does not |
+
+**The net figure and the total of 226 are right, and the "none departing" clause is not.** A name that
+was checked at the branch point is absent at `master`'s tip. It is a rename and not a loss of coverage,
+and `WO-MOK-013` disclosed it in the place a reader is most likely to look: the test's own doc comment
+reads *"This is `the_log_is_ten_rows_only_where_both_thresholds_are_met` renamed and corrected"*, and the
+two viewports that asserted a ten-row log still assert a six-row one, so the withdrawn growth is asserted
+absent rather than left untested. What is wrong is the row in the specification, which says no name
+departed when one did.
+
+This is reported rather than corrected here, for the reason rule 11 itself gives when it reports a
+pre-existing figure defect instead of absorbing one: *"That is a pre-existing figure defect in this rule
+and it is reported as one in `WO-MOK-013` rather than absorbed into the new figure."* It belongs to a
+merged work order and its correction is the technical owner's, so it is carried into
+`amendment-approvals.md` alongside §9.4's figures and is not folded silently into them.

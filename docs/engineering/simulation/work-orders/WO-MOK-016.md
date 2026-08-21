@@ -119,7 +119,12 @@ approval rather than by this work order's judgment**: the `±0.5` band was remov
 the new bound alone, and the one test case became two — each an approved provision, with the removal's justification
 measured before it was put. No assertion was relaxed, nothing was `#[ignore]`d, and `post/test-census-reconciliation.md`
 §6 reconciles the resulting 250 names against the baseline census: **250 passing, 0 failing, 0 ignored**, with the only
-baseline name absent still the single rename of its §3.
+baseline name absent still the single rename of its §3. *Re-taken 2026-08-21, after the merge:* §9 reconciles **264
+names, 264 passing, 0 failing, 0 ignored** against `master`'s tip's 226, reaching the same 39 additions and the same
+single rename, so the merge moved the totals either side of this work order's additions and none of the additions
+themselves. §9.4 measures the `SPEC-MOK-004` rule 11 figures those additions oblige and §9.5 reports a defect it found
+in that rule's `WO-MOK-013` row; both are the technical owner's to approve and both are carried to
+`evidence/WO-MOK-016/amendment-approvals.md`.
 
 One finding is recorded and deliberately not acted on. `INT-MOK-010`'s risk states the advantage's direction as favoring
 `M01`, and the measured direction is the opposite. Its success measure is met either way, and amending an approved
