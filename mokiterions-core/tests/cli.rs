@@ -95,12 +95,12 @@ fn the_trait_aware_policy_is_selectable_and_does_not_become_the_default() {
     assert!(parse(["--policy", "individual", "--policy", "reference"]).is_err());
 }
 
-/// `REQ-MOK-048`: the fourth value is selectable, and adding it moved neither the default nor
+/// `REQ-MOK-057`: the fourth value is selectable, and adding it moved neither the default nor
 /// the three values that were already there.
 ///
-/// A named sibling again, for the reason recorded above: `WO-MOK-012` renames no inherited test.
+/// A named sibling again, for the reason recorded above: `WO-MOK-016` renames no inherited test.
 /// The default matters more here than it did under `WO-MOK-010`. `SPEC-MOK-001` records that
-/// `social` is not proposed as the default *because* the survivor floor `REQ-MOK-049` states for
+/// `social` is not proposed as the default *because* the survivor floor `REQ-MOK-058` states for
 /// it sits three below `REQ-MOK-014`'s, so an invocation that silently selected it would ship a
 /// less habitable world than the one the default promises.
 #[test]
@@ -127,7 +127,7 @@ fn the_social_policy_is_selectable_and_does_not_become_the_default() {
     assert!(parse(["--policy", "social", "--policy", "reference"]).is_err());
 }
 
-/// `REQ-MOK-048`: the diagnostic for an unknown policy names every value the parser accepts.
+/// `REQ-MOK-057`: the diagnostic for an unknown policy names every value the parser accepts.
 ///
 /// The message is what an operator reads after mistyping, and a message that omits a value is a
 /// value nobody finds. It is asserted here rather than only through the help text because the two

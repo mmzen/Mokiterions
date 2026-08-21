@@ -143,13 +143,13 @@ fn the_trait_aware_source_runs_to_completion_and_reports_each_trait_once() {
     assert_eq!(output.matches("summary ").count(), 1);
 }
 
-/// `REQ-MOK-048`, `REQ-MOK-049`: the fourth source reaches the process boundary, and a run under
+/// `REQ-MOK-057`, `REQ-MOK-058`: the fourth source reaches the process boundary, and a run under
 /// it exits successfully whatever its outcome.
 ///
-/// The exit code is the point of the last assertion. `REQ-MOK-049` states that habitability is a
+/// The exit code is the point of the last assertion. `REQ-MOK-058` states that habitability is a
 /// measured property rather than a runtime error, so a run that depopulates or that never reaches a
 /// kill must still exit `0` — an engine that failed the process on its own survivor count would be
-/// reading a population aggregate, which `REQ-MOK-050` forbids outright.
+/// reading a population aggregate, which `REQ-MOK-059` forbids outright.
 #[test]
 fn the_social_source_runs_to_completion_and_exits_successfully() {
     let mut output = Vec::new();

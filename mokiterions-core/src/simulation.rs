@@ -46,12 +46,12 @@ const RETREAT_FEAR_THRESHOLD: u8 = 30;
 /// Mokiterion within `5` of [`ATTRIBUTE_MAX`] declines.
 ///
 /// It was `30`, equal to [`RETREAT_FEAR_THRESHOLD`], and was named separately against exactly
-/// the amendment that has since happened — `REQ-MOK-048`'s of 2026-08-20 moved this one and
+/// the amendment that has since happened — `REQ-MOK-057`'s of 2026-08-20 moved this one and
 /// left that one alone. **The value is measured rather than derived**, and the specification
 /// records that as a cost: at `30` no approach could ever complete, because rule 12 drives
 /// `fear` from company perceived at [`PERCEPTION_RADIUS`] while engagement needs contact at
 /// [`CONTACT_RADIUS`], so the gate closed on the third perceiving tick and closing sixteen
-/// squares takes fifteen. `90` fails `REQ-MOK-049` on one declared seed and `100` holds with
+/// squares takes fifteen. `90` fails `REQ-MOK-058` on one declared seed and `100` holds with
 /// less survivor margin; `95` is the measured point where both of that requirement's bounds
 /// first hold together on all five.
 const ENGAGEMENT_FEAR_THRESHOLD: u8 = 95;
@@ -190,7 +190,7 @@ pub enum Policy {
     Reference,
     Individual,
     /// Rule 26's source. It is not the default and is not proposed as one: the survivor
-    /// floor `REQ-MOK-049` states for it is three below `REQ-MOK-014`'s for the default.
+    /// floor `REQ-MOK-058` states for it is three below `REQ-MOK-014`'s for the default.
     Social,
 }
 
@@ -590,7 +590,7 @@ impl Action {
 
 impl fmt::Display for Action {
     /// The four core verbs render exactly as they always have, `move`'s direction included:
-    /// `CAP-MOK-009` holds every line they appear on byte-identical. A targeted verb renders
+    /// `CAP-MOK-010` holds every line they appear on byte-identical. A targeted verb renders
     /// as the bare verb, because its target is a field of its own beside `proposal`.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -640,7 +640,7 @@ struct Observation {
     health: u8,
     satiety: u8,
     energy: u8,
-    /// The acting Mokiterion's own `fear`, carried under `REQ-MOK-045`. It replaces the
+    /// The acting Mokiterion's own `fear`, carried under `REQ-MOK-054`. It replaces the
     /// refusal that stood here for two revisions: the field was absent for as long as no
     /// rule and no source read it, and rule 26's source reads it at every opportunity. The
     /// value is the one standing at the start of this opportunity — after the previous tick's
@@ -1000,7 +1000,7 @@ fn tolerant_survival_choice(observation: &Observation) -> Option<Action> {
 ///
 /// It is separated from case 4 for the reason [`tolerant_survival_choice`] is separated from
 /// both, and the separation carries more weight here. Rule 26 branch 3 needs exactly this
-/// half: `REQ-MOK-048`'s amendment of 2026-08-20 hoists case 3 above that rule's two social
+/// half: `REQ-MOK-057`'s amendment of 2026-08-20 hoists case 3 above that rule's two social
 /// branches, and hoisting is only legitimate because **this function draws nothing**. Lifting
 /// case 4 with it would have moved the shared stream for every social decision.
 fn tolerant_seek_choice(observation: &Observation) -> Option<Action> {
@@ -1426,7 +1426,7 @@ pub enum EventDetail {
     ThreatResolved {
         target: String,
         /// The increase rule 23 *applied*, which is `0` against a target already at
-        /// `ATTRIBUTE_MAX`, on the same terms as rule 24's `transferred`. `REQ-MOK-046`
+        /// `ATTRIBUTE_MAX`, on the same terms as rule 24's `transferred`. `REQ-MOK-055`
         /// requires the applied amount rather than the constant attempted.
         increase: u8,
         target_fear: (u8, u8),
@@ -1458,7 +1458,7 @@ pub enum EventDetail {
         /// rule 12's update for this tick.
         fear: u8,
         /// Rule 25's record as the source read it, before rule 25 clears it. Rendered only
-        /// when non-empty, which `CAP-MOK-009` requires: a field appended unconditionally
+        /// when non-empty, which `CAP-MOK-010` requires: a field appended unconditionally
         /// would change every `action_trace` line of every `baseline` run.
         ///
         /// Pairs of an identifier and a damage rather than the engine's own
@@ -2685,7 +2685,7 @@ impl Simulation {
     /// answer. The only thing a threat costs its maker is the opportunity it spends.
     ///
     /// The reported `increase` is the **effective** one, which is `0` where the target already
-    /// stood at [`ATTRIBUTE_MAX`], not the nominal [`THREAT_FEAR_INCREASE`]. `REQ-MOK-046`
+    /// stood at [`ATTRIBUTE_MAX`], not the nominal [`THREAT_FEAR_INCREASE`]. `REQ-MOK-055`
     /// requires the increase *applied*, on the same terms as rule 24's `transferred`; a
     /// saturated threat succeeds and reports that it moved nothing. The nominal constant stays
     /// recoverable from the pair of `fear` values the same event carries.
@@ -5030,7 +5030,7 @@ mod tests {
         assert_eq!(reported.len(), 12);
     }
 
-    // ---- WO-MOK-012: contact, conflict and society ----------------------------------------
+    // ---- WO-MOK-016: contact, conflict and society ----------------------------------------
 
     fn social_config(seed: u64, tick_limit: u64, trace_actions: bool) -> Config {
         Config {
@@ -5563,7 +5563,7 @@ mod tests {
     /// attribute bound, and moves nothing else about either party.
     ///
     /// The saturating rows are the ones with a decision in them. A target already at the
-    /// maximum is threatened *validly* and reports an increase of `0`: `REQ-MOK-046` requires
+    /// maximum is threatened *validly* and reports an increase of `0`: `REQ-MOK-055` requires
     /// the increase applied rather than the constant attempted, so a rejection there would be
     /// wrong and a reported `30` would be a lie about the transition beside it.
     #[test]
@@ -6263,7 +6263,7 @@ mod tests {
     }
 
     /// Rule 25 under the three sources that predate it: the window never opens, so
-    /// `CAP-MOK-009`'s byte-identity has nothing here to preserve it against.
+    /// `CAP-MOK-010`'s byte-identity has nothing here to preserve it against.
     #[test]
     fn no_source_but_rule_26s_opens_the_suffered_window() {
         for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
@@ -6348,7 +6348,7 @@ mod tests {
         assert_eq!(core.len() + targeted.len(), 11);
     }
 
-    /// `REQ-MOK-044`'s no-entropy constraint, directly: the shared stream stands exactly where
+    /// `REQ-MOK-053`'s no-entropy constraint, directly: the shared stream stands exactly where
     /// it stood, either side of every resolution and every targeted move.
     ///
     /// This is the form of the claim that a byte-identical capture cannot make. A draw taken
@@ -6400,7 +6400,7 @@ mod tests {
         }
     }
 
-    /// `INT-MOK-009`'s recorded risk, at the mechanism: exchanging the two identifiers changes
+    /// `INT-MOK-010`'s recorded risk, at the mechanism: exchanging the two identifiers changes
     /// nothing about the outcome.
     ///
     /// Deterministic resolution in ascending identifier order is what makes this worth
@@ -6442,10 +6442,10 @@ mod tests {
         assert_eq!(outcome(0, 1).0, "damage:21");
     }
 
-    /// `REQ-MOK-044`'s lethality, counted: four strikes at the maximum and ten at the minimum
+    /// `REQ-MOK-053`'s lethality, counted: four strikes at the maximum and ten at the minimum
     /// empty a full-health Mokiterion.
     ///
-    /// This is the arithmetic `REQ-MOK-049`'s floor was lowered against, so it is asserted
+    /// This is the arithmetic `REQ-MOK-058`'s floor was lowered against, so it is asserted
     /// rather than left implied by the damage range.
     #[test]
     fn a_full_health_mokiterion_falls_in_four_strikes_at_most_and_ten_at_least() {
@@ -6593,7 +6593,7 @@ mod tests {
         // for the company it kept at its own. Unsaturated, so both writes are visible in the sum.
         assert_eq!(simulation.agents[1].fear, THREAT_FEAR_INCREASE + 10);
 
-        // `M01` carries only saturation, and that is a consequence of `REQ-MOK-048`'s amendment
+        // `M01` carries only saturation, and that is a consequence of `REQ-MOK-057`'s amendment
         // of 2026-08-20 rather than a weakening of this test. Rule 26 threatens at or above
         // `ENGAGEMENT_FEAR_THRESHOLD`, which that amendment moved to `95`, so **every** threatener
         // is within `FEAR_DECREASE` of [`ATTRIBUTE_MAX`] and its own rule 12 write saturates.
@@ -6778,7 +6778,7 @@ mod tests {
     ///
     /// A defender whose identifier is above its attacker's answers inside the same tick; one
     /// whose identifier is below it answers on the next. Both are consequences of the acting
-    /// order rather than of rule 25, and `INT-MOK-009` records the asymmetry as accepted.
+    /// order rather than of rule 25, and `INT-MOK-010` records the asymmetry as accepted.
     #[test]
     fn a_defender_below_its_attackers_identifier_answers_on_the_next_tick() {
         let mut simulation =

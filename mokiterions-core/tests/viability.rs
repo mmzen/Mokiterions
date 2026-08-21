@@ -146,16 +146,16 @@ fn the_trait_aware_source_sustains_the_population_at_every_declared_density() {
     }
 }
 
-/// `REQ-MOK-049`: under the social source at the declared density over a thousand ticks, at least
+/// `REQ-MOK-058`: under the social source at the declared density over a thousand ticks, at least
 /// five of the twelve are left living and at least one death is attributable to combat, on every
 /// declared seed.
 ///
 /// Two-sided on purpose, and the second side is the one that is easy to lose. A source that
 /// proposed no lethal action would pass a survivor floor perfectly, and the floor alone cannot tell
-/// a world where combat is survivable from one where it never happens. `REQ-MOK-049` states the
+/// a world where combat is survivable from one where it never happens. `REQ-MOK-058` states the
 /// lower bound as a *combat* death so that the requirement fails in both directions.
 ///
-/// The whole curve is measured before anything is asserted. `VER-MOK-012` requires that: the
+/// The whole curve is measured before anything is asserted. `VER-MOK-016` requires that: the
 /// per-seed count is retained even on a seed that fails, "because the curve is what the floor is
 /// ratified on and a suite that stops at the first failure produces no curve". So the table is
 /// built first, printed, and asserted at the end, and each failure message carries the entire
@@ -163,12 +163,12 @@ fn the_trait_aware_source_sustains_the_population_at_every_declared_density() {
 /// curve, and this is the measurement that decision is made on.
 ///
 /// The cause of death is read off the resolution record rather than off `agent_died`.
-/// `REQ-MOK-044` puts it there deliberately, so that combat deaths can be told apart from
+/// `REQ-MOK-053` puts it there deliberately, so that combat deaths can be told apart from
 /// starvation without adding a cause field to `agent_died`; every death not reported by a
 /// resolution is therefore a death by starvation or exhaustion, by elimination.
 #[test]
 fn the_social_source_keeps_the_world_habitable_and_combat_lethal() {
-    /// `REQ-MOK-049`, transcribed. Three below `REQ-MOK-014`'s eight, which is the cost the owner
+    /// `REQ-MOK-058`, transcribed. Three below `REQ-MOK-014`'s eight, which is the cost the owner
     /// accepted for combat and the reason `social` is not the default.
     const FLOOR: usize = 5;
 
@@ -208,7 +208,7 @@ fn the_social_source_keeps_the_world_habitable_and_combat_lethal() {
         })
         .collect::<Vec<String>>()
         .join("\n");
-    println!("REQ-MOK-049 curve, `social`, default density, 1,000 ticks:\n{table}");
+    println!("REQ-MOK-058 curve, `social`, default density, 1,000 ticks:\n{table}");
 
     let below: Vec<u64> = curve
         .iter()
@@ -276,7 +276,7 @@ fn monotone_non_increasing(series: &[usize]) -> bool {
     series.windows(2).all(|pair| pair[0] >= pair[1])
 }
 
-/// The three per-identifier series `VER-MOK-012` oracle 5 computes, summed over `seeds`.
+/// The three per-identifier series `VER-MOK-016` oracle 5 computes, summed over `seeds`.
 ///
 /// Survival is read as the absence of an `agent_died` record rather than off a summary count,
 /// because the count says how many lived and this needs to know which. The strike counts come from
@@ -321,7 +321,7 @@ fn identifier_series(seeds: &[u64]) -> ([usize; 12], [usize; 12], [usize; 12]) {
 /// `SPEC-MOK-001` places six Mokiterions in each territory by identifier — `M01` to `M06` in A,
 /// `M07` to `M12` in B — and contact is overwhelmingly within a territory, so position `index % 6`
 /// is the covariate turn order's effect actually runs along. Against identifier `1..=12` the same
-/// effect is a sawtooth that resets at `M07`, which is why `VER-MOK-012` measures it here instead.
+/// effect is a sawtooth that resets at `M07`, which is why `VER-MOK-016` measures it here instead.
 fn by_turn_position(series: &[usize; 12]) -> [usize; 6] {
     let mut pooled = [0usize; 6];
     for (index, value) in series.iter().enumerate() {
@@ -330,9 +330,9 @@ fn by_turn_position(series: &[usize; 12]) -> [usize; 6] {
     pooled
 }
 
-/// `VER-MOK-012` oracle 5, the outcome half, part one: the gross-advantage tripwire.
+/// `VER-MOK-016` oracle 5, the outcome half, part one: the gross-advantage tripwire.
 ///
-/// `INT-MOK-009` records the risk that deterministic resolution plus an ascending-identifier acting
+/// `INT-MOK-010` records the risk that deterministic resolution plus an ascending-identifier acting
 /// order advantages `M01`. The contract bounds it from two directions and states that neither is
 /// sufficient alone. The mechanism half is exact and lives in the internal tier, where one
 /// constructed encounter is resolved with the two identifiers exchanged and shown to yield identical
@@ -378,24 +378,24 @@ fn no_identifier_series_is_monotone_in_identifier() {
     }
 }
 
-/// `VER-MOK-012` oracle 5, the outcome half, part two: the turn-position survival bound.
+/// `VER-MOK-016` oracle 5, the outcome half, part two: the turn-position survival bound.
 ///
 /// Survival is what an advantage means, so survival is what is bounded. The measured advantage runs
 /// to *later*-acting Mokiterions rather than to `M01`, which is the opposite of the direction
-/// `INT-MOK-009` anticipated, and the ratio is taken over the extremes of all six positions rather
+/// `INT-MOK-010` anticipated, and the ratio is taken over the extremes of all six positions rather
 /// than of the last to the first so that it bounds any pair and cannot stop catching a reversal.
 ///
 /// This runs its own declared seed set because the bound cannot be measured on five. Over five
 /// disjoint groups of 200 the ratio holds between `1.010` and `1.137` and every group agrees on the
 /// direction; at 100 and at 50 the groups straddle `1.0` and disagree about which way it runs. The
-/// set carries no survivor floor and no lethality bound — `REQ-MOK-049`'s obligations stay on
+/// set carries no survivor floor and no lethality bound — `REQ-MOK-058`'s obligations stay on
 /// `DECLARED_SEEDS`, and nothing here is comparable with `REQ-MOK-014`'s or `REQ-MOK-034`'s.
 #[test]
 fn survival_by_turn_position_stays_inside_the_stated_bound() {
-    /// `VER-MOK-012`, *Part two: the turn-position survival bound*, transcribed.
+    /// `VER-MOK-016`, *Part two: the turn-position survival bound*, transcribed.
     ///
     /// Not read off the curve it bounds. `REQ-MOK-034` binds the trait-aware source at eight of
-    /// twelve and `REQ-MOK-049` binds this source at five, so three of twelve — a quarter of the
+    /// twelve and `REQ-MOK-058` binds this source at five, so three of twelve — a quarter of the
     /// population — is the survivor cost combat was accepted to impose. An advantage worth more
     /// than that whole quarter is structural rather than residual.
     const BOUND: f64 = 1.25;

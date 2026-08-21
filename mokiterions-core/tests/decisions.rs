@@ -44,7 +44,7 @@ fn the_trait_aware_source_never_waits_and_proposes_only_valid_actions() {
 /// counts are comparable at matched seeds with the survivor measurements.
 const DECLARED_SEEDS: [u64; 5] = [0, 1, 42, 123, 777];
 
-/// The seven targeted verbs of `REQ-MOK-043`, in the order `SPEC-MOK-001` states them.
+/// The seven targeted verbs of `REQ-MOK-052`, in the order `SPEC-MOK-001` states them.
 const TARGETED_VERBS: [&str; 7] = [
     "attack",
     "threaten",
@@ -89,7 +89,7 @@ fn proposals(output: &str) -> Vec<(&str, bool)> {
         .collect()
 }
 
-/// `REQ-MOK-043` and `VER-MOK-012` oracle 4: every one of the seven targeted verbs applies at least
+/// `REQ-MOK-052` and `VER-MOK-016` oracle 4: every one of the seven targeted verbs applies at least
 /// once somewhere in the declared matrix.
 ///
 /// A verb that never applies in any run is an unreachable rule, and nothing in a constructed-state
@@ -132,7 +132,7 @@ fn every_targeted_verb_applies_somewhere_in_the_declared_matrix() {
         .join("\n");
     println!("targeted verbs over the declared seeds under `social`:\n{table}");
 
-    // `REQ-MOK-048` branches 2, 3 and 6 delegate to rule 19, which never waits, so neither does
+    // `REQ-MOK-057` branches 2, 3 and 6 delegate to rule 19, which never waits, so neither does
     // this source.
     assert_eq!(waits, 0, "the social source proposed a wait");
 
@@ -149,10 +149,10 @@ fn every_targeted_verb_applies_somewhere_in_the_declared_matrix() {
     );
 }
 
-/// `REQ-MOK-043` and `VER-MOK-012` oracle 4: the acting order is untouched.
+/// `REQ-MOK-052` and `VER-MOK-016` oracle 4: the acting order is untouched.
 ///
 /// One opportunity per living Mokiterion per tick, in ascending identifier order, over whole runs.
-/// The order is what `INT-MOK-009` records as the source of combat's one asymmetry, so it is
+/// The order is what `INT-MOK-010` records as the source of combat's one asymmetry, so it is
 /// asserted directly rather than inferred from the outcomes it produces: a Mokiterion acting twice
 /// would strike twice in a tick, and one acting out of order would answer an attack before it
 /// landed.

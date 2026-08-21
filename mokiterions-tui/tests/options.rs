@@ -71,7 +71,7 @@ fn the_usage_text_advertises_every_policy_the_engine_accepts() {
     // usage text is its own and nothing but this test keeps the list it advertises from falling
     // behind the list the engine parses. The match is exhaustive deliberately: a fifth policy
     // stops the compilation here rather than shipping an accepted value the help omits. The
-    // fourth one did exactly that under `WO-MOK-012`.
+    // fourth one did exactly that under `WO-MOK-016`.
     for policy in [
         Policy::Baseline,
         Policy::Reference,

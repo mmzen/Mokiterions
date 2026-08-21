@@ -668,7 +668,7 @@ fn the_applied_action_presented_is_always_the_engines() {
 /// its candidates through the same `allows`, so the claim holds for the same reason; `VER-MOK-010`
 /// requires it as *validation is not relaxed*. No assertion here was changed to admit it.
 ///
-/// `WO-MOK-012` added a fourth shipped source that **is** rejected, and the name of this case moved
+/// `WO-MOK-016` added a fourth shipped source that **is** rejected, and the name of this case moved
 /// rather than the sweep, for the same reason it moved under `WO-MOK-010`: the claim now states the
 /// property the three share instead of a count of what ships. `SocialDecisionSource` proposes
 /// targeted actions, which `SPEC-MOK-001` rule 3 keeps off the valid-action list on purpose, so

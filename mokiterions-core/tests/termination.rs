@@ -75,7 +75,7 @@ fn a_long_run_is_bounded_under_either_source() {
     }
 }
 
-/// `REQ-MOK-048`: the same bound under the social source, where the population can now fall by a
+/// `REQ-MOK-057`: the same bound under the social source, where the population can now fall by a
 /// cause other than starvation.
 ///
 /// A named sibling, on the same reasoning the test below records. Ten thousand ticks is where a

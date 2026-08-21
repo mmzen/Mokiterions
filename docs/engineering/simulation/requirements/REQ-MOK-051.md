@@ -1,182 +1,139 @@
 +++
 id = "REQ-MOK-051"
 type = "requirement"
-title = "Bound the class composition of a territory's standing resources"
+title = "Detect contact between Mokiterions"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-20"
 updated = "2026-08-20"
-statement = "WHEN a simulation runs to 1,000 ticks at the default resource density under the reference, trait-aware or social decision source, THE SYSTEM SHALL leave no calorie class holding more than half of any territory's standing resources, on every declared verification seed."
+statement = "WHILE two living Mokiterions occupy coordinates at a Chebyshev distance of at most one, THE SYSTEM SHALL treat them as in contact, and SHALL make that contact available to the acting Mokiterion's decision opportunity as the precondition of every action that targets another Mokiterion."
 verification_method = "automated-test"
 
 [relations]
-derives_from = ["CAP-MOK-009"]
+derives_from = ["CAP-MOK-010"]
 +++
 
-# Requirement: Bound the class composition of a territory's standing resources
+# Requirement: Detect contact between Mokiterions
 
 ## Rationale
 
-`SPEC-MOK-001` rule 5 records this effect and records that it was left alone: "measurement at the default density puts
-high class at 45 of 61 resources in a territory by tick 1,000, against a balanced initial third. This is accepted at the
-1,000-tick horizon `REQ-MOK-014` states... It is recorded as a known long-horizon effect rather than a defect, and
-addressing it is out of scope for this revision." It also records that rule 19's per-Mokiterion tolerance was expected to
-reduce it, and closes: "**No obligation is stated on the result in either direction.**" This requirement is that
-obligation, and stating it amends that sentence.
+Every action that acts *on* another Mokiterion needs a stated range, and the range has to be narrow enough that the
+action means something. `SPEC-MOK-001` rule 3's perception radius is `16`, which is the right radius for noticing
+somebody and the wrong one for hitting them: a Mokiterion sixteen cells away is a fortnight of walking in tick terms and
+is not in a fight.
 
-**Why here, and why now.** The effect and this initiative invalidate the same two things. `REQ-MOK-014` binds
-`reference` at eight survivors of twelve at the default density and `REQ-MOK-034` binds the trait-aware source at eight;
-both floors were measured on a world in which three quarters of a territory's standing food is high class by tick 1,000,
-and both must be re-measured if that composition changes. Combat requires them re-measured too. Doing both corrections in
-one work order means the two floors are re-measured **once**, against a world that has both properties, instead of twice
-against two intermediate worlds that will never ship. That was the product owner's decision and it is the reason a
-resource-composition requirement appears in a capability about conflict.
+Adjacency is chosen, and the arithmetic is `REQ-MOK-032`'s own. The expected number of other Mokiterions inside a
+Chebyshev box of radius `r` on this world is `11 * (2r+1)^2 / 16384`. At `r=1` that is about `0.0060` per agent-tick —
+roughly 72 contact agent-ticks in a 1,000-tick run with all twelve alive, before any Mokiterion deliberately closes
+distance. That is rare, and it is deliberately not made less rare by widening the radius. It is made less rare by
+`approach`, which `REQ-MOK-052` provides, because a Mokiterion that seeks contact is the behavior worth observing and a
+Mokiterion that is merely near one is not.
 
-**Why it is worth correcting at all.** The mechanism is stated in rule 5 itself: a high-class resource restores `50`
-satiety, so the non-waste condition makes it eatable only at satiety of at most `50`. High class is therefore passed over
-more often than low or medium, and what is passed over stays standing while regeneration keeps adding classes uniformly.
-The result is a world whose food is increasingly the food nobody can eat. That is not a balance complaint; it is a slow
-drift toward a state where the density an operator selected no longer describes the food actually available to a
-Mokiterion, which makes `REQ-MOK-014`'s density-indexed floor progressively less meaningful the longer a run goes.
+Co-location alone was considered and rejected. Two Mokiterions on the same cell is `r=0`, about `0.0007` per agent-tick,
+which would make combat verifiable only through constructed states — the failure mode `REQ-MOK-032` rejected a four-cell
+`fear` threshold for, and the inert-value problem `SPEC-MOK-003` rule 4.5 refused, reached again by a third route.
 
-**Where the correction may be made, and where it may not.** This constraint is the load-bearing part of this requirement,
-because it is what keeps `INT-MOK-009`'s promise that `baseline` reproduces byte-identically.
-
-- The correction **may** be made in the waste condition of the decision sources — rule 5's `satiety + restoration <= 100`
-  and rule 19's tolerant form `S + R - 100 <= T * R / 100`. Those rules are `reference`'s and `individual`'s proposal
-  logic. Changing them changes what those two sources choose, and leaves `baseline` untouched: rule 4's candidate list
-  offers `eat` for each co-located resource with no waste condition at all, so no relaxation of a waste condition can
-  reach it.
-- The correction **may not** be made in rule 16's uniform class selection, in rule 15's regeneration amount, in rule 9's
-  eat effect, or in the food table's restoration values. Each of those is world behavior under every policy, so each would
-  change what a `baseline` run does and diverge every pre-existing baseline capture. Rule 16's class selection would
-  additionally risk moving the shared entropy stream's consumption, which diverges everything.
-
-So the additivity cost of this requirement is bounded and stated in advance: `reference` and `individual` move,
-`baseline` does not. That is narrower than `REQ-MOK-034`'s existing clause, which states that both `reference`'s and
-`baseline`'s outcomes "are frozen" — and **that clause is amended by this requirement**, narrowed to `baseline`, with the
-amendment recorded in `REQ-MOK-034`'s own amendment record and approved as an amendment rather than assumed by this text.
-
-**Half, per territory, per seed.** The initial composition is a balanced third. A ceiling of one half permits real drift —
-the mechanism is not being abolished, and a source that prefers calories should still leave more high class standing than
-low — while ruling out the measured 45 of 61. It is stated per territory rather than over the world because the two
-territories regenerate independently under rules 14 to 16 and a world average would hide a single territory's drift. It is
-stated per seed for the reason `REQ-MOK-049`'s bounds are: an aggregate over seeds can be met while individual runs fail.
+Contact is defined as a relation rather than as stored state. Nothing records that two Mokiterions were in contact; it
+is recomputed from positions at each decision opportunity, exactly as perception is. This keeps the world's authoritative
+state where it is and means no contact can go stale.
 
 ## Preconditions and trigger
 
-The trigger is a completed 1,000-tick run at the default resource density under `reference`, `individual` or the `social`
-source of `REQ-MOK-048`, on a seed in the declared verification set.
+The trigger is a living Mokiterion's decision opportunity under `SPEC-MOK-001` rule 2, at which the observation of rule 3
+is built.
 
-`baseline` is outside this requirement's obligation, and deliberately: it is the source this initiative holds
-byte-identical, so it cannot be made to satisfy a new obligation about the world it produces.
+Both parties must be living. A dead Mokiterion is in contact with nobody, and neither is a living Mokiterion with a dead
+one, on the same ground rule 3 already excludes dead Mokiterions from the perceived list.
+
+Contact is symmetric as a relation over positions and asymmetric in when it is *registered*, because rule 2 gives each
+Mokiterion its own decision opportunity in ascending identifier order. This is the within-tick asymmetry rule 12 already
+documents for `fear` — "two mutually adjacent Mokiterions may not both register the encounter on the same tick, because
+the earlier one observed the later one's position before it moved" — and it is not a defect to be corrected here.
 
 ## Required response
 
-- **At tick 1,000, in each territory, no calorie class holds more than half that territory's standing resources**, on every
-  declared verification seed, at the default density, under each of the three sources named.
-- **The composition is measurable from the run's own output.** Rule 18's final summary already reports remaining food by
-  territory and calorie class, so the measurement needs no new instrumentation and no new event.
-- **`REQ-MOK-014`'s survivor floor of eight of twelve under `reference` still holds after the correction**, re-measured on
-  the declared seed set. A correction that fixes composition by starving the population is not a correction.
-- **`REQ-MOK-034`'s survivor floor of eight of twelve under the trait-aware source still holds after the correction**,
-  re-measured on the same seeds.
-- **Every `baseline` run reproduces byte-identically** against the pre-change capture, on the declared matrix. This is the
-  check that the correction was placed where this requirement permits it.
-- **Every divergence in `reference` and `individual` output is attributed to this correction** and to nothing else, and the
-  attribution is recorded as evidence — a re-capture of both sources' declared matrix, with the divergence characterized
-  rather than merely acknowledged.
-- **The corrected condition is stated in `SPEC-MOK-001`**, as an amendment to rule 5 and rule 19 rather than as a new
-  appended rule, because it changes those two sources' proposal logic and a second condition stated elsewhere would leave
-  two waste conditions in the specification.
+- Two living Mokiterions are in contact when the Chebyshev distance between their coordinates is at most `1`, computed by
+  the same distance the perceived-Mokiterion list of rule 3 is ordered by. Co-location, distance `0`, is contact.
+- The acting Mokiterion's observation identifies which of its perceived Mokiterions are in contact. It does so by
+  carrying the distance it already carries; no separate flag is required, and none is added, because the observation
+  already states the distance of every perceived Mokiterion and a consumer can compare it to `1`.
+- Contact at distance `2` or greater is not contact. Territory does not attenuate it: two Mokiterions adjacent across
+  `y=63/64` are in contact, on the same ground perception already crosses that boundary.
+- Contact is a precondition validated by the engine, not by the decision source. A proposal that targets a Mokiterion
+  not in contact is rejected under `SPEC-MOK-001` rule 6, consuming the opportunity and mutating nothing.
+- Contact is evaluated against authoritative state at validation time, not against the observation the source read. A
+  target that was in contact when the observation was built and is not at validation time — because it moved or died in
+  an earlier Mokiterion's turn of the same tick — yields a rejection.
 
 ## Failure and boundary behavior
 
-- A territory driven to a single class, or to zero of some class, satisfies the ceiling as stated and is nonetheless a
-  degenerate outcome; the measured composition per class per territory is recorded as evidence so that the owner can see it
-  and decide whether a floor is also wanted. This requirement states a ceiling only.
-- A territory reduced to very few standing resources makes the ratio coarse — at three standing resources, two of one class
-  breaches a half. The obligation is stated on the ratio regardless, because a territory that has drifted to three
-  resources is already a `REQ-MOK-014` problem.
-- A depleted territory, holding zero standing resources, holds no class above half of zero and satisfies the ceiling
-  vacuously. Rule 15 makes permanent local depletion reachable at every density and this requirement does not change that.
-- A run at a non-default density is outside the obligation and may be captured as evidence.
-- A run beyond 1,000 ticks is outside the obligation. `VER-MOK-010` measured the 10,000-tick horizon for the trait-aware
-  source and a longer-horizon obligation is not stated here, because the drift is by nature a long-horizon effect and
-  binding it at a horizon nothing else is bound at would make one requirement the whole of the project's long-run policy.
-- No composition outcome produces a runtime error or a non-zero exit code.
+- A Mokiterion is never in contact with itself. The observer never appears in its own perceived list under rule 3, so
+  self-contact is unrepresentable rather than guarded against.
+- Contact with a Mokiterion that died earlier in the same tick is not contact. This is a reachable path, not a
+  theoretical one: rule 13 marks the dead immediately and a later-acting Mokiterion's observation was built after that.
+- The radius is a specification constant, not a configuration input. There is no `--contact-radius`, and the constant is
+  not derived from the perception radius, because the two answer different questions and a shared constant would tie
+  them.
+- No exit code, configuration error or runtime error arises from contact or its absence.
 
 ## Constraints
 
-- **`baseline` is byte-identical.** No change to rule 4, to rule 9's eat effect, to the food table, to rules 14 to 16, or to
-  anything else a `baseline` run reads.
-- **The shared entropy stream's consumption is unchanged in kind and order.** The correction takes no new draw and moves no
-  existing one. Where `reference` and `individual` runs consume a different total number of draws because they consume food
-  at different times, that is a consequence of different world evolution and not of a changed draw discipline.
-- **No entropy substream.** Still declined, for Phase 2's reason.
-- **No population aggregate is read.** In particular, no source may read the class composition of its territory in order to
-  decide what to eat. `REQ-MOK-050` bounds the population; this constraint extends the same discipline to the world's
-  composition, because a source that read it would be the same shape of defect one step removed.
-- **No new attribute, no new event, no new interface item.** Rule 18 already reports what is measured.
-- **The default density and the default policy are unchanged.**
-- The declared verification seed set is the existing one, so the re-measured floors are comparable at matched seeds with
-  `REQ-MOK-014`'s and `REQ-MOK-034`'s originals.
+- One new constant. Contact reuses `SPEC-MOK-001` rule 3's Chebyshev distance rather than introducing a second distance
+  notion; a Euclidean or Manhattan contact test beside a Chebyshev perception test would make two different senses of
+  "near" observable in one system.
+- Contact adds no field to the observation and no item to the engine's public interface. The distance that decides it is
+  already carried.
+- Contact consumes no entropy and reads no population aggregate — no count of how many Mokiterions are in contact
+  anywhere else, no territory total, nothing outside the acting Mokiterion's own observation. `REQ-MOK-059` states that
+  obligation generally; it is repeated here because contact is the first place a census would be tempting.
+- Contact is not stored. No per-pair state, no memory of prior contact. That is `CAP-MOK-010`'s exclusion of interaction
+  memory and this requirement does not breach it.
 
 ## Acceptance examples
 
 ### Example: normal behavior
 
-**Given** the default density under `reference`
+**Given** two living Mokiterions at coordinates one cell apart on either axis or diagonally
 
-**When** a 1,000-tick run completes on each declared verification seed
+**When** the earlier-identified one reaches its decision opportunity
 
-**Then** rule 18's summary shows no class holding more than half of either territory's standing resources.
+**Then** its observation lists the other at distance `1`, and actions targeting it are valid proposals.
 
-### Example: the effect this corrects
+### Example: the boundary
 
-**Given** the pre-change behavior at the default density under `reference`
+**Given** two living Mokiterions at Chebyshev distance `1`, and a second pair at distance `2`
 
-**When** the same measurement is taken
+**When** each acting Mokiterion reaches its decision opportunity
 
-**Then** high class stands at 45 of 61 in a territory, above half, and the requirement is not met — which is the recorded
-state rule 5 accepted and this requirement ends.
+**Then** the first pair is in contact and the second is not; a targeted proposal against the distance-`2` Mokiterion is
+rejected.
 
-### Example: baseline is untouched
+### Example: co-location is contact
 
-**Given** the declared matrix under `baseline`, captured before the change
+**Given** two living Mokiterions on the same coordinate
 
-**When** each run is repeated after it
+**When** either reaches its decision opportunity
 
-**Then** every output is byte-identical.
+**Then** the other is in contact at distance `0`, and targeted proposals against it are valid.
 
-### Example: the carried floors survive
+### Example: contact across the territory boundary
 
-**Given** the declared seed set at the default density
+**Given** one living Mokiterion at `y=63` and another at `y=64` in the same column
 
-**When** the matrix is re-measured under `reference` and under `individual`
+**When** either reaches its decision opportunity
 
-**Then** each leaves at least eight of twelve living, satisfying `REQ-MOK-014` and `REQ-MOK-034` against the corrected
-world.
+**Then** they are in contact, and no crossing event is emitted by the contact itself.
 
 ### Example: failure behavior
 
-**Given** any declared seed where a class holds more than half of a territory's standing resources at tick 1,000 under a
-bound source, or any `baseline` run that diverges from its pre-change capture
+**Given** a Mokiterion whose observation listed a target in contact, and that target dies or moves to distance `2` in an
+earlier Mokiterion's turn of the same tick
 
-**When** the matrix is evaluated
+**When** the proposal is validated
 
-**Then** the requirement is not met, and the finding names the seed, the source, the territory and the class.
+**Then** it is rejected with a reason naming the unmet precondition, the opportunity is consumed, and no state changes.
 
 ## Open decisions
 
-- **Which of the permitted mechanisms is used is the technical owner's**, on measurement inside the work order: relaxing
-  rule 5's waste condition, raising rule 19's tolerance floor, or both. The permitted set and the reason for its boundary
-  are fixed by this requirement; the choice within it is not.
-- **The ceiling's value was ratified at one half by the product owner on 2026-08-20**, in advance of measurement and
-  against two alternatives: `60%`, which would have been easier to meet with a smaller relaxation of the waste condition
-  and therefore gentler on the re-measured floors, and `40%`, which would likely have needed both permitted mechanisms and
-  moved `reference` and `individual` further. One half was kept because it leaves `17` points of headroom above the balanced
-  initial third — so real drift remains permitted — while ruling out the measured `45` of `61`. It remains open to amendment
-  on the first measured curve, on `REQ-MOK-014`'s precedent, with the amendment recorded here.
-- Whether a per-class floor should accompany the ceiling is deferred until the corrected composition has been measured. A
-  ceiling alone can be satisfied by a world that has drifted the other way, and the evidence will show whether it has.
+None at this level. The constant's value is `1` and is fixed by this requirement; its name and placement in
+`SPEC-MOK-001` are the technical owner's.

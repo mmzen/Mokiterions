@@ -1,0 +1,150 @@
+VER-MOK-016 long-horizon resilience: the retained state no stream shows
+======================================================================
+
+Work order   WO-MOK-016 (Phase 3.1, encounters)
+Retains      "the 10,000-tick run's completion, composition and survivor figures, as evidence and
+             not as an obligation" -- this file is the half of it that no stream can answer
+Commit       1ae4267e729efd5a200f98498f8c7652df391dac   (feature/phase-3-definition)
+Binary       target/release/Mokiterions.exe, cargo build --release --locked
+             sha256 fa7df55709f486b960dae9dd2f056de9dc5667f0b88426fd677b44339faacf81
+Reader       analysis/peak.py, Python 3.14.6, host x86_64-pc-windows-msvc
+Date         2026-08-20
+
+`analysis/horizon.py` reconstructs the three retained collections a stream reveals. Two more are
+retained and invisible there: the previous tick's decision snapshots, which no event reports, and the
+collected-event vector the text host leaves absent. Peak working set is the only instrument that
+reaches them, and the criterion is a ratio rather than a limit -- twenty times the ticks against a
+5% memory band -- because the absolute figure is this machine's and the ratio is the world's.
+
+Four invocations are recorded, each with its exit code. The second is the instrument's own control:
+a flat column measures nothing unless the same reading is shown to move when memory really is held.
+The third and fourth are the ladder taken again, unchanged, because a spread of a few KiB is only
+interpretable beside the spread the same command produces on its own -- and one of the two reads a
+larger spread from re-running one cell than from twenty-fold-ing the tick count.
+
+--------------------------------------------------------------------------------
+$ python docs/engineering/simulation/evidence/WO-MOK-012/analysis/peak.py
+--------------------------------------------------------------------------------
+
+1. The tick ladder, seed 0, --policy social --density 0.75
+     ticks exit  seconds  peak KiB
+      1000    0     0.03      4328
+      2000    0     0.04      4332
+      5000    0     0.06      4332
+     10000    0     0.07      4344
+     20000    0     0.07      4336
+
+2. The same cell 3 times, for the measurement's own noise band
+       run exit  seconds  peak KiB
+         1    0     0.09      4332
+         2    0     0.08      4328
+         3    0     0.07      4336
+
+3. The comparison
+   ticks spanned                     1000 to 20000, a factor of 20
+   peak working set spanned          4328 to 4344 KiB, a factor of 1.0037
+   tolerance                         1.05
+   noise band, same cell 3 times    8 KiB
+   ladder spread                     16 KiB
+
+RESULT: PASS -- 20x the ticks moves the peak working set by 16 KiB, a factor of 1.0037 against a tolerance of 1.05; the same cell 3 times moves it by 8 KiB
+exit 0
+
+--------------------------------------------------------------------------------
+$ python docs/engineering/simulation/evidence/WO-MOK-012/analysis/peak.py --control
+--------------------------------------------------------------------------------
+
+CONTROL: a child that retains a known amount, in place of the engine
+    MiB held exit  peak KiB
+          16    0     29648
+          64    0     78836
+      engine    0      4336
+
+   48 MiB more held moves the peak by 49188 KiB
+RESULT: PASS -- the instrument reads retained memory, so a flat column is a finding
+exit 0
+
+--------------------------------------------------------------------------------
+$ python docs/engineering/simulation/evidence/WO-MOK-012/analysis/peak.py    (third invocation, the ladder taken again)
+--------------------------------------------------------------------------------
+
+1. The tick ladder, seed 0, --policy social --density 0.75
+     ticks exit  seconds  peak KiB
+      1000    0     0.03      4324
+      2000    0     0.05      4332
+      5000    0     0.07      4332
+     10000    0     0.07      4332
+     20000    0     0.07      4332
+
+2. The same cell 3 times, for the measurement's own noise band
+       run exit  seconds  peak KiB
+         1    0     0.07      4344
+         2    0     0.07      4336
+         3    0     0.07      4332
+
+3. The comparison
+   ticks spanned                     1000 to 20000, a factor of 20
+   peak working set spanned          4324 to 4332 KiB, a factor of 1.0019
+   tolerance                         1.05
+   noise band, same cell 3 times    12 KiB
+   ladder spread                     8 KiB
+
+RESULT: PASS -- 20x the ticks moves the peak working set by 8 KiB, a factor of 1.0019 against a tolerance of 1.05; the same cell 3 times moves it by 12 KiB
+exit 0
+
+--------------------------------------------------------------------------------
+$ python docs/engineering/simulation/evidence/WO-MOK-012/analysis/peak.py    (fourth invocation, the ladder once more)
+--------------------------------------------------------------------------------
+
+1. The tick ladder, seed 0, --policy social --density 0.75
+     ticks exit  seconds  peak KiB
+      1000    0     0.03      4324
+      2000    0     0.04      4332
+      5000    0     0.06      4332
+     10000    0     0.07      4344
+     20000    0     0.07      4336
+
+2. The same cell 3 times, for the measurement's own noise band
+       run exit  seconds  peak KiB
+         1    0     0.07      4340
+         2    0     0.07      4336
+         3    0     0.08      4332
+
+3. The comparison
+   ticks spanned                     1000 to 20000, a factor of 20
+   peak working set spanned          4324 to 4344 KiB, a factor of 1.0046
+   tolerance                         1.05
+   noise band, same cell 3 times    8 KiB
+   ladder spread                     20 KiB
+
+RESULT: PASS -- 20x the ticks moves the peak working set by 20 KiB, a factor of 1.0046 against a tolerance of 1.05; the same cell 3 times moves it by 8 KiB
+exit 0
+
+The engine's peak sits at about 4.3 MB and does not move with the tick count. Across the three
+ladders above the 10,000-tick cell reads 4344, 4332 and 4344 KiB and the 20,000-tick cell reads
+4336, 4332 and 4336: twice the ticks, and the longer run never reads higher. The three ladder
+spreads are 16, 8 and 20 KiB while the same cell re-run three times moves 8, 12 and 8 KiB, and in
+the second ladder the re-run band is *larger* than the whole spread the tick count produces. A
+figure that is not reproducible from one invocation to the next is the measurement's and not the
+world's, and that is what these three say.
+
+The control holds 48 MiB more than its first run and the same reading moves by 49,188 KiB, so the
+column is flat because nothing accumulates rather than because nothing is being read.
+
+--------------------------------------------------------------------------------
+Provenance of the identifier
+--------------------------------------------------------------------------------
+
+The four invocations above were taken while the work order was numbered WO-MOK-012, which is the path
+their command lines name. Both the work order and its verification artifact were renumbered on
+2026-08-21 -- to WO-MOK-016 and VER-MOK-016 -- because WO-MOK-012 had by then been taken by a different
+work order, already merged to master.
+
+Every other reader in this packet was re-run at the new path, and each reproduced its retained output
+byte for byte, which is what shows the renumbering changed no figure. `peak.py` was not, and the reason
+is the finding this file exists to record: its output is not reproducible from one invocation to the
+next. Re-running it would have replaced four honest measurements with four different ones and left the
+tick-count spread resting on a fresh set of figures rather than on the three ladders that disagree.
+What is retained is therefore what was measured, at the path it was measured under; the same command is
+runnable today at `evidence/WO-MOK-016/analysis/peak.py`, and it will report different absolute
+kilobytes, which is section 3's point.
