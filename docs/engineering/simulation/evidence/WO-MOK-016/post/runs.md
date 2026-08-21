@@ -81,9 +81,18 @@ strike resolved against that Mokiterion in the tick it died and reported `target
 five survivors is asserted at the default density — `mokiterions-core/tests/viability.rs`'s
 `DECLARED_FLOORS` fixes that density and the `social` oracle's own `FLOOR` is `5` — and this
 capture's `0.75` rows reproduce that oracle's curve by a wholly separate path: survivors 9, 10, 9, 9
-and 11, and combat deaths 1, 2, 3, 2 and 1, so no seed is below the floor and no seed is bloodless. The
+and 11, and combat deaths 1, 2, 2, 3 and 1, so no seed is below the floor and no seed is bloodless. The
 oracle runs the engine in-process and counts `target_died:yes`; this reads the released binary's stdout
 with a different reader. Two paths, the same five pairs of numbers.
+
+**A corrected transcription.** Until 2026-08-21 the combat-death list above read `1, 2, 3, 2 and 1`,
+which is the same five values in `runs.txt`'s **lexical** cell order — `seed123` before `seed42` —
+presented as seed order, so seeds 42 and 123 were transposed. The seed-ordered list is `1, 2, 2, 3
+and 1`, as §2's own table two paragraphs above already had it and as `runs.txt` §1's rows carry it.
+No figure moves and no measurement is re-run: the correction is to a sentence that transcribes the
+table, not to the table, and `REQ-MOK-058`'s ratification row records the same five pairs in seed
+order. The survivor list is invariant under the transposition — both seeds leave 9 — which is why
+only the combat-death list showed it.
 
 The low-density cells are recorded and not excluded, which is what "on failing seeds too" asks for. They
 are not a failure of this change: density `0.15` is the sweep's low end, where `WO-MOK-011` already
