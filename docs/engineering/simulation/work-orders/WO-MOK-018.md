@@ -2,7 +2,7 @@
 id = "WO-MOK-018"
 type = "work_order"
 title = "Close the two observer defects Phase 3.1 left: a stale filterable-type count, and a fourth attribute that becomes unreadable at death"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-21"
 updated = "2026-08-21"
@@ -25,7 +25,8 @@ verification = ["VER-MOK-005"]
 
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope
 below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
-completed change and the retained evidence. Verification and release require separate commit-bound records.
+completed change and the retained evidence, and **it is `implemented` as of 2026-08-21** — see *Transition to
+`implemented`* below. Verification and release require separate commit-bound records.
 
 **Approved and directed on 2026-08-21.** The repository owner, who holds every accountable role in this repository, was
 shown this work order with its two decisions and its four required amendments in full, approved the two-tier scope, and
@@ -41,7 +42,40 @@ technical owner's ratification. The same is true of two provisions inside amendm
 two-line pairing, and `VER-MOK-005`'s correction of a stale `name`. Each is named in the completion report and marked
 where it is recorded, rather than presented as approved text.
 
-Commit-bound verification is classified `required` above.
+Commit-bound verification is classified `required` above. `VREC-MOK-018` is the record that binds it, at
+`docs/engineering/simulation/verification-records/VREC-MOK-018.md`, prepared in the same instruction that moved this
+status and captured against **the commit that carries this transition** — which that record names and this paragraph
+cannot, since `WORKFLOW.md` holds that "a record cannot contain the hash of its own commit" and the same reasoning
+forbids a file naming the commit it is part of. **It is a `ready` candidate and is not `verified`**: `DECISION_RIGHTS.md`
+reserves that transition to the accountable assurance owner, and `WORKFLOW.md` says a candidate "moves separately from
+`ready` to `verified` through an accountable human decision". **This status and that record are independent** and neither
+substitutes for the other in either direction.
+
+The candidate is the transition commit rather than the implementation commit `b034da3`, on `VREC-MOK-017`'s reasoning:
+commit-bound verification is `required` here, so this transition is part of what the record verifies, and the candidate
+must be a commit that carries both the change and the transition.
+
+### Transition to `implemented`, 2026-08-21
+
+**`in_progress` → `implemented` was taken on 2026-08-21 by the repository owner, acting as accountable engineering
+owner.** The instruction, verbatim: *"you can transition the work orders to implemented, and prepare the verification
+record"*. The implementation agent held this status at `in_progress` through implementation and reported the transition
+as the owner's to take, on the ground that `implemented` asserts the completed change **and** the retained evidence as an
+accountable judgement — `WO-MOK-007`, `WO-MOK-011` and `WO-MOK-013` each stayed at their pre-implementation status
+through their own implementation on the same reasoning, and `WO-MOK-013`'s own transition was directed in almost these
+words. The status moved when that judgement was given, and not before.
+
+**Only this work order moved.** The instruction is plural and one work order was available to it: `WO-MOK-018` was the
+only one at `in_progress`. `WO-MOK-008` and `WO-MOK-017` are `draft`, nothing has been implemented for either, and
+`WORKFLOW.md`'s path runs `draft -> approved -> in_progress -> implemented`, so neither is eligible and neither was
+touched. Every other work order in the tree is already `implemented`.
+
+**What the status records is authority, not confidence.** `WORKFLOW.md`: "a status change records authority; it is not a
+confidence estimate." So `implemented` records that the accountable engineering owner judges the six in-scope items
+complete and their evidence retained. It does **not** record that the three OUTSTANDING provisions above are ratified,
+that `VER-MOK-005` is satisfied, that `VREC-MOK-018` is `verified`, or that anything has been pushed, merged, tagged or
+released. Each is a separate record or a separate accountable act, and `VREC-MOK-018`'s *What this record does not claim*
+enumerates them.
 
 `ARCH-MOK-002` is selected because it `addresses` `REQ-MOK-021`, and `ADR-MOK-003` is selected as the active ADR that
 decides it, on the precedent of `WO-MOK-005`. The architecture is selected for coverage and **not because any boundary
