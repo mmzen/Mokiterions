@@ -2,7 +2,7 @@
 id = "VREC-MOK-016"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-016 at the governance transition commit"
-status = "ready"
+status = "superseded"
 owners = ["assurance owner"]
 created = "2026-08-21"
 updated = "2026-08-21"
@@ -11,6 +11,8 @@ git_object_format = "sha1"
 worktree_state = "clean"
 verified_at = "2026-08-21T11:55:45Z"
 artifact_snapshot_sha256 = "7146811904120151d8a33d5eda010c34ab8700d9b4593405c4a4e9f2c3f49afd"
+superseded_at = "2026-08-21T12:57:39Z"
+supersession_authorized_by = "assurance owner"
 evidence_paths = [
   "docs/engineering/simulation/evidence/WO-MOK-016/README.md",
   "docs/engineering/simulation/evidence/WO-MOK-016/amendment-approvals.md",
@@ -178,9 +180,49 @@ evidence_paths = [
 [relations]
 verifies_work_order = ["WO-MOK-016"]
 conforms_to = ["VER-MOK-016"]
+superseded_by = ["VREC-MOK-017"]
 +++
 
-# Verification Candidate Record
+# Superseded Verification Candidate Record
+
+**Transitioned from `ready` to `superseded` on 2026-08-21 by the repository owner, acting as accountable assurance
+owner, and never verified.** `WORKFLOW.md` states the mechanism: *"Only a `ready` VREC may become `superseded` in the
+current model. It must record a UTC `superseded_at`, a non-empty `supersession_authorized_by`, and one `superseded_by`
+relation to a distinct `verified` or `released` VREC whose work-order set covers the old record."* All three are
+recorded above. The successor is **`VREC-MOK-017`**, `verified` and bound to `ecba9fee0776dde98ffda6d69d8d4c47f5cc1ad6`,
+whose `verifies_work_order` is `["WO-MOK-016"]` and therefore covers this record's set exactly.
+
+**Why this record was retired rather than verified.** Its candidate, `4539601`, holds
+`evidence/WO-MOK-016/manual-assessment.md` with **eight of eleven record blocks blank**. `VER-MOK-016`'s own standard is
+that *"an unrecorded assessment is an outstanding assessment, and this contract is not satisfied while any remains
+outstanding"* — so the contract is not satisfied at this commit, and a `verified` status here would have asserted
+satisfaction of a contract that its own candidate does not satisfy. The owner took the eight assessments on 2026-08-21,
+after this record was captured, committed and pushed; the commit that holds them is `ecba9fe`, and
+`WO-MOK-016`'s *The eight manual assessments, recorded 2026-08-21* logs the acts. A record for that commit is a new
+record.
+
+**It was not re-pointed at `ecba9fe`, and that was the one available shortcut.** `VREC-MOK-015` states the rule this
+repository set in `VREC-MOK-011` and followed in `VREC-MOK-014`: *"A decision does not re-measure provenance, and it
+does not re-point the record at the commit that carries the decision."* Editing `commit`, `verified_at` and
+`artifact_snapshot_sha256` here would have been cheaper than a second record by every measure, and it is not a
+transition the model provides: the supersession rule above requires that *"the old commit, object format, snapshot,
+evidence, work orders, and verification contracts remain unchanged"*, and every one of those fields is exactly as the
+capture of `2026-08-21T11:55:45Z` produced it. **Nothing above this line changed except `status`, the two supersession
+fields and the one supersession relation.**
+
+**A second record over one work order is precedented and is not a defect.** `VREC-MOK-014` and `VREC-MOK-015` are both
+`verified` and both carry `verifies_work_order = ["WO-MOK-014"]`, the second bound to the merge because *"a record for
+the merge is a new record"*. This is the same shape one step on, and the numbering carries no claim: `VREC-MOK-008`
+covers `WO-MOK-009`, and `VREC-MOK-017` covers `WO-MOK-016`.
+
+**Everything below this section is retained exactly as the candidate wrote it, and is true of the capture rather than of
+today.** Its measurements are `4539601`'s and remain reproducible only there. Where it says this record is `ready`, says
+that eight assessments are outstanding, or says what must happen before it can be verified, it is describing the state
+at its own candidate — which is what a superseded record is for. **`VREC-MOK-017` is the record to read for the current
+state**, including for the reading of `SPEC-MOK-001`'s rule 21 correction that its 2026-08-20 amendment row points a
+reader here for. Superseded records remain historical and are not release-eligible.
+
+---
 
 **This record is `ready`, and it decides nothing.** It names commit
 `45396016bc13b8bf9edb31cd9a46e66ed587b5ff` as the candidate satisfying `VER-MOK-016`, and the 161 files under

@@ -4,8 +4,8 @@
 |---|---|
 | Contract | `VER-MOK-016`, *Manual assessments* — eleven, each with its accountable role and date |
 | Retention item | "the eleven manual assessments above, each with its accountable role and date" |
-| What this file is | **a prepared record, not a decision.** Each section states the assessment's own words, the value decided in advance where there is one, the measured evidence it is taken against with a citation to the record that holds each figure, the outcomes available, and an **empty record block for the accountable owner to complete**. An implementation agent may prepare this and may not sign it |
-| State | **2 recorded, 1 half-recorded, 1 carried to `WO-MOK-017`, 7 outstanding** |
+| What this file is | **prepared material, and now the record taken on it.** Each section states the assessment's own words, the value decided in advance where there is one, the measured evidence it is taken against with a citation to the record that holds each figure, the outcomes available, and a record block. Everything but the blocks was prepared by an implementation agent, which may prepare this and may not sign it; **every block was completed by the accountable owner**, on 2026-08-20 or 2026-08-21 |
+| State | **10 recorded, 1 carried to `WO-MOK-017` — none outstanding.** 2 recorded 2026-08-20, 1 half-recorded then and completed 2026-08-21, 7 recorded 2026-08-21 |
 | Baseline | `39662d13abd08e3410648d1c59ad38384f8ad2d2` |
 | Candidate | `139061530f1dba72c9a20427eeaac6ce69492fb2` |
 | Merge | `259859dffe1f5f856e154263c48d8d1e04808903` — where source figures are re-taken |
@@ -38,16 +38,16 @@ elsewhere in that contract.
 
 | # | Subject | Owed by | State |
 |---|---|---|---|
-| 1 | the damage function and the striker's energy cost | product owner | **outstanding** |
-| 2 | the forfeit's magnitude and its non-conservation | product owner | **outstanding** |
-| 3 | the threat's magnitude | product owner | **outstanding** |
+| 1 | the damage function and the striker's energy cost | product owner | **recorded** — ratified as decided, 2026-08-21 |
+| 2 | the forfeit's magnitude and its non-conservation | product owner | **recorded** — ratified, destruction intended in both cases, 2026-08-21 |
+| 3 | the threat's magnitude | product owner | **recorded** — `30` ratified and the inertness accepted, 2026-08-21 |
 | 4 | the survivor floor of five and the lethality bound | product owner | **recorded** — `REQ-MOK-058`, 2026-08-20 |
 | 5 | the composition ceiling of one half, and the per-class floor question | product owner | **carried to `WO-MOK-017`** with `REQ-MOK-060`, 2026-08-21 |
-| 6 | the additivity cost | product owner | **half-recorded** — the `REQ-MOK-034` narrowing is approved; the other half's premise is false at this candidate |
-| 7 | the fourth source's name | product owner | **outstanding** |
-| 8 | the defender's decision rule | technical owner | **outstanding** |
-| 9 | cross-agent mutation against `ARCH-MOK-001` | technical owner | **outstanding** |
-| 10 | the read enumeration of oracle 6 | assurance owner | **outstanding** |
+| 6 | the additivity cost | product owner | **recorded in both halves** — the `REQ-MOK-034` narrowing approved 2026-08-20; the cost recorded 2026-08-21 as not assessable here and carried to `WO-MOK-017` |
+| 7 | the fourth source's name | product owner | **recorded** — confirmed in all three places, 2026-08-21 |
+| 8 | the defender's decision rule | technical owner | **recorded** — ordering and thresholds ratified, branch 1 may not decline, 2026-08-21 |
+| 9 | cross-agent mutation against `ARCH-MOK-001` | technical owner | **recorded** — satisfied unchanged, 2026-08-21 |
+| 10 | the read enumeration of oracle 6 | assurance owner | **recorded** — confirmed complete, 2026-08-21 |
 | 11 | the monotonicity band's adequacy | assurance owner | **recorded** — 2026-08-20, and it was not adequate |
 
 The repository owner holds all three roles. That does not merge them: an assessment owed by the product
@@ -55,7 +55,7 @@ owner is taken as product owner, and the role line of each block records which o
 
 ---
 
-## 1. The damage function and the striker's energy cost
+## 1. The damage function and the striker's energy cost — **recorded**
 
 **The contract's words.** "Decided: damage is `10 + (striker.energy + striker.health) / 10`, the division
 truncating, giving the range `10..=30` and four to ten strikes to kill a full-health target; the strike
@@ -88,14 +88,20 @@ subject, noted here because the four magnitudes were decided in one session.
 amend the strike cost to a stronger brake, which is the question the clause attaches. A finding that the
 lethality is lower than intended is an amendment to `REQ-MOK-053` and not a defect in this measurement.
 
-    Decision:
+    Decision:  ratified as decided — the damage function `10 + (energy + health) / 10` and the
+               flat `5` strike cost both stand, the weak brake ratified as weak
     Role:      product owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     the two figures the clause makes the ratification conditional on — 1.36 strikes
+               per encounter over 115 encounters with 58.3% of contacts bloodless, and 21 of 156
+               strikes fatal (`post/branches.md` §4) — read beside survivors 9, 10, 9, 9 and 11
+               against the floor of five (`post/runs.md` §2). The asymmetric `debug_assert!` at
+               `simulation.rs:2624`, which leaves the constant's true oracle coverage at 7 tests
+               and not 23, is carried as a technical-owner finding and does not qualify this.
 
 ---
 
-## 2. The forfeit's magnitude and its non-conservation
+## 2. The forfeit's magnitude and its non-conservation — **recorded**
 
 **The contract's words.** "Decided: `satiety / 2`, truncating, so `40` from a Mokiterion at `80` and `0`
 from one at `1`. The owner ratifies having seen the measured frequency of two cases the arithmetic creates
@@ -123,14 +129,20 @@ that a forfeit at a full recipient is returned rather than destroyed, or that th
 `satiety` `2` is closed. The unnamed literal `2` at `simulation.rs:2741` is a separate technical-owner
 matter carried in the completion summary's findings, not part of this ratification.
 
-    Decision:
+    Decision:  `satiety / 2` is ratified as decided, and the destruction of the part the
+               recipient cannot hold is recorded as intended in both cases the arithmetic
+               admits — at a full recipient, and in the free band below `satiety` `2`
     Role:      product owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     the frequencies the clause asks for: 90 of 95 surrenders discard part of the
+               forfeit, 0 had a recipient already at `satiety` `100`, and 0 fell below `satiety`
+               `2`, the smallest forfeit measured being 11 (`post/branches.md` §5). Both
+               extremes are unreached over 15,000 ticks, so the intent is recorded for cases
+               the world can produce rather than for observed ones. `REQ-MOK-054` is unamended.
 
 ---
 
-## 3. The threat's magnitude
+## 3. The threat's magnitude — **recorded**
 
 **The contract's words.** "Decided: a new constant of `30`, distinct from rule 12's `FEAR_INCREASE` of
 `10` and not pinned to `ATTRIBUTE_MAX`. The owner ratifies having seen how often a free action with an
@@ -156,10 +168,16 @@ zero. Both belong in the same ratification, which is why this file states them t
 so that a threat's effect is reachable, which is the finding rather than the constant. Recording the
 inertness as accepted is itself a decision the clause admits.
 
-    Decision:
+    Decision:  `30` is ratified as decided, and the measured behavioural inertness of
+               `THREAT_FEAR_INCREASE` is accepted — which the clause admits as a decision
     Role:      product owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     the exposure `REQ-MOK-055` records is real at 620 of 620 threats proposed and
+               applied in 118,201 decisions (`post/runs.md` §3), while the effect is zero across
+               all 1,240 `threat_resolved` events, every one `increase:0` and shaped
+               `target_fear:100->100` (`post/branches.md`). The cause is saturation and not
+               magnitude, so amending the constant could not reach it; whether a threat's effect
+               should be reachable at all is carried as a finding against the rule.
 
 ---
 
@@ -222,7 +240,7 @@ unimplemented. The wording needs amending wherever the assessment is re-declared
 
 ---
 
-## 6. The additivity cost — **half-recorded**
+## 6. The additivity cost — **recorded in both halves**
 
 **The contract's words.** "`reference` and `individual` outcomes move. The owner records that this is
 accepted, having seen the characterized divergence, and approves the narrowing of `REQ-MOK-034`'s
@@ -246,15 +264,20 @@ assessable when `WO-MOK-017` moves those outcomes.
     Date:      2026-08-20
     Basis:     `REQ-MOK-034`'s amendment row, in the single act that also approved `WO-MOK-016`
 
-    Decision:
+    Decision:  not assessable at this candidate, and carried to `WO-MOK-017` with
+               `REQ-MOK-060`. There is no divergence, so the cost this half asks about has no
+               subject here; it is taken where the outcomes actually move
     Role:      product owner
-    Date:
-    Basis:     the additivity cost itself — outstanding, and its premise is false at this
-               candidate: `post/byte-identity.txt` measures 60 of 60 cells identical
+    Date:      2026-08-21
+    Basis:     the additivity cost itself, whose premise is false at this candidate:
+               `post/byte-identity.txt` measures 60 of 60 `reference` and `individual` cells
+               identical, and `post/composition.md` reaches the same finding from the other
+               direction at 45 of 45 shared rule 18 summaries. The change that would move them
+               is `REQ-MOK-060`, descoped from this work order on 2026-08-21
 
 ---
 
-## 7. The fourth source's name
+## 7. The fourth source's name — **recorded**
 
 **The contract's words.** "Decided: `social`, from four candidates. Because it appears in `--help`, in the
 invalid-value diagnostic and in every captured stream, the assessment that remains is not the choice but
@@ -281,14 +304,20 @@ closed and is the shipped four.
 the surface that is wrong. The untested diagnostic string is a technical-owner matter the confirmation may
 note in passing — one assertion would pin it — and is not itself a product-owner decision.
 
-    Decision:
+    Decision:  confirmed — the decided name landed identically in all three places, and no
+               captured evidence carries an earlier working name
     Role:      product owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     `cli.rs:12` and `:20` both read `<baseline|reference|individual|social>` and are
+               pinned by tests; `cli.rs:102`'s diagnostic carries the same four names, read from
+               source because no test asserts the string — noted in passing as the
+               technical-owner matter this clause says it is. The absence clause is discharged in
+               its closed-set form: all 210 policy tokens across the three manifests are one of
+               the four shipped variants (`post/social-manifest.txt` and its two counterparts).
 
 ---
 
-## 8. The defender's decision rule
+## 8. The defender's decision rule — **recorded**
 
 **The contract's words.** "Decided: the six-branch ordering of `REQ-MOK-057`, survival first and then a
 perceived meal before society, with the defender answering `surrender` at `fear` `60`, `retreat` at `30`
@@ -335,14 +364,22 @@ happen**, since `validate_targeted` returns `target_dead` and constructed cases 
 `REQ-MOK-057`; or record a degeneracy finding under `INT-MOK-010`; and, separately, decide whether branch
 1 may decline to answer.
 
-    Decision:
+    Decision:  the six-branch ordering and the four thresholds are ratified as decided, and no
+               `INT-MOK-010` degeneracy finding is owed. On the separate open question: branch 1
+               may **not** decline to answer — it is closed in favour of the implemented rule
     Role:      technical owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     not degenerate on any of the clause's three shapes — branch firings 135, 7,579,
+               58,441, 763, 13,308 and 37,975, with 13 `fight` / 27 `retreat` / 95 `surrender`
+               of the 135 answers (`post/branches.md` §§2–3). The cost rule 26 accepts is
+               recorded as **not observed**, at 0 of 135 answers naming a non-living target and
+               0 rejections on `target_dead`, `target_unknown` or `out_of_contact`
+               (`post/runs.md` §5); that is not a claim it cannot happen, and it stays a
+               residual. `REQ-MOK-057` is unamended.
 
 ---
 
-## 9. Cross-agent mutation
+## 9. Cross-agent mutation — **recorded**
 
 **The contract's words.** "Decided: a recorded confirmation that `ARCH-MOK-001` is satisfied unchanged,
 rather than an `ADR` deciding the pattern — the mutation stays within the engine component, crosses no
@@ -365,14 +402,20 @@ record prepares the material the review reads; the review and its recording are 
 **The outcomes available.** Confirm `ARCH-MOK-001` satisfied unchanged; or find that a boundary must move,
 in which case the decision reverts to an `ADR` and this block says so.
 
-    Decision:
+    Decision:  confirmed — `ARCH-MOK-001` is satisfied unchanged. No boundary moves, so no
+               `ADR` is owed and the decision does not revert to one
     Role:      technical owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     the review reads the enumerated paths, not a sample — two `fear` writers, five
+               paths writing a second Mokiterion, three functions, all inside the engine
+               component (`post/reads.md` §7); the public surface at 172 to 186 as the approved
+               `SPEC-MOK-002` growth with rule 6's ten prohibited names absent
+               (`post/interface.txt` §§4, 6); 0 external crates and `Cargo.lock` byte-unchanged
+               (`post/merge-recheck.txt` §6); and `mokiterions-tui/src/state.rs` unchanged.
 
 ---
 
-## 10. The read enumeration of oracle 6
+## 10. The read enumeration of oracle 6 — **recorded**
 
 **The contract's words.** "The owner confirms that the enumeration is complete — that no rule, source or
 validation path is missing from it — because an enumeration's value is entirely in its completeness, and
@@ -390,10 +433,16 @@ establish.
 **The outcomes available.** Confirm the enumeration complete; or name the rule, source or validation path
 that is missing from it, which is a finding against `post/reads.md` and not against `REQ-MOK-059`.
 
-    Decision:
+    Decision:  confirmed — the enumeration is complete. No rule, source or validation path is
+               missing from it
     Role:      assurance owner
-    Date:
-    Basis:
+    Date:      2026-08-21
+    Basis:     all 48 reads are classified with none omitted, each either a read of a named
+               individual or one of the seven aggregate reads, and each of those seven carries
+               a stated reason for being outside the obligation (`post/reads.md` §§2, 4–6).
+               This confirmation is the judgement the clause reserves to the owner, because the
+               reader can show that every read it found is classified and cannot show that it
+               found every read.
 
 ---
 
@@ -430,12 +479,16 @@ completion summary's findings.
 
 ## What this file does not do
 
-- **It signs nothing.** Seven assessments are outstanding and one is half-outstanding; those eight blocks
-  are empty because an implementation agent may prepare a record and may not complete it.
+- **The preparation signed nothing.** Every word outside the record blocks was written by an
+  implementation agent, which may prepare a record and may not complete it. The blocks are the owner's:
+  two completed on 2026-08-20, the remaining eight on 2026-08-21, each stating the role that acted.
 - **It takes no measurement.** Every figure is cited to the packet record that holds it, so this file
   cannot disagree with the packet; where it would, the record is right.
 - **It amends nothing.** Where an outcome above is an amendment, the amendment is an act in the amended
   artifact's own record; a completed block here cites that act rather than being it.
 - **It is not a verification verdict.** `VER-MOK-016` is the contract and `VREC-MOK-016` is the record.
-  `VREC-MOK-016` **cannot reach `verified`** while any of these assessments is unrecorded, and it names
-  the outstanding ones in its residual section for that reason.
+  The contract's bar — "an unrecorded assessment is an outstanding assessment, and this contract is not
+  satisfied while any remains outstanding" — is now met for everything in this work order's scope: ten
+  blocks are recorded and the eleventh, assessment 5, travels with the descoped `REQ-MOK-060` to
+  `WO-MOK-017`. That clears the obstacle these assessments were; it does not itself move `VREC-MOK-016`
+  from `ready` to `verified`, which is a further act of the accountable assurance owner.
