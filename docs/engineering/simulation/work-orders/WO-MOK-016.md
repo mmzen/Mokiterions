@@ -5,7 +5,7 @@ title = "Let Mokiterions act on each other: contact, seven targeted actions, a d
 status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-20"
-updated = "2026-08-20"
+updated = "2026-08-21"
 
 [assurance]
 commit_bound_verification = "required"
@@ -13,7 +13,7 @@ rationale = "This is the largest behavioral change since WO-MOK-001 and the firs
 decided_by = "engineering owner"
 
 [relations]
-implements = ["REQ-MOK-051", "REQ-MOK-052", "REQ-MOK-053", "REQ-MOK-054", "REQ-MOK-055", "REQ-MOK-056", "REQ-MOK-057", "REQ-MOK-058", "REQ-MOK-059", "REQ-MOK-060"]
+implements = ["REQ-MOK-051", "REQ-MOK-052", "REQ-MOK-053", "REQ-MOK-054", "REQ-MOK-055", "REQ-MOK-056", "REQ-MOK-057", "REQ-MOK-058", "REQ-MOK-059"]
 specifications = ["SPEC-MOK-001", "SPEC-MOK-002", "SPEC-MOK-003"]
 verification = ["VER-MOK-016"]
 +++
@@ -125,7 +125,45 @@ One finding is recorded and deliberately not acted on. `INT-MOK-010`'s risk stat
 `M01`, and the measured direction is the opposite. Its success measure is met either way, and amending an approved
 intent's risk text is a decision **stop condition 11** reserves to the intent owner, so it is left to them.
 
-**What still blocks `implemented` is `REQ-MOK-060` alone**, unimplemented under the approved deferral of 2026-08-20.
+### Scope amendment of 2026-08-21: `REQ-MOK-060` is descoped
+
+**`REQ-MOK-060` is removed from this work order's scope and carried into `WO-MOK-017`.** It was the one thing blocking
+`implemented`: approved on 2026-08-20, unimplemented under the product owner's deferral of the same day, and a work order
+does not close over an approved requirement it did not implement.
+
+The repository owner, acting as engineering owner, chose this on 2026-08-21 over two alternatives, each put with its cost.
+Setting `implemented` with the deferral stated as an explicit exception was declined, because the status would then assert
+completion over a requirement in its own scope. Implementing `REQ-MOK-060` first was declined, because it reverses the
+deferral the product owner approved on 2026-08-20 and the reasoning for that deferral is unchanged: `REQ-MOK-060`'s own
+rationale pairs the composition correction with combat so that `REQ-MOK-014`'s and `REQ-MOK-034`'s floors are re-measured
+**once** against a world holding both properties, and that pairing argument is what the deferral suspends, not what it
+contradicts. So the requirement is not withdrawn, weakened or amended by this row. It keeps `approved` status, it keeps its
+`derives_from = CAP-MOK-010` relation, `SPEC-MOK-001` keeps it in `specifies` and keeps rule 5's and rule 19's statement of
+its ceiling and of the surface the correction may use, and the second amendment those paragraphs name as the one to make is
+still the one to make. What changes is which work order owes it.
+
+**Four consequences follow, and none of them is a relaxation.**
+
+1. **`REQ-MOK-014`'s and `REQ-MOK-034`'s floors are not re-measured here, and they do not need to be.** The reason is
+   stronger than a re-measurement: `reference` and `individual` gain no verb under this work order, so no Mokiterion
+   under either source ever proposes a targeted action, and `post/byte-identity.txt` measures all 60 of their declared
+   cells byte-identical to the pre-change capture, alongside `baseline`'s 30. Identical output is identical survivors.
+   The floors are preserved rather than re-established, which is what `REQ-MOK-034`'s own amendment row anticipated when
+   it made the re-measurement "a separate later act ... because re-measuring it requires the change to exist".
+2. **`REQ-MOK-034`'s narrowing amendment of 2026-08-20 stands and is untouched.** It narrowed the frozen-outcome
+   constraint to `baseline` alone so that `REQ-MOK-060` would be free to move `reference`. `reference` has not moved, so
+   the narrowing is a permission granted ahead of its use. An unused permission is not a defect and an approved amendment
+   row is not edited; `WO-MOK-017` is where it is used.
+3. **`post/byte-identity.txt`'s recorded result is re-classified and not rewritten.** It reports `MIXED`: the `baseline`
+   clause passing on 30 of 30, and the `reference`/`individual` clause unsatisfied because the divergence oracle 1 asks
+   to be characterized does not exist, "which is `REQ-MOK-060` measured as unimplemented". That measurement was correct
+   when taken and is correct now; what the descope changes is that the missing divergence is no longer an unmet
+   obligation of this work order but the expected result of a world this work order leaves alone. The file is retained
+   verbatim, as evidence is, and the re-classification is recorded here and in `VREC-MOK-016` rather than edited into it.
+4. **`VER-MOK-016` still lists `REQ-MOK-060` in `verifies`, and this work order does not change that.** Amending a
+   verification requirement is the assurance owner's act, and the owner's decision of 2026-08-21 was a scope amendment to
+   this work order. `VREC-MOK-016` therefore reports `REQ-MOK-060`'s five coverage rows as carried to `WO-MOK-017`, names
+   them, and claims no coverage it does not have.
 
 ### Why this chain is numbered 010, 051 through 060, and 016
 
@@ -163,8 +201,11 @@ count and the verification. `016` is the lowest number at which the work order, 
 verification record are free together, which is what keeping the three paired resolves to. The repository owner chose a
 full renumber over the alternatives on 2026-08-21; the number put to them was `014`, and it was corrected to `016` by
 measurement before anything was renamed, the rename-blind scan having reported `014` free. `ADR-MOK-005` was reserved for
-the architecture decision and is **not** used, because that decision was taken as a confirmation instead; the number stays
-free for whatever needs it next.
+the architecture decision and is **not** used, because that decision was taken as a confirmation instead — and the number
+it released is **not** free either: `origin/feature/phase-4a-definition` holds `ADR-MOK-005`, alongside the `INT-MOK-009`,
+`CAP-MOK-009` and `REQ-MOK-042` through `REQ-MOK-046` this chain also released. Releasing a number does not reserve it,
+which is the same lesson as the rest of this section and is recorded here because an earlier draft of this paragraph
+asserted the number "stays free for whatever needs it next" on no survey at all.
 
 Two notes on what the first survey found, recorded so a later reader does not have to repeat them. `VER-MOK-009` does not
 exist as an artifact on any branch, so the verification family has a gap at `009` that this chain does not fill and should
@@ -305,6 +346,12 @@ Deferred to the first measured curve rather than outstanding at approval, and li
 5); whether a per-class composition floor should accompany the ceiling; whether branch 1 should be able to decline to
 answer at all; and whether the lethality bound should become a rate rather than an existence claim. None of these blocks
 approval, and all of them are the product owner's or the technical owner's rather than an implementation agent's.
+
+*Amended 2026-08-21 by the scope amendment above:* of these four, `REQ-MOK-058`'s floor was ratified at five on the
+measured curve on 2026-08-20 and `escalation.md` §10 records that act. The other three all concern the composition
+correction or the ceiling, and all three follow `REQ-MOK-060` to `WO-MOK-017`, `VER-MOK-016`'s assessment 5 with them. The
+measurement each is to be decided on is nonetheless taken here and retained in `composition.md`, so `WO-MOK-017` inherits
+the curve and not just the question.
 
 ### Required amendments to approved specifications
 
@@ -619,10 +666,14 @@ under `WO-MOK-011`. The third was written on 2026-08-20 after the first two had 
 
 Give a Mokiterion the ability to act on another — approach, avoid, threaten, attack, and as a defender fight, retreat or
 surrender — resolve those actions deterministically under engine authority, let the defender choose its own answer at its
-own next opportunity, introduce the `social` decision source that reads `fear` and proposes them, correct the resource
-composition drift that invalidates the same two survivor floors combat does, and demonstrate four things: that the
-arithmetic is exactly what the specification states, that it is reached in real runs, that `baseline` did not move at
-all, and that nothing reads a population aggregate.
+own next opportunity, introduce the `social` decision source that reads `fear` and proposes them, and demonstrate four
+things: that the arithmetic is exactly what the specification states, that it is reached in real runs, that `baseline` did
+not move at all, and that nothing reads a population aggregate.
+
+*Amended 2026-08-21 by the scope amendment above:* the clause "correct the resource composition drift that invalidates the
+same two survivor floors combat does" is struck, `REQ-MOK-060` having been descoped to `WO-MOK-017`. The fourth
+demonstration is strengthened rather than reduced by the strike — what is shown is that `baseline`, `reference` and
+`individual` all did not move, on all 90 declared cells.
 
 ## In scope
 
@@ -635,9 +686,13 @@ all, and that nothing reads a population aggregate.
   its diagnostic and its reported name — and its delegation to rule 19 for every non-social decision.
 - New event types, each carrying the transitions it caused, each mapped to an authorizing requirement, each presented by
   the observer with its subject.
-- The corrected waste condition in rule 5 and rule 19, and nothing else touched to correct composition.
-- Re-measuring `REQ-MOK-014`'s and `REQ-MOK-034`'s survivor floors against the corrected world, and measuring
-  `REQ-MOK-058`'s floor and lethality bound and `REQ-MOK-060`'s ceiling.
+- Measuring `REQ-MOK-058`'s survivor floor and its lethality bound, and holding `REQ-MOK-014`'s and `REQ-MOK-034`'s
+  survivor floors by byte-identity of the 60 `reference` and `individual` cells rather than by re-measurement.
+  *Amended 2026-08-21:* this item read "The corrected waste condition in rule 5 and rule 19, and nothing else touched to
+  correct composition" and "Re-measuring `REQ-MOK-014`'s and `REQ-MOK-034`'s survivor floors against the corrected world,
+  and measuring `REQ-MOK-058`'s floor and lethality bound and `REQ-MOK-060`'s ceiling". Both are struck by the scope
+  amendment above; the composition measurement is still **taken** at both commits and retained in `composition.md`, as
+  evidence for `WO-MOK-017` to be amended on, but no ceiling is claimed here.
 - The read enumeration `REQ-MOK-059` requires, covering every behavior-governing rule, every source and every validation
   path, including the ones that already exist.
 - The thirteen `SPEC-MOK-001`, three `SPEC-MOK-002` and three `SPEC-MOK-003` provisions above, and the three requirement
@@ -652,6 +707,11 @@ all, and that nothing reads a population aggregate.
   alliance. Phase 3.2.
 - **Perceived relative strength.** No Mokiterion reads another's `health`, `energy` or trait. Phase 3.3, and only if this
   work order's measurement shows the defender's choice degenerate.
+- **`REQ-MOK-060`'s resource-composition ceiling, and the corrected waste condition that would meet it.** Descoped
+  2026-08-21 to `WO-MOK-017`, under the scope amendment recorded above. Rule 5's and rule 19's waste conditions are
+  therefore **not** touched by this work order at all, which is why `reference` and `individual` are byte-identical here;
+  the second `SPEC-MOK-001` amendment those rules name as the one to make is `WO-MOK-017`'s to write. The composition
+  measurement itself is still taken at both commits and retained, because it is the evidence that amendment is decided on.
 - Any change to what `baseline`, `reference` or `individual` **propose** as verbs. None of them gains one.
 - Any change to `baseline`'s output, at all, at any seed, density or trace setting.
 - Cooperation, sharing, grouping, mating, kinship, and any positive social act.
@@ -677,7 +737,9 @@ The implementation agent may decide locally:
   approved `SPEC-MOK-002` amendment fixes and every emitted type maps to an authorizing requirement under `SPEC-MOK-003`
   rule 11. **Which event types exist is not in this envelope**: the owner decided three, and they are named above.
 - Which of `REQ-MOK-060`'s **permitted** mechanisms is used — relaxing rule 5's waste condition, raising rule 19's
-  tolerance floor, or both — on measurement, and within the permitted set only.
+  tolerance floor, or both — on measurement, and within the permitted set only. *Struck 2026-08-21:* this delegation
+  leaves with the requirement and is `WO-MOK-017`'s envelope to restate. No mechanism was chosen here and neither waste
+  condition was touched.
 - Which test tier each new test belongs to, applying `SPEC-MOK-004`'s rule as written. **Widening an item to `pub` to
   relocate a test is prohibited**, and a test that seems to need it belongs inline.
 - The internal organization of test modules, constructed-state helpers and evidence scripts, provided every script is
@@ -852,7 +914,10 @@ Stop and escalate rather than proceeding, if:
 3. **A `reference` or `individual` divergence cannot be attributed** to the corrected waste condition.
 4. **The composition ceiling cannot be met within `REQ-MOK-060`'s permitted mechanisms.** Reaching for rule 16, rule 15,
    rule 9's eat effect or the food table is not a fallback available to the implementation; it is a decision that changes
-   what this work order promises about `baseline`, and it is the owner's.
+   what this work order promises about `baseline`, and it is the owner's. *Carried 2026-08-21 to `WO-MOK-017` with the
+   requirement.* It was not triggered here, and could not be: no mechanism was attempted. Condition 3 is likewise
+   unreachable now — there is no `reference` or `individual` divergence to attribute, which is what `post/byte-identity.txt`
+   measures.
 5. **`REQ-MOK-058`'s survivor floor or lethality bound is missed**, or **`REQ-MOK-014`'s or `REQ-MOK-034`'s re-measured
    floor fails.** The floors are not adjusted to fit the measurement; the measurement is reported and the owner decides.
 6. **The identifier-monotonicity band fails, or the identifier-exchange test fails.** The second means resolution reads
