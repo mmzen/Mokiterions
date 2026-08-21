@@ -2,7 +2,7 @@
 id = "VREC-MOK-018"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-018"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-21"
 updated = "2026-08-21"
@@ -25,8 +25,59 @@ This ready record binds retained evidence for `WO-MOK-018` to candidate commit `
 The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
 
 *Everything above this line is `capture-verification`'s output verbatim — the front matter, the heading and the two
-paragraphs. Everything below is authored, and every figure in it was measured at the candidate rather than carried from
-the evidence pack.*
+paragraphs, with the single exception recorded in the next section. Everything below is authored, and every figure in it
+was measured at the candidate rather than carried from the evidence pack.*
+
+## The assurance decision, taken 2026-08-21
+
+**This record is `verified`.** The assurance owner reviewed the retained evidence for `WO-MOK-018` at candidate commit
+`6051ef218e51fb59c63fe5569b821be66c973cde` and transitioned this record from `ready` to `verified` on 2026-08-21, in the
+words *"i validate VREC-MOK-018"*. The decision was taken on this record as the candidate wrote it, including every
+disclosure and residual below, and it accepts no deviation from `VER-MOK-005`: the contract's coverage is claimed as
+stated, no manual assessment was owed, and none was waived.
+
+**Exactly one front-matter field moved, and it is `status`.** `commit`, `git_object_format`, `worktree_state`,
+`verified_at`, `artifact_snapshot_sha256`, `evidence_paths` and both relations are exactly as `capture-verification`
+produced them. `verified_at = "2026-08-21T15:07:13Z"` remains **the capture timestamp and not the decision time** — the
+decision is later than the capture, and the field is provenance rather than a record of the act. `WORKFLOW.md` provides
+no re-pointing of a record at a later commit, and none is attempted: what is verified is the tree at `6051ef2`.
+
+**Everything below this section is retained as the candidate wrote it**, on the same principle the candidate applied to
+its own evidence pack — a record binds a commit and stays true of that commit. Three of its sentences are falsified by
+the two authorized acts that followed it, and they are named here rather than rewritten:
+
+1. *"This record is `ready`. It is not `verified`, and nothing in it asserts that it is"* — and the first bullet of
+   *What this record does not claim*. Both were true when written and are superseded by this section. `decision_required`
+   is now empty where it held `VREC-MOK-018 [ready] assurance-review`.
+2. *"It is not a merge, a tag, a release or a push. The branch has no upstream, no pull request exists"* — the owner
+   authorized the push and the pull request separately on 2026-08-21, and **[#37](https://github.com/mmzen/Mokiterions/pull/37)**
+   is open against `master`. The sentence's substance stands: this record is still not a merge, a tag or a release
+   decision, and no commit becomes release-eligible by it.
+3. **The residual bullet predicting CI's warning count is wrong, and the corrected figure is 34 rather than 33.** Run
+   `32498244023` on this branch reported **34 warnings**, which a local `--depth 1` clone reproduces exactly. The
+   candidate's arithmetic used `I-REV-001`'s **17** observations as the count of records declaring a candidate commit;
+   `W-REV-003` has **18**, because the informational rule skips the `superseded` `VREC-MOK-016` and the warning does not.
+   `16 + 18 = 34`. The candidate's companion claim — that CI's snapshot will not match — holds and is stronger than it
+   was stated: on a `pull_request` event `actions/checkout@v4` reads the ephemeral merge ref, so CI's
+   `repository.revision` is `d317761dc61952f125251fa9f666bd2fdd877ab1`, a commit that exists on no branch, and its digest
+   `0df8289…` is therefore a figure of no commit in this repository. Everything else the digest covers compares
+   byte-identical between CI's uploaded artifact and the local depth-1 clone: `artifacts`, `relations`, `evidence`,
+   `revision_policy` and both rule versions. **No figure this record binds to the candidate is affected** — the declared
+   `496f1a6d…` and the sixteen local warnings are unmoved, and the corrected number is a fact about the runner.
+
+**What this decision does not reach.** It is a decision on the evidence at this commit and nothing more:
+
+- **The three OUTSTANDING provisions are not ratified by it.** `SPEC-MOK-004` rule 6's amendment 5 and rule 10.6's
+  two-line pairing are the technical owner's separate acts, and `VER-MOK-005`'s stale `name` is a correction outside this
+  work order's approved scope. All three remain marked OUTSTANDING in the artifacts that carry them, and this record
+  claimed no ratification of them before the decision or after it.
+- **The residual uncertainty is carried, not closed.** Rule 10.6's unmeasurable clause, `VREC-MOK-005`'s stale row-by-row
+  mapping, the absence of any sweep for restated figures, and the persisting `W-HEX-001` observation all stand exactly as
+  recorded below.
+- **`WO-MOK-018` stays `implemented`.** `WORKFLOW.md` uses work-order status `verified` only where configured provenance
+  requires it, and this repository's precedent is `WO-MOK-016`, which remains `implemented` under the `verified`
+  `VREC-MOK-017`.
+- **Tier 3 is untouched**, and no merge, tag, release or publication decision is taken or implied.
 
 ## What is still open
 
