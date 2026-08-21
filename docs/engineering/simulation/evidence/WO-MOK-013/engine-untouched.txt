@@ -1,0 +1,66 @@
+The engine is untouched by WO-MOK-013 — measured, not asserted
+
+$ git log --oneline -1 origin/master
+ff3a155 Merge pull request #30 from mmzen/governance/vrec-mok-011-verified
+
+$ git rev-parse HEAD
+a3399023bad526b4661df1d1f3a684e9a5e18268
+
+origin/master is ff3a155, the commit VER-MOK-013 and WO-MOK-013 name as the before side, and it is an
+ancestor of this branch's HEAD, so the two baselines are one commit and not two.
+
+$ git diff --stat origin/master -- mokiterions-core/
+(no output: the engine package does not differ from origin/master by one byte)
+
+$ git diff --numstat origin/master -- mokiterions-core/ | wc -l
+0
+
+What does differ from origin/master, for contrast:
+$ git diff --stat origin/master
+warning: in the working copy of 'docs/engineering/simulation/specifications/SPEC-MOK-003.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/engineering/simulation/specifications/SPEC-MOK-004.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mokiterions-tui/src/layout.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mokiterions-tui/src/render.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mokiterions-tui/tests/render.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mokiterions-tui/tests/verification.rs', LF will be replaced by CRLF the next time Git touches it
+ docs/ROADMAP.md                                    |  61 +-
+ .../simulation/architecture/ARCH-MOK-001.md        |   4 +-
+ .../simulation/evidence/WO-MOK-012/README.md       | 107 +++
+ .../evidence/WO-MOK-012/adverse-observations.md    | 180 ++++
+ .../evidence/WO-MOK-012/amendment-ratifications.md | 190 +++++
+ .../announcement-at-reduced-viewports.txt          |  93 +++
+ .../assessment-material/announcement-oracle.rs     | 139 +++
+ .../assessment-material/assessment-oracle.rs       | 486 +++++++++++
+ .../assessment-material/bar-quantization.txt       |  16 +
+ .../assessment-material/frame-160x48-tick200.txt   |  51 ++
+ .../modifiers-160x48-tick200.txt                   |  54 ++
+ .../overlays-and-zoom-160x48.txt                   | 200 +++++
+ .../assessment-material/palette-160x48-tick200.txt |  13 +
+ .../assessment-material/panes-160x48-tick200.txt   |  75 ++
+ .../assessment-material/rejection-160x48.txt       | 101 +++
+ .../reversed-and-underlined-160x48.txt             | 121 +++
+ .../assessment-material/underline-search.txt       | 112 +++
+ .../evidence/WO-MOK-012/assurance-decision.md      | 114 +++
+ .../evidence/WO-MOK-012/closing-review.md          | 229 +++++
+ .../evidence/WO-MOK-012/completion-summary.md      | 215 +++++
+ .../evidence/WO-MOK-012/identifier-collision.md    | 130 +++
+ .../evidence/WO-MOK-012/identifier-sweep.md        | 114 +++
+ .../evidence/WO-MOK-012/manual-assessment.md       | 174 ++++
+ .../evidence/WO-MOK-012/procedure-defects.md       | 117 +++
+ .../simulation/requirements/REQ-MOK-047.md         | 129 +++
+ .../simulation/requirements/REQ-MOK-048.md         | 108 +++
+ .../simulation/requirements/REQ-MOK-049.md         | 116 +++
+ .../simulation/specifications/SPEC-MOK-002.md      |   8 +-
+ .../simulation/specifications/SPEC-MOK-003.md      | 232 ++++-
+ .../simulation/specifications/SPEC-MOK-004.md      |  97 ++-
+ .../simulation/verification/VER-MOK-005.md         |  47 +-
+ .../simulation/verification/VER-MOK-013.md         | 224 +++++
+ .../simulation/work-orders/WO-MOK-012.md           | 382 +++++++++
+ .../simulation/work-orders/WO-MOK-013.md           | 859 +++++++++++++++++++
+ mokiterions-tui/src/layout.rs                      |  50 +-
+ mokiterions-tui/src/render.rs                      | 487 +++++++++--
+ mokiterions-tui/src/verification.rs                |  14 +-
+ mokiterions-tui/tests/layout.rs                    |  79 +-
+ mokiterions-tui/tests/render.rs                    | 930 ++++++++++++++++++---
+ mokiterions-tui/tests/verification.rs              | 130 ++-
+ 40 files changed, 6707 insertions(+), 281 deletions(-)

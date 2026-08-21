@@ -42,7 +42,7 @@ status below for the one matrix row that record leaves unsatisfied):
 - One behavioral trait per Mokiterion, `waste_tolerance` in `0..=40`, derived from the seed and the identifier by a
   generator of its own and fixed for the run
 - `fear` as the fourth dynamic attribute, `0..=100`, rising `+10` on any perceived living Mokiterion and falling `-5`
-  otherwise — computed, bounded, reported, and read by nothing
+  otherwise — computed, bounded, reported, and read by nothing until `WO-MOK-016` below
 - A third decision source, `--policy individual`, which is rule 5 with a trait-scaled waste allowance and is
   proposal-identical to rule 5 at tolerance zero
 - A fourth roster gauge in the observer
@@ -55,6 +55,23 @@ status below for the manual assessment that record accepts unperformed):
 - The observer presenting that name in the roster, the inspector and the map, sourced from the engine's own record and
   from nowhere else — no name table, no fallback, no derivation from an identifier
 - The map glyph becoming the name's initial, replacing the digit-and-letter table, on twelve pairwise-distinct letters
+
+Added under `WO-MOK-016` (implemented, **not verified**, and with two approved obligations measured as failing —
+see Phase 3's status below):
+
+- Contact at Chebyshev radius 1, recomputed from position every tick and held in no stored relation
+- The seven targeted actions `attack`, `fight`, `threaten`, `surrender`, `approach`, `avoid`, `retreat`, each with
+  its own precondition and each applied at the acting Mokiterion's own opportunity
+- Damage as a function of the striker's own condition, `10 + (energy + health) / 10` bounded to `10..=30`, a flat
+  `5` energy cost per strike, and death through combat by the existing zero-health rule and no other path
+- A one-tick record of attacks suffered, carried in the observation and cleared at the holder's next opportunity —
+  the first and only memory anything in the system has
+- Three event types, `attack_resolved`, `threat_resolved` and `surrender_resolved`, and a `suffered` field on
+  `action_trace`
+- A fourth decision source, `--policy social`, which reads `fear` at three points and is proposal-identical to
+  `--policy individual` for a Mokiterion that perceives no company and holds an empty record
+- No entropy drawn by any targeted resolution, so the shared stream is untouched by everything the phase adds
+
 
 Added under `WO-MOK-018` (implemented and verified under `VREC-MOK-012` at commit `50364a3` — see Phase 4a's
 status below for what that record accepts rather than satisfies, and for the merge it does not cover):
@@ -69,9 +86,11 @@ status below for what that record accepts rather than satisfies, and for the mer
 - The binary target owning every filesystem operation, the library owning none: it resolves the path, opens the
   destination, and removes only a file it created itself when a run fails
 
-Not yet implemented: per-agent entropy substreams, any second trait, any consumer for `fear`, social and combat
-behavior, LLM-backed decisions, and anything that reads the record stream — no batch runner, no distribution across
-seeds, no outcome classification.
+
+Not yet implemented: per-agent entropy substreams, any second trait, LLM-backed decisions, and anything that reads
+the record stream — no batch runner, no distribution across seeds, no outcome classification. `fear`, social and
+combat behavior and structured observability each appeared on this list until 2026-08-20 and are struck from it: the
+first three arrived under `WO-MOK-016` and the fourth under `WO-MOK-018`.
 
 Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
 restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
@@ -284,16 +303,8 @@ substitutes for the other. Phase 4 remains where it is.
 
 **Artifact chain.** The packet drafted on 2026-08-17 is: `INT-MOK-004`, `CAP-MOK-004`, `REQ-MOK-019` through
 `REQ-MOK-027`, `SPEC-MOK-003`, `ARCH-MOK-002`, `ADR-MOK-003`, an in-place amendment of `ARCH-MOK-001`,
-`VER-MOK-005`, and `WO-MOK-005`. **Every one of them is now approved**, `WO-MOK-005` is `implemented`, and
-`VREC-MOK-005` is `verified` on `master`. This paragraph read *"Every artifact is `draft` and awaits its accountable
-owner"* at drafting on 2026-08-17.
-
-> **What `VREC-MOK-005`'s `verified` status does not carry.** The record states about itself that it was verified
-> **with all seven of `VER-MOK-005`'s manual assessments outstanding and unauthored, and eleven amendment provisions
-> across four approved artifacts still `OUTSTANDING`** — verification advances neither. A work order of its own,
-> resolving those eleven provisions and seven assessments before the next release record, is the obligation attached
-> to that state; **no such work order exists**. This is the debt that Phase 2's status section carries as its item 3,
-> and it is named here rather than only there because it belongs to this phase.
+`VER-MOK-005`, and `WO-MOK-005`. Every artifact was `draft` when that packet was drafted; the current lifecycle state
+of each is in its own metadata, and the **Status** paragraph below states where the chain now stands.
 
 Two of those artifacts are load-bearing rather than procedural. `REQ-MOK-026` is the approved requirement that
 `ARCH-MOK-001`'s prohibition on separate crates has always named as its own unlock. The `ARCH-MOK-001` amendment
@@ -308,6 +319,138 @@ events and final state, under heavy operator interaction, with identical per-tic
 package's dependency set is empty, proved per package. Rendering is asserted cell by cell from an in-memory
 buffer at each declared viewport, because a claim about a screen only a human has seen is the weakest evidence
 this project accepts — and the observer's whole value is being trusted about what it shows.
+
+**Status.** Implemented under `WO-MOK-005` and **verified**: `VREC-MOK-005` is `verified`, bound to commit `f361370`.
+But it was verified with its whole manual and amendment debt disclosed and outstanding, in its own words "with all
+seven manual assessments outstanding and unauthored, and eleven amendment provisions still `OUTSTANDING`" — so the
+record certified that the parts behave as specified and explicitly not that the instrument answers `INT-MOK-004`'s
+questions or that anything is legible on a real terminal.
+
+**That debt was discharged on 2026-08-20 under `WO-MOK-012`**, a governance-only work order that changes no executable
+behavior — the diff touches nothing under `mokiterions-core/` or `mokiterions-tui/`, and the workspace's 212 tests,
+formatter and linter are unmoved. In one interactive review the repository owner took fifteen decisions:
+
+- **All eleven amendment provisions ratified as written** — four in `SPEC-MOK-002`, one in `ARCH-MOK-001`, one in
+  `SPEC-MOK-003`, five in `SPEC-MOK-004`. The `ARCH-MOK-001` one is load-bearing: it is the provision that makes the
+  shipped observer legal, and ratifying it authorized what was already in the tree rather than permitting anything new.
+- **Six of the seven manual assessments performed and authored** by the owner, including the reference-viewport
+  legibility and colour-independence assessments the contract names.
+- **The seventh left outstanding by deliberate decision.** The shipped binary has no operator-reachable panic path, so
+  the live-terminal inspection cannot be performed by running the observer, and the contract's "rather than only by an
+  automated assertion" makes the retained automated result insufficient by construction. Closing it against a proxy
+  would have the record assert that a person inspected something no person had seen. **`VREC-MOK-005` continues to
+  disclose it, and a release record covering this chain inherits that disclosure.**
+- **Three restatements of `VER-MOK-005`**, whose subjects had moved since approval. One is notable as a defect in an
+  approved assurance artifact rather than in the implementation: assessment 3 asked for a run with colour disabled, and
+  the observer has no such flag and honours no such variable, so the assessment was unperformable on the shipped binary
+  from the day it was approved.
+
+**Three adverse observations came out of the live pass, and none is fixed.** The `?` key that opens the control
+documentation is advertised nowhere on screen; the roster's survival gauges are two columns wide, which draws three
+distinct states for 101 attribute values; and the hidden-pane notice — which does exist, is permanent and does
+conform — names the overlay key rather than saying the terminal is too small, and carries no visual emphasis. The
+product owner placed all three in a **separate chain** with the design settled in advance, on the reasoning that
+recording and fixing are different acts and folding a rule 4 redesign into this work order would keep the assessment
+obligation open past the next release record. That chain re-sweeps its own identifiers rather than trusting a record of
+what was free.
+
+`WO-MOK-012` is **`implemented`** on the engineering owner's acts of 2026-08-20, which also confirmed its
+`commit_bound_verification = "not_required"` classification as a separately stated act. Being governance-only that is
+its terminal status: it takes no verification record and nothing further is owed on its own lifecycle. Two things are
+disclosed rather than smoothed over — the governance text was committed before the work order was approved, which is not
+the sequence `WORKFLOW.md` describes, and `in_progress` was therefore never recorded. Its *Lifecycle* section states
+both. At `implemented` it emits one W-HEX-001 warning, accepted on the precedent `WO-MOK-010` and `WO-MOK-011` set.
+
+Everything decided, and the measurement behind each decision, is in `engineering/simulation/evidence/WO-MOK-012` —
+start with its `README.md`, then `closing-review.md` for the fifteen review decisions and `assurance-decision.md` for
+the approval.
+
+**All three adverse observations are answered under `WO-MOK-013`**, the separate chain the product owner directed them
+to. `REQ-MOK-047`, `REQ-MOK-048` and `REQ-MOK-049` were approved on 2026-08-20 in three separate acts, `VER-MOK-013`
+approved as their contract, six `SPEC-MOK-003` amendments ratified one question at a time, and the work order approved
+as a bounded scope — eighteen decisions, **all taken before implementation began** so that no amendment row was left
+`OUTSTANDING`, three more on the live pass that followed, a twenty-second that moved the status and a **twenty-third
+that verified the record**. What changed:
+
+- **The survival gauges resolve.** Two gauges per line instead of four raises the roster entry to three lines and the
+  bar from **2 cells to 13**, which is 14 renderable states for 101 values where there were 3, and a ten-point change
+  now moves the fill at every value rather than at eleven of ninety-one.
+- **The controls are findable.** The header carries a permanent `? keys` hint beside the run state, reducing to `?` at
+  the floor, present in the first frame with no input delivered.
+- **The hidden-pane notice is actionable.** It states the axis and the threshold value at which each excluded pane
+  returns — `inspector i at width 140` — read from the layout rather than written down, emphasised, and legible in the
+  `(symbol, modifier)` projection. At the floor all three panes are announced as `r W100  L H38  i W140`.
+- **The log is held at six rows wherever it is present**, which withdraws the ten-row growth at `160 × 48`. This is the
+  product owner's decision 1 and it is a **trade, not a correction**: the reference viewport now shows four recent
+  events where it showed eight. It is what keeps `REQ-MOK-020` intact, because twelve three-line entries need 36
+  interior rows and a six-row log is what leaves exactly 36. The fit has no slack in either direction. The trade was
+  put to the product owner a third time after the live pass, with the result on screen, and it **stands**.
+
+The workspace runs **226** tests, up from 212 — fourteen arrivals, no losses, reconciled name by name in that pack's
+`test-census.md`. The engine is untouched: `mokiterions-core/` is byte-identical to `master`, and non-perturbation is
+closed as a measured chain against `ff3a155` rather than asserted.
+
+**Status.** `WO-MOK-013` is **`implemented`** as of 2026-08-20, moved there by the repository owner as engineering owner
+after the live pass. **`VREC-MOK-013` is `verified`** as of the same day, transitioned by the owner as accountable
+assurance owner, and bound to `41c20ca`. `commit_bound_verification` was `required` and is discharged for that commit;
+the harness's *Decision required* queue is empty. Two things that status does **not** say: `WO-MOK-013` did not move
+with it and stays `implemented`, and the record binds a branch commit rather than `master`'s merge at `798e5d5` — the
+code is identical between them, the harness graph is not, and **a record bound to the merge commit is owed**.
+
+> **Earlier form, for a reader diffing this file.** It read *"It is **not verified**: `commit_bound_verification` is
+> `required`, and `VREC-MOK-013` exists as a **`ready` candidate** bound to `41c20ca` rather than as a verified record
+> — `DECISION_RIGHTS.md` reserves that transition to the accountable assurance owner, and the harness reports it as the
+> one item under *Decision required*."* That was true until the decision was taken.
+
+Of `VER-MOK-013`'s two manual assessments, **the gauge-legibility one was taken at `160 × 48` on 2026-08-20 and is
+SATISFIED** — which is the adverse observation this chain exists to answer, now answered by a person rather than by
+arithmetic. **The discoverability one is still outstanding with no author**: it needs a person who has not read
+`SPEC-MOK-003` rule 7, which the available assessor has read and ratified six amendments to. The owner chose to find
+such a person rather than amend the contract or close the row by decision — the only route that verifies
+`REQ-MOK-048` — so the frame, the question and the administrator's rules are prepared in
+`evidence/WO-MOK-013/discoverability-assessment.md` and the row waits on the person.
+
+**`REQ-MOK-048` is verified, and not on that assessment.** On 2026-08-20 the assurance owner accepted the
+requirement's **four automated cases** — the key hint on screen at frame 1, at every viewport of rule 5's table and at
+the floor, present after 200 ticks in both run states, displacing neither the announcement nor the provenance footer —
+**in place of the primary evidence `VER-MOK-013` designates**, and `VREC-MOK-013` records all three requirements as
+verified. **The contract is not amended and is not satisfied**: it still calls that automated case *"a necessary
+condition and not the property"*, the discoverability assessment is still **outstanding with no author**, and taking it
+would now confirm or contradict a verified requirement rather than verify one. `evidence/WO-MOK-013/assurance-decision.md`
+records the instruction verbatim, the three bases it was read against, what was accepted and the nine things the
+acceptance does not retire. The earlier form of this paragraph ended *"`VREC-MOK-013` therefore records `REQ-MOK-047`
+and `REQ-MOK-049` and **discloses `REQ-MOK-048` as unverified**"*, which is what the record said before the decision.
+
+**One thing about this chain's names.** Four of its identifiers — `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and
+`REQ-MOK-047` — are also claimed by `governance/adr-mok-006-third-party-crates`, a branch off the same base that is
+pushed and not merged, where they name a dependency-set work order and its contract. Both sides' artifacts are
+owner-approved. Nothing was renumbered: decision 3's rule sends the conflict to whichever branch reaches `master` second.
+`evidence/WO-MOK-013/identifier-collision.md` measures it, and **a citation of any of those four
+names resolves only together with the branch it was written on** for as long as both branches exist.
+
+**This chain merged first, in both of its identifier collisions**, at `798e5d5` on 2026-08-20 — so under decision 3's
+rule the renumbering falls to the two other branches and none is owed here. Neither is merged;
+`feature/phase-4a-definition` now reports **9** conflicts against `master` and
+`governance/adr-mok-006-third-party-crates` **8**, four of the latter `add/add` on the colliding names. That is an
+outcome of merge order rather than a decision anyone took, stop condition 8 did not fire because its trigger was this
+branch merging *second*, and nothing was asked of either branch.
+
+> **Later fact, recorded on 2026-08-20 on `governance/adr-mok-006-third-party-crates`, in the commit that merged
+> `master` into it.** The two paragraphs above are overtaken on one point each. **That branch renumbered.** Its
+> `WO-MOK-013`, `VER-MOK-013`, `VREC-MOK-013` and `REQ-MOK-047` are now `WO-MOK-014`, `VER-MOK-014`,
+> `VREC-MOK-014` and `REQ-MOK-050`, so the four names above resolve to this chain alone and a citation of any of
+> them no longer needs the branch it was written on. It moved because `VREC-MOK-013` here is `verified` against a
+> commit while `VERIFICATION_RECORD.template.md` lets a governance decision move only a `ready` record to
+> `superseded`: two `verified` homonyms cannot both stand, so the side that had not landed is the side that could
+> move. The repository owner directed it inside that branch's own approved work order. Nothing is asked of this
+> chain: no artifact here is renamed, re-dated or re-opened, and `evidence/WO-MOK-013/identifier-collision.md`
+> stays as it was written. The conflict figure moved with the renumbering — measured in that clone, **9** before
+> it and **4** after, with all four `add/add` gone; the **8** recorded above was measured against an earlier tip
+> of that branch. It has since merged `master` into itself, resolving those four, and it is still not merged into
+> `master`. Both acts are measured there in `evidence/WO-MOK-014/WO-MOK-014-renumbering.md` and
+> `WO-MOK-014-merge.md`.
+
+Everything measured is in `engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
 
 ---
 
@@ -357,7 +500,7 @@ deliberately narrower than the *In scope* list above, and the reductions are the
 |---|---|---|
 | A trait **vector** — "for example caution, aggression, sociability" | **One** trait, `waste_tolerance` | A trait no rule reads is an inert field. Exactly one rule reads exactly one trait, so the individuality claim is measurable rather than asserted. A second trait is a later governed change and needs a rule to read it |
 | **Per-agent entropy substreams** | **Not implemented.** The shared stream stays shared; the trait derivation uses a separate generator that neither reads nor advances it | Substreams would have moved every draw in every pre-existing run, so no run predating this phase would reproduce. Divergence is carried by the trait instead, which is what makes the whole change additive. Substreams remain available as a later change, and would cost the additivity property |
-| `fear` with "defined rise and decay dynamics" | Delivered, and **inert** — no rule and no decision source reads it | `SPEC-MOK-003` rule 4.5 refused an attribute the engine cannot support; this is the opposite case, an attribute the engine computes and nothing consumes. Recorded as a residual rather than presented as complete |
+| `fear` with "defined rise and decay dynamics" | Delivered, and **inert at the time** — no rule and no decision source read it | `SPEC-MOK-003` rule 4.5 refused an attribute the engine cannot support; this is the opposite case, an attribute the engine computes and nothing consumes. Recorded as a residual rather than presented as complete. Phase 3.1's `REQ-MOK-057` is the first consumer, and the first measurement of it says the rise dynamics chosen here are consequentially wrong — see Phase 3's status |
 | **Carried in: high-class resource accumulation** | **Not addressed.** Still carried | Out of `WO-MOK-010`'s scope. The note above still stands unchanged: fixing it invalidates `REQ-MOK-014`'s floor and needs a fresh measurement, and `REQ-MOK-034` has now added a second floor of the same shape to re-approve alongside it. The measured share of standing high-class supply at tick 1,000 did not improve |
 
 Two further cuts were accepted at the specification level, and both are the reason the observer changed as little as
@@ -392,10 +535,12 @@ Three things stood in the way of a verified record:
    owner overrode the gate on 2026-08-19 and authorized implementation over it, on the recorded mitigation that the
    two layers stay separable by inspection. **One half of that has since resolved and the other has not.**
    `VREC-MOK-005` is now `verified` on `master` and `WO-MOK-005` is `implemented`, so the gate's status condition is
-   met. Its substance is not: the record was verified with all seven of its manual assessments outstanding and
-   unauthored and eleven amendment provisions still `OUTSTANDING`, which the record states about itself. Phase 1.5's
-   obligations are therefore still open and still a prerequisite of *two* verification records rather than one — what
-   changed is that they are no longer also a blocked governance transition.
+   met. Its substance was not: the record was verified with all seven of its manual assessments outstanding and
+   unauthored and eleven amendment provisions still `OUTSTANDING`, which the record states about itself. **This is now
+   substantially resolved.** `WO-MOK-012` ratified all eleven provisions on 2026-08-20 and authored six of the seven
+   assessments; the seventh is outstanding by the assurance owner's deliberate decision, for a reason recorded in
+   Phase 1.5's status above, and it remains a disclosure any release record covering that chain inherits. What Phase 1.5
+   still owes this gate is that one assessment, not the whole debt the gate was overridden against.
 
 **The record was re-captured against the merged tree, and the re-derivation this section demanded is discharged.**
 This paragraph previously read *"The record predates the merge with `master` and has not been re-captured against it"*,
@@ -487,7 +632,8 @@ re-derived when this branch merges `master`.
 
 Three amendment rows written during this work — one each in `SPEC-MOK-001`, `SPEC-MOK-003` and
 `SPEC-MOK-004` — are approved by the repository owner's act of 2026-08-19; the rows marked `OUTSTANDING` in those
-specifications from earlier work are untouched and still outstanding. Everything measured is in
+specifications from earlier work were untouched by this work and outstanding when it completed, and were subsequently
+ratified on 2026-08-20 under `WO-MOK-012`. Everything measured is in
 `engineering/simulation/evidence/WO-MOK-011`.
 
 **It does not close anything Phase 2 left open.** `fear` is still read by nothing, the trait vector is still one
@@ -516,6 +662,50 @@ before model integration means the decision contract is authored once.
 Verification should assert the **absence** of population-level triggers, not merely the presence of combat.
 
 **Governance.** `REQ-MOK-005` ("Apply core actions") requires extension or supersession.
+
+### What was built, and what is outstanding
+
+The packet approved on 2026-08-20 is `INT-MOK-010`, `CAP-MOK-010`, `REQ-MOK-051` through `REQ-MOK-060`,
+`VER-MOK-016`, `WO-MOK-016`, and in-place amendments of `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`,
+`REQ-MOK-005` and `REQ-MOK-034`. It is Phase 3.1: the whole action contract, one decision source that exercises
+it, and no scripting of any kind.
+
+The *In scope* list above is delivered with two reductions, both the product owner's decisions rather than
+implementation shortfalls. "Perceived relative strength" is not read — damage depends on the striker's own
+condition and on nothing about the target, so there is nothing to perceive and `REQ-MOK-059` forbids reading it.
+"Interaction history feeding back into observation" is delivered as **one tick** of history, the attacks suffered
+since the holder's last opportunity, because a longer window is a stored relation and the contact rule is
+deliberately positional.
+
+The critical constraint holds and is verified as an absence, as this section requires: `REQ-MOK-059` states that
+no rule and no decision source reads any population-level aggregate, and every read in every rule, source and
+validation path is enumerated against it.
+
+**Two approved obligations are measured as failing, and both are the product owner's to resolve.** They are
+recorded here rather than worked around, and `WO-MOK-016` stays `in_progress`:
+
+- `REQ-MOK-058` requires at least five of twelve surviving at tick 1,000 under `social` at the default density
+  **and** at least one death attributable to combat, on every declared seed. Measured: 6, 4, 8, 4 and 5
+  survivors, and **zero** combat deaths on all five seeds.
+- `VER-MOK-016` oracle 4 requires each of the seven targeted verbs to apply somewhere in the declared matrix.
+  `surrender` is never proposed in any declared run.
+
+Both follow from one coupling, and it is a design fault rather than a defect in the code. `fear` rises `+10` for
+every tick company is *perceived*, at radius 16, while engagement requires *contact*, at radius 1, below a `fear`
+of 30. Fear therefore crosses the threshold on the third perceiving tick while closing the perception radius takes
+fifteen, so a Mokiterion is nearly always past the threshold by the time it could act on it. Every strike in the
+entire declared matrix lands at tick 1, 2 or 3, between Mokiterions initialized already in contact; after tick 3
+the source routes to `avoid` for the rest of the run, which also displaces the seek-move and drops meals eaten
+from 378–417 per run to 205–304. That, not the combat, is what lowers the survivor count. `avoid` is proposed
+6,329 times against `attack`'s 3.
+
+`REQ-MOK-057`'s ordering and thresholds are the one legitimate lever, and moving them is a governed amendment
+rather than an implementation decision. `REQ-MOK-060`'s resource-composition ceiling is separately measured as
+failing 14 of 15 cells and is deferred to a second amendment by the owner's decision of 2026-08-20.
+
+`social` is therefore honestly described as **implemented and not yet habitable**, and is not the default;
+`--policy` unspecified still selects `reference`. The failing measurements are in the test suite as failing tests
+and were not weakened, skipped or removed to make the run green.
 
 ---
 
@@ -688,7 +878,7 @@ means to the same risk reduction.
 | 1 | `SPEC-MOK-001` amended in place; new intent and capability added; no existing requirement changed |
 | 1.5 | `ARCH-MOK-001` amended in place to scope its one-crate, empty-dependency and UI-framework rules to the engine package; new intent, capability, nine requirements, specification, architecture and ADR added; `ADR-MOK-001` not superseded; `SPEC-MOK-001` unchanged |
 | 2 | New intent, capability and four requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `ARCH-MOK-001` confirmed unchanged; no existing requirement changed; observation contract extended. Broader than this row anticipated: the trait had to be stated in `SPEC-MOK-001`, the new tests' tiers in `SPEC-MOK-002`, and the fourth gauge in `SPEC-MOK-003` |
-| 3 | `REQ-MOK-005` extended or superseded |
+| 3 | `REQ-MOK-005` amended in place rather than superseded; new intent, capability and ten requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `REQ-MOK-034` amended because a fourth source must not be read as extending the floor it freezes; `ARCH-MOK-001` confirmed unchanged. Broader than this row anticipated in the same way Phase 2 was: the carried floors had to be re-measured, and a second amendment to `REQ-MOK-060`'s numeric ceiling is outstanding |
 | 4a | New intent, capability and five requirements added; new specification `SPEC-MOK-006` and new `ADR-MOK-005`; `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amended in place; `REQ-MOK-010` preserved and extended additively — not one byte of the text stream changed; no existing requirement changed. Broader than this row anticipated by one artifact: **`SPEC-MOK-004` rule 11 was amended too**, beyond `ADR-MOK-005`'s approved list, because rule 11 obliges a work order that changes the test census to correct the recorded figures — 212 → 246 in the workspace, 85 → 119 in the engine. That row was approved separately by the technical owner on 2026-08-20 |
 | 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
@@ -714,6 +904,14 @@ anticipate it:
    fifty-seed distribution rather than on the five declared seeds, because the declared-five result is not monotonic
    in the bound. The upper half of the original range was measurably dominated, not a second strategy. Recorded in
    `SPEC-MOK-001`'s *Behavioral trait* subsection and in `WO-MOK-010`'s evidence as `escalation.md`.
+
+A fourth is open, raised by Phase 3.1's first measurement and blocking that phase's completion:
+
+4. **`REQ-MOK-057`'s thresholds and branch order.** *Open.* `fear` accumulates over the perception radius while
+   engagement requires contact, so `social` crosses its own thresholds long before it can act on them and
+   `REQ-MOK-058` fails on the measured curve. Whether to move the thresholds, reorder the branches, decouple
+   engagement from `fear`, or lower `REQ-MOK-058`'s floor again is the owner's decision, and it is the one lever
+   the approved chain sanctions. See Phase 3's status section above and `WO-MOK-016`'s evidence.
 
 ## Maintenance
 

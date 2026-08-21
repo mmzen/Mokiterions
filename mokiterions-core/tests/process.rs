@@ -144,6 +144,45 @@ fn the_trait_aware_source_runs_to_completion_and_reports_each_trait_once() {
     assert_eq!(output.matches("summary ").count(), 1);
 }
 
+/// `REQ-MOK-057`, `REQ-MOK-058`: the fourth source reaches the process boundary, and a run under
+/// it exits successfully whatever its outcome.
+///
+/// The exit code is the point of the last assertion. `REQ-MOK-058` states that habitability is a
+/// measured property rather than a runtime error, so a run that depopulates or that never reaches a
+/// kill must still exit `0` — an engine that failed the process on its own survivor count would be
+/// reading a population aggregate, which `REQ-MOK-059` forbids outright.
+#[test]
+fn the_social_source_runs_to_completion_and_exits_successfully() {
+    let mut output = Vec::new();
+    let mut errors = Vec::new();
+
+    let code = execute(
+        ["--policy", "social", "--ticks", "200", "--seed", "42"],
+        &mut output,
+        &mut errors,
+        None,
+    );
+
+    assert_eq!(code, 0);
+    assert!(errors.is_empty(), "{}", String::from_utf8_lossy(&errors));
+    let output = String::from_utf8(output).unwrap();
+
+    assert_eq!(
+        output
+            .matches("event=decision_source_selected result=source:social")
+            .count(),
+        1
+    );
+    assert_eq!(output.matches("event=agent_initialized").count(), 12);
+    assert_eq!(output.matches("summary ").count(), 1);
+    // The source is reached, not merely selected: a run under it proposes what no other source
+    // can propose.
+    assert!(
+        output.contains("event=threat_resolved") || output.contains("event=attack_resolved"),
+        "two hundred ticks under `social` resolved nothing between Mokiterions"
+    );
+}
+
 #[test]
 fn output_failure_exits_with_code_one() {
     let mut output = FailingWriter;

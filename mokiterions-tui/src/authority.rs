@@ -24,11 +24,19 @@ pub fn for_type(event_type: EventType, source: Option<Policy>) -> Option<&'stati
             Policy::Baseline => "REQ-MOK-008",
             Policy::Reference => "REQ-MOK-015",
             Policy::Individual => "REQ-MOK-033",
+            Policy::Social => "REQ-MOK-057",
         },
         EventType::SurvivalChanged | EventType::AgentDied => "REQ-MOK-003",
         EventType::FoodConsumed => "REQ-MOK-006",
         EventType::FoodRegenerated | EventType::FoodRegenerationSkipped => "REQ-MOK-007",
         EventType::TerritoryCrossed => "REQ-MOK-005",
+        // Rule 11's three added rows. `attack_resolved` maps to `REQ-MOK-053` for `attack` and
+        // for `fight` alike, because both invoke one resolution and the record does not say
+        // which verb produced it. `REQ-MOK-052` takes no row: it authorizes seven verbs while
+        // adding no event type, and rule 11 clause 2's exhaustiveness runs from the event side.
+        EventType::AttackResolved => "REQ-MOK-053",
+        EventType::ThreatResolved => "REQ-MOK-055",
+        EventType::SurrenderResolved => "REQ-MOK-056",
         EventType::SimulationEnded => "REQ-MOK-011",
         EventType::ActionTrace => "REQ-MOK-012",
     })
@@ -54,7 +62,8 @@ pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
         .map(|event_type| {
             let identifier = match event_type {
                 EventType::DecisionSourceSelected => {
-                    "REQ-MOK-008 baseline / REQ-MOK-015 reference / REQ-MOK-033 individual"
+                    "REQ-MOK-008 baseline / REQ-MOK-015 reference / REQ-MOK-033 individual \
+                     / REQ-MOK-057 social"
                         .to_string()
                 }
                 other => for_type(*other, Some(policy))

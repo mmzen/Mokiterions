@@ -294,19 +294,28 @@ jobs:
       - name: Test
         run: cargo test --workspace --locked
 
-      - name: The engine's dependency table must stay empty
-        shell: bash
-        run: |
-          # `ARCH-MOK-001` as amended admits no engine dependency, with no exception,
-          # including one shared with `mokiterions-tui`. `mokiterions-core/Cargo.toml`
-          # names this command as the check.
-          tree="$(cargo tree -p Mokiterions --locked)"
-          echo "$tree"
-          lines="$(printf '%s\n' "$tree" | grep -c .)"
-          if [[ "$lines" -ne 1 ]]; then
-            echo "REFUSED: cargo tree resolved $lines crates for the engine; exactly 1 is admitted." >&2
-            exit 1
-          fi
+      - name: Populate the registry cache, the one step allowed to reach a registry
+        run: cargo fetch --locked
+        # `--locked` makes this a download and not a resolution: it fetches what the committed
+        # lockfile already fixed, for every target, and fails rather than choose a version. The
+        # declared-set check below runs `--offline`, so on a fresh runner it needs this first;
+        # without it the check would refuse over an empty cache and read as a dependency
+        # mismatch, which is the one thing it must never say by accident.
+
+      - name: Each package resolves to the set its specification declares
+        run: python3 scripts/check_declared_dependencies.py --root .
+        # `SPEC-MOK-005` rule 8.4, checks 8.4a to 8.4d, and this is the same program the
+        # pull-request gate runs -- rule 15.5 forbids a second source of truth about what is
+        # declared. It replaces the old assertion that `cargo tree -p Mokiterions --locked`
+        # resolves to exactly one crate. That assertion is still made, and it is now made as a
+        # measurement of `SPEC-MOK-002` rule 13's declared set, which is empty: the engine
+        # having no dependency is a fact about its declaration and is no longer a rule of its
+        # own, per `ADR-MOK-006`. The observer's declared set is checked on the same footing,
+        # which the old step did not check at all.
+        #
+        # The program reads the declarations out of `SPEC-MOK-002` and `SPEC-MOK-003` and
+        # restates none of them, so amending a declared set changes this step's verdict with no
+        # edit here. It writes nothing, and it compares `git status` before and after to say so.
 
       - name: A seed determines the run, byte for byte
         shell: bash

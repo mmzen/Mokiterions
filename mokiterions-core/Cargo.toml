@@ -1,7 +1,8 @@
 # The engine package. `SPEC-MOK-004` rule 3 moved this manifest, `src/` and `tests/` from the
 # repository root into this directory, with every table unchanged. The package name, both
-# target names, both target kinds and the empty dependency table are exactly as
-# `SPEC-MOK-002` rules 1 and 2 fix them; `mokiterions-core` is a directory name only.
+# target names and both target kinds are exactly as `SPEC-MOK-002` rules 1 and 2 fix them, and
+# the dependency table below is exactly the set rule 13 declares; `mokiterions-core` is a
+# directory name only.
 #
 # The paths below are unchanged by the move, because a package manifest's paths were always
 # relative to the manifest.
@@ -22,7 +23,23 @@ path = "src/lib.rs"
 name = "Mokiterions"
 path = "src/main.rs"
 
-# `SPEC-MOK-002` rule 1 and `ARCH-MOK-001` as amended both require this table to stay
-# empty, with no exception, including a dependency shared with `mokiterions-tui`.
-# `cargo tree -p Mokiterions` is the check, and `REQ-MOK-026` is what it discharges.
+# This table is empty, and that is a fact about `SPEC-MOK-002` rule 13's declared set rather
+# than a rule of its own. Amended 2026-08-20 under `ADR-MOK-006`: the earlier comment here
+# said the table must stay empty with no exception, and that prohibition is gone. What replaces
+# it is a comparison — rule 13 declares which external crates this package resolves, today
+# none, and `SPEC-MOK-005` rule 8.4 refuses a commit where the resolved graph and the
+# declaration differ in either direction. So an entry added here without amending rule 13
+# refuses, and rule 13 amended without the entry refuses too.
+#
+# Adding one is the technical owner's decision, recorded in rule 13's *Admitted by* column
+# against `ADR-MOK-006` decision 1's criteria, and never an implementation act. Four
+# prohibitions survive that change untouched and are checked before any of those criteria are
+# weighed: no user-interface crate here, which is `REQ-MOK-026` and the split `ADR-MOK-003`
+# decided; nothing in a class decision 4 prohibits; nothing implementing simulation semantics,
+# per decision 11; and nothing that moves a replay, per decision 6.
+#
+# `python scripts/check_declared_dependencies.py` is the check, at pull-request time and again
+# at the release gate. `cargo tree -p Mokiterions --locked` is what it reads for this package,
+# at every edge kind including dev-only, and `REQ-MOK-026` and `REQ-MOK-050` are what it
+# discharges.
 [dependencies]

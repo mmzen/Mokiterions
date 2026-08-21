@@ -5,7 +5,7 @@ title = "Re-establish declared compliance at the released revision before publis
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
-updated = "2026-08-19"
+updated = "2026-08-20"
 statement = "Before any release asset is published, the release process SHALL re-establish that the harness declares the artifact graph valid and every released work order passes review preflight at the revision holding the release record, and that the repository's declared formatting, lint, test, dependency-boundary and determinism checks pass at the authorized commit."
 verification_method = "automated-test"
 
@@ -14,6 +14,13 @@ derives_from = ["CAP-MOK-007"]
 +++
 
 # Requirement: Re-establish declared compliance at the released revision before publishing
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-19 | Original approved content, including required response 8 — *"the engine package's dependency tree resolves to exactly one crate"* — and the acceptance scenario *"A dependency added to the engine"*, which refused a release at any non-empty engine dependency table. | Approved 2026-08-19 by the repository owner acting as accountable product owner. |
+| 2026-08-20 | The dependency-boundary check becomes a per-package declared-set comparison. Required response 8 no longer asserts a crate count; it requires each package's resolved tree to equal that package's declared set at the declared versions and features, in both directions. The acceptance scenario keeps its refusal, its naming of the boundary and its position in the list, and changes what it refuses: from *any* engine dependency to a set that differs from the declaration either way. The *All checks pass* scenario's *"dependency-tree count"* becomes the same comparison. **This row reaches required response 8 and the first scenario's wording, which the deciding ADR named only as the refusal scenario**, because a requirement whose response clause still counted crates would have refused every release the same approval permits. Nothing else moves: the two-revision structure, the nine checks, the refusal semantics and the lockfile constraint at lines 113–114 are untouched, and `SPEC-MOK-005` rule 8.4 is where the check itself is specified. | Approved 2026-08-20 by the repository owner acting as accountable product owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment. Written under `WO-MOK-014`; the implementation agent wrote the text and did not decide it. |
 
 ## Rationale
 
@@ -75,7 +82,9 @@ The process SHALL establish all of the following before any asset is published.
 7. **Tests pass.** The declared test command passes across the whole workspace, resolving dependencies from the
    committed lockfile without updating it. No test tier is skipped, feature-gated, ignored, or dependent on an
    interactive terminal.
-8. **The engine's dependency boundary holds.** The engine package's dependency tree resolves to exactly one crate.
+8. **Each package's dependency boundary holds.** Each package's resolved dependency tree equals the set declared for
+   that package, entry for entry, at the declared versions and the declared feature sets, with no undeclared entry and
+   no declared entry missing.
 9. **Declared determinism holds.** For each decision policy the engine declares as deterministic, two runs with
    identical inputs produce byte-identical output, an identical final state and an identical exit code.
 
@@ -126,8 +135,8 @@ and SHALL name the check that failed.
 Given an authorized release naming commit `C` and governance revision `G`, releasing `WO-MOK-001`..`006`,
 when compliance is re-established,
 then the harness version matches the declared version, the repository check passes at `G`, artifact validation
-reports zero errors at `G`, six review preflights pass at `G`, and formatting, lints, tests, the dependency-tree
-count and the determinism comparisons pass at `C`; and the process proceeds.
+reports zero errors at `G`, six review preflights pass at `G`, and formatting, lints, tests, the per-package
+declared-set comparison and the determinism comparisons pass at `C`; and the process proceeds.
 
 **An invalid graph at the governance revision.**
 Given the release record was merged together with an artifact that fails validation,
@@ -140,10 +149,13 @@ Given a compiler version whose lint set now flags code at `C` that was clean whe
 when the lint check runs at `C`,
 then it fails and the process refuses, naming the lint check.
 
-**A dependency added to the engine.**
-Given commit `C` in which the engine package's dependency table is no longer empty,
+**An undeclared dependency in a package.**
+Given commit `C` whose resolved dependency set for a package differs from the set declared for that package — an entry
+the declaration does not contain, or a declared entry no longer in the tree, since a declaration that has gone stale
+is as much a mismatch as an addition nobody approved,
 when the dependency-boundary check runs,
-then the engine's dependency tree resolves to more than one crate and the process refuses, naming the boundary.
+then the comparison reports the difference and the process refuses, naming the boundary and the entries either side of
+it.
 
 **A work order that no longer passes review preflight.**
 Given `WO-MOK-004` whose required evidence path was removed by a later commit reachable from `G`,

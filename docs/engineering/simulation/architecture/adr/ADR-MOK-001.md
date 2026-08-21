@@ -5,7 +5,7 @@ title = "Engine-authoritative in-process decision boundary"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-11"
-updated = "2026-08-17"
+updated = "2026-08-20"
 
 [relations]
 decides = ["ARCH-MOK-001"]
@@ -18,6 +18,21 @@ decides = ["ARCH-MOK-001"]
 Accepted. Amended in place 2026-08-17 on one structural point, as recorded in the *Decision* section below and
 required by `ADR-MOK-002`. The substantive decision — option 3, engine authority, and the immutable observation and
 typed proposal boundary — is unchanged, so this ADR is not superseded.
+
+**Note dated 2026-08-20. What supports one of this ADR's assertions has changed; the assertion has not.** This ADR
+states that the foundation requires no network access and no credentials, and that testing simulation mechanics needs
+neither. Until now that rested on the engine package having no dependencies at all: an empty table made the claim
+checkable by reading one line. `ADR-MOK-006` withdrew that rule and admits third-party crates in both packages against
+a declared set. **The support is withdrawn and the assertion is not.** It now rests on two things instead: decision 4
+of `ADR-MOK-006`, which preserves every prohibition in this ADR's trust envelope without relaxation — no network, no
+API credentials, no secret in the repository, no asynchronous runtime, no database, no plugin system, no
+dependency-injection container, and no model provider in either package — and the two `ARCH-MOK-001` conformance checks
+that replace the empty-graph inference: the resolved graph equals the declared set, and a by-name scan confirms no
+crate of a prohibited capability class is in it.
+
+No decision, no option, no consequence and no driver of this ADR changes, and it is **not superseded**. The one thing a
+reader should carry away is that the trust envelope is now defended by a check rather than implied by an empty
+manifest, and `ADR-MOK-006`'s *Negative* consequences say plainly that those are not the same thing.
 
 ## Context
 

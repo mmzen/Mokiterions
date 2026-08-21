@@ -1,0 +1,16 @@
+render.rs:572  filled = value * width / 100, integer division.
+layout ROSTER_WIDTH is 47, so the pane interior is 45 and
+render.rs:546  bar_width(45) = min(20, (45 - 35) / 4) = 2.
+
+A two-cell bar draws three distinct states for 101 attribute values:
+
+bar    values          span
+░░     0..=49       50 values
+█░    50..=99       50 values
+██   100..=100      1 values
+
+So at the reference roster the proportional fill distinguishes 0..=49 from 50..=99
+from 100, and nothing finer. Two attributes 49 apart draw the same bar. The level is
+carried by the three-digit numeric value, which is why SPEC-MOK-003 rule 2.5 still
+holds without colour — but the fill is not doing the work the rule's wording implies
+it shares.

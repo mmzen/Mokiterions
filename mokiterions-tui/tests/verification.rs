@@ -30,6 +30,7 @@ use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::layout::Rect;
+use ratatui::style::Modifier;
 
 // `crate::` used to reach these. A test tier outside the crate names them through the public
 // interface instead; nothing else about the cases changes.
@@ -59,8 +60,13 @@ const VIEWPORTS: [(u16, u16); 10] = [
 ];
 
 /// The declared viewports above the floor, each with the canvas interior rule 5 derives for it.
+///
+/// The reference row reads a 36-row canvas as of rule 5's 2026-08-20 amendment, which holds the log
+/// at six rows everywhere and returns to the body the four the withdrawn ten-row growth took. It is
+/// the only row the amendment moves: every other viewport here either failed one of the two
+/// conditions that growth required or has no log at all.
 const RENDERABLE: [(u16, u16, u16, u16); 9] = [
-    (160, 48, 67, 32),
+    (160, 48, 67, 36),
     (160, 44, 67, 32),
     (160, 40, 67, 28),
     (140, 44, 47, 32),
@@ -653,7 +659,8 @@ fn the_applied_action_presented_is_always_the_engines() {
     }
 }
 
-/// No shipped decision source can have a proposal rejected.
+/// No decision source that proposes only from the observation's valid-action list can have a
+/// proposal rejected.
 ///
 /// `BaselineDecisionSource` selects from the observation's valid actions and
 /// `ReferenceDecisionSource` guards every candidate with the observation's own `allows`, so both
@@ -666,8 +673,19 @@ fn the_applied_action_presented_is_always_the_engines() {
 /// leaving the name of this case broader than what it checked. `IndividualDecisionSource` screens
 /// its candidates through the same `allows`, so the claim holds for the same reason; `VER-MOK-010`
 /// requires it as *validation is not relaxed*. No assertion here was changed to admit it.
+///
+/// `WO-MOK-016` added a fourth shipped source that **is** rejected, and the name of this case moved
+/// rather than the sweep, for the same reason it moved under `WO-MOK-010`: the claim now states the
+/// property the three share instead of a count of what ships. `SocialDecisionSource` proposes
+/// targeted actions, which `SPEC-MOK-001` rule 3 keeps off the valid-action list on purpose, so
+/// `allows` cannot screen them and rule 6 is the only gate. Rule 26's own text fixes that its
+/// branch 1 proposes an answer "whether or not that answer can succeed", and rule 6's fifth
+/// condition rejects a targeted move with no valid direction — both are specified behavior, and
+/// `the_social_source_is_rejected_only_as_the_specification_admits` below asserts which grounds are
+/// reachable rather than that none is. **No assertion in this case was relaxed, widened or removed**:
+/// the three policies below and their per-decision equality are verbatim.
 #[test]
-fn no_shipped_decision_source_has_a_proposal_rejected() {
+fn no_source_confined_to_the_valid_action_list_has_a_proposal_rejected() {
     for policy in ["baseline", "reference", "individual"] {
         let mut observer = observer_for(&["--policy", policy, "--seed", "42", "--ticks", "400"]);
         while !observer.is_finished() {
@@ -683,6 +701,55 @@ fn no_shipped_decision_source_has_a_proposal_rejected() {
             }
         }
     }
+}
+
+/// `SPEC-MOK-003` rule 10 as amended: a rejection under the `social` source is presented as the
+/// engine's own ground, and the grounds reachable are the ones `SPEC-MOK-001` rule 6 names.
+///
+/// This is the counterpart of the case above rather than a relaxation of it. A rejection here is an
+/// expected outcome of the authority boundary, so what is asserted is that the observer presents the
+/// engine's word for it and invents nothing — the reason it presents is one of rule 6's, never a
+/// phrase of the observer's own, and never a fault or a warning.
+#[test]
+fn the_social_source_is_rejected_only_as_the_specification_admits() {
+    // Rule 6's five conditions, in the order that rule fixes them, plus rule 8's own reason
+    // reached by a targeted verb. Nothing outside this set is a ground the engine can state.
+    const GROUNDS: [&str; 9] = [
+        "agent_dead",
+        "target_unknown",
+        "target_dead",
+        "target_is_actor",
+        "target_not_perceived",
+        "target_not_in_contact",
+        "target_not_in_record",
+        "target_co_located",
+        "out_of_bounds",
+    ];
+
+    let mut rejections = 0usize;
+    for seed in ["0", "42", "123"] {
+        let mut observer = observer_for(&["--policy", "social", "--seed", seed, "--ticks", "400"]);
+        while !observer.is_finished() {
+            observer.advance().expect("the engine advances");
+            for decision in &observer.snapshot().decisions {
+                if let DecisionOutcome::Rejected { ground } = &decision.outcome {
+                    rejections += 1;
+                    assert!(
+                        GROUNDS.contains(&ground.as_str()),
+                        "seed {seed} tick {} rejected {} on the unnamed ground {ground}",
+                        observer.snapshot().tick,
+                        decision.agent_id
+                    );
+                }
+            }
+        }
+    }
+
+    // The measured figure across these three seeds is one rejection, at seed 0 tick 11: an `avoid`
+    // whose only away-axis left the world. It is asserted as a bound rather than an equality, since
+    // rule 26 makes rejection rare but not impossible and pinning the count would make this case a
+    // second capture rather than a claim about grounds.
+    assert!(rejections <= 8, "{rejections} rejections is not rare");
 }
 
 // ---- security ------------------------------------------------------------------------------
@@ -1075,4 +1142,126 @@ fn the_inspector_identifies_a_dead_subject_by_name_and_identifier() {
         "the inspector does not identify the dead {victim} as {name}:\n{text}"
     );
     assert!(text.contains("died on tick"), "{text}");
+}
+
+// ---- WO-MOK-013: the notice that names the remedy, without colour ---------------------------
+
+/// Every cell of one region, as symbol and modifier, with colour discarded.
+///
+/// The same projection `src/verification.rs` uses for rule 2.5's cases, restated here rather than
+/// shared: that one is a `#[cfg(test)]` helper inside the crate, and an integration test links the
+/// crate's public interface, which no such helper is part of. Restating a helper across the two tiers
+/// is what `SPEC-MOK-004` rule 9's split already requires of this file.
+///
+/// Returning a value that colour is not in at all is the point of it. A test that read `fg` and
+/// asserted something about it could still pass on a frame whose meaning lived in colour.
+fn monochrome(buffer: &Buffer, area: Rect) -> Vec<Vec<(String, Modifier)>> {
+    (area.y..area.y + area.height)
+        .map(|y| {
+            (area.x..area.x + area.width)
+                .map(|x| {
+                    let cell = buffer.cell((x, y)).expect("inside the area");
+                    (cell.symbol().to_string(), cell.modifier)
+                })
+                .collect()
+        })
+        .collect()
+}
+
+/// The symbols of a monochrome projection, joined into rows.
+fn symbols(cells: &[Vec<(String, Modifier)>]) -> String {
+    cells
+        .iter()
+        .map(|row| {
+            row.iter()
+                .map(|(symbol, _)| symbol.as_str())
+                .collect::<String>()
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
+}
+
+/// The character `SPEC-MOK-003` rule 7 binds to the key-binding overlay, and the one it binds to each
+/// pane's own overlay. Rule 7 is the source, so these are stated rather than read from the observer.
+const OVERLAY_KEY: char = '?';
+
+fn specified_key(pane: layout::Pane) -> char {
+    match pane {
+        layout::Pane::Roster => 'r',
+        layout::Pane::Log => 'L',
+        layout::Pane::Inspector => 'i',
+    }
+}
+
+/// The axis that constrains `pane`, as an initial, and the extent at which the pane returns,
+/// measured from the layout rather than written down — the condition `VER-MOK-013` sets for every
+/// case that reads the announcement's stated value.
+fn measured_threshold(pane: layout::Pane) -> (char, u16) {
+    let in_the_body = |width: u16, height: u16| {
+        !layout::resolve(Rect::new(0, 0, width, height))
+            .overlay_only()
+            .contains(&pane)
+    };
+    let by_width = (layout::MIN_WIDTH..=200).find(|&width| in_the_body(width, 60));
+    let by_height = (layout::MIN_HEIGHT..=60).find(|&height| in_the_body(200, height));
+    match (by_width, by_height) {
+        (Some(width), _) if width > layout::MIN_WIDTH => ('W', width),
+        (_, Some(height)) if height > layout::MIN_HEIGHT => ('H', height),
+        other => panic!("{} is excluded by no extent: {other:?}", pane.label()),
+    }
+}
+
+/// `REQ-MOK-049`'s "legible without colour" row, and the projection clause of `VER-MOK-013`'s
+/// acceptance scenarios 3 and 4.
+///
+/// The defect this closes was a notice an operator could not act on. A notice whose meaning lived in
+/// its colour would be the same defect for one operator in twelve, so the axis, the extent and the
+/// key are all asserted against a projection colour has been discarded from — at `120 x 48`, where
+/// one pane is excluded, and at the floor, where all three are.
+///
+/// The emphasis is asserted in the same projection for the same reason. Rule 5 requires the
+/// announcement to be distinguishable from the optional segments beside it, and a modifier is what
+/// survives here where a colour would not.
+#[test]
+fn the_announcement_and_the_hint_survive_the_loss_of_colour() {
+    for (width, height) in [(120u16, 48u16), (34, 22)] {
+        let mut observer = observer_for(&["--seed", "42"]);
+        let buffer = frame(&mut observer, width, height).expect("above the floor");
+        let cells = monochrome(&buffer, Rect::new(0, 0, width, 1));
+        let plain = symbols(&cells);
+
+        assert!(
+            plain.contains(OVERLAY_KEY),
+            "{width}x{height} loses the hint with colour discarded: {plain}"
+        );
+
+        let excluded = layout::resolve(Rect::new(0, 0, width, height)).overlay_only();
+        assert!(
+            !excluded.is_empty(),
+            "{width}x{height} excludes no pane, so this case is unexercised"
+        );
+        for pane in excluded {
+            let (axis, value) = measured_threshold(pane);
+            let key = specified_key(pane);
+            let word = match axis {
+                'W' => "width",
+                _ => "height",
+            };
+            assert!(
+                plain.contains(&format!("{key} at {word} {value}"))
+                    || plain.contains(&format!("{key} {axis}{value}")),
+                "{width}x{height} states neither the axis nor the extent of the {} with colour \
+                 discarded: {plain}",
+                pane.label()
+            );
+        }
+
+        // Rule 5's emphasis, in the only part of the projection that carries style at all.
+        assert!(
+            cells[0]
+                .iter()
+                .any(|(_, modifier)| modifier.contains(Modifier::BOLD)),
+            "{width}x{height} carries no emphasis in the header's first row"
+        );
+    }
 }

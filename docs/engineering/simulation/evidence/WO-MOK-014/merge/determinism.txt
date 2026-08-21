@@ -1,0 +1,62 @@
+# VER-MOK-014 oracle 3, re-derived at the merge commit 9599c0a
+#
+# Why it is re-run rather than argued from the diff
+# ---------------------------------------------------------------------------------------------
+# The merge brings master's observer work into this branch: six files under mokiterions-tui,
+# 1,487 insertions and 203 deletions, and the 14 tests that take the workspace from 212 to 226.
+# It brings no change at all to the engine. `git diff 4a32a95 9599c0a -- mokiterions-core/
+# Cargo.toml Cargo.lock rust-toolchain.toml .cargo/` is empty, so the replay's subject and every
+# input to building it are byte-for-byte what this branch already had.
+#
+# That argument is sound and it is still not a measurement. REQ-MOK-009 rests on byte-identical
+# replay, and the cheap way to be wrong here is to reason from a diff of the paths one thought to
+# list. The 90-cell matrix was therefore replayed twice at this commit with the same instrument
+# the packet used, and compared three ways.
+#
+# Commands
+# ---------------------------------------------------------------------------------------------
+#   cargo build --release --locked --offline -p Mokiterions
+#   bash docs/engineering/simulation/evidence/WO-MOK-011/capture.sh "$dir/A"
+#   bash docs/engineering/simulation/evidence/WO-MOK-011/capture.sh "$dir/B"
+#
+# The capture script is WO-MOK-011's, retained and unmodified, for the reason the packet's
+# WO-MOK-014-determinism.txt gives: the baseline being compared against is that script's output,
+# so a script written today would compare a capture to itself through a new instrument. The
+# matrix is 5 seeds x 3 policies x 3 densities x 2 trace modes at 1,000 ticks = 90 cells, each
+# hashed as its raw stdout stream with sha256sum and paired with its exit code. The build was
+# --offline: nothing in this measurement reaches the network.
+#
+# Results
+# ---------------------------------------------------------------------------------------------
+# cells captured, run A: 90
+# cells captured, run B: 90
+#
+#   run A == run B                                   all 90 cells, raw hash and exit code
+#   run A == WO-MOK-011 retained post-change capture  all 90 cells, raw hash and exit code
+#   run A == this packet's manifest, taken at 65ac88b all 90 cells, raw hash and exit code
+#
+# The first is determinism within this checkout and the precondition for the other two meaning
+# anything. The second is the comparison VER-MOK-014 declares, against
+# evidence/WO-MOK-011/post/post-manifest.txt, reduced with the awk projection the packet records.
+# The third is the one this act owes and the packet could not make: the merged tree replays
+# byte-identically to the candidate the verified record binds, so the merge moved no replay byte.
+#
+# The four cells VER-MOK-014 names, measured here:
+#
+#   seed123-baseline-d0.75-traceoff   fcd03d6f2ae68bb67eed68721e35f91e1ed641901b2732a70c2e81026ae1cdc2  exit 0
+#   seed123-baseline-d1.50-traceoff   44a448a16b782f6166374974cdcc13fc1ceeca7496243c3267fb20767b0324a3  exit 0
+#   seed123-reference-d0.75-traceoff  cebe44c44460c0e20d6ab1fde695dfd1e2bd6f96df72504f57f5f8eace09dbbf  exit 0
+#   seed123-reference-d1.50-traceoff  9621f5f8f8f127f39d2239aed5d3ed04c2ea768a15e41caea305506dbdb00548  exit 0
+#
+# Those are the same four values the packet recorded at 65ac88b and VREC-MOK-014 quotes. All 90
+# lines of run A are in replay-manifest.txt beside this file, in `name hash exit code` form, so
+# the comparison is reproducible from this checkout with no network.
+#
+# What this does not show
+# ---------------------------------------------------------------------------------------------
+# It does not show that the observer is unchanged, and the observer is exactly what the merge
+# changed. The observer has no replay contract: its output is a terminal rendering, VER-MOK-014
+# claims nothing about it, and master's own verification record for that work is what covers it.
+# It does not discharge VREC-MOK-002, which stays bound to the commit and content it was written
+# for. And it does not show that no dependency moved -- WO-MOK-014-check-run.txt beside this file
+# is that measurement, re-derived at this commit by the same script.

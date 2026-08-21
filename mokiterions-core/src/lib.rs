@@ -2,9 +2,15 @@
 //!
 //! This crate owns every simulation rule fixed by `SPEC-MOK-001`, the closed public
 //! interface fixed by `SPEC-MOK-002` rules 5 and 6, and the read-only observation surface
-//! that `SPEC-MOK-003` adds to that interface. It has no external dependencies, and
-//! `ARCH-MOK-001` as amended admits no exception to that, including a dependency shared
-//! with `mokiterions-tui`.
+//! that `SPEC-MOK-003` adds to that interface. It has no external dependencies: that is what
+//! `SPEC-MOK-002` rule 13's declared set records, and as of 2026-08-20 it is a measurement
+//! this crate is held to rather than a prohibition. `ARCH-MOK-001` as amended admitted no
+//! exception, including a dependency shared with `mokiterions-tui`; `ADR-MOK-006` replaced
+//! that with a comparison, so an external crate reaching this graph without an amendment to
+//! rule 13 refuses, and one prohibition is untouched — no user-interface crate may enter it,
+//! which is `REQ-MOK-026` and the split `ADR-MOK-003` decided. What the simulation rules are
+//! made of does not change either way: `ADR-MOK-006` decision 11 reserves simulation
+//! semantics to this crate, so no third-party crate may supply a rule the specifications fix.
 //!
 //! The public interface carries values only. No public item yields a mutable borrow of, or
 //! a reference into, the world grid, the agent collection, the resource collection, the

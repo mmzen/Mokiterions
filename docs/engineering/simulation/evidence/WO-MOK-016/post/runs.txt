@@ -1,0 +1,151 @@
+=== 1. every cell: outcome, deaths by cause, exit code ===
+cell                               exit         end surv dead combat attrit terr A terr B strikes threats surr
+seed0-social-d0.15-traceoff           0  tick_limit    1   11      0     11      1      0       4      56    4
+seed0-social-d0.15-traceon            0  tick_limit    1   11      0     11      1      0       4      56    4
+seed0-social-d0.75-traceoff           0  tick_limit    9    3      1      2      3      6       8      11    5
+seed0-social-d0.75-traceon            0  tick_limit    9    3      1      2      3      6       8      11    5
+seed0-social-d1.50-traceoff           0  tick_limit   11    1      1      0      5      6       5       5    2
+seed0-social-d1.50-traceon            0  tick_limit   11    1      1      0      5      6       5       5    2
+seed1-social-d0.15-traceoff           0  extinction    0   12      1     11      0      0       5      92    4
+seed1-social-d0.15-traceon            0  extinction    0   12      1     11      0      0       5      92    4
+seed1-social-d0.75-traceoff           0  tick_limit   10    2      2      0      4      6      14       7   10
+seed1-social-d0.75-traceon            0  tick_limit   10    2      2      0      4      6      14       7   10
+seed1-social-d1.50-traceoff           0  tick_limit   10    2      2      0      6      4      11       5    7
+seed1-social-d1.50-traceon            0  tick_limit   10    2      2      0      6      4      11       5    7
+seed123-social-d0.15-traceoff         0  extinction    0   12      1     11      0      0       4     148    3
+seed123-social-d0.15-traceon          0  extinction    0   12      1     11      0      0       4     148    3
+seed123-social-d0.75-traceoff         0  tick_limit    9    3      3      0      4      5      21      43    6
+seed123-social-d0.75-traceon          0  tick_limit    9    3      3      0      4      5      21      43    6
+seed123-social-d1.50-traceoff         0  tick_limit   11    1      1      0      7      4      13      56    7
+seed123-social-d1.50-traceon          0  tick_limit   11    1      1      0      7      4      13      56    7
+seed42-social-d0.15-traceoff          0  extinction    0   12      1     11      0      0      12      32   11
+seed42-social-d0.15-traceon           0  extinction    0   12      1     11      0      0      12      32   11
+seed42-social-d0.75-traceoff          0  tick_limit    9    3      2      1      6      3      17      18    8
+seed42-social-d0.75-traceon           0  tick_limit    9    3      2      1      6      3      17      18    8
+seed42-social-d1.50-traceoff          0  tick_limit   11    1      1      0      5      6       7      20    5
+seed42-social-d1.50-traceon           0  tick_limit   11    1      1      0      5      6       7      20    5
+seed777-social-d0.15-traceoff         0  extinction    0   12      2     10      0      0      15      51    8
+seed777-social-d0.15-traceon          0  extinction    0   12      2     10      0      0      15      51    8
+seed777-social-d0.75-traceoff         0  tick_limit   11    1      1      0      6      5       8      49    7
+seed777-social-d0.75-traceon          0  tick_limit   11    1      1      0      6      5       8      49    7
+seed777-social-d1.50-traceoff         0  tick_limit   10    2      2      0      7      3      12      27    8
+seed777-social-d1.50-traceon          0  tick_limit   10    2      2      0      7      3      12      27    8
+
+=== 2. traced cells: every verb proposed and applied ===
+cell                                     wait      sleep        eat       move     attack   threaten      fight    retreat  surrender   approach      avoid
+seed0-social-d0.15-traceon            0/0      118/118    111/111   3772/3772     4/4       56/56       0/0        0/0        4/4      162/162    181/181  
+seed0-social-d0.75-traceon            0/0      315/315    369/369   8656/8656     8/8       11/11       0/0        2/2        5/5      412/412   1069/1045 
+seed0-social-d1.50-traceon            0/0      316/316    439/439   8845/8845     5/5        5/5        0/0        2/2        2/2      404/404    991/978  
+seed1-social-d0.15-traceon            0/0       64/64      42/42    2099/2099     5/5       92/92       0/0        0/0        4/4       74/74     127/127  
+seed1-social-d0.75-traceon            0/0      283/283    371/371   8409/8409    14/14       7/7        0/0        2/2       10/10     305/305    618/618  
+seed1-social-d1.50-traceon            0/0      288/288    405/405   8264/8264    11/11       5/5        0/0        2/2        7/7      307/307    729/729  
+seed123-social-d0.15-traceon          0/0       75/75      55/55    2182/2182     4/4      148/148      0/0        0/0        3/3      158/158    256/256  
+seed123-social-d0.75-traceon          0/0      253/253    326/326   7463/7463    15/15      43/43       6/6        6/6        6/6      329/329    574/574  
+seed123-social-d1.50-traceon          0/0      309/309    443/443   8778/8778    10/10      56/56       3/3        2/2        7/7      408/408    992/988  
+seed42-social-d0.15-traceon           0/0       70/70      45/45    2123/2123    12/12      32/32       0/0        0/0       11/11     165/165    210/210  
+seed42-social-d0.75-traceon           0/0      266/266    336/336   7707/7707    14/14      18/18       3/3        4/4        8/8      328/328    595/595  
+seed42-social-d1.50-traceon           0/0      319/319    441/441   9016/9016     7/7       20/20       0/0        1/1        5/5      388/388    812/812  
+seed777-social-d0.15-traceon          0/0       68/68      44/44    2139/2139    14/14      51/51       1/1        4/4        8/8       81/81      88/88   
+seed777-social-d0.75-traceon          0/0      315/315    389/389   8841/8841     8/8       49/49       0/0        0/0        7/7      414/414    986/983  
+seed777-social-d1.50-traceon          0/0      290/290    414/414   8122/8122    12/12      27/27       0/0        2/2        8/8      357/357    788/788  
+  each cell reads proposed/applied
+
+=== 3. traced cells: rejections by verb and ground ===
+seed0-social-d0.75-traceon         avoid:out_of_bounds=24
+seed0-social-d1.50-traceon         avoid:out_of_bounds=13
+seed123-social-d1.50-traceon       avoid:out_of_bounds=4
+seed777-social-d0.75-traceon       avoid:out_of_bounds=3
+
+=== 4. traced cells: the six branches of rule 26 ===
+cell                                   b1     b2     b3     b4     b5     b6   total  fight   retr   surr dead tgt
+seed0-social-d0.15-traceon              4    229   2046     60    343   1726    4408      0      0      4        0
+seed0-social-d0.75-traceon              7    684   5459     19   1481   3197   10847      0      2      5        0
+seed0-social-d1.50-traceon              4    755   5377     10   1395   3468   11009      0      2      2        0
+seed1-social-d0.15-traceon              4    106    787     97    201   1312    2507      0      0      4        0
+seed1-social-d0.75-traceon             12    654   5333     21    923   3076   10019      0      2     10        0
+seed1-social-d1.50-traceon              9    693   5066     16   1036   3198   10018      0      2      7        0
+seed123-social-d0.15-traceon            3    130   1100    152    414   1082    2881      0      0      3        0
+seed123-social-d0.75-traceon           18    579   4406     58    903   3057    9021      6      6      6        0
+seed123-social-d1.50-traceon           12    752   5844     66   1400   2934   11008      3      2      7        0
+seed42-social-d0.15-traceon            11    115    880     44    375   1243    2668      0      0     11        0
+seed42-social-d0.75-traceon            15    602   4605     32    923   3102    9279      3      4      8        0
+seed42-social-d1.50-traceon             6    760   5795     27   1200   3221   11009      0      1      5        0
+seed777-social-d0.15-traceon           13    112    774     65    169   1365    2498      1      4      8        0
+seed777-social-d0.75-traceon            7    704   5780     57   1400   3061   11009      0      0      7        0
+seed777-social-d1.50-traceon           10    704   5189     39   1145   2933   10020      0      2      8        0
+
+=== 5. traced cells: encounters, and what resolved inside them ===
+cell                                encs  ticks   mean longest strikes str/enc threats  surr deaths silent orphan
+seed0-social-d0.15-traceon             3     38  12.67      29       4    1.33      56     4      0      0      0
+seed0-social-d0.75-traceon            10     96   9.60      45       8    0.80      11     5      1      3      0
+seed0-social-d1.50-traceon             6     56   9.33      24       5    0.83       5     2      1      1      0
+seed1-social-d0.15-traceon             5     75  15.00      55       5    1.00      92     4      1      0      0
+seed1-social-d0.75-traceon             6     28   4.67       6      14    2.33       7    10      2      0      0
+seed1-social-d1.50-traceon             5     29   5.80       8      11    2.20       5     7      2      0      0
+seed123-social-d0.15-traceon           3    120  40.00      90       4    1.33     148     3      1      0      0
+seed123-social-d0.75-traceon           8     79   9.88      18      21    2.62      43     6      3      1      0
+seed123-social-d1.50-traceon          13     91   7.00      27      13    1.00      56     7      1      4      0
+seed42-social-d0.15-traceon            5     53  10.60      18      12    2.40      32    11      1      0      0
+seed42-social-d0.75-traceon           10     64   6.40      12      17    1.70      18     8      2      1      0
+seed42-social-d1.50-traceon           10     60   6.00      13       7    0.70      20     5      1      5      0
+seed777-social-d0.15-traceon           4     47  11.75      27      15    3.75      51     8      2      0      0
+seed777-social-d0.75-traceon          16    117   7.31      19       8    0.50      49     7      1      4      0
+seed777-social-d1.50-traceon          11     75   6.82      20      12    1.09      27     8      2      2      0
+  silent: encounters in which nothing resolved. orphan: resolutions in no encounter
+  strikes per encounter, over all 115 encounters:
+     0 strike(s):   67 encounters   58.3%
+     1 strike(s):   12 encounters   10.4%
+     2 strike(s):   10 encounters    8.7%
+     3 strike(s):    6 encounters    5.2%
+     4 strike(s):    5 encounters    4.3%
+     5 strike(s):   10 encounters    8.7%
+     6 strike(s):    1 encounters    0.9%
+     7 strike(s):    2 encounters    1.7%
+     8 strike(s):    2 encounters    1.7%
+
+=== 6. rule 23 and rule 24 at the boundaries ===
+cell                               threats saturated  surr discarded all lost below 2 transferred
+seed0-social-d0.15-traceon              56        56     4         3        0       0          33
+seed0-social-d0.75-traceon              11        11     5         5        0       0          32
+seed0-social-d1.50-traceon               5         5     2         2        0       0           8
+seed1-social-d0.15-traceon              92        92     4         3        0       0          23
+seed1-social-d0.75-traceon               7         7    10         9        0       0          87
+seed1-social-d1.50-traceon               5         5     7         7        0       0          27
+seed123-social-d0.15-traceon           148       148     3         3        0       0           9
+seed123-social-d0.75-traceon            43        43     6         6        0       0          24
+seed123-social-d1.50-traceon            56        56     7         7        0       0          30
+seed42-social-d0.15-traceon             32        32    11        10        0       0          69
+seed42-social-d0.75-traceon             18        18     8         7        0       0          69
+seed42-social-d1.50-traceon             20        20     5         5        0       0          19
+seed777-social-d0.15-traceon            51        51     8         8        0       0          25
+seed777-social-d0.75-traceon            49        49     7         7        0       0          41
+seed777-social-d1.50-traceon            27        27     8         8        0       0          44
+  saturated: increase 0 at fear 100. all lost: transferred 0 with a discard.
+  below 2: a surrender at satiety 0 or 1, which rule 24 halves to nothing
+  every one of the 95 surrenders, as rule 24 divides it:
+               forfeit transferred discarded recipient satiety
+       least        11           1         0                26
+    greatest        47          44        42                99
+       total      2813         540      2273                  
+  surrenders whose recipient was already at satiety 100, so the whole forfeit was discarded: 0
+
+=== 7. CHECKS: the reconstruction against the engine. Every row must read 0 ===
+  the branch checks need trace lines and are silent on the fifteen untraced cells;
+  the four resolution checks read events and run on all thirty.
+check                                              total  cells with a nonzero count
+branch 3 direction disagrees                           0  none
+branch 6 with company perceived                        0  none
+branch 4 or 5 with a branch 3 candidate                0  none
+branch 4 without contact                               0  none
+branch 5 in contact                                    0  none
+branch 1 verb against the two thresholds               0  none
+branch 4 or 5 verb against the engagement threshold       0  none
+a wait was proposed                                    0  none
+move direction absent                                  0  none
+rule 22 damage disagrees                               0  none
+rule 22 transition disagrees                           0  none
+rule 23 increase disagrees                             0  none
+rule 24 forfeit arithmetic disagrees                   0  none
+
+118201 decisions classified across 15 traced cells, 0 check failures
+branch 3 vs branch 6, over those cells: 58441 seek steps, 37975 search steps

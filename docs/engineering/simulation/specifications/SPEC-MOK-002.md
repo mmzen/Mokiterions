@@ -8,7 +8,19 @@ created = "2026-08-17"
 updated = "2026-08-20"
 
 [relations]
-specifies = ["REQ-MOK-016", "REQ-MOK-017", "REQ-MOK-032", "REQ-MOK-033"]
+specifies = [
+  "REQ-MOK-016",
+  "REQ-MOK-017",
+  "REQ-MOK-032",
+  "REQ-MOK-033",
+  "REQ-MOK-050",
+  "REQ-MOK-052",
+  "REQ-MOK-053",
+  "REQ-MOK-054",
+  "REQ-MOK-055",
+  "REQ-MOK-056",
+  "REQ-MOK-057",
+]
 +++
 
 # Specification: Crate targets, public interface, and test placement
@@ -18,10 +30,13 @@ specifies = ["REQ-MOK-016", "REQ-MOK-017", "REQ-MOK-032", "REQ-MOK-033"]
 | Date | Change | Approval |
 |---|---|---|
 | 2026-08-17 | Original approved content for `REQ-MOK-016` and `REQ-MOK-017`. | Approved; implemented under `WO-MOK-003` and verified under `VREC-MOK-003`. |
-| 2026-08-18 | Four provisions amended so that the terminal observer of `SPEC-MOK-003` can be conformed to. **Rule 1**: "no second package, no workspace" narrowed to a workspace of exactly two packages, on the approved requirement `REQ-MOK-026` that the clause reserved the exception for. **Rule 3**: the clause freezing `src/cli.rs` and `src/simulation.rs` scoped to the `WO-MOK-003` restructuring it was written for, so that an approved requirement may add code to them. **Rule 5**: the closed enumeration grown by the read-only observation surface, under rule 5's own growth clause. **Rule 6**: the prohibition narrowed from five named value types to the capability it was written to deny. Nothing about mutation, dependency direction, determinism or observable behavior is relaxed, and the engine package's dependency table stays empty. | **OUTSTANDING.** Requires the technical owner. All four are approval preconditions of `WO-MOK-005`, alongside the 2026-08-18 amendment to `ARCH-MOK-001`. None could have been part of the 2026-08-17 approval of the observer chain: this specification was not on that branch when the approval was given, and it reached `master` afterwards. |
-| 2026-08-18 | Every root-relative path re-based on `mokiterions-core/`, the engine package's own directory, and rule 1's "unchanged in source location" clause corrected. Stated once in *Scope* under **Paths** and at rule 1, so that no rule's substance is restated and none is re-opened. The two target paths in rule 1's table, the file list in *Inputs*, the rule 3 and rule 4 file names, rule 5's `grep` check, rule 8's file table and rule 9's locations all move by prefix alone. No file is renamed, no rule changes what it requires, no target, target name, target kind or package name changes, and the engine package's dependency table stays empty. `REQ-MOK-030` is the approved requirement; `SPEC-MOK-004` rules 1 to 3 fix the layout and `ADR-MOK-004` decides it. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-003`, which binds this specification's 2026-08-17 content to `WO-MOK-003`'s commit, is not edited: the paths it names were correct at its commit and this row records why they differ afterwards. The 2026-08-18 row above is untouched and remains **OUTSTANDING**. |
-| 2026-08-19 | Rule 5's enumeration amended in two entries, under `REQ-MOK-032` and `REQ-MOK-033`. `simulation::Policy` gains a third variant, `Individual`; `Default` is unchanged and still resolves to `Reference`. `simulation::AgentSnapshot` carries four `u8` attributes rather than three, the fourth being `fear`. Its justification holds unchanged, because `REQ-MOK-032` requires `fear` in the event stream as well. Rule 6 is **not** amended and was re-checked instead: the added field carries a value, so no public item yields a mutable borrow of or a reference into authoritative state, and the trait-aware source and the `Observation` it consumes stay private, keeping the `ADR-MOK-001` trust boundary where it is. `waste_tolerance` deliberately does **not** join the snapshot: no approved requirement needs the observer to render it, and rule 5 holds the interface to what approved requirements need. It reaches the observer through the event log, which `REQ-MOK-022` already retains. Public interface growth is therefore exactly two items. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `WO-MOK-010`. The implementation agent wrote the text and did not decide the substance. **The two rows above this one, dated 2026-08-18, remain OUTSTANDING and are untouched**: they belong to `WO-MOK-005` and are awaiting the same owner's separate act. `VREC-MOK-003`, which binds this specification, is not edited. |
-| 2026-08-20 | Five provisions amended so that `SPEC-MOK-006`'s record stream can be conformed to, under `REQ-MOK-042` through `REQ-MOK-046`. **Rule 4**: `execute` gains exactly one parameter, `records: Option<&mut dyn Write>`, and nothing else; the exit codes are unchanged and none is added, a record-sink write, flush or close failure being an output failure and therefore `1`. **Rule 5**: the `execute` row reworded from "two writers" to "the caller's writers", the enumeration otherwise untouched — a parameter is not an item, so the interface grows by no item, and the rows for `cli::Command`, `simulation::Config` and `simulation::Simulation::run` are **not** amended. **Rule 5's mechanical checks**: restated as two greps for `execute`'s signature, and the mutating-method check recorded as still returning exactly `run` and `advance_tick`, with the crate-private carrier `run_recording` named so that its non-match is disclosed rather than relied on silently. **Rule 6**: **not** amended, and the omission recorded at the rule — `SplitMix64` stays private, the ten prohibited names stay ten, and the entropy value the projection reads is an owned `u64` behind `#[cfg(test)]`. **Scope and *Compatibility and migration***: `SPEC-MOK-006` named as the authority on the stream and this specification as the authority on the seam, with the four `execute` call sites listed and `mokiterions-tui` recorded as passing `None`. Nothing about mutation, dependency direction, determinism or observable text behavior is relaxed, no target or package changes, and the engine package's dependency table stays empty. | Approved 2026-08-20 by the repository owner acting as technical owner, by way of `ADR-MOK-005`, whose *Required amendments* section states this amendment in full and which the same owner accepted on the same date. The implementation agent wrote the text under `WO-MOK-018`; it did not decide the substance. **The first 2026-08-18 row remains OUTSTANDING and is untouched**: it belongs to `WO-MOK-005` and awaits the same owner's separate act, on which nothing here depends. `VREC-MOK-003` and `VREC-MOK-010`, which bind earlier content of this specification to their commits, are not edited; `VER-MOK-012` covers this amendment. |
+| 2026-08-18 | Four provisions amended so that the terminal observer of `SPEC-MOK-003` can be conformed to. **Rule 1**: "no second package, no workspace" narrowed to a workspace of exactly two packages, on the approved requirement `REQ-MOK-026` that the clause reserved the exception for. **Rule 3**: the clause freezing `src/cli.rs` and `src/simulation.rs` scoped to the `WO-MOK-003` restructuring it was written for, so that an approved requirement may add code to them. **Rule 5**: the closed enumeration grown by the read-only observation surface, under rule 5's own growth clause. **Rule 6**: the prohibition narrowed from five named value types to the capability it was written to deny. Nothing about mutation, dependency direction, determinism or observable behavior is relaxed, and the engine package's dependency table stays empty. | **Ratified 2026-08-20 by the repository owner acting as technical owner**, all four provisions as written and without modification, in the assessment review recorded under `WO-MOK-012`. It was **OUTSTANDING** from 2026-08-18 until that act. All four were approval preconditions of `WO-MOK-005`, alongside the 2026-08-18 amendment to `ARCH-MOK-001`, and none could have been part of the 2026-08-17 approval of the observer chain: this specification was not on that branch when the approval was given, and it reached `master` afterwards. The owner was shown each provision separately, together with the clause it narrows and the approved requirement it rests on, and ratified each on its own terms rather than as a block. The implementation agent wrote this text and decided none of the substance. `VREC-MOK-003`, which binds this specification's 2026-08-17 content to `WO-MOK-003`'s commit, is not edited: what it verified was correct at its commit. |
+| 2026-08-18 | Every root-relative path re-based on `mokiterions-core/`, the engine package's own directory, and rule 1's "unchanged in source location" clause corrected. Stated once in *Scope* under **Paths** and at rule 1, so that no rule's substance is restated and none is re-opened. The two target paths in rule 1's table, the file list in *Inputs*, the rule 3 and rule 4 file names, rule 5's `grep` check, rule 8's file table and rule 9's locations all move by prefix alone. No file is renamed, no rule changes what it requires, no target, target name, target kind or package name changes, and the engine package's dependency table stays empty. `REQ-MOK-030` is the approved requirement; `SPEC-MOK-004` rules 1 to 3 fix the layout and `ADR-MOK-004` decides it. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-003`, which binds this specification's 2026-08-17 content to `WO-MOK-003`'s commit, is not edited: the paths it names were correct at its commit and this row records why they differ afterwards. The 2026-08-18 row above is untouched. It was **OUTSTANDING** when this row was written, and the technical owner ratified it on 2026-08-20 under `WO-MOK-012`. |
+| 2026-08-19 | Rule 5's enumeration amended in two entries, under `REQ-MOK-032` and `REQ-MOK-033`. `simulation::Policy` gains a third variant, `Individual`; `Default` is unchanged and still resolves to `Reference`. `simulation::AgentSnapshot` carries four `u8` attributes rather than three, the fourth being `fear`. Its justification holds unchanged, because `REQ-MOK-032` requires `fear` in the event stream as well. Rule 6 is **not** amended and was re-checked instead: the added field carries a value, so no public item yields a mutable borrow of or a reference into authoritative state, and the trait-aware source and the `Observation` it consumes stay private, keeping the `ADR-MOK-001` trust boundary where it is. `waste_tolerance` deliberately does **not** join the snapshot: no approved requirement needs the observer to render it, and rule 5 holds the interface to what approved requirements need. It reaches the observer through the event log, which `REQ-MOK-022` already retains. Public interface growth is therefore exactly two items. | Approved 2026-08-19 by the repository owner acting as technical owner, together with `WO-MOK-010`. The implementation agent wrote the text and did not decide the substance. **The two rows above this one, dated 2026-08-18, are untouched.** They belonged to `WO-MOK-005` and were awaiting the same owner's separate act, which came on 2026-08-20 under `WO-MOK-012`. This sentence as originally written said both rows remained **OUTSTANDING**, which overstated it: only the first of the two ever was, the second having been approved the same day by way of `ADR-MOK-004`. The miscount is recorded rather than silently dropped, and is reported in `WO-MOK-012`. `VREC-MOK-003`, which binds this specification, is not edited. |
+| 2026-08-20 | **Rule 1's empty-table rule withdrawn** and replaced by the declared-set form, decided by `ADR-MOK-006`. *"The dependency and dev-dependency tables stay empty, with no exception, including a dependency shared with another package in the same workspace"* becomes: both tables contain exactly what rule 13 declares, at the declared versions and feature sets; dev-dependencies are declared the same way and are **not** exempt; a crate shared with the observer is admissible only as a declared entry of both, with `SPEC-MOK-004` rule 1 governing where its version is keyed. *"No third target and no build script"* is **unchanged and stated as unchanged** — it binds this repository's own package, while `ADR-MOK-006` decision 13 concerns a *dependency's* build script, which this rule never spoke to. Rule 1's `cargo tree` sentence becomes the declared-set comparison with offline resolution beside it, the superseded wording recorded in place. **New rule 13, *Declared dependency set***, holds the engine package's table — crate, version, features, build script, admitting amendment — and **the table is empty as this amendment lands**, which is now a fact about the declaration rather than a rule; rule 13 also states the five checks an added row must pass and that adding one is an amendment approved by the technical owner, not an implementation act. Rule 13 is a **new** number: rules 1 to 12 keep their numbers, so every citation of them elsewhere is unaffected, and no statement of a total rule count exists to update. Rule 13 also fixes how a *Features* cell is read mechanically, since `SPEC-MOK-005` rule 8.4b is a program and a program left to guess at the reading would be a second declaration; the convention binds `SPEC-MOK-003`'s cell, which is the only one with content. **`REQ-MOK-050` joins `specifies`**, which `ADR-MOK-006` did not enumerate and which is disclosed here for that reason: rule 13 is the engine package's half of the declaration that requirement is about, and `ARCH-MOK-001` names the requirement in `addresses` while conforming to this specification, so without the relation the requirement would have a rule written for it and no declared coverage by it. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment in full. Written under `WO-MOK-014`; the implementation agent wrote the text and did not decide it, and chose no crate, version or feature set — there is none to choose while the table is empty. **Neither 2026-08-18 row above was touched.** This sentence first said both "stay OUTSTANDING", which repeated the miscount `WO-MOK-012` had already found and corrected in the 2026-08-19 row: only the first of the two ever was outstanding, and the second, the path re-basing, was approved the same day by way of `ADR-MOK-004`. The first was `WO-MOK-005`'s precondition, this approval neither cleared nor inherited it, and the repository owner acting as technical owner ratified it as written on 2026-08-20 under `WO-MOK-012`, which reached this branch by merge after this row was written. The miscount is recorded rather than deleted, following that work order's precedent. `VREC-MOK-003`, which binds this specification's 2026-08-17 content, is not edited. |
+| 2026-08-20 | Rule 5's enumeration amended and rule 6 re-checked, under `CAP-MOK-010`, and the frontmatter's `specifies` gains `REQ-MOK-052` through `REQ-MOK-057`. `simulation::Policy` gains a fourth variant, `Social`; `simulation::Action` gains seven target-carrying variants; `simulation::EventType` gains `AttackResolved`, `ThreatResolved` and `SurrenderResolved` with their three `EventDetail` payloads, and `EventType::ALL`'s length moves from `12` to `15`, which is public-surface growth because that array is a `pub const`. A growth table states each figure and a paragraph states what does **not** grow: no verb reaches rule 3's valid-proposal list, so the observation's existing fields keep their types. **The observation's two new fields are not interface growth**, because `Observation` is declared without `pub` at `mokiterions-core/src/simulation.rs:500` and rule 6 lists it among the ten names that stay private; the distinction is load-bearing, and it is the one place `WO-MOK-016` stated the opposite, which is corrected there. Rule 6 is re-checked and recorded as **not amended**, cross-agent mutation being introduced for the first time: a target is an identifier and not a reference, the mutation is entirely inside the engine, the three event types carry copies of printed values, all ten prohibited names stay private, and no `pub(crate)` is widened. | Approved 2026-08-20 by the repository owner acting as technical owner, in the **single act this amendment's own ordering requires**: together with `REQ-MOK-051` through `REQ-MOK-060`, `VER-MOK-016` and `WO-MOK-016`. The act is single because this amendment's `specifies` relation is what makes those ten requirements approvable at all — without it `validate` raises `E007` on every one of them and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. Implementation begins after this act and not before. It is stated in full in `WO-MOK-016`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Eight consequences the text derived rather than decided are named in that work order's *Required amendments* section; the owner took the four of them that were genuinely open before approving, and those four are recorded in its decision table with the alternatives declined. |
+| 2026-08-20 | **Rule 5's growth table gains a fourth row, which the amendment above omitted**: `simulation::EventDetail`'s pre-existing `ActionTrace` variant gains one field, `suffered: Vec<(String, u8)>`, appended after `fear`. Growth under `CAP-MOK-010` is therefore `1 + 7 + 3 + 3 + 1` and the table says "four items change shape" where it said three. The omission was a defect in the enumeration and not in the implementation: the row above enumerates added *variants*, and a field appended to a public variant that already existed is the one form of growth such an enumeration does not catch. `SPEC-MOK-001` rule 7 obliges the trace line to report the suffered-attack record and its rule 6 fixes the line's shape, but neither can admit a field to this interface, which is closed here. The field is a `Vec` of pairs of a `String` and a `u8` rather than of the engine's `SufferedAttack`, so **no type is added and rule 6's ten private names are untouched** — both halves of a pair are already public values. Rule 6 needs no further re-check: a pair of copies grants no path into engine-owned state, which is what the 2026-08-20 re-check above establishes for the three event payloads on identical grounds. | Approved 2026-08-20 by the repository owner acting as technical owner, in a **separate act** from the amendment above, the omission having been found after that act was taken. The alternatives were put with it and declined: bundling the row with `REQ-MOK-060`'s deferred numeric amendment, which would leave this record knowingly incomplete in the interval, and treating the field as covered by `SPEC-MOK-001`'s trace provision, which would let a behavior authority admit an item to an interface this specification closes. The implementation agent found the omission while comparing the engine's public surface against this table for `VER-MOK-016`, and wrote the row; it did not decide the substance. **The implementation is unchanged by this amendment** — the field was already present and already in pair form, at `mokiterions-core/src/simulation.rs:1425` where its own comment gives that reason — so this row records the interface authority catching up with an approved obligation, not a code change. It is stated in full in `WO-MOK-016`'s *Required amendments* section as provision 3. |
+| 2026-08-20 | Five provisions amended so that `SPEC-MOK-006`'s record stream can be conformed to, under `REQ-MOK-042` through `REQ-MOK-046`. **Rule 4**: `execute` gains exactly one parameter, `records: Option<&mut dyn Write>`, and nothing else; the exit codes are unchanged and none is added, a record-sink write, flush or close failure being an output failure and therefore `1`. **Rule 5**: the `execute` row reworded from "two writers" to "the caller's writers", the enumeration otherwise untouched — a parameter is not an item, so the interface grows by no item, and the rows for `cli::Command`, `simulation::Config` and `simulation::Simulation::run` are **not** amended. **Rule 5's mechanical checks**: restated as two greps for `execute`'s signature, and the mutating-method check recorded as still returning exactly `run` and `advance_tick`, with the crate-private carrier `run_recording` named so that its non-match is disclosed rather than relied on silently. **Rule 6**: **not** amended, and the omission recorded at the rule — `SplitMix64` stays private, the ten prohibited names stay ten, and the entropy value the projection reads is an owned `u64` behind `#[cfg(test)]`. **Scope and *Compatibility and migration***: `SPEC-MOK-006` named as the authority on the stream and this specification as the authority on the seam, with the four `execute` call sites listed and `mokiterions-tui` recorded as passing `None`. Nothing about mutation, dependency direction, determinism or observable text behavior is relaxed, no target or package changes, and this amendment adds no row to the engine package's declared dependency set, which is still empty. This sentence originally read "the engine package's dependency table stays empty", invoking a rule of rule 1 that `ADR-MOK-006` withdrew on the same date for the declared-set form; the superseded wording is recorded rather than deleted, and the `ADR-MOK-006` row above is the authority. | Approved 2026-08-20 by the repository owner acting as technical owner, by way of `ADR-MOK-005`, whose *Required amendments* section states this amendment in full and which the same owner accepted on the same date. The implementation agent wrote the text under `WO-MOK-018`; it did not decide the substance. **The first 2026-08-18 row above was not touched.** It was **OUTSTANDING** when this row was written, and the repository owner acting as technical owner ratified it as written on 2026-08-20 under `WO-MOK-012`, in the assessment review that reached this branch by merge after this row was written. It was `WO-MOK-005`'s precondition; nothing here depended on it, and this approval neither cleared nor inherited it. `VREC-MOK-003` and `VREC-MOK-010`, which bind earlier content of this specification to their commits, are not edited; `VER-MOK-012` covers this amendment. This row reached the table by merge, after the three rows above it, which is why it is last on a date it shares with them. |
 
 ## Scope
 
@@ -100,8 +115,23 @@ The package name stays `Mokiterions`. It declares exactly two targets:
 | Library | `[lib]` | `mokiterions` | `src/lib.rs` |
 | Binary | `[[bin]]` | `Mokiterions` | `src/main.rs` |
 
-No third target and no build script. The dependency and dev-dependency tables stay empty, with no exception,
-including a dependency shared with another package in the same workspace.
+No third target and no build script.
+
+The dependency and dev-dependency tables contain exactly the entries rule 13, *Declared dependency set*, declares for
+this package, at the versions and feature sets declared there, and nothing else. Dev-dependencies are
+declared in the same way and are **not** exempt: a test-only crate that draws entropy can make a test flake in a
+repository whose figures are replay hashes. A dependency shared with another package in the same workspace is
+admissible only as a declared entry of both packages' sets; `SPEC-MOK-004` rule 1 governs where its version may be
+keyed.
+
+**Amended 2026-08-20.** The two sentences above replace *"The dependency and dev-dependency tables stay empty, with no
+exception, including a dependency shared with another package in the same workspace."* `ADR-MOK-006` withdrew the
+empty-table rule and admits third-party crates in both packages against a declared set. **The declared set for this
+package is empty as this amendment lands**, so nothing about the manifest changes on the day of the amendment — what
+changes is that an empty table is a fact about the current declaration rather than a rule. *"No third target and no
+build script"* is **unchanged**: a build script is a code-execution surface in **this repository's own package**, and
+this decision does not open it. `ADR-MOK-006` decision 13 concerns a *dependency's* build script, which this clause
+never spoke to, and requires each declared entry to disclose whether it carries one.
 
 **Amended 2026-08-18.** This rule read "No third target, no second package, no workspace, no build script." The
 repository is a Cargo workspace of exactly two packages: this one, unchanged in package name and in both target
@@ -109,8 +139,12 @@ names, and the terminal observer `mokiterions-tui` as its only other member. `RE
 requirement that this rule and `ARCH-MOK-001`'s prohibited-pattern list both reserved the exception for;
 `ADR-MOK-003` decides the split and `SPEC-MOK-003` governs the observer package. No third package, no service, no
 network boundary and no separate release artifact is admitted. Every other clause of this rule is unchanged, and the
-empty dependency table is the check that the split cost this package nothing: `cargo tree -p Mokiterions` resolves to
-one crate.
+dependency table is the check that the split cost this package nothing: `cargo tree -p Mokiterions -e normal --locked
+--offline` resolves to exactly the declared set plus this package itself — which is one crate while that set is empty —
+and it resolves from the committed lockfile with no registry access. *(The sentence read "the empty dependency table …
+resolves to one crate" until the 2026-08-20 amendment, which replaced the count with the comparison and added the
+offline resolution; the figure it asserted is unchanged today, and it is now derived from the declaration rather than
+fixed by a rule.)*
 
 That amendment also described this package as "at the root, unchanged in package name, in both target names and in
 source location". The location half is superseded by the second amendment of the same date: this package's manifest,
@@ -201,7 +235,7 @@ The library target's public interface is exactly the union of the three lists be
 | `cli::parse` | function returning `Result<Command, String>` |
 | `simulation::Config` | struct with public fields `seed`, `tick_limit`, `policy`, `density`, `trace_actions` |
 | `simulation::Density` | value type with associated constant `DEFAULT` and function `parse` |
-| `simulation::Policy` | enum with variants `Baseline`, `Reference` and `Individual`, with `parse` and `Default` |
+| `simulation::Policy` | enum with variants `Baseline`, `Reference`, `Individual` and `Social`, with `parse` and `Default` |
 | `simulation::RunSummary` | opaque value type; its fields stay private |
 | `simulation::Simulation::new` | `Config` in, `Result<Simulation, String>` out |
 | `simulation::Simulation::run` | `&mut self` and a writer in, `io::Result<RunSummary>` out |
@@ -241,7 +275,7 @@ every item below; this list is the enumeration that closes the interface, and th
 | `simulation::TickOutcome` | struct of `Vec<Event>`, `bool` and `Option<TerminationReason>` | What one tick emitted, owned |
 | `simulation::Event` | struct with public `tick`, `subject`, `detail`, and `event_type` | One already-emitted line as a value; not the event log, and no path to it |
 | `simulation::EventDetail` | enum with `event_type` | The per-event payload the text stream already formats |
-| `simulation::EventType` | enum with `ALL: [Self; 12]` and `as_str` | The closed set of emitted kinds, so a host can filter by kind without parsing text |
+| `simulation::EventType` | enum with `ALL: [Self; 15]` and `as_str` | The closed set of emitted kinds, so a host can filter by kind without parsing text |
 | `simulation::DecisionOutcome` | enum carrying a rejection ground | Already printed on a trace line |
 | `simulation::RegenerationSkipReason` | enum | Already printed in a regeneration event |
 | `simulation::Coordinate` | struct with public `x` and `y`, both `u8` | A position already printed in the event stream; two bytes by value |
@@ -253,6 +287,51 @@ every item below; this list is the enumeration that closes the interface, and th
 Every item is a value, a pure function of a value, or an accessor returning a copy, exactly as `ADR-MOK-002` requires
 of an admission. Five of the type names — `Coordinate`, `Territory`, `Direction`, `FoodClass` and `Action` — are named
 by rule 6 as it was written; rule 6's 2026-08-18 amendment is what admits them, and it admits them as values only.
+
+**Amended 2026-08-20 under `CAP-MOK-010`, and the growth is enumerated item by item so that it can be checked rather
+than described.** Four items on the lists above change shape and no item is added or removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::Policy` | one variant, `Social`. `Default` is unchanged and still resolves to `Reference` | 1 |
+| `simulation::Action` | seven variants — `Attack`, `Threaten`, `Fight`, `Retreat`, `Surrender`, `Approach`, `Avoid` — each carrying one target field holding an agent identifier | 7 |
+| `simulation::EventType` | three variants — `AttackResolved`, `ThreatResolved`, `SurrenderResolved` — so `ALL` goes from twelve entries to fifteen, together with the three `EventDetail` payloads that carry their fixed field lists | 3 + 3 |
+| `simulation::EventDetail`, the **existing** `ActionTrace` variant | one field, `suffered: Vec<(String, u8)>`, appended after `fear` | 1 |
+
+**The fourth row was added 2026-08-20, after the first three had been approved, and its absence was a defect in this
+enumeration rather than in the implementation.** The row is here because this list is closed and checkable: three of the
+four items are new variants, and the fourth is a **field appended to a public variant that already existed**, which is
+the one form of growth an enumeration of added variants does not catch. `SPEC-MOK-001` rule 7 obliges the trace line to
+report the suffered-attack record, and rule 6 of that specification fixes the line's shape; a public payload cannot
+carry a field the interface authority has not enumerated, whatever obliges the line to print it.
+
+Two properties of the field are part of the row rather than incidental to it. It is a `Vec` of **pairs of a `String` and
+a `u8`** and not of the engine's own `SufferedAttack`, so no type is added to the interface and rule 6's ten private
+names are untouched — both halves of a pair are already public values, an identifier being what `AgentSnapshot` carries
+and a damage being what `AttackResolved` carries. And it is a growth of one field on one variant, so the shape of every
+other `EventDetail` variant is unchanged; a host matching on `ActionTrace` with named fields and a `..` rest pattern is
+unaffected, while one matching it exhaustively by field must add the name.
+
+**What this correction does not do is relax the accounting it belongs to.** Public interface growth under
+`CAP-MOK-010` is `1 + 7 + 3 + 3 + 1`, and `EventType::ALL`'s length moving from `12` to `15` remains the only change to
+a `pub const`. `VER-MOK-016`'s interface-growth check compares the engine's public surface item for item against this
+table, so the check is re-run against four rows rather than three.
+
+**What does not grow is part of the enumeration.** `AgentSnapshot` still carries a `String`, a `Coordinate`, a
+`Territory`, four `u8` attributes and an `Option<Action>`: no fifth attribute exists, the suffered-attack record is not
+an attribute, and no approved requirement needs the observer to render it. `DecisionSnapshot` is unchanged in shape and
+carries the seven new verbs through the `Action` it already holds. `WorldSnapshot`, `TerritorySnapshot`,
+`ResourceSnapshot`, `TickOutcome`, `Event`, `DecisionOutcome`, `RegenerationSkipReason`, `Coordinate`, `Territory`,
+`Direction` and `FoodClass` are untouched, as are all nine items of the first list beyond `Policy` and all five
+authorized additions. No accessor is added, no method is added, and the two `&mut self` methods stay exactly two, so
+rule 5's `grep` check is unchanged.
+
+**The observation's two new fields are not interface growth, and the distinction is load-bearing.** The observer's own
+`fear` and its suffered-attack record are fields on `Observation`, which rule 6 keeps private and names among the ten
+types that stay private. They are counted in this amendment's accounting because `REQ-MOK-054` obliges that they be, not
+because anything about them becomes public: a host cannot construct an `Observation`, cannot receive one, and cannot
+read either field. The same is true of the fourth decision source itself, which is an implementation of the private
+`DecisionSource` trait.
 
 **Mutating methods on the interface: exactly two, and both are simulation steps.** `advance_tick`, added by this list,
 and `Simulation::run`, already in the first list, are the only `pub fn` items in the library target taking `&mut self`.
@@ -322,6 +401,28 @@ This rule remains the security-relevant rule of this specification, and `REQ-MOK
 exactly. Narrowing it makes it checkable by a property of the public surface rather than by a list that must be
 maintained as types are renamed.
 
+**Re-checked 2026-08-20 under `CAP-MOK-010` and not amended, because that initiative introduces the one thing this rule
+had never had to consider: an action by one Mokiterion that mutates another.** The re-check is recorded rather than
+assumed, because "no public item hands out a path to engine-owned state" is a claim about a surface whose meaning
+changes when the engine gains cross-agent mutation.
+
+- **A target is an identifier, not a reference.** The seven added `Action` variants each carry an agent identifier by
+  value. `Action` is public as a value under this rule's 2026-08-18 narrowing, and a public value carrying the string
+  `M03` grants no more reach than the `AgentSnapshot` that already carries it. There is no `&mut Mokiterion`, no index
+  into the agent collection, and no callback through which one could be obtained.
+- **Cross-agent mutation happens entirely inside the engine.** Rules 22 to 24 of `SPEC-MOK-001` resolve against
+  authoritative state the engine owns, reached from the tick loop and not from anything a caller holds. A source
+  proposes an identifier; the engine looks it up. That the source cannot reach its target is precisely why the
+  `Observation` and `DecisionSource` prohibitions below stay where they are.
+- **The three added `EventType` variants and their details are copies of what the text stream prints**, on the same
+  ground the twelve existing ones are admissible, and they carry a second Mokiterion's transitions as numbers rather
+  than as any path to it.
+- **The ten prohibited type names are unchanged and all ten stay private**, including `Observation` with its two new
+  fields and `DecisionSource` with its fourth implementation. The `ADR-MOK-001` trust boundary is where it was: the
+  observation surface is for a host that watches, not for one that decides — and now not for one that fights either.
+- **No `pub(crate)` item is widened** and no new mutating method exists, so the two-method `grep` check in rule 5 is
+  still the whole of the mutation surface.
+
 **Not amended on 2026-08-20, and recorded here so that the omission is deliberate rather than overlooked.**
 `ADR-MOK-005` requires no change to this rule, and `WO-MOK-018` makes none. The record projection reads
 `SplitMix64`'s state through a `#[cfg(test)]` accessor returning an owned `u64` — the value, never the type, never a
@@ -388,6 +489,65 @@ changes. Every case, invariant, and check in `VER-MOK-001` and `VER-MOK-002` rem
 A relocated test keeps its assertions verbatim. Only the path by which it reaches the code changes — a `use` of the
 library target in place of `use super::*`, and public accessors in place of private field reads. A relocated test
 whose assertions cannot survive the move is a rule 7 misclassification and stays in the internal tier.
+
+### 13. Declared dependency set
+
+**Added 2026-08-20 under `ADR-MOK-006`.** This is the engine package's declared set, referenced by rule 1. Every
+external crate in this package's resolved dependency graph — including one reached transitively and one reached only by
+a dev-dependency — is an entry in this table, and every entry is in the graph. A resolved set that differs from this
+table in either direction is a violation of `REQ-MOK-050`, and `SPEC-MOK-005` rule 8.4 is the check.
+
+| Crate | Version | Features | Build script | Admitted by |
+|---|---|---|---|---|
+
+**The table is empty.** That is the whole of it: as this rule is written the engine package declares no external
+dependency, and `cargo tree -p Mokiterions -e normal --locked --offline` resolves to one crate, this package itself,
+measured on 2026-08-20 in this checkout under `cargo 1.97.1 (c980f4866 2026-06-30)`. An empty
+table is now a **fact about the current declaration** rather than a rule, which is exactly what `ADR-MOK-006` changed —
+before it, the emptiness was the provision; after it, the emptiness is the state and the provision is the comparison.
+
+Adding a row is a decision, not an implementation act:
+
+1. **The technical owner applies the criteria of `ADR-MOK-006` decision 1** — stable, well-maintained functionality
+   that accelerates delivery without excessive dependency debt, and proven solutions for standard, non-core features —
+   to the candidate crate. There is no numeric threshold for *excessive*, by `ADR-MOK-006` decision 10, and there is
+   no crate-count ceiling.
+2. **The row is added by amendment to this specification**, approved by the technical owner, whose *Approval* cell
+   records that the criteria were applied to that crate. An implementation agent may propose a row and may not decide
+   one, and may choose neither the crate, nor the version, nor the feature set.
+3. **The envelope of `ADR-MOK-006` decision 4 is checked before the criteria**, not after: no crate providing network
+   access, credential handling, an asynchronous runtime, a database, a plugin system or dependency injection is
+   admissible here however stable it is, and no user-interface crate is admissible in this package at all.
+4. **`ADR-MOK-006` decision 11 is checked**: no entry may implement simulation semantics — the rules `SPEC-MOK-001`
+   fixes, the world model, agent decision-making — own or advance entropy, or perform action validation. This is a
+   review, retained as a manual assessment under `VER-MOK-014`.
+5. **Determinism is checked**, per `ADR-MOK-006` decision 6: no entry may draw entropy, read wall-clock time, read the
+   environment, or introduce iteration-order nondeterminism into any value the `REQ-MOK-010` stream, the authoritative
+   event sequence or the final state observes. Where such a capability sits behind a feature, the feature is off and
+   its absence is part of the *Features* column.
+
+Column meanings, so a row is unambiguous:
+
+- **Version** is the exact resolved version, not a range. A version change is an amendment.
+- **Features** is the exact enabled feature set, written as it appears in the manifest, including
+  `default-features = false` where that applies. A feature set change is an amendment, and a feature enabled by
+  unification without one is a mismatch.
+- **Build script** is `yes` or `no`, per `ADR-MOK-006` decision 13: whether the crate itself carries a `build.rs`, so
+  the build-time code-execution surface is enumerated rather than discovered. A crate that acquires one is a mismatch,
+  not an unremarked change. This column describes a *dependency's* build script and does not relax rule 1's prohibition
+  on a build script in this package, which is unchanged.
+- **Admitted by** names the amendment row that added the entry, so every crate is traceable to an approval that says
+  the criteria were applied to it.
+
+**Reading a *Features* cell mechanically.** `SPEC-MOK-005` rule 8.4b is a program, so the cell has a fixed reading and
+not only a prose meaning. Within the cell, `default-features = false` is the default-features switch and every other
+backticked token is a feature name. A sentence containing the word *off* names features that must be **absent** from the
+resolved set and names nothing else. A sentence containing the word *implied* names features that the resolved set may
+contain because a declared feature activates them, which the manifest therefore does not list. Every remaining token is
+a feature the manifest declares and the resolved set must contain. The check is then exact: the resolved feature set
+equals the declared features together with the implied ones, and intersects the prohibited ones nowhere. This
+convention binds `SPEC-MOK-003`'s declared set too, which is the only cell that has content today. It is written here
+rather than left to the checking program because a program that guessed at the reading would be a second declaration.
 
 ## Error and recovery behavior
 

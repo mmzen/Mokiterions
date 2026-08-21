@@ -1,0 +1,161 @@
+SPEC-MOK-004 rule 6 — the observer's public interface, re-counted
+
+module        items  fields  pub lines
+authority         5       0          5
+export            3       0          3
+layout           10       7         17
+options           8       4         12
+render            2       0          2
+spatial          19       6         25
+state            47       7         54
+total            94      24        118
+
+recorded: 94 items, 24 public fields, 118 pub lines
+measured: 94 items, 24 public fields, 118 pub lines
+figure movement: none
+
+Every public declaration, module by module, so the figure is inspectable and not only stated:
+
+--- mokiterions-tui/src/authority.rs
+  item     10  pub const DECISION_AUTHORITY: &str = "REQ-MOK-004";
+  item     13  pub const PERCEPTION_AUTHORITY: &str = "REQ-MOK-013";
+  item     19  pub fn for_type(event_type: EventType, source: Option<Policy>) -> Option<&'static str> {
+  item     42  pub fn for_event(event: &Event) -> Option<&'static str> {
+  item     51  pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
+
+--- mokiterions-tui/src/export.rs
+  item     14  pub fn default_path(seed: u64, tick: u64) -> String {
+  item     23  pub fn write_records<W: Write>(writer: &mut W, events: &EventBuffer) -> io::Result<()> {
+  item     39  pub fn write_file(path: &str, events: &EventBuffer) -> Result<(), String> {
+
+--- mokiterions-tui/src/layout.rs
+  item     18  pub const MIN_WIDTH: u16 = 34;
+  item     19  pub const MIN_HEIGHT: u16 = 22;
+  item     45  pub const ROSTER_TWO_LINE_WIDTH: u16 = 47;
+  item     50  pub enum Pane {
+  item     57  pub fn label(self) -> &'static str {
+  item     90  pub struct Panes {
+  item    103  pub fn overlay_only(&self) -> Vec<Pane> {
+  item    120  pub fn below_floor(width: u16, height: u16) -> bool {
+  item    137  pub fn resolve(area: Rect) -> Panes {
+  item    215  pub fn canvas_cells(pane: Rect) -> (u16, u16) {
+  field    91  pub header: Rect,
+  field    92  pub roster: Option<Rect>,
+  field    93  pub view: Rect,
+  field    94  pub inspector: Option<Rect>,
+  field    95  pub log: Option<Rect>,
+  field    96  pub footer: Rect,
+  field    98  pub overlay: Rect,
+
+--- mokiterions-tui/src/options.rs
+  item     13  pub const USAGE: &str = "Usage: mokiterions-tui [--seed <u64>] [--ticks <u64>]\n                       [--policy <baseline|reference|individual>]\n                       [--density <percent>]\n                       [--speed <1|2|4|8|16|32|64>] [--start-paused]\n                       [--export <path>]\n       mokiterions-tui --help\n\nThe observer presents a running simulation in a terminal. It never mutates world\nstate: the operator's only influence over the simulation is when a tick is advanced.\n\n--seed, --ticks, --policy and --density carry exactly the meaning, the defaults and\nthe validation the Mokiterions binary gives them.\n\n--speed is the number of ticks advanced per second while progression runs, and it\ndefaults to 8. --start-paused begins held before tick 1. --export supplies the path\nthe export control writes to; it is validated as a string only and is never opened\nuntil the operator asks for an export.\n\nAction tracing is always on in the observer, because the event log presents traced\nactions and the authority overlay maps them. Tracing does not change a run.\n\nPress ? inside the observer for the key bindings.\n";
+  item     16  pub const SPEED_STEPS: [u32; 7] = [1, 2, 4, 8, 16, 32, 64];
+  item     19  pub const DEFAULT_SPEED: u32 = 8;
+  item     23  pub struct Options {
+  item     32  pub enum Startup {
+  item     42  pub fn parse<I, S>(args: I) -> Result<Startup, String>
+  item    131  pub fn faster(speed: u32) -> u32 {
+  item    140  pub fn slower(speed: u32) -> u32 {
+  field    25  pub config: Config,
+  field    26  pub speed: u32,
+  field    27  pub start_paused: bool,
+  field    28  pub export_path: Option<String>,
+
+--- mokiterions-tui/src/render.rs
+  item     34  pub const COMMIT: Option<&str> = option_env!("MOKITERIONS_COMMIT");
+  item     84  pub fn draw(frame: &mut Frame, observer: &mut Observer) {
+
+--- mokiterions-tui/src/spatial.rs
+  item     13  pub const WORLD_SIZE: u16 = 128;
+  item     17  pub const TERRITORY_A_LAST_ROW: u16 = 63;
+  item     20  pub const DOTS_PER_CELL_X: u16 = 2;
+  item     24  pub enum Zoom {
+  item     30  pub fn label(self) -> &'static str {
+  item     37  pub fn toggled(self) -> Self {
+  item     48  pub struct Viewport {
+  item     60  pub fn resolve(zoom: Zoom, canvas: (u16, u16), camera: (u16, u16)) -> Self {
+  item     81  pub fn is_whole_world(self) -> bool {
+  item     85  pub fn last_x(self) -> u16 {
+  item     89  pub fn last_y(self) -> u16 {
+  item     93  pub fn contains(self, x: u16, y: u16) -> bool {
+  item     98  pub fn camera_limit(self) -> (u16, u16) {
+  item    106  pub fn cell_of(self, zoom: Zoom, x: u16, y: u16) -> Option<(u16, u16)> {
+  item    123  pub fn dot_of(self, x: u16, y: u16) -> Option<(f64, f64)> {
+  item    134  pub fn bounds(self) -> ([f64; 2], [f64; 2]) {
+  item    142  pub fn shows_territory_boundary(self) -> bool {
+  item    161  pub fn agent_glyph(name: &str) -> char {
+  item    169  pub fn resource_glyph(class: FoodClass) -> char {
+  field    49  pub origin_x: u16,
+  field    50  pub origin_y: u16,
+  field    51  pub width: u16,
+  field    52  pub height: u16,
+  field    55  pub span_x: u16,
+  field    56  pub span_y: u16,
+
+--- mokiterions-tui/src/state.rs
+  item     22  pub const EVENT_CAPACITY: usize = 100_000;
+  item     25  pub enum Progression {
+  item     31  pub fn label(self) -> &'static str {
+  item     41  pub enum Filter {
+  item     48  pub fn matches(&self, event: &Event) -> bool {
+  item     56  pub fn label(&self) -> String {
+  item     66  pub enum Overlay {
+  item     80  pub struct EventBuffer {
+  item     86  pub fn new() -> Self {
+  item     93  pub fn push(&mut self, event: Event) {
+  item    101  pub fn len(&self) -> usize {
+  item    109  pub fn is_empty(&self) -> bool {
+  item    113  pub fn truncated(&self) -> bool {
+  item    117  pub fn iter(&self) -> impl DoubleEndedIterator<Item = &Event> {
+  item    128  pub struct Death {
+  item    138  pub struct KeyResponse {
+  item    145  pub struct Observer {
+  item    177  pub fn new(options: Options) -> Result<Self, String> {
+  item    214  pub fn advance(&mut self) -> Result<(), String> {
+  item    258  pub fn snapshot(&self) -> &WorldSnapshot {
+  item    262  pub fn config(&self) -> Config {
+  item    266  pub fn is_finished(&self) -> bool {
+  item    270  pub fn termination_reason(&self) -> Option<TerminationReason> {
+  item    276  pub fn progression(&self) -> Progression {
+  item    280  pub fn speed(&self) -> u32 {
+  item    284  pub fn zoom(&self) -> Zoom {
+  item    288  pub fn follow(&self) -> bool {
+  item    295  pub fn camera(&self) -> (u16, u16) {
+  item    299  pub fn filter(&self) -> &Filter {
+  item    303  pub fn overlay(&self) -> Overlay {
+  item    307  pub fn events(&self) -> &EventBuffer {
+  item    311  pub fn selection(&self) -> Option<&str> {
+  item    315  pub fn notice(&self) -> Option<&str> {
+  item    319  pub fn set_notice(&mut self, notice: impl Into<String>) {
+  item    323  pub fn ended_early(&self) -> bool {
+  item    327  pub fn mark_ended_early(&mut self) {
+  item    335  pub fn deaths(&self) -> &[Death] {
+  item    355  pub fn death_of(&self, id: &str) -> Option<&Death> {
+  item    359  pub fn log_cursor(&self) -> usize {
+  item    364  pub fn presented(&self) -> Vec<&Event> {
+  item    372  pub fn highlighted(&self) -> Option<&Event> {
+  item    378  pub fn selected_agent(&self) -> Option<&AgentSnapshot> {
+  item    388  pub fn shared_cell_count(&self) -> usize {
+  item    412  pub fn record_geometry(&mut self, canvas: (u16, u16), log_rows: usize) {
+  item    418  pub fn apply_follow(&mut self, canvas: (u16, u16)) {
+  item    435  pub fn viewport(&self) -> Viewport {
+  item    443  pub fn handle_key(&mut self, key: KeyEvent) -> Result<KeyResponse, String> {
+  field   129  pub id: String,
+  field   130  pub tick: u64,
+  field   131  pub health: u8,
+  field   132  pub satiety: Option<u8>,
+  field   133  pub energy: Option<u8>,
+  field   139  pub quit: bool,
+  field   142  pub force_draw: bool,
+
+
+SPEC-MOK-002 rules 5 and 6 — the engine's public interface, re-counted against ff3a155
+
+mokiterions-core/src/lib.rs                 3 at ff3a155     3 now   identical
+mokiterions-core/src/cli.rs                 3 at ff3a155     3 now   identical
+mokiterions-core/src/simulation.rs         86 at ff3a155    86 now   identical
+mokiterions-core/src/main.rs                0 at ff3a155     0 now   identical
+total                                      92 at ff3a155    92 now   unchanged item for item
+
+The engine's surface is re-counted declaration by declaration rather than inferred from an empty diff.
+The empty diff is retained separately, as `engine-untouched.txt`.

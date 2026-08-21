@@ -1,0 +1,537 @@
+Every command-derived figure in this packet, re-taken after the merge of 2026-08-21
+===================================================================================
+
+Work order   WO-MOK-016 (Phase 3.1, encounters)
+Re-takes     post/gates.txt sections 1 to 5, and post/observer.md sections 5, 6 and 9
+Supersedes   nothing by edit. Both files stand as measured at the commits they name.
+             A figure produced by a command is a statement about a tree, and the merge
+             changed the tree; this file re-runs the commands rather than correcting
+             the figures in place.
+Commit       259859dffe1f5f856e154263c48d8d1e04808903  ("Merge origin/master into
+             feature/phase-3-definition") -- the last commit that moved a line of
+             non-documentation source. HEAD at measurement was
+             e96c21449d63f0fe51d65c5fd5cea78a2ef5177f, docs-only since the merge, and
+             `git status --short` was empty before the first command and after the last.
+Toolchain    cargo 1.97.1 (c980f4866 2026-06-30), rustc 1.97.1 (8bab26f4f 2026-07-14),
+             clippy 0.1.97 (8bab26f4f6 2026-07-14), host x86_64-pc-windows-msvc
+             -- character for character the toolchain post/gates.txt records, so nothing
+             below is a toolchain difference
+Date         2026-08-21
+
+post/gates.txt was taken at 1b06d851 and post/observer.md at 7fda4402, both before the merge
+brought origin/master into this branch. Sections 1 to 5 below re-run the four gate commands and
+every enumeration those two files carry. Section 6 records the gate the merge added, which did not
+exist when either file was written. Section 7 re-takes the three figures the merge falsifies. One
+claim is falsified and it is section 5's; everything else is re-measured and unchanged.
+
+Section 0 first, because it decides how much of the rest can move.
+
+
+0. What the merge moved, and what it did not
+---------------------------------------------
+
+    $ git diff --name-only 1b06d851..HEAD | grep -v '^docs/' | wc -l
+    25
+
+Twenty-five files outside docs/. For each one, the changed lines that are not comments -- a line
+beginning #, // or /// on either side of the diff:
+
+    file                                          diff        non-comment
+    ------------------------------------------------------------------------
+    Cargo.toml                                     9+/3-        0
+    Cargo.lock                                     (unchanged)  0
+    mokiterions-core/Cargo.toml                   22+/5-        0
+    mokiterions-core/src/lib.rs                    9+/3-        0
+    mokiterions-core/src/simulation.rs            18+/18-       0
+    mokiterions-core/tests/cli.rs                  4+/4-        0
+    mokiterions-core/tests/decisions.rs            5+/5-        0
+    mokiterions-core/tests/process.rs              3+/3-        0
+    mokiterions-core/tests/termination.rs          1+/1-        0
+    mokiterions-core/tests/viability.rs           15+/15-       2
+    mokiterions-tui/Cargo.toml                    17+/4-        0
+    rust-toolchain.toml                            6+/3-        0
+    SIMULATION_RULES.md                            1+/1-        2
+    ------------------------------------------------------------------------
+    mokiterions-tui/src/authority.rs               7+/7-       10
+    mokiterions-tui/src/layout.rs                 40+/10-      29
+    mokiterions-tui/src/render.rs                404+/83-     349
+    mokiterions-tui/src/verification.rs           13+/1-        4
+    mokiterions-tui/tests/authority.rs             6+/6-        8
+    mokiterions-tui/tests/layout.rs               74+/5-       46
+    mokiterions-tui/tests/options.rs               1+/1-        0
+    mokiterions-tui/tests/render.rs              827+/103-    682
+    mokiterions-tui/tests/verification.rs        130+/2-       96
+    .github/workflows/dependency-declarations.yml 108+/0-      45
+    .github/workflows/release.yml                 22+/13-      15
+    scripts/check_declared_dependencies.py      1225+/0-     1187
+    scripts/test_check_declared_dependencies.py  856+/0-       847
+
+The first block is twelve files: the engine's eight, the workspace's and the observer's manifests, the
+toolchain file and SIMULATION_RULES.md. Cargo.lock is listed with them and is not one of the 25, being
+unchanged. Ten of the twelve carry 0 non-comment changed lines and two carry 2 apiece, and neither of the
+two is a behavioural change:
+
+    mokiterions-core/tests/viability.rs
+    -    println!("REQ-MOK-049 curve, `social`, default density, 1,000 ticks: ...");
+    +    println!("REQ-MOK-058 curve, `social`, default density, 1,000 ticks: ...");
+
+    SIMULATION_RULES.md
+    -    | What was measured, and how | .../WO-MOK-002/, .../WO-MOK-010/ and .../WO-MOK-012/ |
+    +    | What was measured, and how | .../WO-MOK-002/, .../WO-MOK-010/ and .../WO-MOK-016/ |
+
+Both are this branch's own renumber of 2026-08-21 (d72465c and 6e3e2f0) reaching a string literal and
+a documentation pointer. The same sweep accounts for every comment change in the engine's list: the
+18 changed lines of simulation.rs are 18 identifier strings inside doc comments, and one section
+banner reading WO-MOK-012 now reads WO-MOK-016.
+
+So the engine this work order implements did not move behaviourally between the gates commit and the
+merge. The whole substantive change is the observer's, and it is origin/master's WO-MOK-013 --
+render.rs and its suite, layout.rs collapsing two log heights into one, and the two scripts/ files
+and two workflows that ADR-MOK-006 brought with it. That bounds what the sections below can find:
+the engine's gate results cannot have moved for a source reason, and the observer's can.
+
+What post/observer.md declares it reads -- authority.rs, tests/authority.rs, and simulation.rs's
+EventType and EventType::ALL, which that file's header counts as four -- is unchanged in structure and
+changed in identifier only:
+
+    mokiterions-tui/src/authority.rs      7+/7-    every changed line an identifier string
+    mokiterions-tui/tests/authority.rs    6+/6-    every changed line an identifier string
+    simulation.rs's EventType and ALL     unchanged bytes
+
+That header states the four are byte-identical at 7c4aef39 and at 7fda4402. At this commit they are not
+byte-identical to either: the renumber moved REQ-MOK-044, REQ-MOK-046 and
+REQ-MOK-047 to REQ-MOK-053, REQ-MOK-055 and REQ-MOK-056, and REQ-MOK-048 to REQ-MOK-057. Section 2
+of that file already carries the new identifiers, because the renumber swept the evidence with the
+source. The reading holds; the byte-identity sentence does not, and that is what this paragraph
+replaces.
+
+
+1. cargo fmt --all -- --check
+------------------------------
+
+    $ cargo fmt --all -- --check
+    (no output, 0 bytes)
+    exit 0
+
+Clean, on the same terms post/gates.txt section 1 states: the command prints what it would change
+and prints nothing when there is nothing.
+
+
+2. cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+--------------------------------------------------------------------------------
+
+Run from a fully cleaned target directory, for post/gates.txt section 2's reason: against a warm
+directory the command checks nothing and its exit code is a statement about the cache.
+
+    $ cargo clean
+         Removed 5389 files, 1.1GiB total
+
+    $ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+       Compiling proc-macro2 v1.0.107
+       Compiling unicode-ident v1.0.24
+       Compiling quote v1.0.47
+        Checking Mokiterions v0.1.0 (mokiterions-core)
+        Checking equivalent v1.0.2
+        Checking allocator-api2 v0.2.21
+       Compiling rustversion v1.0.23
+        Checking foldhash v0.2.0
+        Checking cfg-if v1.0.4
+       Compiling ident_case v1.0.1
+       Compiling thiserror v2.0.20
+       Compiling strsim v0.11.1
+       Compiling winapi v0.3.9
+        Checking either v1.17.0
+        Checking bitflags v2.13.1
+       Compiling heck v0.5.0
+       Compiling unicode-segmentation v1.13.3
+       Compiling parking_lot_core v0.9.12
+        Checking hashbrown v0.16.1
+        Checking hashbrown v0.17.1
+        Checking itertools v0.14.0
+       Compiling instability v0.3.13
+        Checking static_assertions v1.1.0
+       Compiling convert_case v0.10.0
+        Checking scopeguard v1.2.0
+        Checking unicode-width v0.2.2
+        Checking ryu v1.0.23
+        Checking itoa v1.0.18
+        Checking windows-link v0.2.1
+        Checking smallvec v1.15.2
+        Checking lru v0.18.2
+        Checking lock_api v0.4.14
+       Compiling litrs v1.0.0
+       Compiling indoc v2.0.7
+        Checking critical-section v1.2.0
+        Checking line-clipping v0.3.8
+        Checking parking_lot v0.12.5
+        Checking castaway v0.2.4
+       Compiling document-features v0.2.12
+        Checking compact_str v0.9.1
+       Compiling syn v3.0.3
+       Compiling syn v2.0.119
+        Checking unicode-truncate v2.0.1
+        Checking crossterm_winapi v0.9.1
+       Compiling strum_macros v0.28.0
+       Compiling derive_more-impl v2.1.1
+        Checking derive_more v2.1.1
+        Checking crossterm v0.29.0
+       Compiling darling_core v0.24.0
+       Compiling thiserror-impl v2.0.20
+        Checking strum v0.28.0
+        Checking kasuari v0.4.12
+        Checking ratatui-core v0.1.2
+       Compiling darling_macro v0.24.0
+       Compiling darling v0.24.0
+        Checking ratatui-crossterm v0.1.2
+        Checking ratatui-widgets v0.3.2
+        Checking ratatui v0.30.2
+        Checking mokiterions-tui v0.1.0 (mokiterions-tui)
+        Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.85s
+    exit 0
+
+59 units compiled or checked, 0 warnings, 0 errors. The clean removed 5389 files and 1.1 GiB, where
+the same command at 1b06d851 removed 3699 files and 814.7 MiB -- the difference is the observer's
+new test volume, not a change in what is linted.
+
+The three allow attributes are still three, still dead_code, and still the observer's:
+
+    $ grep -rn "allow(" --include=*.rs mokiterions-core mokiterions-tui
+    mokiterions-tui/src/state.rs:108:    #[allow(dead_code)]
+    mokiterions-tui/src/state.rs:294:    #[allow(dead_code)]
+    mokiterions-tui/src/state.rs:334:    #[allow(dead_code)]
+
+Same three lines, same file, same line numbers as post/gates.txt records. origin/master's rewrite of
+render.rs added none, which is the thing worth checking: 349 non-comment lines of new rendering code
+passed -D warnings without one.
+
+
+3. cargo tree -p Mokiterions
+-----------------------------
+
+    $ cargo tree -p Mokiterions
+    Mokiterions v0.1.0 (mokiterions-core)
+    exit 0
+
+One line, unchanged. The engine resolves to itself and to nothing else.
+
+    [dependencies]
+                    <- mokiterions-core/Cargo.toml, last line, no entry
+
+The reason this measurement discharges anything has changed, and the measurement has not.
+post/gates.txt section 3 reads this line as SPEC-MOK-002 rule 1 and ARCH-MOK-001 requiring an empty
+table "with no exception". origin/master's ADR-MOK-006 of 2026-08-20 withdrew that prohibition. What
+stands in its place is rule 13's declared dependency set and SPEC-MOK-005 rule 8.4's comparison of
+that declaration against the resolved graph in both directions, so an entry added here without
+amending rule 13 refuses, and rule 13 amended without the entry refuses too. The engine's declared
+set is empty today, which is why the table is absent rather than empty, and the four prohibitions
+that survive untouched are named in mokiterions-core/Cargo.toml's own comment. Section 6 runs the
+check that enforces it.
+
+There is still no [dev-dependencies] table. post/gates.txt calls that "the stronger form of the same
+claim"; under ADR-MOK-006 it is simply another empty part of the same declared set, and section 6
+measures it at every edge kind including dev-only rather than by the table's absence.
+
+    $ cargo tree -p mokiterions-tui --depth 1
+    mokiterions-tui v0.1.0 (mokiterions-tui)
+    |-- Mokiterions v0.1.0 (mokiterions-core)
+    `-- ratatui v0.30.2
+    exit 0
+
+Unchanged: one path dependency on the engine, ratatui at the pinned 0.30.2, the arrow running engine
+to observer. One refinement post/gates.txt could not have made. It says "exactly the three features
+SPEC-MOK-003 fixes"; the resolved set is four --
+
+    ratatui 0.30.2: crossterm, layout-cache, std, underline-color
+
+-- because those three activate std, which the manifest does not ask for. Under ADR-MOK-006 that is
+not a discrepancy to explain away: SPEC-MOK-003 records std as implied for exactly this reason, the
+comparison is made against the resolved set exactly, and default-features = false is what keeps a
+feature arriving by unification from passing as a plausible implication. Three declared, one implied
+and declared as implied, four resolved.
+
+
+4. cargo test at the workspace root
+------------------------------------
+
+Retained whole rather than restated, as before. The table with the merge's two rows added:
+
+    baseline/test-run.txt          39662d13   212 names   212 passed   exit 0
+    post/test-run.txt              7c4aef39   249 names   246 passed   exit 101   3 failing
+    post/test-run-amended.txt      13906153   250 names   250 passed   exit 0
+    post/test-run-master.txt       d8e2079    226 names   226 passed   exit 0
+    post/test-run-merged.txt       259859d    264 names   264 passed   exit 0
+
+The last two are the merge's before and after, reconciled name by name in
+post/test-census-reconciliation.md section 9: 225 retained, 39 added, 0 removed, 0 ignored, 0
+non-ok. 264 is the figure every count in this file is taken against, and it supersedes 250 everywhere
+the packet uses a whole-suite total.
+
+Every clause of VER-MOK-016's "no feature, environment variable, ignore attribute, extra command,
+terminal or working-directory dependence", re-run:
+
+    $ grep -rn "#\[ignore" --include=*.rs mokiterions-core mokiterions-tui | wc -l
+    0
+    $ grep -rn "cfg(feature" --include=*.rs mokiterions-core mokiterions-tui | wc -l
+    0
+    $ grep -n "^\[features\]" mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml | wc -l
+    0
+    $ grep -rn "env::var\|env!(" --include=*.rs mokiterions-core/tests mokiterions-tui/tests | wc -l
+    0
+    $ grep -rn "CARGO_BIN_EXE\|current_dir\|process::Command" --include=*.rs \
+          mokiterions-core/tests mokiterions-tui/tests | wc -l
+    0
+
+All five still zero, across 682 new non-comment lines of tests/render.rs and 96 of
+tests/verification.rs. The load-bearing pair is the last two, and they are the ones the observer's
+growth could most easily have broken.
+
+The sixteen prefixes and the unit tiers, re-censused from post/test-census-merged.txt:
+
+    unittests :: simulation::...   82   the engine's library      (82 at 250)
+    unittests :: render::...       20   the observer's library    (18 at 250)
+    unittests :: verification::...  9   the observer's library     (9 at 250)
+    unittests :: state::...         4   the observer's library     (4 at 250)
+    unittests :: tests::...         8   the observer's binary       (8 at 250)
+                                  123                            (121 at 250)
+
+    fifteen integration targets    141                            (129 at 250)
+                                   ---
+                                   264
+
+The engine's unit tier is unmoved at 82, which is section 0's finding arriving from the census side.
+Every one of the 14 added names is the observer's, and 2 of them are unit cases in render.
+
+
+5. Packages, targets, build scripts and names -- the one claim the merge falsifies
+----------------------------------------------------------------------------------
+
+post/gates.txt section 5 settles the package count, both target lists, all six names and the absence
+of a build script with one diff:
+
+    $ git diff --stat 39662d13..1b06d851 -- Cargo.toml Cargo.lock \
+          mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml
+    (no output -- not one of the four files differs)
+
+At this commit that diff is not empty.
+
+    $ git diff --stat 39662d13..HEAD -- Cargo.toml Cargo.lock \
+          mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml
+     Cargo.toml                  | 12 +++++++++---
+     mokiterions-core/Cargo.toml | 27 ++++++++++++++++++++++-----
+     mokiterions-tui/Cargo.toml  | 21 +++++++++++++++++----
+     3 files changed, 48 insertions(+), 12 deletions(-)
+
+Three of the four differ. So the claim has to be re-established a different way rather than restated,
+and it is, in three measurements instead of one:
+
+    non-comment changed lines, per file, 39662d13..HEAD
+    Cargo.toml                     0
+    mokiterions-core/Cargo.toml    0
+    mokiterions-tui/Cargo.toml     0
+    Cargo.lock                     0     (the file is unchanged, byte for byte)
+
+Every one of the 48 insertions is a comment. ADR-MOK-006 rewrote what those three manifests say about
+themselves -- the engine's empty table as a declared set rather than a prohibition, the observer's
+entry as a declaration rule 8.4 compares, the workspace's absent [workspace.dependencies] table as a
+measurement -- and changed no declaration. Cargo.lock is the strongest of the three: an added
+dependency reached by inheritance would move it, and it did not move.
+
+    $ cargo metadata --no-deps
+    Mokiterions      lib mokiterions, bin Mokiterions,
+                     tests: cli decisions density naming process termination viability
+    mokiterions-tui  lib mokiterions_tui, bin mokiterions-tui,
+                     tests: authority export layout options render spatial state verification
+
+    $ find . -name build.rs -not -path './target/*'
+    (no match)
+
+Two packages, four non-test targets, fifteen integration test targets, no build script -- the same
+lists, target for target and name for name, as post/gates.txt records.
+
+    $ git ls-tree -r --name-only 39662d13 | grep -E '(mokiterions-core|mokiterions-tui)/tests/'
+    $ git ls-tree -r --name-only HEAD     | grep -E '(mokiterions-core|mokiterions-tui)/tests/'
+    (identical, fifteen lines each)
+
+Identical. The merge added 14 test cases and not one test file, so the reconciliation still runs by
+name inside known targets.
+
+One thing this section can no longer claim in one command, and says instead: scripts/ and
+.github/workflows/ gained four files the merge brought. Neither directory holds a package, a target
+or a build script -- cargo metadata above is what settles that -- and the two Python files are the
+check section 6 runs plus its own test suite, which cargo test does not reach and does not claim to.
+
+
+6. The gate the merge added
+----------------------------
+
+ADR-MOK-006 replaced a prohibition with a comparison, and a comparison needs something to run it.
+That command did not exist when post/gates.txt was written:
+
+    $ python scripts/check_declared_dependencies.py
+    targets: x86_64-pc-windows-msvc, x86_64-unknown-linux-gnu, aarch64-apple-darwin
+    cargo metadata --locked reports 182 packages, which is the whole lockfile across every target
+      and both members and is not any package's set
+    [workspace.dependencies] holds no entry
+    Mokiterions -- declared by SPEC-MOK-002
+      Mokiterions: 0 declared, 0 in the manifest
+      Mokiterions on aarch64-apple-darwin: 0 external crates, no figure declared
+      Mokiterions on x86_64-pc-windows-msvc: 0 external crates, no figure declared
+      Mokiterions on x86_64-unknown-linux-gnu: 0 external crates, no figure declared
+      Mokiterions on aarch64-apple-darwin: 0 external crates (1 node including workspace members)
+      Mokiterions on x86_64-pc-windows-msvc: 0 external crates (1 node including workspace members)
+      Mokiterions on x86_64-unknown-linux-gnu: 0 external crates (1 node including workspace members)
+      Mokiterions: builds and tests offline from the committed lockfile
+    mokiterions-tui -- declared by SPEC-MOK-003
+      not an entry: Mokiterions (path ../mokiterions-core), a workspace member reached by path
+      mokiterions-tui: 1 declared, 1 in the manifest
+      ratatui 0.30.2 on aarch64-apple-darwin: features crossterm,layout-cache,std,underline-color
+      ratatui 0.30.2 on x86_64-pc-windows-msvc: features crossterm,layout-cache,std,underline-color
+      ratatui 0.30.2 on x86_64-unknown-linux-gnu: features crossterm,layout-cache,std,underline-color
+      mokiterions-tui on aarch64-apple-darwin: 62 external crates, declared 62
+      mokiterions-tui on x86_64-pc-windows-msvc: 57 external crates, declared 57
+      mokiterions-tui on x86_64-unknown-linux-gnu: 63 external crates, declared 63
+      mokiterions-tui union of the declared targets: 66 external crates, declared 66
+      mokiterions-tui on aarch64-apple-darwin: 9 build-script crates (...)
+      mokiterions-tui on x86_64-pc-windows-msvc: 7 build-script crates (...)
+      mokiterions-tui on x86_64-unknown-linux-gnu: 9 build-script crates (...)
+      raw hit on aarch64-apple-darwin: mio 1.2.2 (network access)
+      raw hit on aarch64-apple-darwin: signal-hook-mio 0.2.5 (network access)
+      raw hit on x86_64-unknown-linux-gnu: mio 1.2.2 (network access)
+      raw hit on x86_64-unknown-linux-gnu: signal-hook-mio 0.2.5 (network access)
+      disclosed and accepted: mio 1.2.2 -- the technical owner's judgement is recorded
+        (VER-MOK-014 manual assessment 6)
+      disclosed and accepted: signal-hook-mio 0.2.5 -- the technical owner's judgement is recorded
+        (VER-MOK-014 manual assessment 6)
+    Every declared set matches its resolved graph. 8.4a-8.4d pass.
+    exit 0
+
+The three build-script lines are elided above only in their crate lists, which the command prints in
+full; nothing else is abridged.
+
+Three things in that output bear on this work order and none of them is a figure post/gates.txt could
+have carried.
+
+First, the engine's set is measured at 0 external crates on all three declared targets, node count 1,
+and measured to build and test offline from the committed lockfile. That is cargo tree's one line
+re-derived from cargo metadata --locked per target, and it is what REQ-MOK-026 now rests on.
+
+Second, "0 declared, 0 in the manifest" is the comparison and not the count: an entry added to the
+manifest without amending SPEC-MOK-002 rule 13 fails here, and rule 13 amended without the entry
+fails here too. That is the direction post/gates.txt could only assert.
+
+Third, the two network-access hits are the observer's and are somebody else's disclosure: mio and
+signal-hook-mio reach no target graph of the engine at all, and appear on Linux and macOS inside
+ratatui's crossterm path. The judgement accepting them is recorded in VER-MOK-014 manual assessment
+6. This packet neither takes nor re-opens that judgement; it records that the check reaches exit 0
+with the disclosure standing.
+
+This command is not a VER-MOK-016 retention item, and it is recorded here because the contract
+section post/gates.txt covers acquired it between the two commits, and a re-run that stopped at the
+four commands would report the older contract as the whole of it.
+
+
+7. post/observer.md's three run figures, re-taken
+--------------------------------------------------
+
+post/observer.md sections 5 and 6 record four one-line mutations by their output. Section 0 shows that
+the two files those controls mutate changed in identifier only, so the two that fail should read the
+same and the two that pass should read a larger total. Both kinds were re-applied at this commit and
+both were reverted; git status --short was empty afterwards.
+
+Control A -- a row missing from the mapping table. Delete
+`        (EventType::ThreatResolved, "REQ-MOK-055"),` from expected in tests/authority.rs:
+
+    $ cargo test --locked -p mokiterions-tui --test authority
+    thread 'the_mapping_is_the_specified_one' (3748) panicked at
+      mokiterions-tui\tests\authority.rs:70:5:
+    assertion `left == right` failed
+      left: 14
+     right: 15
+    test result: FAILED. 3 passed; 1 failed
+    exit 101
+
+Identical to the figure post/observer.md section 5 records, line number included, and the sweep
+every_event_type_the_observer_can_present_has_an_entry passed again. One cosmetic difference: this
+toolchain prints the panicking thread's id, (3748), which the earlier transcript does not carry.
+
+Control D -- a variant absent from EventType::ALL. A sixteenth variant, its as_str arm and its
+for_type arm, with ALL left at fifteen entries:
+
+    $ cargo test --locked --workspace --no-fail-fast
+    264 passed, 0 failed, exit 0        (post/observer.md: 250 passed, at 250)
+
+    $ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+    exit 0                              (2 units, warm -- see below)
+
+Nothing fails, and the residual stands exactly as section 6 states it: expected.len() + 1 ==
+ALL.len() compares fifteen with fifteen, every consumer iterates ALL, and a never-constructed pub
+variant is part of the API so dead_code does not fire. The 14 test cases the merge added include none
+that would catch it.
+
+Control E -- the overlay's source row stops naming social. Remove `/ REQ-MOK-057 social` from
+table()'s hand-written string for row 4:
+
+    $ cargo test --locked -p mokiterions-tui --no-fail-fast
+    142 passed, 0 failed, exit 0        (post/observer.md: 128 passed, at 250)
+                                        (101 across the eight integration targets,
+                                         33 library units, 8 binary units)
+
+    $ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+    exit 0                              (1 unit, warm)
+
+Nothing fails. The observer package grew from 128 cases to 142 -- 89 integration to 101, 31 library
+units to 33 -- and not one of the 14 asserts that row's content. So the residual is not narrowing:
+origin/master's WO-MOK-013 added 682 non-comment lines to tests/render.rs and left the one identifier
+in the presented table that no call to for_type produces still unasserted.
+
+Both control clippy runs are warm, at 1 and 2 units against section 2's 59, and their exit 0 is a
+statement about the mutated crates and not about the workspace. post/observer.md's are the same and
+report the same way; section 2's cold run is the one that speaks for the workspace.
+
+Controls B and C were not re-run. Control B mutates the same assertion as control A in the same file,
+whose line numbering section 0 measures as unchanged, and control C is an error[E0004] from the
+compiler on a wildcard-free match, which no test count can move. Naming them here rather than
+re-running them is the bound, and it is stated rather than left to inference.
+
+post/observer.md section 9 was re-read rather than assumed to hold, and every figure it stands on reads
+the same. That is a measurement and not an omission, because its figures are not all in one file: four
+are arithmetic on layout.rs's constants, three are built by authority_lines and help_lines inside
+render.rs, and the eighth is tests/verification.rs's viewport array -- and origin/master rewrote render.rs
+by 349 non-comment lines and layout.rs by 29, collapsing FULL_LOG_HEIGHT 10 and COMPACT_LOG_HEIGHT 6
+into one LOG_HEIGHT 6 and dropping the width gate on it. All of them survive that:
+
+    HEADER_HEIGHT                                    3           unchanged
+    FOOTER_HEIGHT                                    1           unchanged
+    layout::resolve's overlay height                 height - 4  unchanged
+    the overlay's interior, inside a bordered Block  height - 6  unchanged
+    authority_lines, with an event highlighted       23          unchanged
+    authority_lines, with none highlighted           22          unchanged
+    help_lines (17 bindings + 3)                     20          unchanged
+    tests/verification.rs's renderable viewports     9           unchanged, same nine
+
+The overlay's height is invariant to the log's: resolve computes body_height = height -
+HEADER_HEIGHT - FOOTER_HEIGHT - log_height and then overlay.height = body_height + log_height, so the
+log's height cancels. That is why a change which moved every canvas figure in the observer's own
+suite moved nothing in section 9, and it is worth stating because the opposite would have been the
+natural guess.
+
+
+8. What this file does not establish
+-------------------------------------
+
+- Nothing here is a verification verdict. VER-MOK-016 is the contract, VREC-MOK-016 the record.
+- It re-takes figures and corrects no artifact. post/gates.txt and post/observer.md are unedited and
+  remain true of the commits they name; where this file and one of them differ, the difference is
+  section 0's tree change and is named at the point it appears.
+- The observer's 349 new non-comment lines of rendering are origin/master's WO-MOK-013 and are
+  verified there. Nothing here reviews them. What is measured is only that they leave this work
+  order's gate results and this work order's retention items where they were.
+- The four gate commands' exit codes are statements about the lints and tests this toolchain has, on
+  this platform, at this commit. The toolchain is recorded above for that reason and is identical to
+  post/gates.txt's.
+- scripts/check_declared_dependencies.py at exit 0 is that script's verdict on the declared sets.
+  Whether the declared set is the right one is the technical owner's decision under ADR-MOK-006
+  decision 1, recorded in the specifications' Admitted by columns, and is not an implementation act.
+- The two network-access disclosures belong to VER-MOK-014's manual assessment 6. They are reported
+  here as standing, not re-judged.
+- Controls B and C were not re-run, for the reasons section 7 states.

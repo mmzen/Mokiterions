@@ -1,0 +1,689 @@
+VER-MOK-013 — both placements, and the search for a restated declaration
+========================================================================
+
+Work order   WO-MOK-013 (crates policy, declared-set comparison)
+Branch       governance/adr-mok-006-third-party-crates
+Date         2026-08-20
+
+SPEC-MOK-005 rule 15.5 requires the release gate and the pull-request gate to read one
+declaration rather than two copies of one. VER-MOK-013 makes that checkable: search both
+workflow files for every crate name, version and feature name in either declared set. This
+file is the search, and the files it searched.
+
+The terms are not typed out below. They are read out of SPEC-MOK-002 rule 13 and SPEC-MOK-003
+by the same parser the checking program uses, so this search cannot be looking for a
+declaration different from the one being checked — which a hand-written term list would be the
+first time a declaration was amended and the list was not.
+
+The two files, as they stand
+------------------------------------------------------------------------
+  .github/workflows/release.yml
+    625 lines, sha256 d97c267b259bd8c9ba38472ae0a1b3bd0e06d0ef14190615b8e74313f6cba40c
+  .github/workflows/dependency-declarations.yml
+    108 lines, sha256 871d1fec650f04957ed1dd1eb978a764cbb09bc05e0a8ea8115a50f596391805
+
+`.github/workflows/dependency-declarations.yml` is new and is quoted in full below.
+`release.yml` is 625 lines and pre-existing; its two changed steps are quoted as a diff
+against the baseline, and every step name in the job that carries them is listed so a reader
+can see where in the sequence the check sits.
+
+------------------------------------------------------------------------
+release.yml — the diff against ff3a155 (origin/master)
+------------------------------------------------------------------------
+  diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+  index 1594fad..1ea115f 100644
+  --- a/.github/workflows/release.yml
+  +++ b/.github/workflows/release.yml
+  @@ -291,25 +291,34 @@ jobs:
+         - name: Lint
+           run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+   
+         - name: Test
+           run: cargo test --workspace --locked
+   
+  -      - name: The engine's dependency table must stay empty
+  -        shell: bash
+  -        run: |
+  -          # `ARCH-MOK-001` as amended admits no engine dependency, with no exception,
+  -          # including one shared with `mokiterions-tui`. `mokiterions-core/Cargo.toml`
+  -          # names this command as the check.
+  -          tree="$(cargo tree -p Mokiterions --locked)"
+  -          echo "$tree"
+  -          lines="$(printf '%s\n' "$tree" | grep -c .)"
+  -          if [[ "$lines" -ne 1 ]]; then
+  -            echo "REFUSED: cargo tree resolved $lines crates for the engine; exactly 1 is admitted." >&2
+  -            exit 1
+  -          fi
+  +      - name: Populate the registry cache, the one step allowed to reach a registry
+  +        run: cargo fetch --locked
+  +        # `--locked` makes this a download and not a resolution: it fetches what the committed
+  +        # lockfile already fixed, for every target, and fails rather than choose a version. The
+  +        # declared-set check below runs `--offline`, so on a fresh runner it needs this first;
+  +        # without it the check would refuse over an empty cache and read as a dependency
+  +        # mismatch, which is the one thing it must never say by accident.
+  +
+  +      - name: Each package resolves to the set its specification declares
+  +        run: python3 scripts/check_declared_dependencies.py --root .
+  +        # `SPEC-MOK-005` rule 8.4, checks 8.4a to 8.4d, and this is the same program the
+  +        # pull-request gate runs -- rule 15.5 forbids a second source of truth about what is
+  +        # declared. It replaces the old assertion that `cargo tree -p Mokiterions --locked`
+  +        # resolves to exactly one crate. That assertion is still made, and it is now made as a
+  +        # measurement of `SPEC-MOK-002` rule 13's declared set, which is empty: the engine
+  +        # having no dependency is a fact about its declaration and is no longer a rule of its
+  +        # own, per `ADR-MOK-006`. The observer's declared set is checked on the same footing,
+  +        # which the old step did not check at all.
+  +        #
+  +        # The program reads the declarations out of `SPEC-MOK-002` and `SPEC-MOK-003` and
+  +        # restates none of them, so amending a declared set changes this step's verdict with no
+  +        # edit here. It writes nothing, and it compares `git status` before and after to say so.
+   
+         - name: A seed determines the run, byte for byte
+           shell: bash
+           run: |
+             # `--policy <baseline|reference>` is the whole declared set, and both are
+             # deterministic given a seed. Only proves determinism within one build of one
+
+------------------------------------------------------------------------
+release.yml — every step of the job that carries the check, in order
+------------------------------------------------------------------------
+    39    push:
+    46    workflow_dispatch:
+    71    authorize:
+    95        - name: Pin the governance revision every later job will read
+   116        - name: Refuse to publish without a released release record for this tag
+   121        - name: Record who created the tag
+   129        - name: The authorized commit must be reachable from a release-bearing branch
+   156    harness:
+   165        - name: This job must be standing on the pinned governance revision
+   184        - name: Install the declared candidate runtime
+   190        - name: The installed harness must be the version the repository declares
+   204        - name: Managed-file integrity and formal graph validity
+   209        - name: Review preflight for every released work order
+   230        - name: Harness Explorer for the released commit
+   244    verify:
+   253        - name: This job must be standing on the authorized commit
+   267        - name: Toolchain, from the repository's pin
+   288        - name: Format
+   291        - name: Lint
+   294        - name: Test
+   297        - name: Populate the registry cache, the one step allowed to reach a registry
+   305        - name: Each package resolves to the set its specification declares
+   320        - name: A seed determines the run, byte for byte
+   364    build:
+   383        - name: The assets must be built from the authorized commit, stated in full
+   404        - name: Toolchain and target
+   438        - name: Build
+   448        - name: Package
+   513    publish:
+   537        - name: Notes, stated from the authorized facts only
+   562        - name: Attach assets to the existing tag
+
+------------------------------------------------------------------------
+dependency-declarations.yml — in full
+------------------------------------------------------------------------
+     1  # Compare each package's resolved dependency graph against the set its specification declares.
+     2  #
+     3  # This workflow is repository-owned and implements `SPEC-MOK-005` rule 15, which places the four
+     4  # checks of rule 8.4 -- 8.4a, 8.4b, 8.4c and 8.4d -- at pull-request time as well as at the
+     5  # release gate. A dependency graph drifts between commits in a way formatting does not: an
+     6  # undeclared crate, a feature switched on by unification, or a lockfile update that pulls in a
+     7  # prohibited capability all arrive with an ordinary-looking diff. Rule 15.1 wants those to fail
+     8  # where they are cheap to fix rather than on release day.
+     9  #
+    10  # What this workflow deliberately does NOT do:
+    11  #
+    12  #   * add the format, lint or test checks to pull-request CI -- rule 15.2 keeps this scope
+    13  #     narrow. Those live at the authorized commit under rule 8 and in retained evidence at the
+    14  #     candidate commit, and rule 15 changes neither placement.
+    15  #   * touch `engineering-harness.yml` -- rule 15.3. That file is managed, listed in
+    16  #     `.engineering-harness.lock` with a schema-2 SHA-256 lock, verified by
+    17  #     `python -m se_harness doctor`, and its `governor` job would report an edit as tampering.
+    18  #     This workflow is added beside it and the managed file is not modified.
+    19  #   * approve anything -- rule 15.4. It is evidence, not authority. It can refuse a merge and it
+    20  #     approves nothing. Whether a crate belongs in a declared set is `ADR-MOK-006`'s question
+    21  #     and the technical owner's answer, recorded in a specification and not in CI.
+    22  #
+    23  # It runs the same program the release gate runs, `scripts/check_declared_dependencies.py`, which
+    24  # reads the declared sets out of `SPEC-MOK-002` rule 13 and `SPEC-MOK-003` and restates neither.
+    25  # Rule 15.5 is the reason: an implementation that duplicated a declaration would be a third
+    26  # source of truth, and the two placements could then disagree about what is declared while both
+    27  # reported success. Amending a declared set changes this workflow's verdict with no edit here.
+    28  #
+    29  # It fails closed. Every refusal names the fact it could not establish.
+    30  
+    31  name: Dependency declarations
+    32  
+    33  on:
+    34    # Rule 15.1 says every pull request, and that is the whole trigger list. There is no
+    35    # `push` trigger, because the release gate already carries rule 8.4 at the commit that
+    36    # matters, and no `workflow_dispatch`, because a run of this check is only meaningful
+    37    # against a proposed change.
+    38    pull_request:
+    39  
+    40  permissions:
+    41    contents: read
+    42  
+    43  concurrency:
+    44    # A superseded head commit is a stale fact. Cancelling its run is not a shortcut: the answer
+    45    # would describe a graph nobody is proposing to merge any more.
+    46    group: dependency-declarations-${{ github.event.pull_request.number }}
+    47    cancel-in-progress: true
+    48  
+    49  jobs:
+    50    declared-sets:
+    51      name: Declared sets
+    52      runs-on: ubuntu-latest
+    53      steps:
+    54        - uses: actions/checkout@v4
+    55          # The default for a `pull_request` event is the prospective merge commit, and that is
+    56          # the right subject: the question is what the dependency graph would be if this landed,
+    57          # not what it is on a branch that is behind its base. A lockfile change that only
+    58          # conflicts with the base shows up here and nowhere else.
+    59  
+    60        - name: Which commit this run is a fact about
+    61          shell: bash
+    62          run: |
+    63            # Rule 15.4: a refusal is a fact about a commit, so the commit is named before any
+    64            # check runs rather than left for a reader to infer from the event.
+    65            echo "merge commit    $(git rev-parse HEAD)"
+    66            echo "pull-request head ${{ github.event.pull_request.head.sha }}"
+    67            echo "base            ${{ github.event.pull_request.base.ref }} @ ${{ github.event.pull_request.base.sha }}"
+    68  
+    69        - name: Toolchain, from the repository's pin
+    70          shell: bash
+    71          run: |
+    72            # A log, not a check. `rust-toolchain.toml` selects the version, so the first cargo
+    73            # invocation installs it; printing it means a resolution difference can be read
+    74            # against the toolchain that produced it. The pin assertion itself belongs to the
+    75            # release gate under rule 8, and rule 15.2 keeps this workflow from acquiring it.
+    76            rustup show active-toolchain
+    77            cargo --version
+    78            python3 --version
+    79  
+    80        - name: Populate the registry cache, the one step allowed to reach a registry
+    81          run: cargo fetch --locked
+    82          # `--locked` makes this a download and not a resolution: it fetches what the committed
+    83          # lockfile already fixed, for every target, and fails rather than choose a version. A
+    84          # pull request that changes `Cargo.toml` without updating `Cargo.lock` refuses here,
+    85          # which is the correct place for it to refuse -- the checks below are about a resolved
+    86          # graph, and there is no resolved graph until the lockfile agrees with the manifests.
+    87  
+    88        - name: Each package resolves to the set its specification declares
+    89          run: python3 scripts/check_declared_dependencies.py --root .
+    90          # 8.4a, both directions, per package and over `[workspace.dependencies]`; 8.4b, the
+    91          # declared features against the resolved ones on each of rule 10's three targets,
+    92          # negatives included; 8.4c, the engine building and testing offline from the committed
+    93          # lockfile; 8.4d, the by-name scan for the capability classes `ADR-MOK-006` decision 4
+    94          # prohibits, where a declared entry refuses outright and a transitive hit refuses unless
+    95          # the declaring specification discloses it.
+    96          #
+    97          # `--no-engine-build` exists for a local rehearsal and is not passed here: it would skip
+    98          # 8.4c and print that it had, and a gate that skipped a check would be reporting on
+    99          # three of the four.
+   100  
+   101        - name: The check leaves the tree as it found it
+   102          if: always()
+   103          shell: bash
+   104          run: |
+   105            # A log, not a check -- the program already compares `git status` across its own run
+   106            # and refuses if the tree moved. This prints the same thing at the job's edge so that
+   107            # a difference is visible in the transcript rather than inferred from an exit code.
+   108            git status --porcelain --untracked-files=all
+
+The search
+------------------------------------------------------------------------
+
+Declared and disclosed crate names (13 terms)
+  instability, libc, mio, parking_lot_core, proc-macro2, quote, ratatui, rustix, rustversion, signal-hook, signal-hook-mio, thiserror, winapi
+    .github/workflows/release.yml: NO HIT
+    .github/workflows/dependency-declarations.yml: NO HIT
+    scripts/check_declared_dependencies.py: 3 hit(s)
+      :666  [mio — disclosed crate name]
+         "socket2", "mio", "tokio", "smoltcp", "trust", "hickory", "dns", "resolv", "url",
+      :692  [ratatui — declared crate name]
+         "ratatui", "crossterm", "termion", "tui", "ncurses", "pancurses", "cursive", "egui",
+      :1048  [quote — declared build-script crate]
+         The notes and refusals quote artifact prose, which uses em dashes and arrows. A Windows
+    scripts/test_check_declared_dependencies.py: 76 hit(s)
+      :15  [ratatui — declared crate name]
+         The reading tests assert today's declared values — one entry, `ratatui 0.30.2`, the per-target
+      :158  [ratatui — declared crate name]
+         | `ratatui` | `0.30.2` |
+      :172  [ratatui — declared crate name]
+         self.assertEqual(tables[0].rows, (("`ratatui`", "`0.30.2`"),))
+      :185  [mio — disclosed crate name]
+         | `mio` | `1.2.2` |
+      :266  [mio — disclosed crate name]
+         name_tokens("signal-hook-mio"), {"signal-hook-mio", "signal", "hook", "mio"}
+      :266  [signal-hook-mio — disclosed crate name]
+         name_tokens("signal-hook-mio"), {"signal-hook-mio", "signal", "hook", "mio"}
+      :268  [parking_lot_core — declared build-script crate]
+         self.assertEqual(name_tokens("parking_lot_core"), {"parking_lot_core", "parking", "lot", "core"})
+      :271  [mio — disclosed crate name]
+         """`signal-hook-mio` is a hit on the `mio` token, which is why it is disclosed."""
+      :271  [signal-hook-mio — disclosed crate name]
+         """`signal-hook-mio` is a hit on the `mio` token, which is why it is disclosed."""
+      :272  [mio — disclosed crate name]
+         hits = scan_names([crate("signal-hook-mio", "0.2.5"), crate("ratatui", "0.30.2")], ("mio",))
+      :272  [ratatui — declared crate name]
+         hits = scan_names([crate("signal-hook-mio", "0.2.5"), crate("ratatui", "0.30.2")], ("mio",))
+      :272  [signal-hook-mio — disclosed crate name]
+         hits = scan_names([crate("signal-hook-mio", "0.2.5"), crate("ratatui", "0.30.2")], ("mio",))
+      :273  [signal-hook-mio — disclosed crate name]
+         self.assertEqual([hit.name for hit in hits], ["signal-hook-mio"])
+      :287  [ratatui — declared crate name]
+         "error: no matching package named `ratatui` found\nperhaps you meant to run without "
+      :315  [ratatui — declared crate name]
+         self.assertEqual(list(observer.entries), ["ratatui"])
+      :316  [ratatui — declared crate name]
+         ratatui = observer.entries["ratatui"]
+      :343  [winapi — declared build-script crate]
+         self.assertIn("winapi 0.3.9", observer.build_script_crates["Windows"])
+      :344  [winapi — declared build-script crate]
+         self.assertNotIn("winapi 0.3.9", observer.build_script_crates["Linux"])
+      :345  [rustix — declared build-script crate]
+         self.assertIn("rustix 1.1.4", observer.build_script_crates["macOS"])
+      :351  [mio — disclosed crate name]
+         self.assertEqual(sorted(observer.disclosures), ["mio", "signal-hook-mio"])
+      :351  [signal-hook-mio — disclosed crate name]
+         self.assertEqual(sorted(observer.disclosures), ["mio", "signal-hook-mio"])
+      :352  [mio — disclosed crate name]
+         mio = observer.disclosures["mio"]
+      :384  [ratatui — declared crate name]
+         ratatui = { version = "0.30.2", default-features = false, features = ["crossterm"] }
+      :388  [ratatui — declared crate name]
+         self.assertEqual(list(entries), ["ratatui"])
+      :390  [ratatui — declared crate name]
+         self.assertFalse(entries["ratatui"].default_features)
+      :391  [ratatui — declared crate name]
+         self.assertEqual(entries["ratatui"].features, ("crossterm",))
+      :411  [libc — declared build-script crate]
+         libc = "0.2.189"
+      :415  [libc — declared build-script crate]
+         self.assertEqual(sorted(entries), ["libc", "proptest"])
+      :416  [libc — declared build-script crate]
+         self.assertEqual(entries["libc"].tables, {"target.cfg(unix).dependencies"})
+      :422  [ratatui — declared crate name]
+         ratatui = { workspace = true }
+      :426  [ratatui — declared crate name]
+         self.assertTrue(entries["ratatui"].inherited)
+      :433  [ratatui — declared crate name]
+         self.declaration = declaration(entries={"ratatui": entry("ratatui", "0.30.2")})
+      :440  [ratatui — declared crate name]
+         {"ratatui": manifest_entry("ratatui", "0.30.2")},
+      :451  [ratatui — declared crate name]
+         "ratatui": manifest_entry("ratatui", "0.30.2"),
+      :470  [ratatui — declared crate name]
+         {"ratatui": manifest_entry("ratatui", "0.30.1")},
+      :487  [ratatui — declared crate name]
+         entries={"ratatui": entry("ratatui", "0.30.2", self.cell)}
+      :490  [ratatui — declared crate name]
+         "ratatui": manifest_entry(
+      :491  [ratatui — declared crate name]
+         "ratatui",
+      :500  [ratatui — declared crate name]
+         return {target: [crate("ratatui", "0.30.2", features)] for target in TARGETS}
+      :539  [ratatui — declared crate name]
+         "ratatui": manifest_entry(
+      :540  [ratatui — declared crate name]
+         "ratatui",
+      :552  [ratatui — declared crate name]
+         "ratatui": manifest_entry(
+      :553  [ratatui — declared crate name]
+         "ratatui", "0.30.2", default_features=False, features=("crossterm",)
+      :570  [mio — disclosed crate name]
+         crate="mio",
+      :585  [ratatui — declared crate name]
+         entries={"ratatui": entry("ratatui", "0.30.2")},
+      :586  [mio — disclosed crate name]
+         disclosures={"mio": self.disclosure()},
+      :588  [mio — disclosed crate name]
+         self.unix_graphs(crate("mio", "1.2.2"), crate("ratatui", "0.30.2")),
+      :588  [ratatui — declared crate name]
+         self.unix_graphs(crate("mio", "1.2.2"), crate("ratatui", "0.30.2")),
+      :601  [mio — disclosed crate name]
+         declaration(disclosures={"mio": self.disclosure()}),
+      :602  [mio — disclosed crate name]
+         self.unix_graphs(crate("mio", "1.2.2")),
+      :608  [mio — disclosed crate name]
+         self.assertTrue(all("mio 1.2.2" in line for line in raw))
+      :614  [mio — disclosed crate name]
+         self.unix_graphs(crate("mio", "1.2.2")),
+      :642  [mio — disclosed crate name]
+         declaration(disclosures={"mio": self.disclosure(frozenset({"Linux"}))}),
+      :643  [mio — disclosed crate name]
+         self.unix_graphs(crate("mio", "1.2.2")),
+      :653  [mio — disclosed crate name]
+         declaration(disclosures={"mio": self.disclosure()}),
+      :654  [mio — disclosed crate name]
+         self.unix_graphs(crate("mio", "1.3.0")),
+      :664  [mio — disclosed crate name]
+         declaration(disclosures={"mio": self.disclosure()}),
+      :665  [winapi — declared build-script crate]
+         {WINDOWS: [crate("winapi", "0.3.9")]},
+      :676  [ratatui — declared crate name]
+         {LINUX: [crate("ratatui", "0.30.2")]},
+      :703  [ratatui — declared crate name]
+         self.graphs(crate("ratatui", "0.30.2")),
+      :713  [ratatui — declared crate name]
+         self.graphs(crate("ratatui", "0.30.2")),
+      :723  [ratatui — declared crate name]
+         self.graphs(crate("ratatui", "0.30.2"), crate("Mokiterions", "0.1.0")),
+      :732  [libc — declared build-script crate]
+         build_script_crates={"Linux": frozenset({"libc 0.2.189"})},
+      :735  [libc — declared build-script crate]
+         self.graphs(crate("libc", "0.2.189"), crate("ratatui", "0.30.2")),
+      :735  [ratatui — declared crate name]
+         self.graphs(crate("libc", "0.2.189"), crate("ratatui", "0.30.2")),
+      :737  [libc — declared build-script crate]
+         {"libc 0.2.189", "ratatui 0.30.2"},
+      :737  [ratatui — declared crate name]
+         {"libc 0.2.189", "ratatui 0.30.2"},
+      :739  [ratatui — declared crate name]
+         self.assertTrue(any("ratatui 0.30.2 carries a build script" in line for line in found))
+      :746  [winapi — declared build-script crate]
+         build_script_crates={"Linux": frozenset({"winapi 0.3.9"})},
+      :749  [ratatui — declared crate name]
+         self.graphs(crate("ratatui", "0.30.2")),
+      :760  [libc — declared build-script crate]
+         self.graphs(crate("libc", "0.2.189")),
+      :762  [libc — declared build-script crate]
+         {"libc 0.2.189"},
+      :784  [libc — declared build-script crate]
+         {LINUX: [crate("Mokiterions", "0.1.0"), crate("libc", "0.2.189")]},
+      :788  [libc — declared build-script crate]
+         self.assertIn("libc 0.2.189", found[0])
+      :797  [libc — declared build-script crate]
+         entries={"libc": entry("libc", "0.2.189")},
+      :799  [libc — declared build-script crate]
+         {LINUX: [crate("Mokiterions", "0.1.0"), crate("libc", "0.2.189")]},
+
+Declared, disclosed and tabulated versions (13 terms)
+  0.2.189, 0.2.5, 0.3.13, 0.3.18, 0.3.9, 0.30.2, 0.9.12, 1.0.107, 1.0.23, 1.0.47, 1.1.4, 1.2.2, 2.0.20
+    .github/workflows/release.yml: NO HIT
+    .github/workflows/dependency-declarations.yml: NO HIT
+    scripts/check_declared_dependencies.py: NO HIT
+    scripts/test_check_declared_dependencies.py: 48 hit(s)
+      :15  [0.30.2 — ratatui's declared version]
+         The reading tests assert today's declared values — one entry, `ratatui 0.30.2`, the per-target
+      :158  [0.30.2 — ratatui's declared version]
+         | `ratatui` | `0.30.2` |
+      :172  [0.30.2 — ratatui's declared version]
+         self.assertEqual(tables[0].rows, (("`ratatui`", "`0.30.2`"),))
+      :185  [1.2.2 — mio's disclosed version]
+         | `mio` | `1.2.2` |
+      :272  [0.2.5 — signal-hook-mio's disclosed version]
+         hits = scan_names([crate("signal-hook-mio", "0.2.5"), crate("ratatui", "0.30.2")], ("mio",))
+      :272  [0.30.2 — ratatui's declared version]
+         hits = scan_names([crate("signal-hook-mio", "0.2.5"), crate("ratatui", "0.30.2")], ("mio",))
+      :317  [0.30.2 — ratatui's declared version]
+         self.assertEqual(ratatui.version, "0.30.2")
+      :343  [0.3.9 — winapi's version in the build-script table]
+         self.assertIn("winapi 0.3.9", observer.build_script_crates["Windows"])
+      :344  [0.3.9 — winapi's version in the build-script table]
+         self.assertNotIn("winapi 0.3.9", observer.build_script_crates["Linux"])
+      :345  [1.1.4 — rustix's version in the build-script table]
+         self.assertIn("rustix 1.1.4", observer.build_script_crates["macOS"])
+      :353  [1.2.2 — mio's disclosed version]
+         self.assertEqual(mio.version, "1.2.2")
+      :384  [0.30.2 — ratatui's declared version]
+         ratatui = { version = "0.30.2", default-features = false, features = ["crossterm"] }
+      :411  [0.2.189 — libc's version in the build-script table]
+         libc = "0.2.189"
+      :433  [0.30.2 — ratatui's declared version]
+         self.declaration = declaration(entries={"ratatui": entry("ratatui", "0.30.2")})
+      :440  [0.30.2 — ratatui's declared version]
+         {"ratatui": manifest_entry("ratatui", "0.30.2")},
+      :451  [0.30.2 — ratatui's declared version]
+         "ratatui": manifest_entry("ratatui", "0.30.2"),
+      :487  [0.30.2 — ratatui's declared version]
+         entries={"ratatui": entry("ratatui", "0.30.2", self.cell)}
+      :492  [0.30.2 — ratatui's declared version]
+         "0.30.2",
+      :500  [0.30.2 — ratatui's declared version]
+         return {target: [crate("ratatui", "0.30.2", features)] for target in TARGETS}
+      :541  [0.30.2 — ratatui's declared version]
+         "0.30.2",
+      :553  [0.30.2 — ratatui's declared version]
+         "ratatui", "0.30.2", default_features=False, features=("crossterm",)
+      :571  [1.2.2 — mio's disclosed version]
+         version="1.2.2",
+      :585  [0.30.2 — ratatui's declared version]
+         entries={"ratatui": entry("ratatui", "0.30.2")},
+      :588  [0.30.2 — ratatui's declared version]
+         self.unix_graphs(crate("mio", "1.2.2"), crate("ratatui", "0.30.2")),
+      :588  [1.2.2 — mio's disclosed version]
+         self.unix_graphs(crate("mio", "1.2.2"), crate("ratatui", "0.30.2")),
+      :602  [1.2.2 — mio's disclosed version]
+         self.unix_graphs(crate("mio", "1.2.2")),
+      :608  [1.2.2 — mio's disclosed version]
+         self.assertTrue(all("mio 1.2.2" in line for line in raw))
+      :614  [1.2.2 — mio's disclosed version]
+         self.unix_graphs(crate("mio", "1.2.2")),
+      :643  [1.2.2 — mio's disclosed version]
+         self.unix_graphs(crate("mio", "1.2.2")),
+      :665  [0.3.9 — winapi's version in the build-script table]
+         {WINDOWS: [crate("winapi", "0.3.9")]},
+      :676  [0.30.2 — ratatui's declared version]
+         {LINUX: [crate("ratatui", "0.30.2")]},
+      :703  [0.30.2 — ratatui's declared version]
+         self.graphs(crate("ratatui", "0.30.2")),
+      :713  [0.30.2 — ratatui's declared version]
+         self.graphs(crate("ratatui", "0.30.2")),
+      :723  [0.30.2 — ratatui's declared version]
+         self.graphs(crate("ratatui", "0.30.2"), crate("Mokiterions", "0.1.0")),
+      :732  [0.2.189 — libc's version in the build-script table]
+         build_script_crates={"Linux": frozenset({"libc 0.2.189"})},
+      :735  [0.2.189 — libc's version in the build-script table]
+         self.graphs(crate("libc", "0.2.189"), crate("ratatui", "0.30.2")),
+      :735  [0.30.2 — ratatui's declared version]
+         self.graphs(crate("libc", "0.2.189"), crate("ratatui", "0.30.2")),
+      :737  [0.2.189 — libc's version in the build-script table]
+         {"libc 0.2.189", "ratatui 0.30.2"},
+      :737  [0.30.2 — ratatui's declared version]
+         {"libc 0.2.189", "ratatui 0.30.2"},
+      :739  [0.30.2 — ratatui's declared version]
+         self.assertTrue(any("ratatui 0.30.2 carries a build script" in line for line in found))
+      :746  [0.3.9 — winapi's version in the build-script table]
+         build_script_crates={"Linux": frozenset({"winapi 0.3.9"})},
+      :749  [0.30.2 — ratatui's declared version]
+         self.graphs(crate("ratatui", "0.30.2")),
+      :760  [0.2.189 — libc's version in the build-script table]
+         self.graphs(crate("libc", "0.2.189")),
+      :762  [0.2.189 — libc's version in the build-script table]
+         {"libc 0.2.189"},
+      :784  [0.2.189 — libc's version in the build-script table]
+         {LINUX: [crate("Mokiterions", "0.1.0"), crate("libc", "0.2.189")]},
+      :788  [0.2.189 — libc's version in the build-script table]
+         self.assertIn("libc 0.2.189", found[0])
+      :797  [0.2.189 — libc's version in the build-script table]
+         entries={"libc": entry("libc", "0.2.189")},
+      :799  [0.2.189 — libc's version in the build-script table]
+         {LINUX: [crate("Mokiterions", "0.1.0"), crate("libc", "0.2.189")]},
+
+Feature names: declared, implied and asserted absent (5 terms)
+  crossterm, layout-cache, serde, std, underline-color
+    .github/workflows/release.yml: NO HIT
+    .github/workflows/dependency-declarations.yml: NO HIT
+    scripts/check_declared_dependencies.py: 1 hit(s)
+      :692  [crossterm — declared feature]
+         "ratatui", "crossterm", "termion", "tui", "ncurses", "pancurses", "cursive", "egui",
+    scripts/test_check_declared_dependencies.py: 46 hit(s)
+      :216  [crossterm — declared feature]
+         "`default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. "
+      :216  [layout-cache — declared feature]
+         "`default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. "
+      :216  [underline-color — declared feature]
+         "`default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. "
+      :217  [serde — asserted-absent feature]
+         "`std` is implied by those and is not declared in the manifest. `serde` is off, and "
+      :217  [std — implied feature]
+         "`std` is implied by those and is not declared in the manifest. `serde` is off, and "
+      :221  [crossterm — declared feature]
+         self.assertEqual(features.declared, {"crossterm", "layout-cache", "underline-color"})
+      :221  [layout-cache — declared feature]
+         self.assertEqual(features.declared, {"crossterm", "layout-cache", "underline-color"})
+      :221  [underline-color — declared feature]
+         self.assertEqual(features.declared, {"crossterm", "layout-cache", "underline-color"})
+      :222  [std — implied feature]
+         self.assertEqual(features.implied, {"std"})
+      :223  [serde — asserted-absent feature]
+         self.assertEqual(features.prohibited, {"serde"})
+      :225  [crossterm — declared feature]
+         features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :225  [layout-cache — declared feature]
+         features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :225  [std — implied feature]
+         features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :225  [underline-color — declared feature]
+         features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :229  [serde — asserted-absent feature]
+         self.assertTrue(parse_features("`serde`.").default_features)
+      :233  [serde — asserted-absent feature]
+         parse_features("Plus `serde`. `serde` is off.")
+      :320  [crossterm — declared feature]
+         ratatui.features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :320  [layout-cache — declared feature]
+         ratatui.features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :320  [std — implied feature]
+         ratatui.features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :320  [underline-color — declared feature]
+         ratatui.features.expected, {"crossterm", "layout-cache", "std", "underline-color"}
+      :322  [serde — asserted-absent feature]
+         self.assertEqual(ratatui.features.prohibited, {"serde"})
+      :384  [crossterm — declared feature]
+         ratatui = { version = "0.30.2", default-features = false, features = ["crossterm"] }
+      :391  [crossterm — declared feature]
+         self.assertEqual(entries["ratatui"].features, ("crossterm",))
+      :452  [serde — asserted-absent feature]
+         "serde": manifest_entry("serde", "1.0.0"),
+      :458  [serde — asserted-absent feature]
+         self.assertIn("declares serde, which SPEC-MOK-003", found[0])
+      :483  [crossterm — declared feature]
+         "`default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. "
+      :483  [layout-cache — declared feature]
+         "`default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. "
+      :483  [underline-color — declared feature]
+         "`default-features = false`, plus `crossterm`, `layout-cache`, `underline-color`. "
+      :484  [serde — asserted-absent feature]
+         "`std` is implied by those. `serde` is off."
+      :484  [std — implied feature]
+         "`std` is implied by those. `serde` is off."
+      :494  [crossterm — declared feature]
+         features=("crossterm", "layout-cache", "underline-color"),
+      :494  [layout-cache — declared feature]
+         features=("crossterm", "layout-cache", "underline-color"),
+      :494  [underline-color — declared feature]
+         features=("crossterm", "layout-cache", "underline-color"),
+      :497  [crossterm — declared feature]
+         self.resolved = "crossterm,layout-cache,std,underline-color"
+      :497  [layout-cache — declared feature]
+         self.resolved = "crossterm,layout-cache,std,underline-color"
+      :497  [std — implied feature]
+         self.resolved = "crossterm,layout-cache,std,underline-color"
+      :497  [underline-color — declared feature]
+         self.resolved = "crossterm,layout-cache,std,underline-color"
+      :522  [serde — asserted-absent feature]
+         check_features, self.declaration, self.manifest, self.graphs(self.resolved + ",serde")
+      :532  [crossterm — declared feature]
+         self.graphs("crossterm,layout-cache,std"),
+      :532  [layout-cache — declared feature]
+         self.graphs("crossterm,layout-cache,std"),
+      :532  [std — implied feature]
+         self.graphs("crossterm,layout-cache,std"),
+      :535  [underline-color — declared feature]
+         self.assertIn("underline-color", found[0])
+      :543  [crossterm — declared feature]
+         features=("crossterm", "layout-cache", "underline-color"),
+      :543  [layout-cache — declared feature]
+         features=("crossterm", "layout-cache", "underline-color"),
+      :543  [underline-color — declared feature]
+         features=("crossterm", "layout-cache", "underline-color"),
+      :553  [crossterm — declared feature]
+         "ratatui", "0.30.2", default_features=False, features=("crossterm",)
+
+Declared figures, matched on a word boundary (7 terms)
+  10, 57, 62, 63, 66, 7, 9
+    .github/workflows/release.yml: NO HIT
+    .github/workflows/dependency-declarations.yml: 1 hit(s)
+      :91  [10 — declared build-script count (union)]
+         # declared features against the resolved ones on each of rule 10's three targets,
+    scripts/check_declared_dependencies.py: 1 hit(s)
+      :22  [10 — declared build-script count (union)]
+         `SPEC-MOK-005` rule 10 builds, read with `--locked` so nothing resolves that the committed
+    scripts/test_check_declared_dependencies.py: 12 hit(s)
+      :12  [10 — declared build-script count (union)]
+         2, 3, 4 and 10 are discharged here: a passing check proves nothing about a check that cannot
+      :329  [57 — declared external count (x86_64-pc-windows-msvc)]
+         self.assertEqual(observer.external_counts[WINDOWS], 57)
+      :330  [63 — declared external count (x86_64-unknown-linux-gnu)]
+         self.assertEqual(observer.external_counts[LINUX], 63)
+      :331  [62 — declared external count (aarch64-apple-darwin)]
+         self.assertEqual(observer.external_counts[MACOS], 62)
+      :332  [66 — declared external count (union)]
+         self.assertEqual(observer.external_counts["union"], 66)
+      :333  [7 — declared build-script count (x86_64-pc-windows-msvc)]
+         self.assertEqual(observer.build_script_counts[WINDOWS], 7)
+      :334  [9 — declared build-script count (x86_64-unknown-linux-gnu)]
+         self.assertEqual(observer.build_script_counts[LINUX], 9)
+      :340  [7 — declared build-script count (x86_64-pc-windows-msvc)]
+         self.assertEqual(len(observer.build_script_crates["Windows"]), 7)
+      :341  [9 — declared build-script count (x86_64-unknown-linux-gnu)]
+         self.assertEqual(len(observer.build_script_crates["Linux"]), 9)
+      :342  [9 — declared build-script count (x86_64-unknown-linux-gnu)]
+         self.assertEqual(len(observer.build_script_crates["macOS"]), 9)
+      :566  [10 — declared build-script count (union)]
+         """8.4d, injected. Scenarios 3 and 10 of `VER-MOK-013`."""
+      :597  [10 — declared build-script count (union)]
+         """Scenario 10: the evidence retains what the scan saw, not what survived it."""
+
+What the hits are
+------------------------------------------------------------------------
+
+Both workflows: NO HIT on every crate name, every version and every feature name. The one
+figure hit is `dependency-declarations.yml:91`, the phrase "each of rule 10's three targets" --
+`10` there is a rule number in `SPEC-MOK-005`, not the union build-script count that happens to
+share the digits. Neither workflow names a crate, a version, a feature or a count. Amending a
+declared set changes both verdicts with no edit to either file, which is the property rule 15.5
+asks for, and it is a property of the text rather than a claim in a comment.
+
+`check_declared_dependencies.py`: five hits, all in two term lists and one sentence.
+
+  * `mio` at line 664 and `ratatui` and `crossterm` at lines 690 sit in `PROHIBITED_TERMS` and
+    `USER_INTERFACE_TERMS`. These are prohibitions, not declarations: the list says which names
+    8.4d refuses in the engine's graph or reports as a transitive hit, and it carries no version,
+    no feature set and no count. `ratatui` is in it because REQ-MOK-026 confines the user
+    interface to the observer -- the term exists so that `ratatui` in the *engine* refuses, which
+    injection case 10 demonstrates. A term list written from ADR-MOK-006 decision 4's capability
+    classes is the opposite of a copied declaration: it was deliberately not derived from the
+    present graph, which is why it hit two crates nobody had looked at.
+  * `quote` at line 1046 is the English verb, in a sentence about quoting artifact prose. It
+    collides with the build-script crate `quote 1.0.47` and means nothing.
+  * `10` is again "rule 10".
+
+An earlier draft of that file did carry 57, 63 and 62 in its module docstring, explaining what
+8.4a does not compare. That sentence was rewritten to point at SPEC-MOK-003 instead, because a
+count in a comment is a second copy of a declaration and the copy in the code is the one that
+goes stale. This search is what found it.
+
+`test_check_declared_dependencies.py`: 76 name hits, 48 version hits, 46 feature hits, 12 figure
+hits, and this is deliberate and disclosed rather than clean.
+
+Its reading tests parse the real SPEC-MOK-002 and SPEC-MOK-003 out of the checkout and assert
+today's values -- one entry, `ratatui 0.30.2`, the counts 57/63/62/66, the build-script table's
+7/9/9 with `winapi 0.3.9` on Windows and not on Linux, and the two disclosures outstanding. Its
+injection tests build synthetic declarations out of the same names, because a fixture that reads
+like the real thing is a fixture a reader can check.
+
+So an approved amendment to a declared set edits this file too, and this is the only place in
+the repository where that is true. It is not a second declaration -- nothing reads these
+assertions to decide whether a graph conforms, and the gate would refuse on a real mismatch
+whatever they said -- but a reader who took "amending a declared set needs no code edit" as
+unqualified would be wrong about the test suite. The file's own docstring now says so, and
+VER-MOK-013's *What an admission must retain* list is where the obligation belongs.
+
+The alternative was to rename every fixture crate to a synthetic name so that no declared value
+appeared in any script. That buys a clean search result and costs the reading tests, which are
+the ones that catch an amendment renaming a heading or writing a *Features* cell the convention
+cannot parse. The failure mode those tests exist for is the one a hand-copied declaration hides,
+and it is worth more than a tidy grep.

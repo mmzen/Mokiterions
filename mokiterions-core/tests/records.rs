@@ -341,6 +341,28 @@ fn reference(label: &str) -> Capture {
     )
 }
 
+/// The capture for the shapes only the social source produces.
+///
+/// The three combat resolutions and a non-empty `suffered` array are unreachable under every
+/// other shipped source, so the reference capture above cannot cover them and no amount of
+/// running it longer will. At this seed and length this run resolves fourteen strikes, twelve
+/// threats and five forfeits and writes twelve traces carrying a suffered attack, so every key
+/// and every composite shape the combat rules add appears at least once.
+fn social(label: &str) -> Capture {
+    Capture::of(
+        &[
+            "--seed",
+            "42",
+            "--ticks",
+            "300",
+            "--trace-actions",
+            "--policy",
+            "social",
+        ],
+        label,
+    )
+}
+
 // ---------------------------------------------------------------------------------------
 // Framing, ordering and completeness
 // ---------------------------------------------------------------------------------------
@@ -404,9 +426,15 @@ fn the_stream_is_one_record_per_line_in_the_order_the_specification_fixes() {
 /// duration and wall-clock, are absent because *every* key not on this list is absent. The
 /// forbidden vocabulary is then spelled out anyway, because a reader of this test should not
 /// have to derive the prohibition from an allow-list.
+///
+/// The set is in two parts because the stream's vocabulary is not one capture's. Every key in
+/// `ALLOWED` reaches a stream under any source; every key in `COMBAT` reaches one only under the
+/// social source. Each part is asserted in both directions against the capture that can produce
+/// it, and `COMBAT` is asserted absent from the reference capture as well, so a combat field
+/// leaking onto a non-combat line fails here rather than being covered by the union.
 #[test]
 fn every_key_in_the_stream_is_a_key_the_specification_names() {
-    const ALLOWED: [&str; 61] = [
+    const ALLOWED: [&str; 62] = [
         // Framing and the header
         "record",
         "schema",
@@ -468,7 +496,29 @@ fn every_key_in_the_stream_is_a_key_the_specification_names() {
         "final",
         "agents",
         "id",
-        "died_at",
+        "died_at", // Rule 25's record, written on every trace under rule 4.4 and so on every
+        // capture, empty where nothing was suffered
+        "suffered",
+    ];
+
+    /// The thirteen keys a combat resolution adds, none of which any other source can reach.
+    ///
+    /// `attacker` and `damage` are on this list rather than the one above because they are
+    /// members of a `suffered` entry, and an entry is what the reference capture never has.
+    const COMBAT: [&str; 13] = [
+        "target",
+        "damage",
+        "target_health",
+        "striker_energy",
+        "target_died",
+        "increase",
+        "target_fear",
+        "recipient",
+        "transferred",
+        "discarded",
+        "subject_satiety",
+        "recipient_satiety",
+        "attacker",
     ];
 
     fn collect<'a>(value: &'a Value, into: &mut Vec<&'a str>) {
@@ -494,13 +544,32 @@ fn every_key_in_the_stream_is_a_key_the_specification_names() {
         collect(record, &mut observed);
     }
 
-    for key in &observed {
-        assert!(ALLOWED.contains(key), "unnamed field {key}");
+    let combat_capture = social("keys-social");
+    let mut combat_observed = Vec::new();
+    for record in &combat_capture.records {
+        collect(record, &mut combat_observed);
+    }
+
+    for key in observed.iter().chain(combat_observed.iter()) {
+        assert!(
+            ALLOWED.contains(key) || COMBAT.contains(key),
+            "unnamed field {key}"
+        );
     }
     for key in ALLOWED {
         assert!(
             observed.contains(&key),
             "the reference capture never produced {key}, so this test does not cover it"
+        );
+    }
+    for key in COMBAT {
+        assert!(
+            combat_observed.contains(&key),
+            "the social capture never produced {key}, so this test does not cover it"
+        );
+        assert!(
+            !observed.contains(&key),
+            "{key} reached a capture with no combat in it"
         );
     }
 
@@ -652,9 +721,39 @@ fn render_result(result: &Value) -> String {
                     ["x", "y"] => format!("{}:{}", pairs[0].1.token(), pairs[1].1.token()),
                     ["from", "to"] => format!("{}->{}", pairs[0].1.token(), pairs[1].1.token()),
                     ["action"] => pairs[0].1.token(),
+                    // A targeted verb's one value is a field *of* the proposal object here and a
+                    // field beside `proposal` on the text line, so this pair renders as two.
+                    // Rule 6.6 runs in one direction and this is what it maps: the record nests
+                    // what the text line, having no nesting, states next to it.
+                    ["action", "target"] => {
+                        rendered.push(format!("{key}:{}", pairs[0].1.token()));
+                        rendered.push(format!("target:{}", pairs[1].1.token()));
+                        continue;
+                    }
                     ["action", _] => format!("{}:{}", pairs[0].1.token(), pairs[1].1.token()),
                     other => panic!("unknown composite shape {other:?}"),
                 }
+            }
+            // Rule 25's record. The text line omits it where nothing was suffered and renders
+            // `attacker:damage` pairs joined by `;` where something was; this stream writes the
+            // array either way, under rule 4.4. An empty array therefore renders no text field
+            // at all, which is the one place this reconstruction drops a record field rather
+            // than rewriting it.
+            Value::Array(items) if key.as_str() == "suffered" => {
+                if items.is_empty() {
+                    continue;
+                }
+                items
+                    .iter()
+                    .map(|item| {
+                        format!(
+                            "{}:{}",
+                            item.field("attacker").token(),
+                            item.field("damage").token()
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join(";")
             }
             scalar => scalar.token(),
         };
@@ -671,41 +770,45 @@ fn render_result(result: &Value) -> String {
 /// text line it accompanies and the two are compared as bytes, so a field in the wrong order, a
 /// value rendered differently, a record for an event that was not emitted, or an event with no
 /// record all fail here.
+///
+/// Both captures, because the two places the record's shape is not the text line's are both
+/// reachable only under the social source: a targeted verb's `target`, which nests inside the
+/// proposal object and sits beside it on the text line, and a non-empty `suffered`.
 #[test]
 fn every_text_event_line_is_reconstructible_from_its_event_record() {
-    let capture = reference("reconstruct");
-
-    let text_events: Vec<&str> = capture
-        .text
-        .lines()
-        .filter(|line| line.starts_with("tick="))
-        .collect();
-    let records = capture.of_kind("event");
-    assert_eq!(text_events.len(), records.len(), "one record per text line");
-    assert!(text_events.len() > 3_000, "the capture must be substantial");
-
-    for (line, record) in text_events.iter().zip(&records) {
-        let reconstructed = format!(
-            "tick={} subject={} event={} result={}",
-            record.field("tick").token(),
-            record.field("subject").token(),
-            record.field("event").token(),
-            render_result(record.field("result"))
-        );
-        assert_eq!(*line, reconstructed);
-    }
-
-    // Rule 9.3: the summary line and the run record are the pair that closes both streams, and
-    // the text stream's last line is that summary line.
-    assert!(
-        capture
+    for capture in [reference("reconstruct"), social("reconstruct-social")] {
+        let text_events: Vec<&str> = capture
             .text
             .lines()
-            .last()
-            .unwrap()
-            .starts_with("summary reason="),
-        "the text stream must end with its summary line"
-    );
+            .filter(|line| line.starts_with("tick="))
+            .collect();
+        let records = capture.of_kind("event");
+        assert_eq!(text_events.len(), records.len(), "one record per text line");
+        assert!(text_events.len() > 3_000, "the capture must be substantial");
+
+        for (line, record) in text_events.iter().zip(&records) {
+            let reconstructed = format!(
+                "tick={} subject={} event={} result={}",
+                record.field("tick").token(),
+                record.field("subject").token(),
+                record.field("event").token(),
+                render_result(record.field("result"))
+            );
+            assert_eq!(*line, reconstructed);
+        }
+
+        // Rule 9.3: the summary line and the run record are the pair that closes both streams,
+        // and the text stream's last line is that summary line.
+        assert!(
+            capture
+                .text
+                .lines()
+                .last()
+                .unwrap()
+                .starts_with("summary reason="),
+            "the text stream must end with its summary line"
+        );
+    }
 }
 
 /// Rule 8.3: the run record carries exactly the twelve figures the text summary line carries.

@@ -1,0 +1,1293 @@
+WO-MOK-016 completion report item 13: every updated test named, with its assertion
+count before and after
+=================================================================================
+
+What this is        The measurement behind item 13's second clause. The census
+                    reconciles the two name lists; a name list cannot show what a
+                    test that kept its name now asserts. This file is that figure,
+                    for the nine retained tests whose bodies changed, and it is the
+                    measurement of stop condition 8 rather than a statement about it.
+Reader              analysis/updated-tests.py, written for this record
+Interpreter         Python 3.14.6
+Commit              7fd313c806026180a8eaa3ad30d64312b250f459
+Worktree            One untracked path at measurement -- analysis/updated-tests.py,
+                    the reader these runs invoke. This file is the second, written by
+                    the runs themselves. No tracked file modified, before or after.
+Supersedes          Nothing. post/test-census-reconciliation.md sections 1 to 9 stand
+                    unaltered; this file adds the figure they do not carry.
+Date                2026-08-21
+
+The trees. Every run reads two extracted trees rather than two revisions of one file,
+because 20 files carry tests and every one of them moves:
+
+    $ cd /c/Users/mathi/wo016-updated-tests
+    $ mkdir base cand renum master merged
+    $ git archive 39662d13abd08e3410648d1c59ad38384f8ad2d2 | tar -x -C base
+    $ git archive 139061530f1dba72c9a20427eeaac6ce69492fb2 | tar -x -C cand
+    $ git archive d72465c4e7f2d874eef0fe5bd14ae25b2432ee40 | tar -x -C renum
+    $ git archive d8e207941f99ee47ae6c7f3ffeb1769f560fd4dc | tar -x -C master
+    $ git archive 259859dffe1f5f856e154263c48d8d1e04808903 | tar -x -C merged
+
+    base    39662d13  the baseline the whole packet compares against
+    cand    13906153  this branch's amended candidate, and the commit the census's
+                      retained logs were taken at. Its non-documentation tree is
+                      byte-identical to 59d61b9's: git diff --name-only 59d61b9
+                      13906153 names no file outside docs/, so either revision
+                      extracts the same suite.
+    renum   d72465c   the renumber: this chain moved out of four occupied identifier
+                      ranges. Sits between cand and the merge.
+    master  d8e2079   master's tip, the merge's second parent
+    merged  259859d   the merge. git diff --name-only 259859d HEAD | grep -v '^docs/'
+                      is empty, so this is also the suite at the commit above.
+
+The eight runs, and why eight. Three measure; five are controls, and three of the five
+must fail. A check that has never fired is a check whose failure path is unread, so each
+detector here is shown failing on a tree perturbed in exactly the way the detector
+exists to catch. The perturbations are made with sed rather than by hand, so a reader
+can reproduce them:
+
+    $ old=the_whole_world_needs_both_axes_and_never_width_alone
+    $ new=the_whole_world_needs_both_axes
+    $ cp -r cand control-b && cp -r cand control-c && cp -r cand control-d
+    $ sed -i '33d' control-b/mokiterions-tui/tests/spatial.rs
+    $ sed -i "33d;13s/$old/$new/" control-c/mokiterions-tui/tests/spatial.rs
+    $ sed -i "13s/$old/$new/" control-d/mokiterions-tui/tests/spatial.rs
+
+Line 33 of that file is `assert!(!narrow.is_whole_world());`, a standalone assertion
+inside a test in a target this work order does not touch, so deleting it perturbs one
+figure and nothing else. Line 13 is that test's signature.
+
+Those three sed invocations do one thing more than they were asked to, and it is
+disclosed rather than worked around: this shell's sed rewrites the whole file's line
+endings from CRLF to LF, which is 145 bytes of that file and not the ~40 the edit
+accounts for. The perturbation the reader sees is still only the intended one, because
+the reader reads with Python's universal newlines and compares text in which CRLF has
+already become LF. Control E is that claim measured rather than asserted, and it is
+worth measuring for its own sake: it says a verifier extracting these trees on a
+platform that checks out LF gets this file's figures to the byte.
+
+    run          trees                   expected  actual  what it establishes
+    -----------  ----------------------  --------  ------  ----------------------------
+    1 baseline   base -> cand            exit 0    exit 0  item 13's figure
+    2 master     master -> merged        exit 0    exit 0  no test of master's is
+                                                           absorbed into this list
+    3 renumber   cand -> renum           exit 0    exit 0  seven bodies move, no count
+    4 control A  cand -> base (swapped)  exit 1    exit 1  the fall detector fires
+    5 control B  base -> control-b       exit 1    exit 1  one deleted assertion is named
+    6 control C  base -> control-c       exit 1    exit 1  a rename that changed its body
+                                                           is refused as a rename
+    7 control D  base -> control-d       exit 0    exit 0  a rename that did not is accepted
+    8 control E  base -> cand-lf         exit 0    exit 0  the figures do not depend on
+                                                           the checkout's line endings
+
+Controls D and E are the two that pass, and they are here for the same reason the three
+failing ones are: a rename matcher that refuses every rename would pass controls A, B
+and C and still be useless, and a reader whose figures move with the platform would pass
+all four and still not answer item 13. D renames a test the change never touched and
+alters nothing else, and the reader pairs the two names by body at 12 assertions on each
+side. E converts every Rust source file in the candidate tree to LF and changes nothing
+else:
+
+    $ cp -r cand cand-lf
+    $ find cand-lf/mokiterions-core/src cand-lf/mokiterions-core/tests \
+           cand-lf/mokiterions-tui/src cand-lf/mokiterions-tui/tests \
+           -name '*.rs' -exec sed -i 's/\r$//' {} +
+    (32 files)
+
+What this file does not establish. Four things, and the last is the one that matters:
+
+  * That the assertions which kept their count kept their strength. Nine bodies changed
+    at the baseline pair and six of the nine hold the same count on both sides; the
+    count cannot tell a widened sweep from a weakened check. post/updated-tests.md reads
+    all nine by hand, and the renumber's seven with them, and says which each is.
+  * That the added tests assert anything in particular. 39 additions carrying 206
+    assertions is a volume, not a claim about coverage; VER-MOK-016's own rows are where
+    coverage is argued.
+  * That `unwrap()` and `expect()` were not substituted for assertions. They abort a test
+    and are deliberately uncounted here, so a check rewritten as an `expect` would read
+    as one assertion fewer -- which the fall detector would catch -- and a setup line
+    rewritten from `unwrap` to `assert!` would read as one more.
+  * That the suite is right. Every figure here is about what changed between two trees.
+    Whether the tests that changed assert what the specification requires is
+    VER-MOK-016's question and the verifier's, not this file's.
+
+
+=================================================================================
+Run 1 of 8 -- the measurement: 39662d13 -> 13906153
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/base C:/Users/mathi/wo016-updated-tests/cand
+
+This is item 13's answer. Nine retained tests changed body, none of the nine
+asserts less than it did, the one absent name is the rename section 3 of the
+census reconciles, and its body is identical with the name blanked out.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\base
+after tree      C:\Users\mathi\wo016-updated-tests\cand
+pair            baseline -- reconciled by post/test-census-reconciliation.md §§1-2 and §8
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     212 before, 250 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after         census §2
+tests/authority.rs               4          4           4 -> 4  
+tests/cli.rs                    13         15    +2    13 -> 15 
+tests/decisions.rs               1          3    +2     1 -> 3  
+tests/density.rs                 2          2           2 -> 2  
+tests/export.rs                  7          7           7 -> 7  
+tests/layout.rs                 10         10          10 -> 10 
+tests/naming.rs                  3          3           3 -> 3  
+tests/options.rs                 8          8           8 -> 8  
+tests/process.rs                 6          7    +1     6 -> 7  
+tests/render.rs                 12         12          12 -> 12 
+tests/spatial.rs                 7          7           7 -> 7  
+tests/state.rs                  21         21          21 -> 21 
+tests/termination.rs             4          5    +1     4 -> 5  
+tests/verification.rs           19         20    +1    19 -> 20 
+tests/viability.rs               2          5    +3     2 -> 4   and §8's +1
+unittests                       93        121   +28    93 -> 121
+total                          212        250
+
+post/test-census-reconciliation.md §§1-2 and §8 reads 212 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+The right-hand column is that file's §2 table, whose after side is the 249-name
+census at 7c4aef39. Its §8 records the step from there to 250 as one viability test
+becoming two, so tests/viability.rs is expected to read one higher here and every
+other target is expected to match exactly.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        211
+added on the after side      39
+absent on the after side     1
+  gone     mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       32     37  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       31     36  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       28     33  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      12      14       18     20
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       33     38  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       14     19  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       5       6       15     16
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       1       2       19     23
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       13     19  same count
+
+retained and byte-identical  202
+retained and updated         9
+assertions across the updated tests: 34 before, 38 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   0
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  rename   mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+        -> no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/cli.rs                2
+tests/decisions.rs          2
+tests/process.rs            1
+tests/termination.rs        1
+tests/verification.rs       2
+tests/viability.rs          3
+unittests                  28
+total                      39
+
+assertions in the added tests  206
+
+Checks
+------
+Every check passed.
+
+RESULT: PASS
+
+    $ echo $?
+    0
+
+
+=================================================================================
+Run 2 of 8 -- from master's tip: d8e2079 -> 259859d
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/master C:/Users/mathi/wo016-updated-tests/merged master
+
+WO-MOK-013 is present on both sides here, so master's own work cancels and what
+remains is this branch's. The same nine names, the same 34 -> 38 assertions, the
+same 39 additions carrying 206 assertions, and the same single rename. Nothing of
+master's was absorbed into this work order's list and no tenth retained test moved.
+What this run does not isolate is the merge resolution from the renumber, because
+both sit inside the interval; run 3 is the renumber on its own.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\master
+after tree      C:\Users\mathi\wo016-updated-tests\merged
+pair            master -- reconciled by post/test-census-reconciliation.md §9.2
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     226 before, 264 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after      
+tests/authority.rs               4          4      
+tests/cli.rs                    13         15    +2
+tests/decisions.rs               1          3    +2
+tests/density.rs                 2          2      
+tests/export.rs                  7          7      
+tests/layout.rs                 11         11      
+tests/naming.rs                  3          3      
+tests/options.rs                 8          8      
+tests/process.rs                 6          7    +1
+tests/render.rs                 22         22      
+tests/spatial.rs                 7          7      
+tests/state.rs                  21         21      
+tests/termination.rs             4          5    +1
+tests/verification.rs           20         21    +1
+tests/viability.rs               2          5    +3
+unittests                       95        123   +28
+total                          226        264
+
+post/test-census-reconciliation.md §9.2 reads 226 names before and 264 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+§9.2 reconciles this pair by total and by added-name set rather than target by
+target, so no per-target expectation is applied and the columns above stand as
+measurement only.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        225
+added on the after side      39
+absent on the after side     1
+  gone     mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       32     37  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       31     36  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       28     33  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      12      14       18     20
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       33     38  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       14     19  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       5       6       15     16
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       1       2       19     23
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       13     19  same count
+
+retained and byte-identical  216
+retained and updated         9
+assertions across the updated tests: 34 before, 38 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   0
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  rename   mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+        -> no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/cli.rs                2
+tests/decisions.rs          2
+tests/process.rs            1
+tests/termination.rs        1
+tests/verification.rs       2
+tests/viability.rs          3
+unittests                  28
+total                      39
+
+assertions in the added tests  206
+
+Checks
+------
+Every check passed.
+
+RESULT: PASS
+
+    $ echo $?
+    0
+
+
+=================================================================================
+Run 3 of 8 -- the renumber alone: 13906153 -> d72465c
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/cand C:/Users/mathi/wo016-updated-tests/renum renumber
+
+The commit that moved this chain out of four occupied identifier ranges, measured
+against the tree before it. 250 names on both sides, seven bodies changed, and not
+one assertion count or non-comment body line moved in any of the seven. This is the
+reason the candidate trees of runs 1 and 2 disagree on which identifier two of the
+authority tests assert while agreeing on every figure in this file, and it is the
+clearest case of what section 4 discloses: seven changed bodies at unchanged counts,
+each read by hand in post/updated-tests.md and each an identifier substitution.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\cand
+after tree      C:\Users\mathi\wo016-updated-tests\renum
+pair            renumber -- reconciled by no census row -- 13906153 against the renumber commit d72465c
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     250 before, 250 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after      
+tests/authority.rs               4          4      
+tests/cli.rs                    15         15      
+tests/decisions.rs               3          3      
+tests/density.rs                 2          2      
+tests/export.rs                  7          7      
+tests/layout.rs                 10         10      
+tests/naming.rs                  3          3      
+tests/options.rs                 8          8      
+tests/process.rs                 7          7      
+tests/render.rs                 12         12      
+tests/spatial.rs                 7          7      
+tests/state.rs                  21         21      
+tests/termination.rs             5          5      
+tests/verification.rs           20         20      
+tests/viability.rs               5          5      
+unittests                      121        121      
+total                          250        250
+
+no census row -- 13906153 against the renumber commit d72465c reads 250 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+§9.2 reconciles this pair by total and by added-name set rather than target by
+target, so no per-target expectation is applied and the columns above stand as
+measurement only.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        250
+added on the after side      0
+absent on the after side     0
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_threat_composes_with_rule_12_in_turn_order_and_outlasts_its_tick       8       8       61     61  same count
+mokiterions-core/tests/decisions.rs :: every_targeted_verb_applies_somewhere_in_the_declared_matrix       2       2       43     43  same count
+mokiterions-core/tests/viability.rs :: survival_by_turn_position_stays_inside_the_stated_bound       2       2       40     40  same count
+mokiterions-core/tests/viability.rs :: the_social_source_keeps_the_world_habitable_and_combat_lethal       2       2       56     56  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       6       6       16     16  same count
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       2       2       23     23  same count
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       19     19  same count
+
+retained and byte-identical  243
+retained and updated         7
+assertions across the updated tests: 25 before, 25 after
+
+The 7 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   0
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+total                       0
+
+assertions in the added tests  0
+
+Checks
+------
+Every check passed.
+
+RESULT: PASS
+
+    $ echo $?
+    0
+
+
+=================================================================================
+Run 4 of 8 -- control A: the trees swapped, which must fail
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/cand C:/Users/mathi/wo016-updated-tests/base
+
+Reading the change backwards makes every addition a removal and every widened
+assertion a narrowed one. 18 checks fire: the totals, seven per-target rows, the
+three tests whose counts rose read as three that fell, and 38 additions read as
+38 removals no rename accounts for. The crudest control, and the one that shows
+the direction of the comparison is load-bearing rather than incidental.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\cand
+after tree      C:\Users\mathi\wo016-updated-tests\base
+pair            baseline -- reconciled by post/test-census-reconciliation.md §§1-2 and §8
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     250 before, 212 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after         census §2
+tests/authority.rs               4          4           4 -> 4  
+tests/cli.rs                    15         13    -2    13 -> 15 
+tests/decisions.rs               3          1    -2     1 -> 3  
+tests/density.rs                 2          2           2 -> 2  
+tests/export.rs                  7          7           7 -> 7  
+tests/layout.rs                 10         10          10 -> 10 
+tests/naming.rs                  3          3           3 -> 3  
+tests/options.rs                 8          8           8 -> 8  
+tests/process.rs                 7          6    -1     6 -> 7  
+tests/render.rs                 12         12          12 -> 12 
+tests/spatial.rs                 7          7           7 -> 7  
+tests/state.rs                  21         21          21 -> 21 
+tests/termination.rs             5          4    -1     4 -> 5  
+tests/verification.rs           20         19    -1    19 -> 20 
+tests/viability.rs               5          2    -3     2 -> 4   and §8's +1
+unittests                      121         93   -28    93 -> 121
+total                          250        212
+
+post/test-census-reconciliation.md §§1-2 and §8 reads 212 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+The right-hand column is that file's §2 table, whose after side is the 249-name
+census at 7c4aef39. Its §8 records the step from there to 250 as one viability test
+becoming two, so tests/viability.rs is expected to read one higher here and every
+other target is expected to match exactly.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        211
+added on the after side      1
+absent on the after side     39
+  gone     mokiterions-core/src/simulation.rs :: a_defender_below_its_attackers_identifier_answers_on_the_next_tick
+  gone     mokiterions-core/src/simulation.rs :: a_full_health_mokiterion_falls_in_four_strikes_at_most_and_ten_at_least
+  gone     mokiterions-core/src/simulation.rs :: a_mokiterion_killed_mid_tick_takes_no_further_opportunity
+  gone     mokiterions-core/src/simulation.rs :: a_rejected_targeted_proposal_mutates_nothing_and_reports_nothing
+  gone     mokiterions-core/src/simulation.rs :: a_resolution_touches_nobody_but_its_two_parties
+  gone     mokiterions-core/src/simulation.rs :: a_strike_that_empties_health_kills_through_rule_13_and_no_other_path
+  gone     mokiterions-core/src/simulation.rs :: a_surrender_buys_no_immunity_and_is_paid_again
+  gone     mokiterions-core/src/simulation.rs :: a_surrender_forfeits_half_its_own_satiety_and_discards_what_does_not_fit
+  gone     mokiterions-core/src/simulation.rs :: a_targeted_move_is_a_rule_8_move_on_rule_5s_axis
+  gone     mokiterions-core/src/simulation.rs :: a_threat_composes_with_rule_12_in_turn_order_and_outlasts_its_tick
+  gone     mokiterions-core/src/simulation.rs :: a_threat_moves_the_targets_fear_and_nothing_else
+  gone     mokiterions-core/src/simulation.rs :: answering_one_attack_closes_the_window_on_every_attack_in_it
+  gone     mokiterions-core/src/simulation.rs :: both_parties_may_die_within_one_tick
+  gone     mokiterions-core/src/simulation.rs :: branch_one_answers_the_earliest_attacker_and_precedes_every_other_branch
+  gone     mokiterions-core/src/simulation.rs :: branch_one_answers_the_first_attack_at_the_specified_fear_thresholds
+  gone     mokiterions-core/src/simulation.rs :: branch_two_puts_survival_before_society_and_draws_nothing
+  gone     mokiterions-core/src/simulation.rs :: branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold
+  gone     mokiterions-core/src/simulation.rs :: contact_and_resolution_span_the_territory_boundary
+  gone     mokiterions-core/src/simulation.rs :: contact_is_recomputed_from_position_and_needs_two_living_neighbors
+  gone     mokiterions-core/src/simulation.rs :: every_targeted_rejection_names_the_first_unmet_condition
+  gone     mokiterions-core/src/simulation.rs :: exchanging_the_two_identifiers_changes_no_outcome
+  gone     mokiterions-core/src/simulation.rs :: no_resolution_and_no_targeted_move_touches_the_shared_stream
+  gone     mokiterions-core/src/simulation.rs :: no_source_but_rule_26s_opens_the_suffered_window
+  gone     mokiterions-core/src/simulation.rs :: strike_damage_is_the_strikers_own_condition_and_the_cost_is_flat
+  gone     mokiterions-core/src/simulation.rs :: the_action_vocabulary_is_eleven_kinds_and_seven_name_a_target
+  gone     mokiterions-core/src/simulation.rs :: the_social_source_draws_at_most_once_and_never_for_a_targeted_proposal
+  gone     mokiterions-core/src/simulation.rs :: the_suffered_window_opens_in_resolution_order_and_closes_at_the_next_opportunity
+  gone     mokiterions-core/src/simulation.rs :: with_no_company_and_an_empty_record_the_social_source_is_the_individual_source
+  gone     mokiterions-core/tests/cli.rs :: the_social_policy_is_selectable_and_does_not_become_the_default
+  gone     mokiterions-core/tests/cli.rs :: the_unknown_policy_diagnostic_names_every_accepted_value
+  gone     mokiterions-core/tests/decisions.rs :: every_targeted_verb_applies_somewhere_in_the_declared_matrix
+  gone     mokiterions-core/tests/decisions.rs :: the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source
+  gone     mokiterions-core/tests/process.rs :: the_social_source_runs_to_completion_and_exits_successfully
+  gone     mokiterions-core/tests/termination.rs :: a_long_run_is_bounded_under_the_social_source
+  gone     mokiterions-core/tests/viability.rs :: no_identifier_series_is_monotone_in_identifier
+  gone     mokiterions-core/tests/viability.rs :: survival_by_turn_position_stays_inside_the_stated_bound
+  gone     mokiterions-core/tests/viability.rs :: the_social_source_keeps_the_world_habitable_and_combat_lethal
+  gone     mokiterions-tui/tests/verification.rs :: no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+  gone     mokiterions-tui/tests/verification.rs :: the_social_source_is_rejected_only_as_the_specification_admits
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       37     32  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       36     31  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       33     28  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      14      12       20     18  <- FEWER ASSERTIONS
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       38     33  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       19     14  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       6       5       16     15  <- FEWER ASSERTIONS
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       2       1       23     19  <- FEWER ASSERTIONS
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       19     13  same count
+
+retained and byte-identical  202
+retained and updated         9
+assertions across the updated tests: 38 before, 34 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   3
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_defender_below_its_attackers_identifier_answers_on_the_next_tick
+           5 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_full_health_mokiterion_falls_in_four_strikes_at_most_and_ten_at_least
+           5 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_mokiterion_killed_mid_tick_takes_no_further_opportunity
+           4 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_rejected_targeted_proposal_mutates_nothing_and_reports_nothing
+           4 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_resolution_touches_nobody_but_its_two_parties
+           3 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_strike_that_empties_health_kills_through_rule_13_and_no_other_path
+           7 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_surrender_buys_no_immunity_and_is_paid_again
+           6 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_surrender_forfeits_half_its_own_satiety_and_discards_what_does_not_fit
+           7 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_targeted_move_is_a_rule_8_move_on_rule_5s_axis
+           21 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_threat_composes_with_rule_12_in_turn_order_and_outlasts_its_tick
+           8 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: a_threat_moves_the_targets_fear_and_nothing_else
+           7 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: answering_one_attack_closes_the_window_on_every_attack_in_it
+           3 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: both_parties_may_die_within_one_tick
+           7 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: branch_one_answers_the_earliest_attacker_and_precedes_every_other_branch
+           2 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: branch_one_answers_the_first_attack_at_the_specified_fear_thresholds
+           3 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: branch_two_puts_survival_before_society_and_draws_nothing
+           6 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold
+           6 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: contact_and_resolution_span_the_territory_boundary
+           6 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: contact_is_recomputed_from_position_and_needs_two_living_neighbors
+           9 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: every_targeted_rejection_names_the_first_unmet_condition
+           10 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: exchanging_the_two_identifiers_changes_no_outcome
+           2 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: no_resolution_and_no_targeted_move_touches_the_shared_stream
+           1 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: no_source_but_rule_26s_opens_the_suffered_window
+           3 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: strike_damage_is_the_strikers_own_condition_and_the_cost_is_flat
+           17 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: the_action_vocabulary_is_eleven_kinds_and_seven_name_a_target
+           5 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: the_social_source_draws_at_most_once_and_never_for_a_targeted_proposal
+           2 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: the_suffered_window_opens_in_resolution_order_and_closes_at_the_next_opportunity
+           9 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/src/simulation.rs :: with_no_company_and_an_empty_record_the_social_source_is_the_individual_source
+           3 assertions, and no test added to mokiterions-core/src/simulation.rs carries its body
+  REMOVAL  mokiterions-core/tests/cli.rs :: the_social_policy_is_selectable_and_does_not_become_the_default
+           8 assertions, and no test added to mokiterions-core/tests/cli.rs carries its body
+  REMOVAL  mokiterions-core/tests/cli.rs :: the_unknown_policy_diagnostic_names_every_accepted_value
+           2 assertions, and no test added to mokiterions-core/tests/cli.rs carries its body
+  REMOVAL  mokiterions-core/tests/decisions.rs :: every_targeted_verb_applies_somewhere_in_the_declared_matrix
+           2 assertions, and no test added to mokiterions-core/tests/decisions.rs carries its body
+  REMOVAL  mokiterions-core/tests/decisions.rs :: the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source
+           7 assertions, and no test added to mokiterions-core/tests/decisions.rs carries its body
+  REMOVAL  mokiterions-core/tests/process.rs :: the_social_source_runs_to_completion_and_exits_successfully
+           6 assertions, and no test added to mokiterions-core/tests/process.rs carries its body
+  REMOVAL  mokiterions-core/tests/termination.rs :: a_long_run_is_bounded_under_the_social_source
+           2 assertions, and no test added to mokiterions-core/tests/termination.rs carries its body
+  REMOVAL  mokiterions-core/tests/viability.rs :: no_identifier_series_is_monotone_in_identifier
+           1 assertions, and no test added to mokiterions-core/tests/viability.rs carries its body
+  REMOVAL  mokiterions-core/tests/viability.rs :: survival_by_turn_position_stays_inside_the_stated_bound
+           2 assertions, and no test added to mokiterions-core/tests/viability.rs carries its body
+  REMOVAL  mokiterions-core/tests/viability.rs :: the_social_source_keeps_the_world_habitable_and_combat_lethal
+           2 assertions, and no test added to mokiterions-core/tests/viability.rs carries its body
+  rename   mokiterions-tui/tests/verification.rs :: no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+        -> no_shipped_decision_source_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+  REMOVAL  mokiterions-tui/tests/verification.rs :: the_social_source_is_rejected_only_as_the_specification_admits
+           2 assertions, and no test added to mokiterions-tui/tests/verification.rs carries its body
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/verification.rs       1
+total                       1
+
+assertions in the added tests  1
+
+Checks
+------
+FAIL  tests/cli.rs: 15 before against §2's 13
+FAIL  tests/cli.rs: 13 after against §2's 15 plus 0
+FAIL  tests/decisions.rs: 3 before against §2's 1
+FAIL  tests/decisions.rs: 1 after against §2's 3 plus 0
+FAIL  tests/process.rs: 7 before against §2's 6
+FAIL  tests/process.rs: 6 after against §2's 7 plus 0
+FAIL  tests/termination.rs: 5 before against §2's 4
+FAIL  tests/termination.rs: 4 after against §2's 5 plus 0
+FAIL  tests/verification.rs: 20 before against §2's 19
+FAIL  tests/verification.rs: 19 after against §2's 20 plus 0
+FAIL  tests/viability.rs: 5 before against §2's 2
+FAIL  tests/viability.rs: 2 after against §2's 4 plus 1
+FAIL  unittests: 121 before against §2's 93
+FAIL  unittests: 93 after against §2's 121 plus 0
+FAIL  before total 250 is not the census's 212
+FAIL  after total 212 is not the census's 250
+FAIL  retained tests asserting fewer things than before: 3 -- mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity, mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names, mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one
+FAIL  tests removed rather than renamed: 38 -- mokiterions-core/src/simulation.rs :: a_defender_below_its_attackers_identifier_answers_on_the_next_tick, mokiterions-core/src/simulation.rs :: a_full_health_mokiterion_falls_in_four_strikes_at_most_and_ten_at_least, mokiterions-core/src/simulation.rs :: a_mokiterion_killed_mid_tick_takes_no_further_opportunity, and 35 more
+
+RESULT: FAIL (18 of the checks fired)
+
+    $ echo $?
+    1
+
+
+=================================================================================
+Run 5 of 8 -- control B: one assertion deleted, which must fail
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/base C:/Users/mathi/wo016-updated-tests/control-b
+
+A single standalone assert! removed from a test in a target this change does not
+touch. Two checks fire and both name the test: the fall detector, and the nine-name
+tripwire that says which tests this change is entitled to have updated. Neither
+the totals nor the per-target table moves, which is the point -- a suite can keep
+every name and every count and still assert less.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\base
+after tree      C:\Users\mathi\wo016-updated-tests\control-b
+pair            baseline -- reconciled by post/test-census-reconciliation.md §§1-2 and §8
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     212 before, 250 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after         census §2
+tests/authority.rs               4          4           4 -> 4  
+tests/cli.rs                    13         15    +2    13 -> 15 
+tests/decisions.rs               1          3    +2     1 -> 3  
+tests/density.rs                 2          2           2 -> 2  
+tests/export.rs                  7          7           7 -> 7  
+tests/layout.rs                 10         10          10 -> 10 
+tests/naming.rs                  3          3           3 -> 3  
+tests/options.rs                 8          8           8 -> 8  
+tests/process.rs                 6          7    +1     6 -> 7  
+tests/render.rs                 12         12          12 -> 12 
+tests/spatial.rs                 7          7           7 -> 7  
+tests/state.rs                  21         21          21 -> 21 
+tests/termination.rs             4          5    +1     4 -> 5  
+tests/verification.rs           19         20    +1    19 -> 20 
+tests/viability.rs               2          5    +3     2 -> 4   and §8's +1
+unittests                       93        121   +28    93 -> 121
+total                          212        250
+
+post/test-census-reconciliation.md §§1-2 and §8 reads 212 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+The right-hand column is that file's §2 table, whose after side is the 249-name
+census at 7c4aef39. Its §8 records the step from there to 250 as one viability test
+becoming two, so tests/viability.rs is expected to read one higher here and every
+other target is expected to match exactly.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        211
+added on the after side      39
+absent on the after side     1
+  gone     mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       32     37  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       31     36  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       28     33  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      12      14       18     20
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       33     38  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       14     19  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       5       6       15     16
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       1       2       19     23
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       13     19  same count
+mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone      12      11       19     18  <- FEWER ASSERTIONS
+
+retained and byte-identical  201
+retained and updated         10
+assertions across the updated tests: 46 before, 49 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   1
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  rename   mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+        -> no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/cli.rs                2
+tests/decisions.rs          2
+tests/process.rs            1
+tests/termination.rs        1
+tests/verification.rs       2
+tests/viability.rs          3
+unittests                  28
+total                      39
+
+assertions in the added tests  206
+
+Checks
+------
+FAIL  tests updated that this pair's recorded 9 do not name: mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+FAIL  retained tests asserting fewer things than before: 1 -- mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+
+RESULT: FAIL (2 of the checks fired)
+
+    $ echo $?
+    1
+
+
+=================================================================================
+Run 6 of 8 -- control C: a rename that changed its body, which must fail
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/base C:/Users/mathi/wo016-updated-tests/control-c
+
+The same deletion as control B, with the test renamed in the same commit. This is
+the shape condition 8's 'renamed away' clause exists for: a name disappears, a new
+name appears in the same file, and a reader comparing name lists sees a rename. The
+matcher compares bodies, finds no added test carrying the absent one's, and reports
+a REMOVAL of a test holding 12 assertions rather than a rename.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\base
+after tree      C:\Users\mathi\wo016-updated-tests\control-c
+pair            baseline -- reconciled by post/test-census-reconciliation.md §§1-2 and §8
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     212 before, 250 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after         census §2
+tests/authority.rs               4          4           4 -> 4  
+tests/cli.rs                    13         15    +2    13 -> 15 
+tests/decisions.rs               1          3    +2     1 -> 3  
+tests/density.rs                 2          2           2 -> 2  
+tests/export.rs                  7          7           7 -> 7  
+tests/layout.rs                 10         10          10 -> 10 
+tests/naming.rs                  3          3           3 -> 3  
+tests/options.rs                 8          8           8 -> 8  
+tests/process.rs                 6          7    +1     6 -> 7  
+tests/render.rs                 12         12          12 -> 12 
+tests/spatial.rs                 7          7           7 -> 7  
+tests/state.rs                  21         21          21 -> 21 
+tests/termination.rs             4          5    +1     4 -> 5  
+tests/verification.rs           19         20    +1    19 -> 20 
+tests/viability.rs               2          5    +3     2 -> 4   and §8's +1
+unittests                       93        121   +28    93 -> 121
+total                          212        250
+
+post/test-census-reconciliation.md §§1-2 and §8 reads 212 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+The right-hand column is that file's §2 table, whose after side is the 249-name
+census at 7c4aef39. Its §8 records the step from there to 250 as one viability test
+becoming two, so tests/viability.rs is expected to read one higher here and every
+other target is expected to match exactly.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        210
+added on the after side      40
+absent on the after side     2
+  gone     mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+  gone     mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       32     37  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       31     36  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       28     33  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      12      14       18     20
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       33     38  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       14     19  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       5       6       15     16
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       1       2       19     23
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       13     19  same count
+
+retained and byte-identical  201
+retained and updated         9
+assertions across the updated tests: 34 before, 38 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   0
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  REMOVAL  mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+           12 assertions, and no test added to mokiterions-tui/tests/spatial.rs carries its body
+  rename   mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+        -> no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/cli.rs                2
+tests/decisions.rs          2
+tests/process.rs            1
+tests/spatial.rs            1
+tests/termination.rs        1
+tests/verification.rs       2
+tests/viability.rs          3
+unittests                  28
+total                      40
+
+assertions in the added tests  217
+
+Checks
+------
+FAIL  tests removed rather than renamed: 1 -- mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+
+RESULT: FAIL (1 of the checks fired)
+
+    $ echo $?
+    1
+
+
+=================================================================================
+Run 7 of 8 -- control D: a rename that did not, which must pass
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/base C:/Users/mathi/wo016-updated-tests/control-d
+
+The rename from control C without the deletion. The matcher pairs the two names by
+body -- 12 assertions before, 12 after -- and the run passes with two renames
+reported instead of one. This is the control that keeps the three above honest.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\base
+after tree      C:\Users\mathi\wo016-updated-tests\control-d
+pair            baseline -- reconciled by post/test-census-reconciliation.md §§1-2 and §8
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     212 before, 250 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after         census §2
+tests/authority.rs               4          4           4 -> 4  
+tests/cli.rs                    13         15    +2    13 -> 15 
+tests/decisions.rs               1          3    +2     1 -> 3  
+tests/density.rs                 2          2           2 -> 2  
+tests/export.rs                  7          7           7 -> 7  
+tests/layout.rs                 10         10          10 -> 10 
+tests/naming.rs                  3          3           3 -> 3  
+tests/options.rs                 8          8           8 -> 8  
+tests/process.rs                 6          7    +1     6 -> 7  
+tests/render.rs                 12         12          12 -> 12 
+tests/spatial.rs                 7          7           7 -> 7  
+tests/state.rs                  21         21          21 -> 21 
+tests/termination.rs             4          5    +1     4 -> 5  
+tests/verification.rs           19         20    +1    19 -> 20 
+tests/viability.rs               2          5    +3     2 -> 4   and §8's +1
+unittests                       93        121   +28    93 -> 121
+total                          212        250
+
+post/test-census-reconciliation.md §§1-2 and §8 reads 212 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+The right-hand column is that file's §2 table, whose after side is the 249-name
+census at 7c4aef39. Its §8 records the step from there to 250 as one viability test
+becoming two, so tests/viability.rs is expected to read one higher here and every
+other target is expected to match exactly.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        210
+added on the after side      40
+absent on the after side     2
+  gone     mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+  gone     mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       32     37  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       31     36  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       28     33  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      12      14       18     20
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       33     38  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       14     19  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       5       6       15     16
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       1       2       19     23
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       13     19  same count
+
+retained and byte-identical  201
+retained and updated         9
+assertions across the updated tests: 34 before, 38 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   0
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  rename   mokiterions-tui/tests/spatial.rs :: the_whole_world_needs_both_axes_and_never_width_alone
+        -> the_whole_world_needs_both_axes
+           assertions: 12 before, 12 after; body identical with the name blanked
+  rename   mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+        -> no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/cli.rs                2
+tests/decisions.rs          2
+tests/process.rs            1
+tests/spatial.rs            1
+tests/termination.rs        1
+tests/verification.rs       2
+tests/viability.rs          3
+unittests                  28
+total                      40
+
+assertions in the added tests  218
+
+Checks
+------
+Every check passed.
+
+RESULT: PASS
+
+    $ echo $?
+    0
+
+
+=================================================================================
+Run 8 of 8 -- control E: the candidate converted to LF, which must pass unchanged
+=================================================================================
+
+    $ cd docs/engineering/simulation/evidence/WO-MOK-016/analysis
+    $ python updated-tests.py C:/Users/mathi/wo016-updated-tests/base C:/Users/mathi/wo016-updated-tests/cand-lf
+
+Run 1's comparison against a candidate tree whose every Rust source file has been
+converted from CRLF to LF. Not one figure moves. The output below and run 1's differ
+in the `after tree` line and nowhere else, which is checked below rather than left to
+the eye.
+
+Every test updated between two trees, with its assertion count before and after
+===============================================================================
+
+before tree     C:\Users\mathi\wo016-updated-tests\base
+after tree      C:\Users\mathi\wo016-updated-tests\cand-lf
+pair            baseline -- reconciled by post/test-census-reconciliation.md §§1-2 and §8
+source roots    mokiterions-core/src, mokiterions-core/tests, mokiterions-tui/src, mokiterions-tui/tests
+tests found     212 before, 250 after
+
+1. The two sides by target, against the census taken from the cargo test log
+----------------------------------------------------------------------------
+target                      before      after         census §2
+tests/authority.rs               4          4           4 -> 4  
+tests/cli.rs                    13         15    +2    13 -> 15 
+tests/decisions.rs               1          3    +2     1 -> 3  
+tests/density.rs                 2          2           2 -> 2  
+tests/export.rs                  7          7           7 -> 7  
+tests/layout.rs                 10         10          10 -> 10 
+tests/naming.rs                  3          3           3 -> 3  
+tests/options.rs                 8          8           8 -> 8  
+tests/process.rs                 6          7    +1     6 -> 7  
+tests/render.rs                 12         12          12 -> 12 
+tests/spatial.rs                 7          7           7 -> 7  
+tests/state.rs                  21         21          21 -> 21 
+tests/termination.rs             4          5    +1     4 -> 5  
+tests/verification.rs           19         20    +1    19 -> 20 
+tests/viability.rs               2          5    +3     2 -> 4   and §8's +1
+unittests                       93        121   +28    93 -> 121
+total                          212        250
+
+post/test-census-reconciliation.md §§1-2 and §8 reads 212 names before and 250 after,
+from the cargo test logs. This parser reads source. They agree or one of the two is
+wrong about what the suite is.
+
+The right-hand column is that file's §2 table, whose after side is the 249-name
+census at 7c4aef39. Its §8 records the step from there to 250 as one viability test
+becoming two, so tests/viability.rs is expected to read one higher here and every
+other target is expected to match exactly.
+
+2. Name reconciliation, by file rather than by target
+-----------------------------------------------------
+present on both sides        211
+added on the after side      39
+absent on the after side     1
+  gone     mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+
+A rename appears here as one removal and one addition, which is what the census's
+§§3, 6 and 7 reconcile by body rather than by name.
+
+3. The updated tests: same name, changed body
+---------------------------------------------
+test                                                                     assertions     body lines
+                                                                      before  after   before after
+mokiterions-core/src/simulation.rs :: a_name_is_the_same_value_at_both_ends_of_a_run       2       2       32     37  same count
+mokiterions-core/src/simulation.rs :: naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration       4       4       31     36  same count
+mokiterions-core/src/simulation.rs :: the_trait_is_fixed_for_the_run_and_independent_of_every_configuration       2       2       28     33  same count
+mokiterions-core/tests/cli.rs :: the_entries_state_the_constraints_that_decide_validity      12      14       18     20
+mokiterions-core/tests/naming.rs :: every_run_reports_the_specified_twelve_names_in_identifier_order       2       2       33     38  same count
+mokiterions-tui/tests/authority.rs :: every_event_type_the_observer_can_present_has_an_entry       3       3       14     19  same count
+mokiterions-tui/tests/authority.rs :: the_decision_source_maps_by_the_source_the_record_names       5       6       15     16
+mokiterions-tui/tests/authority.rs :: the_mapping_is_the_specified_one       1       2       19     23
+mokiterions-tui/tests/options.rs :: the_usage_text_advertises_every_policy_the_engine_accepts       3       3       13     19  same count
+
+retained and byte-identical  202
+retained and updated         9
+assertions across the updated tests: 34 before, 38 after
+
+The 9 names this pair expects are fixed in this reader. On the baseline
+pair that is a tripwire: it repeats what the run just read. On the master pair it is a
+claim -- WO-MOK-013 is on both sides there and cancels, so the same nine and no tenth
+means no test of master's was absorbed into this work order's list. On the renumber
+pair it is the whole point: seven bodies move and not one count does.
+
+4. Stop condition 8, measured rather than asserted
+--------------------------------------------------
+Condition 8 is reached if any existing test's assertions are relaxed, widened,
+removed, renamed away or #[ignore]d. Three of the five are measurable here.
+
+retained tests asserting fewer things than before   0
+#[ignore] before / after                            0 / 0
+
+Each absent name is either a rename or a removal, and the difference is the whole of
+condition 8's third clause. A rename is resolved here by body rather than by judgement:
+the absent test's body is compared against every test added to the same file, with each
+side's own function name blanked out, and a match means the case survived under a new
+identifier with nothing else altered. An absent name with no match is a removal.
+
+  rename   mokiterions-tui/tests/verification.rs :: no_shipped_decision_source_has_a_proposal_rejected
+        -> no_source_confined_to_the_valid_action_list_has_a_proposal_rejected
+           assertions: 1 before, 1 after; body identical with the name blanked
+
+What this cannot see: an assertion whose *content* was weakened while the count held.
+The rows above with 'same count' are where that could hide, and each is read by hand
+in post/updated-tests.md. A count is a tripwire, not a proof.
+
+5. Where the added tests sit
+----------------------------
+tests/cli.rs                2
+tests/decisions.rs          2
+tests/process.rs            1
+tests/termination.rs        1
+tests/verification.rs       2
+tests/viability.rs          3
+unittests                  28
+total                      39
+
+assertions in the added tests  206
+
+Checks
+------
+Every check passed.
+
+RESULT: PASS
+
+    $ echo $?
+    0
+
+
+=================================================================================
+Control E's claim, checked
+=================================================================================
+
+Runs 1 and 8 above, each with its `after tree` line dropped, hashed:
+
+    8ae8b4f08bca566fd402692a662bf84b54b37a43d33d2e5a80425b445d4dae9a  run 1
+    8ae8b4f08bca566fd402692a662bf84b54b37a43d33d2e5a80425b445d4dae9a  run 8
+
+One digest. Every figure in this file is independent of the line endings the
+checkout carries, so a verifier on a platform that checks out LF reproduces them
+to the byte.

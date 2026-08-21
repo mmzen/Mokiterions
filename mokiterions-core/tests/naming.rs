@@ -64,7 +64,12 @@ fn reported_names(output: &str) -> Vec<String> {
 #[test]
 fn every_run_reports_the_specified_twelve_names_in_identifier_order() {
     for seed in DECLARED_SEEDS {
-        for policy in [Policy::Baseline, Policy::Reference, Policy::Individual] {
+        for policy in [
+            Policy::Baseline,
+            Policy::Reference,
+            Policy::Individual,
+            Policy::Social,
+        ] {
             for density in ["0.15", "0.75", "1.50"] {
                 for trace_actions in [false, true] {
                     let output = run(Config {

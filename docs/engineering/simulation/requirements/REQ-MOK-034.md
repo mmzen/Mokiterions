@@ -5,7 +5,7 @@ title = "Sustain a viable population under the trait-aware decision source"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-19"
-updated = "2026-08-19"
+updated = "2026-08-20"
 statement = "WHEN a simulation runs to 1,000 ticks using the trait-aware decision source at the default resource density, THE SYSTEM SHALL leave at least eight of the twelve Mokiterions living."
 verification_method = "automated-test"
 
@@ -14,6 +14,13 @@ derives_from = ["CAP-MOK-006"]
 +++
 
 # Requirement: Sustain a viable population under the trait-aware decision source
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-19 | Original approved content for `CAP-MOK-006`: a floor of eight of twelve at the default density under the trait-aware source. | Approved 2026-08-19 by the repository owner acting as product owner, together with `INT-MOK-006`, `CAP-MOK-006`, `REQ-MOK-031` through `REQ-MOK-033`, `VER-MOK-010` and `WO-MOK-010`. The floor was missed on three of five declared seeds under `WO-MOK-010` stop condition 6 and was corrected by narrowing the `waste_tolerance` range in `SPEC-MOK-001` rather than by amending this requirement, which had delegated the range to that specification. |
+| 2026-08-20 | Narrowed the frozen-outcome constraint from "the reference or baseline source" to `baseline` alone, because `REQ-MOK-060` corrects `SPEC-MOK-001` rule 5's waste condition and that rule is the reference source's own proposal logic. **The floor of eight of twelve is not touched by this row**, and neither is the density, the horizon, the seed set, or the range-narrowing clause. | Approved 2026-08-20 by the repository owner acting as product owner, in the same act as `WO-MOK-016` — earlier than this amendment's ordering required, since it had only to precede the change that moves the reference source and need not have preceded that work order's approval. It is stated in full in that work order's *Required amendments* section. The implementation agent wrote the text and did not decide the substance: narrowing this clause rather than declining `REQ-MOK-060` was the product owner's decision of 2026-08-20, recorded in `WO-MOK-016`. **The floor itself is re-measured under `WO-MOK-016` against the corrected world and is a separate later act**, taken only if the measurement moves it, because re-measuring it requires the change to exist. |
 
 ## Rationale
 
@@ -81,8 +88,18 @@ verification seed set — `0`, `1`, `42`, `123` and `777` — not merely on a fa
   `REQ-MOK-033`. Narrowing the range on evidence is a legitimate specification amendment; narrowing it until the
   divergence evidence `VER-MOK-010` requires can no longer be produced is not.
 - Determinism is preserved, so every measurement here is reproducible rather than statistical.
-- Meeting this floor must not be achieved by any change to the reference or baseline source. Their outcomes are frozen
-  under `REQ-MOK-033`.
+- Meeting this floor must not be achieved by any change to the baseline source. Its outcomes are frozen under
+  `REQ-MOK-033` and held byte-identical under `CAP-MOK-010`.
+
+  **Narrowed 2026-08-20 under `REQ-MOK-060`.** This constraint read "any change to the reference or baseline source.
+  Their outcomes are frozen under `REQ-MOK-033`", and it named one source too many. `REQ-MOK-060` corrects the waste
+  condition of `SPEC-MOK-001` rule 5, which is the reference source's own proposal logic, so the reference source's
+  outcomes move — deliberately, on the product owner's decision, at the default density, with every divergence attributed
+  to that correction and to nothing else. `baseline` does not move and is held byte-identical, because rule 4's candidate
+  list offers `eat` under no waste condition for a relaxation to reach. What this constraint still forbids is unchanged in
+  force: this floor may not be met by editing a source this initiative holds fixed, and it may not be met by making the
+  trait-aware source behave as the reference one, which is what the range-narrowing clause above already exercised on
+  measurement.
 
 ## Acceptance examples
 

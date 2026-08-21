@@ -75,6 +75,34 @@ fn a_long_run_is_bounded_under_either_source() {
     }
 }
 
+/// `REQ-MOK-057`: the same bound under the social source, where the population can now fall by a
+/// cause other than starvation.
+///
+/// A named sibling, on the same reasoning the test below records. Ten thousand ticks is where a
+/// combat rule that leaked would show: an unbounded `fear` accumulation, a `health` subtraction
+/// that wrapped instead of saturating, a suffered-attack record that grew without being cleared, or
+/// a strike attributed to a Mokiterion that had already died. The survivor-plus-death identity is
+/// the assertion that catches the last of those — a Mokiterion counted in neither column, or in
+/// both, is bookkeeping that combat broke.
+#[test]
+fn a_long_run_is_bounded_under_the_social_source() {
+    for seed in [0, 1, 42, 123, 777] {
+        let mut simulation = Simulation::new(Config {
+            seed,
+            tick_limit: 10_000,
+            policy: Policy::Social,
+            density: Density::DEFAULT,
+            trace_actions: false,
+        })
+        .unwrap();
+
+        let summary = simulation.run(&mut io::sink()).unwrap();
+
+        assert!(summary.ticks() <= 10_000, "seed {seed}");
+        assert_eq!(summary.survivors() + summary.deaths(), 12, "seed {seed}");
+    }
+}
+
 /// `REQ-MOK-033`, `REQ-MOK-034`: the same bound under the trait-aware source.
 ///
 /// A named sibling rather than a third entry in the loop above: the test above is
