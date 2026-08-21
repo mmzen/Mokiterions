@@ -17,7 +17,7 @@ decides = ["ARCH-MOK-001"]
 
 Accepted by the repository owner on 2026-08-20, acting as technical owner, together with the `ARCH-MOK-001`,
 `SPEC-MOK-001` and `SPEC-MOK-002` amendments this ADR requires. The same act approved `INT-MOK-009`, `CAP-MOK-009`,
-`REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006` and `VER-MOK-012`, and authorized `WO-MOK-012` to begin.
+`REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006` and `VER-MOK-012`, and authorized `WO-MOK-018` to begin.
 
 This ADR refines `ARCH-MOK-001` on three points — where a filesystem destination is resolved, how a serialization
 format is produced without a serialization library, and how much the enumerated public interface grows — and
@@ -26,9 +26,9 @@ target shape and enumerated interface, `ADR-MOK-003`'s two-package split and `AD
 observer interface are all unaffected in substance.
 
 The amendments this ADR requires are listed under *Required amendments* and are the technical owner's act. This ADR
-does not claim them and `WO-MOK-012` makes them approval preconditions, in the same way `WO-MOK-003`, `WO-MOK-005`
+does not claim them and `WO-MOK-018` makes them approval preconditions, in the same way `WO-MOK-003`, `WO-MOK-005`
 and `WO-MOK-006` did for their own chains. The owner's approval of this ADR on 2026-08-20 covered those amendments as
-stated here; each is written into its own document with its own amendment-record row, and `WO-MOK-012`'s *Lifecycle*
+stated here; each is written into its own document with its own amendment-record row, and `WO-MOK-018`'s *Lifecycle*
 states that reading so that it is disclosed rather than assumed.
 
 One precondition predates this chain and is stated here because it bears on the same architecture document:
@@ -248,7 +248,7 @@ draw no entropy, participate in no rule, decision, validation or applied action,
 
 ## Required amendments
 
-Each is the technical owner's act. `WO-MOK-012` makes all of them approval preconditions. None is claimed by this
+Each is the technical owner's act. `WO-MOK-018` makes all of them approval preconditions. None is claimed by this
 ADR.
 
 The `SPEC-MOK-001` list below has grown from the five seams named in `docs/PHASE_4_PROPOSAL.md` to nine, on a closer
@@ -408,7 +408,7 @@ otherwise leave the specification stating something no longer true.
 
 ### Migration
 
-- One work order, `WO-MOK-012`, performs the counters, the projection, the three new record kinds, the option and the
+- One work order, `WO-MOK-018`, performs the counters, the projection, the three new record kinds, the option and the
   host-side file handling together, because the counters without the run record are unobservable and the run record
   without the counters is unimplementable.
 - Non-perturbation is demonstrated by comparison, not review: text bytes and per-tick entropy draw counts compared

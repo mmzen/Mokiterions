@@ -1,7 +1,7 @@
 +++
 id = "VREC-MOK-012"
 type = "verification_record"
-title = "Verification candidate for WO-MOK-012"
+title = "Verification candidate for WO-MOK-018"
 status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-20"
@@ -12,74 +12,74 @@ worktree_state = "clean"
 verified_at = "2026-08-20T12:08:52Z"
 artifact_snapshot_sha256 = "16862ef3408e500d5e3488f9911eba100af3de3a4e584c4c55792131f837108d"
 evidence_paths = [
-  "docs/engineering/simulation/evidence/WO-MOK-012/README.md",
-  "docs/engineering/simulation/evidence/WO-MOK-012/additivity.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/alphabet.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/amendment-approvals.md",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/amendments.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/capture-failures.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/census-by-target.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/census-by-target.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/census-reconciliation.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/compare.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/digest.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/entropy.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/prior-captures.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/reconstruct.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/replay.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/retain-sink.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/retain.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/static-checks.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/analysis/validate.py",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/COMMIT.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/capture-state.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/full/seed42-baseline-d0.75-traceoff.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/full/seed42-individual-d0.75-traceoff.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/full/seed42-reference-d0.75-traceoff.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/pre-manifest.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/test-census.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/baseline/test-run.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/capture.sh",
-  "docs/engineering/simulation/evidence/WO-MOK-012/completion-summary.md",
-  "docs/engineering/simulation/evidence/WO-MOK-012/entropy-per-tick.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/entropy-states.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/entropy.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/failure-captures.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/gates.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/interface.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/json-validity.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/manual-assessment.md",
-  "docs/engineering/simulation/evidence/WO-MOK-012/measure-sizes.sh",
-  "docs/engineering/simulation/evidence/WO-MOK-012/negative-controls.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/oracle1/post-nosink-vs-post-sink.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/oracle1/pre-vs-post-nosink.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/oracle1/pre-vs-post-sink.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/oracle2/reconstruction-result.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/oracle6/reconciliation.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post-nosink-manifest.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post-sink-manifest.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post/full/seed42-baseline-d0.75-traceoff.jsonl",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post/full/seed42-baseline-d0.75-traceon.jsonl",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post/full/seed42-individual-d0.75-traceoff.jsonl",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post/full/seed42-reference-d0.75-traceoff.jsonl",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post/test-census.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/post/test-run.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/retained-sink-streams.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/sizes.txt",
-  "docs/engineering/simulation/evidence/WO-MOK-012/static-checks.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/README.md",
+  "docs/engineering/simulation/evidence/WO-MOK-018/additivity.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/alphabet.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/amendment-approvals.md",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/amendments.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/capture-failures.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-by-target.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/census-reconciliation.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/compare.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/digest.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/entropy.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/prior-captures.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/reconstruct.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/replay.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/retain-sink.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/retain.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/static-checks.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/analysis/validate.py",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/COMMIT.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/capture-state.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/full/seed42-baseline-d0.75-traceoff.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/full/seed42-individual-d0.75-traceoff.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/full/seed42-reference-d0.75-traceoff.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/pre-manifest.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/test-census.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/baseline/test-run.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/capture.sh",
+  "docs/engineering/simulation/evidence/WO-MOK-018/completion-summary.md",
+  "docs/engineering/simulation/evidence/WO-MOK-018/entropy-per-tick.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/entropy-states.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/entropy.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/failure-captures.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/gates.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/interface.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/json-validity.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/manual-assessment.md",
+  "docs/engineering/simulation/evidence/WO-MOK-018/measure-sizes.sh",
+  "docs/engineering/simulation/evidence/WO-MOK-018/negative-controls.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/oracle1/post-nosink-vs-post-sink.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/oracle1/pre-vs-post-nosink.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/oracle1/pre-vs-post-sink.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/oracle2/reconstruction-result.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/oracle6/reconciliation.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post-nosink-manifest.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post-sink-manifest.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post/full/seed42-baseline-d0.75-traceoff.jsonl",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post/full/seed42-baseline-d0.75-traceon.jsonl",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post/full/seed42-individual-d0.75-traceoff.jsonl",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post/full/seed42-reference-d0.75-traceoff.jsonl",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post/test-census.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/post/test-run.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/retained-sink-streams.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/sizes.txt",
+  "docs/engineering/simulation/evidence/WO-MOK-018/static-checks.txt",
 ]
 
 [relations]
-verifies_work_order = ["WO-MOK-012"]
+verifies_work_order = ["WO-MOK-018"]
 conforms_to = ["VER-MOK-012"]
 +++
 
 # Verification Record Candidate
 
-This record binds the retained evidence for `WO-MOK-012` — the optional structured record stream — to
+This record binds the retained evidence for `WO-MOK-018` — the optional structured record stream — to
 commit `50364a3719c68643f0b5354798b6d3084cff1c0e` on `feature/phase-4a-definition`. **It is
 `verified`.** The repository owner, acting as accountable assurance owner, transitioned it from `ready`
-on 2026-08-20; `evidence/WO-MOK-012/assurance-decision.md` records that act and what it accepted.
+on 2026-08-20; `evidence/WO-MOK-018/assurance-decision.md` records that act and what it accepted.
 
 **The title still reads *candidate*, and that is deliberate.** The record was captured as one, and a
 verification decision does not rewrite the capture — `VREC-MOK-010`'s and `VREC-MOK-011`'s titles read
@@ -124,11 +124,11 @@ candidate commit this record binds. What it changes and what it leaves standing:
   one commit of its own.
 - **Nothing else moved with it.** At the moment that validation was recorded the nine defects were
   uncorrected, the `SPEC-MOK-004` rule 11 amendment made beyond `ADR-MOK-005`'s approved list was
-  still unapproved, the three carried-forward `OUTSTANDING` amendment rows stood, `WO-MOK-012` was
+  still unapproved, the three carried-forward `OUTSTANDING` amendment rows stood, `WO-MOK-018` was
   `in_progress`, and pull request #31 was a draft. **Each of those then moved by its own named act, bar
   one.** Approved and taken by the commit before this one: the `SPEC-MOK-004` rule 11 row. Taken by
   this commit: this record's transition. Authorized in the same turn and taken in the commits after
-  this one: `WO-MOK-012` to `implemented`, and the pull request made ready for review. **Not moved: the
+  this one: `WO-MOK-018` to `implemented`, and the pull request made ready for review. **Not moved: the
   three carried-forward `OUTSTANDING` amendment rows, which still stand untouched.** The nine defects
   were dispositioned rather than corrected — deferred to a correction work order — which is a decision
   about them and not a repair of them.
@@ -159,7 +159,7 @@ upgrade it to a proof.**
 **`status` moved from `ready` to `verified` on 2026-08-20, by the repository owner acting as accountable
 assurance owner.** It is a second act, distinct from the validation above, taken in answer to a
 question that put this record's three available answers side by side with their measured costs. The full
-note is `evidence/WO-MOK-012/assurance-decision.md`; what the decision accepted, stated in the terms
+note is `evidence/WO-MOK-018/assurance-decision.md`; what the decision accepted, stated in the terms
 this record used as a candidate to describe what accepting it would mean:
 
 - **The seven oracles as measured at `50364a3`**, all passing, with **oracle 5's size assertion for one
@@ -244,7 +244,7 @@ what the validation settled and what it did not.
 
 ## What this record claims
 
-`WO-MOK-012` is `in_progress` as this record is transitioned, and `VER-MOK-012` is `approved`. The work
+`WO-MOK-018` is `in_progress` as this record is transitioned, and `VER-MOK-012` is `approved`. The work
 order is **not** moved in the same commit, and not because it must not be: the owner authorized
 `implemented` in the same turn. `WORKFLOW.md` is explicit that a work order's status never substitutes
 for this record's, so the two are separate commits by separate accountable roles — assurance here,
@@ -252,7 +252,7 @@ engineering next — in the order `VREC-MOK-011`'s transition and `WO-MOK-011`'s
 permits it either way: `in_progress` and `implemented` are both in the set a `verified` record's work
 order may carry.
 
-> **Later fact, 2026-08-20, in the commit after this record's transition: `WO-MOK-012` is now
+> **Later fact, 2026-08-20, in the commit after this record's transition: `WO-MOK-018` is now
 > `implemented`.** The paragraph above is what stood when this record moved, and it stands unedited
 > because the sentence it makes — that the two are separate commits by separate accountable roles — is
 > only demonstrated by having been written while the first had happened and the second had not. The
@@ -277,7 +277,7 @@ outright.
 | `cargo tree -p mokiterions-tui` | 111 lines: the path dependency plus `ratatui 0.30.2` and its tree, unchanged |
 | `python scripts/validate_engineering_artifacts.py` | PASS — **113 artifacts, 0 errors, 0 warnings** across structure, governance, policy and maintenance |
 | `bash scripts/check_engineering_harness.sh` | PASS — 113 artifacts, **371 relations**, 0 errors |
-| `python scripts/inspect_engineering_artifacts.py` | 0 errors; **`Decision required (0): none`**, `Assurance pending (0): none`, `WO-MOK-012 [in_progress]`; 19 findings — 2 `W-HEX-001`, 5 `W-HEX-003`, 12 `I-REV-001`, none of them new |
+| `python scripts/inspect_engineering_artifacts.py` | 0 errors; **`Decision required (0): none`**, `Assurance pending (0): none`, `WO-MOK-018 [in_progress]`; 19 findings — 2 `W-HEX-001`, 5 `W-HEX-003`, 12 `I-REV-001`, none of them new |
 
 Zero ignored and zero filtered out is the part worth stating: a suite can be made to pass by not
 running, and those two counts are what would show it. Every source was touched before the clippy and
@@ -397,7 +397,7 @@ What else is measured, beyond the seven oracles:
    substitution rather than as written, with the substitution's dependence on oracle 1 named.
 
    **What transitioning this record to `verified` would now record.** That the accountable assurance
-   owner accepts the retained evidence for `WO-MOK-012` at `50364a3` **with those two retention
+   owner accepts the retained evidence for `WO-MOK-018` at `50364a3` **with those two retention
    deviations, the nine uncorrected defects and the unapproved `SPEC-MOK-004` rule 11 amendment
    standing** — and with assessment 8 discharged as a reading rather than as a measurement, which is
    the strongest form that assessment admits. It is a materially narrower acceptance than the candidate
@@ -414,7 +414,7 @@ What else is measured, beyond the seven oracles:
    streams, and rule 3.3 is unaffected because both vocabularies use only lowercase and underscore.
    The other eight are: rule 3.2's `"direction":"north_east"` example is unreachable; `SPEC-MOK-002`'s
    amendment row names four `execute` call sites including two in `mokiterions-tui`, where the real
-   count is eight sites in two files and the observer never calls it; `WO-MOK-012` says "six
+   count is eight sites in two files and the observer never calls it; `WO-MOK-018` says "six
    cumulative counters" in three places, including the assurance rationale in its own front matter,
    where there are **seven** `u64` counters in four struct fields; `VER-MOK-012` assessment 4 miscites
    rule 7.8 and says "three facts" where its own *Residual uncertainty* names two; `ADR-MOK-005`
@@ -537,5 +537,5 @@ re-measure it.
 respect; two retention bullets stand unmet by their own terms. It does not correct a defect, resolve a
 carried-forward amendment row, merge a branch or release anything. It records that the accountable
 assurance owner read what is retained here, including everything this record declines to claim, and
-accepted it for `WO-MOK-012` at `50364a3`. **That is the whole of it, and the whole of it is on this
+accepted it for `WO-MOK-018` at `50364a3`. **That is the whole of it, and the whole of it is on this
 page.**

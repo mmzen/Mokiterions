@@ -1,0 +1,115 @@
+VER-MOK-012 — the declared gates, at the candidate tree
+======================================================
+
+Work order   WO-MOK-018 (Phase 4A, the record stream)
+Baseline     de33d7440c323a98ac88db3fabaf87bea48ebf4e
+Governance   bb4a21491eff321cbfd14ba3ea794e34535e3033 (the packet's three amendments)
+Branch       feature/phase-4a-definition
+Date         2026-08-20
+Toolchain    cargo 1.97.1 (c980f4866 2026-06-30); rustc 1.97.1 (8bab26f4f 2026-07-14)
+
+Every command was run from the repository root, against the tree this packet describes, and every
+source was touched first so that neither clippy nor the test run reports a cached result. The four
+commands are the four WO-MOK-018 declares, in the order it declares them, and no other command was
+run to reach these figures.
+
+The working directory is `C:\Users\mathi\mokiterions-20260820-075225-1684`, a uniquely suffixed
+clone: other agents work on this repository concurrently, so the clone is per-session. The absolute
+path appears in cargo's own output below, as it does in `WO-MOK-011/gates.txt`, and nothing in the
+capture depends on it.
+
+The tree carries the WO-MOK-018 change and nothing else. The three deliberate perturbations of
+`negative-controls.txt` were each reverted before this capture:
+
+    SIMULATION_RULES.md                  64 +-
+    docs/ROADMAP.md                      87 +-
+    mokiterions-core/src/cli.rs          30 +
+    mokiterions-core/src/lib.rs          26 +-
+    mokiterions-core/src/main.rs        141 +-
+    mokiterions-core/src/simulation.rs 1678 +-
+    mokiterions-core/tests/cli.rs        99 +
+    mokiterions-core/tests/process.rs    11 +-
+    mokiterions-core/tests/records.rs  1107 (new)
+
+--------------------------------------------------------------------------
+$ cargo fmt --all -- --check
+(no output: every file is formatted)
+exit=0
+
+--------------------------------------------------------------------------
+$ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\mokiterions-20260820-075225-1684\mokiterions-core)
+    Checking mokiterions-tui v0.1.0 (C:\Users\mathi\mokiterions-20260820-075225-1684\mokiterions-tui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.83s
+exit=0
+No warning in either package, at any target, with -D warnings in force. `--locked` is part of the
+declared form and it held: `Cargo.lock` was not rewritten to make the command pass, which for a
+workspace with one external dependency is a check that the change added none.
+
+--------------------------------------------------------------------------
+$ cargo test        (one invocation at the workspace root)
+exit=0
+
+246 passed, 0 failed, 0 ignored, 0 filtered out, over 22 targets. The full log is post/test-run.txt
+and the census taken from it is post/test-census.txt; the reconciliation against the baseline's 212
+is analysis/census-reconciliation.txt. The per-target results:
+
+       Running unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+  test result: ok. 68 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.28s
+       Running unittests src\main.rs (target\debug\deps\Mokiterions-c8f7f3eae82c82c7.exe)
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\cli.rs (target\debug\deps\cli-ea1fe31a556a11ea.exe)
+  test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\decisions.rs (target\debug\deps\decisions-c8ff5ce97e674eac.exe)
+  test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+       Running tests\density.rs (target\debug\deps\density-aa384b05c61f2961.exe)
+  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\naming.rs (target\debug\deps\naming-0344a3e53e41d1bb.exe)
+  test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+       Running tests\process.rs (target\debug\deps\process-44af230791f0b687.exe)
+  test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+       Running tests\records.rs (target\debug\deps\records-ca470aa8761b3131.exe)
+  test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+       Running tests\termination.rs (target\debug\deps\termination-3962b6ea9d95e5a7.exe)
+  test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+       Running tests\viability.rs (target\debug\deps\viability-6b215a30b755f00d.exe)
+  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+       Running unittests src\lib.rs (target\debug\deps\mokiterions_tui-2fbcc6609753ce76.exe)
+  test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+       Running unittests src\main.rs (target\debug\deps\mokiterions_tui-cacaff985fad9c9e.exe)
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\authority.rs (target\debug\deps\authority-eff95bcdd131dbd9.exe)
+  test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\export.rs (target\debug\deps\export-a7c26a0bd291cfde.exe)
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+       Running tests\layout.rs (target\debug\deps\layout-428970b899246a03.exe)
+  test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\options.rs (target\debug\deps\options-9145103ef3454b8b.exe)
+  test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+       Running tests\render.rs (target\debug\deps\render-672d1ffbd6e3eb65.exe)
+  test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+       Running tests\spatial.rs (target\debug\deps\spatial-6b42680631cd88b2.exe)
+  test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+       Running tests\state.rs (target\debug\deps\state-269098bb3c362ab5.exe)
+  test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+       Running tests\verification.rs (target\debug\deps\verification-eddf947fada740f8.exe)
+  test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.59s
+   Doc-tests mokiterions
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests mokiterions_tui
+  test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Of the 22 targets, one is new: `tests/records.rs`, the engine's public-tier target for the record
+stream. Two targets grew — the engine's library by 14 and `tests/cli.rs` by 3 — and the remaining
+19 are unchanged to the test, which is what SPEC-MOK-004 rule 11's conservation clause asks for.
+The observer's ten targets are untouched at 127 tests: this change adds a stream the observer does
+not read.
+
+--------------------------------------------------------------------------
+$ cargo tree -p Mokiterions
+Mokiterions v0.1.0 (C:\Users\mathi\mokiterions-20260820-075225-1684\mokiterions-core)
+exit=0
+One crate and no dependency line, which is SPEC-MOK-002 rule 1's empty dependency table measured
+rather than assumed, and REQ-MOK-026's check. This is the gate the record stream had to be written
+against: the engine cannot link a JSON library, which is why SPEC-MOK-006 fixes the serialization by
+rule and why oracle 3 validates the output with a parser this repository does not own.

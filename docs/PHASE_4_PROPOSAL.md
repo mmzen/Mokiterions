@@ -161,7 +161,7 @@ reports success would be worse than no record file.
 | `SPEC-MOK-006` | specification | The record schema, the closed value alphabet, the four record kinds, the metric set, and the sink contract |
 | `ADR-MOK-005` | ADR | The structured stream as an additive projection; writer-not-path; hand-written JSON on a closed alphabet; no classification in the engine |
 | `VER-MOK-012` | verification | The four checks above, plus the failure case |
-| `WO-MOK-012` | work order | Phase 4a implementation |
+| `WO-MOK-018` | work order | Phase 4a implementation |
 
 **In-place amendments required, none of them substantive to world rules:**
 
@@ -252,7 +252,7 @@ file-writing convention is better than two.
 was taken, `VREC-MOK-011` was `ready` rather than `verified` and `WO-MOK-011` was `in_progress`. The objection recorded
 was that beginning new work while a verification record is outstanding "is exactly the reasoning `WO-MOK-010`'s gate
 existed to prevent, and it leaves no record of the judgment"; the owner's decision was to begin regardless and to
-record no override, and `WO-MOK-012` was written to state the precondition status factually rather than to assert it
+record no override, and `WO-MOK-018` was written to state the precondition status factually rather than to assert it
 was clear. **`origin/master` then advanced to `ff3a155`**, carrying `VREC-MOK-011` to `verified` and `WO-MOK-011` to
 `implemented`. Every verification record in the repository is now `verified` and every work order but the `draft`
 `WO-MOK-008` is `implemented`. The packet was rebased onto `ff3a155`, so decision 10 no longer has a subject and the
@@ -261,7 +261,7 @@ the record when the objection stops mattering.
 
 **One precondition remains outstanding and predates this chain.** `ARCH-MOK-001`'s amendment record carries a row dated
 2026-08-18 whose approval column reads **OUTSTANDING**, and which names itself an approval precondition of
-`WO-MOK-005`. It is not this chain's row and `WO-MOK-012` does not claim it, but this chain proposes to add a row
+`WO-MOK-005`. It is not this chain's row and `WO-MOK-018` does not claim it, but this chain proposes to add a row
 beneath it, so the technical owner should expect to resolve it in the same act. `VER-MOK-012` oracle 7 records its
 state either way.
 

@@ -56,7 +56,7 @@ status below for the manual assessment that record accepts unperformed):
   from nowhere else — no name table, no fallback, no derivation from an identifier
 - The map glyph becoming the name's initial, replacing the digit-and-letter table, on twelve pairwise-distinct letters
 
-Added under `WO-MOK-012` (implemented and verified under `VREC-MOK-012` at commit `50364a3` — see Phase 4a's
+Added under `WO-MOK-018` (implemented and verified under `VREC-MOK-012` at commit `50364a3` — see Phase 4a's
 status below for what that record accepts rather than satisfies, and for the merge it does not cover):
 
 - A structured record stream, `SPEC-MOK-006`, written to a file named by `--events-path` and to nothing by default:
@@ -552,9 +552,9 @@ dependency to rely on.
 
 ### Phase 4a — Structured measurement in the engine
 
-**Status: implemented under `WO-MOK-012` and verified under `VREC-MOK-012` at commit `50364a3`. Not merged and not
+**Status: implemented under `WO-MOK-018` and verified under `VREC-MOK-012` at commit `50364a3`. Not merged and not
 released.** The artifact packet — `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`,
-`ADR-MOK-005`, `WO-MOK-012` and `VER-MOK-012` — was drafted, reviewed and validated by the owner on 2026-08-20, and
+`ADR-MOK-005`, `WO-MOK-018` and `VER-MOK-012` — was drafted, reviewed and validated by the owner on 2026-08-20, and
 the whole chain was implemented, evidenced, verified and closed the same day in seven commits, one act each.
 
 `VER-MOK-012`'s seven oracles are executed and passing, its eight manual assessments are recorded, and its evidence is
@@ -596,7 +596,7 @@ chain, is unrelated and still `draft`.
 |---|---|---|
 | A JSON library | **Hand-written writers, no dependency** | `ARCH-MOK-001` keeps the engine's dependency table empty and the owner declined to open it for this. The closed value alphabet is what makes that safe: no value can contain a quotation mark or a backslash, so there is nothing to escape |
 | Any floating-point figure | **Integers only, sums rather than averages** | An average is a float, a float's text form is platform-sensitive, and the whole value of the stream is that two files can be compared byte for byte. A consumer that wants a mean has the sum and the count |
-| An outcome label of any kind | **Prohibited, not deferred** | This was named in `WO-MOK-012` as the most tempting scope creep in the work. A file that labels its own numbers hands everyone downstream somebody else's opinion, and Phase 6's evaluation is where a classification is argued on evidence |
+| An outcome label of any kind | **Prohibited, not deferred** | This was named in `WO-MOK-018` as the most tempting scope creep in the work. A file that labels its own numbers hands everyone downstream somebody else's opinion, and Phase 6's evaluation is where a classification is argued on evidence |
 | A timestamp or a duration | **Neither, anywhere** | The same seed and build must produce an identical file on any machine on any day, so that a diff between two runs is a statement about the simulation |
 | A reader, a schema file or an example analysis script | **None, in this phase** | 4a produces; 4b consumes. A consumer written here would be written before the measurement that decides 4b's shape |
 

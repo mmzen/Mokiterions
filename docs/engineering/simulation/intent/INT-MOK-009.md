@@ -147,5 +147,5 @@ record's outstanding state as unrelated to this work and declining to record a g
 longer has a subject.** `origin/master` advanced to `ff3a155` during drafting, carrying `VREC-MOK-011` to `verified`
 and `WO-MOK-011` to `implemented`; every verification record in the repository is now `verified` and every work order
 but the `draft` `WO-MOK-008` is `implemented`. This chain is drafted against `ff3a155`, so it begins from a fully
-verified predecessor and needs no judgement about an unverified one. `WO-MOK-012` states the precondition status
+verified predecessor and needs no judgement about an unverified one. `WO-MOK-018` states the precondition status
 factually, including the one amendment row that remains outstanding and predates this chain.

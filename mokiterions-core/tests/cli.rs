@@ -10,7 +10,7 @@
 //! applies, so the two are held equal here. None of them compares the text to a literal
 //! declared in this file, which would move the drift one level up rather than remove it.
 //!
-//! `WO-MOK-012` adds one option, and most of what has to be true of it is already asserted by
+//! `WO-MOK-018` adds one option, and most of what has to be true of it is already asserted by
 //! the tests above, which read the parser's own match arms rather than a list: an option added
 //! to the parser and left out of the help fails there without being named. What the three tests
 //! at the end of this file add is what those cannot reach — that the parser keeps no path
