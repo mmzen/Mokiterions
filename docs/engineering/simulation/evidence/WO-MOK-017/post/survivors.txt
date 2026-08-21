@@ -1,0 +1,247 @@
+WO-MOK-017: the three carried survivor floors, and REQ-MOK-058's lethality bound
+==================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Re-measures  REQ-MOK-014 (floor 8, reference), REQ-MOK-034 (floor 8, individual) and
+             REQ-MOK-058 (floor 5 plus a lethality bound, social), all three at the
+             default density of 0.75% on the five declared verification seeds
+Pre-change   pre/COMMIT.txt      Candidate  post/COMMIT.txt
+Reader       analysis/survivors.py
+Date         2026-08-21
+
+None of the three floors is inherited by this candidate. Each was ratified on the world this
+work order corrects, so each is measured again here on the shipped build. A floor the corrected
+world misses is stop condition 5 and is the owner's to answer; this reader states the verdict
+per seed and does not encode it in an exit code.
+
+1. The obligations as their requirements state them
+---------------------------------------------------
+    REQ-MOK-014  reference   floor  8 of 12
+      "at least the survivor floor stated for that density living; the declared density is the default 0.75% and its stated floor is eight"
+    REQ-MOK-034  individual  floor  8 of 12
+      "at least eight of the twelve Mokiterions living"
+    REQ-MOK-058  social      floor  5 of 12  plus a lethality bound
+      "at least five of the twelve Mokiterions living and at least one death attributable to combat, on every declared verification seed"
+
+    the population every run starts with                        12
+    the horizon every floor is stated at                     1,000 ticks
+    the density every floor is stated at                      0.75% (the default)
+    declared verification seeds                               0, 1, 42, 123, 777
+
+`REQ-MOK-014` states its floor as a function of density and declares one density, the default.
+Its *Notes* forbid reading the obligation as monotonic in density, so section 7 reports the
+other two captured densities without a verdict rather than extending the floor to them.
+
+2. Every floor, at both commits, seed by seed
+---------------------------------------------
+
+  REQ-MOK-014 -- reference at the default density, floor 8 of 12
+    seed  commit      reason      ticks  survivors  deaths   against the floor
+       0  pre-change  tick_limit  1000          8       4   met
+       0  candidate   tick_limit  1000          8       4   met
+       1  pre-change  tick_limit  1000         11       1   met
+       1  candidate   tick_limit  1000          9       3   met
+      42  pre-change  tick_limit  1000          8       4   met
+      42  candidate   tick_limit  1000         10       2   met
+     123  pre-change  tick_limit  1000          9       3   met
+     123  candidate   tick_limit  1000          9       3   met
+     777  pre-change  tick_limit  1000         11       1   met
+     777  candidate   tick_limit  1000          9       3   met
+    worst seed, pre-change   8 living   -> candidate   8 living   -> margin above the floor  0
+    verdict: pre-change met, candidate met
+
+  REQ-MOK-034 -- individual at the default density, floor 8 of 12
+    seed  commit      reason      ticks  survivors  deaths   against the floor
+       0  pre-change  tick_limit  1000         11       1   met
+       0  candidate   tick_limit  1000         10       2   met
+       1  pre-change  tick_limit  1000          9       3   met
+       1  candidate   tick_limit  1000          8       4   met
+      42  pre-change  tick_limit  1000          9       3   met
+      42  candidate   tick_limit  1000         10       2   met
+     123  pre-change  tick_limit  1000         10       2   met
+     123  candidate   tick_limit  1000          8       4   met
+     777  pre-change  tick_limit  1000         12       0   met
+     777  candidate   tick_limit  1000          8       4   met
+    worst seed, pre-change   9 living   -> candidate   8 living   -> margin above the floor  0
+    verdict: pre-change met, candidate met
+
+  REQ-MOK-058 -- social at the default density, floor 5 of 12  with at least one combat death
+    seed  commit      reason      ticks  survivors  deaths  combat  attrition   against the floor
+       0  pre-change  tick_limit  1000          9       3       1          2   met
+       0  candidate   tick_limit  1000          9       3       1          2   met
+       1  pre-change  tick_limit  1000         10       2       2          0   met
+       1  candidate   tick_limit  1000          7       5       2          3   met
+      42  pre-change  tick_limit  1000          9       3       2          1   met
+      42  candidate   tick_limit  1000          9       3       2          1   met
+     123  pre-change  tick_limit  1000          9       3       3          0   met
+     123  candidate   tick_limit  1000          8       4       3          1   met
+     777  pre-change  tick_limit  1000         11       1       1          0   met
+     777  candidate   tick_limit  1000          9       3       1          2   met
+    worst seed, pre-change   9 living   -> candidate   7 living   -> margin above the floor  2
+    combat deaths per seed, pre-change [1, 2, 2, 3, 1]  -> candidate [1, 2, 2, 3, 1]
+    verdict: pre-change met, candidate met
+
+3. The three verdicts together
+------------------------------
+    requirement   floor  pre-change  candidate  worst seed at the candidate
+    REQ-MOK-014      8  met         met        seed 0, 8 living
+    REQ-MOK-034      8  met         met        seed 1, 8 living
+    REQ-MOK-058      5  met         met        seed 1, 7 living, 2 combat deaths
+
+**All three floors hold on the corrected world, on every declared seed.** They are stated
+with their margins because two of the three are narrow, and a narrow margin is a fact the
+owner is entitled to before ratifying rather than after:
+      REQ-MOK-014  floor 8, worst seed leaves 8, margin 0
+      REQ-MOK-034  floor 8, worst seed leaves 8, margin 0
+      REQ-MOK-058  floor 5, worst seed leaves 7, margin 2
+    The approval measurement of 2026-08-21 predicted minimum survivors of 8, 8 and 7
+    against floors of 8, 8 and 5 for the ratified condition, and named the absence of
+    margin on the two eights as the reason it declined the alternatives with more room.
+    Section 2 is that prediction measured on the shipped build.
+
+4. What the correction did to survival, and in which direction
+--------------------------------------------------------------
+    source      seed  survivors pre -> post   deaths pre -> post   ticks pre -> post
+    reference      0       8 -> 8   =           4 -> 4            1000 -> 1000
+    reference      1      11 -> 9   -           1 -> 3            1000 -> 1000
+    reference     42       8 -> 10  +           4 -> 2            1000 -> 1000
+    reference    123       9 -> 9   =           3 -> 3            1000 -> 1000
+    reference    777      11 -> 9   -           1 -> 3            1000 -> 1000
+    individual     0      11 -> 10  -           1 -> 2            1000 -> 1000
+    individual     1       9 -> 8   -           3 -> 4            1000 -> 1000
+    individual    42       9 -> 10  +           3 -> 2            1000 -> 1000
+    individual   123      10 -> 8   -           2 -> 4            1000 -> 1000
+    individual   777      12 -> 8   -           0 -> 4            1000 -> 1000
+    social         0       9 -> 9   =           3 -> 3            1000 -> 1000
+    social         1      10 -> 7   -           2 -> 5            1000 -> 1000
+    social        42       9 -> 9   =           3 -> 3            1000 -> 1000
+    social       123       9 -> 8   -           3 -> 4            1000 -> 1000
+    social       777      11 -> 9   -           1 -> 3            1000 -> 1000
+
+    runs where more Mokiterions survive after the correction   2 of 15
+    runs where fewer survive                                   9 of 15
+    runs where the count does not move                         4 of 15
+
+**The direction is a net regression on survival, and it is stated that way because that is what
+was measured: 9 of the 15 obligated runs leave fewer Mokiterions living after the correction and
+2 leave more.** No floor is missed and none of the movement is large, but a reader who
+expected "eats more, so survives better" would have it backwards, and the reason is worth
+stating rather than leaving to inference:
+
+    resources consumed across the whole 120-cell matrix, pre-change   26,136
+    the same figure at the candidate                                  26,924
+    standing resources at tick 1,000 over the 15 obligated runs, pre   1,680
+    the same figure at the candidate                                   1,595
+
+The correction admits eats a Mokiterion would previously have declined, so the world is grazed
+harder: 788 more resources are consumed across the matrix and 85 fewer are standing at
+the horizon in the runs the requirement binds. Depleting the standing stock is exactly how the
+composition ceiling is met -- `post/composition.txt` measures the high class falling from 81.6%
+to 54.1% at its worst -- and a thinner larder is the price. The per-run figures above do not
+line up one-for-one with the survivor movements, so this is offered as the mechanism and not as
+a per-seed explanation; attributing an individual death would need the divergence analysis.
+
+This is the trade `WO-MOK-017`'s approval measurement disclosed before the condition was
+ratified, in the owner's sight: over the 50 unbound seeds `0`-`49`, cells above the ceiling fell
+from 140 of 150 to 7 of 150 while cells below their source's floor rose from 6 of 150 to 17 of
+150. The declared set behaves the same way in miniature and no declared seed misses a floor.
+
+One consequence points the other way at a shorter horizon and is recorded in
+`post/updated-tests.md`: at 200 ticks the correction removes starvation-driven health decline
+entirely under `reference` and `individual` on every declared seed. Both facts are consistent --
+feeding sooner helps an individual early, and grazing the world harder costs the population
+later -- and the pair is why the 1,000-tick horizon is the one the floors are stated at.
+
+5. REQ-MOK-058's lethality bound, and the resolutions behind it
+---------------------------------------------------------------
+    seed  commit      strikes  lethal strikes  combat deaths  attrition deaths  bound
+       0  pre-change        8               1              1                 2   met
+       0  candidate         9               1              1                 2   met
+       1  pre-change       14               2              2                 0   met
+       1  candidate        10               2              2                 3   met
+      42  pre-change       17               2              2                 1   met
+      42  candidate        16               2              2                 1   met
+     123  pre-change       21               3              3                 0   met
+     123  candidate        22               3              3                 1   met
+     777  pre-change        8               1              1                 0   met
+     777  candidate         6               1              1                 2   met
+
+The lethal-strike column and the combat-death column are produced by two different rules --
+counting `target_died:yes` across the cell, and testing the record adjacent to each
+`agent_died` -- and they must agree cell by cell. They do, in all 120 cells at both commits,
+which is what licenses reading either as the lethality figure.
+
+`REQ-MOK-058`'s bound is an existence claim per seed, "at least one death attributable to
+combat", and whether it should become a rate is a deferral the requirement carries and this
+work order does not touch. The per-seed counts are printed anyway, because a bound met by one
+death on a seed is a different fact from one met by three, and the deferral is decided on that.
+
+6. Lethality is measurable without tracing, checked rather than assumed
+----------------------------------------------------------------------
+    social triples where the traced and untraced cells agree on every
+    strike, lethal strike, combat death, attrition death and survivor   30 of 30
+
+`attack_resolved`, `threat_resolved` and `surrender_resolved` are emitted whether or not
+actions are traced, so the lethality bound is measurable in all 120 cells. That is a claim
+about the released instrumentation rather than about this change, and it is measured here
+because the whole of section 5 rests on it.
+
+7. The two densities that carry no floor
+----------------------------------------
+    source      dens  seed  reason      ticks  survivors pre -> post
+    reference   0.15     0  extinction   560       0 -> 0
+    reference   0.15     1  extinction   605       0 -> 0
+    reference   0.15    42  extinction   741       0 -> 0
+    reference   0.15   123  extinction   359       0 -> 0
+    reference   0.15   777  extinction   418       0 -> 0
+    reference   1.50     0  tick_limit  1000      11 -> 11
+    reference   1.50     1  tick_limit  1000      12 -> 11
+    reference   1.50    42  tick_limit  1000      12 -> 10
+    reference   1.50   123  tick_limit  1000      11 -> 12
+    reference   1.50   777  tick_limit  1000      12 -> 11
+    individual  0.15     0  extinction   571       0 -> 0
+    individual  0.15     1  extinction   520       0 -> 0
+    individual  0.15    42  extinction   381       0 -> 0
+    individual  0.15   123  extinction   483       0 -> 0
+    individual  0.15   777  extinction   418       0 -> 0
+    individual  1.50     0  tick_limit  1000      12 -> 10
+    individual  1.50     1  tick_limit  1000      12 -> 11
+    individual  1.50    42  tick_limit  1000      12 -> 11
+    individual  1.50   123  tick_limit  1000      11 -> 12
+    individual  1.50   777  tick_limit  1000      11 -> 11
+    social      0.15     0  tick_limit  1000       1 -> 1
+    social      0.15     1  extinction   815       0 -> 0
+    social      0.15    42  extinction   468       0 -> 0
+    social      0.15   123  extinction   485       0 -> 0
+    social      0.15   777  extinction   414       0 -> 0
+    social      1.50     0  tick_limit  1000      11 -> 11
+    social      1.50     1  tick_limit  1000      10 -> 9
+    social      1.50    42  tick_limit  1000      11 -> 11
+    social      1.50   123  tick_limit  1000      11 -> 11
+    social      1.50   777  tick_limit  1000      10 -> 10
+
+    runs at density 0.15 reaching 1,000 ticks, at the candidate   1 of 15
+    the same figure at the pre-change commit                      1 of 15
+    runs at density 1.50 reaching 1,000 ticks, at the candidate   15 of 15
+
+No floor is stated at either density and none is read here. `REQ-MOK-014`'s *Notes* say why in
+the requirement's own words: "The obligation must not be read as monotonic in density. A
+density above the declared minimum carries no guarantee." The rows are retained because the
+starved density is where the correction has the most room to help and the dense one is where
+it has the least, and a reader deciding whether to declare either density later will want the
+measured pair rather than a recapture.
+
+8. Internal checks
+------------------
+    Every internal check passed, over all 240 cells across the two commits:
+      every agent_died record parsed, and their count equal to the printed deaths
+      every attack_resolved parsed, and every lethal one leaving its target at health 0
+      combat deaths by adjacency equal to lethal strikes by count, cell by cell
+      survivors plus deaths equal to twelve
+
+What none of this settles: `REQ-MOK-058`'s deferred question of whether the lethality bound
+should become a rate, which is the product owner's; whether the two undeclared densities
+should carry floors, which is also the product owner's; and the composition ceiling, which is
+`post/composition.txt`.
+
+RESULT: PASS on every internal check, and all three floors hold and the lethality bound is met on every declared seed.

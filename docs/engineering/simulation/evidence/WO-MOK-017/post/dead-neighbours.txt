@@ -1,0 +1,78 @@
+WO-MOK-017: the dead identifier rule 10.6's both-directions scenario needs
+==========================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Subject      mokiterions-tui/src/state.rs ::
+             a_dead_selection_is_retained_and_the_next_control_finds_a_living_neighbour
+Measured on  the retained captures, at both commits, over the first 700 ticks
+Cell         seed0-reference-d0.75-traceoff.txt -- the defaults the test takes
+Reader       analysis/dead-neighbours.py
+Date         2026-08-21
+
+1. The death order at each commit
+---------------------------------
+Each row is one death, in the order the observer records it. "usable" names the first dead
+identifier that holds living identifiers on both sides once that death has landed, which is
+the test's own search, evaluated after every advance.
+
+    pre-change: 12 identifiers, 2 deaths inside 700 ticks
+      tick  dies   living after                                  usable
+       604  M05    M01 M02 M03 M04 M06 M07 M08 M09 M10 M11 M12   M05
+       689  M07    M01 M02 M03 M04 M06 M08 M09 M10 M11 M12       M05
+
+    candidate: 12 identifiers, 3 deaths inside 700 ticks
+      tick  dies   living after                                  usable
+       314  M01    M02 M03 M04 M05 M06 M07 M08 M09 M10 M11 M12   -- none --
+       399  M11    M02 M03 M04 M05 M06 M07 M08 M09 M10 M12       M11
+       438  M05    M02 M03 M04 M06 M07 M08 M09 M10 M12           M11
+
+2. What moved, and why the pinned scenario stopped working
+---------------------------------------------------------
+    pre-change  first death M05 at tick 604  interior     search settles on M05 at tick 604
+    candidate   first death M01 at tick 314  NOT interior search settles on M11 at tick 399
+
+    The first identifier to die is M01 at the candidate, and M01 is the lowest
+    identifier in the list. No living identifier sorts below it, so BackTab from it wraps to
+    the top rather than moving down, and `assert!(backward < dead)` cannot hold. The only way
+    to keep a scenario pinned to the first death would have been to weaken that assertion to
+    admit the wrap -- a different claim about a different behavior, and exactly what
+    `SPEC-MOK-002` rule 12 forbids. Searching for the state rule 10.6 describes keeps both
+    assertions as written.
+
+    The search terminates at both commits well inside the 700-tick horizon the test
+    declares: tick 604 pre-change on M05, tick 399 at the candidate on M11. The amendment
+    asserts that rather than assuming it: if the run finishes with no such state, the test
+    fails saying so instead of falling out of the loop having proved nothing.
+
+3. Why the scenario cannot simply take the baseline policy
+---------------------------------------------------------
+The comment's other claim -- that baseline cannot serve because it starves the whole
+population at once -- is measured here too, since it is what rules out the cheapest fix.
+    pre-change  12 of 12 identifiers die on tick 119
+    candidate   12 of 12 identifiers die on tick 119
+
+    Rule 4 applies no waste condition, so the baseline population starves together and the
+    tick that produces a dead selection produces no living one. That is also why these two
+    rows are identical: `INT-MOK-010` promises byte-identity for `--policy baseline`, and
+    `post/byte-identity.txt` measures the promise kept across all thirty baseline cells.
+
+4. What this does not claim
+---------------------------
+  * Not that the identifier is stable. It is not, and that is the point: the amended test
+    searches for the state rather than naming the Mokiterion, so the next change to the
+    world moves the subject without touching the test.
+  * Not that a live run is the right way to reach rule 10.6's state. Constructing a dead
+    selection with living neighbours directly would be a scenario coupled to nothing, and it
+    would not need a 700-tick run to find one. This test discharges two cases in
+    `VER-MOK-005` -- `REQ-MOK-021`'s "Selected Mokiterion dies" and `REQ-MOK-023`'s
+    "Selection cycles living Mokiterions only" -- and neither states how the state is
+    reached, so the search is inside the scenario as written. Changing it to a constructed
+    one would be a `VER-MOK-005` amendment this work order has no authority to make; raised
+    in `manual-assessment.md`.
+  * Not that the deaths themselves are correct. Which identifiers die and when is
+    `post/survivors.txt` and `post/divergence.txt`, not this file.
+
+RESULT: PASS -- the first identifier to die was interior before the change and is the
+lowest identifier at the candidate, so the pinned scenario broke on the BackTab wrap; the
+search for rule 10.6's state terminates at both commits, and both assertions stand as
+written.

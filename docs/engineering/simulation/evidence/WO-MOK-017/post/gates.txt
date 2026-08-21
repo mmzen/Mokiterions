@@ -1,0 +1,244 @@
+WO-MOK-017 gate output: the three commands the work order retains, each with its exit code
+==========================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Retains      "cargo fmt, cargo clippy and cargo test output"
+Commit       post/COMMIT.txt   (feature/resource-composition-ceiling)
+Pre-change   pre/COMMIT.txt
+Toolchain    cargo 1.97.1 (c980f4866 2026-06-30), rustc 1.97.1 (8bab26f4f 2026-07-14),
+             clippy 0.1.97 (8bab26f4f6 2026-07-14), host x86_64-pc-windows-msvc
+Date         2026-08-21
+
+The invocations are the ones `VER-MOK-016`'s "Static and architecture checks" section declares,
+character for character, so a verifier re-running this file is running the contract's command and not a
+paraphrase of it. `cargo tree` is that section's fourth command and is retained in section 4 for
+continuity even though this work order's retention item names three; sections 5 and 6 carry the adjacent
+clauses of the same section that are enumerations rather than command output.
+
+Absolute paths are shortened to the workspace member's directory name wherever cargo prints them.
+Nothing else is edited, and the exit code of every command is its own.
+
+
+1. cargo fmt --all -- --check
+------------------------------
+
+    $ cargo fmt --all -- --check
+    (no output)
+    exit 0
+
+Clean. The command prints a diff of what it would change and prints nothing when there is nothing, so
+"no output" is the whole of the result and the exit code is the whole of the verdict.
+
+Recorded honestly: this is not the first invocation. The first, against the change as first written,
+reported three differences and exited 1 -- an `assert_eq!` that fitted one line by two characters too
+few, a two-argument `assert_eq!` whose arguments rustfmt splits when a format string follows them, and a
+five-link method chain rustfmt breaks one call per line. `cargo fmt --all` was run and the three were
+taken as it wrote them. All three are in test code: two in
+`mokiterions-core/src/simulation.rs`'s test module and one in `mokiterions-tui/src/state.rs`'s. The
+result above is a re-check at this candidate, taken after the last of the test amendments, which rustfmt
+left alone. **The engine text was not touched by the formatter**, which
+post/world-rules-unchanged.txt measures independently: the module ahead of `#[cfg(test)]` is 3,055 lines
+at this candidate and every changed line in it lies inside the three functions of the non-waste
+condition. The line counts in post/test-census-reconciliation.md and post/updated-tests.md are the
+formatted change's, not the first draft's.
+
+
+2. cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+--------------------------------------------------------------------------------
+
+Run from a fully cleaned target directory, so that every unit is actually linted rather than reported
+from cache. This matters: the same command against a warm target directory finishes in about a second
+having checked nothing, and its exit 0 would then be a statement about the cache.
+
+    $ cargo clean
+         Removed 4750 files, 881.2MiB total
+
+    $ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+       Compiling proc-macro2 v1.0.107
+       Compiling unicode-ident v1.0.24
+       Compiling quote v1.0.47
+        Checking Mokiterions v0.1.0 (mokiterions-core)
+        Checking allocator-api2 v0.2.21
+        Checking cfg-if v1.0.4
+       Compiling rustversion v1.0.23
+        Checking foldhash v0.2.0
+        Checking equivalent v1.0.2
+       Compiling ident_case v1.0.1
+       Compiling thiserror v2.0.20
+       Compiling strsim v0.11.1
+        Checking bitflags v2.13.1
+       Compiling unicode-segmentation v1.13.3
+       Compiling parking_lot_core v0.9.12
+        Checking either v1.17.0
+       Compiling winapi v0.3.9
+       Compiling heck v0.5.0
+        Checking itertools v0.14.0
+        Checking scopeguard v1.2.0
+        Checking itoa v1.0.18
+        Checking hashbrown v0.17.1
+        Checking hashbrown v0.16.1
+       Compiling instability v0.3.13
+       Compiling convert_case v0.10.0
+        Checking ryu v1.0.23
+        Checking static_assertions v1.1.0
+        Checking smallvec v1.15.2
+        Checking unicode-width v0.2.2
+        Checking windows-link v0.2.1
+        Checking lock_api v0.4.14
+       Compiling indoc v2.0.7
+       Compiling litrs v1.0.0
+        Checking critical-section v1.2.0
+        Checking line-clipping v0.3.8
+        Checking parking_lot v0.12.5
+        Checking castaway v0.2.4
+        Checking lru v0.18.2
+       Compiling syn v3.0.3
+       Compiling syn v2.0.119
+       Compiling document-features v0.2.12
+        Checking compact_str v0.9.1
+        Checking unicode-truncate v2.0.1
+        Checking crossterm_winapi v0.9.1
+       Compiling strum_macros v0.28.0
+       Compiling derive_more-impl v2.1.1
+        Checking derive_more v2.1.1
+        Checking crossterm v0.29.0
+       Compiling darling_core v0.24.0
+       Compiling thiserror-impl v2.0.20
+        Checking strum v0.28.0
+        Checking kasuari v0.4.12
+        Checking ratatui-core v0.1.2
+       Compiling darling_macro v0.24.0
+       Compiling darling v0.24.0
+        Checking ratatui-crossterm v0.1.2
+        Checking ratatui-widgets v0.3.2
+        Checking ratatui v0.30.2
+        Checking mokiterions-tui v0.1.0 (mokiterions-tui)
+        Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.04s
+    exit 0
+
+Clean. Not one warning line, on either package, on any target. Sixty lines of output and none of them a
+diagnostic. Every crate but the two workspace members is a transitive dependency of ratatui, reached
+through mokiterions-tui; none is reachable from the engine, which is section 4.
+
+`-D warnings` is the declared lint gate and it is the only one: neither package declares a crate-level
+lint attribute and neither manifest carries a [lints] table, so the gate lives in this command line and
+nowhere else. That is why the next clause is worth measuring rather than asserting.
+
+**No `allow` attribute was added and no lint was suppressed to accommodate this change.** Three exist in
+the workspace and all three predate this work order:
+
+    $ grep -rn "allow(" --include=*.rs mokiterions-core mokiterions-tui
+    mokiterions-tui/src/state.rs:108:    #[allow(dead_code)]
+    mokiterions-tui/src/state.rs:304:    #[allow(dead_code)]
+    mokiterions-tui/src/state.rs:344:    #[allow(dead_code)]
+
+    $ git grep -n "allow(" 1ba5a3a -- '*.rs'
+    1ba5a3a:mokiterions-tui/src/state.rs:108:    #[allow(dead_code)]
+    1ba5a3a:mokiterions-tui/src/state.rs:304:    #[allow(dead_code)]
+    1ba5a3a:mokiterions-tui/src/state.rs:344:    #[allow(dead_code)]
+
+Three at the pre-change commit, three at this one, at the same lines in the same file -- which is also
+a check on the change's own placement, since this work order's `state.rs` amendment begins at line 735 and
+did not shift them. All three are in the observer and none is in the engine, so the engine, which is
+what this work order changes, carries no suppression at all.
+
+
+3. cargo test at the workspace root
+------------------------------------
+
+Retained whole rather than restated, in post/test-run.txt:
+
+    268 test names, 268 passed, 0 failed, 0 ignored, exit 0
+
+    pre/test-run.txt     pre/COMMIT.txt     267 names   267 passed   exit 0
+    post/test-run.txt    post/COMMIT.txt    268 names   268 passed   exit 0
+
+The two are reconciled name by name in post/test-census-reconciliation.md: one test added, none removed,
+none renamed, none ignored, and each of the six amended bodies still present under its own name. The
+six amendments and the addition are argued test by test in post/updated-tests.md, with the two
+observer-side amendments measured against the retained captures in post/health-falls.txt and
+post/dead-neighbours.txt.
+
+The log is taken from a warm target directory, so it opens at `Finished` and names no path outside the
+workspace. Sixteen targets appear in it -- fifteen integration targets and `unittests`, whose rows carry
+the module path -- which is how post/test-census.txt makes the "every tier of both packages" clause
+checkable by reading rather than by trusting a sentence.
+
+    $ grep -rn "#\[ignore" --include=*.rs mokiterions-core mokiterions-tui | wc -l
+    0
+
+Not one ignore attribute in either package. `SPEC-MOK-002` rule 12 forbids weakening an assertion to
+move a test, and `#[ignore]` is the strongest available weakening and the easiest to miss in a green run,
+so it is counted here as well as in the reconciliation.
+
+
+4. cargo tree -p Mokiterions
+-----------------------------
+
+    $ cargo tree -p Mokiterions
+    Mokiterions v0.1.0 (mokiterions-core)
+    exit 0
+
+One line. The engine resolves to itself and to nothing else, which is what `SPEC-MOK-002` rule 1 and
+`ARCH-MOK-001` as amended require and what `REQ-MOK-026` is discharged by. For contrast, and because the
+contract asks for the observer's set in the same section:
+
+    $ cargo tree -p mokiterions-tui --depth 1
+    mokiterions-tui v0.1.0 (mokiterions-tui)
+    |-- Mokiterions v0.1.0 (mokiterions-core)
+    `-- ratatui v0.30.2
+    exit 0
+
+One path dependency on the engine and ratatui at the pinned 0.30.2. The arrow runs one way, engine to
+observer, which is the direction `ARCH-MOK-001` fixes. This work order touches neither manifest, which
+is section 5.
+
+
+5. Packages, targets, build scripts and names
+----------------------------------------------
+
+`VER-MOK-016`: "No new package, no new target, no build script, and no change to any package, library or
+binary name."
+
+    $ git diff --stat 1ba5a3a -- Cargo.toml Cargo.lock \
+          mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml
+    (no output -- not one of the four files differs)
+
+That single diff settles the package count, both target lists, all six names and the absence of a build
+script at once, because every one of them is declared in those four files and nowhere else. The lock file
+is in the check deliberately: a dependency added through inheritance would still move Cargo.lock, and it
+did not move.
+
+The whole of this work order's source change is three files, and none of them is a manifest:
+
+    $ git status --porcelain
+     M SIMULATION_RULES.md
+     M docs/ROADMAP.md
+     M mokiterions-core/src/simulation.rs
+     M mokiterions-tui/src/state.rs
+     M mokiterions-tui/tests/render.rs
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/…
+
+The two markdown files are the reader-facing documents `WO-MOK-017`'s *In scope* names. They carry no
+code, they are not compiled by anything, and neither is a manifest.
+
+No file was added to either package and none was removed, so the fifteen integration targets are the
+same fifteen and the added test is inside a file that already existed. That is why
+post/test-census-reconciliation.md reconciles within known targets and one target grows by one name.
+
+
+6. What this file does not establish
+-------------------------------------
+
+- Nothing here is a verification verdict. `VER-MOK-016` is the contract and its record is a separate,
+  commit-bound act reserved to the assurance owner.
+- clippy at exit 0 is a statement about the lints clippy has, at this toolchain, on this platform. It is
+  recorded with the toolchain version above for that reason.
+- A green suite is not a correct correction. Whether the condition is the right one is
+  post/divergence.txt, post/composition.txt and post/survivors.txt; whether the suite still asserts what
+  it asserted before is post/updated-tests.md.
+- The three `allow(dead_code)` attributes are shown to be unchanged by this work order, not shown to be
+  justified. They belong to the observer and to the work order that wrote them.
+- `cargo fmt` reformatting three pieces of this work order's own test code is recorded in section 1 as
+  what happened, not offered as a finding. It moved no assertion and no engine line, and the evidence
+  that reports line counts reports the formatted ones.

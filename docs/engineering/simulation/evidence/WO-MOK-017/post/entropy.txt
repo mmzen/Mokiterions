@@ -1,0 +1,237 @@
+WO-MOK-017: where the shared entropy stream stands, either side of the correction
+=================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Retains      "the shared stream's recorded state either side of every resolution kind, and
+             the total draw count per run per source at matched seeds"
+Pre-change   pre/COMMIT.txt      Candidate  post/COMMIT.txt
+Reader       analysis/entropy.py, reusing WO-MOK-016/analysis/entropy.py's replay
+Date         2026-08-21
+
+The second half of that retention item is not derivable at this candidate. Section 5 states
+why, in full, and records it as a residual gap rather than substituting a proxy for it. The
+first half is measured here, and so is the claim this work order actually depends on: that the
+corrected condition consumes no entropy.
+
+1. The correction consumes no entropy
+-------------------------------------
+If `fits_within` drew from the shared stream, every divergence in `post/divergence.txt` would
+be confounded -- "the condition changed an answer" and "the condition moved the stream" would
+be indistinguishable, and route R2 there would be unfalsifiable rather than merely permissive.
+So the corrected function and every function that reaches it are read for stream contact.
+
+    function                                                lines  reaches the stream
+    Observation::fits_within                              738-748  NO
+    Observation::fits                                     768-770  NO
+    Observation::fits_within_tolerance                    822-824  NO
+    Observation::best_fitting_co_located_food             774-785  NO
+    Observation::best_fitting_distant_food                791-802  NO
+    Observation::best_tolerated_co_located_food           828-839  NO
+    Observation::best_tolerated_distant_food              844-855  NO
+
+Read at face value that is only seven bodies, and a draw could sit one call deeper. So the
+same question is asked of everything those seven can reach, transitively:
+
+    functions reachable from the seven, including themselves    9
+    of those, functions that reach the shared stream            0
+    **Nothing the corrected condition can reach touches the shared stream.** So a
+    divergence recorded in `post/divergence.txt` cannot be a stream displacement created
+    inside the condition; it is a changed answer, or a consequence of one.
+
+    The scope of that negative claim, stated rather than left to be assumed: the scan covers
+    the engine module ahead of `#[cfg(test)]` at line 3056, matching `next_u64`,
+    `choose_index`, `entropy`, `SplitMix64` and `DecisionEntropy` as whole words, and the
+    call graph is followed by bare callee name -- which over-approximates, so the closure
+    scans more than the path can truly reach rather than less. What it cannot see is a draw
+    reached through a trait object or a closure stored elsewhere, which is why the suite's
+    `no_resolution_and_no_targeted_move_touches_the_shared_stream` remains the primary
+    guarantee and this is a check on the correction specifically.
+
+2. The stream's state at the end of initialization, at both commits
+-------------------------------------------------------------------
+`SplitMix64::new(seed)` sets `state = seed`, and `next_u64` advances the state by exactly one
+fixed increment before mixing. So the absolute state after `k` values is
+`seed + k*GAMMA (mod 2^64)`, and a draw count converts to a state without inverting the mixing
+function. `choose_index` costs exactly one value for both bounds in play -- 128 for `x` and 64
+for the territory-local `y` -- because each divides 2^64, so the rejection threshold
+`bound.wrapping_neg() % bound` is zero and no value is ever rejected for modulo bias. That is
+asserted rather than assumed, because it is what makes "two values per coordinate attempt"
+exact.
+
+    choose_index(128) rejection threshold                0
+    choose_index( 64) rejection threshold                0
+
+    dens   seed   resources    draws  recorded  occupancy      the state the stream stands at
+                per territory                    rejections     when initialization returns
+    0.15      0          12       72        72           0      0x7F9A3C2BCCF2E5E8
+    0.15      1          12       72        72           0      0x7F9A3C2BCCF2E5E9
+    0.15     42          12       72        72           0      0x7F9A3C2BCCF2E612
+    0.15    123          12       72        72           0      0x7F9A3C2BCCF2E663
+    0.15    777          12       72        72           0      0x7F9A3C2BCCF2E8F1
+    0.75      0          61      270       270           1      0xDE8261A4408EDE26
+    0.75      1          61      268       268           0      0xA2136E3141F9E5FD
+    0.75     42          61      268       268           0      0xA2136E3141F9E626
+    0.75    123          61      268       268           0      0xA2136E3141F9E677
+    0.75    777          61      268       268           0      0xA2136E3141F9E905
+    1.50      0         122      516       516           2      0xE7D159E492221A54
+    1.50      1         122      516       516           2      0xE7D159E492221A55
+    1.50     42         122      516       516           2      0xE7D159E492221A7E
+    1.50    123         122      514       514           1      0xAB626671938D22A5
+    1.50    777         122      516       516           2      0xE7D159E492221D5D
+
+    The `draws` column is replayed and the `recorded` column is `INITIALIZATION_DRAWS`
+    transcribed from the suite. They are compared, never substituted: the replay is not told
+    the answer, and it reproduces all fifteen. The state column is the closed form
+    `seed + k*GAMMA mod 2^64`, cross-checked against the state the replay itself carries.
+
+    This table is a property of `Simulation::new`, which the correction does not touch, so it
+    is the same at both commits. Section 3 measures that rather than asserting it.
+
+3. The replay checked against the captures, and the two commits checked against each other
+------------------------------------------------------------------------------------------
+A reimplementation that agreed with nothing would only measure itself. Every reconstructed
+position is compared against the engine's own initialization records, cell for cell, at both
+commits -- so a placement change would break this reader here even though the replay came from
+the previous work order.
+
+    cells whose placement was replayed and compared            120
+    comparisons made, counting both commits                    240
+    placements the replay got wrong                            0
+    tick-0 records compared across the two commits             17,280
+    cells whose initialization prefix differs                  0
+
+    **Every food class, food position, food territory and Mokiterion position in all
+    120 cells matches the replay at both commits, and every cell's tick-0 records
+    are identical across the two commits.** So the stream enters tick 1 at the same state
+    in all 120 runs, and the correction demonstrably begins to act after initialization
+    rather than within it.
+
+    The excerpts also settle something the suite states but no single capture asserts: that
+    the decision source and the trace setting move no placement draw. All eight cells sharing
+    a `(seed, density)` pair replay from one reconstruction, and all eight match it.
+
+4. Every resolution kind, counted either side of the correction
+---------------------------------------------------------------
+`attack_resolved`, `threat_resolved` and `surrender_resolved` are the resolution kinds, and
+rule 26 emits them whether or not actions are traced. Two thirds of the matrix cannot contain
+one at all, and that is worth establishing before the table rather than leaving a reader to
+read three pages of zeros as a bug: a resolution is the settlement of a contested action, and
+only the social source ever proposes one. So the resolution half of this retention item is
+informative under `social` and vacuous everywhere else. The zeros below are proved rather than
+merely observed:
+
+    Each source is read together with everything it can reach, because `individual` decides
+    in two delegating lines and a five-line body proves nothing on its own.
+
+    decision source                         lines  reaches  proposes a contested action
+    BaselineDecisionSource::decide        947-955       13  none
+    ReferenceDecisionSource::decide      969-1009       23  none
+    IndividualDecisionSource::decide    1110-1114       27  none
+    SocialDecisionSource::decide        1147-1197       28  Attack, Surrender, Threaten
+
+    So `baseline`, `reference` and `individual` emit no resolution by construction, and their
+    rows below are a consequence of the engine's shape rather than of these five seeds.
+
+Under `social` the counts are expected to move, because the correction changes where
+Mokiterions walk and so changes who meets whom. Under `baseline` they are expected not to,
+and that is measured rather than inherited: a `baseline` resolution count that moved would
+contradict `post/byte-identity.txt`, and a reader is entitled to see the two files agree.
+
+    Totals over the ten cells of each source and density -- five seeds, traced and untraced.
+
+    source      dens   attack_resolved   threat_resolved   surrender_resolved
+                        pre -> candidate  pre -> candidate  pre -> candidate
+    baseline    0.15       0 ->     0       0 ->     0       0 ->     0
+    baseline    0.75       0 ->     0       0 ->     0       0 ->     0
+    baseline    1.50       0 ->     0       0 ->     0       0 ->     0
+    reference   0.15       0 ->     0       0 ->     0       0 ->     0
+    reference   0.75       0 ->     0       0 ->     0       0 ->     0
+    reference   1.50       0 ->     0       0 ->     0       0 ->     0
+    individual  0.15       0 ->     0       0 ->     0       0 ->     0
+    individual  0.75       0 ->     0       0 ->     0       0 ->     0
+    individual  1.50       0 ->     0       0 ->     0       0 ->     0
+    social      0.15      80 ->    80     758 ->  1228      60 ->    62
+    social      0.75     136 ->   126     256 ->   228      72 ->    62
+    social      1.50      96 ->    94     226 ->   154      58 ->    56
+
+    Per cell under `social`, untraced, which is where the item has content. The traced half
+    of each pair is identical and is checked below rather than reprinted.
+
+    dens   seed   attack_resolved   threat_resolved   surrender_resolved
+                   pre -> candidate  pre -> candidate  pre -> candidate
+    0.15      0       4 ->     3      56 ->     4       4 ->     3
+    0.15      1       5 ->     3      92 ->   108       4 ->     3
+    0.15     42      12 ->    10      32 ->    66      11 ->     9
+    0.15    123       4 ->     9     148 ->   381       3 ->     8
+    0.15    777      15 ->    15      51 ->    55       8 ->     8
+    0.75      0       8 ->     9      11 ->    12       5 ->     6
+    0.75      1      14 ->    10       7 ->     7      10 ->     6
+    0.75     42      17 ->    16      18 ->     6       8 ->     7
+    0.75    123      21 ->    22      43 ->    20       6 ->     7
+    0.75    777       8 ->     6      49 ->    69       7 ->     5
+    1.50      0       5 ->     6       5 ->    31       2 ->     3
+    1.50      1      11 ->    11       5 ->     7       7 ->     7
+    1.50     42       7 ->     7      20 ->    11       5 ->     5
+    1.50    123      13 ->    13      56 ->    24       7 ->     7
+    1.50    777      12 ->    10      27 ->     4       8 ->     6
+
+    baseline cells whose resolution counts moved               0
+    Zero, which is what `post/byte-identity.txt` requires -- though on `baseline` this is
+    a weak check twice over, since the construction proof above already forbids a
+    resolution there. It is printed because a non-zero value would mean one of the two
+    files is wrong, and finding that out from a cheap check is worth four lines.
+
+    traced/untraced pairs in the matrix                         60
+    of those, pairs carrying a resolution at either commit      15
+    pairs whose two halves disagree on any resolution count,
+    at either commit                                           0
+    Zero, at both commits. The count that carries the claim is the middle one: on every
+    pair that has a resolution to disagree about, the traced and untraced halves agree
+    exactly. So tracing moves no draw, and the accounting above is a property of the run
+    rather than of the instrumentation. The remaining pairs agree vacuously and are not
+    evidence of anything.
+
+5. The residual gap: the total draw count per run
+-------------------------------------------------
+The second half of the retention item asks for "the total draw count per run per source at
+matched seeds". It is not derivable at this candidate, and this section is the record of that
+rather than a proxy dressed as an answer.
+
+    what would be needed                      why it is unavailable here
+    a counter on the released surface         WO-MOK-017 Out of scope: "any new attribute,
+                                             event, interface item or instrumentation".
+                                             `--help` lists no such option and the rule 18
+                                             summary carries no such field.
+    a full replay outside the crate          a regeneration spends an unknown number of
+                                             draws, because occupancy rejections are
+                                             invisible -- only the accepted position is
+                                             printed. Recovering them means replaying every
+                                             draw-consuming path, which is a second
+                                             implementation of the engine.
+    a golden-value test in the suite         no requirement states a draw total, so such a
+                                             test would pin an arbitrary measured number and
+                                             fail on any later legitimate behavior change.
+                                             SPEC-MOK-002 rule 12 is the neighboring
+                                             principle: a test's assertion is its meaning.
+
+What stands in its place, all of it measured above rather than argued:
+  * the initialization draw total and absolute stream state, at all fifteen declared pairs and
+    identical at both commits (section 2), validated against the suite's own recorded counts;
+  * the initialization prefix byte-identical in all 120 cells, so every run enters tick 1 at
+    the same stream state at both commits (section 3);
+  * every resolution kind counted per cell at both commits, with `baseline` unmoved and
+    tracing shown to move no draw (section 4);
+  * the correction itself shown to consume no entropy (section 1), which is the premise that
+    makes `post/divergence.txt`'s attribution mean anything.
+
+What remains genuinely unmeasured is the absolute number of values each thousand-tick run
+draws. Closing it needs a decision the technical owner has not been asked for -- whether a
+draw counter belongs on the released surface, or whether a work order may carry a replay of
+the whole engine as evidence. `WO-MOK-016` left a comparable clause unwritable and recorded it;
+this is the same discipline applied to a narrower gap, and it is raised in
+`manual-assessment.md` so that accepting it is an act rather than an omission.
+
+RESULT: PASS on every derivable check -- the correction consumes no entropy, the initialization
+replay reproduces all fifteen recorded draw counts and all 120 captured placements at both
+commits, every initialization prefix is unchanged, and no `baseline` resolution count moved.
+The per-run draw total is recorded as a residual gap in section 5, with its reason.

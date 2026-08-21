@@ -1,0 +1,165 @@
+VER-MOK-016 oracle 1 under WO-MOK-017: the provenance of the pre-change capture
+===============================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Requirement  REQ-MOK-060
+Pre-change   1ba5a3aabe775c9cdee29a04b399af3bb82dde90   (the bare hash is COMMIT.txt, which is
+             therefore kept to one line so a script can read it)
+Branch       feature/resource-composition-ceiling, off origin/master 7f4792a
+Date         2026-08-21
+
+VER-MOK-016 oracle 1 requires the capture "taken before any code change from a tracked-clean worktree,
+with the commit recorded", and adds that "a discrepancy is never resolved by recapturing it". A
+statement that a tree was clean is an assurance. What follows is that claim measured, the same way
+WO-MOK-011 and WO-MOK-016 measured it: the capture is reproduced cell for cell from a tree that cannot
+contain a working-tree modification at all.
+
+The matrix is 120 cells here where WO-MOK-016's was 90 plus 30 in a second capture. capture.sh states
+why one script now takes all four sources.
+
+
+1. The state of the worktree at capture
+---------------------------------------
+
+    $ git rev-parse HEAD
+    1ba5a3aabe775c9cdee29a04b399af3bb82dde90
+    $ git diff --stat HEAD
+    (no output)
+    $ git status --short
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/analysis/
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/capture.sh
+
+Tracked-clean, with two untracked paths: capture.sh and analysis/, which at this moment held the two
+scripts these results were taken with and now holds every reader that produced this packet's evidence. Both
+paths are committed together with these results and neither is compiled or read by the engine. pre/
+appeared as a third untracked path once the scripts had run, which is to say after the capture, not
+before it. Section 2 measures rather than argues the point.
+
+1ba5a3a is this work order's own approval commit -- the four governance amendments of 2026-08-21 and the
+approval measurement they were taken on, and no source file. Its parent is origin/master 7f4792a. No
+file under mokiterions-core/ has been touched at either commit, so the capture is taken before any code
+change, which is what makes it a pre-change capture at all.
+
+
+2. The capture is the recorded commit's own output
+--------------------------------------------------
+
+    $ rm -rf <scratch> && mkdir -p <scratch>/recap-tree <scratch>/recap
+    $ git archive $(cat docs/engineering/simulation/evidence/WO-MOK-017/pre/COMMIT.txt) \
+        | tar -x -C <scratch>/recap-tree
+    $ cd <scratch>/recap-tree && cargo build --release --offline -p Mokiterions
+       Compiling Mokiterions v0.1.0 (<scratch>/recap-tree/mokiterions-core)
+        Finished `release` profile [optimized] target(s) in 3.56s
+    $ bash <repo>/docs/engineering/simulation/evidence/WO-MOK-017/capture.sh <scratch>/recap
+    captured 120 streams into <scratch>/recap
+
+    real    0m6.073s
+
+`git archive` writes the commit's trees and nothing else: no untracked file, no working-tree
+modification, no index state. The archived tree holds evidence/WO-MOK-017/approval/ and nothing else
+under that directory -- capture.sh and analysis/ are untracked at this commit -- so capture.sh is
+invoked from the repository while the working directory is the archived tree. capture.sh addresses the
+binary as ./target/release/Mokiterions, so it runs the archived tree's engine, and using one script on
+both sides is deliberate: it makes the comparison a statement about the tree and not about the harness.
+
+Every cell was then digested with analysis/manifest.py and compared with pre/pre-manifest.txt on four
+columns at once -- raw SHA-256, byte count, line count and exit code:
+
+    cells in pre-manifest.txt:                                 120
+    reproduced exactly (raw digest, bytes, lines, exit):       120
+    mismatched:                                                  0
+
+The comparison is a plain diff of the two manifests with the label line excluded, because the two runs
+label themselves differently and agree on everything else. Both manifests report exit codes {'0'}.
+
+The two cells retained whole in this packet are read directly rather than by digest, and each one's row
+in pre-manifest.txt is reproducible from the committed file itself:
+
+    $ sha256sum < pre/full/seed42-baseline-d0.75-traceon.txt
+    c777bc0ae1a322a447639b81dd502d3b2b84e7d4d4e7d097585fe3d987ec42c8
+    $ sha256sum < pre/full/seed42-reference-d0.15-traceon.txt
+    549ba37f5bc2b41d2ab550fe33d41036199d6e20dd0936de70ad55fad9c7379e
+
+The first digest is worth reading twice: it is byte for byte the digest WO-MOK-016 recorded for the same
+cell, in evidence/WO-MOK-016/baseline/pre-manifest.txt and again in its post-change manifest. The
+traced default-density baseline stream has not moved across two work orders.
+
+Those equalities survive a Windows clone because .gitattributes carries
+`docs/engineering/simulation/evidence/** -text`, added while committing WO-MOK-010 for this exact
+failure: with core.autocrlf = true and no such rule, checkout rewrites every retained stream to CRLF and
+every recorded digest then fails against a file whose content is correct. The manifest is of the capture
+as the engine wrote it, LF, and the working tree holds those bytes unchanged.
+
+Any tracked modification present when the capture was taken would have to have left all 120 streams
+byte-identical to the commit's own output to escape this check.
+
+
+3. Cross-check: the same 120 cells against WO-MOK-016
+-----------------------------------------------------
+
+A second and independent agreement, of the kind WO-MOK-016's cross-check.txt recorded against
+WO-MOK-011. All 120 cells of this capture were compared by cell name and raw digest against
+WO-MOK-016's two post-change manifests together:
+
+    evidence/WO-MOK-016/post/post-manifest.txt      90 cells, from git archive 7c4aef3
+    evidence/WO-MOK-016/post/social-manifest.txt    30 cells, from git archive 59d61b9
+    ------------------------------------------------------------------------------------
+    union                                          120 cells
+    agreeing with this capture, by raw digest      120
+    differing                                        0
+
+This says something neither of those records can say for itself. Those digests were taken on two
+branch commits, and per this project's convention a verification record binds a branch commit and never
+master's merge of it. The agreement measures the merge: nothing between 7c4aef3, 59d61b9 and this
+capture's parent 7f4792a moved any of the 120 cells, and the governance-only commit 1ba5a3a moved none
+either. It is recorded as a cross-check and not as a post-merge verification record, which remains a
+thing this project does not produce.
+
+
+4. What the pre-change eat census already fixes
+-----------------------------------------------
+
+pre/eaten.txt is new on this work order and is read here because it makes this change's obligation
+falsifiable on the stream rather than only on the composition. Across all 30 reference cells:
+
+    highest pre-eat satiety, low class          85       against rule 5's bound of 85
+    highest pre-eat satiety, medium class       70       against 70
+    highest pre-eat satiety, high class         50       against 50
+    cells in which any satiety was wasted        0       of 30
+
+Rule 5's condition is inclusive and every one of its three bounds is attained exactly. That is the
+measurement the amendment moves: after the change the same three columns must read 87, 79 and 75, and
+the wasted total must be non-zero and bounded by R * R / 100 per eat.
+
+The two trait-aware sources already waste, because rule 19 already permits it, and their bounds are
+attained too -- 90, 82 and 70 under social against the 91, 82 and 70 that a tolerance of 40 admits.
+Their post-change prediction is narrower and is stated here before it is measured: the effective
+allowance becomes max(R * R / 100, T * R / 100), so the low and medium bounds do not move at all and
+only high class rises, from 70 to 75.
+
+Under baseline, 16 of the 30 cells eat nothing whatever, the highest pre-eat satiety is 92, and 214
+satiety is wasted across the matrix. Rule 4's candidate list applies no waste condition, so there is
+nothing there for this change to relax -- which is the same fact REQ-MOK-060's byte-identity constraint
+rests on, read from the other side.
+
+
+5. What is not measured here
+----------------------------
+
+There is no post-change capture yet. This packet is the pre-change side alone, taken at the moment
+implementation began, and the comparison oracle 1 exists for happens later, at the candidate. The
+figures here are what that comparison will be taken against, which is why they are recorded before any
+code is written rather than reconstructed afterwards.
+
+Neither the ceiling nor the three floors is assessed here. summary.txt carries rule 18's counts for all
+120 cells, so both are computable from this packet, and both are computed at the candidate against it.
+
+Both scratch captures -- the original and the reproduction -- were written outside the repository, at
+156 MB each, and neither is retained with this packet or anywhere else the packet can reach. That is why
+this file records the outcome and not the streams. analysis/retain.py states what is kept instead, cell
+by cell, and why each piece is worth its bytes, and section 2 above states the four commands that
+rebuild either capture from the commit it names.
+
+RESULT: PASS -- the pre-change capture is reproducible from the commit it claims, 120 of 120 cells on
+four columns, from a tree that cannot have been dirty, and it agrees with WO-MOK-016's post-change
+capture on all 120.

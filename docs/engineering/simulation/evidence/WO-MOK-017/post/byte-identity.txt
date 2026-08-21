@@ -1,0 +1,102 @@
+WO-MOK-017: the 30 baseline cells compared byte for byte
+========================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Constraint   "baseline is byte-identical on all 30 of its declared cells, compared byte for
+             byte and not by projection", and stop condition 1: "Any baseline cell differs,
+             in any byte or exit code, at any seed, density or trace setting"
+Pre-change   pre/COMMIT.txt      Candidate  post/COMMIT.txt
+Reader       analysis/divergence.py
+Date         2026-08-21
+
+This is the constraint the whole permitted surface exists to protect. `REQ-MOK-060` may correct
+the waste condition of rule 5 and rule 19 and nothing else, and the reason is `INT-MOK-010`:
+rule 4's candidate list carries no waste condition at all, so a correction confined to the two
+sources that have one cannot reach `baseline`. That is the argument. Below is the measurement.
+
+1. Bytes, not digests
+---------------------
+The constraint names the projection it will not accept, so what follows compares raw bytes read
+from both captures with `open(path, "rb").read()` and `==`. No digest is computed here and no
+record is parsed. `pre/pre-manifest.txt` and `post/post-manifest.txt` carry the digests, and
+they are the weaker of the two statements.
+
+    baseline cells compared                        30
+    byte-identical                                 30
+    differing in any byte                          0
+    bytes compared, both sides                  17,658,740
+
+    exit codes compared                            30
+    differing                                      0
+    the code every baseline run reported, at both commits   ['0']
+
+**All 30 baseline cells are byte-identical at the two commits, and every exit
+code agrees.** The comparison covers all five declared seeds, all three densities and both
+trace settings, which is the whole of the declared `baseline` matrix rather than a sample.
+
+2. The cells, listed, so that "all 30" is readable rather than asserted
+----------------------------------------------------------------------
+    cell                                 bytes  exit  identical
+    seed0-baseline-d0.15-traceoff       158,865     0  yes
+    seed0-baseline-d0.15-traceon        398,592     0  yes
+    seed0-baseline-d0.75-traceoff       167,984     0  yes
+    seed0-baseline-d0.75-traceon        407,933     0  yes
+    seed0-baseline-d1.50-traceoff       195,220     0  yes
+    seed0-baseline-d1.50-traceon        459,572     0  yes
+    seed1-baseline-d0.15-traceoff       156,381     0  yes
+    seed1-baseline-d0.15-traceon        395,855     0  yes
+    seed1-baseline-d0.75-traceoff       166,884     0  yes
+    seed1-baseline-d0.75-traceon        407,103     0  yes
+    seed1-baseline-d1.50-traceoff       180,711     0  yes
+    seed1-baseline-d1.50-traceon        423,214     0  yes
+    seed123-baseline-d0.15-traceoff     158,935     0  yes
+    seed123-baseline-d0.15-traceon      397,504     0  yes
+    seed123-baseline-d0.75-traceoff     174,820     0  yes
+    seed123-baseline-d0.75-traceon      425,019     0  yes
+    seed123-baseline-d1.50-traceoff     178,838     0  yes
+    seed123-baseline-d1.50-traceon      419,355     0  yes
+    seed42-baseline-d0.15-traceoff      159,365     0  yes
+    seed42-baseline-d0.15-traceon       398,542     0  yes
+    seed42-baseline-d0.75-traceoff      171,046     0  yes
+    seed42-baseline-d0.75-traceon       414,329     0  yes
+    seed42-baseline-d1.50-traceoff      197,652     0  yes
+    seed42-baseline-d1.50-traceon       465,151     0  yes
+    seed777-baseline-d0.15-traceoff     159,669     0  yes
+    seed777-baseline-d0.15-traceon      398,814     0  yes
+    seed777-baseline-d0.75-traceoff     169,502     0  yes
+    seed777-baseline-d0.75-traceon      411,841     0  yes
+    seed777-baseline-d1.50-traceoff     182,986     0  yes
+    seed777-baseline-d1.50-traceon      427,688     0  yes
+
+3. What identity here does and does not prove
+---------------------------------------------
+It proves that no observable behavior of the `baseline` source moved: not a proposal, not a
+draw, not a regeneration, not a death, not the final summary, anywhere in the declared matrix.
+Because all four sources share one world, one regeneration rule and one entropy stream, it also
+constrains everything shared. Rules 14 to 16, rule 9's eat effect and rule 6's food table all
+run under `baseline` too, so a change to any of them would appear here.
+`post/world-rules-unchanged.txt` makes the same point by reading the source; this is its
+behavioral half, and neither substitutes for the other.
+
+It proves it only as far as `baseline` runs, and that is a real bound rather than a caveat.
+`baseline` proposes without regard to the world, so it starves:
+
+    the tick every baseline run ended at              119 to 193, of a possible 1,000
+    how they ended                                    30 by extinction
+    consumptions across all 30 baseline cells         34
+    the tick the obligated runs reached, for contrast 359 to 1000
+
+So the identity above constrains the shared world over the first 193 ticks at most,
+and over the later ticks of a thousand-tick obligated run it constrains nothing. It could not be
+otherwise: a control that ignores the world cannot survive in it, which is exactly why
+`INT-MOK-010` promises `baseline` byte-identity rather than `baseline` survival. The later ticks
+are covered instead by reading the source -- `post/world-rules-unchanged.txt` -- and by the draw
+accounting in `post/entropy.txt`. Anyone reading this file as "the world is unchanged for a
+thousand ticks" is reading more than the measurement carries.
+
+It does not prove that the other three sources diverge only where they should, which is
+`divergence.txt`. Nor does it prove the entropy stream is consumed identically in the obligated
+runs -- it is not, and legitimately so: a wider candidate set draws a different number of
+times, which is `post/entropy.txt` and route R2 of `divergence.txt`.
+
+RESULT: PASS -- 30 of 30 baseline cells byte-identical, 30 of 30 exit codes equal.

@@ -1,0 +1,683 @@
+WO-MOK-017: every obligated divergence, by first diverging tick, record and decision
+====================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+In scope     "characterizing each of the 60 reference and individual divergences by first
+             diverging tick, first diverging record and the eat-or-seek decision that changed
+             -- the clause WO-MOK-016 recorded as unwritable, which becomes writable for the
+             first time here". The 30 social cells are characterized with them, because rule 26
+             delegates eating and seeking to rule 19, whose test this change amends.
+Stop cond 3  "A reference or individual divergence cannot be attributed to the corrected waste
+             condition."
+Pre-change   pre/COMMIT.txt      Candidate  post/COMMIT.txt
+Reader       analysis/divergence.py
+Date         2026-08-21
+
+1. The two conditions, from the two commits' own source
+------------------------------------------------------
+Attribution is arithmetic, so the arithmetic is transcribed from each commit's
+`mokiterions-core/src/simulation.rs` rather than from the specification. The specification is
+the thing the pre-change binary had drifted from, so quoting it for both sides would beg the
+question this file exists to answer.
+
+    pre-change  rule 5   S + R <= 100
+                rule 19  S + R <= 100  ||  S + R - 100 <= T*R/100
+    candidate   both     S + R <= 100  ||  S + R - 100 <= max(R*R/100, T*R/100)
+                         with T = 0 for rule 5, which is `fits_within(food, 0)`
+
+The drift was one term omitted twice: rule 5 had no allowance at all, and rule 19 had only the
+trait half. That is also why rule 19's `T = 0` identity with rule 5 held on the drifted pair --
+at `T = 0` the trait term is zero and both collapse to `S + R <= 100`. The identity was a
+coincidence of the defect, and the amended clause 1 together with the shared `fits_within` is
+what makes it structural.
+
+    class    R   R*R/100    highest satiety the old rule 5 ate at    the candidate's, at T = 0
+    low      15        2                                       85                           87
+    medium   30        9                                       70                           79
+    high     50       25                                       50                           75
+
+`reference` ignores the trait, so a `reference` cell's printed `waste_tolerance` is not its
+allowance and is not read as one here: its old allowance is zero and its new one is `R*R/100`.
+
+2. The model checked against both captures before it is used
+-----------------------------------------------------------
+Every consumption prints the satiety it happened at, so each condition can be tested against
+the capture of the commit that implemented it. A consumption outside its own commit's allowance
+would mean this reader's model of that commit is wrong, and every attribution built on it with
+it.
+
+    consumptions in the 90 obligated cells, pre-change       26,102
+    the same at the candidate                                26,890
+    pre-change consumptions above a satiety of 100            3,482
+    the same at the candidate                                12,128
+    pre-change consumptions outside the OLD allowance             0
+    candidate consumptions outside the NEW allowance              0
+    candidate consumptions the OLD condition cannot emit      8,626
+
+    **Neither capture holds a single consumption outside its own commit's allowance.** Both
+    conditions are reproduced exactly by the two captures' own records, so the model this
+    attribution rests on is measured rather than assumed.
+
+    The check has teeth. An earlier draft of this reader modelled the old condition as plainly
+    `S + R <= 100` for every source, and the 3,482 pre-change consumptions above a
+    satiety of 100 contradicted it at once: they are the trait-aware sources eating inside the
+    old `T*R/100` term, which the drifted rule 19 did have. The correction to this reader came
+    from the capture, not from re-reading the source a second time.
+
+3. The three attribution routes
+-------------------------------
+Two sources differing only in their waste condition can behave differently only where the two
+conditions disagree: some class with `S + R > 100`, admitted by the new allowance and declined
+by the old. Call that the disagreement band. Each cell's first divergence takes one route.
+
+    R1  direct         the first diverging record carries the acting Mokiterion's pre-action
+                       satiety, and that (S, T, source) is in the band. The changed decision is
+                       visible in the record itself.
+    R2  stream-shared  the acting Mokiterion is not in the band, but an in-band one acted
+                       earlier in the same tick with an unchanged record. A wider candidate set
+                       consumes a different number of draws even when it reaches the same
+                       proposal, so the next Mokiterion to draw wanders somewhere else.
+    R3  sibling        an untraced cell, explained by the traced cell of its own triple --
+                       same seed, source and density, diverging no later, by R1 or R2. An
+                       untraced stream prints no proposal, so the changed decision is invisible
+                       in it and its first visible difference is a downstream effect.
+
+    cells attributed by R1                               57 of 90
+    cells attributed by R2                                9 of 90
+    cells attributed by R3                               24 of 90
+    cells attributed by no route                          0 of 90
+    obligated cells that did not diverge at all           0 of 90
+
+    **Every obligated divergence takes one of the three routes.**
+
+4. The independent necessary condition: nothing may diverge before the band is entered
+------------------------------------------------------------------------------------
+The three routes classify a divergence. This is the check that can refute one. Every
+Mokiterion starts at a satiety of 100 and loses one per tick, so no band is reachable at tick 0:
+the first one a falling satiety enters is the low class at 87 -- excess 2 against an earned
+allowance of 2 -- and 87 is thirteen decrements below the start. A divergence arising before any
+Mokiterion is in a band could not be this correction's, whatever route it appeared to take, so
+the earliest band entry is measured per cell from the pre-change stream and compared with it.
+
+    starting satieties, over all 90 obligated cells         [100]
+    earliest first divergence, over all diverged cells      tick 14
+    latest                                                  tick 28
+    earliest band entry measured in a pre-change stream     tick 14
+    cells whose divergence precedes their own band entry    0
+
+    **No cell diverges before the tick at which its band is first entered.** The bound is
+    not slack: the earliest divergence and the earliest band entry fall on the same tick,
+    so the correction takes effect at the first observation where it can. That is the
+    strongest form this check can return, and it is why no divergence in any of the
+    90 obligated runs sits earlier than tick 14 -- a Mokiterion at a
+    satiety of 88 or above declines every class under both conditions alike.
+
+    cells whose waste_tolerance assignment moved            0
+    Rule 20 fixes the trait at initialization from the seed, and it is identical at both
+    commits in every cell. So these divergences are the condition reading the same trait
+    differently, not a different trait being drawn.
+
+5. Every divergence, one row per cell
+-------------------------------------
+    cell                              tick  route  agent   S   T  record kinds         pre verb        -> post verb       the disagreement, or the witness
+    seed0-individual-d0.15-traceoff     17  R3     M05    84   4  survival_changed     -               -> -               seed0-individual-d0.15-traceon, tick 14, R1
+    seed0-individual-d0.15-traceon      14  R1     M03    87   8  action_trace         move:south      -> move:north      low +2 <= 2, old 1
+    seed0-individual-d0.75-traceoff     15  R2     M07    86  15  survival_changed     -               -> -               M05 at S=86 T=4, band low
+    seed0-individual-d0.75-traceon      14  R1     M01    87   6  action_trace         move:west       -> move:east       low +2 <= 2, old 0
+    seed0-individual-d1.50-traceoff     14  R1     M05    87   4  survival_changed     -               -> -               low +2 <= 2, old 0
+    seed0-individual-d1.50-traceon      14  R1     M01    87   6  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed0-reference-d0.15-traceoff      19  R3     M03    82   8  survival_changed/food_consumed -               -> -               seed0-reference-d0.15-traceon, tick 14, R1
+    seed0-reference-d0.15-traceon       14  R1     M03    87   8  action_trace         move:south      -> move:north      low +2 <= 2, old 0
+    seed0-reference-d0.75-traceoff      16  R3     M09    85  39  survival_changed/food_consumed -               -> -               seed0-reference-d0.75-traceon, tick 14, R1
+    seed0-reference-d0.75-traceon       14  R1     M01    87   6  action_trace         move:west       -> move:east       low +2 <= 2, old 0
+    seed0-reference-d1.50-traceoff      15  R1     M03    86   8  survival_changed     -               -> -               low +1 <= 2, old 0
+    seed0-reference-d1.50-traceon       14  R1     M01    87   6  action_trace         move:north      -> move:east       low +2 <= 2, old 0
+    seed0-social-d0.15-traceoff         24  R2     M12    77  37  survival_changed     -               -> -               M10 at S=77 T=18, band medium
+    seed0-social-d0.15-traceon          14  R2     M09    87  39  action_trace         move:west       -> move:east       M08 at S=87 T=10, band low
+    seed0-social-d0.75-traceoff         23  R1     M05    78   4  survival_changed     -               -> -               medium +8 <= 9, old 1
+    seed0-social-d0.75-traceon          14  R1     M02    87   8  action_trace         avoid           -> move:west       low +2 <= 2, old 1
+    seed0-social-d1.50-traceoff         14  R2     M11    87  20  survival_changed     -               -> -               M05 at S=87 T=4, band low
+    seed0-social-d1.50-traceon          14  R1     M01    87   6  action_trace         approach        -> move:west       low +2 <= 2, old 0
+    seed1-individual-d0.15-traceoff     15  R2     M11    86  28  survival_changed     -               -> -               M07 at S=86 T=2, band low
+    seed1-individual-d0.15-traceon      14  R1     M07    87   2  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed1-individual-d0.75-traceoff     18  R3     M12    83   0  survival_changed/food_consumed -               -> -               seed1-individual-d0.75-traceon, tick 14, R1
+    seed1-individual-d0.75-traceon      14  R1     M02    87   3  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed1-individual-d1.50-traceoff     14  R1     M02    87   3  survival_changed/food_consumed -               -> -               low +2 <= 2, old 0
+    seed1-individual-d1.50-traceon      14  R1     M02    87   3  action_trace/food_consumed move:east       -> -               low +2 <= 2, old 0
+    seed1-reference-d0.15-traceoff      16  R3     M09    85  15  survival_changed/food_consumed -               -> -               seed1-reference-d0.15-traceon, tick 14, R1
+    seed1-reference-d0.15-traceon       14  R1     M02    87   3  action_trace         move:east       -> move:west       low +2 <= 2, old 0
+    seed1-reference-d0.75-traceoff      19  R3     M05    82  39  survival_changed/food_consumed -               -> -               seed1-reference-d0.75-traceon, tick 14, R1
+    seed1-reference-d0.75-traceon       14  R1     M01    87  26  action_trace         move:north      -> move:west       low +2 <= 2, old 0
+    seed1-reference-d1.50-traceoff      14  R1     M02    87   3  survival_changed/food_consumed -               -> -               low +2 <= 2, old 0
+    seed1-reference-d1.50-traceon       14  R1     M01    87  26  action_trace         move:west       -> move:south      low +2 <= 2, old 0
+    seed1-social-d0.15-traceoff         27  R1     M03    74  22  survival_changed     -               -> -               high +24 <= 25, old 11
+    seed1-social-d0.15-traceon          14  R2     M08    87  17  action_trace         move:west       -> move:east       M07 at S=87 T=2, band low
+    seed1-social-d0.75-traceoff         20  R3     A       ?   ?  food_regenerated     -               -> -               seed1-social-d0.75-traceon, tick 14, R1
+    seed1-social-d0.75-traceon          14  R1     M02    87   3  action_trace         avoid           -> move:west       low +2 <= 2, old 0
+    seed1-social-d1.50-traceoff         20  R3     A       ?   ?  food_regenerated     -               -> -               seed1-social-d1.50-traceon, tick 14, R1
+    seed1-social-d1.50-traceon          14  R1     M07    87   2  action_trace         move:north      -> move:west       low +2 <= 2, old 0
+    seed123-individual-d0.15-traceoff   28  R1     M01    73  20  survival_changed     -               -> -               high +23 <= 25, old 10
+    seed123-individual-d0.15-traceon    22  R1     M04    79  13  action_trace         move:east       -> move:west       medium +9 <= 9, old 3
+    seed123-individual-d0.75-traceoff   20  R3     A       ?   ?  food_regenerated     -               -> -               seed123-individual-d0.75-traceon, tick 14, R1
+    seed123-individual-d0.75-traceon    14  R1     M04    87  13  action_trace         move:south      -> move:west       low +2 <= 2, old 1
+    seed123-individual-d1.50-traceoff   20  R3     A       ?   ?  food_regenerated     -               -> -               seed123-individual-d1.50-traceon, tick 14, R1
+    seed123-individual-d1.50-traceon    14  R1     M04    87  13  action_trace         move:east       -> move:west       low +2 <= 2, old 1
+    seed123-reference-d0.15-traceoff    15  R1     M02    86  33  survival_changed     -               -> -               low +1 <= 2, old 0
+    seed123-reference-d0.15-traceon     14  R1     M03    87  40  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed123-reference-d0.75-traceoff    18  R3     M11    83  19  survival_changed/food_consumed -               -> -               seed123-reference-d0.75-traceon, tick 14, R1
+    seed123-reference-d0.75-traceon     14  R1     M01    87  20  action_trace         move:north      -> move:east       low +2 <= 2, old 0
+    seed123-reference-d1.50-traceoff    15  R1     M02    86  33  survival_changed     -               -> -               low +1 <= 2, old 0
+    seed123-reference-d1.50-traceon     14  R1     M02    87  33  action_trace         move:south      -> move:west       low +2 <= 2, old 0
+    seed123-social-d0.15-traceoff       20  R3     B       ?   ?  food_regenerated     -               -> -               seed123-social-d0.15-traceon, tick 14, R1
+    seed123-social-d0.15-traceon        14  R1     M12    87   4  action_trace         move:north      -> move:west       low +2 <= 2, old 0
+    seed123-social-d0.75-traceoff       14  R1     M12    87   4  threat_resolved/survival_changed -               -> -               low +2 <= 2, old 0
+    seed123-social-d0.75-traceon        14  R1     M12    87   4  threat_resolved/action_trace -               -> move:south      low +2 <= 2, old 0
+    seed123-social-d1.50-traceoff       20  R3     A       ?   ?  food_regenerated     -               -> -               seed123-social-d1.50-traceon, tick 14, R1
+    seed123-social-d1.50-traceon        14  R1     M04    87  13  action_trace         move:west       -> move:east       low +2 <= 2, old 1
+    seed42-individual-d0.15-traceoff    17  R3     M03    84   4  survival_changed     -               -> -               seed42-individual-d0.15-traceon, tick 14, R2
+    seed42-individual-d0.15-traceon     14  R2     M02    87  40  action_trace         move:south      -> move:west       M01 at S=87 T=11, band low
+    seed42-individual-d0.75-traceoff    15  R1     M03    86   4  survival_changed     -               -> -               low +1 <= 2, old 0
+    seed42-individual-d0.75-traceon     14  R1     M01    87  11  action_trace         move:north      -> move:east       low +2 <= 2, old 1
+    seed42-individual-d1.50-traceoff    20  R3     M11    81  10  survival_changed     -               -> -               seed42-individual-d1.50-traceon, tick 14, R1
+    seed42-individual-d1.50-traceon     14  R1     M01    87  11  action_trace         move:east       -> move:west       low +2 <= 2, old 1
+    seed42-reference-d0.15-traceoff     14  R1     M07    87   7  survival_changed     -               -> -               low +2 <= 2, old 0
+    seed42-reference-d0.15-traceon      14  R1     M01    87  11  action_trace         move:east       -> move:west       low +2 <= 2, old 0
+    seed42-reference-d0.75-traceoff     15  R1     M06    86  13  survival_changed     -               -> -               low +1 <= 2, old 0
+    seed42-reference-d0.75-traceon      14  R1     M01    87  11  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed42-reference-d1.50-traceoff     14  R1     M06    87  13  survival_changed     -               -> -               low +2 <= 2, old 0
+    seed42-reference-d1.50-traceon      14  R1     M02    87  40  action_trace         move:north      -> move:east       low +2 <= 2, old 0
+    seed42-social-d0.15-traceoff        20  R3     B       ?   ?  food_regenerated     -               -> -               seed42-social-d0.15-traceon, tick 14, R1
+    seed42-social-d0.15-traceon         14  R1     M01    87  11  action_trace         move:south      -> move:west       low +2 <= 2, old 1
+    seed42-social-d0.75-traceoff        19  R3     M01    82  11  survival_changed/food_consumed -               -> -               seed42-social-d0.75-traceon, tick 14, R1
+    seed42-social-d0.75-traceon         14  R1     M01    87  11  action_trace         move:south      -> move:east       low +2 <= 2, old 1
+    seed42-social-d1.50-traceoff        20  R3     A       ?   ?  food_regenerated     -               -> -               seed42-social-d1.50-traceon, tick 14, R1
+    seed42-social-d1.50-traceon         14  R1     M01    87  11  action_trace         move:east       -> move:west       low +2 <= 2, old 1
+    seed777-individual-d0.15-traceoff   15  R2     M06    86  18  survival_changed     -               -> -               M02 at S=86 T=3, band low
+    seed777-individual-d0.15-traceon    14  R1     M02    87   3  action_trace         move:south      -> move:west       low +2 <= 2, old 0
+    seed777-individual-d0.75-traceoff   16  R3     M03    85   7  survival_changed/food_consumed -               -> -               seed777-individual-d0.75-traceon, tick 14, R1
+    seed777-individual-d0.75-traceon    14  R1     M02    87   3  action_trace         move:east       -> move:west       low +2 <= 2, old 0
+    seed777-individual-d1.50-traceoff   16  R3     M07    85  36  survival_changed     -               -> -               seed777-individual-d1.50-traceon, tick 14, R1
+    seed777-individual-d1.50-traceon    14  R1     M02    87   3  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed777-reference-d0.15-traceoff    15  R1     M06    86  18  survival_changed     -               -> -               low +1 <= 2, old 0
+    seed777-reference-d0.15-traceon     14  R1     M02    87   3  action_trace         move:south      -> move:west       low +2 <= 2, old 0
+    seed777-reference-d0.75-traceoff    16  R3     M03    85   7  survival_changed/food_consumed -               -> -               seed777-reference-d0.75-traceon, tick 14, R1
+    seed777-reference-d0.75-traceon     14  R1     M01    87  36  action_trace         move:east       -> move:west       low +2 <= 2, old 0
+    seed777-reference-d1.50-traceoff    14  R1     M08    87  24  territory_crossed/survival_changed -               -> -               low +2 <= 2, old 0
+    seed777-reference-d1.50-traceon     14  R1     M02    87   3  action_trace         move:south      -> move:east       low +2 <= 2, old 0
+    seed777-social-d0.15-traceoff       18  R3     M11    83   8  survival_changed     -               -> -               seed777-social-d0.15-traceon, tick 14, R2
+    seed777-social-d0.15-traceon        14  R2     M03    94   7  action_trace         move:south      -> move:west       M02 at S=87 T=3, band low
+    seed777-social-d0.75-traceoff       20  R3     A       ?   ?  food_regenerated     -               -> -               seed777-social-d0.75-traceon, tick 14, R1
+    seed777-social-d0.75-traceon        14  R1     M02    87   3  action_trace         move:east       -> move:west       low +2 <= 2, old 0
+    seed777-social-d1.50-traceoff       16  R3     M08     ?  24  survival_changed/territory_crossed -               -> -               seed777-social-d1.50-traceon, tick 14, R1
+    seed777-social-d1.50-traceon        14  R1     M03    87   7  action_trace         move:south      -> move:east       low +2 <= 2, old 1
+
+`S` is the acting Mokiterion's satiety before the tick's effects, read from the first
+diverging record. `T` is its `waste_tolerance` as printed at initialization -- shown for every
+source, including `reference`, where the trait is in the record but the source does not read
+it. Each `R1` row carries the excess above 100 and both allowances, so its arithmetic is
+checkable without rerunning this reader. On an `R2` or `R3` row the `S` and `T` shown are the
+ones the routes had to *reject* -- that Mokiterion is not the one whose answer changed, which
+is precisely why those cells take a route other than R1 -- and the witness column names the one
+that carries the explanation. Where the two sides of the line are different record kinds, both
+are printed separated by a slash.
+
+6. The first diverging record of every cell, in full
+---------------------------------------------------
+The row above is a summary of the two lines below it, and "first diverging record" is a
+retention item in its own right: a summary of a record is not the record.
+
+  seed0-individual-d0.15-traceoff   tick 17, line 243, route R3
+    -  tick=17 subject=M05 event=survival_changed result=health:100->100,satiety:84->83,energy:84->83,fear:0->10
+    +  tick=17 subject=M05 event=survival_changed result=health:100->100,satiety:84->83,energy:84->83,fear:0->0
+
+  seed0-individual-d0.15-traceon   tick 14, line 363, route R1
+    -  tick=14 subject=M03 event=action_trace result=proposal:move:south,status:accepted,detail:position:123:53,position:123:53,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M03 event=action_trace result=proposal:move:north,status:accepted,detail:position:123:51,position:123:51,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed0-individual-d0.75-traceoff   tick 15, line 313, route R2
+    -  tick=15 subject=M07 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:0->0
+    +  tick=15 subject=M07 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:0->10
+
+  seed0-individual-d0.75-traceon   tick 14, line 451, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:86:35,position:86:35,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:88:35,position:88:35,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed0-individual-d1.50-traceoff   tick 14, line 421, route R1
+    -  tick=14 subject=M05 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:40->50
+    +  tick=14 subject=M05 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:40->35
+
+  seed0-individual-d1.50-traceon   tick 14, line 573, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:south,status:accepted,detail:position:26:40,position:26:40,territory:A,health:100,satiety:87,energy:87,fear:30
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:27:39,position:27:39,territory:A,health:100,satiety:87,energy:87,fear:30
+
+  seed0-reference-d0.15-traceoff   tick 19, line 265, route R3
+    -  tick=19 subject=M03 event=survival_changed result=health:100->100,satiety:82->81,energy:82->81,fear:100->100
+    +  tick=19 subject=M03 event=food_consumed result=food:F0007,class:low,satiety:82->97,energy:82->87
+
+  seed0-reference-d0.15-traceon   tick 14, line 363, route R1
+    -  tick=14 subject=M03 event=action_trace result=proposal:move:south,status:accepted,detail:position:123:53,position:123:53,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M03 event=action_trace result=proposal:move:north,status:accepted,detail:position:123:51,position:123:51,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed0-reference-d0.75-traceoff   tick 16, line 327, route R3
+    -  tick=16 subject=M09 event=survival_changed result=health:100->100,satiety:85->84,energy:85->84,fear:100->100
+    +  tick=16 subject=M09 event=food_consumed result=food:F0122,class:low,satiety:85->100,energy:85->90
+
+  seed0-reference-d0.75-traceon   tick 14, line 451, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:85:34,position:85:34,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:87:34,position:87:34,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed0-reference-d1.50-traceoff   tick 15, line 431, route R1
+    -  tick=15 subject=M03 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:100->100
+    +  tick=15 subject=M03 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:100->95
+
+  seed0-reference-d1.50-traceon   tick 14, line 573, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:north,status:accepted,detail:position:27:39,position:27:39,territory:A,health:100,satiety:87,energy:87,fear:15
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:28:40,position:28:40,territory:A,health:100,satiety:87,energy:87,fear:15
+
+  seed0-social-d0.15-traceoff   tick 24, line 344, route R2
+    -  tick=24 subject=M12 event=survival_changed result=health:100->100,satiety:77->76,energy:77->76,fear:0->10
+    +  tick=24 subject=M12 event=survival_changed result=health:100->100,satiety:77->76,energy:77->76,fear:0->0
+
+  seed0-social-d0.15-traceon   tick 14, line 380, route R2
+    -  tick=14 subject=M09 event=action_trace result=proposal:move:west,status:accepted,detail:position:14:65,position:14:65,territory:B,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M09 event=action_trace result=proposal:move:east,status:accepted,detail:position:16:65,position:16:65,territory:B,health:100,satiety:87,energy:87,fear:0
+
+  seed0-social-d0.75-traceoff   tick 23, line 421, route R1
+    -  tick=23 subject=M05 event=survival_changed result=health:100->100,satiety:78->77,energy:78->77,fear:85->80
+    +  tick=23 subject=M05 event=survival_changed result=health:100->100,satiety:78->77,energy:78->77,fear:85->95
+
+  seed0-social-d0.75-traceon   tick 14, line 460, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:avoid,target:M04,status:accepted,detail:position:75:53,position:75:53,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:75:53,position:75:53,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed0-social-d1.50-traceoff   tick 14, line 430, route R2
+    -  tick=14 subject=M11 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:10->20
+    +  tick=14 subject=M11 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:10->5
+
+  seed0-social-d1.50-traceon   tick 14, line 573, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:approach,target:M05,status:accepted,detail:position:22:36,position:22:36,territory:A,health:100,satiety:87,energy:87,fear:20
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:22:36,position:22:36,territory:A,health:100,satiety:87,energy:87,fear:20
+
+  seed1-individual-d0.15-traceoff   tick 15, line 219, route R2
+    -  tick=15 subject=M11 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:0->0
+    +  tick=15 subject=M11 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:0->10
+
+  seed1-individual-d0.15-traceon   tick 14, line 365, route R1
+    -  tick=14 subject=M07 event=action_trace result=proposal:move:south,status:accepted,detail:position:19:126,position:19:126,territory:B,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M07 event=action_trace result=proposal:move:east,status:accepted,detail:position:20:125,position:20:125,territory:B,health:100,satiety:87,energy:87,fear:0
+
+  seed1-individual-d0.75-traceoff   tick 18, line 355, route R3
+    -  tick=18 subject=M12 event=survival_changed result=health:100->100,satiety:83->82,energy:83->82,fear:100->100
+    +  tick=18 subject=M12 event=food_consumed result=food:F0080,class:low,satiety:83->98,energy:83->88
+
+  seed1-individual-d0.75-traceon   tick 14, line 453, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:88:42,position:88:42,territory:A,health:100,satiety:87,energy:87,fear:10
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:89:41,position:89:41,territory:A,health:100,satiety:87,energy:87,fear:10
+
+  seed1-individual-d1.50-traceoff   tick 14, line 418, route R1
+    -  tick=14 subject=M02 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:100->100
+    +  tick=14 subject=M02 event=food_consumed result=food:F0001,class:low,satiety:87->100,energy:87->92
+
+  seed1-individual-d1.50-traceon   tick 14, line 575, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:66:39,position:66:39,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M02 event=food_consumed result=food:F0001,class:low,satiety:87->100,energy:87->92
+
+  seed1-reference-d0.15-traceoff   tick 16, line 229, route R3
+    -  tick=16 subject=M09 event=survival_changed result=health:100->100,satiety:85->84,energy:85->84,fear:100->100
+    +  tick=16 subject=M09 event=food_consumed result=food:F0022,class:low,satiety:85->100,energy:85->90
+
+  seed1-reference-d0.15-traceon   tick 14, line 355, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:119:36,position:119:36,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:117:36,position:117:36,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed1-reference-d0.75-traceoff   tick 19, line 360, route R3
+    -  tick=19 subject=M05 event=survival_changed result=health:100->100,satiety:82->81,energy:82->81,fear:0->0
+    +  tick=19 subject=M05 event=food_consumed result=food:F0019,class:low,satiety:82->97,energy:82->87
+
+  seed1-reference-d0.75-traceon   tick 14, line 451, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:north,status:accepted,detail:position:66:46,position:66:46,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:65:47,position:65:47,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed1-reference-d1.50-traceoff   tick 14, line 418, route R1
+    -  tick=14 subject=M02 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:100->100
+    +  tick=14 subject=M02 event=food_consumed result=food:F0001,class:low,satiety:87->100,energy:87->92
+
+  seed1-reference-d1.50-traceon   tick 14, line 573, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:76:34,position:76:34,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:south,status:accepted,detail:position:77:35,position:77:35,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed1-social-d0.15-traceoff   tick 27, line 366, route R1
+    -  tick=27 subject=M03 event=survival_changed result=health:100->100,satiety:74->73,energy:74->73,fear:0->10
+    +  tick=27 subject=M03 event=survival_changed result=health:100->100,satiety:74->73,energy:74->73,fear:0->0
+
+  seed1-social-d0.15-traceon   tick 14, line 375, route R2
+    -  tick=14 subject=M08 event=action_trace result=proposal:move:west,status:accepted,detail:position:62:93,position:62:93,territory:B,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M08 event=action_trace result=proposal:move:east,status:accepted,detail:position:64:93,position:64:93,territory:B,health:100,satiety:87,energy:87,fear:0
+
+  seed1-social-d0.75-traceoff   tick 20, line 375, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0123,class:high,position:22:63
+    +  tick=20 subject=A event=food_regenerated result=food:F0123,class:low,position:104:17
+
+  seed1-social-d0.75-traceon   tick 14, line 455, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:avoid,target:M01,status:accepted,detail:position:78:42,position:78:42,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:76:42,position:76:42,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed1-social-d1.50-traceoff   tick 20, line 505, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0245,class:medium,position:63:44
+    +  tick=20 subject=A event=food_regenerated result=food:F0245,class:high,position:51:45
+
+  seed1-social-d1.50-traceon   tick 14, line 589, route R1
+    -  tick=14 subject=M07 event=action_trace result=proposal:move:north,status:accepted,detail:position:35:109,position:35:109,territory:B,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M07 event=action_trace result=proposal:move:west,status:accepted,detail:position:34:110,position:34:110,territory:B,health:100,satiety:87,energy:87,fear:0
+
+  seed123-individual-d0.15-traceoff   tick 28, line 372, route R1
+    -  tick=28 subject=M01 event=survival_changed result=health:100->100,satiety:73->72,energy:73->72,fear:100->95
+    +  tick=28 subject=M01 event=survival_changed result=health:100->100,satiety:73->72,energy:73->72,fear:100->100
+
+  seed123-individual-d0.15-traceon   tick 22, line 554, route R1
+    -  tick=22 subject=M04 event=action_trace result=proposal:move:east,status:accepted,detail:position:57:5,position:57:5,territory:A,health:100,satiety:79,energy:79,fear:0
+    +  tick=22 subject=M04 event=action_trace result=proposal:move:west,status:accepted,detail:position:55:5,position:55:5,territory:A,health:100,satiety:79,energy:79,fear:0
+
+  seed123-individual-d0.75-traceoff   tick 20, line 382, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0123,class:medium,position:4:6
+    +  tick=20 subject=A event=food_regenerated result=food:F0123,class:high,position:85:45
+
+  seed123-individual-d0.75-traceon   tick 14, line 457, route R1
+    -  tick=14 subject=M04 event=action_trace result=proposal:move:south,status:accepted,detail:position:110:50,position:110:50,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M04 event=action_trace result=proposal:move:west,status:accepted,detail:position:109:49,position:109:49,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed123-individual-d1.50-traceoff   tick 20, line 503, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0245,class:high,position:75:15
+    +  tick=20 subject=A event=food_regenerated result=food:F0245,class:high,position:23:12
+
+  seed123-individual-d1.50-traceon   tick 14, line 579, route R1
+    -  tick=14 subject=M04 event=action_trace result=proposal:move:east,status:accepted,detail:position:111:45,position:111:45,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M04 event=action_trace result=proposal:move:west,status:accepted,detail:position:109:45,position:109:45,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed123-reference-d0.15-traceoff   tick 15, line 210, route R1
+    -  tick=15 subject=M02 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:100->95
+    +  tick=15 subject=M02 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:100->100
+
+  seed123-reference-d0.15-traceon   tick 14, line 357, route R1
+    -  tick=14 subject=M03 event=action_trace result=proposal:move:south,status:accepted,detail:position:90:61,position:90:61,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M03 event=action_trace result=proposal:move:east,status:accepted,detail:position:91:60,position:91:60,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed123-reference-d0.75-traceoff   tick 18, line 353, route R3
+    -  tick=18 subject=M11 event=survival_changed result=health:100->100,satiety:83->82,energy:83->82,fear:100->100
+    +  tick=18 subject=M11 event=food_consumed result=food:F0077,class:low,satiety:83->98,energy:83->88
+
+  seed123-reference-d0.75-traceon   tick 14, line 451, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:north,status:accepted,detail:position:119:54,position:119:54,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:120:55,position:120:55,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed123-reference-d1.50-traceoff   tick 15, line 430, route R1
+    -  tick=15 subject=M02 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:15->25
+    +  tick=15 subject=M02 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:15->10
+
+  seed123-reference-d1.50-traceon   tick 14, line 575, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:79:48,position:79:48,territory:A,health:100,satiety:87,energy:87,fear:5
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:78:47,position:78:47,territory:A,health:100,satiety:87,energy:87,fear:5
+
+  seed123-social-d0.15-traceoff   tick 20, line 282, route R3
+    -  tick=20 subject=B event=food_regenerated result=food:F0025,class:low,position:25:72
+    +  tick=20 subject=B event=food_regenerated result=food:F0025,class:medium,position:5:119
+
+  seed123-social-d0.15-traceon   tick 14, line 376, route R1
+    -  tick=14 subject=M12 event=action_trace result=proposal:move:north,status:accepted,detail:position:16:78,position:16:78,territory:B,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M12 event=action_trace result=proposal:move:west,status:accepted,detail:position:15:79,position:15:79,territory:B,health:100,satiety:87,energy:87,fear:0
+
+  seed123-social-d0.75-traceoff   tick 14, line 328, route R1
+    -  tick=14 subject=M12 event=threat_resolved result=target:M09,increase:0,target_fear:100->100
+    +  tick=14 subject=M12 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:100->100
+
+  seed123-social-d0.75-traceon   tick 14, line 474, route R1
+    -  tick=14 subject=M12 event=threat_resolved result=target:M09,increase:0,target_fear:100->100
+    +  tick=14 subject=M12 event=action_trace result=proposal:move:south,status:accepted,detail:position:111:109,position:111:109,territory:B,health:100,satiety:87,energy:87,fear:100
+
+  seed123-social-d1.50-traceoff   tick 20, line 519, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0245,class:low,position:83:6
+    +  tick=20 subject=A event=food_regenerated result=food:F0245,class:medium,position:60:43
+
+  seed123-social-d1.50-traceon   tick 14, line 595, route R1
+    -  tick=14 subject=M04 event=action_trace result=proposal:move:west,status:accepted,detail:position:115:49,position:115:49,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M04 event=action_trace result=proposal:move:east,status:accepted,detail:position:117:49,position:117:49,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-individual-d0.15-traceoff   tick 17, line 235, route R3
+    -  tick=17 subject=M03 event=survival_changed result=health:100->100,satiety:84->83,energy:84->83,fear:0->10
+    +  tick=17 subject=M03 event=survival_changed result=health:100->100,satiety:84->83,energy:84->83,fear:0->0
+
+  seed42-individual-d0.15-traceon   tick 14, line 355, route R2
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:67:10,position:67:10,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:66:9,position:66:9,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed42-individual-d0.75-traceoff   tick 15, line 311, route R1
+    -  tick=15 subject=M03 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:85->95
+    +  tick=15 subject=M03 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:85->80
+
+  seed42-individual-d0.75-traceon   tick 14, line 452, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:north,status:accepted,detail:position:11:1,position:11:1,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:12:2,position:12:2,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-individual-d1.50-traceoff   tick 20, line 501, route R3
+    -  tick=20 subject=M11 event=survival_changed result=health:100->100,satiety:81->80,energy:81->80,fear:0->0
+    +  tick=20 subject=M11 event=survival_changed result=health:100->100,satiety:81->80,energy:81->80,fear:0->10
+
+  seed42-individual-d1.50-traceon   tick 14, line 573, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:9:43,position:9:43,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:7:43,position:7:43,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-reference-d0.15-traceoff   tick 14, line 203, route R1
+    -  tick=14 subject=M07 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:20->15
+    +  tick=14 subject=M07 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:20->30
+
+  seed42-reference-d0.15-traceon   tick 14, line 353, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:111:48,position:111:48,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:109:48,position:109:48,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-reference-d0.75-traceoff   tick 15, line 313, route R1
+    -  tick=15 subject=M06 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:100->100
+    +  tick=15 subject=M06 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:100->95
+
+  seed42-reference-d0.75-traceon   tick 14, line 452, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:south,status:accepted,detail:position:13:3,position:13:3,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:14:2,position:14:2,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-reference-d1.50-traceoff   tick 14, line 422, route R1
+    -  tick=14 subject=M06 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:10->5
+    +  tick=14 subject=M06 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:10->20
+
+  seed42-reference-d1.50-traceon   tick 14, line 575, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:north,status:accepted,detail:position:79:10,position:79:10,territory:A,health:100,satiety:87,energy:87,fear:15
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:80:11,position:80:11,territory:A,health:100,satiety:87,energy:87,fear:15
+
+  seed42-social-d0.15-traceoff   tick 20, line 316, route R3
+    -  tick=20 subject=B event=food_regenerated result=food:F0025,class:low,position:111:75
+    +  tick=20 subject=B event=food_regenerated result=food:F0025,class:low,position:95:111
+
+  seed42-social-d0.15-traceon   tick 14, line 374, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:south,status:accepted,detail:position:111:48,position:111:48,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:110:47,position:110:47,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-social-d0.75-traceoff   tick 19, line 360, route R3
+    -  tick=19 subject=M01 event=survival_changed result=health:100->100,satiety:82->81,energy:82->81,fear:0->0
+    +  tick=19 subject=M01 event=food_consumed result=food:F0019,class:low,satiety:82->97,energy:82->87
+
+  seed42-social-d0.75-traceon   tick 14, line 454, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:south,status:accepted,detail:position:12:2,position:12:2,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:13:1,position:13:1,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed42-social-d1.50-traceoff   tick 20, line 508, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0245,class:high,position:33:19
+    +  tick=20 subject=A event=food_regenerated result=food:F0245,class:high,position:67:53
+
+  seed42-social-d1.50-traceon   tick 14, line 580, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:10:40,position:10:40,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:8:40,position:8:40,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed777-individual-d0.15-traceoff   tick 15, line 214, route R2
+    -  tick=15 subject=M06 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:40->50
+    +  tick=15 subject=M06 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:40->35
+
+  seed777-individual-d0.15-traceon   tick 14, line 355, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:70:33,position:70:33,territory:A,health:100,satiety:87,energy:87,fear:40
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:69:32,position:69:32,territory:A,health:100,satiety:87,energy:87,fear:40
+
+  seed777-individual-d0.75-traceoff   tick 16, line 321, route R3
+    -  tick=16 subject=M03 event=survival_changed result=health:100->100,satiety:85->84,energy:85->84,fear:0->0
+    +  tick=16 subject=M03 event=food_consumed result=food:F0058,class:low,satiety:85->100,energy:85->90
+
+  seed777-individual-d0.75-traceon   tick 14, line 453, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:64:51,position:64:51,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:62:51,position:62:51,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed777-individual-d1.50-traceoff   tick 16, line 451, route R3
+    -  tick=16 subject=M07 event=survival_changed result=health:100->100,satiety:85->84,energy:85->84,fear:100->100
+    +  tick=16 subject=M07 event=survival_changed result=health:100->100,satiety:85->84,energy:85->84,fear:100->95
+
+  seed777-individual-d1.50-traceon   tick 14, line 576, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:83:11,position:83:11,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:84:10,position:84:10,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed777-reference-d0.15-traceoff   tick 15, line 214, route R1
+    -  tick=15 subject=M06 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:40->50
+    +  tick=15 subject=M06 event=survival_changed result=health:100->100,satiety:86->85,energy:86->85,fear:40->35
+
+  seed777-reference-d0.15-traceon   tick 14, line 355, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:70:33,position:70:33,territory:A,health:100,satiety:87,energy:87,fear:40
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:69:32,position:69:32,territory:A,health:100,satiety:87,energy:87,fear:40
+
+  seed777-reference-d0.75-traceoff   tick 16, line 321, route R3
+    -  tick=16 subject=M03 event=survival_changed result=health:100->100,satiety:85->84,energy:85->84,fear:0->0
+    +  tick=16 subject=M03 event=food_consumed result=food:F0058,class:low,satiety:85->100,energy:85->90
+
+  seed777-reference-d0.75-traceon   tick 14, line 451, route R1
+    -  tick=14 subject=M01 event=action_trace result=proposal:move:east,status:accepted,detail:position:63:27,position:63:27,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M01 event=action_trace result=proposal:move:west,status:accepted,detail:position:61:27,position:61:27,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed777-reference-d1.50-traceoff   tick 14, line 425, route R1
+    -  tick=14 subject=M08 event=territory_crossed result=from:A,to:B
+    +  tick=14 subject=M08 event=survival_changed result=health:100->100,satiety:87->86,energy:87->86,fear:0->0
+
+  seed777-reference-d1.50-traceon   tick 14, line 576, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:south,status:accepted,detail:position:83:13,position:83:13,territory:A,health:100,satiety:87,energy:87,fear:100
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:84:12,position:84:12,territory:A,health:100,satiety:87,energy:87,fear:100
+
+  seed777-social-d0.15-traceoff   tick 18, line 263, route R3
+    -  tick=18 subject=M11 event=survival_changed result=health:100->100,satiety:83->82,energy:83->82,fear:0->0
+    +  tick=18 subject=M11 event=survival_changed result=health:100->100,satiety:83->82,energy:83->82,fear:0->10
+
+  seed777-social-d0.15-traceon   tick 14, line 364, route R2
+    -  tick=14 subject=M03 event=action_trace result=proposal:move:south,status:accepted,detail:position:6:34,position:6:34,territory:A,health:74,satiety:94,energy:67,fear:55
+    +  tick=14 subject=M03 event=action_trace result=proposal:move:west,status:accepted,detail:position:5:33,position:5:33,territory:A,health:74,satiety:94,energy:67,fear:55
+
+  seed777-social-d0.75-traceoff   tick 20, line 396, route R3
+    -  tick=20 subject=A event=food_regenerated result=food:F0123,class:high,position:24:15
+    +  tick=20 subject=A event=food_regenerated result=food:F0123,class:medium,position:64:61
+
+  seed777-social-d0.75-traceon   tick 14, line 457, route R1
+    -  tick=14 subject=M02 event=action_trace result=proposal:move:east,status:accepted,detail:position:59:54,position:59:54,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M02 event=action_trace result=proposal:move:west,status:accepted,detail:position:57:54,position:57:54,territory:A,health:100,satiety:87,energy:87,fear:0
+
+  seed777-social-d1.50-traceoff   tick 16, line 460, route R3
+    -  tick=16 subject=M08 event=survival_changed result=health:100->100,satiety:99->98,energy:90->89,fear:0->0
+    +  tick=16 subject=M08 event=territory_crossed result=from:A,to:B
+
+  seed777-social-d1.50-traceon   tick 14, line 586, route R1
+    -  tick=14 subject=M03 event=action_trace result=proposal:move:south,status:accepted,detail:position:60:3,position:60:3,territory:A,health:100,satiety:87,energy:87,fear:0
+    +  tick=14 subject=M03 event=action_trace result=proposal:move:east,status:accepted,detail:position:61:2,position:61:2,territory:A,health:100,satiety:87,energy:87,fear:0
+
+7. The decision that changed, by kind
+-------------------------------------
+Both sides of the first differing line are named, and they are not always the same kind of
+record: where one commit emits a resolution the other does not, the line indices part and an
+`action_trace` lands opposite a `threat_resolved`. A table that printed one event for both
+sides would read as though a `food_consumed` had changed its proposal.
+
+    pre event         pre verb        post event        post verb       cells
+    survival_changed  -               survival_changed  -                  22
+    survival_changed  -               food_consumed     -                  11
+    action_trace      move:east       action_trace      move:west           9
+    action_trace      move:south      action_trace      move:east           9
+    food_regenerated  -               food_regenerated  -                   9
+    action_trace      move:south      action_trace      move:west           7
+    action_trace      move:west       action_trace      move:east           5
+    action_trace      move:north      action_trace      move:east           4
+    action_trace      move:north      action_trace      move:west           3
+    action_trace      avoid           action_trace      move:west           2
+    action_trace      move:south      action_trace      move:north          2
+    action_trace      approach        action_trace      move:west           1
+    action_trace      move:east       food_consumed     -                   1
+    action_trace      move:west       action_trace      move:south          1
+    survival_changed  -               territory_crossed -                   1
+    territory_crossed -               survival_changed  -                   1
+    threat_resolved   -               action_trace      move:south          1
+    threat_resolved   -               survival_changed  -                   1
+
+A verb of `-` means the record carries no proposal, which is every record kind but
+`action_trace`. Those rows are the untraced cells, plus the traced cells whose diverging line is
+a resolution one commit emits and the other does not. The changed decision behind them is named
+in the route and witness columns of section 5, not here.
+
+    traced cells, where a proposal is printed and can be the first difference   45
+    untraced cells, where the earliest visible difference is an effect          45
+
+The two halves of a triple part at the same decision but report it differently, and that is
+instrumentation rather than behavior. In a traced cell `action_trace` prints the proposal, so
+the first differing line names the verb that changed. In an untraced cell the proposal is not
+printed at all, so the first differing line is whatever the changed decision eventually
+produced -- a `food_consumed` one commit emits and the other does not, a `survival_changed`
+for a Mokiterion that is somewhere else, or a `food_regenerated` whose class and position have
+moved because the shared stream is at a different offset. That is why route R3 exists, and why
+an untraced cell is explained by its traced sibling rather than by its own first record.
+
+Rule 5 applies its condition in two places and both appear above: case 1, eating a co-located
+resource, and case 3, approaching the nearest resource it would not decline. A changed `move`
+is the second of those -- the Mokiterion walks toward a resource it now accepts instead of
+wandering or heading elsewhere -- and it is the more common first divergence because seeking
+happens at a distance and so happens sooner than the eat it leads to.
+
+8. The first diverging tick, distributed
+----------------------------------------
+    source      dens   seeds ordered 0, 1, 42, 123, 777: first diverging tick, traced half
+    reference   0.15      14     14     14     14     14
+    reference   0.75      14     14     14     14     14
+    reference   1.50      14     14     14     14     14
+    individual  0.15      14     14     14     22     14
+    individual  0.75      14     14     14     14     14
+    individual  1.50      14     14     14     14     14
+    social      0.15      14     14     14     14     14
+    social      0.75      14     14     14     14     14
+    social      1.50      14     14     14     14     14
+
+    cells diverging at or before tick 20                    85 of 90
+    triples whose two halves diverge at the same tick        8 of 45
+
+Where the two halves part at different ticks the reason is the one section 7 gives: the
+untraced stream cannot show a proposal, so it parts at the first *effect* of the changed
+decision, at or after the decision itself. Route R3 requires exactly that ordering -- traced no
+later than untraced -- and it holds in every triple it is applied to.
+
+9. What this does not claim
+---------------------------
+It does not claim every *subsequent* difference in a diverged stream is individually
+attributable. Once two runs part they are different worlds: different Mokiterions are alive at
+different positions with different satieties, and every later record differs for that reason
+rather than for this change's. Stop condition 3 is written about the divergence, singular per
+cell, and the first diverging record is where a divergence is attributable at all.
+
+It does not re-derive the proposal. Whether the corrected condition admits the *right*
+resources is a specification question, answered against constructed state in the test suite --
+`the_corrected_non_waste_condition_admits_the_specified_boundaries` fixes all three classes at
+both boundaries in both of rule 5's cases, and
+`a_trait_difference_alone_decides_whether_a_clipped_resource_is_eaten` fixes the trait's
+effect. A second implementation of the specification inside an evidence script would agree
+with whichever of the two was written second.
+
+Route R2 concedes something worth stating plainly: a divergence can reach a Mokiterion the
+condition never applied to, through the draw count of one it did apply to. That is not a defect
+and it is not new -- `WO-MOK-016` recorded the shared stream as the mechanism by which any
+behavioral change propagates -- but it does mean the *set* of Mokiterions whose behavior moved
+is larger than the set whose answer the condition changed. `post/entropy.txt` is where the draw
+accounting itself is recorded, and `post/survivors.txt` is where the population consequence is.
+
+RESULT: PASS -- 90 of 90 obligated cells diverge, 57 attributed directly, 9 through the shared stream, 24 through the traced sibling, 0 unattributed.

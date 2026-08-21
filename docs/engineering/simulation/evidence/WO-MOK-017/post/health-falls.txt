@@ -1,0 +1,67 @@
+WO-MOK-017: the health decline VER-MOK-013's gauge scenario has to work with
+============================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Subject      mokiterions-tui/tests/render.rs ::
+             a_declining_mokiterion_shows_a_declining_bar
+Measured on  the retained captures, at both commits, over the first 200 ticks
+Reader       analysis/health-falls.py
+Date         2026-08-21
+
+The test's own definition of a fall is reproduced: the health of each Mokiterion **still
+alive at tick 200**, first sample minus last. Its guard fails the run when the deepest such
+fall is under 30, so the guard column below is the whole question.
+
+    source      seed   deepest fall     living at 200    deaths inside      guard of 30
+                       pre -> cand.     pre -> cand.     pre -> cand.       pre / cand.
+    reference      0      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    reference      1      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    reference     42     35 ->    0       12 ->   12        0 ->    0       pass / FAILS
+    reference    123     80 ->    0       12 ->   11        0 ->    1       pass / FAILS
+    reference    777      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    individual     0      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    individual     1      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    individual    42      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    individual   123     45 ->    0       12 ->   12        0 ->    0       pass / FAILS
+    individual   777      0 ->    0       12 ->   12        0 ->    0       FAILS/ FAILS
+    social         0     56 ->   56       11 ->   11        1 ->    1       pass / pass
+    social         1     26 ->   26       10 ->   10        2 ->    2       FAILS/ FAILS
+    social        42     78 ->   78       10 ->   10        2 ->    2       pass / pass
+    social       123     85 ->   85        9 ->    9        3 ->    3       pass / pass
+    social       777     48 ->   23       11 ->   11        1 ->    1       pass / FAILS
+
+    deepest fall on any declared seed under `reference`     pre-change  80, candidate   0
+    deepest fall on any declared seed under `individual`    pre-change  45, candidate   0
+    deepest fall on any declared seed under `social`        pre-change  85, candidate  85
+
+What the table establishes, in the order the argument needs it:
+
+  1. **The guard genuinely fired.** At the candidate, no declared seed under `reference` or
+     `individual` produces any fall at all among the Mokiterions alive at tick 200. The test
+     could not have been left as it was: it would fail with "this scenario is unexercised",
+     which is the guard doing its job rather than a defect.
+  2. **`REQ-MOK-060` is why.** Health falls only once satiety reaches zero, so the corrected
+     waste condition -- which feeds Mokiterions sooner -- removes the decline at this horizon.
+     Seed 42 under `reference` fell 35 points before the
+     correction and 0 after it.
+  3. **`social` is not a weaker scenario, and it is not a longer one either.** There the
+     decline is combat damage rather than starvation: seed 42 falls 78 points
+     pre-change and 78 at the candidate. Selecting it decouples the test from the
+     nutrition model that has now broken it twice, which is why it was preferred to raising
+     the horizon until starvation reappears.
+  4. **The guard and the assertions are untouched.** The threshold stays at thirty and both
+     properties -- a strictly lower fill at the end, and fill monotone in health across every
+     sample -- are asserted exactly as before. `VER-MOK-013` states the scenario as "200
+     ticks at a declared seed at the reference viewport" and names no decision source, so the
+     source is a parameter the scenario leaves open.
+
+What this does not claim: that `social` will exercise the gauge forever. It is coupled to the
+combat model instead of the nutrition model, which is a different dependency and not none. A
+scenario that constructs a declining subject directly, rather than searching a live run for
+one, is the durable answer, and it needs a `VER-MOK-013` amendment this work order has no
+authority to make. Raised in `manual-assessment.md` for the technical owner.
+
+RESULT: PASS -- the guard fails under `reference` and `individual` at the candidate on
+every declared seed, and `social` seed 42 clears it at both commits, so the scenario
+change is a parameter selection made necessary by the correction rather than a retreat
+from an assertion.
