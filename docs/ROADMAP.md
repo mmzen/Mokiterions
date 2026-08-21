@@ -56,8 +56,8 @@ status below for the manual assessment that record accepts unperformed):
   from nowhere else — no name table, no fallback, no derivation from an identifier
 - The map glyph becoming the name's initial, replacing the digit-and-letter table, on twelve pairwise-distinct letters
 
-Added under `WO-MOK-016` (implemented, **not verified**, and with two approved obligations measured as failing —
-see Phase 3's status below):
+Added under `WO-MOK-016` (implemented and verified at `VREC-MOK-017`; two approved obligations were measured as
+failing and were resolved by a governed amendment inside the phase — see Phase 3's status below):
 
 - Contact at Chebyshev radius 1, recomputed from position every tick and held in no stored relation
 - The seven targeted actions `attack`, `fight`, `threaten`, `surrender`, `approach`, `avoid`, `retreat`, each with
@@ -72,6 +72,19 @@ see Phase 3's status below):
   `--policy individual` for a Mokiterion that perceives no company and holds an empty record
 - No entropy drawn by any targeted resolution, so the shared stream is untouched by everything the phase adds
 
+Added under `WO-MOK-017` (implemented, **not verified** — see Phase 3's status below):
+
+- The missing term in `SPEC-MOK-001` rule 5's non-waste condition: a resource whose satiety restoration would
+  be clipped is eaten and approached anyway while the clipped amount is no more than the resource's own
+  allowance, `R * R / 100` — `2` for low class, `9` for medium, `25` for high. The condition is now stated
+  once and rule 19's tolerant test is that same expression at the acting Mokiterion's own tolerance, so no
+  decision source can be stricter than `reference` and none can carry a copy that drifts
+- `REQ-MOK-060`'s resource-composition ceiling, amended from one half to **three fifths** on the measured
+  curve and met on every declared seed under all three bound sources — the high-class share of a territory's
+  standing supply at tick 1,000 falls from 36%–82% to 33%–54%
+- **The carried-in high-class accumulation of Phase 2 is closed by this**, and both survivor floors were
+  re-measured rather than argued: `REQ-MOK-014`'s eight and `REQ-MOK-034`'s eight are met on every declared
+  seed, with no margin on the worst of them, and `REQ-MOK-058`'s five is met by two
 
 Added under `WO-MOK-019` (implemented and verified under `VREC-MOK-012` at commit `50364a3` — see Phase 4a's
 status below for what that record accepts rather than satisfies, and for the merge it does not cover):
@@ -469,15 +482,24 @@ written against a final contract instead of being rewritten twice.
   sociability)
 - `fear` as the fourth dynamic attribute, with defined rise and decay dynamics
 - Per-agent entropy substreams, so identical situations can diverge across individuals
-- **Carried in from Phase 1: high-class resource accumulation.** `SPEC-MOK-001` rule 5 makes a resource both
-  eatable and approachable only while its satiety restoration would not be clipped, which for high class means
-  satiety of at most `50`. High-class resources are therefore sought least often and accumulate against the
-  capacity that density fixes — roughly three quarters of standing supply by tick 1,000 — so territories stay
-  full while the food anyone will walk to grows scarce. The population declines against a full larder, and a
-  10,000-tick run at the default density reaches extinction at tick 9,154. This was measured, disclosed, and
-  accepted by the product owner on 2026-08-17 because no Phase 1 requirement speaks past tick 1,000, where the
-  rule is decisively better than its predecessor. See
+- **Carried in from Phase 1: high-class resource accumulation.** `SPEC-MOK-001` rule 5 made a resource both
+  eatable and approachable only while its satiety restoration would not be clipped **at all**, which for high
+  class meant satiety of at most `50`. High-class resources were therefore sought least often and accumulated
+  against the capacity that density fixes — roughly three quarters of standing supply by tick 1,000 — so
+  territories stayed full while the food anyone would walk to grew scarce. The population declined against a
+  full larder, and a 10,000-tick run at the default density reached extinction at tick 9,154. This was
+  measured, disclosed, and accepted by the product owner on 2026-08-17 because no Phase 1 requirement speaks
+  past tick 1,000, where the rule is decisively better than its predecessor. See
   `engineering/simulation/evidence/WO-MOK-002/density-curve.md`.
+
+  **Closed on 2026-08-21 under `WO-MOK-017`, and the diagnosis above turned out to be incomplete.** The
+  clipping bound was not a considered constant at all: rule 5's condition had simply lost the allowance term
+  the rule was written to carry, so `50` stood where `75` belonged and the same omission had been copied into
+  rule 19's tolerant test. What looked like a modelling consequence to be lived with was a defect to be
+  corrected. `REQ-MOK-060` is the correction, and the high-class share of standing supply at tick 1,000 now
+  runs 33%–54% against a starting third. The tick-9,154 figure above is **not** re-measured: it belongs to the
+  uncorrected world, `REQ-MOK-060` binds tick 1,000 only, and re-taking the long horizon is outstanding work —
+  see the note on the carried-in item below.
 
 **Out of scope.** Combat resolution, model integration.
 
@@ -488,6 +510,16 @@ reproducible from seed; fear dynamics bounded and observable.
 moves the density curve and invalidates `REQ-MOK-014`'s floor of eight. Expect that requirement to need
 re-approval on a fresh measurement rather than an argument. A long-horizon stability requirement should be stated
 at the same time, because the current floor is a claim about tick 1,000 and deliberately not about a steady state.
+
+**What actually happened, on 2026-08-21.** The first sentence held and the second did not. The density curve
+moved substantially — nine of the fifteen obligated runs at the default density leave *fewer* Mokiterions alive
+at tick 1,000 than before the correction, and matrix consumption rises from 26,136 meals to 26,924 — but
+`REQ-MOK-014`'s floor of eight and `REQ-MOK-034`'s floor of eight are both **met on every declared seed** and
+needed no re-approval. Neither has any margin on its worst seed, so the prediction was right about the risk and
+wrong about the outcome. The long-horizon requirement is **still not stated**, and `WO-MOK-017` did not re-run
+the long horizon: it is the one part of this item that remains open, and it now has a second reason to be
+stated, since the figures the earlier long-horizon claims rest on describe a world the engine no longer
+implements.
 
 ### What was actually built, and what was cut
 
@@ -501,7 +533,7 @@ deliberately narrower than the *In scope* list above, and the reductions are the
 | A trait **vector** — "for example caution, aggression, sociability" | **One** trait, `waste_tolerance` | A trait no rule reads is an inert field. Exactly one rule reads exactly one trait, so the individuality claim is measurable rather than asserted. A second trait is a later governed change and needs a rule to read it |
 | **Per-agent entropy substreams** | **Not implemented.** The shared stream stays shared; the trait derivation uses a separate generator that neither reads nor advances it | Substreams would have moved every draw in every pre-existing run, so no run predating this phase would reproduce. Divergence is carried by the trait instead, which is what makes the whole change additive. Substreams remain available as a later change, and would cost the additivity property |
 | `fear` with "defined rise and decay dynamics" | Delivered, and **inert at the time** — no rule and no decision source read it | `SPEC-MOK-003` rule 4.5 refused an attribute the engine cannot support; this is the opposite case, an attribute the engine computes and nothing consumes. Recorded as a residual rather than presented as complete. Phase 3.1's `REQ-MOK-057` is the first consumer, and the first measurement of it says the rise dynamics chosen here are consequentially wrong — see Phase 3's status |
-| **Carried in: high-class resource accumulation** | **Not addressed.** Still carried | Out of `WO-MOK-010`'s scope. The note above still stands unchanged: fixing it invalidates `REQ-MOK-014`'s floor and needs a fresh measurement, and `REQ-MOK-034` has now added a second floor of the same shape to re-approve alongside it. The measured share of standing high-class supply at tick 1,000 did not improve |
+| **Carried in: high-class resource accumulation** | **Not addressed under this work order.** Closed on 2026-08-21 under `WO-MOK-017` | Out of `WO-MOK-010`'s scope, and it stayed carried through Phase 2.5 and Phase 3.1. The measured share of standing high-class supply at tick 1,000 did not improve here. `REQ-MOK-060` closed it two phases later by correcting the omitted allowance in rule 5, and both floors survived the fresh measurement |
 
 Two further cuts were accepted at the specification level, and both are the reason the observer changed as little as
 it did: **no per-Mokiterion trait display** in the observer, and **no trait in the event vocabulary** beyond the one
@@ -638,7 +670,8 @@ ratified on 2026-08-20 under `WO-MOK-012`. Everything measured is in
 
 **It does not close anything Phase 2 left open.** `fear` is still read by nothing, the trait vector is still one
 trait, entropy substreams are still unimplemented, and high-class resource accumulation is still carried. Phase 2's
-status section above stands unchanged.
+status section above stands unchanged. Two of those four have since moved, and neither moved here: `fear` acquired
+its first consumer under `WO-MOK-016`, and the accumulation was closed under `WO-MOK-017`.
 
 ---
 
@@ -681,31 +714,56 @@ The critical constraint holds and is verified as an absence, as this section req
 no rule and no decision source reads any population-level aggregate, and every read in every rule, source and
 validation path is enumerated against it.
 
-**Two approved obligations are measured as failing, and both are the product owner's to resolve.** They are
-recorded here rather than worked around, and `WO-MOK-016` stays `in_progress`:
+**Two approved obligations were measured as failing inside Phase 3.1, and both were resolved before the phase
+closed.** The sequence is recorded rather than the outcome alone, because what resolved them was a governed
+amendment to a requirement rather than a correction to the code, and the coupling underneath them is still there.
+
+What the first measurement of `social` reported:
 
 - `REQ-MOK-058` requires at least five of twelve surviving at tick 1,000 under `social` at the default density
   **and** at least one death attributable to combat, on every declared seed. Measured: 6, 4, 8, 4 and 5
   survivors, and **zero** combat deaths on all five seeds.
 - `VER-MOK-016` oracle 4 requires each of the seven targeted verbs to apply somewhere in the declared matrix.
-  `surrender` is never proposed in any declared run.
+  `surrender` was never proposed in any declared run.
 
-Both follow from one coupling, and it is a design fault rather than a defect in the code. `fear` rises `+10` for
-every tick company is *perceived*, at radius 16, while engagement requires *contact*, at radius 1, below a `fear`
-of 30. Fear therefore crosses the threshold on the third perceiving tick while closing the perception radius takes
-fifteen, so a Mokiterion is nearly always past the threshold by the time it could act on it. Every strike in the
-entire declared matrix lands at tick 1, 2 or 3, between Mokiterions initialized already in contact; after tick 3
-the source routes to `avoid` for the rest of the run, which also displaces the seek-move and drops meals eaten
-from 378–417 per run to 205–304. That, not the combat, is what lowers the survivor count. `avoid` is proposed
-6,329 times against `attack`'s 3.
+Both followed from one coupling, and it was a design fault rather than a defect in the code. `fear` rises `+10`
+for every tick company is *perceived*, at radius 16, while engagement required *contact*, at radius 1, below a
+`fear` of 30. Fear therefore crossed the threshold on the third perceiving tick while closing the perception
+radius takes fifteen, so a Mokiterion was nearly always past the threshold by the time it could act on it. Every
+strike in the entire declared matrix landed at tick 1, 2 or 3, between Mokiterions initialized already in contact;
+after tick 3 the source routed to `avoid` for the rest of the run, which also displaced the seek-move and dropped
+meals eaten from 378–417 per run to 205–304. That, not the combat, was what lowered the survivor count. `avoid`
+was proposed 6,329 times against `attack`'s 3.
 
-`REQ-MOK-057`'s ordering and thresholds are the one legitimate lever, and moving them is a governed amendment
-rather than an implementation decision. `REQ-MOK-060`'s resource-composition ceiling is separately measured as
-failing 14 of 15 cells and is deferred to a second amendment by the owner's decision of 2026-08-20.
+**Resolved on 2026-08-20**, on the product owner's selection of package A of `WO-MOK-016`'s `escalation.md` §8:
+rule 12 stays perception-driven exactly as Phase 2 approved it, `REQ-MOK-057`'s branch order is amended so that
+rule 19's case 3 — walk toward food — precedes the social branches, `ENGAGEMENT_FEAR_THRESHOLD` becomes 95, and
+`REQ-MOK-058`'s floor of five is ratified unchanged. Five artifacts were amended, each with its own
+amendment-record row, before any code was written. Measured at the resulting candidate: 9, 10, 9, 9 and 11
+survivors; combat deaths 1, 2, 2, 3 and 1; `surrender` proposed 5, 10, 8, 6 and 7 times; meals recovered to
+326–389 against 205–304, so the starvation mechanism is gone. Both obligations hold, and `WO-MOK-016` is
+`implemented` and verified at `VREC-MOK-017`.
 
-`social` is therefore honestly described as **implemented and not yet habitable**, and is not the default;
-`--policy` unspecified still selects `reference`. The failing measurements are in the test suite as failing tests
-and were not weakened, skipped or removed to make the run green.
+**The mitigation is not a repair, and the diagnosis above is why.** Raising the gate to 95 buys ten perceiving
+ticks instead of three, which is enough to reach contact on the declared seeds; it does not change that `+10` up
+against `−5` down saturates, so `fear` remains a stopwatch on company in sight rather than an appraisal of it.
+Measured at `WO-MOK-017`'s candidate, at the default density across the five declared seeds: every one of the 63
+strikes was proposed at a `fear` of 90 or below, thirteen of them at exactly 90; every one of the 1,724
+approaches at 90 or below; all 114 threats at exactly 100; and all 4,268 avoidances at 95 or 100. Nothing
+straddles the line. That is the gate working exactly as written, and it is also the shape of the fault: which
+side of it a holder falls on is decided by how long it has had company, not by anything about that company.
+
+`REQ-MOK-060`'s resource-composition ceiling was the third failing measurement, 14 of 15 cells, deferred to a
+second amendment by the owner's decision of 2026-08-20 and descoped out of `WO-MOK-016` the following day. It is
+`WO-MOK-017`, recorded under *Current state* above: the ceiling amended to three fifths, and the allowance term
+rule 5 had lost restored. **Implemented and not verified** — the verification record is the assurance owner's act
+and has not been made.
+
+`social` is therefore honestly described as **implemented, no longer starving, and still not the default**;
+`--policy` unspecified selects `reference`. On the corrected world it leaves 9, 7, 9, 8 and 9 of twelve alive
+against its floor of five, with 1, 2, 2, 3 and 1 of the deaths attributable to combat. No measurement was
+weakened, skipped or removed to make any of this green: where a requirement moved, it moved in the open and
+before the code did.
 
 ---
 
@@ -878,7 +936,7 @@ means to the same risk reduction.
 | 1 | `SPEC-MOK-001` amended in place; new intent and capability added; no existing requirement changed |
 | 1.5 | `ARCH-MOK-001` amended in place to scope its one-crate, empty-dependency and UI-framework rules to the engine package; new intent, capability, nine requirements, specification, architecture and ADR added; `ADR-MOK-001` not superseded; `SPEC-MOK-001` unchanged |
 | 2 | New intent, capability and four requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `ARCH-MOK-001` confirmed unchanged; no existing requirement changed; observation contract extended. Broader than this row anticipated: the trait had to be stated in `SPEC-MOK-001`, the new tests' tiers in `SPEC-MOK-002`, and the fourth gauge in `SPEC-MOK-003` |
-| 3 | `REQ-MOK-005` amended in place rather than superseded; new intent, capability and ten requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `REQ-MOK-034` amended because a fourth source must not be read as extending the floor it freezes; `ARCH-MOK-001` confirmed unchanged. Broader than this row anticipated in the same way Phase 2 was: the carried floors had to be re-measured, and a second amendment to `REQ-MOK-060`'s numeric ceiling is outstanding |
+| 3 | `REQ-MOK-005` amended in place rather than superseded; new intent, capability and ten requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `REQ-MOK-034` amended because a fourth source must not be read as extending the floor it freezes; `ARCH-MOK-001` confirmed unchanged. Broader than this row anticipated in the same way Phase 2 was: the carried floors had to be re-measured, `REQ-MOK-057`'s branch order and engagement threshold had to be amended after the first measurement, and `REQ-MOK-060`'s numeric ceiling took the second amendment it was deferred to — made under `WO-MOK-017` on 2026-08-21, after the requirement was descoped out of `WO-MOK-016` |
 | 4a | New intent, capability and five requirements added; new specification `SPEC-MOK-006` and new `ADR-MOK-005`; `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amended in place; `REQ-MOK-010` preserved and extended additively — not one byte of the text stream changed; no existing requirement changed. Broader than this row anticipated by one artifact: **`SPEC-MOK-004` rule 11 was amended too**, beyond `ADR-MOK-005`'s approved list, because rule 11 obliges a work order that changes the test census to correct the recorded figures — 212 → 246 in the workspace, 85 → 119 in the engine. That row was approved separately by the technical owner on 2026-08-20 |
 | 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
@@ -905,13 +963,16 @@ anticipate it:
    in the bound. The upper half of the original range was measurably dominated, not a second strategy. Recorded in
    `SPEC-MOK-001`'s *Behavioral trait* subsection and in `WO-MOK-010`'s evidence as `escalation.md`.
 
-A fourth is open, raised by Phase 3.1's first measurement and blocking that phase's completion:
+A fourth was raised by Phase 3.1's first measurement and settled inside that phase, for the same reason:
 
-4. **`REQ-MOK-057`'s thresholds and branch order.** *Open.* `fear` accumulates over the perception radius while
-   engagement requires contact, so `social` crosses its own thresholds long before it can act on them and
-   `REQ-MOK-058` fails on the measured curve. Whether to move the thresholds, reorder the branches, decouple
-   engagement from `fear`, or lower `REQ-MOK-058`'s floor again is the owner's decision, and it is the one lever
-   the approved chain sanctions. See Phase 3's status section above and `WO-MOK-016`'s evidence.
+4. **`REQ-MOK-057`'s thresholds and branch order.** *Decided 2026-08-20:* package A of `WO-MOK-016`'s
+   `escalation.md` §8 — rule 12 stays perception-driven, rule 19's case 3 is hoisted ahead of the social branches,
+   `ENGAGEMENT_FEAR_THRESHOLD` moves from 30 to 95, and `REQ-MOK-058`'s floor of five is ratified unchanged. The
+   alternative of rescoping the fear rise was withdrawn. `REQ-MOK-058` and `VER-MOK-016` oracle 4 both hold on the
+   measured curve afterwards. What the decision deliberately did not settle is the coupling that produced the
+   failure: `fear` still rises `+10` per perceiving tick against a `−5` decay, so it saturates and the gate is a
+   stopwatch on company in sight rather than an appraisal of it. Phase 3's status section measures where that
+   leaves every social verb, and `WO-MOK-016`'s evidence carries the packages the owner chose between.
 
 ## Maintenance
 

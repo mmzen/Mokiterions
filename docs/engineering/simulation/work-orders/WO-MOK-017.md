@@ -2,7 +2,7 @@
 id = "WO-MOK-017"
 type = "work_order"
 title = "Correct the resource composition drift: the numeric waste condition, and both survivor floors re-measured against the corrected world"
-status = "draft"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-21"
 updated = "2026-08-21"
@@ -38,13 +38,16 @@ consequences; this section does not restate them.
 
 **Nothing about the requirement changed in the transfer.** `REQ-MOK-060` keeps `approved` status, keeps
 `derives_from = CAP-MOK-010`, and `SPEC-MOK-001` keeps it in `specifies`. Its ceiling of one half, ratified at that value
-by the product owner on 2026-08-20 against `60%` and `40%`, stands. The surface the correction may use is fixed by the
-requirement and restated in `SPEC-MOK-001` rule 5's accumulation paragraph, and is not this work order's to widen.
+by the product owner on 2026-08-20 against `60%` and `40%`, stood at the transfer and **was amended to three fifths on
+2026-08-21, on the measurement this work order took at approval and against the alternatives its own requirement named**;
+*Approval decisions of 2026-08-21* records that act and `REQ-MOK-060`'s amendment record carries it. The surface the
+correction may use is fixed by the requirement, restated in `SPEC-MOK-001` rule 5's accumulation paragraph, unchanged by
+that amendment, and is not this work order's to widen.
 
 **What this work order inherits is a measurement, not just an obligation.** `WO-MOK-016` took the composition measurement
 at both of its commits and retained it, precisely so that this work order's open decisions are taken on a curve rather
 than on an argument. `evidence/WO-MOK-016/post/byte-identity.txt` records that the ceiling fails in 14 of the 15 measured
-cells at that candidate, and `evidence/WO-MOK-016/composition.md` carries rule 18's final summary per seed under all four
+cells at that candidate, and `evidence/WO-MOK-016/post/composition.md` carries rule 18's final summary per seed under all four
 sources with the ratio computed per territory and per calorie class. The state the requirement ends — high class standing
 at 45 of 61 in a territory by tick 1,000 against a balanced initial third — is measured there and is not re-derived here.
 
@@ -52,7 +55,9 @@ at 45 of 61 in a territory by tick 1,000 against a balanced initial third — is
 
 Three things must be decided before this work order is approved, and none of them is an implementation choice. All three
 are already reserved to their owners by artifacts in force; this section only names them and says what they are decided
-on.
+on. **All three were decided on 2026-08-21 and the section that follows this one records the answers**, together with two
+further decisions the first answer forced. This section is left as it was written, because what a precondition asked is
+part of the record of how it was answered.
 
 1. **Which permitted mechanism is used.** `REQ-MOK-060`'s *Open decisions* reserves this to the technical owner **on
    measurement**: relaxing `SPEC-MOK-001` rule 5's non-waste condition `satiety + restoration <= 100`, raising the
@@ -79,6 +84,96 @@ Two further deferrals travel with the requirement and are noted so they are not 
 decline to answer at all, and whether `REQ-MOK-058`'s lethality bound should become a rate rather than an existence
 claim. Neither blocks this work order and neither is an implementation agent's.
 
+### Approval decisions of 2026-08-21
+
+**All three approval preconditions were decided by the repository owner on 2026-08-21, and two further decisions were
+taken with them, because the first precondition's answer forced them.** The decisions are recorded here in the order they
+were put; each was put with its measured alternatives rather than as a recommendation with reasons attached.
+
+**Stop condition 4 fired before this work order was approved, and this section is the escalation being answered.** The
+measurement the *Approval preconditions* reserve the first decision to did not produce a mechanism that meets the
+ceiling. It produced a wall: **one half is not reachable inside `REQ-MOK-060`'s permitted surface while the three carried
+survivor floors hold.** Stop conditions 4 and 5 are jointly unsatisfiable at the value the requirement stated, which is
+precisely the case the two conditions were written to catch, and neither the mechanism nor the floors were adjusted to
+escape it. The measurement is retained in `evidence/WO-MOK-017/approval/`: roughly 55 parameter points across three
+mechanism shapes, each evaluated on all 15 obligated cells, plus a 150-cell survey over unbound seeds. Its load-bearing
+figures are that the closest point meeting one half on every cell leaves 6 of 12 living under `reference` and
+`individual`, and that no point holding all three floors meets one half at all — the best floor-respecting point measured is the condition ratified below, whose worst class share is `54.1%`, four points above one half.
+
+1. **The ceiling is amended from one half to three fifths**, by the owner acting as product owner, on the measured curve.
+   `REQ-MOK-060`'s amendment record of 2026-08-21 carries the decision, its figures and its three declined alternatives;
+   this work order does not restate them. Two of those alternatives were live options for this work order rather than
+   rhetorical, and both were declined by the owner and not by the agent: amending the three floors downward to 6, 6 and 3,
+   and widening the correction surface to rule 15, rule 16, rule 9's eat effect or the food table. The second is the one
+   stop condition 4 forbids the implementation from reaching for, and it stayed forbidden.
+2. **Rule 19's `T = 0` proposal identity is preserved**, by the owner acting as technical owner, by restating rule 19's
+   first clause as a reference to rule 5's condition rather than as the literal inequality `S + R <= 100`. This is the
+   first of the two outcomes `SPEC-MOK-001` rule 19 permits, so **nothing is retracted**: the identity sentence stands,
+   the `waste_tolerance` `0` entry in *Acceptance examples* stands, and every test asserting either stands. **`REQ-MOK-033`
+   therefore needs no amendment row**, and the precondition attached to that consequence in *Approval preconditions* is
+   discharged by the identity surviving rather than by an approval. The restatement is not cosmetic and not optional: the
+   measurement shows `individual` and `social` both read rule 19's test and not rule 5's, so without it a rule 5
+   correction reaches one of the three obligated sources and 14 of the 15 cells still breach.
+3. **The per-class composition floor remains deferred**, by the owner acting as product owner, and is reserved again to
+   the post-change composition this work order measures rather than taken on the approval measurement. `REQ-MOK-060`'s
+   *Open decisions* carries the re-reservation. What this settles for the implementation is that a floor is not in scope
+   here and that the post-change per-class figures are retained so the decision can be taken on them, which the *Evidence
+   to record* list already requires.
+4. **The numeric form `S + R - 100 <= R * R / 100` is ratified**, by the owner acting as technical owner. It is rule 19's
+   own arithmetic evaluated at a tolerance equal to the restoration itself, which is why it needs no new constant and no
+   new shape in the specification. Its measured consequences, all retained in `evidence/WO-MOK-017/approval/`: the
+   allowance above `100` becomes `2` for low class, `9` for medium and `25` for high, so the satiety a Mokiterion will eat
+   up to moves from today's `85`, `70` and `50` to `87`, `79` and `75`; the worst class share over all 15 obligated cells
+   is `54.1%`; and minimum survivors are 8, 8 and 7 against the floors of 8, 8 and 5. Alternatives measured and declined:
+   `R * R / 120`, which breaks the amended ceiling on the declared seeds, and the two-term forms `25R/100 + 10` and
+   `20R/100 + 10` on high class alone, which hold the floors with more room but leave a worst share of `59.3%` and
+   introduce a class-specific constant the specification does not have.
+5. **This work order is approved and set to `in_progress` in the same act**, by the owner acting as engineering owner, and
+   the four governance amendments the decisions above require are authorized to be written by the implementation agent
+   under them. Those amendments are `REQ-MOK-060`'s ceiling amendment (product owner), `VER-MOK-016`'s realignment
+   (assurance owner), `SPEC-MOK-001`'s second amendment to rules 5 and 19 (technical owner) and this section
+   (engineering owner). **The agent wrote the text; it decided none of the substance**, and each amendment row names the
+   owner and the role the decision was taken in. The alternative of taking the amendments in one round and the approval in
+   a second was declined by the owner, so that the engine change, the 90-cell re-capture and the evidence packet follow
+   without a further round trip.
+
+**What is not decided by this section.** The three floors are unchanged at 8, 8 and 5, and stop condition 5 is in force
+against them at the values they hold today — the approval measurement is not the re-measurement this work order owes, and
+a floor missed on the shipped build is still a stop. The permitted surface is unchanged. `REQ-MOK-058`'s lethality bound
+is unchanged. The declared seed set, the density and the 1,000-tick horizon are unchanged.
+
+**One disclosure the approval measurement carries, which no obligation covers.** Over the 50 unbound seeds `0`–`49` the
+corrected condition is a large improvement on the ceiling and a small regression on the floors: cells above `60%` fall
+from 140 of 150 to 7 of 150 and the worst share from `88.5%` to `63.9%`, while cells below their source's floor rise from
+6 of 150 to 17 of 150. No requirement binds those seeds and none is being read as if it did. It is recorded because the
+ratified form was chosen against a shape that trades the other way, and the owner saw both before ratifying.
+
+### Consequential citation corrections of 2026-08-21
+
+Two stale references were found while the decisions above were being measured, and correcting them is authorized with
+them. Neither changes an obligation.
+
+- **This work order's own citation of the composition curve.** *Why this work order exists* cites
+  `evidence/WO-MOK-016/composition.md`; the retained file is `evidence/WO-MOK-016/post/composition.md`. Corrected in place
+  above, because a draft's body text is not an approved amendment row.
+- **`SPEC-MOK-001` rule 5's accumulation paragraph and rule 19 both say the mechanism is "decided on measurement under
+  `WO-MOK-016`".** `REQ-MOK-060` was descoped from that work order on 2026-08-21 and the measurement was taken here, so
+  both are repointed to `WO-MOK-017` as part of the second amendment rather than as a separate edit. This is added to
+  *In scope*.
+
+### Transition to `approved` and `in_progress`, 2026-08-21
+
+**Set to `approved` and then to `in_progress` on 2026-08-21 by the repository owner acting as engineering owner**, in the
+act recorded as decision 5 above. The owner's instruction was to write the four amendment texts and authorize the
+transitions together, so that implementation continues into the engine change, the re-capture and the evidence packet
+without a second round trip.
+
+`approved` authorizes the scope below and nothing wider. `in_progress` records that implementation has begun. It does not
+authorize `implemented`, which requires the completed change and the retained evidence, nor verification or release,
+which require separate commit-bound records, nor any push, pull request, tag or publication — those remain the owner's
+acts and are not authorized by this transition. *Out of scope*'s bar on the agent transitioning artifact status is lifted
+for these two transitions only, on the owner's explicit instruction, and remains in force for every other artifact.
+
 ## Objective
 
 Correct the resource composition drift that `SPEC-MOK-001` rule 5 records and `REQ-MOK-060` obliges, by amending the
@@ -95,7 +190,10 @@ consumption is unchanged in kind and order.
 - The consequential statement about rule 19's `T = 0` identity, in the form the specification's own text requires —
   either the identity is preserved by restating rule 19's first clause as a reference to rule 5's condition, or it is
   retracted together with the `waste_tolerance` `0` acceptance entry and every test asserting it, each named.
-- Any `REQ-MOK-033` amendment row that consequence requires, written as its owner has approved it.
+- Any `REQ-MOK-033` amendment row that consequence requires, written as its owner has approved it. **The identity
+  survives, so no such row is required**; see *Approval decisions of 2026-08-21*.
+- Repointing rule 5's accumulation paragraph and rule 19 from "decided on measurement under `WO-MOK-016`" to this work
+  order, in the same amendment, since `REQ-MOK-060` was descoped from that work order and measured here.
 - The engine change implementing the corrected condition, in the sources' proposal logic only.
 - Re-measuring `REQ-MOK-014`'s floor of eight of twelve under `reference` and `REQ-MOK-034`'s floor of eight of twelve
   under the trait-aware source, at the default density, on the declared verification seed set, against the corrected
@@ -148,7 +246,8 @@ The implementation agent may decide locally:
 The implementation agent may **not** decide:
 
 - Any of the three approval preconditions above.
-- The ceiling's value, which is ratified at one half.
+- The ceiling's value, which is three fifths as amended on 2026-08-21 by the product owner. Neither the agent nor this
+  work order may move it again, and a post-change curve that misses it is stop condition 4 rather than a value to adjust.
 - Whether the `T = 0` identity survives, or the content of any amendment row.
 - Any change to a floor, a threshold, a default or an exit code, including `REQ-MOK-014`'s and `REQ-MOK-034`'s floors of
   eight and `REQ-MOK-058`'s floor of five. A floor that the corrected world misses is a stop condition, not a value to
@@ -218,7 +317,9 @@ Stop and escalate rather than proceeding, if:
 3. **A `reference` or `individual` divergence cannot be attributed** to the corrected waste condition.
 4. **The ceiling cannot be met within `REQ-MOK-060`'s permitted mechanisms.** Reaching for rule 16, rule 15, rule 9's eat
    effect or the food table is not a fallback available to the implementation; it changes what the project promises about
-   `baseline` and it is the owner's decision.
+   `baseline` and it is the owner's decision. **This condition fired at one half before approval and was escalated rather
+   than worked around**; the owner amended the ceiling to three fifths and left the surface closed. It stands unchanged
+   against three fifths, and the widening it forbids was among the alternatives the owner declined.
 5. **`REQ-MOK-014`'s or `REQ-MOK-034`'s re-measured floor of eight is missed**, or **`REQ-MOK-058`'s floor of five or its
    lethality bound is missed**. A correction that fixes composition by starving the population is not a correction, and
    `REQ-MOK-060` says so in its own *Required response*.

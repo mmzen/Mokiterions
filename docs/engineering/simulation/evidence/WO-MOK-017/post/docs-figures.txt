@@ -1,0 +1,653 @@
+WO-MOK-017 documentation figures: every number written into a reader-facing document,
+against the stream, the sibling file or the earlier packet it comes from
+==================================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+In scope     "`SIMULATION_RULES.md` and `docs/ROADMAP.md` brought back into agreement
+             with the corrected world"
+Documents    SIMULATION_RULES.md, docs/ROADMAP.md
+Pre-change   pre/COMMIT.txt
+Candidate    post/COMMIT.txt
+Reader       analysis/docs-figures.py
+Date         2026-08-21
+
+Neither document is a governed artifact and neither is compiled by anything, which is
+exactly why their figures need a record of their own: nothing else in this repository
+would fail if one of them were wrong. `SIMULATION_RULES.md` section 11 carried a decider
+the project had stopped shipping for a day and a half because commit 7d744bb changed the
+social branch order and nobody re-measured the prose. This file is the answer to that.
+
+Every claim below is one figure. `matrix` means recomputed here from the 120-cell
+captures; `outside` from a run the document itself prints the command for; `cited` from a
+named sibling file in this packet, checked to say what the document says; `history` from a
+world the engine no longer implements, not re-measured, and required to be flagged as
+history in the document itself.
+
+
+1. What was read, and the two checks that make the reading usable
+------------------------------------------------------------------
+    cells read at the pre-change commit                               60
+    cells read at the candidate                                       60
+    triples whose traced and untraced halves carry a byte-identical
+    non-trace record stream, at both commits                        30 of 30
+
+    summaries present, one per cell, at both commits               120 of 120
+
+The 60 cells per commit are the default-density matrix under all four sources, plus the
+other two densities under `social` for the threat figure of section 6. The rest of the
+matrix is not read here: no figure in either document is taken from it, and the two files
+that do read all 120 are `post/composition.txt` and `post/divergence.txt`.
+
+The first check is what lets the traced half stand for the run. Every figure below that is
+not a proposal count comes from records both halves print, and they print them identically:
+the traced half is the untraced half with `action_trace` interleaved and nothing else
+moved. A figure read off a traced cell is therefore a figure about the run, not about the
+instrumentation.
+
+
+2. Survivors and deaths at the default density, both commits
+-------------------------------------------------------------
+    source      seeds ordered 0, 1, 42, 123, 777
+    reference   pre  8, 11, 8, 9, 11    candidate  8, 9, 10, 9, 9
+    individual  pre  11, 9, 9, 10, 12   candidate  10, 8, 10, 8, 8
+    social      pre  9, 10, 9, 9, 11    candidate  9, 7, 9, 8, 9
+    baseline    pre  0, 0, 0, 0, 0      candidate  0, 0, 0, 0, 0
+
+    the control case of section 11, seed 42: 12 dead by tick 142, with 122 pieces of food
+    still standing, 61 in territory A and 61 in territory B, both at the capacity of 61
+
+    social deaths, candidate            3, 5, 3, 4, 3      total 18
+    of which lethal strikes             1, 2, 2, 3, 1      total 9
+
+A death is counted as combat when the strike that produced it printed `target_died:yes`,
+which is `post/survivors.txt`'s rule and not a second one invented here. That file also
+reconciles it against adjacency, cell by cell, and this reader defers to it.
+
+
+3. Every targeted action the social decider proposed, both commits
+------------------------------------------------------------------
+    verb        pre-change   candidate     the document prints
+    avoid          3,842       4,268     | avoid | 3,842 | 4,268 |
+    approach       1,788       1,724     | approach | 1,788 | 1,724 |
+    threaten         128         114     | threaten | 128 | 114 |
+    attack            59          54     | attack | 59 | 54 |
+    surrender         36          31     | **surrender** | 36 | **31** |
+    retreat           14          14     | retreat | 14 | 14 |
+    fight              9           9     | fight | 9 | 9 |
+
+    strikes, pre-change 68   candidate 63   (attack + fight, and equal to the count of
+    `attack_resolved` records, which both verbs produce)
+    strikes at tick 14 or earlier, candidate   56 of 63
+    last strike, candidate                     tick 882
+
+The two columns of that table are the two commits of this work order, and neither is the
+set the section carried before 2026-08-21. Section 8 below accounts for that third set.
+
+
+4. Where the fear gate sits, measured at the proposal rather than argued
+-------------------------------------------------------------------------
+    verb                     proposals   lowest fear   highest fear   distinct values
+    attack + fight                63             0             90   10 values
+    approach                    1724             0             90   19 values
+    threaten                     114           100            100   100
+    avoid                       4268            95            100   95, 100
+
+    strikes proposed at exactly 90, the last rung below the gate   13
+    `ENGAGEMENT_FEAR_THRESHOLD`, from the engine                   95
+
+Nothing straddles 95: every engagement is proposed at 90 or below and every backing-off
+at 95 or above, with no verb appearing on both sides. That is the gate working as written,
+and it is why `docs/ROADMAP.md` records the raise to 95 as a mitigation rather than a
+repair -- which side of the line a Mokiterion falls on is decided by how many turns it has
+had company, not by anything about that company.
+
+    `threat_resolved` records across every social cell, both commits   2,850
+    social cells they come from                                        60
+    of those threats, ones that moved the target's fear at all         1
+      tick=337 subject=M02 event=threat_resolved result=target:M04,increase:5,target_fear:95->100
+
+Every other threat lands on a target already at 100 and prints `increase:0`. The one
+exception is the record `SIMULATION_RULES.md` section 14 prints, which is why that section
+says what it is an example of.
+
+
+5. Fear across creature-turns, both commits
+--------------------------------------------
+    population                              turns      at 100   above 0   +5 steps
+    reference and individual, candidate     105,445      38%      55%        260
+    reference and individual, pre-change    111,604      39%      57%        219
+    all four deciders, candidate            160,921      34%      52%        540
+
+    per-run share above 0, candidate, ten runs   44% to 64%
+
+One creature-turn is one `survival_changed` record and the fear read is the value it ends
+at, so the population is exactly the turns lived and nothing is weighted. The population
+shrinks with the correction -- 111,604 turns become 105,445 -- because fewer Mokiterions
+reach turn 1,000, which is the same fact the survivor rows of section 2 report from the
+other side. That is why the document dates the percentage rather than stating it flatly.
+
+The `+5` step is the clamp at the top of the range: a Mokiterion at 95 gains the usual 10
+and stops at 100. It is measured rather than derived because it is the one step size
+section 8's table does not predict.
+
+
+6. The composition figures, from rule 18's own summary line
+------------------------------------------------------------
+    evaluations are territory A and territory B of each of the fifteen obligated runs
+
+    population                                   high share      worst class share
+    candidate, three bound sources            33.3% to  54.1%    54.1%
+    pre-change, three bound sources           35.6% to  81.6%    81.6%
+    pre-change, trait-aware only              35.6% to  77.4%
+    pre-change, reference only                45.9% to  75.4%
+
+    the highest single high-class share before the correction   81.6%
+    the highest single share of any class after it              54.1%
+
+The share is `food_*_high` over the three counts of the same territory, taken from the
+summary line each run prints. `post/composition.txt` does not trust that line: it rebuilds
+all six counts from the records that produced them, for all 120 cells at both commits, and
+it is the file that evaluates `REQ-MOK-060`. This reader takes the printed line, because
+what it is checking is a sentence in a document and the two agree.
+
+
+7. What the trait still changes: meals the reference rule would have refused
+----------------------------------------------------------------------------
+    trait-aware runs at the default density, one row per declared seed
+
+    seed    meals   refused by the reference rule of its own commit   creatures
+    0         412   3                                              1
+    1         366   1                                              1
+    42        405   2                                              2
+    123       363   3                                              2
+    777       388   0                                              0
+                    pre-change: 73, 86, 54, 97, 75                 9, 9, 9, 10, 9
+
+Each commit is judged by its own reference rule, which is the only comparison that means
+anything: before the correction the reference rule admitted no spill at all, so a meal
+counted here is one spilling any; after it, one spilling more than the resource's own
+allowance of 2, 9 or 25. The trait went from deciding 54 to 97 meals a run to deciding at
+most 3, because on a High resource the allowance of 25 already exceeds anything a
+tolerance of 40 can add.
+
+That is a narrowing of the trait, not of the divergence: `post/divergence.txt` accounts
+for every one of the 90 obligated cells, including seed 777, whose two runs still part
+even though not one of its meals is a meal the reference rule would refuse. A tolerance
+also decides what is worth walking to, and a path that differs moves who is standing
+where long after it has stopped moving who eats what.
+
+
+8. Every record either document prints, found in the cell it is attributed to
+----------------------------------------------------------------------------
+    ok   section 14, the food record
+         seed42-reference-d0.75-traceon
+         tick=0 subject=F0002 event=food_initialized result=class:medium,position:82:20,territory:A
+    ok   section 14, the Mokiterion record
+         seed42-reference-d0.75-traceon
+         tick=0 subject=M08 event=agent_initialized result=name:Nurb,position:62:104,territory:B,health:100,satiety:100,energy:100,fear:0,waste_tolerance:40
+    ok   section 14, the refused regeneration
+         seed42-reference-d0.75-traceon
+         tick=10 subject=A event=food_regeneration_skipped result=reason:capacity,count:61
+    ok   section 14, the regeneration
+         seed42-reference-d0.75-traceon
+         tick=40 subject=A event=food_regenerated result=food:F0129,class:medium,position:56:30
+    ok   section 14, the survival record and the fear it carries
+         seed42-reference-d0.75-traceon
+         tick=40 subject=M12 event=survival_changed result=health:100->100,satiety:91->90,energy:71->70,fear:100->100
+    ok   section 14, the strike
+         seed123-social-d0.75-traceon
+         tick=1 subject=M11 event=attack_resolved result=target:M10,damage:30,target_health:100->70,striker_energy:100->95,target_died:no
+    ok   section 14, the threat that partly landed
+         seed123-social-d1.50-traceon
+         tick=337 subject=M02 event=threat_resolved result=target:M04,increase:5,target_fear:95->100
+    ok   section 14, the surrender
+         seed123-social-d0.75-traceon
+         tick=7 subject=M06 event=surrender_resolved result=recipient:M04,transferred:7,discarded:40,subject_satiety:94->47,recipient_satiety:93->100
+    ok   section 11, the real difference the trait makes
+         seed42-individual-d0.75-traceon
+         tick=381 subject=M08 event=food_consumed result=food:F0257,class:low,satiety:88->100,energy:45->50
+
+Nine records, each read out of the capture cell the document's own command selects. The
+documents pad these lines into columns for reading; the comparison is on whitespace-
+normalized text, so the padding is not part of the claim and the fields are.
+
+Two are worth naming. The threat at tick 337 of `seed123-social-d1.50` is the one threat
+in the whole capture that moved a target's fear, per section 4. The meal at tick 381 of
+`seed42-individual-d0.75` is the one the document prints as the difference the trait still
+makes, and the meal that used to be printed in its place is measured in section 7 instead
+-- the document now describes that one in prose rather than quoting it, so there is no
+record here to match.
+
+
+9. Trok's twenty-one turns, the walked example of section 14
+-------------------------------------------------------------
+    from seed42-reference-d0.75-traceon.txt, which is the cell of the command section 14 names
+    M05 is Trok, waste tolerance 21, and the decider in this run ignores it
+    F0058 is low class, standing at 89:13 from turn 0, and never moves
+
+    turn  proposal            satiety   at        a Low snack would spill
+       1  move:south              100   84:16     15, over the 2 allowed
+       2  move:south               99   84:17     14, over the 2 allowed
+       3  move:north               98   84:16     13, over the 2 allowed
+       4  move:south               97   84:17     12, over the 2 allowed
+       5  move:north               96   84:16     11, over the 2 allowed
+       6  move:north               95   84:15     10, over the 2 allowed
+       7  move:south               94   84:16     9, over the 2 allowed
+       8  move:north               93   84:15     8, over the 2 allowed
+       9  move:east                92   85:15     7, over the 2 allowed
+      10  move:west                91   84:15     6, over the 2 allowed
+      11  move:east                90   85:15     5, over the 2 allowed
+      12  move:north               89   85:14     4, over the 2 allowed
+      13  move:south               88   85:15     3, over the 2 allowed
+      14  move:east                87   86:15     2, within the 2 allowed
+      15  move:east                86   87:15     1, within the 2 allowed
+      16  move:east                85   88:15     nothing
+      17  move:east                84   89:15     nothing
+      18  move:north               83   89:14     nothing
+      19  move:north               82   89:13     nothing
+      20  eat:F0058                96   89:13     this is the meal, and the satiety is already after it
+      21  move:east                95   90:13     10, over the 2 allowed
+
+    the meal at turn 20   F0058, low class, satiety 81 + 15 = 96, 4 short of full
+    reach at turn 14     85:15 to 89:13, 4 east and 2 north, 6 squares
+
+The satiety column is the trace record's own field, which is the value at the moment the
+Mokiterion decided -- except on turn 20, where the meal has already been applied by the
+time the trace prints, and the document prints that row as `81 -> 96` for exactly that
+reason. The last column is the corrected condition's arithmetic on each of those turns,
+and it is the whole of the walk: the spill sits above the allowance of 2 for thirteen turns
+and reaches it on turn 14, which is the turn the Mokiterion sets off.
+
+This is why the example is in the document twice over. It is a real run, and the correction
+is visible in it without a second world to compare against: nothing walks toward a resource
+it would waste more than the allowance on, and the turn the arithmetic changes is the turn
+the behavior does.
+
+
+10. The figures taken outside the declared matrix
+--------------------------------------------------
+Seven runs, none of them a cell of the 120. Each is a command a reader can run, and each is
+printed in the document beside the figure it produces. They are not retained: they are one
+command each and `REQ-MOK-009` makes them reproducible, which is the same reason
+`analysis/retain.py` gives for keeping two cells of the matrix rather than 120.
+
+    cargo run --bin Mokiterions -- --seed 0 --policy reference --density 0.70 --ticks 1000
+        reason=tick_limit  ticks=1000  survivors=9   deaths=3
+    cargo run --bin Mokiterions -- --seed 0 --policy reference --density 0.75 --ticks 1000
+        reason=tick_limit  ticks=1000  survivors=8   deaths=4
+    cargo run --bin Mokiterions -- --seed 0 --policy reference --density 1.00 --ticks 1000
+        reason=tick_limit  ticks=1000  survivors=7   deaths=5
+    cargo run --bin Mokiterions -- --seed 0 --policy reference --density 1.25 --ticks 1000
+        reason=tick_limit  ticks=1000  survivors=12  deaths=0
+    cargo run --bin Mokiterions -- --seed 42 --ticks 200 --density 0.02
+        reason=extinction  ticks=134   survivors=0   deaths=12
+    cargo run --bin Mokiterions -- --seed 42 --ticks 40
+        reason=tick_limit  ticks=40    survivors=12  deaths=0
+    cargo run --bin Mokiterions -- --policy individual --seed 42 --ticks 400
+        reason=tick_limit  ticks=400   survivors=11  deaths=1
+
+    the density warning of section 9, seed 0 under reference
+        density 0.70%    9 alive
+        density 0.75%    8 alive
+        density 1.00%    7 alive
+        density 1.25%   12 alive
+
+    the starvation clock of section 8, seed 42 at density 0.02%
+        tick 119  11 died
+        tick 134   1 died
+
+The density row at 0.75% is in that list on purpose, and it is the check that makes the
+other three worth reading: it leaves 8 alive, which is what cell
+`seed0-reference-d0.75` of the declared matrix reports. The binary that produced the
+out-of-matrix runs is therefore the binary that produced the matrix, and the sweep is a
+statement about density rather than about a stale build.
+
+
+11. Figures a sibling file in this packet measures, cited rather than recomputed
+--------------------------------------------------------------------------------
+One figure, one reader. Where a file in this packet already measures a number the document
+states, this reader checks that the file says it and does not recompute it: two readers of
+one stream that disagree would be a defect of this packet and not a finding about the
+world.
+
+    ok   SR  the case REQ-MOK-060 names, at the pre-change commit
+         the document: High standing at 45 of 61 in one territory, 73.8%
+         post/composition.txt: reference   0.75     0           61   11.5%   14.8%   73.8%
+    ok   SR  the corrected boundaries, per class
+         the document: | Low | 15 | 2 | **87** |
+         post/eaten.txt: cannot exceed 85/70/50 for low/medium/high; after it, 87/79/75
+    ok   SR  the enumerated identity set
+         the document: of 4,536 possible situations was checked
+         post/updated-tests.md: `assert_eq!(cases, 2_808)` became `assert_eq!(cases, 4_536)`
+    ok   SR  the suite behind every figure here
+         the document: the workspace runs 268 tests green
+         post/gates.txt: 268 test names, 268 passed, 0 failed, 0 ignored, exit 0
+    ok   RM  consumption across the whole matrix
+         the document: matrix consumption rises from 26,136 meals to 26,924
+         post/composition.txt: consumptions at the candidate 26,924
+    ok   RM  the two carried floors of eight
+         the document: `REQ-MOK-014`'s eight and `REQ-MOK-034`'s eight are met on every declared seed
+         post/survivors.txt: REQ-MOK-014 -- reference at the default density, floor 8 of 12
+    ok   RM  the allowance term, per class
+         the document: `2` for low class, `9` for medium, `25` for high
+         post/eaten.txt: 87/79/75
+    ok   SR  the observer amendment that rests on the control case
+         the document: watch the random decider starve
+         post/dead-neighbours.txt: candidate   12 of 12 identifiers die on tick 119
+
+
+12. Figures this work order did not re-measure, and the flag each one carries
+------------------------------------------------------------------------------
+Nine figures in the two documents describe a world the engine no longer implements. Every
+one is kept, because deleting a measurement is not the same as superseding it, and every
+one is required here to carry a sentence in its own document saying so. The flag is part of
+the claim: a figure of this kind stated flatly would fail this reader even though there is
+no arithmetic to check.
+
+    ok   SR  the extinction tick at the default density
+         the figure: dead by tick 9,154 at the default density on seed 123
+         the flag:   were measured on the **uncorrected** world
+         measured by: evidence/WO-MOK-002/density-curve.md
+    ok   RM  the same figure in the roadmap
+         the figure: reached extinction at tick 9,154
+         the flag:   The tick-9,154 figure above is **not** re-measured
+         measured by: evidence/WO-MOK-002/density-curve.md
+    ok   SR  the 10,000-turn comparison
+         the figure: reaching the limit on four of the five seeds with 1 to 5 survivors
+         the flag:   was measured on the uncorrected world and has not been re-run
+         measured by: evidence/WO-MOK-010/escalation.md
+    ok   SR  the tolerance-range measurement that cut the range at 40
+         the figure: dropped below the required eight survivors on three of the five seeds
+         the flag:   taken on the pre-2026-08-21 world, and not re-taken since
+         measured by: evidence/WO-MOK-010/escalation.md
+    ok   SR  WO-MOK-010's two composition bands
+         the figure: ran 35% to 77% per territory under the trait-aware decider against 45% to 75%
+         the flag:   As measured then
+         measured by: evidence/WO-MOK-010/
+    ok   SR  the action table the section carried until 2026-08-21
+         the figure: 6,329 avoids, three attacks, no surrenders at all
+         the flag:   That set was measured before commit `7d744bb` reordered the five steps above
+         measured by: evidence/WO-MOK-016/
+    ok   RM  the first measurement of social, in the roadmap
+         the figure: Measured: 6, 4, 8, 4 and 5 survivors, and **zero** combat deaths on all five seeds
+         the flag:   What the first measurement of `social` reported
+         measured by: evidence/WO-MOK-016/
+    ok   RM  the starvation the branch order caused
+         the figure: dropped meals eaten from 378–417 per run to 205–304
+         the flag:   Both followed from one coupling
+         measured by: evidence/WO-MOK-016/
+    ok   SR  the strict count of divergent moments
+         the figure: "Moments where two creatures facing the genuinely same situation would have chosen differently" was 3 to 10 per run
+         the flag:   **The stricter count has not been re-measured.**
+         measured by: evidence/WO-MOK-010/
+
+The long horizon is the substantive one. `REQ-MOK-060` binds tick 1,000 and nothing past
+it, deliberately, so `WO-MOK-017` measured nothing past it either -- and the figures that
+made high-class accumulation look fatal over 10,000 turns are exactly the figures the
+correction is most likely to have moved. `docs/ROADMAP.md` carries re-measuring them as
+outstanding work against a long-horizon requirement that is still unstated.
+
+
+13. The whole claim inventory
+------------------------------
+    `q!` means the quoted sentence is not in the document as written; `v!` that the
+    document's figure and this reader's do not agree; `c!` that a cited file does not
+    carry the figure attributed to it.
+
+    matrix -- 94 claims
+      ok  SR  §2  survivors under the two food-only deciders, range
+              8, 10
+      ok  SR  §2  survivors, reference, per declared seed
+              8, 9, 10, 9, 9
+      ok  SR  §2  survivors, trait-aware, per declared seed
+              10, 8, 10, 8, 8
+      ok  SR  §2  the section 11 survivor table, trait-aware row
+              10, 8, 10, 8, 8
+      ok  SR  §2  the section 11 survivor table, reference row
+              8, 9, 10, 9, 9
+      ok  SR  §2  trait-aware against reference, seed by seed
+              1, 1, 3
+      ok  SR  §2  both food-only deciders against the floor of eight
+              10
+      ok  SR  §2  seeds sitting exactly on the floor
+              1, 3
+      ok  SR  §2  seed 777 under the trait-aware decider, both commits
+              12, 8
+      ok  SR  §2  seed 777, how many it now loses
+              4
+      ok  SR  §2  survivors, social, range
+              7, 9
+      ok  SR  §2  survivors, social, per declared seed
+              9, 7, 9, 8, 9
+      ok  SR  §2  deaths under social, and how many are killings
+              18, 9
+      ok  SR  §2  combat deaths, social, per declared seed
+              1, 2, 2, 3, 1
+      ok  SR  §2  the reproducibility example
+              10
+      ok  RM  §2  survivors, social, candidate
+              9, 7, 9, 8, 9
+      ok  RM  §2  combat deaths, social, candidate
+              1, 2, 2, 3, 1
+      ok  RM  §2  survivors at WO-MOK-016's candidate, which is this packet's pre-change commit
+              9, 10, 9, 9, 11
+      ok  RM  §2  combat deaths at the pre-change commit
+              1, 2, 2, 3, 1
+      ok  RM  §2  surrender proposals at the pre-change commit
+              5, 10, 8, 6, 7
+      ok  RM  §2  meals eaten under social at the pre-change commit
+              326, 389
+      ok  RM  §2  obligated runs that lose survivors to the correction
+              9, 15
+      ok  SR  §2  the cost to social, seed by seed
+              2, 1, 3
+      ok  RM  §2  the worst seed against REQ-MOK-058's floor of five
+              2
+      ok  SR  §2  the control case, and the larder it died beside
+              12, 142, 122
+      ok  SR  §2  both territories at capacity when it died
+              61, 61
+      ok  SR  §3  the section 11 action table, avoid row
+              3,842, 4,268
+      ok  SR  §3  the section 11 action table, approach row
+              1,788, 1,724
+      ok  SR  §3  the section 11 action table, threaten row
+              128, 114
+      ok  SR  §3  the section 11 action table, attack row
+              59, 54
+      ok  SR  §3  the section 11 action table, surrender row
+              36, 31
+      ok  SR  §3  the section 11 action table, retreat row
+              14, 14
+      ok  SR  §3  the section 11 action table, fight row
+              9, 9
+      ok  SR  §3  strikes across the five social runs
+              63
+      ok  SR  §3  strikes landing inside the first fourteen turns
+              56
+      ok  SR  §3  strikes after tick 14, and the last of them
+              7, 882
+      ok  SR  §3  the same two figures in section 1
+              56, 63
+      ok  SR  §3  the turns left after the opening
+              986
+      ok  SR  §3  the same figures in section 16
+              63, 56, 9, 18
+      ok  SR  §3  avoidances against strikes, to the nearest ten
+              70
+      ok  SR  §4  the fear every strike was proposed at
+              63, 90
+      ok  SR  §4  strikes proposed at exactly 90
+              13
+      ok  SR  §4  the fear every approach was proposed at
+              1,724, 90
+      ok  SR  §4  the fear every threat was proposed at
+              114, 100
+      ok  SR  §4  the fear every avoidance was proposed at
+              4,268, 95, 100
+      ok  RM  §4  the same four distributions in the roadmap
+              63, 13, 1,724, 114, 4,268
+      ok  SR  §4  turns of company needed to shut the gate
+              10
+      ok  SR  §4  threats that moved their target's fear at all
+              60, 2,850, 1
+      ok  SR  §5  creature-turns under the two fear-carrying deciders
+              105,445
+      ok  SR  §5  share of them at fear 100
+              38
+      ok  SR  §5  share above 0, per run
+              44, 64
+      ok  SR  §5  the +5 step the table does not predict
+              260
+      ok  SR  §5  the same population across all four deciders
+              160,921, 34
+      ok  SR  §5  the pre-change figures the document replaces
+              111,604, 39, 219
+      ok  SR  §5  the figure section 8 asks the reader not to over-read
+              38
+      ok  SR  §6  the high-class share at tick 1,000, candidate
+              33, 54
+      ok  SR  §6  the same share before the correction
+              36, 82
+      ok  SR  §6  the worst territory of any class, candidate
+              yes
+      ok  SR  §6  WO-MOK-010's two bands, re-measured on this packet's pre-change captures
+              36, 77, 46, 75
+      ok  RM  §6  the same band in the roadmap
+              33, 54
+      ok  RM  §6  both bands in the roadmap
+              36, 82, 33, 54
+      ok  SR  §7  meals the reference rule would refuse, candidate
+              0, 3, 0, 2
+      ok  SR  §7  seed 777, candidate
+              0
+      ok  SR  §7  the same count before the correction
+              54, 97, 9, 10
+      ok  SR  §7  the tolerance of the creature in section 11's example
+              40
+      ok  SR  §7  what its snack destroyed
+              15, 3
+      ok  SR  §7  the tolerance that would also have refused it
+              yes
+      ok  SR  §7  the meal that used to be the example, at both commits
+              87, 87
+      ok  SR  §7  and that it is no longer a difference
+              yes
+      ok  SR  §8  section 14, the food record
+              yes
+      ok  SR  §8  section 14, the Mokiterion record
+              yes
+      ok  SR  §8  section 14, the refused regeneration
+              yes
+      ok  SR  §8  section 14, the regeneration
+              yes
+      ok  SR  §8  section 14, the survival record and the fear it carries
+              yes
+      ok  SR  §8  section 14, the strike
+              yes
+      ok  SR  §8  section 14, the threat that partly landed
+              yes
+      ok  SR  §8  section 14, the surrender
+              yes
+      ok  SR  §8  section 11, the real difference the trait makes
+              yes
+      ok  SR  §9  Trok's first thirteen turns, in order
+              south, south, north, south, north, north, south, north, east, west, east, north, south
+      ok  SR  §9  the satiety it wandered through
+              100, 88
+      ok  SR  §9  what a snack would have spilled on the first and last of those turns
+              15, 3
+      ok  SR  §9  the turn it set off, and from where, and toward what
+              85:15, 89:13, 87, east
+      ok  SR  §9  the arithmetic that opened the walk
+              102, 2
+      ok  SR  §9  the distance from where it set off to the resource
+              6
+      ok  SR  §9  the shape of the walk
+              4, 2
+      ok  SR  §9  the turn it arrived, and on what
+              89:13, 82
+      ok  SR  §9  the meal, and that it wasted nothing
+              F0058, low, 81, 96
+      ok  SR  §9  how far short of full that left it
+              4
+      ok  SR  §9  the turn after, and that it is wandering again
+              95, move, east
+      ok  SR  §9  Trok's own waste tolerance
+              21
+      ok  SR  §9  the satiety the trait-aware decider would have set off at
+              88
+      ok  SR  §9  the satiety above which nothing fits at all
+              87
+      ok  SR  §9  the highest a tolerance of 40 reaches on a snack
+              91
+      ok  SR  §9  that the run is real output rather than an illustration
+              21
+
+    outside -- 9 claims
+      ok  SR  §10 the density warning, four densities on seed 0
+              9, 8, 7, 12
+      ok  SR  §10 the default density, against the matrix cell of the same run
+              8
+      ok  SR  §10 the starvation clock at a density of 0.02
+              11, 119
+      ok  SR  §10 the twelfth, which found the one resource
+              134
+      ok  SR  §10 the arithmetic the run confirms
+              119
+      ok  SR  §10 the scoreboard of section 15, its four counts
+              tick_limit, 40, 12, 0
+      ok  SR  §10 the scoreboard of section 15, its six food counts
+              17, 22, 20, 18, 19, 19
+      ok  SR  §10 the three sizes at turn 40, still roughly even
+              yes
+      ok  SR  §10 the command section 11 prints, and the line it prints
+              381, M08, F0257, low, 88
+
+    cited -- 8 claims
+      ok  SR  §6  the case REQ-MOK-060 names, at the pre-change commit
+      ok  SR  §11 the corrected boundaries, per class
+      ok  SR  §11 the enumerated identity set
+      ok  SR  §11 the suite behind every figure here
+      ok  RM  §11 consumption across the whole matrix
+      ok  RM  §11 the two carried floors of eight
+      ok  RM  §11 the allowance term, per class
+      ok  SR  §11 the observer amendment that rests on the control case
+
+    history -- 9 claims
+      ok  SR  §12 the extinction tick at the default density
+      ok  RM  §12 the same figure in the roadmap
+      ok  SR  §12 the 10,000-turn comparison
+      ok  SR  §12 the tolerance-range measurement that cut the range at 40
+      ok  SR  §12 WO-MOK-010's two composition bands
+      ok  SR  §12 the action table the section carried until 2026-08-21
+      ok  RM  §12 the first measurement of social, in the roadmap
+      ok  RM  §12 the starvation the branch order caused
+      ok  SR  §12 the strict count of divergent moments
+
+    claims checked                          120
+    of which recomputed from the captures    94
+    recomputed from a run outside them        9
+    cited to a sibling file                   8
+    history, flagged as such                  9
+    failures                                  0
+
+
+14. What this file does not establish
+-------------------------------------
+- It is not a verification record and settles no obligation. The ceiling is
+  `post/composition.txt`, the floors are `post/survivors.txt`, and both are the assurance
+  owner's to accept.
+- It does not check that either document is well written, well organized or complete. It
+  checks that the numbers in it are the world's numbers.
+- Where a document spells a figure in words, the words are not parsed. The quote and the
+  measurement are printed together and the reader closes that link by reading them.
+- The out-of-matrix runs of section 10 are not retained. They are reproducible in one
+  command each, and the density row at 0.75% is the cross-check that says the binary that
+  produced them is the binary that produced the matrix.
+- Nothing here re-measures the long horizon. Section 12 says so, and so does every
+  document sentence it lists.
+
+RESULT: PASS -- 120 figures across two reader-facing documents, 103 recomputed from the
+streams at both commits, 8 cited to a sibling file, 9 flagged as history and not re-measured,
+and 0 disagreeing with the document that states them.

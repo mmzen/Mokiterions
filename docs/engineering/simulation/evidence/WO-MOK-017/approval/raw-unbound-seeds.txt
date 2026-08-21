@@ -1,0 +1,4 @@
+seeds 0..49 at the default density, 1,000 ticks; obligations bind only seeds 0, 1, 42, 123, 777
+
+today (uncorrected)    over-60% 140/150   over-50% 149/150   worst  88.5%   below floor   6/150   lowest {'reference': 5, 'individual': 7, 'social': 3}
+corrected R*R/100      over-60%   7/150   over-50%  61/150   worst  63.9%   below floor  17/150   lowest {'reference': 5, 'individual': 5, 'social': 4}

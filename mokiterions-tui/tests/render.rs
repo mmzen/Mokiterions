@@ -1155,6 +1155,20 @@ fn every_living_mokiterion_has_an_entry_at_the_reference_viewport() {
 /// fill is monotone in the value: no pair of frames presents a lower health over a fuller bar. A
 /// gauge can satisfy the first with a single step somewhere in the middle of the range; only the
 /// second says the bar tracks the decline.
+///
+/// **The run selects `social` from 2026-08-21, where it took the default source before.** The
+/// scenario `VER-MOK-013` states is "200 ticks at a declared seed at the reference viewport" and
+/// names no source, so this is a change of scenario parameter and not of the scenario. The reason it
+/// was needed is `REQ-MOK-060`: the corrected waste condition feeds the population well enough that
+/// at 200 ticks **no declared seed under `reference` or `individual` produces any health fall at
+/// all** — seed 42 fell 35 points before the correction and falls 0 after it, and the deepest fall
+/// over all five declared seeds under either source is now 0. Health falls only once satiety reaches
+/// zero, so a better-fed world has no declining health to draw, and the ≥30 guard below fired.
+///
+/// `social` is the durable choice rather than a longer run, because there the decline is combat
+/// damage and not starvation: seed 42's deepest fall is 78 points at **both** commits, so this test
+/// is no longer coupled to the nutrition model it has twice been broken by. The guard stays at
+/// thirty and the assertions are untouched.
 #[test]
 fn a_declining_mokiterion_shows_a_declining_bar() {
     /// The scenario's own run length, declared to the run rather than assumed of it: the default
@@ -1164,7 +1178,7 @@ fn a_declining_mokiterion_shows_a_declining_bar() {
     const LENGTH: usize = 200;
 
     // The subject is found without drawing, so the pass that draws reads one gauge per frame.
-    let mut observer = start(&["--seed", "42", "--ticks", "200"]);
+    let mut observer = start(&["--seed", "42", "--ticks", "200", "--policy", "social"]);
     let mut series: BTreeMap<String, Vec<u8>> = BTreeMap::new();
     for _ in 0..LENGTH {
         for agent in &observer.snapshot().agents {
@@ -1198,7 +1212,9 @@ fn a_declining_mokiterion_shows_a_declining_bar() {
          fall was {fall}, so this scenario is unexercised"
     );
 
-    let mut observer = start(&["--seed", "42", "--ticks", "200"]);
+    // The same run again, drawing this time. The two passes must select the same source or the
+    // subject found by the first is not the subject drawn by the second.
+    let mut observer = start(&["--seed", "42", "--ticks", "200", "--policy", "social"]);
     let mut samples: Vec<(u8, usize)> = Vec::new();
     for _ in 0..LENGTH {
         let buffer = frame_of(&mut observer, 160, 48);

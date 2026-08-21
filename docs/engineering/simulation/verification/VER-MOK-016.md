@@ -5,7 +5,7 @@ title = "Encounter verification: exact resolution on constructed states, reachab
 status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-20"
-updated = "2026-08-20"
+updated = "2026-08-21"
 
 [relations]
 verifies = ["REQ-MOK-051", "REQ-MOK-052", "REQ-MOK-053", "REQ-MOK-054", "REQ-MOK-055", "REQ-MOK-056", "REQ-MOK-057", "REQ-MOK-058", "REQ-MOK-059", "REQ-MOK-060"]
@@ -20,6 +20,7 @@ verifies = ["REQ-MOK-051", "REQ-MOK-052", "REQ-MOK-053", "REQ-MOK-054", "REQ-MOK
 | 2026-08-20 | Original approved content. | Approved 2026-08-20 by the repository owner acting as assurance owner. |
 | 2026-08-20 | **Realigned to `REQ-MOK-057`'s first amendment**, which added a branch and moved the engagement threshold from `30` to `95`. Four provisions: the engagement-threshold oracle now asserts `94` and `95`, and additionally asserts `30` and `60` so that the gate is proved *not* to be either answer threshold — the two were equal by coincidence before and a test that passed at `30` could not tell the constants apart; the draw-discipline oracle renumbers and adds the assertion that the new branch 3 draws nothing, which is what makes the amendment a reordering of decisions rather than of the shared stream; the differential oracle against `individual` is **widened** to hold wherever a tolerated resource is perceived, and both the narrow and the widened form are asserted; and manual assessment 8 records the six-branch ordering with the gate at `95`. No oracle is weakened or removed, and the retention list is unchanged. | Approved 2026-08-20 by the repository owner acting as assurance owner, on `REQ-MOK-057`'s amendment being approved the same date and on the measured evidence in `evidence/WO-MOK-016/escalation.md`. The realignment does not decide anything: it follows an approved requirement change, and the one oracle whose strength it alters it strengthens. |
 | 2026-08-20 | **Oracle 5's outcome half is restated: the rank-correlation band is removed and a turn-position survival bound replaces it.** Four provisions. The monotone non-increasing check stays exactly as written and stays on the five declared seeds, because that is the part five seeds support. The `±0.5` rank-correlation band on identifier is **removed** and no rank correlation is bounded anywhere in this contract; both correlations are recorded as evidence with their event totals. A **declared diagnostic seed set** of the 200 seeds `0`–`199` is added, carrying no survivor floor, no lethality bound and no comparability obligation, and the obligations stay on the five declared seeds. Over that set, the ratio of the highest to the lowest survival rate across the six turn positions within a territory must be **below `1.25`**, a figure taken from the three-of-twelve survivor cost `REQ-MOK-058`'s floor concedes below `REQ-MOK-034`'s and not from the curve it bounds; the measured value on that set is `1.082`, and `1.063` over all 1,000 seeds measured. The bound and the set size are one provision: at 50 seeds a group would breach `1.25` on noise alone, which is measured in the section below. Manual assessment 11 is answered rather than deferred. **This weakens no oracle's ability to fail**: the removed bound could fail on noise and pass on a real advantage, and both replacements were measured against 9,194 resolved strikes and 12,000 identifier-runs over 1,000 seeds before being written. | Approved 2026-08-20 by the repository owner acting as product owner on accepting the measured turn-order advantage as a property of the world, and as assurance owner on what this row should bound, both against the four measured options in `evidence/WO-MOK-016/escalation.md` §11. The advantage is identifier-blind — the identifier-symmetry oracle still passes — and an ablation measured that amending `SPEC-MOK-001` rule 25 would shrink it by about two thirds without changing its ordering, so the alternative of changing the world was declined with its cost known. |
+| 2026-08-21 | **Realigned to `REQ-MOK-060`'s amendment of the composition ceiling from one half to three fifths.** Five provisions, none of which changes what is measured or how. Oracle 4's coverage row asserts three fifths and states which side of the boundary passes — exactly three fifths passes, a share strictly above it is the breach — because the previous row said "more than half" without settling equality, and at a coarse standing total that is a reachable case rather than a pedantic one. The pre-change contrast row asserts the pre-change measurement exceeds three fifths, which is the stronger contrast the amended ceiling permits and which the retained `45` of `61` at `73.8%` satisfies. The composition-ratio property carries three fifths. Manual assessment 7 carries it on both of its halves. Manual assessment 5 is restated: the ceiling's value is no longer what the reviewer assesses, because `REQ-MOK-060`'s amendment record closes it and a verification contract does not reopen a requirement; what the reviewer assesses is that three fifths is met on the shipped build with the margin the amendment claimed, and whether the corrected composition warrants a per-class floor. The residual on pre-measurement numbers records that one of its seven has now moved. **No oracle is weakened in its ability to fail**: the ceiling oracle's threshold moves with its requirement, and the contrast oracle it is paired with is strengthened. Nothing about the other nine requirements, the retention list, the draw-discipline oracles or the `baseline` byte-identity obligation moves. | Approved 2026-08-21 by the repository owner acting as assurance owner, on `REQ-MOK-060`'s amendment being approved the same date by the same owner acting as product owner, and on the measurement retained in `evidence/WO-MOK-017/approval/`. This row realigns and decides nothing: it follows an approved requirement change, and where it alters an oracle's strength it raises it. The implementation agent wrote this text under `WO-MOK-017`; it did not decide the substance. |
 
 ## Independence
 
@@ -265,9 +266,9 @@ that this contract's survivor measurements are comparable at matched seeds with 
 | `REQ-MOK-059` | static-analysis | No count-dependent branch | No rule's behavior depends on how many Mokiterions exist, are alive, are in contact or are in a territory; no threshold on a count, no scaling by population |
 | `REQ-MOK-059` | automated-test | Perception is not a census | Rule 12's dependence on whether the observation lists a Mokiterion is unchanged and satisfies the bound; a run reproduces its `fear` trajectory exactly |
 | `REQ-MOK-059` | review | The prohibited shape is absent | No path suppresses, weakens or gates combat on a population condition. This is the row that would catch a survivor floor met by making the engine stop the fighting |
-| `REQ-MOK-060` | automated-test | **The ceiling** (oracle 4) | At tick 1,000, in each territory, no calorie class holds more than half that territory's standing resources, on every declared seed, under `reference`, `individual` and the `social` source |
+| `REQ-MOK-060` | automated-test | **The ceiling** (oracle 4) | At tick 1,000, in each territory, no calorie class holds more than three fifths of that territory's standing resources, on every declared seed, under `reference`, `individual` and the `social` source. Exactly three fifths passes; the breach is a share strictly above it |
 | `REQ-MOK-060` | automated-test | Measured from rule 18's summary (oracle 4) | The composition is read from the run's own final summary, with no new event and no new instrumentation |
-| `REQ-MOK-060` | automated-test | The pre-change state is reproduced as the contrast (oracle 1) | The same measurement at the pre-change commit puts high class above half in a territory, which is the recorded 45 of 61 this requirement ends |
+| `REQ-MOK-060` | automated-test | The pre-change state is reproduced as the contrast (oracle 1) | The same measurement at the pre-change commit puts high class above three fifths in a territory, which is the recorded 45 of 61 — `73.8%` — this requirement ends |
 | `REQ-MOK-060` | static-analysis | **The correction is where it is permitted to be** | The change touches rule 5's and rule 19's waste condition only; rule 4, rule 9's eat effect, the food table and rules 14 to 16 are unchanged, compared line for line against the pre-change commit |
 | `REQ-MOK-060` | static-analysis | No composition read by any source | No decision source reads the class composition of a territory or of the world |
 | both | automated-test | **Identifier symmetry** (oracle 5) | One constructed encounter resolved with the two identifiers exchanged yields identical damage and identical resulting attributes |
@@ -381,8 +382,8 @@ be amended is the intent owner's and is **not** decided here.
    reverts.
 6. A reviewer runs the declared seed set under the `social` source and finds, on each seed, at least five survivors and
    at least one death attributable to combat, and finds all seven verbs applied somewhere across the set.
-7. A reviewer reads rule 18's final summary on each seed and confirms no class holds more than half of either
-   territory's standing resources, then confirms the same measurement at the pre-change commit exceeds half.
+7. A reviewer reads rule 18's final summary on each seed and confirms no class holds more than three fifths of either
+   territory's standing resources, then confirms the same measurement at the pre-change commit exceeds three fifths.
 8. A reviewer adds a hypothetical rule that suppresses combat below seven living Mokiterions, confirms the enumeration
    of oracle 6 names it as a violating read, and reverts. This is the demonstration that `REQ-MOK-059` is checkable.
 9. A reviewer constructs a target that dies during an earlier Mokiterion's turn, confirms the later attack against it is
@@ -432,7 +433,7 @@ be amended is the intent owner's and is **not** decided here.
   Mokiterion equals the amount received plus the amount reported as discarded. Conservation of `satiety` across the
   population is deliberately **not** a property, and this identity is what replaces it.
 - **Composition ratio.** At tick 1,000, per territory, per class, the ratio of standing resources of that class to the
-  territory's standing total is at most one half — asserted as a property over the summary rather than sampled.
+  territory's standing total is at most three fifths — asserted as a property over the summary rather than sampled.
 - **No aggregate reaches a decision.** Asserted structurally by oracle 6's enumeration, and behaviorally by the absence
   of any run in which two Mokiterions in identical local situations behave differently because the population differs.
 
@@ -537,10 +538,16 @@ both acceptable outcomes, and silence is not either of them. The numbering is pr
    records that five sits exactly on the line its own six-argument drew, so this ratification is doing real work rather
    than confirming a comfortable number: a curve that clusters at five or six is itself a finding about the damage
    function, and amending `REQ-MOK-058` upward is as available an outcome as ratifying it.
-5. **The composition ceiling of one half, by the product owner**, on the measured corrected composition, together with
-   the judgement on whether a per-class floor is also wanted. Ratified in advance at one half against `60%` and `40%`,
-   for the `17` points of headroom above the balanced initial third that it leaves; the ratification here is against the
-   measured curve rather than against the reasoning.
+5. **The composition ceiling of three fifths, by the product owner**, on the measured corrected composition, together
+   with the judgement on whether a per-class floor is also wanted. Ratified in advance at one half against `60%` and
+   `40%`, for the `17` points of headroom above the balanced initial third that it leaves, and **amended to three fifths
+   on 2026-08-21 on the first measured curve**, which showed one half unreachable inside `REQ-MOK-060`'s own permitted
+   surface while the three carried survivor floors hold. What remains to be assessed here is therefore not the value —
+   `REQ-MOK-060`'s amendment record closes it, and this contract does not reopen a requirement — but two things the
+   approval measurement could not settle: that three fifths is met on the shipped build with the margin the amendment
+   claimed, and whether the corrected composition warrants a per-class floor. A curve that meets three fifths only by
+   sitting on it is a finding about the mechanism, and a further amendment is as available an outcome as ratifying the
+   result.
 6. **The additivity cost, by the product owner.** `reference` and `individual` outcomes move. The owner records that this
    is accepted, having seen the characterized divergence, and approves the narrowing of `REQ-MOK-034`'s frozen-outcomes
    clause to `baseline` alone.
@@ -654,12 +661,17 @@ Evidence is retained in the repository, is reproducible from the recorded comman
 - **`REQ-MOK-059` is verified by enumeration, and an enumeration can be incomplete.** Its completeness is manual
   assessment 10. Nothing in this contract can prove that no reader was omitted from a list written by hand.
 - **Every number in this chain was decided before measurement existed.** Not only the survivor floor of five and the
-  composition ceiling of one half, but the damage function, the strike cost of `5`, the threat of `30`, the forfeit of
-  `satiety / 2` and the three thresholds `60`, `30` and `30` — all decided on 2026-08-20 so that the work order had
-  obligations to verify against. `REQ-MOK-014`'s amendment record is the precedent for expecting such numbers to move. A
-  first measurement that misses a bound is evidence for an amendment, and this contract's rows are written so that the
-  amendment is visible as a governed decision rather than absorbed as a threshold adjustment. This is recorded as one
-  residual rather than seven, and manual assessments 1 to 5 and 8 are where it is discharged.
+  composition ceiling — one half as first stated — but the damage function, the strike cost of `5`, the threat of `30`,
+  the forfeit of `satiety / 2` and the three thresholds `60`, `30` and `30` — all decided on 2026-08-20 so that the work
+  order had obligations to verify against. `REQ-MOK-014`'s amendment record is the precedent for expecting such numbers
+  to move. A first measurement that misses a bound is evidence for an amendment, and this contract's rows are written so
+  that the amendment is visible as a governed decision rather than absorbed as a threshold adjustment. This is recorded
+  as one residual rather than seven, and manual assessments 1 to 5 and 8 are where it is discharged. **One of the seven
+  has now moved**: the composition ceiling went to three fifths on 2026-08-21, before any engine change, on a measurement
+  that showed one half unreachable inside the surface its own requirement permits. That is this residual behaving as
+  written rather than an exception to it, and it raises rather than lowers the standing of the six that have not moved —
+  the mechanism by which a pre-measurement number becomes a governed amendment has now been exercised once and can be
+  inspected.
 - **The delegation equality checks the branches that are not new.** Oracle 8 establishes that `social` behaves as
   `individual` wherever nothing is perceived and nothing is unanswered. It says nothing at all about the four branches
   that are the point of this initiative: those have no prior source to be compared against and rest entirely on oracle

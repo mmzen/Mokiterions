@@ -729,7 +729,44 @@ impl Observation {
             )
     }
 
-    /// Whether consuming this resource would waste part of its satiety restoration.
+    /// The non-waste condition of `SPEC-MOK-001` rule 5, at an arbitrary waste tolerance, and
+    /// the only place its arithmetic is written.
+    ///
+    /// The resource fits outright, or the part the attribute maximum would clip is at most the
+    /// allowance. The allowance is the larger of two terms and both truncate toward zero:
+    ///
+    /// * `R * R / 100`, which the resource earns for itself and which no tolerance is needed
+    ///   to obtain — `2` satiety for low class, `9` for medium, `25` for high. This is the term
+    ///   `REQ-MOK-060` added, and it is rule 19's own arithmetic at a tolerance equal to the
+    ///   restoration itself, so the corrected condition introduces no constant the
+    ///   specification did not already have.
+    /// * `T * R / 100`, rule 19's per-Mokiterion tolerance, which is `0` for rule 5's callers.
+    ///
+    /// `u16` throughout, so no intermediate saturates and no float appears; the widest product
+    /// reachable is `50 * 50`.
+    ///
+    /// **This function is why rule 19's `T = 0` identity with rule 5 holds structurally rather
+    /// than by coincidence.** `REQ-MOK-033` obliges the trait-aware source at tolerance `0` to
+    /// decide exactly as the reference source does, and `SPEC-MOK-001`'s amendment of
+    /// 2026-08-21 preserves that obligation by restating rule 19's first clause as a reference
+    /// to rule 5's condition rather than the literal `S + R <= 100`. At `T = 0` the second term
+    /// is `0`, the first is unchanged, and the two predicates below are the same call. An
+    /// implementation that duplicated the arithmetic could satisfy the obligation today and
+    /// break it on the next edit to either copy.
+    fn fits_within(&self, food: &PerceivedFood, tolerance: u8) -> bool {
+        let restored = u16::from(food.class.restoration().0);
+        let resulting = u16::from(self.satiety) + restored;
+        let maximum = u16::from(ATTRIBUTE_MAX);
+        if resulting <= maximum {
+            return true;
+        }
+        let earned = restored * restored / 100;
+        let tolerated = u16::from(tolerance) * restored / 100;
+        resulting - maximum <= earned.max(tolerated)
+    }
+
+    /// Whether consuming this resource would waste more of its satiety restoration than the
+    /// resource itself earns.
     ///
     /// `REQ-MOK-015` requires consuming when consuming is not wasteful, and `SPEC-MOK-001`
     /// rule 5 applies this one test to both eating and approaching. A fixed satiety
@@ -738,8 +775,16 @@ impl Observation {
     /// defect standing, because a Mokiterion that declined the resource underfoot stepped
     /// off, perceived it again as the nearest resource at a distance greater than zero, and
     /// stepped back. Screening approach targets by the same rule is what closes that cycle.
+    ///
+    /// The test admitted nothing above satiety `85`, `70` and `50` for low, medium and high
+    /// class until `REQ-MOK-060`, and now admits up to `87`, `79` and `75`. That requirement
+    /// is a ceiling on a territory's class composition, and this is the whole of the mechanism
+    /// it permits: the resource nobody could eat was the resource that stayed standing, so
+    /// high class accumulated to 45 of 61 by tick 1,000. Rule 4's baseline candidate list
+    /// applies no waste condition at all and so is not reached from here, which is what keeps
+    /// `INT-MOK-010`'s byte-identity promise for `baseline` across the correction.
     fn fits(&self, food: &PerceivedFood) -> bool {
-        self.satiety.saturating_add(food.class.restoration().0) <= ATTRIBUTE_MAX
+        self.fits_within(food, 0)
     }
 
     /// The co-located resource worth consuming: the richest one that fits, then lowest
@@ -775,27 +820,25 @@ impl Observation {
     }
 
     /// Whether consuming this resource wastes no more of its satiety restoration than the
-    /// acting Mokiterion's own tolerance admits.
+    /// resource earns or the acting Mokiterion's own tolerance admits, whichever is larger.
     ///
-    /// Rule 19's tolerant test verbatim: the resource fits outright, or the part the
-    /// attribute maximum would clip is at most `T * R / 100` with the division truncating
-    /// toward zero. `u16` throughout, so no intermediate saturates and no float appears. At
-    /// tolerance `0` the second clause reads `S + R - 100 <= 0`, which is [`Self::fits`], so
-    /// the two agree on every observation at that tolerance.
+    /// Rule 19's tolerant test, and [`Self::fits`] is the same test at tolerance `0`.
     ///
-    /// [`Self::fits`] and the two selectors beside it are deliberately left as they are
-    /// rather than generalized to take a tolerance. They are the control this change is
-    /// measured against, and a shared implementation would make the reference source's
-    /// behavior depend on code written for the trait-aware one. The cost is the ordering
-    /// below, repeated once.
+    /// The two predicates were deliberately separate implementations until 2026-08-21, so
+    /// that the reference source's behavior did not depend on code written for the
+    /// trait-aware one. `REQ-MOK-060` reverses that judgment and states the reason: it
+    /// requires the corrected condition expressed once rather than duplicated across the two
+    /// sources, because the correction has to reach `reference`, `individual` and `social`
+    /// alike and two copies is the shape in which it reaches only some of them. The control
+    /// the separation protected is now the pre-change capture, which is a stronger control
+    /// than a second copy of an expression.
+    ///
+    /// The trait is masked wherever the resource's own `R * R / 100` already exceeds
+    /// `T * R / 100`, which is `T <= 19` for low class, `T <= 33` for medium and every
+    /// tolerance in `0..=40` for high. It remains live above those, and the declared seeds
+    /// still derive tolerances that reach them.
     fn fits_within_tolerance(&self, food: &PerceivedFood) -> bool {
-        let restored = u16::from(food.class.restoration().0);
-        let resulting = u16::from(self.satiety) + restored;
-        let maximum = u16::from(ATTRIBUTE_MAX);
-        if resulting <= maximum {
-            return true;
-        }
-        resulting - maximum <= u16::from(self.waste_tolerance) * restored / 100
+        self.fits_within(food, self.waste_tolerance)
     }
 
     /// The co-located resource rule 19 case 1 selects: the richest one the tolerance admits,
@@ -3776,6 +3819,20 @@ mod tests {
         }
     }
 
+    /// The highest satiety at which `SPEC-MOK-001` rule 5's corrected non-waste condition still
+    /// admits a resource of this class: `100 - R + R * R / 100`, which is `87`, `79` and `75`.
+    ///
+    /// Computed from the food table and the allowance rather than written as three literals, so
+    /// that a scenario reading "one point above the level that still fits" stays true if either
+    /// moves. The three values themselves are asserted as literals against the specification in
+    /// `the_corrected_non_waste_condition_admits_the_specified_boundaries`, which is where a
+    /// drift in this helper's own arithmetic is caught.
+    fn highest_admitted_satiety(class: FoodClass) -> u8 {
+        let restored = u16::from(class.restoration().0);
+        let allowance = restored * restored / 100;
+        u8::try_from(u16::from(ATTRIBUTE_MAX) - restored + allowance).unwrap()
+    }
+
     fn decide_once(simulation: &Simulation, agent_index: usize) -> (Action, u32) {
         let observation = simulation.observation(agent_index);
         let mut stream = simulation.entropy;
@@ -4626,9 +4683,11 @@ mod tests {
         let position = Coordinate { x: 50, y: 30 };
         simulation.agents[0].position = position;
         // One satiety point above the level at which a high-class resource still fits, so the
-        // non-waste rule declines it. Derived from the food table rather than from a
-        // threshold constant, because rule 5 states no threshold.
-        simulation.agents[0].satiety = ATTRIBUTE_MAX - FoodClass::High.restoration().0 + 1;
+        // non-waste rule declines it. Derived from the food table and the allowance rather than
+        // from a threshold constant, because rule 5 states no threshold. The level was `51`
+        // until `REQ-MOK-060` and is `76` now, because the condition grants a high-class
+        // resource `50 * 50 / 100 = 25` satiety of allowance above the maximum.
+        simulation.agents[0].satiety = highest_admitted_satiety(FoodClass::High) + 1;
         simulation.foods = vec![Food {
             id: "F0001".into(),
             position,
@@ -4655,9 +4714,10 @@ mod tests {
         simulation.tick = 1;
         let underfoot = Coordinate { x: 50, y: 30 };
         simulation.agents[0].position = underfoot;
-        simulation.agents[0].satiety = ATTRIBUTE_MAX - FoodClass::High.restoration().0 + 1;
+        simulation.agents[0].satiety = highest_admitted_satiety(FoodClass::High) + 1;
 
-        // Both perceived resources would be clipped, so there is nothing worth walking to.
+        // Both perceived resources would be clipped beyond the allowance, so there is nothing
+        // worth walking to.
         simulation.foods = vec![
             Food {
                 id: "F0001".into(),
@@ -4702,6 +4762,129 @@ mod tests {
             draws, 1,
             "the cell just left must not be re-targeted, got {adjacent:?}"
         );
+    }
+
+    /// `REQ-MOK-060`: rule 5's corrected non-waste condition, at every boundary the specification
+    /// states, for eating and for approaching alike.
+    ///
+    /// The allowance and the three satieties are written as literals transcribed from
+    /// `SPEC-MOK-001`'s amendment of 2026-08-21 rather than computed, because the purpose here is to
+    /// hold the engine to the specification's numbers. `highest_admitted_satiety`, which the
+    /// scenario tests derive their satieties from, is checked against the same literals in the same
+    /// loop, so a drift in its arithmetic cannot silently move those scenarios.
+    ///
+    /// Each class is asserted on both sides of its boundary and in both of rule 5's cases. The
+    /// inclusive side is the one that matters: `REQ-MOK-060`'s whole mechanism is that a resource
+    /// wasting exactly its own allowance is taken rather than left standing, and a condition
+    /// written with `<` instead of `<=` would pass every other check in this suite.
+    #[test]
+    fn the_corrected_non_waste_condition_admits_the_specified_boundaries() {
+        let underfoot = Coordinate { x: 50, y: 30 };
+        let eat = Action::Eat {
+            food_id: "F0001".into(),
+        };
+
+        for (class, allowance, highest) in [
+            (FoodClass::Low, 2u16, 87u8),
+            (FoodClass::Medium, 9, 79),
+            (FoodClass::High, 25, 75),
+        ] {
+            let restored = u16::from(class.restoration().0);
+            assert_eq!(
+                restored * restored / 100,
+                allowance,
+                "{class} class: the allowance R * R / 100 is not the specified {allowance}"
+            );
+            assert_eq!(
+                highest_admitted_satiety(class),
+                highest,
+                "{class} class: the highest admitted satiety is not the specified {highest}"
+            );
+            // The allowance is exactly what is wasted at the boundary, which is the sense in
+            // which the condition is stated on the waste and not on the satiety.
+            assert_eq!(
+                u16::from(highest) + restored - u16::from(ATTRIBUTE_MAX),
+                allowance
+            );
+
+            let mut simulation = Simulation::new(reference_config(0, 1, false)).unwrap();
+            simulation.tick = 1;
+            simulation.agents[0].position = underfoot;
+            simulation.foods = vec![Food {
+                id: "F0001".into(),
+                position: underfoot,
+                class,
+            }];
+
+            // Case 1, eating: inclusive at the boundary, excluded one point above it.
+            simulation.agents[0].satiety = highest;
+            let (admitted, draws) = decide_once(&simulation, 0);
+            assert_eq!(
+                admitted, eat,
+                "{class} class at satiety {highest} was declined, wasting exactly the allowance \
+                 of {allowance}, which rule 5's condition admits inclusively"
+            );
+            assert_eq!(draws, 0, "eating must not consume entropy");
+
+            simulation.agents[0].satiety = highest + 1;
+            let (declined, draws) = decide_once(&simulation, 0);
+            assert!(
+                matches!(declined, Action::Move { .. }),
+                "{class} class at satiety {} wastes {} against an allowance of {allowance} and \
+                 must be declined, got {declined}",
+                highest + 1,
+                allowance + 1
+            );
+            assert_eq!(
+                draws, 1,
+                "with nothing worth eating the step must be a search"
+            );
+
+            // Case 3, approaching: the same test on the same two satieties, one cell away. Rule
+            // 5 screens both cases by one condition, so a correction applied to eating alone
+            // would restore the two-cell oscillation the condition exists to prevent.
+            simulation.agents[0].position = Coordinate { x: 49, y: 30 };
+            simulation.agents[0].satiety = highest;
+            let (approach, draws) = decide_once(&simulation, 0);
+            assert_eq!(
+                approach,
+                Action::Move {
+                    direction: Direction::East
+                },
+                "{class} class at satiety {highest} one cell west was not approached"
+            );
+            assert_eq!(draws, 0, "approaching must not consume entropy");
+
+            simulation.agents[0].satiety = highest + 1;
+            let (unapproached, draws) = decide_once(&simulation, 0);
+            assert_eq!(
+                draws,
+                1,
+                "{class} class at satiety {} must not be approached, got {unapproached}",
+                highest + 1
+            );
+        }
+
+        // The first clause still stands on its own: a low-class resource at satiety 80 fits
+        // outright, needing none of the allowance, while a high-class one at the same satiety
+        // exceeds even the largest allowance in the table.
+        let mut simulation = Simulation::new(reference_config(0, 1, false)).unwrap();
+        simulation.tick = 1;
+        simulation.agents[0].position = underfoot;
+        simulation.agents[0].satiety = 80;
+        for (class, eaten) in [(FoodClass::Low, true), (FoodClass::High, false)] {
+            simulation.foods = vec![Food {
+                id: "F0001".into(),
+                position: underfoot,
+                class,
+            }];
+            let (action, _) = decide_once(&simulation, 0);
+            assert_eq!(
+                action == eat,
+                eaten,
+                "{class} class at satiety 80 was decided the wrong way, got {action}"
+            );
+        }
     }
 
     #[test]
@@ -5123,9 +5306,13 @@ mod tests {
     ///
     /// The set is the product of five dimensions:
     ///
-    /// - thirteen satiety values straddling every clipping boundary the food table produces —
-    ///   `85` for the low class, `70` for the medium and `50` for the high — with one value below,
-    ///   at and above each, plus both ends of the range and one value between the boundaries;
+    /// - twenty-one satiety values straddling every clipping boundary the food table produces —
+    ///   `87` for the low class, `79` for the medium and `75` for the high, as `REQ-MOK-060`
+    ///   corrected them on 2026-08-21 — with one value below, at and above each, plus both ends of
+    ///   the range and one value between the boundaries. The three triples the *uncorrected*
+    ///   condition produced, `84..=86`, `69..=71` and `49..=51`, are retained rather than replaced:
+    ///   they are where a regression to the omitted allowance would first show, and this test is
+    ///   the one that would have to keep holding through it;
     /// - the three calorie classes;
     /// - eighteen placements: underfoot, then each of the eight relative directions at distance
     ///   `1` and at the perception radius, then nothing perceived at all, which is the case that
@@ -5142,7 +5329,9 @@ mod tests {
     /// the next tick.
     #[test]
     fn at_tolerance_zero_the_trait_aware_source_proposes_what_the_reference_source_proposes() {
-        const SATIETIES: [u8; 13] = [0, 49, 50, 51, 60, 69, 70, 71, 84, 85, 86, 99, 100];
+        const SATIETIES: [u8; 21] = [
+            0, 49, 50, 51, 60, 69, 70, 71, 74, 75, 76, 78, 79, 80, 84, 85, 86, 87, 88, 99, 100,
+        ];
 
         let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
         simulation.tick = 1;
@@ -5203,22 +5392,33 @@ mod tests {
         }
 
         assert_eq!(cases, SATIETIES.len() * 3 * placements.len() * 2 * 2);
-        assert_eq!(cases, 2_808, "the enumerated situation set changed size");
+        assert_eq!(cases, 4_536, "the enumerated situation set changed size");
     }
 
     /// `REQ-MOK-033`: a trait difference alone changes the proposal, in both of rule 19's worked
-    /// cases as amended on 2026-08-19.
+    /// cases as amended on 2026-08-19 and again on 2026-08-21.
     ///
-    /// The medium-class case is the interior one: at satiety `80` a medium-class resource restores
-    /// `30` and wastes `10`, which the tolerant test admits when `10 <= T * 30 / 100`, so at
-    /// `T = 34` (`1020 / 100 = 10`) and not at `T = 33` (`990 / 100 = 9`). **The pair either side
-    /// of `34` is what pins the division as truncating rather than rounding**, and neither value is
-    /// near the range's ends, so it survives a further narrowing.
+    /// The medium-class case is unmoved by `REQ-MOK-060` and is the interior one: at satiety `80` a
+    /// medium-class resource restores `30` and wastes `10`. Rule 5's own allowance is
+    /// `30 * 30 / 100 = 9`, which does not admit it, so the tolerance still decides — at `T = 34`
+    /// (`1020 / 100 = 10`) and not at `T = 33` (`990 / 100 = 9`). **The pair either side of `34` is
+    /// what pins the division as truncating rather than rounding**, and neither value is near the
+    /// range's ends.
     ///
-    /// The high-class case sits exactly at the range's upper bound: at satiety `70` the waste is
-    /// `20` and `40 * 50 / 100 = 20` admits it while `39 * 50 / 100 = 19` does not. A resource of
-    /// that class at satiety `80` is declined at every reachable tolerance, which is the effect the
-    /// narrowing was made to produce, so that is asserted too.
+    /// **The high-class pair at satiety `70` was the second case until 2026-08-21 and is not a pair
+    /// any more.** Rule 5's corrected allowance for that class is `50 * 50 / 100 = 25`, which admits
+    /// the waste of `20` outright, so `39` and `40` both eat and neither the tolerance nor the
+    /// truncation is observable there. The replacement is the low-class case at satiety `88`, where
+    /// the waste is `3`, rule 5's allowance is `15 * 15 / 100 = 2`, and the tolerance decides at
+    /// `T = 20` (`300 / 100 = 3`) against `T = 19` (`285 / 100 = 2`). That pair pins the truncation
+    /// a second time, at the other end of the food table, and `19` is where rounding would have
+    /// admitted it.
+    ///
+    /// Two effects are asserted after the loop because each is a claim about the whole reachable
+    /// range rather than about a pair. A high-class resource at satiety `80` is declined at every
+    /// tolerance, which is what the 2026-08-19 narrowing was made to produce and what `REQ-MOK-060`
+    /// had to leave standing; the same resource at satiety `70` is now eaten at every tolerance and
+    /// by the reference source alike, which is what `REQ-MOK-060` moved.
     #[test]
     fn a_trait_difference_alone_decides_whether_a_clipped_resource_is_eaten() {
         let underfoot = Coordinate { x: 60, y: 30 };
@@ -5228,12 +5428,7 @@ mod tests {
 
         for (class, satiety, admits, declines) in [
             (FoodClass::Medium, 80u8, 34u8, 33u8),
-            (
-                FoodClass::High,
-                70,
-                WASTE_TOLERANCE_MAX,
-                WASTE_TOLERANCE_MAX - 1,
-            ),
+            (FoodClass::Low, 88, 20, 19),
         ] {
             let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
             simulation.tick = 1;
@@ -5275,8 +5470,9 @@ mod tests {
             assert_eq!(same, tolerant);
         }
 
-        // The narrowing's intended effect: a high-class resource at satiety 80 wastes 30, and no
-        // tolerance the amended range can produce admits it, because `40 * 50 / 100 = 20 < 30`.
+        // The narrowing's intended effect, which REQ-MOK-060 had to leave standing: a high-class
+        // resource at satiety 80 wastes 30, and no tolerance the amended range can produce admits
+        // it, because neither `40 * 50 / 100 = 20` nor rule 5's own `50 * 50 / 100 = 25` reaches 30.
         let mut simulation = Simulation::new(individual_config(0, 1, false)).unwrap();
         simulation.tick = 1;
         with_companions(&mut simulation, underfoot, &[]);
@@ -5295,6 +5491,30 @@ mod tests {
                  the amended range was narrowed to prevent"
             );
         }
+
+        // REQ-MOK-060's own effect at the same place: at satiety 70 the waste of 20 is inside rule
+        // 5's allowance of 25, so the resource is eaten at every tolerance and by the reference
+        // source too. This is the entry SPEC-MOK-001's *Acceptance examples* asserted the opposite
+        // of until 2026-08-21, and asserting it across the whole range is what records that the
+        // trait is masked here rather than merely agreeing at the two values a pair would name.
+        simulation.agents[0].satiety = 70;
+        for tolerance in 0..=WASTE_TOLERANCE_MAX {
+            simulation.agents[0].waste_tolerance = tolerance;
+            let (proposal, draws) = decide_individual_once(&simulation, 0);
+            assert_eq!(
+                proposal, expected,
+                "tolerance {tolerance} declined a high-class resource at satiety 70, wasting 20, \
+                 which rule 5's corrected allowance of 25 admits without any tolerance at all"
+            );
+            assert_eq!(draws, 0, "eating consumes no entropy");
+        }
+        let (reference, draws) = decide_once(&simulation, 0);
+        assert_eq!(
+            reference, expected,
+            "the reference source declined a high-class resource at satiety 70, which is the \
+             decision REQ-MOK-060 corrected"
+        );
+        assert_eq!(draws, 0, "eating consumes no entropy");
     }
 
     /// Rule 19's *The test governs cases 1 and 3 alike*, in the form rule 5's own test is held

@@ -1,0 +1,544 @@
+VER-MOK-016 oracle 4 under WO-MOK-017: the composition per territory per class, both commits
+==================================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Requirement  REQ-MOK-060, whose ceiling is three fifths per territory as amended on
+             2026-08-21, at the default density, under reference, individual and social,
+             on every declared verification seed
+Pre-change   pre/COMMIT.txt -- this work order's own approval commit, no source file changed
+Candidate    post/COMMIT.txt
+Reader       analysis/composition.py
+Date         2026-08-21
+
+The ceiling is evaluated in section 6 and the value it was amended from in section 7. Neither
+is an internal check of this reader: a breach is a measurement and stop condition 4 is where it
+is answered, not an exit code here.
+
+
+1. The cells this reads, at both commits
+----------------------------------------
+    pre-change cells read                  120
+    candidate cells read                   120
+    cells present at both commits          120
+    cells present at one commit only         0
+
+The matrix is the declared one, 5 seeds x 4 sources x 3 densities x 2 trace settings. Unlike
+`WO-MOK-016`, both sides hold all four sources: `social` exists at this work order's
+pre-change commit, so "at both commits" is answered for every cell rather than for 45 of 60
+triples with a stated reason for the rest.
+
+
+2. Rule 18's summary line, and what it has to agree with inside itself
+----------------------------------------------------------------------
+    summary reason=<reason> ticks=<n> survivors=<n> deaths=<n> territory_a=<n>
+            territory_b=<n> food_a_low=<n> food_a_medium=<n> food_a_high=<n>
+            food_b_low=<n> food_b_medium=<n> food_b_high=<n>
+
+    cells with exactly one summary, and nothing printed after it   240 of 240
+    cells where survivors + deaths == 12                           240 of 240
+    cells where territory_a + territory_b == survivors             240 of 240
+    cells where the termination reason agrees with the survivors   240 of 240
+
+Every one of those is checked per cell and a failure would appear in section 11 rather than
+being folded into a count. The counts read `n of n` because all four held at both commits.
+
+3. The six food counts rebuilt from the records that produced them
+------------------------------------------------------------------
+    cells where initialized + regenerated - consumed reproduces all six   240 of 240
+    cells where the standing set agrees with that arithmetic               240 of 240
+    resources placed, each territory derived from y and checked against
+    the territory the record printed                                    79,760
+    consumptions, each checked against the class its resource was
+    placed with and against the resource still standing                 53,060
+
+    consumptions at the pre-change commit                               26,136
+    consumptions at the candidate                                       26,924
+    the correction's effect on how much is eaten across the matrix        +788
+
+The rebuild is what makes this a measurement rather than a transcription. It also excludes,
+on the composition side, the one failure mode a corrected waste condition could hide: every
+eat is checked against the class its resource was *placed* with, at both commits, so the food
+table cannot have drifted underneath the correction without a failure here.
+
+4. Rule 18's summary per seed under each source, at both commits
+----------------------------------------------------------------
+
+  PRE-CHANGE
+    source      dens  seed  reason     ticks  surv  dead  A  B  territory A   territory B
+                                                                low med hgh   low med hgh
+    baseline    0.15     0  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15     1  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15    42  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15   123  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15   777  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.75     0  extinction   119     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75     1  extinction   119     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75    42  extinction   142     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75   123  extinction   168     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75   777  extinction   134     0    12  0  0    21  20  20    20  21  20
+    baseline    1.50     0  extinction   193     0    12  0  0    40  42  40    41  41  40
+    baseline    1.50     1  extinction   134     0    12  0  0    41  41  40    41  41  40
+    baseline    1.50    42  extinction   169     0    12  0  0    41  41  40    41  41  40
+    baseline    1.50   123  extinction   119     0    12  0  0    41  41  40    41  41  40
+    baseline    1.50   777  extinction   142     0    12  0  0    40  40  42    41  41  40
+    reference   0.15     0  extinction   409     0    12  0  0     1   5   6     3   2   7
+    reference   0.15     1  extinction   709     0    12  0  0     6   4   2     3   4   5
+    reference   0.15    42  extinction   569     0    12  0  0     3   4   5     3   5   4
+    reference   0.15   123  extinction   469     0    12  0  0     5   3   4     0   9   3
+    reference   0.15   777  extinction   927     0    12  0  0     4   1   7     5   3   4
+    reference   0.75     0  tick_limit  1000     8     4  3  5     7   9  45     7  16  32
+    reference   0.75     1  tick_limit  1000    11     1  4  7     4  10  43     7   7  25
+    reference   0.75    42  tick_limit  1000     8     4  3  5     6  17  38     8   7  26
+    reference   0.75   123  tick_limit  1000     9     3  4  5     8  11  42     4  12  44
+    reference   0.75   777  tick_limit  1000    11     1  6  5    13  20  28     8  13  18
+    reference   1.50     0  tick_limit  1000    11     1  4  7    18  23  81     7   9  43
+    reference   1.50     1  tick_limit  1000    12     0  5  7     8  17  67    10   8  75
+    reference   1.50    42  tick_limit  1000    12     0  6  6     5  13  76    10  14  69
+    reference   1.50   123  tick_limit  1000    11     1  5  6    14  18  84     9  16  64
+    reference   1.50   777  tick_limit  1000    12     0  5  7     6  14  67     7  14  80
+    individual  0.15     0  extinction   674     0    12  0  0     1   7   4     4   4   4
+    individual  0.15     1  extinction   757     0    12  0  0     6   6   0     5   2   5
+    individual  0.15    42  extinction   494     0    12  0  0     6   3   3     3   4   5
+    individual  0.15   123  extinction   463     0    12  0  0     6   3   3     3   6   3
+    individual  0.15   777  extinction   379     0    12  0  0     5   5   2     4   3   5
+    individual  0.75     0  tick_limit  1000    11     1  6  5     7  10  24    10  13  37
+    individual  0.75     1  tick_limit  1000     9     3  5  4     7  11  42    22  16  21
+    individual  0.75    42  tick_limit  1000     9     3  4  5    13  17  31    13  11  36
+    individual  0.75   123  tick_limit  1000    10     2  7  3     9  11  40     8  14  39
+    individual  0.75   777  tick_limit  1000    12     0  8  4     6   6  41    10   8  26
+    individual  1.50     0  tick_limit  1000    12     0  5  7     6  27  85     4  14  47
+    individual  1.50     1  tick_limit  1000    12     0  5  7    15  24  72     3  14  50
+    individual  1.50    42  tick_limit  1000    12     0  8  4    10   9  52    10  23  67
+    individual  1.50   123  tick_limit  1000    11     1  5  6    10  17  80    13  12  45
+    individual  1.50   777  tick_limit  1000    11     1  4  7    15  27  65    11  13  74
+    social      0.15     0  tick_limit  1000     1    11  1  0     4   3   5     5   3   4
+    social      0.15     1  extinction   393     0    12  0  0     3   6   3     4   4   4
+    social      0.15    42  extinction   583     0    12  0  0     3   4   5     5   2   5
+    social      0.15   123  extinction   509     0    12  0  0     3   5   4     2   4   6
+    social      0.15   777  extinction   426     0    12  0  0     3   3   6     4   7   1
+    social      0.75     0  tick_limit  1000     9     3  3  6     9  16  36     2   7  40
+    social      0.75     1  tick_limit  1000    10     2  4  6     6  12  43     5  10  46
+    social      0.75    42  tick_limit  1000     9     3  6  3     6  13  41     7  15  39
+    social      0.75   123  tick_limit  1000     9     3  4  5    12  11  33     7  13  41
+    social      0.75   777  tick_limit  1000    11     1  6  5     6  11  39    10   9  41
+    social      1.50     0  tick_limit  1000    11     1  5  6     9  15  87    11  14  62
+    social      1.50     1  tick_limit  1000    10     2  6  4     9  28  78    10  27  82
+    social      1.50    42  tick_limit  1000    11     1  5  6     5  13  84     5   9  82
+    social      1.50   123  tick_limit  1000    11     1  7  4     8  20  74     9  15  71
+    social      1.50   777  tick_limit  1000    10     2  7  3     3  12  80    11  21  90
+
+  CANDIDATE
+    source      dens  seed  reason     ticks  surv  dead  A  B  territory A   territory B
+                                                                low med hgh   low med hgh
+    baseline    0.15     0  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15     1  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15    42  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15   123  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.15   777  extinction   119     0    12  0  0     4   4   4     4   4   4
+    baseline    0.75     0  extinction   119     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75     1  extinction   119     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75    42  extinction   142     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75   123  extinction   168     0    12  0  0    21  20  20    21  20  20
+    baseline    0.75   777  extinction   134     0    12  0  0    21  20  20    20  21  20
+    baseline    1.50     0  extinction   193     0    12  0  0    40  42  40    41  41  40
+    baseline    1.50     1  extinction   134     0    12  0  0    41  41  40    41  41  40
+    baseline    1.50    42  extinction   169     0    12  0  0    41  41  40    41  41  40
+    baseline    1.50   123  extinction   119     0    12  0  0    41  41  40    41  41  40
+    baseline    1.50   777  extinction   142     0    12  0  0    40  40  42    41  41  40
+    reference   0.15     0  extinction   560     0    12  0  0     4   4   4     4   6   2
+    reference   0.15     1  extinction   605     0    12  0  0     4   6   2     6   2   4
+    reference   0.15    42  extinction   741     0    12  0  0     6   4   2     4   6   2
+    reference   0.15   123  extinction   359     0    12  0  0     5   6   1     3   4   5
+    reference   0.15   777  extinction   418     0    12  0  0     4   3   5     5   4   3
+    reference   0.75     0  tick_limit  1000     8     4  3  5    11  20  30    12  21  23
+    reference   0.75     1  tick_limit  1000     9     3  4  5    15  14  26    20  15  25
+    reference   0.75    42  tick_limit  1000    10     2  5  5    14  19  28    10  12  12
+    reference   0.75   123  tick_limit  1000     9     3  4  5    11  29  21    11  18  28
+    reference   0.75   777  tick_limit  1000     9     3  6  3    14  10  18     9  23  29
+    reference   1.50     0  tick_limit  1000    11     1  5  6    19  30  39     3  32  44
+    reference   1.50     1  tick_limit  1000    11     1  4  7    11  21  25    13  29  62
+    reference   1.50    42  tick_limit  1000    10     2  6  4     9  27  34    21  38  62
+    reference   1.50   123  tick_limit  1000    12     0  6  6     9  20  27    12  31  51
+    reference   1.50   777  tick_limit  1000    11     1  5  6    21  38  56     8  18  19
+    individual  0.15     0  extinction   571     0    12  0  0     3   3   6     1   5   6
+    individual  0.15     1  extinction   520     0    12  0  0     5   6   1     4   4   4
+    individual  0.15    42  extinction   381     0    12  0  0     2   5   5     3   4   5
+    individual  0.15   123  extinction   483     0    12  0  0     3   7   2     3   5   4
+    individual  0.15   777  extinction   418     0    12  0  0     4   3   5     5   4   3
+    individual  0.75     0  tick_limit  1000    10     2  4  6     9  21  31     7  14  11
+    individual  0.75     1  tick_limit  1000     8     4  2  6    14  18  29     8  10  12
+    individual  0.75    42  tick_limit  1000    10     2  5  5     7  16  24     8  18  30
+    individual  0.75   123  tick_limit  1000     8     4  3  5    10  18  25    11  21  27
+    individual  0.75   777  tick_limit  1000     8     4  5  3     8  14  24    15  24  22
+    individual  1.50     0  tick_limit  1000    10     2  4  6    17  27  47     7  30  42
+    individual  1.50     1  tick_limit  1000    11     1  5  6     4  18  39    13  35  55
+    individual  1.50    42  tick_limit  1000    11     1  5  6    20  27  52     8  23  35
+    individual  1.50   123  tick_limit  1000    12     0  5  7     6  31  42     7  23  36
+    individual  1.50   777  tick_limit  1000    11     1  7  4     7  20  28    16  35  55
+    social      0.15     0  tick_limit  1000     1    11  0  1     4   3   5     3   6   3
+    social      0.15     1  extinction   815     0    12  0  0     6   2   4     3   4   5
+    social      0.15    42  extinction   468     0    12  0  0     6   2   4     4   3   5
+    social      0.15   123  extinction   485     0    12  0  0     5   4   3     5   3   4
+    social      0.15   777  extinction   414     0    12  0  0     5   2   5     2   6   4
+    social      0.75     0  tick_limit  1000     9     3  6  3     8  21  21    13  16  26
+    social      0.75     1  tick_limit  1000     7     5  4  3    11  22  28    11  17  33
+    social      0.75    42  tick_limit  1000     9     3  6  3    13  22  26    12  20  28
+    social      0.75   123  tick_limit  1000     8     4  4  4     7  14  21    18  22  21
+    social      0.75   777  tick_limit  1000     9     3  6  3    15  23  19    11  11  11
+    social      1.50     0  tick_limit  1000    11     1  4  7    12  33  38     7  32  48
+    social      1.50     1  tick_limit  1000     9     3  1  8    15  42  65     5  18  31
+    social      1.50    42  tick_limit  1000    11     1  5  6    17  28  45    12  27  46
+    social      1.50   123  tick_limit  1000    11     1  3  8    12  35  57     6  26  44
+    social      1.50   777  tick_limit  1000    10     2  5  5    13  34  47    20  45  57
+
+    triples where the traced and untraced cells print the same summary   120 of 120
+    cells whose summary is identical at both commits                     30 of 120
+    of which baseline cells, identical in every printed field            30 of 30
+
+Only the traced half of each triple is printed above, because the untraced half prints the
+same summary and the count immediately below says so for all 120 rather than by repetition.
+
+**Every baseline cell prints the identical summary at both commits, in every one of the twelve
+fields.** That is the constraint the whole permitted surface exists to protect, read on one
+line per cell; `post/byte-identity.txt` measures the same thing over whole streams and at
+greater strength.
+
+5. The composition ratio per territory per class, at both commits
+----------------------------------------------------------------
+
+  PRE-CHANGE
+    source      dens  seed     standing     low  medium    high     standing     low  medium    high
+    baseline    0.15     0           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15     1           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15    42           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15   123           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15   777           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.75     0           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75     1           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75    42           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75   123           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75   777           61   34.4%   32.8%   32.8%           61   32.8%   34.4%   32.8%
+    baseline    1.50     0          122   32.8%   34.4%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50     1          122   33.6%   33.6%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50    42          122   33.6%   33.6%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50   123          122   33.6%   33.6%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50   777          122   32.8%   32.8%   34.4%          122   33.6%   33.6%   32.8%
+    reference   0.15     0           12    8.3%   41.7%   50.0%           12   25.0%   16.7%   58.3%
+    reference   0.15     1           12   50.0%   33.3%   16.7%           12   25.0%   33.3%   41.7%
+    reference   0.15    42           12   25.0%   33.3%   41.7%           12   25.0%   41.7%   33.3%
+    reference   0.15   123           12   41.7%   25.0%   33.3%           12    0.0%   75.0%   25.0%
+    reference   0.15   777           12   33.3%    8.3%   58.3%           12   41.7%   25.0%   33.3%
+    reference   0.75     0           61   11.5%   14.8%   73.8%           55   12.7%   29.1%   58.2%
+    reference   0.75     1           57    7.0%   17.5%   75.4%           39   17.9%   17.9%   64.1%
+    reference   0.75    42           61    9.8%   27.9%   62.3%           41   19.5%   17.1%   63.4%
+    reference   0.75   123           61   13.1%   18.0%   68.9%           60    6.7%   20.0%   73.3%
+    reference   0.75   777           61   21.3%   32.8%   45.9%           39   20.5%   33.3%   46.2%
+    reference   1.50     0          122   14.8%   18.9%   66.4%           59   11.9%   15.3%   72.9%
+    reference   1.50     1           92    8.7%   18.5%   72.8%           93   10.8%    8.6%   80.6%
+    reference   1.50    42           94    5.3%   13.8%   80.9%           93   10.8%   15.1%   74.2%
+    reference   1.50   123          116   12.1%   15.5%   72.4%           89   10.1%   18.0%   71.9%
+    reference   1.50   777           87    6.9%   16.1%   77.0%          101    6.9%   13.9%   79.2%
+    individual  0.15     0           12    8.3%   58.3%   33.3%           12   33.3%   33.3%   33.3%
+    individual  0.15     1           12   50.0%   50.0%    0.0%           12   41.7%   16.7%   41.7%
+    individual  0.15    42           12   50.0%   25.0%   25.0%           12   25.0%   33.3%   41.7%
+    individual  0.15   123           12   50.0%   25.0%   25.0%           12   25.0%   50.0%   25.0%
+    individual  0.15   777           12   41.7%   41.7%   16.7%           12   33.3%   25.0%   41.7%
+    individual  0.75     0           41   17.1%   24.4%   58.5%           60   16.7%   21.7%   61.7%
+    individual  0.75     1           60   11.7%   18.3%   70.0%           59   37.3%   27.1%   35.6%
+    individual  0.75    42           61   21.3%   27.9%   50.8%           60   21.7%   18.3%   60.0%
+    individual  0.75   123           60   15.0%   18.3%   66.7%           61   13.1%   23.0%   63.9%
+    individual  0.75   777           53   11.3%   11.3%   77.4%           44   22.7%   18.2%   59.1%
+    individual  1.50     0          118    5.1%   22.9%   72.0%           65    6.2%   21.5%   72.3%
+    individual  1.50     1          111   13.5%   21.6%   64.9%           67    4.5%   20.9%   74.6%
+    individual  1.50    42           71   14.1%   12.7%   73.2%          100   10.0%   23.0%   67.0%
+    individual  1.50   123          107    9.3%   15.9%   74.8%           70   18.6%   17.1%   64.3%
+    individual  1.50   777          107   14.0%   25.2%   60.7%           98   11.2%   13.3%   75.5%
+    social      0.15     0           12   33.3%   25.0%   41.7%           12   41.7%   25.0%   33.3%
+    social      0.15     1           12   25.0%   50.0%   25.0%           12   33.3%   33.3%   33.3%
+    social      0.15    42           12   25.0%   33.3%   41.7%           12   41.7%   16.7%   41.7%
+    social      0.15   123           12   25.0%   41.7%   33.3%           12   16.7%   33.3%   50.0%
+    social      0.15   777           12   25.0%   25.0%   50.0%           12   33.3%   58.3%    8.3%
+    social      0.75     0           61   14.8%   26.2%   59.0%           49    4.1%   14.3%   81.6%
+    social      0.75     1           61    9.8%   19.7%   70.5%           61    8.2%   16.4%   75.4%
+    social      0.75    42           60   10.0%   21.7%   68.3%           61   11.5%   24.6%   63.9%
+    social      0.75   123           56   21.4%   19.6%   58.9%           61   11.5%   21.3%   67.2%
+    social      0.75   777           56   10.7%   19.6%   69.6%           60   16.7%   15.0%   68.3%
+    social      1.50     0          111    8.1%   13.5%   78.4%           87   12.6%   16.1%   71.3%
+    social      1.50     1          115    7.8%   24.3%   67.8%          119    8.4%   22.7%   68.9%
+    social      1.50    42          102    4.9%   12.7%   82.4%           96    5.2%    9.4%   85.4%
+    social      1.50   123          102    7.8%   19.6%   72.5%           95    9.5%   15.8%   74.7%
+    social      1.50   777           95    3.2%   12.6%   84.2%          122    9.0%   17.2%   73.8%
+
+  CANDIDATE
+    source      dens  seed     standing     low  medium    high     standing     low  medium    high
+    baseline    0.15     0           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15     1           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15    42           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15   123           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.15   777           12   33.3%   33.3%   33.3%           12   33.3%   33.3%   33.3%
+    baseline    0.75     0           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75     1           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75    42           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75   123           61   34.4%   32.8%   32.8%           61   34.4%   32.8%   32.8%
+    baseline    0.75   777           61   34.4%   32.8%   32.8%           61   32.8%   34.4%   32.8%
+    baseline    1.50     0          122   32.8%   34.4%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50     1          122   33.6%   33.6%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50    42          122   33.6%   33.6%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50   123          122   33.6%   33.6%   32.8%          122   33.6%   33.6%   32.8%
+    baseline    1.50   777          122   32.8%   32.8%   34.4%          122   33.6%   33.6%   32.8%
+    reference   0.15     0           12   33.3%   33.3%   33.3%           12   33.3%   50.0%   16.7%
+    reference   0.15     1           12   33.3%   50.0%   16.7%           12   50.0%   16.7%   33.3%
+    reference   0.15    42           12   50.0%   33.3%   16.7%           12   33.3%   50.0%   16.7%
+    reference   0.15   123           12   41.7%   50.0%    8.3%           12   25.0%   33.3%   41.7%
+    reference   0.15   777           12   33.3%   25.0%   41.7%           12   41.7%   33.3%   25.0%
+    reference   0.75     0           61   18.0%   32.8%   49.2%           56   21.4%   37.5%   41.1%
+    reference   0.75     1           55   27.3%   25.5%   47.3%           60   33.3%   25.0%   41.7%
+    reference   0.75    42           61   23.0%   31.1%   45.9%           34   29.4%   35.3%   35.3%
+    reference   0.75   123           61   18.0%   47.5%   34.4%           57   19.3%   31.6%   49.1%
+    reference   0.75   777           42   33.3%   23.8%   42.9%           61   14.8%   37.7%   47.5%
+    reference   1.50     0           88   21.6%   34.1%   44.3%           79    3.8%   40.5%   55.7%
+    reference   1.50     1           57   19.3%   36.8%   43.9%          104   12.5%   27.9%   59.6%
+    reference   1.50    42           70   12.9%   38.6%   48.6%          121   17.4%   31.4%   51.2%
+    reference   1.50   123           56   16.1%   35.7%   48.2%           94   12.8%   33.0%   54.3%
+    reference   1.50   777          115   18.3%   33.0%   48.7%           45   17.8%   40.0%   42.2%
+    individual  0.15     0           12   25.0%   25.0%   50.0%           12    8.3%   41.7%   50.0%
+    individual  0.15     1           12   41.7%   50.0%    8.3%           12   33.3%   33.3%   33.3%
+    individual  0.15    42           12   16.7%   41.7%   41.7%           12   25.0%   33.3%   41.7%
+    individual  0.15   123           12   25.0%   58.3%   16.7%           12   25.0%   41.7%   33.3%
+    individual  0.15   777           12   33.3%   25.0%   41.7%           12   41.7%   33.3%   25.0%
+    individual  0.75     0           61   14.8%   34.4%   50.8%           32   21.9%   43.8%   34.4%
+    individual  0.75     1           61   23.0%   29.5%   47.5%           30   26.7%   33.3%   40.0%
+    individual  0.75    42           47   14.9%   34.0%   51.1%           56   14.3%   32.1%   53.6%
+    individual  0.75   123           53   18.9%   34.0%   47.2%           59   18.6%   35.6%   45.8%
+    individual  0.75   777           46   17.4%   30.4%   52.2%           61   24.6%   39.3%   36.1%
+    individual  1.50     0           91   18.7%   29.7%   51.6%           79    8.9%   38.0%   53.2%
+    individual  1.50     1           61    6.6%   29.5%   63.9%          103   12.6%   34.0%   53.4%
+    individual  1.50    42           99   20.2%   27.3%   52.5%           66   12.1%   34.8%   53.0%
+    individual  1.50   123           79    7.6%   39.2%   53.2%           66   10.6%   34.8%   54.5%
+    individual  1.50   777           55   12.7%   36.4%   50.9%          106   15.1%   33.0%   51.9%
+    social      0.15     0           12   33.3%   25.0%   41.7%           12   25.0%   50.0%   25.0%
+    social      0.15     1           12   50.0%   16.7%   33.3%           12   25.0%   33.3%   41.7%
+    social      0.15    42           12   50.0%   16.7%   33.3%           12   33.3%   25.0%   41.7%
+    social      0.15   123           12   41.7%   33.3%   25.0%           12   41.7%   25.0%   33.3%
+    social      0.15   777           12   41.7%   16.7%   41.7%           12   16.7%   50.0%   33.3%
+    social      0.75     0           50   16.0%   42.0%   42.0%           55   23.6%   29.1%   47.3%
+    social      0.75     1           61   18.0%   36.1%   45.9%           61   18.0%   27.9%   54.1%
+    social      0.75    42           61   21.3%   36.1%   42.6%           60   20.0%   33.3%   46.7%
+    social      0.75   123           42   16.7%   33.3%   50.0%           61   29.5%   36.1%   34.4%
+    social      0.75   777           57   26.3%   40.4%   33.3%           33   33.3%   33.3%   33.3%
+    social      1.50     0           83   14.5%   39.8%   45.8%           87    8.0%   36.8%   55.2%
+    social      1.50     1          122   12.3%   34.4%   53.3%           54    9.3%   33.3%   57.4%
+    social      1.50    42           90   18.9%   31.1%   50.0%           85   14.1%   31.8%   54.1%
+    social      1.50   123          104   11.5%   33.7%   54.8%           76    7.9%   34.2%   57.9%
+    social      1.50   777           94   13.8%   36.2%   50.0%          122   16.4%   36.9%   46.7%
+
+The ratio is per territory because the two territories regenerate independently under rules 14
+to 16, which is `REQ-MOK-060`'s stated reason for not averaging them. A `-` is a territory
+holding nothing, where a share is undefined rather than zero.
+
+6. REQ-MOK-060 evaluated exactly as amended: three fifths
+---------------------------------------------------------
+The requirement as amended: "WHEN a simulation runs to 1,000 ticks at the default resource
+density under the reference, trait-aware or social decision source, THE SYSTEM SHALL leave no
+calorie class holding more than three fifths of any territory's standing resources, on every
+declared verification seed." So the population is the default density only, the three named
+sources only, and the five declared seeds; the trigger requires the run to reach 1,000 ticks,
+which is checked rather than assumed.
+
+    source       seed  reached  territory  standing  widest class   share  against three fifths
+    reference      0      yes          A        61          high   49.2%  met
+    reference      0      yes          B        56          high   41.1%  met
+    reference      1      yes          A        55          high   47.3%  met
+    reference      1      yes          B        60          high   41.7%  met
+    reference     42      yes          A        61          high   45.9%  met
+    reference     42      yes          B        34        medium   35.3%  met
+    reference    123      yes          A        61        medium   47.5%  met
+    reference    123      yes          B        57          high   49.1%  met
+    reference    777      yes          A        42          high   42.9%  met
+    reference    777      yes          B        61          high   47.5%  met
+    individual     0      yes          A        61          high   50.8%  met
+    individual     0      yes          B        32        medium   43.8%  met
+    individual     1      yes          A        61          high   47.5%  met
+    individual     1      yes          B        30          high   40.0%  met
+    individual    42      yes          A        47          high   51.1%  met
+    individual    42      yes          B        56          high   53.6%  met
+    individual   123      yes          A        53          high   47.2%  met
+    individual   123      yes          B        59          high   45.8%  met
+    individual   777      yes          A        46          high   52.2%  met
+    individual   777      yes          B        61        medium   39.3%  met
+    social         0      yes          A        50        medium   42.0%  met
+    social         0      yes          B        55          high   47.3%  met
+    social         1      yes          A        61          high   45.9%  met
+    social         1      yes          B        61          high   54.1%  met
+    social        42      yes          A        61          high   42.6%  met
+    social        42      yes          B        60          high   46.7%  met
+    social       123      yes          A        42          high   50.0%  met
+    social       123      yes          B        61        medium   36.1%  met
+    social       777      yes          A        57        medium   40.4%  met
+    social       777      yes          B        33           low   33.3%  met
+
+    territory evaluations, 3 sources x 5 seeds x 2 territories   30
+    evaluations whose run reached 1,000 ticks                     30 of 30
+    evaluations breaching the amended ceiling of three fifths     0
+    evaluations meeting it                                        30
+    runs carrying at least one breaching territory                0 of 15
+    the widest class's share, at its lowest and highest           33.3% and 54.1%
+    evaluations where the widest class is high                    22 of 30
+
+**All 30 territory evaluations meet the amended ceiling of three fifths, so `REQ-MOK-060` is met
+under all three obligated sources on all five declared seeds.** The requirement binds "on
+every declared verification seed", so it is the worst row and not the average that decides
+it, and the worst is 54.1% against 60.0%.
+
+The margin is stated as measured rather than rounded, because it is not wide:
+      the worst evaluation is social seed 1 territory B, high at 54.1% of 61
+      that is 5.9 points below the ceiling, and 4.1 points above the value
+      the ceiling was amended from. The approval measurement of 2026-08-21 predicted a
+      worst class share of 54.1% for the ratified condition over the 15 obligated cells,
+      and that figure is reproduced here on the shipped build to the tenth of a point.
+
+7. The same 30 territories against the value the ceiling was amended from
+-------------------------------------------------------------------------
+One half is retracted and is not the requirement. It is evaluated here because the amendment
+of 2026-08-21 was taken on a measured curve and a reviewer is entitled to see what the
+correction did against the original number, rather than only against the one it now has.
+
+  PRE-CHANGE
+    evaluations over one half         27 of 30
+    evaluations over three fifths     20 of 30
+    the widest class's worst share     81.6%
+
+  CANDIDATE
+    evaluations over one half          5 of 30
+    evaluations over three fifths      0 of 30
+    the widest class's worst share     54.1%
+
+At the candidate 5 of 30 evaluations still exceed one half. They are named, because they are
+exactly the set the amendment was needed for:
+      social      seed   1  territory B   high at 54.1% of 61
+      individual  seed  42  territory B   high at 53.6% of 56
+      individual  seed 777  territory A   high at 52.2% of 46
+      individual  seed  42  territory A   high at 51.1% of 47
+      individual  seed   0  territory A   high at 50.8% of 61
+
+This is the shape the approval measurement reported and the owner ratified against: the
+correction moves the whole distribution down but it does not reach one half everywhere, and no
+point that does reach one half holds the three survivor floors. `REQ-MOK-060`'s amendment
+record carries the figures and the three declined alternatives.
+
+8. Against the curve WO-MOK-016 retained
+----------------------------------------
+`WO-MOK-016/post/composition.txt` is the curve the ceiling was amended on. Its candidate rows
+are the uncorrected world, and this reader's pre-change rows are the same world one merge and
+one governance-only commit later. The two must therefore agree, and that agreement is what
+licenses reading the amendment's figures against this packet at all.
+
+    what WO-MOK-016 reported at the default density, over 30 evaluations
+      breaching one half                              27 of 30
+      the widest class's share, lowest and highest    37.3% and 81.6%
+      breaches where the class over the line is high  27 of 27
+      runs carrying at least one breach               14 of 15
+
+    what this reader measures at its pre-change commit, same 30 evaluations
+      breaching one half                              27 of 30
+      the widest class's share, lowest and highest    37.3% and 81.6%
+      breaches where the class over the line is high  27 of 27
+      runs carrying at least one breach               14 of 15
+
+    the four figures agree: yes
+
+The agreement is on the four headline figures rather than on the whole table, because
+`pre/capture-state.txt` section 3 already measured the stronger statement: all 120 cells of
+this work order's pre-change capture are byte-identical to `WO-MOK-016`'s post-change capture,
+by raw SHA-256. Two figures worth stating on their own: the 37.3% low was the one
+default-density evaluation in the uncorrected world whose widest class was not high, and the
+81.6% high was the worst. Both reproduce.
+
+9. The narrowest class, which is the figure the deferred floor is reserved to
+----------------------------------------------------------------------------
+`REQ-MOK-060`'s *Open decisions* defers a per-class composition **floor** beside the ceiling,
+on the ground that "a ceiling alone can be satisfied by a world that has drifted the other
+way", and the owner acting as product owner re-reserved that decision on 2026-08-21 to the
+corrected composition this work order measures. No floor is in force and none is proposed
+here. What is owed is the measurement the decision would be taken on, so it is stated:
+
+    source       seed  territory  standing  narrowest class   share
+    reference      0          A        61              low   18.0%
+    reference      0          B        56              low   21.4%
+    reference      1          A        55           medium   25.5%
+    reference      1          B        60           medium   25.0%
+    reference     42          A        61              low   23.0%
+    reference     42          B        34              low   29.4%
+    reference    123          A        61              low   18.0%
+    reference    123          B        57              low   19.3%
+    reference    777          A        42           medium   23.8%
+    reference    777          B        61              low   14.8%
+    individual     0          A        61              low   14.8%
+    individual     0          B        32              low   21.9%
+    individual     1          A        61              low   23.0%
+    individual     1          B        30              low   26.7%
+    individual    42          A        47              low   14.9%
+    individual    42          B        56              low   14.3%
+    individual   123          A        53              low   18.9%
+    individual   123          B        59              low   18.6%
+    individual   777          A        46              low   17.4%
+    individual   777          B        61              low   24.6%
+    social         0          A        50              low   16.0%
+    social         0          B        55              low   23.6%
+    social         1          A        61              low   18.0%
+    social         1          B        61              low   18.0%
+    social        42          A        61              low   21.3%
+    social        42          B        60              low   20.0%
+    social       123          A        42              low   16.7%
+    social       123          B        61              low   29.5%
+    social       777          A        57              low   26.3%
+    social       777          B        33              low   33.3%
+
+    the narrowest class's share at the candidate, lowest        14.3%
+    the same figure at the pre-change commit                    4.1%
+    evaluations where the narrowest class is low                 27 of 30
+    evaluations where the narrowest class holds nothing at all   0 of 30
+
+The correction raises the floor as well as lowering the ceiling, which is the direction a floor
+would want, and it is the reason the deferral was reasonable to carry this far. Whether the
+figure above is high enough to be worth binding is the product owner's decision and is not
+taken here.
+
+10. What is measured and excluded, and why
+------------------------------------------
+`REQ-MOK-060` binds the default density, the three trait-and-reference sources and the five
+declared seeds. The other 90 cells are captured, digested and printed above, and none of them
+is read as if the requirement bound it:
+
+    baseline cells, at every density                              30
+      Rule 4 applies no waste condition, so there is nothing here for this change to
+      relax, and REQ-MOK-060 excludes the source for exactly that reason.
+    obligated cells at density 0.15                               15 triples
+      of which reached 1,000 ticks                                1
+      The trigger is a run that reaches 1,000 ticks. At the starved density most runs
+      go extinct first, so the requirement mostly does not trigger there at all.
+    obligated cells at density 1.50                               15 triples
+      of which reached 1,000 ticks                                15
+      territory evaluations there, which the requirement does not bind        30
+      of those, evaluations above three fifths at the pre-change commit       30
+      of those, evaluations above three fifths at the candidate               1
+        individual  seed   1  territory A   high at 63.9% of 61
+      Recorded and not read as a breach: the density is not the default and
+      REQ-MOK-060 is not written against it. The disclosure runs the other way
+      from what a reader might expect -- at twice the default density the
+      correction nearly generalizes, 30 evaluations above the ceiling before and 1 after --
+      so the figures are offered as evidence that the mechanism is not tuned to
+      one density, and each remaining exception is named rather than left inside
+      a count. No requirement binds them and none is being read as if it did.
+
+11. Internal checks
+-------------------
+    Every internal check passed. Nothing was skipped and nothing was sampled: every
+    record of all 240 cells across the two commits was parsed, and any line matching an
+    event kind but not its expected shape would appear here rather than be ignored.
+
+What none of this settles: the survivor floors, which `post/survivors.txt` measures; the
+per-class floor, which is the product owner's and is reserved to section 9's figures; and
+whether every divergence is attributable to the correction, which is `post/divergence.txt`.
+
+RESULT: PASS on every internal check, and the amended ceiling of three fifths is met on all 30 territory evaluations.

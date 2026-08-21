@@ -1,0 +1,287 @@
+WO-MOK-017: the world rules the correction does not touch, compared line for line
+=================================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Retains      "the line-for-line comparison showing rule 4, rule 9's eat effect, the food
+             table and rules 14 to 16 unchanged"
+Pre-change   pre/COMMIT.txt      Candidate  post/COMMIT.txt
+Reader       analysis/world-rules.py
+Date         2026-08-21
+
+    pre-change engine lines, ahead of `#[cfg(test)]` at line 3013     3012
+    candidate engine lines, ahead of it at line 3056                 3055
+    pre-change engine SHA-256   8f8c14bc82ba858ab7047c4b020820c23961f1e530394d5e3978e95e63bdfc20
+    candidate  engine SHA-256   4297af56c13c5be8a10a110b9fa085bc8b65d478e06260ee2d5ba56c07092be1
+
+The two digests differ, which they must -- this work order changes the engine. What follows is
+where, and where not. The test module is excluded from every comparison here and accounted for
+separately in `post/test-census-reconciliation.md`, so that expected test churn cannot bury
+the claim that the engine moved in exactly one place.
+
+1. Every changed engine line, and the one place they all sit
+------------------------------------------------------------
+This is the general claim, and it is made first because the four named rules are corollaries
+of it. The two engine texts are aligned by `difflib.SequenceMatcher` and every non-equal
+block is listed. Each is then tested for containment in the non-waste condition family.
+
+    the only functions this work order may change   pre-change    candidate
+    Observation::fits_within                         new here      714-748
+    Observation::fits                                 714-725      750-770
+    Observation::fits_within_tolerance                759-781      804-824
+
+    `fits_within` is new at the candidate, so it has no pre-change extent, and that absence is
+    asserted rather than tolerated: `REQ-MOK-060` introduced it, so finding it in the
+    pre-change text would mean the two sources are not the two commits they claim to be.
+    Each extent includes the function's own documentation, because a doc comment belongs to
+    the item it documents and all three were rewritten with the arithmetic they describe.
+    Containment is tested against the union of the three rather than against one at a time: a
+    single aligned block can straddle two of them, and it does here, where `fits_within` was
+    inserted immediately above `fits`. It is also tested on both sides, so a world rule
+    deleted inside a `replace` block cannot pass by having an innocent candidate range.
+
+    kind       pre-change lines  candidate lines   inside
+    replace             714-714          714-751   fits_within, fits
+    insert                    -          760-767   fits
+    replace             724-724          769-769   fits
+    replace             760-760          805-805   fits_within_tolerance
+    replace             762-766          807-807   fits_within_tolerance
+    replace             768-772          809-821   fits_within_tolerance
+    replace             774-780          823-823   fits_within_tolerance
+
+    changed blocks in the engine                                7
+    changed blocks outside the non-waste condition              0
+    **Zero.** Every line the engine gained, lost or altered lies inside `fits_within`,
+    `fits` or `fits_within_tolerance`. So the four rules named in the retention item are
+    unchanged, and so is every other rule in the module -- including any this work order
+    failed to think of. The named four are still shown individually below, because a
+    containment argument is only as trustworthy as its alignment and a reader is entitled
+    to see the code itself.
+
+2. Rule 4: the baseline candidate list, and the source that draws from it
+-------------------------------------------------------------------------
+Rule 4 applies no waste condition, so `fits` is not reachable from it. That is what makes
+`INT-MOK-010`'s byte-identity promise for `--policy baseline` survivable across a change to
+the waste arithmetic, and `post/byte-identity.txt` measures the promise kept in all thirty
+baseline cells. This section is the reason it was kept rather than the evidence that it was.
+
+    Simulation::observation, where rule 3 assembles the candidate list
+      pre-change lines 2253-2269, candidate lines 2296-2312, 17 lines
+      SHA-256 pre-change  4f479ab244fb0cf12a1986f3d5e8fd20f3c4a26161dd20234ab3365a05598f22
+      SHA-256 candidate   4f479ab244fb0cf12a1986f3d5e8fd20f3c4a26161dd20234ab3365a05598f22
+      line for line       IDENTICAL
+
+     2296          let mut valid_actions = vec![Action::Wait];
+     2297          if agent.energy < ATTRIBUTE_MAX {
+     2298              valid_actions.push(Action::Sleep);
+     2299          }
+     2300          valid_actions.extend(
+     2301              co_located_food
+     2302                  .iter()
+     2303                  .cloned()
+     2304                  .map(|food_id| Action::Eat { food_id }),
+     2305          );
+     2306          valid_actions.extend(
+     2307              Direction::ORDERED
+     2308                  .into_iter()
+     2309                  .filter(|direction| agent.position.moved(*direction).is_some())
+     2310                  .map(|direction| Action::Move { direction }),
+     2311          );
+     2312  
+
+    BaselineDecisionSource::decide, rule 4 itself
+      pre-change lines 899-913, candidate lines 942-956, 15 lines
+      SHA-256 pre-change  0468954a80d94debba84c1ea92db4e1684473f0024faccd458d1b10613b7f9c2
+      SHA-256 candidate   0468954a80d94debba84c1ea92db4e1684473f0024faccd458d1b10613b7f9c2
+      line for line       IDENTICAL
+
+      942  impl DecisionSource for BaselineDecisionSource {
+      943      fn name(&self) -> &str {
+      944          "baseline"
+      945      }
+      946  
+      947      fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action {
+      948          debug_assert!(observation.is_consistent());
+      949          let choice = entropy.choose_index(observation.valid_actions.len());
+      950          observation
+      951              .valid_actions
+      952              .get(choice)
+      953              .cloned()
+      954              .unwrap_or(Action::Wait)
+      955      }
+      956  }
+
+3. Rule 9: what consuming a resource does
+-----------------------------------------
+`REQ-MOK-060` changes whether a resource is eaten and never what eating restores. The clip is
+still here and still unconditional -- `saturating_add` then `min(ATTRIBUTE_MAX)`, on satiety
+and on energy alike, printed below inside the identical region. That is the whole relationship
+between this rule and the correction: the corrected condition decides that a resource whose
+restoration will be clipped is worth taking anyway, and this code goes on clipping it. The
+waste `REQ-MOK-060` tolerates is real waste, not waste the effect was quietly changed to
+avoid. Nothing here needed to change for the correction to work, and nothing did.
+
+    Simulation::apply_action, the eat arm
+      pre-change lines 2322-2365, candidate lines 2365-2408, 44 lines
+      SHA-256 pre-change  b7b8bdb10e9962dfeb50f6b80d796740d4b79738a52593873e7a43709abcab77
+      SHA-256 candidate   b7b8bdb10e9962dfeb50f6b80d796740d4b79738a52593873e7a43709abcab77
+      line for line       IDENTICAL
+
+     2365              Action::Eat { food_id } => {
+     2366                  let agent_position = self.agents[agent_index].position;
+     2367                  let Some(food_index) = self
+     2368                      .foods
+     2369                      .iter()
+     2370                      .position(|food| food.id == *food_id && food.position == agent_position)
+     2371                  else {
+     2372                      return Ok(ActionResult {
+     2373                          accepted: false,
+     2374                          detail: "food_unavailable".into(),
+     2375                      });
+     2376                  };
+     2377  
+     2378                  let food = self.foods.remove(food_index);
+     2379                  let (satiety_restored, energy_restored) = food.class.restoration();
+     2380                  let event = {
+     2381                      let agent = &mut self.agents[agent_index];
+     2382                      let previous_satiety = agent.satiety;
+     2383                      let previous_energy = agent.energy;
+     2384                      agent.satiety = agent
+     2385                          .satiety
+     2386                          .saturating_add(satiety_restored)
+     2387                          .min(ATTRIBUTE_MAX);
+     2388                      agent.energy = agent
+     2389                          .energy
+     2390                          .saturating_add(energy_restored)
+     2391                          .min(ATTRIBUTE_MAX);
+     2392                      Event::new(
+     2393                          self.tick,
+     2394                          agent.id.clone(),
+     2395                          EventDetail::FoodConsumed {
+     2396                              food: food.id.clone(),
+     2397                              class: food.class,
+     2398                              satiety: (previous_satiety, agent.satiety),
+     2399                              energy: (previous_energy, agent.energy),
+     2400                          },
+     2401                      )
+     2402                  };
+     2403                  self.emit(output, event)?;
+     2404                  Ok(ActionResult {
+     2405                      accepted: true,
+     2406                      detail: format!("food:{};class:{}", food.id, food.class),
+     2407                  })
+     2408              }
+
+4. The food table
+-----------------
+This table is the input to the corrected allowance. `R * R / 100` is `2`, `9` and `25` for the
+three classes because `R` is `15`, `30` and `50` here, so the specification's boundaries of
+`87`, `79` and `75` are derived from these six numbers. Had the table moved, the engine and
+the specification could agree while both were wrong.
+
+    FoodClass::restoration
+      pre-change lines 406-412, candidate lines 406-412, 7 lines
+      SHA-256 pre-change  ddbc088cd39ea4bbf7a5781150c879d919cb8b81ca065dcf014f05cbfaf3bb3d
+      SHA-256 candidate   ddbc088cd39ea4bbf7a5781150c879d919cb8b81ca065dcf014f05cbfaf3bb3d
+      line for line       IDENTICAL
+
+      406      fn restoration(self) -> (u8, u8) {
+      407          match self {
+      408              Self::Low => (15, 5),
+      409              Self::Medium => (30, 10),
+      410              Self::High => (50, 20),
+      411          }
+      412      }
+
+5. Rules 14 to 16: regeneration
+-------------------------------
+The composition curve in `post/composition.txt` is the joint product of what regenerates and
+what is eaten, and `REQ-MOK-060` is the claim that consumption alone explains the drift. That
+claim is only testable with regeneration held fixed -- including rule 16's uniform class
+selection, which is what would otherwise be suspected of favouring high class.
+
+    Simulation::regenerate_food
+      pre-change lines 2873-2933, candidate lines 2916-2976, 61 lines
+      SHA-256 pre-change  661289da76f27802c1f946d0918470c6b7da4b27ced0860298a1d8085fca1033
+      SHA-256 candidate   661289da76f27802c1f946d0918470c6b7da4b27ced0860298a1d8085fca1033
+      line for line       IDENTICAL
+
+     2916      fn regenerate_food<W: Write>(
+     2917          &mut self,
+     2918          output: &mut W,
+     2919          territory: Territory,
+     2920      ) -> io::Result<()> {
+     2921          let capacity = self.config.density.resources_per_territory();
+     2922          let current_count = self
+     2923              .foods
+     2924              .iter()
+     2925              .filter(|food| food.position.territory() == territory)
+     2926              .count();
+     2927  
+     2928          if current_count == 0 || current_count >= capacity {
+     2929              let reason = if current_count == 0 {
+     2930                  RegenerationSkipReason::Depleted
+     2931              } else {
+     2932                  RegenerationSkipReason::Capacity
+     2933              };
+     2934              let event = Event::new(
+     2935                  self.tick,
+     2936                  territory.to_string(),
+     2937                  EventDetail::FoodRegenerationSkipped {
+     2938                      reason,
+     2939                      count: current_count,
+     2940                  },
+     2941              );
+     2942              return self.emit(output, event);
+     2943          }
+     2944  
+     2945          // Add the specified yield, or only as many as the remaining capacity allows.
+     2946          let additions = REGENERATION_YIELD.min(capacity - current_count);
+     2947          for _ in 0..additions {
+     2948              let class = FoodClass::ALL[self.entropy.choose_index(FoodClass::ALL.len())];
+     2949              let occupied: Vec<Coordinate> = self
+     2950                  .foods
+     2951                  .iter()
+     2952                  .filter(|food| food.position.territory() == territory)
+     2953                  .map(|food| food.position)
+     2954                  .collect();
+     2955              let position = choose_free_coordinate(territory, &occupied, &mut self.entropy)
+     2956                  .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+     2957              let id = food_id(self.next_food_id);
+     2958              self.next_food_id += 1;
+     2959              self.foods.push(Food {
+     2960                  id: id.clone(),
+     2961                  position,
+     2962                  class,
+     2963              });
+     2964              let event = Event::new(
+     2965                  self.tick,
+     2966                  territory.to_string(),
+     2967                  EventDetail::FoodRegenerated {
+     2968                      food: id,
+     2969                      class,
+     2970                      position,
+     2971                  },
+     2972              );
+     2973              self.emit(output, event)?;
+     2974          }
+     2975          Ok(())
+     2976      }
+
+6. What this comparison does not settle
+---------------------------------------
+  * That the engine changed in one place is not that the change is right. The condition's own
+    correctness is `post/divergence.txt` and the suite's new boundary test, not this file.
+  * The regions above shift by a line count between the two texts, because the condition
+    family gained lines ahead of them. Shifted is not changed, and the digests are computed
+    on the text rather than on the line numbers, so a pure move reads as identical here -- as
+    it should.
+  * The test module is excluded throughout. Its changes are real and are reconciled name by
+    name in `post/test-census-reconciliation.md`, with the two consequential TUI fixes in
+    `post/updated-tests.md`.
+  * Two crates outside this module changed and are not compared here: `mokiterions-tui`'s
+    state and render tests, both of which are test-side and both accounted for in
+    `post/updated-tests.md`. No `mokiterions-tui` source rule is a world rule.
+
+RESULT: PASS -- every changed line in the engine lies inside the three functions of the
+non-waste condition, and rule 4, rule 9's eat effect, the food table and rules 14 to 16
+are identical between the two commits, character for character.

@@ -1,0 +1,56 @@
+Test conservation across the merge
+==================================
+
+other side  docs/engineering/simulation/evidence/WO-MOK-019/merge/second/test-census.txt
+merge       docs/engineering/simulation/evidence/WO-MOK-017/merge/test-census.txt
+candidate   docs/engineering/simulation/evidence/WO-MOK-017/post/test-census.txt
+
+The other side's file is `WO-MOK-019`'s census at `e96648a`, the second merge of `master`
+into that chain. `master` merged that tree as `3f47743`, which is this merge's second
+parent, so it is the census of the tree this merge takes its other half from.
+
+1. The three sets
+-----------------
+    WO-MOK-019 at e96648a  (--list)               301 names,   301 distinct
+    this merge at ae2e44f  (census)               302 names,   302 distinct
+    this candidate at 26ae6ba (census)            268 names,   268 distinct
+
+2. The merge against the other side: nothing lost, one added
+------------------------------------------------------------
+An arrival is explained only if it is this work order's own test. A departure is a defect
+under rule 11 whatever explains it, so departures are listed in full rather than counted.
+
+    only on the merged tree   1
+      + simulation::tests::the_corrected_non_waste_condition_admits_the_specified_boundaries
+    only on the other side    0
+
+3. The merge against this branch's own candidate
+------------------------------------------------
+The other direction of the same question: what the merge takes from `master` should be
+`master`'s own tests and nothing else, and this branch's one addition should survive.
+
+    arrived with master       34
+    lost from the candidate   0
+
+    268 at the candidate + 34 arriving with master = 302 on the merged tree
+    301 on the other side + 1 added by this work order = 302
+
+4. Every case passed, and none is ignored
+-----------------------------------------
+A census whose reader dropped a failing case would report a suite that passes by omission,
+so the outcome column is counted rather than assumed. `analysis/test-census.py` records the
+outcome it read; `test-run.txt` is the log it read it from.
+
+    this merge        {'ok': 302}
+    this candidate    {'ok': 268}
+
+5. What rule 11 is owed, and it is not paid here
+------------------------------------------------
+Rule 11's last approved figures are 301 for the workspace, as corrected for the second
+merge of `master` into the `WO-MOK-019` chain, and 267 at the point this branch was cut.
+The merged tree runs 302. The correction is a paragraph in an approved
+specification and belongs to the technical owner; `SPEC-MOK-004-rule-11.md` in this
+directory drafts it and states what it would replace. This reader measures the figure and
+does not write it.
+
+RESULT: PASS -- 302 names on the merged tree, 0 lost, 1 added and accounted for

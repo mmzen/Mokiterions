@@ -1,0 +1,77 @@
+diff --git a/mokiterions-core/src/simulation.rs b/mokiterions-core/src/simulation.rs
+index 4c25050..988a22a 100644
+--- a/mokiterions-core/src/simulation.rs
++++ b/mokiterions-core/src/simulation.rs
+@@ -540,6 +540,25 @@ const WASTE_TOLERANCE_MAX: u8 = 40;
+ /// **The generator is constructed here and dropped here.** It neither reads nor advances the
+ /// shared stream, which is the property that leaves every run predating this revision
+ /// unchanged. Integer arithmetic only, as the trait's every use is.
++fn probe_env(name: &str) -> u16 {
++    std::env::var(name)
++        .ok()
++        .and_then(|value| value.parse().ok())
++        .unwrap_or(0)
++}
++
++fn probe_k() -> u16 {
++    probe_env("MOK_PROBE_K")
++}
++
++fn probe_floor() -> u8 {
++    u8::try_from(probe_env("MOK_PROBE_FLOOR")).unwrap_or(0)
++}
++
++fn probe_shared() -> bool {
++    probe_env("MOK_PROBE_SHARED") == 1
++}
++
+ fn derive_waste_tolerance(seed: u64, number: u8) -> u8 {
+     let mut generator = SplitMix64::new(seed ^ u64::from(number).wrapping_mul(TRAIT_SALT));
+     generator.choose_index(usize::from(WASTE_TOLERANCE_MAX) + 1) as u8
+@@ -711,7 +730,7 @@ impl Observation {
+             )
+     }
+ 
+-    /// Whether consuming this resource would waste part of its satiety restoration.
++    /// PROBE ONLY - not for commit. Fixed relaxation, from the environment.
+     ///
+     /// `REQ-MOK-015` requires consuming when consuming is not wasteful, and `SPEC-MOK-001`
+     /// rule 5 applies this one test to both eating and approaching. A fixed satiety
+@@ -721,7 +740,23 @@ impl Observation {
+     /// off, perceived it again as the nearest resource at a distance greater than zero, and
+     /// stepped back. Screening approach targets by the same rule is what closes that cycle.
+     fn fits(&self, food: &PerceivedFood) -> bool {
+-        self.satiety.saturating_add(food.class.restoration().0) <= ATTRIBUTE_MAX
++        let restored = u16::from(food.class.restoration().0);
++        let resulting = u16::from(self.satiety) + restored;
++        let maximum = u16::from(ATTRIBUTE_MAX);
++        if resulting <= maximum {
++            return true;
++        }
++        let high_only = if restored == 50 {
++            probe_env("MOK_PROBE_HIGH")
++        } else {
++            0
++        };
++        let square = match probe_env("MOK_PROBE_SQ") {
++            0 => 0,
++            denominator => restored * restored / denominator,
++        };
++        resulting - maximum
++            <= probe_k() * restored / 100 + probe_env("MOK_PROBE_W") + high_only + square
+     }
+ 
+     /// The co-located resource worth consuming: the richest one that fits, then lowest
+@@ -774,10 +809,10 @@ impl Observation {
+         let restored = u16::from(food.class.restoration().0);
+         let resulting = u16::from(self.satiety) + restored;
+         let maximum = u16::from(ATTRIBUTE_MAX);
+-        if resulting <= maximum {
++        if resulting <= maximum || (probe_shared() && self.fits(food)) {
+             return true;
+         }
+-        resulting - maximum <= u16::from(self.waste_tolerance) * restored / 100
++        resulting - maximum <= u16::from(self.waste_tolerance.max(probe_floor())) * restored / 100
+     }
+ 
+     /// The co-located resource rule 19 case 1 selects: the richest one the tolerance admits,

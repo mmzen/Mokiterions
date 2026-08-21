@@ -1,0 +1,223 @@
+VER-MOK-016 oracle 1 under WO-MOK-017: the provenance of the post-change capture
+===============================================================================
+
+Work order   WO-MOK-017 (the resource composition drift)
+Requirement  REQ-MOK-060
+Candidate    26ae6ba648be4eecf6234da15c0beb763b403a0a   (the bare hash is COMMIT.txt, which is
+             therefore kept to one line so a script can read it)
+Pre-change   pre/COMMIT.txt -- 1ba5a3aabe775c9cdee29a04b399af3bb82dde90
+Branch       feature/resource-composition-ceiling, off origin/master 7f4792a
+Date         2026-08-21
+
+VER-MOK-016 oracle 1 requires "the post-change capture of the same 90 cells, retained the same way,
+with the byte comparison of the 30 baseline cells and the characterized divergence of the 60 others",
+and adds that "a discrepancy is never resolved by recapturing it". pre/capture-state.txt is the same
+claim on the other side, and it closes by saying what is missing: "There is no post-change capture yet.
+This packet is the pre-change side alone... the comparison oracle 1 exists for happens later, at the
+candidate." This file is that later, and section 4 is the prediction pre/capture-state.txt §4 wrote
+down before any code was written, measured.
+
+The matrix is the same 120 cells, taken with the same capture.sh, so the two captures are comparable
+cell for cell. 30 of those cells are the byte-identity obligation and 90 are the divergence.
+
+
+1. The state of the worktree at capture, stated plainly
+------------------------------------------------------
+
+    $ git rev-parse HEAD
+    26ae6ba648be4eecf6234da15c0beb763b403a0a
+    $ git diff --stat HEAD
+    (no output)
+    $ git status --short
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/analysis/
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/capture.sh
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/manual-assessment.md
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/post/
+    ?? docs/engineering/simulation/evidence/WO-MOK-017/pre/
+
+Tracked-clean at the candidate, with the packet itself as the only untracked content -- capture.sh,
+analysis/, this directory, pre/ and manual-assessment.md, all of which are committed in the packet
+commit that follows and none of which is compiled or read by the engine.
+
+**The first candidate capture was not taken from that tree, and this file says so rather than
+implying otherwise.** The implementation ran against the working tree while the change was being
+written, before 26ae6ba existed; the manifest of that capture labelled itself "candidate (working
+tree)" for exactly that reason. A capture from a working tree is not evidence about a commit, so every
+byte retained under post/ was rewritten from the reproduction described in section 2, and the label
+lines now name the commit. The working-tree capture is not retained and is not cited anywhere in this
+packet. What section 2 measures is therefore not "the capture reproduces" but the stronger and simpler
+claim: **the retained bytes are the commit's own output, because they were produced by it.**
+
+
+2. The retained capture is the recorded commit's own output
+----------------------------------------------------------
+
+    $ rm -rf <scratch> && mkdir -p <scratch>/tree <scratch>/cells
+    $ git archive $(cat docs/engineering/simulation/evidence/WO-MOK-017/post/COMMIT.txt) \
+        | tar -x -C <scratch>/tree
+    $ cd <scratch>/tree && cargo build --release --offline -p Mokiterions
+       Compiling Mokiterions v0.1.0 (<scratch>/tree/mokiterions-core)
+        Finished `release` profile [optimized] target(s) in 2.84s
+    $ bash <repo>/docs/engineering/simulation/evidence/WO-MOK-017/capture.sh <scratch>/cells
+    captured 120 streams into <scratch>/cells
+
+    real    0m5.454s
+
+git archive writes the commit's trees and nothing else: no untracked file, no working-tree
+modification, no index state. The archived tree holds evidence/WO-MOK-017/approval/ and nothing else
+under that directory, capture.sh and analysis/ being untracked at this commit too, so capture.sh is
+invoked from the repository while the working directory is the archived tree. capture.sh addresses the
+binary as ./target/release/Mokiterions, so it runs the archived tree's engine. This is the same
+procedure pre/capture-state.txt §2 records, with the one difference that here it is the source of the
+retained bytes rather than a check on them.
+
+The working-tree capture was compared against it before it was discarded, on all four columns at once
+-- raw SHA-256, byte count, line count and exit code:
+
+    cells in each capture                                      120
+    agreeing on raw digest, bytes, lines and exit code          120
+    mismatched                                                    0
+
+That comparison is recorded because it is the interesting outcome and not because anything rests on
+it: the change was complete when the working-tree capture was taken, so agreement is what a correct
+commit produces. Had it disagreed, the discrepancy would have been a finding about the commit, and
+oracle 1 forbids resolving one by recapturing.
+
+    $ python analysis/manifest.py <scratch>/cells post/post-manifest.txt \
+          "post-change capture at 26ae6ba..., 120 cells, all four sources"
+    120 cells, exit codes ['0']
+    $ python analysis/retain.py <scratch>/cells post/ "post-change capture at 26ae6ba..."
+    retained 120 initialization blocks, 120 summary lines, 120 census rows, 120 eat censuses,
+    and 2 of 2 stated cells whole
+
+post/init/ (120 files) and post/full/ (2 files) carry no label line and were byte-identical before and
+after that rewrite, which is a third statement of the same agreement. post/summary.txt,
+post/census.txt, post/eaten.txt and post/post-manifest.txt differed only in their first line, and it
+is their first line that had to change: a label reading "candidate (working tree)" beside a hash-bound
+packet is the kind of provenance error a reader cannot check.
+
+The two cells retained whole are read directly rather than by digest, and each one's row in
+post-manifest.txt is reproducible from the committed file itself:
+
+    $ sha256sum < post/full/seed42-baseline-d0.75-traceon.txt
+    c777bc0ae1a322a447639b81dd502d3b2b84e7d4d4e7d097585fe3d987ec42c8
+    $ sha256sum < post/full/seed42-reference-d0.15-traceon.txt
+    3aa2d00c4e18036e48c0a0d380b5e621f6f46f52afc5b40d1b479de405c0943f
+
+The first is worth reading beside pre/capture-state.txt §2, which records the same digest for the same
+cell at the pre-change commit and at WO-MOK-016's two commits before that. The traced default-density
+baseline stream has now not moved across three work orders, and this is the one that matters most: it
+is the cell INT-MOK-010's byte-identity promise is most likely to be broken by, being the traced one at
+the density everything else is measured at. The second moved -- 549ba37f... to 3aa2d00c..., 854,427
+bytes to 1,006,756 -- which is the correction, in the one reference cell this packet retains whole.
+
+Those equalities survive a Windows clone because .gitattributes carries
+`docs/engineering/simulation/evidence/** -text`. The retained bytes are the capture as the engine wrote
+it, LF, and the working tree holds them unchanged.
+
+
+3. The two manifests against each other: which cells moved, and no others
+------------------------------------------------------------------------
+
+pre-manifest.txt and post-manifest.txt hold the same 120 cell names. Compared row by row on all four
+columns:
+
+    cells in both                                              120
+    rows identical at both commits                              30
+    rows differing                                              90
+    identical rows that are baseline cells                      30 of 30
+    differing rows that are baseline cells                       0 of 90
+
+**The partition is exactly the source.** Every baseline cell is unchanged and every non-baseline cell
+moved, at every density and with tracing either way. That is REQ-MOK-060's load-bearing constraint and
+the divergence obligation in one table, and it is stated here as a partition rather than as two counts
+because the partition is the claim: a single baseline cell in the differing set would breach
+INT-MOK-010, and a single reference, individual or social cell in the identical set would mean the
+correction did not reach a source it was written for.
+
+The two statements this table does not make are made elsewhere and are not restated here.
+post/byte-identity.txt compares the 30 baseline cells byte for byte rather than by digest, with their
+exit codes, because a digest match is a claim about a hash function as well as about the bytes.
+post/divergence.txt attributes each of the 90 divergences to a route and checks that none precedes the
+tick at which the corrected condition can first apply.
+
+Exit codes: both manifests report the set ['0'] over all 120 cells. Every run at both commits reached
+its stop condition and none was a diagnostic.
+
+
+4. The prediction pre/capture-state.txt wrote down, measured
+-----------------------------------------------------------
+
+pre/capture-state.txt §4 recorded the pre-change eat census and then stated, before the change was
+written, what the corrected condition would have to do to it. That prediction is quoted and measured
+here, from post/eaten.txt, over all 30 cells of each source:
+
+  Under reference, the prediction was "after the change the same three columns must read 87, 79 and 75,
+  and the wasted total must be non-zero and bounded by R * R / 100 per eat":
+
+    highest pre-eat satiety     low       medium      high      cells wasting any     satiety wasted
+    pre-change                   85           70        50            0 of 30                      0
+    candidate                    87           79        75           30 of 30                 43,800
+
+  All three bounds are attained exactly, as they were before the change, so the condition is inclusive
+  at every boundary and reaches every one of them somewhere in the matrix. These are the three numbers
+  SPEC-MOK-001's amendment of 2026-08-21 states, read off 120 captured streams rather than off the
+  test suite. The per-eat bound is post/divergence.txt §2, which measures 0 consumptions outside their
+  own commit's allowance at either commit.
+
+  Under the two trait-aware sources the prediction was narrower: "the effective allowance becomes
+  max(R * R / 100, T * R / 100), so the low and medium bounds do not move at all and only high class
+  rises, from 70 to 75":
+
+    highest pre-eat satiety     low       medium      high      cells wasting any     satiety wasted
+    individual, pre-change       90           82        69           30 of 30                 10,062
+    individual, candidate        90           82        75           30 of 30                 46,008
+    social, pre-change           90           82        70           30 of 30                  9,508
+    social, candidate            90           82        75           30 of 30                 43,458
+
+  Low and medium do not move by a single point on either source, which is the prediction exactly: a
+  tolerance of 40 already admitted more than R * R / 100 for those two classes, so max() returns the
+  tolerance term and nothing changes. High class rises to 75 on both, from 70 under social and from 69
+  under individual. The pre-change figure quoted in the prediction was social's, and 70 is the bound a
+  tolerance of 40 admits on both sources: individual's 30 cells span 56 to 69 and simply do not contain
+  the eat that attains it, which is a fact about the matrix and not a second bound.
+
+  Under baseline the prediction was that there is nothing here for the change to relax:
+
+    highest pre-eat satiety     low       medium      high      cells wasting any     satiety wasted
+    pre-change                   92           77        85            8 of 30                    214
+    candidate                    92           77        85            8 of 30                    214
+
+  Every figure identical, which it must be if 30 of 30 cells are byte-identical, and is recorded
+  separately because it is read from a different field of the stream than the digest is.
+
+The waste totals are the correction's whole effect stated in one number per source: zero to 43,800
+satiety wasted under reference, and roughly four and a half times the previous total under each
+trait-aware source. post/survivors.txt §4 is where that turns into 788 more resources consumed and 85
+fewer standing at the horizon, and post/composition.txt §6 is where it turns into the ceiling being
+met.
+
+
+5. What is not established here
+-------------------------------
+
+- Nothing here is a verification verdict. VER-MOK-016 is the contract and its record is a separate,
+  commit-bound act reserved to the assurance owner.
+- This file establishes provenance and nothing about correctness. That the retained bytes are the
+  commit's own output says nothing about whether the commit is right; the ceiling is
+  post/composition.txt, the floors are post/survivors.txt, the attribution is post/divergence.txt and
+  the suite is post/updated-tests.md.
+- It is not a post-merge record. The candidate is a branch commit and this packet binds it. Per this
+  project's convention a verification record binds a branch commit and never master's merge of it, and
+  nothing here is written about a merge that has not happened.
+- Both scratch captures -- the discarded working-tree one and the reproduction these bytes come from --
+  were written outside the repository, at about 156 MB each, and neither is retained. That is why this
+  file records the outcome and the commands rather than the streams. analysis/retain.py states what is
+  kept instead, cell by cell, and section 2 above states the four commands that rebuild the whole
+  capture from the commit it names.
+
+RESULT: PASS -- every byte retained under post/ is the output of 26ae6ba, produced by building and
+running that commit's own archived tree; the 120 cells agree with the discarded working-tree capture on
+four columns each; the two manifests partition exactly by source, 30 baseline rows identical and 90
+others moved; and the three-column prediction pre/capture-state.txt made before the change was written
+is met on all four sources.
