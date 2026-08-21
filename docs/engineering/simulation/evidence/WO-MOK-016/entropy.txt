@@ -1,0 +1,335 @@
+VER-MOK-016 oracle 2: where the shared entropy stream stands
+============================================================
+
+Work order   WO-MOK-016 (Phase 3.1, encounters)
+Retains      "the shared stream's recorded state either side of every resolution kind, and
+             the reused VER-MOK-007 initialization expectations"
+Authority    VER-MOK-016 oracle 2; the no-entropy constraints of REQ-MOK-052, REQ-MOK-053,
+             REQ-MOK-054, REQ-MOK-055 and REQ-MOK-056; REQ-MOK-057's at-most-one-draw
+             constraint; REQ-MOK-031's and REQ-MOK-040's untouched-stream constraints
+Candidate    6c1496befb1a34f08cac6124ea2133460fe7a8e5   (feature/phase-3-definition)
+Baseline     39662d13abd08e3410648d1c59ad38384f8ad2d2   (baseline/COMMIT.txt)
+Reader       analysis/entropy.py
+Date         2026-08-21
+
+VER-MOK-016 oracle 2 asks for a state, and INITIALIZATION_DRAWS holds a count. The engine
+has no command that prints either, so this file computes the state and then checks the
+computation against things the engine did print. Sections 1 to 3 derive the count and the
+state and reproduce the suite's fifteen recorded counts; sections 4 and 5 check the
+reconstruction against 90 retained initialization excerpts; section 6 gives the state at
+which every resolution in the suite is asserted to leave the stream unmoved; section 7
+enumerates every draw site the shipped engine has; section 8 says what none of it settles.
+
+Constants, transcribed from mokiterions-core/src/simulation.rs:
+
+  GAMMA               0x9E3779B97F4A7C15  (11400714819323198485)
+  MIX_1               0xBF58476D1CE4E5B9
+  MIX_2               0x94D049BB133111EB
+  WORLD_SIZE          128
+  TERRITORY_HEIGHT    64
+  CELLS_PER_TERRITORY 8192
+
+1. One value per index, derived rather than assumed
+---------------------------------------------------
+
+`choose_index` rejects a value below `bound.wrapping_neg() % bound`. Both bounds in play
+divide 2^64, so the threshold is zero and nothing is ever rejected for modulo bias:
+
+    bound 128   wrapping_neg() % bound = 0
+    bound  64   wrapping_neg() % bound = 0
+
+So a coordinate attempt costs exactly two values, and the draw count below is exact.
+
+Control -- a bound that does not divide 2^64 would reject, which is what makes the check
+above load-bearing rather than decorative:
+
+    bound 100   wrapping_neg() % bound = 16
+    bound  61   wrapping_neg() % bound = 16
+    bound   3   wrapping_neg() % bound = 1
+
+2. The generator reproduces the crate's own recorded values
+-----------------------------------------------------------
+
+`splitmix64_sequence_is_stable`, in `mokiterions-core/src/simulation.rs`, asserts the first
+three values at seed `0`. This reader is not told them; it computes them:
+
+    value 1   0xE220A8397B1DCDAF   matches  0xE220A8397B1DCDAF
+    value 2   0x6E789E6AA1B965F4   matches  0x6E789E6AA1B965F4
+    value 3   0x06C45D188009454F   matches  0x06C45D188009454F
+
+3. Post-initialization draw count and absolute state, all fifteen declared pairs
+--------------------------------------------------------------------------------
+
+`draws` is replayed, not read. `recorded` is `INITIALIZATION_DRAWS` transcribed from the
+suite. `attempts` is coordinate attempts; `rejected` is attempts refused as occupied.
+`state` is the shared stream's absolute position, `seed + draws * GAMMA (mod 2^64)`.
+
+    density seed entities attempts rejected  draws recorded  state
+       0.15    0       36       36        0     72       72  0x7F9A3C2BCCF2E5E8
+       0.15    1       36       36        0     72       72  0x7F9A3C2BCCF2E5E9
+       0.15   42       36       36        0     72       72  0x7F9A3C2BCCF2E612
+       0.15  123       36       36        0     72       72  0x7F9A3C2BCCF2E663
+       0.15  777       36       36        0     72       72  0x7F9A3C2BCCF2E8F1
+       0.75    0      134      135        1    270      270  0xDE8261A4408EDE26
+       0.75    1      134      134        0    268      268  0xA2136E3141F9E5FD
+       0.75   42      134      134        0    268      268  0xA2136E3141F9E626
+       0.75  123      134      134        0    268      268  0xA2136E3141F9E677
+       0.75  777      134      134        0    268      268  0xA2136E3141F9E905
+       1.50    0      256      258        2    516      516  0xE7D159E492221A54
+       1.50    1      256      258        2    516      516  0xE7D159E492221A55
+       1.50   42      256      258        2    516      516  0xE7D159E492221A7E
+       1.50  123      256      257        1    514      514  0xAB626671938D22A5
+       1.50  777      256      258        2    516      516  0xE7D159E492221D5D
+
+The count decomposes exactly, which is what makes a wrong figure visible rather than
+merely different: `2 x (2 x resources_per_territory + 12)` is the no-rejection floor, and
+every excess is two values per occupied cell refused.
+
+    density per territory  floor  seeds above the floor
+       0.15            12     72  none
+       0.75            61    268  0 (+2)
+       1.50           122    512  0 (+4), 1 (+4), 42 (+4), 123 (+2), 777 (+4)
+
+4. The replay against the engine's own event stream, all 90 excerpts
+--------------------------------------------------------------------
+
+Every food's class, position and territory and every Mokiterion's position, compared
+cell for cell against `baseline/init/`.
+
+    excerpts read             90
+    cells compared            12780
+    files matching the replay 90
+    files differing           0
+
+5. The source and the trace setting move no placement draw
+----------------------------------------------------------
+
+The six excerpts sharing a `(seed, density)` pair -- three sources by two trace settings --
+must be identical in every placed cell. This is asserted nowhere else in the packet.
+
+    pairs checked            15
+    excerpts per pair        6
+    pairs whose six disagree 0
+
+6. The state either side of every resolution, at the constructed encounter
+--------------------------------------------------------------------------
+
+`encounter(9, ..)` calls `Simulation::new(social_config(9, 1_000, false))` and then sets
+`tick`, clears `foods` and moves positions. None of those draws, so the stream sits where
+initialization left it when the resolution is applied.
+
+    seed                     9
+    density                  0.75 (Density::DEFAULT), 61 per territory
+    coordinate attempts      137
+    refused as occupied      3
+    draws                    274
+    state BEFORE             0x5760488A3DB8CE83
+    state AFTER (asserted)   0x5760488A3DB8CE83
+
+The suite builds encounters at more seeds than nine, and each has its own state. Every
+`encounter(..)` call in the file is found and its seed reported, so a seed added later
+appears here rather than being covered by silence:
+
+    seed sites attempts rejected  draws  state either side of every resolution
+       0     2      135        1    270  0xDE8261A4408EDE26
+       1     2      134        0    268  0xA2136E3141F9E5FD
+       2     1      135        1    270  0xDE8261A4408EDE28
+       3     6      134        0    268  0xA2136E3141F9E5FF
+       4     1      135        1    270  0xDE8261A4408EDE2A
+       5     2      134        0    268  0xA2136E3141F9E601
+       6     2      134        0    268  0xA2136E3141F9E602
+       7     2      134        0    268  0xA2136E3141F9E603
+       8     2      134        0    268  0xA2136E3141F9E604
+       9     3      137        3    274  0x5760488A3DB8CE83
+      10     2      134        0    268  0xA2136E3141F9E606
+      11     3      134        0    268  0xA2136E3141F9E607
+      12     1      135        1    270  0xDE8261A4408EDE32
+      13     2      136        2    272  0x1AF155173F23D65D
+      14     2      134        0    268  0xA2136E3141F9E60A
+     all    33  call sites, over 15 distinct seeds
+
+`encounter` is one helper -- `Simulation::new(social_config(seed, 1_000, false))`, then a
+tick number, a cleared food vector and twelve position assignments -- so every row above is
+the state at which that seed's resolutions are asserted to leave the stream unmoved.
+
+The table checks itself. Because the state is `seed + draws * GAMMA`, two seeds with the
+same draw count must have states differing by exactly their seed difference, and two with
+different counts must not. Both hold in every pair:
+
+    268 draws: seeds 1, 3, 5, 6, 7, 8, 10, 11, 14
+      offsets from seed 1: +2, +4, +5, +6, +7, +9, +10, +13
+    270 draws: seeds 0, 2, 4, 12
+      offsets from seed 0: +2, +4, +12
+    272 draws: seeds 13
+      offsets from seed 13: none
+    274 draws: seeds 9
+      offsets from seed 9: none
+    and across the four groups, 63 cross pairs, none of which has the seed
+    difference as its state offset -- so an unnoticed change in draw count could not
+    produce this table.
+
+`no_resolution_and_no_targeted_move_touches_the_shared_stream` asserts
+`simulation.entropy == before` after each application, over these 28 cases:
+
+    geometry                     positions        verbs
+    in contact, record present   40:40 / 41:40    attack, threaten, fight, retreat, surrender, approach, avoid
+    perceived, not in contact    40:40 / 48:40    attack, threaten, fight, retreat, surrender, approach, avoid
+    co-located                   40:40 / 40:40    attack, threaten, fight, retreat, surrender, approach, avoid
+    in contact, no record        40:40 / 41:40    attack, threaten, fight, retreat, surrender, approach, avoid
+
+    cases: 4 geometries x 7 verbs = 28
+
+The four resolutions this change adds -- attack, fight, threaten, surrender -- and both
+targeted moves -- approach, avoid -- are each covered at every geometry, with retreat the
+seventh verb. Equality is what the engine asserts; the table above is what it holds at.
+
+Control -- a single restored draw would leave the count equal and the state moved, so the
+state is the quantity that catches it and the count is not:
+
+    one further value        0xF597C243BD034A98
+    difference               GAMMA
+
+7. Every draw site in the shipped engine, enumerated
+----------------------------------------------------
+
+The `no entropy draw` constraints of `REQ-MOK-052`, `REQ-MOK-053`, `REQ-MOK-054`,
+`REQ-MOK-055` and `REQ-MOK-056` are claims about code that does not exist, and a test can
+only sample them. This section enumerates instead: every call to `next_u64` or
+`choose_index` in the shipped half of `mokiterions-core/src/simulation.rs`, checked against
+the set below. A draw added anywhere in shipped code fails this check by appearing.
+
+    file                     mokiterions-core/src/simulation.rs
+    lines                    6865
+    `#[cfg(test)]` at        3013 -- shipped code is lines 1 to 3012
+
+      line  site
+       545  generator.choose_index(usize::from(WASTE_TOLERANCE_MAX) + 1) as u8
+       882  self.stream.choose_index(upper_bound)
+       906  let choice = entropy.choose_index(observation.valid_actions.len());
+       962  let choice = entropy.choose_index(moves.len());
+      1033  let choice = entropy.choose_index(moves.len());
+      1180  let value = self.next_u64();
+      2905  let class = FoodClass::ALL[self.entropy.choose_index(FoodClass::ALL.len())];
+      2993  let x = entropy.choose_index(WORLD_SIZE as usize) as u8;
+      2994  let local_y = entropy.choose_index(TERRITORY_HEIGHT as usize) as u8;
+
+    sites found 9, expected 9: the same set, in the same order
+
+    what each one is:
+         545  the trait's own side generator -- not the shared stream
+         882  `DecisionEntropy::choose_index`, the only path a source has to the stream
+         906  `baseline`'s uniform selection, one per opportunity
+         962  `reference`'s rule 19 case 4
+        1033  `tolerant_search_choice` -- rule 19 case 4, reached by `individual` and by `social` branch 6
+        1180  inside `SplitMix64::choose_index` itself
+        2905  rule 16's regeneration class
+        2993  `choose_free_coordinate`, used by initialization and by regeneration
+        2994  the same
+
+Two of the nine are not draws against the shared stream at all. The first is the trait's
+side generator, which is `REQ-MOK-031`'s structural claim rather than an asserted one: the
+shipped file constructs a `SplitMix64` in exactly two places, and they are different
+objects.
+
+       544  let mut generator = SplitMix64::new(seed ^ u64::from(number).wrapping_mul(TRAIT_SALT));
+      1783  let mut entropy = SplitMix64::new(config.seed);
+
+The sixth is `choose_index`'s own loop, which is where the other draws land. That leaves
+**seven** call sites against the shared stream, and they are not seven independent draws:
+`DecisionEntropy::choose_index` at 882 is the funnel the three decision-source sites reach
+the stream through, so the distinct origins are **six** -- `baseline`'s selection,
+`reference`'s case 4, `tolerant_search_choice`, the regeneration class and the two
+coordinate indices -- of which three can only draw by passing through the counted wrapper.
+That is the bounded capability `DecisionEntropy`'s doc comment describes, and it is checkable
+rather than merely described: no `decide` in the file mentions `SplitMix64` anywhere in its
+body, so a source cannot reach past the wrapper's `draws` counter without a signature change
+that this enumeration would show.
+
+      904-912     BaselineDecisionSource::decide -- no `SplitMix64`
+      926-966     ReferenceDecisionSource::decide -- no `SplitMix64`
+     1067-1071    IndividualDecisionSource::decide -- no `SplitMix64`
+     1104-1154    SocialDecisionSource::decide -- no `SplitMix64`
+
+**No resolution path can draw, because none of them is given the stream.** Every function
+in the shipped half is taken in turn, its extent read from `rustfmt`'s indentation, and its
+body scanned for a draw call and for any mention of the stream outside a comment. Comments
+are excluded deliberately: `resolve_strike`'s own doc comment at line 2612 asserts that
+"no entropy is drawn by any part of this", and a claim in a comment is the thing being
+checked, not the check.
+
+    functions in the shipped half            85
+    mentioning the stream outside a comment  15
+    not mentioning it at all                 70
+
+           lines  draws  function
+      543-546         1  derive_waste_tolerance
+      876-878         0  DecisionEntropy::new
+      880-883         1  DecisionEntropy::choose_index
+      891-891         0  DecisionSource::decide  (declaration)
+      904-912         1  BaselineDecisionSource::decide
+      926-966         1  ReferenceDecisionSource::decide
+     1027-1037        1  tolerant_search_choice
+     1044-1050        0  tolerant_movement_choice
+     1067-1071        0  IndividualDecisionSource::decide
+     1104-1154        0  SocialDecisionSource::decide
+     1167-1173        0  SplitMix64::next_u64
+     1175-1185        1  SplitMix64::choose_index
+     2147-2201        0  Simulation::run_tick
+     2873-2933        1  Simulation::regenerate_food
+     2987-3007        2  choose_free_coordinate
+
+           lines  resolution, validation and application functions, and what they hold
+     2288-2374    Simulation::apply_action -- no draw, no stream
+     2380-2411    Simulation::apply_move -- no draw, no stream
+     2436-2497    Simulation::validate_targeted -- no draw, no stream
+     2505-2544    Simulation::apply_targeted_action -- no draw, no stream
+     2555-2601    Simulation::apply_targeted_move -- no draw, no stream
+     2613-2679    Simulation::resolve_strike -- no draw, no stream
+     2692-2722    Simulation::resolve_threat -- no draw, no stream
+     2734-2773    Simulation::resolve_surrender -- no draw, no stream
+     2817-2871    Simulation::apply_survival -- no draw, no stream
+
+    9 functions, 0 of them able to reach the stream.
+
+So `validate_targeted`, `apply_targeted_action`, `apply_targeted_move`, `resolve_strike`,
+`resolve_threat`, `resolve_surrender`, `apply_action`, `apply_move` and `apply_survival`
+do not merely refrain from drawing: none of them is passed the stream. The field is bound
+in the shipped `impl Simulation` at three places only -- the decision call at line 2163,
+regeneration's class at 2905 and regeneration's placement at 2912 -- and a resolution is
+none of the three. That is `REQ-MOK-053`'s *No entropy draw is taken by validation, damage
+computation, cost application or death handling* discharged structurally rather than by
+sampling, and the same enumeration discharges the identical constraint in `REQ-MOK-052`,
+`REQ-MOK-054`, `REQ-MOK-055` and `REQ-MOK-056`.
+
+**The `social` source draws in one branch, and the enumeration says which.** `entropy`
+reaches the body of `SocialDecisionSource::decide` exactly once:
+
+    body                     lines 1104 to 1154
+    `return` statements      5 -- branches 1 to 5, at lines 1111, 1122, 1129, 1135, 1145
+    entropy at line   1153  tolerant_search_choice(observation, entropy)
+
+Every `return` precedes it, so branches 1 to 5 cannot reach the stream by construction and
+branch 6 draws exactly once through `tolerant_search_choice`. `post/branches.md` §2 counts
+branch 6 at **37,975** of 118,201 decisions across the fifteen traced cells; with this
+enumeration that count *is* the source's entire draw consumption, and the other 80,226
+decisions are derived. This is the claim `branches.md` defers to this file, and what makes
+it a measurement rather than a restatement is the enumeration above: the count is the draw
+total only because no other branch has a draw site to reach.
+
+8. What this reader does not establish
+--------------------------------------
+
+It does not re-measure the engine. The draw count is reproduced from the placement
+arithmetic and checked against the engine's placed cells, which is a strong check on the
+reconstruction and no check at all on whether some later code path draws. That claim is
+carried by the in-crate assertion named in section 6 and by `shared_stream_draws`.
+
+It does not exhibit the state at a mid-run resolution. The encounter tests construct their
+world and resolve immediately, which is why their state is computable here; a resolution
+reached by running the world sits at a position no released stream reports, because the
+engine has no command that prints the stream. Bounding that would need an engine-side
+diagnostic this work order did not add, and it is recorded as a residual rather than
+implied to be covered.
+
+==========================================================================
+RESULT: PASS -- every check above holds

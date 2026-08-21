@@ -659,7 +659,8 @@ fn the_applied_action_presented_is_always_the_engines() {
     }
 }
 
-/// No shipped decision source can have a proposal rejected.
+/// No decision source that proposes only from the observation's valid-action list can have a
+/// proposal rejected.
 ///
 /// `BaselineDecisionSource` selects from the observation's valid actions and
 /// `ReferenceDecisionSource` guards every candidate with the observation's own `allows`, so both
@@ -672,8 +673,19 @@ fn the_applied_action_presented_is_always_the_engines() {
 /// leaving the name of this case broader than what it checked. `IndividualDecisionSource` screens
 /// its candidates through the same `allows`, so the claim holds for the same reason; `VER-MOK-010`
 /// requires it as *validation is not relaxed*. No assertion here was changed to admit it.
+///
+/// `WO-MOK-016` added a fourth shipped source that **is** rejected, and the name of this case moved
+/// rather than the sweep, for the same reason it moved under `WO-MOK-010`: the claim now states the
+/// property the three share instead of a count of what ships. `SocialDecisionSource` proposes
+/// targeted actions, which `SPEC-MOK-001` rule 3 keeps off the valid-action list on purpose, so
+/// `allows` cannot screen them and rule 6 is the only gate. Rule 26's own text fixes that its
+/// branch 1 proposes an answer "whether or not that answer can succeed", and rule 6's fifth
+/// condition rejects a targeted move with no valid direction — both are specified behavior, and
+/// `the_social_source_is_rejected_only_as_the_specification_admits` below asserts which grounds are
+/// reachable rather than that none is. **No assertion in this case was relaxed, widened or removed**:
+/// the three policies below and their per-decision equality are verbatim.
 #[test]
-fn no_shipped_decision_source_has_a_proposal_rejected() {
+fn no_source_confined_to_the_valid_action_list_has_a_proposal_rejected() {
     for policy in ["baseline", "reference", "individual"] {
         let mut observer = observer_for(&["--policy", policy, "--seed", "42", "--ticks", "400"]);
         while !observer.is_finished() {
@@ -689,6 +701,55 @@ fn no_shipped_decision_source_has_a_proposal_rejected() {
             }
         }
     }
+}
+
+/// `SPEC-MOK-003` rule 10 as amended: a rejection under the `social` source is presented as the
+/// engine's own ground, and the grounds reachable are the ones `SPEC-MOK-001` rule 6 names.
+///
+/// This is the counterpart of the case above rather than a relaxation of it. A rejection here is an
+/// expected outcome of the authority boundary, so what is asserted is that the observer presents the
+/// engine's word for it and invents nothing — the reason it presents is one of rule 6's, never a
+/// phrase of the observer's own, and never a fault or a warning.
+#[test]
+fn the_social_source_is_rejected_only_as_the_specification_admits() {
+    // Rule 6's five conditions, in the order that rule fixes them, plus rule 8's own reason
+    // reached by a targeted verb. Nothing outside this set is a ground the engine can state.
+    const GROUNDS: [&str; 9] = [
+        "agent_dead",
+        "target_unknown",
+        "target_dead",
+        "target_is_actor",
+        "target_not_perceived",
+        "target_not_in_contact",
+        "target_not_in_record",
+        "target_co_located",
+        "out_of_bounds",
+    ];
+
+    let mut rejections = 0usize;
+    for seed in ["0", "42", "123"] {
+        let mut observer = observer_for(&["--policy", "social", "--seed", seed, "--ticks", "400"]);
+        while !observer.is_finished() {
+            observer.advance().expect("the engine advances");
+            for decision in &observer.snapshot().decisions {
+                if let DecisionOutcome::Rejected { ground } = &decision.outcome {
+                    rejections += 1;
+                    assert!(
+                        GROUNDS.contains(&ground.as_str()),
+                        "seed {seed} tick {} rejected {} on the unnamed ground {ground}",
+                        observer.snapshot().tick,
+                        decision.agent_id
+                    );
+                }
+            }
+        }
+    }
+
+    // The measured figure across these three seeds is one rejection, at seed 0 tick 11: an `avoid`
+    // whose only away-axis left the world. It is asserted as a bound rather than an equality, since
+    // rule 26 makes rejection rare but not impossible and pinning the count would make this case a
+    // second capture rather than a claim about grounds.
+    assert!(rejections <= 8, "{rejections} rejections is not rare");
 }
 
 // ---- security ------------------------------------------------------------------------------

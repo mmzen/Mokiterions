@@ -13,19 +13,25 @@ what happens when you run the simulation and why.
 ## 1. The one-minute version
 
 Twelve creatures called **Mokiterions** live on a square map. They get hungry. There is food on the
-map, but not much. Each creature can look around, walk one step, or eat what it is standing on.
-Nobody tells them what to do as a group — each one decides for itself, one at a time, over and over.
+map, but not much. Each creature can look around, walk one step, or eat what it is standing on — and,
+if somebody is standing right next to it, hit them, threaten them, back away from them, or hand over
+half its dinner. Nobody tells them what to do as a group — each one decides for itself, one at a
+time, over and over.
 
 The interesting question is: **who is still alive after 1,000 turns?**
 
-The answer is usually 8 to 11 of the 12, and 9 to 12 with the newest of the three deciders described
-in section 11. Some always die. That is on purpose. A world where everyone survives easily would be
-boring, and a world where everyone dies would tell us nothing.
+The answer is usually 8 to 11 of the 12, and 9 to 12 with the trait-aware decider of section 11. Some
+always die. That is on purpose. A world where everyone survives easily would be boring, and a world
+where everyone dies would tell us nothing.
 
 The twelve are also no longer interchangeable. Each is born with one fixed quirk — how much food it
 is willing to waste — which changes what it will eat and what it will walk to (section 3, section
-11). Each also carries a mood, `fear`, that rises when it is not alone. The quirk changes behaviour.
-**The mood, so far, changes nothing at all** (section 8).
+11). Each also carries a mood, `fear`, that rises when it is not alone, and one of the four deciders
+now reads it: below a threshold it engages, above it it backs off, high enough and it surrenders.
+
+**With that decider, 4 to 8 survive — and the drop has nothing to do with the fighting.** They
+barely fight; they are too busy fleeing each other to eat. It is the most interesting measurement in
+this document and section 11 spells it out.
 
 ---
 
@@ -144,26 +150,34 @@ in this exact order:
 2. **Each living Mokiterion gets one action opportunity**, in order: `M01` first, then `M02`, and so
    on to `M12`. Dead ones are skipped entirely.
 3. For each one, in turn:
-   - **It looks around.** The simulation hands it a description of what it can see (see section 7).
-   - **It picks one action** — just one — from wait, sleep, eat, or move.
+   - **It looks around.** The simulation hands it a description of what it can see (see section 7),
+     together with who hit it since its last turn.
+   - **It picks one action** — just one — from the eleven in section 6.
    - **The simulation checks the action is legal**, and applies it if so.
+   - **Its memory of who hit it is wiped**, whether it acted on it or not.
    - **Then it gets hungrier and more tired, and its fear moves** (see section 8).
 4. **After everyone has moved, food may regrow** — but only on ticks that divide by 10 (tick 10, 20,
    30 …). See section 9.
 5. **The simulation checks whether to stop**: either everyone is dead, or the turn limit was reached.
 
-Two details that matter more than they look:
+Three details that matter more than they look:
 
 - Order is fixed and always the same. `M01` always acts before `M02`. If `M01` eats the last piece of
   food on a square, `M02` arrives to find nothing there. Being early is an advantage.
 - One action per turn. A creature cannot walk *and* eat in the same turn. Walking onto food means
   eating it next turn at the earliest.
+- **Everything a creature does to somebody else lands immediately, inside its own turn.** There is no
+  simultaneous resolution and nothing is queued up for later. So if `M03` strikes `M07` hard enough to
+  kill it, `M07` never takes its turn that tick — it was alive at the start of the tick and dead
+  before its own opportunity arrived. Being early is an advantage here too, and a bigger one.
 
 ---
 
-## 6. The four things a Mokiterion can do
+## 6. The eleven things a Mokiterion can do
 
 That is the complete list. There is nothing else.
+
+Four of them concern nobody but yourself:
 
 | Action | What it does | What it costs |
 |---|---|---|
@@ -172,16 +186,56 @@ That is the complete list. There is nothing else.
 | **sleep** | recover 20 energy | nothing extra |
 | **wait** | do nothing at all | nothing extra |
 
+The other seven each name **one other creature**:
+
+| Action | What it does | What it costs |
+|---|---|---|
+| **attack** | strike the named creature for 10 to 30 damage | 5 energy |
+| **fight** | the same strike, aimed at somebody who struck you | 5 energy |
+| **threaten** | raise the named creature's fear by 30 | nothing |
+| **surrender** | hand half your own satiety to somebody who struck you | half your satiety |
+| **approach** | step one square toward the named creature | nothing extra |
+| **avoid** | step one square away from the named creature | nothing extra |
+| **retreat** | the same step away, from somebody who struck you | nothing extra |
+
+Each of the seven has its own condition, and this is where most of the interesting behaviour comes
+from:
+
+- **attack, fight and threaten need *contact*** — the target within one square of you, diagonals
+  included. That is a circle of 8 squares, against the 1,088 squares you can *see* (section 7). The
+  gap between those two numbers matters more than anything else in this section; section 11 has the
+  measurement.
+- **approach and avoid need only that you can see the target**, out to the full 16 squares.
+- **fight, surrender and retreat need the target to have struck you**, and specifically to have
+  struck you since your last turn — see the memory rule below. `surrender` and `retreat` do *not*
+  need contact: you can pay off or back away from somebody who hit you and then stepped away.
+- Nobody can target themselves, and nobody can target the dead — including for a `fight` answering
+  an attack the attacker made while it was still alive.
+
 Rules and limits:
 
 - **Movement is one square at a time, and never diagonal.** To reach a square 3 east and 2 north, you
-  need 5 turns.
+  need 5 turns. `approach`, `avoid` and `retreat` are ordinary moves under the hood and obey this
+  too: they pick a direction and take one step, and they are refused for the same reasons any move is
+  refused.
 - **You can only eat what is under your feet.** Not next to you — under you.
 - Eating raises satiety and energy by the amounts in the food table, and the food is gone for good.
-- Nothing can push any number above 100. Extra is simply lost.
-- Trying something illegal — walking off the edge of the map, eating food that is not there — is not
-  a crash. The turn is spent, nothing happens, and the simulation records that the attempt was
-  rejected.
+- **How hard you hit depends only on you:** `10 + (your energy + your health) / 10`, which is 10 at
+  your weakest and 30 at full strength. The creature you hit makes no difference to it. There is no
+  armour, no dodging, no luck, and no roll of any kind — combat consumes no randomness whatsoever.
+- **Damage kills by the ordinary rule.** Health reaching 0 is death whether it got there through a
+  strike or through starvation (section 8); there is no separate killing rule and no second way to
+  die.
+- **Being struck is remembered exactly one turn.** Whoever hit you is on your list until your next
+  turn comes round, and taking that turn clears the list — all of it, however many people are on it.
+  So you may answer *one* of the people who hit you, and answering one forgets the rest. That is the
+  only memory anything in this simulation has (section 16).
+- Nothing can push any number above 100. Extra is simply lost. A surrender of 50 satiety to somebody
+  already at 80 gives them 20 and destroys the other 30 — the surrendering creature pays in full
+  either way.
+- Trying something illegal — walking off the edge of the map, eating food that is not there,
+  attacking somebody two squares away — is not a crash. The turn is spent, nothing happens, and the
+  simulation records that the attempt was rejected and which condition it failed.
 
 ---
 
@@ -198,6 +252,10 @@ Within that region it is told:
 
 What it is **not** told: anything outside the region, anything about dead creatures, and anything at
 all about itself in its own list of neighbours.
+
+It is handed one thing that is not about the region at all: **who struck it since its last turn, and
+for how much.** That list is the only non-spatial thing in the description, and the only thing in it
+that refers to the past. It can name somebody who has since walked out of sight, or died.
 
 Two things do not obstruct sight: the territory line, and other creatures. Nobody hides behind
 anybody.
@@ -266,13 +324,18 @@ every seed and every decider: **fear is sitting at exactly 100 on 39% of them**,
 roughly half to two thirds. There is also one step size the table above does not predict — **+5**,
 which occurred 219 times. That is a creature at 95 gaining 10 and stopping at 100.
 
-**And now the honest part: nothing reads fear.** No rule consults it, no decider consults it, no
-creature behaves differently because of it. It is computed, kept in range, reported on every
-`survival_changed` line and on the observer's roster, and that is the end of it. Which means the two
-numbers `+10` and `−5` cannot be shown to be right or wrong by anything that happens in the world —
-there is no outcome for them to be wrong *about* yet. Fear exists now so that the thing that will use
-it, in a later phase, does not have to invent it. Until then, treat that 39% as a fact about the
-current constants and not as a finding.
+**Something reads fear now, and there is a third way for it to move.** The social decider of section
+11 consults it at three points, and a `threaten` aimed at you adds **+30** on the spot, outside the
+end-of-turn step entirely. So fear can now move twice in one turn: once because somebody threatened
+you, and again at the end of the turn by the table above.
+
+That also means the two numbers `+10` and `−5` finally have an outcome to be right or wrong about,
+and the first measurement says they are wrong — not obviously, but consequentially. Fear rises for
+every turn you can *see* company, at 16 squares, while the actions that fear gates need company
+within *one* square. Ten per turn crosses the deciders' threshold of 30 on the third turn of noticing
+somebody, and walking 16 squares takes fifteen. The result is that a creature is almost always too
+afraid to engage by the time it could. Section 11 has the numbers and what is being done about it.
+Until that is settled, treat the 39% as a fact about the current constants and not as a finding.
 
 ---
 
@@ -342,11 +405,13 @@ description of its surroundings and hands back a *request*: "I would like to mov
 change anything itself. The simulation checks the request and decides what actually happens.
 
 This separation is the whole point of the design. It means the thing making decisions can be swapped
-out — for something smarter, later — without it ever being able to cheat. The newest decider reads
-each creature's waste tolerance, and that changes nothing about the arrangement: it still only asks,
-and the simulation still decides.
+out — for something smarter, later — without it ever being able to cheat. The newest decider asks to
+hit other creatures, and that changes nothing about the arrangement: it still only asks, and the
+simulation still decides. A creature cannot damage anybody by wanting to. It names a target and a
+verb, and every condition in section 6 is checked against the simulation's own state before anything
+happens.
 
-Three deciders exist today. Pick one with `--policy`.
+Four deciders exist today. Pick one with `--policy`.
 
 ### The baseline decider — `--policy baseline`
 
@@ -425,6 +490,67 @@ Two honest limits on all of this:
   different things.
 - **A higher tolerance is not a better tolerance.** It stops helping well before the range runs out,
   which is why the range stops at 40 and not at 100 — see section 12.
+
+### The social decider — `--policy social`
+
+The first decider that lets creatures do anything to each other. It is the trait-aware decider with
+four checks in front of it, and it runs down them in order, doing the **first** thing that applies:
+
+1. **Somebody hit me.** Answer the first name on the list (section 6), and which way depends entirely
+   on how afraid I already am: **surrender** at fear 60 or more, **retreat** at 30 to 59, **fight**
+   below 30.
+2. **Eat what I am standing on, or sleep if exhausted.** Survival comes before society, always. A
+   starving creature does not stop to posture.
+3. **Somebody is in contact.** Engage the nearest: **attack** below fear 30, **threaten** at 30 or
+   more.
+4. **Somebody is in sight but not in contact.** **Approach** below fear 30, **avoid** at 30 or more.
+5. **Nobody is around.** Fall through to the trait-aware decider's last two steps — walk toward food,
+   or take a random step.
+
+Steps 2 and 5 are the trait-aware decider verbatim, tolerance and all, so a creature that is alone
+behaves exactly as it did before. It never chooses "wait" either.
+
+Fear is doing all the work in steps 1, 3 and 4, and the direction is worth noticing: **fear makes a
+creature more submissive, never more violent.** Below 30 it engages, above 30 it backs off, above 60
+it pays. There is no rage.
+
+**And now the honest part, because this is the interesting result and it is a negative one.** Over
+1,000 turns on the five seeds the project uses, at the default density, here is every targeted action
+the decider actually proposed:
+
+| Action | Times proposed, all five seeds |
+|---|---:|
+| avoid | 6,329 |
+| approach | 973 |
+| threaten | 454 |
+| fight | 9 |
+| attack | 3 |
+| retreat | 3 |
+| **surrender** | **0** |
+
+Twelve strikes across five complete runs — and **every single one of them landed on turn 1, 2 or 3**,
+between creatures that happened to be *placed* next to each other at the start. Two of the five seeds
+contain no violence at all. Nobody has ever died of it.
+
+The cause is the mismatch section 8 describes. Fear rises by 10 for every turn you can see company at
+16 squares; engaging needs company at 1 square; 30 is the threshold. So a creature crosses into
+"back off" on its third turn of noticing somebody, and then spends the next dozen turns walking away
+from them. `avoid` outnumbers `attack` two thousand to one. And because nobody ever gets struck,
+nobody ever has a name on their list, so `surrender` — which needs one — is unreachable in practice
+rather than merely rare.
+
+Two consequences of that are recorded rather than papered over:
+
+- The project's own target for this decider was **at least 5 of 12 alive at turn 1,000 and at least
+  one death caused by combat, on every seed.** Measured: 6, 4, 8, 4 and 5 survivors, and **zero**
+  combat deaths on all five. Two seeds miss the floor and every seed misses the death.
+- The test suite contains the failing measurements as failing tests. They were not weakened, skipped
+  or deleted to make the run green.
+
+Fixing it means moving the thresholds or the order of those four steps, and in this project that is a
+decision taken and recorded before it is coded, not a number quietly nudged until the tests pass.
+Until it is taken, `social` is honestly described as *implemented and not yet habitable*, which is
+also why it is **not** the default — `--policy` with nothing given still selects `reference`.
 
 ---
 
@@ -600,8 +726,44 @@ getting hungrier and more tired at the end of turn 40.
 
 That last line is where fear shows up. `fear:100->100` means `M12` could see somebody *and* was already
 at the top of the range, so nothing moved. A rise from 30 would print `fear:30->40` and a fall
-`fear:30->25`. Every living creature gets one of these lines every turn, so fear is always visible even
-though nothing acts on it.
+`fear:30->25`. Every living creature gets one of these lines every turn, so fear is always visible.
+
+Three more lines exist, and only `--policy social` produces them. The first two are real, from
+`--policy social --seed 123` and `--policy social --seed 42`:
+
+```
+tick=1 subject=M11 event=attack_resolved result=target:M10,damage:30,target_health:100->70,striker_energy:100->95,target_died:no
+tick=4 subject=M10 event=threat_resolved result=target:M11,increase:30,target_fear:30->60
+```
+
+`M11` hits `M10` for 30 — the hardest anybody can hit — and both sides of it are on the one line,
+including whether it was fatal. `M10` then frightens `M11` by 30; the number after `increase:` is what
+actually landed, so a target already at 90 would show `increase:10,target_fear:90->100`.
+
+The third one has a shape but no example, and that is the finding of section 11 rather than an
+omission here — **no run on any of the five seeds has ever produced a surrender.** Its shape, from the
+test that constructs one by hand:
+
+```
+tick=1 subject=M01 event=surrender_resolved result=recipient:M02,transferred:20,discarded:20,subject_satiety:80->40,recipient_satiety:80->100
+```
+
+`M01` gives up half of 80, so 40 leaves it; `M02` was already at 80, so 20 arrives and 20 is
+destroyed. `transferred` and `discarded` differ precisely when something was wasted, and the payer is
+out 40 either way.
+
+There is no line of its own for `approach`, `avoid` or `retreat`. They are moves, and they report as
+moves. To see who *proposed* what, including the refusals and the reason for each, add
+`--trace-actions`:
+
+```
+tick=2 subject=M10 event=action_trace result=proposal:fight,target:M11,status:accepted,detail:damage:26,position:103:102,territory:B,health:70,satiety:99,energy:94,fear:10,suffered:M11:30
+```
+
+`M10` fights back at `M11` and the whole reason is on the line: `suffered:M11:30` is its one-turn
+memory (section 6), read as `who:how-much`, and it is the only place that list is ever visible. Empty
+means nobody hit you. Note the fear of 10 — under 30, which is exactly why this came out as `fight`
+and not `retreat`.
 
 The last line is always the scoreboard:
 
@@ -623,15 +785,19 @@ Worth stating plainly, because the project's eventual goals make people expect m
 
 - **One trait, not a personality.** There is exactly one thing that differs between creatures — waste
   tolerance — and it only affects what they will eat. No caution, no aggression, no sociability, no
-  preferences.
-- **Fear is measured but unused.** It rises, falls, stays in range and gets reported, and no rule and
-  no decider reads it. It changes nobody's behaviour. This is deliberate: it is there for the fighting
-  and fleeing that come next, and it is honest to call it inert until then.
-- **No fighting, no threatening, no fleeing, no cooperating.** Creatures cannot interact at all. They
-  can see each other, they get uneasy about it, and that is the end of it.
-- **No memory.** Each decision is made from what is visible right now. Nothing is remembered between
-  turns — including how afraid you were.
-- **No AI or language model.** All three deciders are a few lines of fixed rules.
+  preferences. Two creatures at the same fear make the same social choice; the aggression is a
+  property of the situation, not of anybody.
+- **Fighting exists but barely happens.** Creatures can now strike, threaten, back away and give in,
+  and with `--policy social` they do — twelve strikes across five 1,000-turn runs, all of them in the
+  first three turns, and not one death. It is implemented, tested and measured; it is not yet a
+  working part of the world. Section 11 has the diagnosis. The other three deciders cannot interact
+  at all and are unchanged.
+- **No cooperating.** Nothing anybody can do helps anybody else. `surrender` transfers food, and it
+  is a payment under duress, not a gift.
+- **Almost no memory.** One thing is remembered, for exactly one turn: who hit you (section 6).
+  Everything else in a decision comes from what is visible right now — including how afraid you were,
+  which nobody stores because it is a live attribute rather than a recollection.
+- **No AI or language model.** All four deciders are a few lines of fixed rules.
 - **No graphics, no saved files, no network.** Text output only.
 
 All of these are planned. The order they arrive in, and why, is in `docs/ROADMAP.md`.
@@ -644,5 +810,5 @@ All of these are planned. The order they arrive in, and why, is in `docs/ROADMAP
 |---|---|
 | The exact, binding rules | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` |
 | What is planned, and in what order | `docs/ROADMAP.md` |
-| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/` and `.../WO-MOK-010/` |
+| What was measured, and how | `docs/engineering/simulation/evidence/WO-MOK-002/`, `.../WO-MOK-010/` and `.../WO-MOK-016/` |
 | How changes get approved here | `ENGINEERING_HARNESS.md` |

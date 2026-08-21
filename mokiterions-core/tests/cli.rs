@@ -95,6 +95,55 @@ fn the_trait_aware_policy_is_selectable_and_does_not_become_the_default() {
     assert!(parse(["--policy", "individual", "--policy", "reference"]).is_err());
 }
 
+/// `REQ-MOK-057`: the fourth value is selectable, and adding it moved neither the default nor
+/// the three values that were already there.
+///
+/// A named sibling again, for the reason recorded above: `WO-MOK-016` renames no inherited test.
+/// The default matters more here than it did under `WO-MOK-010`. `SPEC-MOK-001` records that
+/// `social` is not proposed as the default *because* the survivor floor `REQ-MOK-058` states for
+/// it sits three below `REQ-MOK-014`'s, so an invocation that silently selected it would ship a
+/// less habitable world than the one the default promises.
+#[test]
+fn the_social_policy_is_selectable_and_does_not_become_the_default() {
+    assert_eq!(
+        parse(["--policy", "social"]).unwrap(),
+        Command::Run(config_with(Policy::Social))
+    );
+
+    assert_eq!(
+        parse(Vec::<String>::new()).unwrap(),
+        Command::Run(config_with(Policy::Reference))
+    );
+    assert_ne!(
+        parse(Vec::<String>::new()).unwrap(),
+        Command::Run(config_with(Policy::Social))
+    );
+
+    // The name is exact: neither an abbreviation nor a near miss selects it.
+    assert!(parse(["--policy", "socials"]).is_err());
+    assert!(parse(["--policy", "Social"]).is_err());
+    assert!(parse(["--policy", "soc"]).is_err());
+    assert!(parse(["--policy", "society"]).is_err());
+    assert!(parse(["--policy", "social", "--policy", "reference"]).is_err());
+}
+
+/// `REQ-MOK-057`: the diagnostic for an unknown policy names every value the parser accepts.
+///
+/// The message is what an operator reads after mistyping, and a message that omits a value is a
+/// value nobody finds. It is asserted here rather than only through the help text because the two
+/// strings are separate and nothing but this keeps them agreeing.
+#[test]
+fn the_unknown_policy_diagnostic_names_every_accepted_value() {
+    let message = parse(["--policy", "random"])
+        .expect_err("an unknown policy is a configuration error")
+        .to_string();
+
+    for name in ["baseline", "reference", "individual", "social"] {
+        assert!(message.contains(name), "{message} omits {name}");
+        assert!(parse(["--policy", name]).is_ok(), "{name} is not accepted");
+    }
+}
+
 fn config_with(policy: Policy) -> Config {
     Config {
         seed: 0,
@@ -353,9 +402,11 @@ fn the_entries_state_the_constraints_that_decide_validity() {
     assert!(policy.contains("baseline"), "{policy}");
     assert!(policy.contains("reference"), "{policy}");
     assert!(policy.contains("individual"), "{policy}");
+    assert!(policy.contains("social"), "{policy}");
     assert!(parse(["--policy", "baseline"]).is_ok());
     assert!(parse(["--policy", "reference"]).is_ok());
     assert!(parse(["--policy", "individual"]).is_ok());
+    assert!(parse(["--policy", "social"]).is_ok());
     assert!(parse(["--policy", "random"]).is_err());
 
     let density = description("--density").to_lowercase();
