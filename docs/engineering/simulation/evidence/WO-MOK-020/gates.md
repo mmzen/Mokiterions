@@ -212,8 +212,8 @@ uniformly CRLF with zero bare LF and zero bare CR; the two shell scripts are uni
 | `specifications/SPEC-MOK-003.md` | 1265 | 0 | 0 |
 | `verification/VER-MOK-004.md` | 280 | 0 | 0 |
 | `evidence/WO-MOK-020/README.md` | 92 | 0 | 0 |
-| `evidence/WO-MOK-020/gates.md` | 447 | 0 | 0 |
-| `evidence/WO-MOK-020/usage-text.md` | 431 | 0 | 0 |
+| `evidence/WO-MOK-020/gates.md` | 453 | 0 | 0 |
+| `evidence/WO-MOK-020/usage-text.md` | 434 | 0 | 0 |
 | `evidence/WO-MOK-020/before/engine-usage.txt` | 38 | 0 | 0 |
 | `evidence/WO-MOK-020/before/observer-usage.txt` | 22 | 0 | 0 |
 | `evidence/WO-MOK-020/after/engine-usage.txt` | 71 | 0 | 0 |
@@ -288,6 +288,12 @@ Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
 148 artifacts, the new work order among them, across all four planes with no error and no warning. This
 is what confirms `WO-MOK-020`'s frontmatter and its four `[relations]` edges resolve: `REQ-MOK-018`,
 `SPEC-MOK-001`, `SPEC-MOK-003` and `VER-MOK-004` all exist and all accept the relation.
+
+**148 is the count at the commit this page is committed in, which does not contain `VREC-MOK-020`.** The
+record is generated against that commit and committed after it, so its own file cannot be inside it. With
+the record present the same command reports **149 artifacts, 0 errors and 0 warnings**, which was run and is
+the figure a reader checking out the branch tip will see. Both are stated because neither alone matches
+every checkout.
 
 ### `harnessctl preflight` — three readings
 

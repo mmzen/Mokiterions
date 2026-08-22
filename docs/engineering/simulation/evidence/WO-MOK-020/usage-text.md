@@ -5,8 +5,11 @@ implicit facts named in its *Objective* traced to where each is now stated. This
 
 These are observations of the working tree. They approve nothing, create no candidate commit, and
 authorize no release. `VER-MOK-004` is the verification contract they serve; the accountable assurance
-decision is the owner's act, and `WO-MOK-020` is `draft` with five **OUTSTANDING** amendments, so no
-verification record exists yet.
+decision is the owner's act. **Updated 2026-08-22**: this paragraph read "`WO-MOK-020` is `draft` with five
+**OUTSTANDING** amendments, so no verification record exists yet", which was true when the texts were
+captured. The owner has since ratified those five and directed the transition to `implemented`, and
+`VREC-MOK-020` exists at status `ready` — prepared, not accepted. A **sixth** amendment, to `VER-MOK-004`
+itself, is now **OUTSTANDING** and was not put to the owner.
 
 ## Commit binding
 
@@ -16,7 +19,7 @@ verification record exists yet.
 | Method for the pre-change text | `git worktree add` at that commit, then `cargo run -- --help` in the clean tree. The text was **not** reconstructed from a diff. |
 | Post-change text rendered from | the working tree of `feature/help-output-clarity` that became the commit |
 | Implementation branch | `feature/help-output-clarity` |
-| Candidate commit | none yet; this work order is `draft` |
+| Candidate commit | the commit `VREC-MOK-020` binds; its `commit` field is the authority. This row read "none yet; this work order is `draft`" when the texts were captured, which was true then and is corrected rather than back-dated. |
 | Toolchain | rustc 1.97.1 (8bab26f4f 2026-07-14), cargo 1.97.1, clippy 0.1.97, rustfmt 1.9.0-stable |
 
 Both programs were invoked as `cargo run -q -p <package> -- --help` and both exited `0`. The four
