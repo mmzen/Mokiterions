@@ -5,20 +5,27 @@ title = "State every option's effect and default in the help output"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
-statement = "WHEN the program prints its usage text, THE SYSTEM SHALL state, for every option it accepts, a short description of that option's effect and, for every option that has one, the default value the program itself applies when the option is omitted."
+updated = "2026-08-22"
+statement = "WHEN the program prints its usage text, THE SYSTEM SHALL state, for every option it accepts, a description of that option's effect; for every option that has one, the default value the program itself applies when the option is omitted; and for every option whose accepted values are a closed set, what each of those values means."
 verification_method = "automated-test"
 
 [relations]
 derives_from = ["CAP-MOK-001"]
 +++
 
-# Requirement: State every option's effect and default in the help output
+# Requirement: State every option's effect, values and default in the help output
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-22 | **A third clause, and the verbosity boundary that forbade it.** The statement gains "for every option whose accepted values are a closed set, what each of those values means", and the title gains *values*. `--policy` is the only such option today, and its four values were named in the placeholder and explained in prose beneath the options block, where an operator looking at the entry does not find them. *Required response*'s options enumeration gains `--events-path`, which it has been missing since that option was added on 2026-08-20, and gains a bullet for the new clause. *Failure and boundary behavior*'s **"one entry per option, not a paragraph per option"** clause is replaced: it forbade exactly what the new clause requires, since four value descriptions cannot fit a single line. What replaces it is a bound with the same purpose — nothing in an entry that is not one of the four things this requirement asks for, and no line past column eighty — and the *Rationale*'s stale "five options" and the acceptance example's stale "six options" are corrected to name the six options and `--help` the program has accepted since 2026-08-20. **No default, no accepted value, no constraint and no output changes**, and the first two clauses of the statement are untouched. | **OUTSTANDING.** Written by the implementation agent on 2026-08-22 under `WO-MOK-020` and approved by nobody. It requires the **product owner**, this requirement's owner, and it is one act with the technical owner's `SPEC-MOK-001` *Help output* amendment of the same date, because that amendment's fourth column is unsatisfiable under the verbosity clause as it stood and this clause is unverifiable without that section's table. `WO-MOK-020` states both in full in its *Required amendments* section. The implementation agent chose the wording of the four value descriptions, which *Constraints* delegates below; it decided nothing about what any value does. |
 
 ## Rationale
 
-The program accepts five options and `--help`. `SPEC-MOK-001` declares a default for all five. The usage text
-states one of them.
+The program accepts six options and `--help`, `--events-path` having been added on 2026-08-20. `SPEC-MOK-001`
+declares a default for all six. When this requirement was written the program accepted five and the usage text
+stated one of their defaults.
 
 An operator who runs `--help` therefore learns each option's name and the shape of its value, and nothing about
 what the option does or what happens when it is left out. `--seed` and `--ticks` appear only as type placeholders.
@@ -45,13 +52,20 @@ The obligation is a property of the text, so it holds on both paths and cannot b
 ## Required response
 
 The usage text contains a synopsis and an options block. The options block contains one entry for each option the
-program accepts — `--seed`, `--ticks`, `--policy`, `--density`, `--trace-actions`, and `--help` — and each entry
-states:
+program accepts — `--seed`, `--ticks`, `--policy`, `--density`, `--trace-actions`, `--events-path`, and `--help`
+— and each entry states:
 
 - the option, with its value placeholder where it takes a value;
-- a short description of the option's effect, readable without the specification at hand;
+- a description of the option's effect, readable without the specification at hand;
 - the default the program applies when the option is omitted, for every option that has one;
-- the constraint that decides whether a value is accepted, for every option that constrains its values.
+- the constraint that decides whether a value is accepted, for every option that constrains its values;
+- what each accepted value means, for every option whose accepted values are a closed set. *(Added 2026-08-22.)*
+
+The last bullet reaches `--policy` and only `--policy`. Naming its four values in the placeholder tells an operator
+what the parser will take and nothing about what choosing one does, so the choice is made blind or the operator
+goes to the specification — which *Preconditions and trigger* below excludes as an answer. The descriptions belong
+in the entry rather than beneath the block, because an operator reading an entry to decide a value has already
+found the place they will read.
 
 `--trace-actions` accepts no value. Its entry states that tracing is off unless the option is given, and states no
 default *value*: printing one would invite `--trace-actions false`, which the program rejects. `--help` has no
@@ -74,8 +88,12 @@ to follow the `configuration error:` line on standard error when configuration i
   state, so it is identical on every invocation and remains reproducible.
 - Adding descriptions changes no simulation output. Event lines, the run summary, action traces, exit codes, and the
   `configuration error:` line itself are unchanged.
-- Verbosity stays bounded: one entry per option, not a paragraph per option, and the text stays readable in an
-  eighty-column terminal.
+- Verbosity stays bounded. **Amended 2026-08-22**: this clause read "one entry per option, not a paragraph per
+  option", which forbade the value descriptions the statement's third clause now requires — four of them cannot be
+  a line. The bound is now on content rather than on length: an entry states the four things listed under *Required
+  response* and nothing else, no option is described twice anywhere in the text, and no line runs past column
+  eighty. An entry that grows because it explains an accepted value is within the bound; one that grows because it
+  argues, gives history, or repeats a neighbouring entry is not.
 - A fact stated in the options block is stated once. Where the existing explanatory prose already states the same
   default, the duplicate is removed rather than left to disagree later.
 
@@ -99,11 +117,16 @@ to follow the `configuration error:` line on standard error when configuration i
 
 **When** an operator who has never run it invokes `Mokiterions --help`
 
-**Then** standard output contains one entry for each of the six options; `--seed` states its default `0`; `--ticks`
-states its default `100` and that it must be greater than zero; `--policy` states its default `reference` and that
-`baseline` and `reference` are the only valid values; `--density` states its default `0.75` and the two-decimal
-limit; `--trace-actions` states that tracing is off unless the option is given and states no value; the process
-exits `0`; and no simulation event is emitted.
+**Then** standard output contains one entry for each of the six options and for `--help`; `--seed` states its
+default `0`; `--ticks` states its default `100` and that it must be greater than zero; `--policy` states its default
+`reference`, that `baseline`, `reference`, `individual` and `social` are the only valid values, and what choosing
+each of the four does; `--density` states its default `0.75` and the two-decimal limit; `--trace-actions` states
+that tracing is off unless the option is given and states no value; `--events-path` states that no record stream is
+written unless the option is given; the process exits `0`; and no simulation event is emitted.
+
+*Restated 2026-08-22.* It named six options when the program accepted five and `--help`, named two `--policy` values
+when four are accepted, and predated `--events-path`. The three additions are the amendment of the same date; the
+correction from five to six is the arithmetic that was already wrong.
 
 ### Example: failure behavior
 

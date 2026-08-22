@@ -5,7 +5,7 @@ title = "Minimum simulation foundation behavior"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-11"
-updated = "2026-08-21"
+updated = "2026-08-22"
 
 [relations]
 specifies = [
@@ -75,6 +75,7 @@ This is the single behavior contract for the simulation core. It is amended in p
 | 2026-08-20 | Contact, conflict and society, under `CAP-MOK-010`. Thirteen provisions amended, of which seven are appended rules, and the frontmatter's `specifies` gains `REQ-MOK-051` through `REQ-MOK-060`. *Scope* names `CAP-MOK-010` and no longer excludes interaction between Mokiterions; cooperation, memory of encounters and perceived relative strength stay excluded, restated as boundaries of this capability rather than of this document. *Actors*, *Inputs* and *Help output* name a fourth decision source, `social`, with `reference` still the default. *State model / Mokiterion* gains **no attribute** and one item of transient state, the record of attacks suffered since that Mokiterion's previous decision opportunity; a new *Contact* subsection fixes the contact relation at Chebyshev distance `1` between living Mokiterions, recomputed from positions and never stored. *Name*'s justification for a name's absence from the observation is replaced, because it rested on `fear`'s absence and that no longer holds; the name stays off the observation. *Time and entropy* and the *Behavioral rules* preamble state each appended rule's position in tick order, in an eight-row table, since rule order stopped matching tick order at rule 19. Rule 3 carries `fear` and the suffered-attack record and its valid-proposal list is **untouched**, so rule 6 becomes the complete statement of what may be proposed. *Data and interface contracts* fixes the eleven-kind action contract, the three added event types with their field lists, and the `action_trace` line's conditional `suffered` field. Rule 6 extends validation to targeted proposals against the target's authoritative state, rule 7 fixes the trace-before-clearing order, rule 12's closing "No rule reads `fear`" is **inverted** and the composition of its two writers stated, and rule 13 states that combat death uses its existing path, event and finality. **Rules 20 to 26 are appended after rule 19 and not inserted**, on `WO-MOK-010`'s precedent and for its stated reason: contact, targeted actions, combat resolution, threat, surrender, the suffered-attack window, and the `social` source with its five ordered branches. Rule 5's accumulation paragraph and rule 19's tolerance test now state `REQ-MOK-060`'s ceiling as an obligation where they stated none, and name the two places the correction may be made; **the numeric form of the corrected waste condition is a second, later amendment**, named here as the one to make, on the 2026-08-19 *Behavioral trait* precedent where an approved rule named in advance the amendment to make on measurement. The measured 45 of 61 figure is **retained** as the state that obligation ends. | Approved 2026-08-20 by the repository owner acting as technical owner, in the **single act this amendment's own ordering requires**: together with `REQ-MOK-051` through `REQ-MOK-060`, `VER-MOK-016` and `WO-MOK-016`. The act is single because this amendment's `specifies` relation is what makes those ten requirements approvable at all — without it `validate` raises `E007` on every one of them and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. Implementation begins after this act and not before. It is stated in full in `WO-MOK-016`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Eight consequences the text derived rather than decided are named in that work order's *Required amendments* section; the owner took the four of them that were genuinely open before approving, and those four are recorded in its decision table with the alternatives declined. |
 | 2026-08-20 | Rule 21's co-location fallback and rule 6's paragraph on it are corrected to name **both `avoid` and `retreat`**, under `REQ-MOK-052`. Both named `avoid` alone. `retreat` reaches distance zero on identical terms: the two verbs are one move away from the target, differ from `approach` only in sign, resolve through the same axis rule, and `retreat`'s precondition — the target named in the actor's suffered-attack record — requires no contact but does not exclude it. `retreat` is the more reachable of the two, because rule 26 has no branch proposing `avoid` at distance zero while its answer branch selects `retreat` for a defender at `fear` of at least `30` whose attacker struck from the same cell and has not moved. **Nothing about the fallback's behavior changes**, for either verb: north, then east, south, west, drawing no entropy, and `approach` at distance zero stays a rejection. This is a correction of an incomplete enumeration rather than of an obligation, and the previously-stated form is retained above in the amended paragraphs so that a reader of `VREC-MOK-016` can see what was understated. | Approved 2026-08-20 by the repository owner acting as technical owner, on the discrepancy being put to them with the alternatives — recording it as residual uncertainty in `VER-MOK-016`, or restricting `retreat` in the code to match the text literally. Both were declined: the second would reject a co-located retreat, which is the case rule 26 most often produces. The implementation agent found the discrepancy while enumerating rule 21's paths for `REQ-MOK-059` and did not decide it. The implementation is unchanged by this amendment and was already what the corrected text states; `WO-MOK-016`'s derived consequence 4 is corrected there in the same act, its parenthetical having asserted that rule 26 never reaches this case. |
 | 2026-08-20 | Rule 26's branch order and engagement threshold, under `REQ-MOK-057`'s first amendment. **Six provisions of that rule alone; no other rule is touched, and rule 12 in particular is not.** The five-branch list becomes six: rule 19's case 3 is hoisted out of branch 5 into a new branch 3 ahead of the two social branches, so that food perceived outranks company perceived and company outranks aimless wandering, and rule 19's case 4 stays alone at branch 6. The engagement threshold moves from `30` to `95` in both places it is read. The *normative ordering* paragraph now forbids delegating branch 3 as well as branch 2 to rule 19 whole. The *three constants* paragraph states `95`. The *composition with rule 23* paragraph is rewritten: it claimed that one threat moves a calm Mokiterion from `attack` to `threaten`, which was true at `30` and is false at `95`, and the composition now runs through branch 1's answer thresholds, which are unchanged. A new paragraph states what `95` means and records that it is an arbitrary constant rather than a derived one. The *entropy discipline* paragraph renumbers, and the differential equality with rule 19 **widens** from "no Mokiterion perceived" to "case 1, 2 or 3 applies", which is strictly more observations. | Approved 2026-08-20 by the repository owner acting as product owner and technical owner, on the measured evidence in `evidence/WO-MOK-016/escalation.md`. The rule as first approved was unsatisfiable against `REQ-MOK-058`: `fear` is driven by perception at radius `16` and engagement required contact at radius `1` below `fear` `30`, so the gate closed on the third perceiving tick, no approach could complete, nothing struck anything and branch 1 never fired. Seventeen variants were measured across three levers. The owner chose between three packages, and selected the one that **leaves rule 12 as Phase 2 approved it** — declining an earlier selection to rescope rule 12 to contact, which recovered lethality but was measured to put `REQ-MOK-058`'s floor beyond reach at every gate value, and which would have invalidated `WO-MOK-010`'s measured `fear` distribution. `REQ-MOK-058`'s floor of five is ratified unchanged in the same act. |
+| 2026-08-22 | **The help output restructured so that no fact an operator needs is implicit, under `REQ-MOK-018` as amended the same date. Three provisions; no simulated behavior, no default, no accepted value, no constraint and no exit code changes.** *Inputs*' synopsis block reads `<number>` where it read `<u64>`, with a paragraph stating that both options still parse into a `u64` and that the placeholder now names what the operator supplies rather than how it is stored. *Help output* replaces its four-item ordered content with six items: the synopsis stays first, an orientation paragraph is added after it, and two statements are added after the order-and-repetition sentence — what the program writes and to which stream, and the exit codes — each restating *Outputs*, which governs. The options block gains a blank line between entries and the rule that it ends at the first line carrying text in column one, since a blank line no longer closes it. Its table gains a fourth column stating what else each entry says, which is **the trailing explanatory prose relocated into the entries**: the four decision-source descriptions and the three roles `--density` binds. **That prose is deleted rather than kept beside them**, which the *stated once* paragraph is extended to say in as many words, so a later correction has one place to land. `--density`'s row states two constraints the help text did not state before — at least one resource per territory, and not above `100` — both already in its *Inputs* bullet. **What is retired is a provision about where text sits, not an obligation**: stated-equals-applied, each-fact-once, and the rule that the block states no behavior stated nowhere else are all unchanged and all still govern, the last extended to cover the two added statements and the orientation paragraph. | **OUTSTANDING.** Written by the implementation agent on 2026-08-22 under `WO-MOK-020` and approved by nobody. It requires the technical owner acting on `REQ-MOK-018`'s amendment of the same date, which is the product owner's, and the two are one act because this section's fourth column is unsatisfiable under that requirement's unamended *Verbosity stays bounded* clause. `WO-MOK-020` states all three provisions in full in its *Required amendments* section, together with the `SPEC-MOK-003` amendment the observer's own text needs. The implementation agent chose the wording and the layout, which `REQ-MOK-018`'s *Constraints* delegate; it decided no default, no value and no constraint, and none moved. |
 
 | 2026-08-20 | The optional structured record stream, under `CAP-MOK-009`. Eleven provisions, none of which changes a simulated behavior. *Scope* stops excluding structured output and names `SPEC-MOK-006` as its contract, while keeping persistence excluded. *Actors* adds the filesystem as a destination the binary target writes and the engine never reads. *Inputs* takes `--events-path <path>` in the synopsis and one bullet: absent by default, at most once, the empty string and the single character `-` rejected as invalid configuration, and a well-formed path the platform refuses classified as a runtime failure instead. *Help output* gains the option's entry between `--trace-actions` and `--help`, stating an absence rather than a value as its default and no constraint. *Outputs* adds the stream, and records that the text stream is unaffected by the option's presence; the exit-code list is unchanged and a paragraph states that no code is added. *Error and recovery behavior* adds that failing to create, write, flush or close the sink exits `1` with no summary claimed, that a sink that cannot be created stops the run before any tick, and that a file the process created is removed on failure. *Security and privacy properties* records the sink path as the one input interpreted as a path, interpreted only by the binary target and only as a path, and adds that no record carries a path, a clock, a host, a user, an environment value or a credential. *Performance and capacity* records the stream as write-only, linear in the run and flat in memory. *Observability* adds byte-identical records for identical trace and sink configuration, and byte-identical standard output when a sink is configured. *Compatibility and migration* names the stream's own schema version and records that no existing behavior, default or exit code changes. *Explicitly unspecified decisions* records that the stream's framing, fields, alphabet, version and failure behavior are governed rather than delegated. **No rule, no decision source, no constant, no floor, no attribute, no ordering, no default and no exit code is touched, and every run's text output and entropy sequence are unchanged.** | Approved 2026-08-20 by the repository owner acting as technical owner, together with `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`, `ADR-MOK-005` and `VER-MOK-012`, and by way of `ADR-MOK-005`, whose *Required amendments* section states all eleven in full. The option's name, its default, its two rejected spellings, the classification of an unopenable path as a runtime failure and the decision that the library target performs no filesystem operation are the owner's decisions of the same date, recorded in `WO-MOK-019`. The implementation agent wrote the amended text under `WO-MOK-019` and did not decide the substance. `VREC-MOK-001`, which binds the 2026-08-11 content, is not edited. |
 
@@ -107,11 +108,16 @@ eight. It also removes a false statement that the second amendment left standing
 The binary accepts:
 
 ```text
-Mokiterions [--seed <u64>] [--ticks <u64>]
+Mokiterions [--seed <number>] [--ticks <number>]
             [--policy <baseline|reference|individual|social>]
             [--density <percent>] [--trace-actions]
             [--events-path <path>]
 ```
+
+The two numeric placeholders read `<number>` as of 2026-08-22, having read `<u64>` since 2026-08-11. Nothing about
+what either option accepts changed: both are still parsed into a `u64` and `--ticks` still rejects zero. `u64` is a
+Rust type name, and `REQ-MOK-018` names "the operator reading a terminal" as the audience of the text this block
+appears in, so the placeholder now states what the operator must supply rather than how it is stored.
 
 - `--seed` defaults to `0`.
 - `--ticks` defaults to `100` and must be greater than zero.
@@ -129,26 +135,50 @@ Mokiterions [--seed <u64>] [--ticks <u64>]
 `configuration error:` line on standard error when configuration is invalid. There is one usage text and two paths
 that emit it, so the content below is a property of that text and not of either path.
 
-The usage text contains, in order: the synopsis block above; an options block; a statement that options may appear
-in any order and at most once; and the explanatory prose on the decision sources and on what `--density` binds
-together.
+**Restructured 2026-08-22 for `REQ-MOK-018` as amended the same date.** What changed is *where* each fact is
+stated, not which facts are stated. Everything an operator needs about an option is now in that option's own entry,
+and the trailing explanatory prose that carried the decision-source descriptions and the `--density` explanation is
+**removed rather than duplicated**. The paragraphs below on stated-equals-applied and on stating each fact once are
+unchanged and still govern; the *Explanatory prose* provision they referred to is what this amendment retires.
 
-The explanatory prose on the decision sources describes all four. It states no default and no value constraint:
-the options block below states each of those once, and the prose is where an earlier copy of them lived. The
-options block contains one entry for each option the program accepts — `--seed`, `--ticks`, `--policy`,
-`--density`, `--trace-actions`, `--events-path`, and `--help`, in that order. Each entry states the option, its
-value placeholder where it takes a value, and a short description of its effect that is intelligible without this
-specification at hand. Each entry additionally states:
+The usage text contains, in order:
 
-| Option | Stated default | Stated constraint |
-|---|---|---|
-| `--seed` | `0` | none |
-| `--ticks` | `100` | must be greater than zero |
-| `--policy` | `reference` | only `baseline`, `reference`, `individual`, and `social` are valid, which the value placeholder states |
-| `--density` | `0.75` | at most two decimal places |
-| `--trace-actions` | no value; the entry states that tracing is off unless the option is given | none |
-| `--events-path` | none; the entry states that no record stream is written unless the option is given | none |
-| `--help` | none | none |
+1. the synopsis block above;
+2. one short orientation paragraph, stating what the program simulates, that a run is determined by its options
+   alone, and what an invocation with no options does;
+3. an options block;
+4. a statement that options may appear in any order and each at most once;
+5. a statement of what the program writes and to which stream;
+6. a statement of the exit codes.
+
+Items 2, 5 and 6 are added by this amendment. Items 5 and 6 restate *Outputs* below, which governs them; item 2 and
+the options block restate *Inputs* above and *World* below, which govern those. Where any of them differs from the
+section that governs it, that section governs and the text is wrong.
+
+The synopsis stays first, ahead of item 2, because `SPEC-MOK-002` rule 2 ties its first line to the binary's name
+and `tests/records.rs::help_opens_no_file` reads that line at the start of standard output.
+
+The options block contains one entry for each option the program accepts — `--seed`, `--ticks`, `--policy`,
+`--density`, `--trace-actions`, `--events-path`, and `--help`, in that order. **Entries are separated by a blank
+line and every line of an entry is indented**, so the block ends at the first line that carries text in column one,
+which is item 4. Each entry states the option, its value placeholder where it takes a value, and a description of
+its effect that is intelligible without this specification at hand. Each entry additionally states:
+
+| Option | Stated default | Stated constraint | Also stated in the entry, as of 2026-08-22 |
+|---|---|---|---|
+| `--seed` | `0` | none | that the same seed repeats a run exactly and a different seed gives a different world |
+| `--ticks` | `100` | must be greater than zero | what one turn is, and that a run stops earlier only when no Mokiterion is alive |
+| `--policy` | `reference` | only `baseline`, `reference`, `individual`, and `social` are valid, which the value placeholder states | one short description of each of the four values, and that none of them learns anything or calls a model |
+| `--density` | `0.75` | at most two decimal places; must leave at least one resource per territory; must not exceed `100` | the three roles the single value binds together, the territory's cell count, and that runs are comparable only with runs at the same density |
+| `--trace-actions` | no value; the entry states that tracing is off unless the option is given | none | that tracing only observes, so the same seed produces the same run either way |
+| `--events-path` | none; the entry states that no record stream is written unless the option is given | none | that standard output is byte-identical either way, and that nothing reads the file back |
+| `--help` | none | none | none |
+
+The fourth column is added 2026-08-22 and is the substance of the amendment: it is what the retired explanatory
+prose said, relocated into the entries and still stated once. `--density`'s two further constraints appear in the
+help text for the first time; both are already in that option's *Inputs* bullet, so nothing new is required of the
+program. **The four `--policy` value descriptions are the plain-language form of rules 5, 19 and 26 and of the
+uniform selection `baseline` performs; those rules govern, and a description that outruns them is wrong.**
 
 `--events-path`'s row was added 2026-08-20 for `REQ-MOK-042`. It sits between `--trace-actions` and `--help`,
 matching its position in the synopsis block, and it is the second option whose stated default is an absence rather
@@ -163,10 +193,15 @@ Every default stated in the options block is the value the program applies when 
 required to be equal, and that equality is verified rather than maintained by convention.
 
 Each of these facts is stated once. Where the explanatory prose previously repeated a default or a value constraint
-that the options block now states, the repetition is removed.
+that the options block now states, the repetition is removed. **The 2026-08-22 amendment carries that rule through
+to its end**: the prose that described the four decision sources and what `--density` binds together is not kept
+beside the entries that now state the same things, it is deleted, so a later correction has one place to land. A
+help text that stated a fact in an entry *and* in prose beneath the block would satisfy neither this paragraph nor
+`REQ-MOK-018`.
 
 The options block states no behavior this specification does not state elsewhere. It restates the *Inputs* list for
-the operator's benefit, and where the two differ this specification's *Inputs* list governs.
+the operator's benefit, and where the two differ this specification's *Inputs* list governs. The same holds for the
+orientation paragraph against *World*, and for the two statements on output and exit status against *Outputs*.
 
 ## Outputs
 

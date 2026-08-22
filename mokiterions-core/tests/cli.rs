@@ -210,12 +210,21 @@ fn density_is_accepted_in_the_specified_forms_and_rejected_otherwise() {
 // configuration the parser actually applies. An assertion written only against `USAGE`
 // would hold for every possible value of `USAGE`, including an empty one.
 
-/// The lines of the options block: the text between the `Options:` heading and the blank
-/// line that closes it.
+/// The lines of the options block: the indented text that follows the `Options:` heading,
+/// blank separator lines removed.
+///
+/// The block closes at the first line that carries text in column one, which is where
+/// `SPEC-MOK-001`'s *Help output* section puts the statement on order and repetition. Under
+/// `WO-MOK-020` the block gained a blank line between entries, so a blank line no longer
+/// closes it; nothing else about how this reads the text changed, and no assertion below was
+/// touched.
 fn options_block() -> Vec<&'static str> {
     let mut lines = USAGE.lines().skip_while(|line| *line != "Options:");
     assert_eq!(lines.next(), Some("Options:"), "no options block in USAGE");
-    lines.take_while(|line| !line.trim().is_empty()).collect()
+    lines
+        .take_while(|line| line.trim().is_empty() || line.starts_with(' '))
+        .filter(|line| !line.trim().is_empty())
+        .collect()
 }
 
 /// The explanatory prose that follows the options block.

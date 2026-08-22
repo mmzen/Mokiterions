@@ -5,13 +5,19 @@ title = "Help output content verification"
 status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-22"
 
 [relations]
 verifies = ["REQ-MOK-018"]
 +++
 
 # Verification Contract: Help output content verification
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-22 | **Realigned to `REQ-MOK-018` as amended the same date, and three stale enumerations corrected.** The additions are in *Amendment of 2026-08-22* below: four matrix rows and two acceptance scenarios, covering the third clause of the amended statement, the retirement of the trailing prose, the two statements the text now makes about output and exit status, and the byte-identity of the four shared entries across the two targets. The corrections are stale counts this contract has carried since it was written for `WO-MOK-004`: "six options" and "all six" meant five options and `--help`, and `--policy`'s row named two accepted values when four have been accepted since 2026-08-20. **Nothing already in the matrix is withdrawn or weakened**, and the *Independence* section's hazard is unchanged and still the governing one: every check is written against a source outside `cli::USAGE`, and the new byte-identity check is written against the *other* target's constant rather than against a literal in a test file. The baseline figures for `WO-MOK-004` are historical and are not restated. | **OUTSTANDING.** Written by the implementation agent on 2026-08-22 under `WO-MOK-020` and approved by nobody. It requires the **assurance owner**, and it cannot be taken before the product owner's `REQ-MOK-018` amendment of the same date, since three of the four added rows verify clauses that amendment introduces. `WO-MOK-020` states it in full in its *Required amendments* section. The implementation agent wrote the rows and the two scenarios; it decided no pass condition that the amended requirement does not already fix. |
 
 ## Independence
 
@@ -91,6 +97,37 @@ description beyond the substance the specification fixes and the readability ass
 | `REQ-MOK-018` | review | Readability | Each description is intelligible to a reader who has not read `SPEC-MOK-001`; a description that requires the specification to interpret is an adverse observation |
 | `REQ-MOK-018` | static-analysis | Line width | No line the options block introduces exceeds 80 columns; the reproduced synopsis block, whose first line is 81 columns before and after, is unchanged |
 | `REQ-MOK-018` | automated-test | Applied defaults unchanged | `cli::parse` on an empty argument list yields exactly the pre-change configuration: `seed 0`, `tick_limit 100`, `Policy::Reference`, `Density::DEFAULT`, `trace_actions false` |
+
+### Amendment of 2026-08-22
+
+Three rows above carry stale enumerations, corrected here rather than edited in place so that a reader of
+`VREC-MOK-004` can see what they said. **"An options entry exists for each of `--seed`, `--ticks`, `--policy`,
+`--density`, `--trace-actions`, and `--help`"** and its "All six present" pass condition were written when the
+program accepted five options and `--help`; the set is now `--seed`, `--ticks`, `--policy`, `--density`,
+`--trace-actions`, `--events-path` and `--help`, and the pass condition is that the options block and the synopsis
+name exactly the options the parser's own match arms accept, in the same order, with no surplus and no shortfall.
+**`--policy`'s row** named `baseline` and `reference` as the value set; it is `baseline`, `reference`, `individual`
+and `social`, each of which the parser must accept and none of which may be absent from the entry. **"Every declared
+default is stated"** counted five; it is six declared defaults, of which four are values stated once each and two are
+stated absences.
+
+These rows are added:
+
+| Requirement | Method | Case/evidence | Pass condition |
+|---|---|---|---|
+| `REQ-MOK-018` | automated-test | Each accepted value of a closed-set option is explained | The `--policy` entry contains all four value names *and* a description of each; a value named in the placeholder and not described in the entry is a failure |
+| `REQ-MOK-018` | automated-test | The retired prose is gone rather than duplicated | No text after the options block states a default or a value constraint; the decision-source descriptions and the `--density` explanation appear in their entries and nowhere else |
+| `REQ-MOK-018` | automated-test | The two added statements are present and true | The text states what it writes and to which stream, and states exit `0` for a finished run or printed help, `2` for invalid configuration and `1` for an output failure; the three codes are the three `SPEC-MOK-001` *Outputs* fixes and no fourth is named |
+| `REQ-MOK-018` | automated-test | The observer describes the shared inputs in the engine's words | Each of the `--seed`, `--ticks`, `--policy` and `--density` entries read out of `mokiterions_tui::options::USAGE` appears byte for byte in `mokiterions::cli::USAGE`; an edit to one alone fails and names the option |
+
+And these acceptance scenarios:
+
+6. An operator who has not read any specification runs `--help`, chooses a `--policy` value on the strength of the
+   entry alone, and can say what that choice will make the Mokiterions do — the failure this amendment exists to
+   remove being a choice made from four bare names.
+7. A description of one shared input is edited in one target and not the other in a scratch copy; the suite fails and
+   names the option. The scratch change is not committed, and its purpose is to show that the duplication is held
+   rather than merely intended.
 
 ## Acceptance scenarios
 
