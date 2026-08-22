@@ -1,0 +1,26 @@
+
+running 1 test
+the_shared_entries_are_the_engines_own_words --- FAILED
+
+failures:
+
+---- the_shared_entries_are_the_engines_own_words stdout ----
+
+thread 'the_shared_entries_are_the_engines_own_words' (24728) panicked at mokiterions-tui\tests\options.rs:179:9:
+the observer describes --density in words the engine's own help does not use:
+  --density <percent>
+      How much food the world holds, as a percentage of one territory's 8193
+      cells, written with at most two decimal places. Default: 0.75. The one
+      value sets three things together: the food present at the start, the most
+      a territory can ever hold, and the level regrowth aims for. It must leave
+      at least one resource per territory and must not exceed 100. Runs are
+      comparable only with runs at the same density.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    the_shared_entries_are_the_engines_own_words
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p mokiterions-tui --test options`

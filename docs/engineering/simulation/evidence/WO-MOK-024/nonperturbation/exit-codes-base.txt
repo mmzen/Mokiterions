@@ -1,0 +1,642 @@
+=== help
+argv:        --help
+exit:        0
+stdout_sha:  88d278a2feabcfeb80c9f457dd3aae10a50df60cf5b3db7ebc34d33f48554601
+stdout_len:  2195
+stderr:
+=== ticks zero
+argv:        --ticks 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --ticks must be greater than zero
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== density zero cells
+argv:        --density 0.01
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0.01; resolves to zero resources per territory; the smallest usable density is 0.02
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== density literal zero
+argv:        --density 0
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0; resolves to zero resources per territory; the smallest usable density is 0.02
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== density precision
+argv:        --density 0.751
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 0.751; at most two decimal places are accepted
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== density negative
+argv:        --density -1
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: -1; expected digits and at most one decimal point
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== density over 100
+argv:        --density 101
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: 101; must not exceed 100
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== density non-numeric
+argv:        --density abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --density value: abc; expected digits and at most one decimal point
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== policy invalid
+argv:        --policy random
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --policy value: random; expected baseline, reference, individual, or social
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== policy missing value
+argv:        --policy
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --policy
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== seed non-numeric
+argv:        --seed abc
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: invalid --seed value: abc
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== unknown option
+argv:        --unknown
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: unknown option: --unknown
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== duplicate seed
+argv:        --seed 1 --seed 2
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --seed may appear at most once
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== duplicate trace
+argv:        --trace-actions --trace-actions
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: --trace-actions may appear at most once
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== ticks missing value
+argv:        --ticks
+exit:        2
+stdout_sha:  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stdout_len:  0
+stderr:
+  | configuration error: missing value for --ticks
+  | Usage: Mokiterions [--seed <u64>] [--ticks <u64>]
+  |                    [--policy <baseline|reference|individual|social>]
+  |                    [--density <percent>] [--trace-actions]
+  |                    [--events-path <path>]
+  |        Mokiterions --help
+  | 
+  | Options:
+  |   --seed <u64>                   Entropy stream seed. Default: 0.
+  |   --ticks <u64>                  Ticks to run; must be greater than zero.
+  |                                  Default: 100.
+  |   --policy <baseline|reference|individual|social>
+  |                                  Decision source. Default: reference.
+  |   --density <percent>            Resource density per territory, at most two
+  |                                  decimal places. Default: 0.75.
+  |   --trace-actions                Emit one action trace per living-agent decision
+  |                                  opportunity. Off unless given.
+  |   --events-path <path>           Write the structured record stream to the named
+  |                                  file, replacing any file already there. No
+  |                                  record stream is written unless given.
+  |   --help                         Print this usage and exit without running.
+  | 
+  | Options may appear in any order and at most once.
+  | 
+  | The reference policy is a deterministic development instrument, not autonomous
+  | behavior. It seeks and consumes perceived food so that world viability can be
+  | measured. The baseline policy selects uniformly among valid actions. The
+  | individual policy seeks and consumes as the reference policy does, except that
+  | each Mokiterion also accepts food it would partly waste, in proportion to its own
+  | waste tolerance, which is derived from the seed and its identifier. The social
+  | policy behaves as the individual policy does while no other Mokiterion is
+  | perceived, and otherwise answers an attack it has just suffered, attacks or
+  | threatens a Mokiterion in contact, or closes on or keeps away from a more distant
+  | one, according to how afraid it is.
+  | 
+  | --density is the percentage of a territory's cells that hold a resource. It sets
+  | the initial endowment, the territory capacity, and the replenishment target
+  | together. Only the densities declared in the requirements carry a population
+  | viability floor.
+=== single tick
+argv:        --ticks 1 --seed 42
+exit:        0
+stdout_sha:  35777c86b7dd8dce51a4f84245404aba4b71cfee0227ac7bc40b1ae8c800c14b
+stdout_len:  14386
+stderr:

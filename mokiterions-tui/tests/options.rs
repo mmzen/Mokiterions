@@ -142,3 +142,43 @@ fn speed_steps_are_clamped_at_both_ends() {
     assert_eq!(slower(2), 1);
     assert_eq!(slower(1), 1);
 }
+
+/// One entry of a usage text: the line naming the option, and every line indented beneath it.
+fn entry(usage: &str, option: &str) -> String {
+    let opening = format!("  {option} ");
+    let mut lines = usage.lines().skip_while(|line| !line.starts_with(&opening));
+    let first = lines
+        .next()
+        .unwrap_or_else(|| panic!("the usage text has no entry for {option}"));
+    let mut text = String::from(first);
+    for line in lines.take_while(|line| line.starts_with("      ")) {
+        text.push('\n');
+        text.push_str(line);
+    }
+    text
+}
+
+/// `WO-MOK-024`: the four engine inputs are described here in the engine's own words.
+///
+/// `SPEC-MOK-003`'s *Start-up inputs* section gives them "identical names, identical parsing,
+/// identical validation, identical defaults and identical rejection behavior" and leaves their
+/// meaning to `SPEC-MOK-001`, which the observer therefore may not restate differently. The
+/// observer prints its own text because its synopsis and its own three inputs differ, so the
+/// four shared entries exist twice; a copy is only safe while it stays a copy. This reads each
+/// entry out of the observer's text and requires the engine's text to contain it byte for byte,
+/// so an edit to one description alone fails here and names the option. Neither text is
+/// compared to a literal declared in this file, which would move the drift one level up.
+#[test]
+fn the_shared_entries_are_the_engines_own_words() {
+    for option in ["--seed", "--ticks", "--policy", "--density"] {
+        let ours = entry(USAGE, option);
+        assert!(
+            ours.lines().count() > 1,
+            "{option} has no description in the observer's text"
+        );
+        assert!(
+            mokiterions::cli::USAGE.contains(&ours),
+            "the observer describes {option} in words the engine's own help does not use:\n{ours}"
+        );
+    }
+}

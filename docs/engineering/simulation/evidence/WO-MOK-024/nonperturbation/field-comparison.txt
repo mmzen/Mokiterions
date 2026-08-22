@@ -1,0 +1,36 @@
+Per-case comparison of the sixteen named cases of VER-MOK-004's capture matrix,
+base commit f7b1c45 against candidate. The four fields compared are the four the
+contract fixes: exit code, standard-output digest, standard-output length, and the
+first line of standard error, which is the `configuration error: ...` line. The
+stderr line count is reported but NOT a pass field: the usage block appended after
+that line is exactly what this work order replaces.
+
+case                 | exit | sha ok   | stdout len | stderr lines | configuration error line
+---------------------------------------------------------------------------------------------
+help                 | 0    | CHANGED  | 2195 -> 3600 | 0           | <stderr empty>
+ticks zero           | 2    | same     | 0          | 39 -> 72    | configuration error: --ticks must be greater than zero
+density zero cells   | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --density value: 0.01; resolves to zero resources per territory; the smallest usable density is 0.02
+density literal zero | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --density value: 0; resolves to zero resources per territory; the smallest usable density is 0.02
+density precision    | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --density value: 0.751; at most two decimal places are accepted
+density negative     | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --density value: -1; expected digits and at most one decimal point
+density over 100     | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --density value: 101; must not exceed 100
+density non-numeric  | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --density value: abc; expected digits and at most one decimal point
+policy invalid       | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --policy value: random; expected baseline, reference, individual, or social
+policy missing value | 2    | same     | 0          | 39 -> 72    | configuration error: missing value for --policy
+seed non-numeric     | 2    | same     | 0          | 39 -> 72    | configuration error: invalid --seed value: abc
+unknown option       | 2    | same     | 0          | 39 -> 72    | configuration error: unknown option: --unknown
+duplicate seed       | 2    | same     | 0          | 39 -> 72    | configuration error: --seed may appear at most once
+duplicate trace      | 2    | same     | 0          | 39 -> 72    | configuration error: --trace-actions may appear at most once
+ticks missing value  | 2    | same     | 0          | 39 -> 72    | configuration error: missing value for --ticks
+single tick          | 0    | same     | 14386      | 0           | <stderr empty>
+
+Cases with a change on any pass field: 1 of 16.
+The one is `help`, whose standard output IS the subject of this work order:
+  base   sha 88d278a2feabcfeb80c9f457dd3aae10a50df60cf5b3db7ebc34d33f48554601  len 2195
+  after  sha 99f832b85995666161fc3331f82bee9e330e044223eb204b0e2ddb05ee45f879  len 3600
+The 3600 is the rendered text's 3601 bytes less the trailing newline that capture.sh's
+`printf '%s'` drops; after/engine-usage.txt is the 3601-byte form.
+
+Every one of the fourteen invalid-configuration cases holds exit 2, an empty standard
+output, and a byte-identical `configuration error:` line. Their stderr grew from 39
+lines to 72 because the appended usage block grew from 38 lines to 71.
