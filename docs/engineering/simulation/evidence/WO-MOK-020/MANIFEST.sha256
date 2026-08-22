@@ -4,7 +4,7 @@
 #
 # Verify from this directory:  sha256sum -c MANIFEST.sha256
 #
-# 22 files, 1,897,837 bytes.
+# 22 files, 1,899,864 bytes.
 #
 7f4d6bc170bcab1c7f103fec215a52508017f4e570649accc73c7fe49342bc45 *01-format-candidate.txt
 b85f453fb67fae4d3a076cf95d9e88b3fa1034eb55aa9fe65a97b80aa46e0585 *02-lint-candidate.txt
@@ -26,5 +26,5 @@ c1b396dc9f93fc0c4392ac8a97beacdbf0a041e975d6dd3053065f1f04fcc78b *14-long-run-tr
 82d7fc34563ada3e43f759d549d6dcc060380e3ba76ec5f4b879d8a9122a9ca8 *17-export-unmoved.txt
 6b5407d26dc1908ba6c173da680ca3467182f3b7e5a2390eb77502e27026d9e0 *18-dependency-sets-unmoved.txt
 1e273bc2eebc094d25a585a52fdb8a3ec95e4c14c493ebfd3d7020bcb10016c2 *19-harness-validate-and-preflight.txt
-9549e4a0a1d941d2bac1bf5a8074b16a25cd643a246279da146a73c6ac878ca1 *README.md
-20a215f253cade00b9f6dcfac04049f51cb273f0acb9d28869aa318faf987d19 *completion-report.md
+9d2dc310b8ee67ae7a9bf04a95a92a396885fc22404833f58362ed36f1ce64e0 *README.md
+e06d748575004524f271629bec5189eb71a4290e6bf9152f148a7ab585fa115a *completion-report.md

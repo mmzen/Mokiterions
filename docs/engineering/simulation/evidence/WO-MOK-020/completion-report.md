@@ -209,9 +209,17 @@ bullets to the files that answer it, and states the four bullets met by substitu
 | What | Whose act | Artifact that carries it |
 |---|---|---|
 | All **seven** manual assessments | product owner (1, 2), technical owner (3, 4, 7), assurance owner (5, 6) | `VER-MOK-017` *Manual assessments* |
-| Ratifying the two amendment rows | technical owner | `SPEC-MOK-003`, `SPEC-MOK-004` |
-| Moving the work order to `implemented` | engineering owner | `WO-MOK-020` |
 | The commit-bound verification record | assurance owner | a new `VREC` against `VER-MOK-017` |
+| A reconciliation row re-measuring rules 9, 10 and 11 at the merge | whoever merges second | `SPEC-MOK-004` |
+| Reconciling `docs/ROADMAP.md`, which this work order puts out of its own scope | engineering owner | its own change, as the two prior roadmap reconciliations were |
+
+**Two rows left this table on 2026-08-22, after the packet was captured and in a separate governance act.** The
+repository owner, acting as technical owner, **ratified both amendment rows** — `SPEC-MOK-003`'s nine provisions in
+one act, and `SPEC-MOK-004`'s figures with the reconciliation above owed — and, acting as engineering owner, moved
+this work order from `approved` to **`implemented`**. Both amendment rows carry that act, the alternatives declined
+and what the owner was shown before deciding. The ratification discharges no manual assessment: it decided the
+substance assessments 3 and 4 turn on, but an assessment is a statement recorded in a verification record, and none
+exists.
 
 Assessment 6 — recomputing at least one amended `SPEC-MOK-004` figure independently of the retained
 command output — is deliberately **not** answered by `10-spec-mok-004-measured.txt`, which is the retained
@@ -259,10 +267,12 @@ command output it must be independent of.
    conflict to that side. Both amendment tables now gain a row dated 2026-08-22 from two branches, and
    whichever merges second resolves by hand. Neither row is a figure this side may edit on the other's
    behalf.
-5. **`docs/ROADMAP.md` is not updated.** Its entry records this chain as defined and unapproved, which was
-   true when it was written. It is not corrected here because the work order is still `approved`:
-   correcting the roadmap before the status transition would record a state the artifact graph does not
-   yet hold. It becomes accurate to update it in the same act that moves the work order.
+5. **`docs/ROADMAP.md` is not updated, and not by this chain.** Its entry records these four artifacts as
+   `draft` and the amendments as unwritten, which was true when it was written and is now wrong on both
+   counts. It is not corrected here because **`WO-MOK-020` puts the roadmap out of its own scope** — "the
+   roadmap is repository-owned planning reconciled under its own change" — so the reconciliation belongs
+   to a separate change, as the two prior roadmap reconciliations were. The status transition does not
+   alter that: it makes the roadmap's entry stale, it does not bring the file into scope.
 6. **Four items disclosed earlier in this chain remain owed and are not this work order's**: Phase 5 does
    not state `REQ-MOK-050`'s pull-request gate in its own section; `WO-MOK-018` has no phase account;
    finding 7's `VER-MOK-016` amendment row is the assurance owner's; and the non-artifact CI lane is

@@ -125,15 +125,24 @@ needs a commit-bound record against `VER-MOK-017`, decided by the assurance owne
 release record. The preflight in `19` says the same thing in its own last line: it "does not approve
 artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy."
 
-**None of the seven manual assessments.** All seven are OUTSTANDING. Three belong to the product owner
+**None of the seven manual assessments.** All seven are OUTSTANDING, and the ratification above does not
+discharge any of them: it decided the substance assessments 3 and 4 turn on — item 7's amendment and the two
+corrections — but an assessment is a statement recorded in a verification record, which does not exist yet. Three belong to the product owner
 (1 and 2) and the technical owner (3, 4 and 7), one to the assurance owner (5), and one — assessment 6,
 recomputing at least one amended `SPEC-MOK-004` figure independently of the retained command output — is
 the assurance owner's and is deliberately **not** answered by `10`, which is the retained command output
 it must be independent of.
 
-**Neither specification amendment row is approved.** The rows written under this work order into
-`SPEC-MOK-003` and `SPEC-MOK-004` are recorded as OUTSTANDING pending the technical owner's ratification.
-An amendment row the implementation agent wrote is a proposal until the accountable role signs it.
+**Both specification amendment rows were OUTSTANDING when this packet was captured and were ratified
+afterwards.** The captures in `01`–`19` were taken against a tree in which both rows read OUTSTANDING, which is
+what an amendment row the implementation agent wrote is until the accountable role signs it. The repository owner,
+acting as technical owner, ratified both on 2026-08-22 in a separate governance act after this packet was complete:
+`SPEC-MOK-003`'s nine provisions in one act, correction 2's fork decided explicitly in favour of narrowing rule 4's
+prohibition to derivation; and `SPEC-MOK-004`'s figures with **a reconciliation row owed at the next merge**, because
+the `WO-MOK-008` branch changes two of the same source files and a trial merge measures rules 9, 10 and 11 at 119,
+66 and 342 rather than the 117, 58 and 332 this packet retains evidence for. Both rows carry that act's own record.
+This paragraph is the only statement in the packet that the ratification changes, and no captured transcript was
+re-taken for it.
 
 **That the figures survive a merge.** Every figure here is measured against `ccb0584`. `master` has moved
 before in this repository and will again; on a merged tree the gates, the census, the counts and the
