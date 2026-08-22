@@ -9,6 +9,9 @@
 - **Created:** 2026-08-17
 - **Scope:** macro phases following the completed minimum simulation foundation (`WO-MOK-001`)
 - **Audience:** product owner, engineering owner, assurance owner
+- **Statuses re-measured against the artifact graph and against `master`:** 2026-08-22, at `f7b1c45`. Every
+  lifecycle word, commit and merge claim below was read from artifact metadata and from `git merge-base`
+  rather than carried forward. Where a claim moved, the earlier form is retained in a blockquote beside it.
 
 ## Purpose
 
@@ -72,7 +75,8 @@ failing and were resolved by a governed amendment inside the phase — see Phase
   `--policy individual` for a Mokiterion that perceives no company and holds an empty record
 - No entropy drawn by any targeted resolution, so the shared stream is untouched by everything the phase adds
 
-Added under `WO-MOK-017` (implemented, **not verified** — see Phase 3's status below):
+Added under `WO-MOK-017` (merged to `master` as `f7b1c45`, the work order still **`in_progress`** and the chain
+**not verified** — see Phase 3's status below for the two lifecycle acts that are unmade):
 
 - The missing term in `SPEC-MOK-001` rule 5's non-waste condition: a resource whose satiety restoration would
   be clipped is eaten and approached anyway while the clipped amount is no more than the resource's own
@@ -86,8 +90,9 @@ Added under `WO-MOK-017` (implemented, **not verified** — see Phase 3's status
   re-measured rather than argued: `REQ-MOK-014`'s eight and `REQ-MOK-034`'s eight are met on every declared
   seed, with no margin on the worst of them, and `REQ-MOK-058`'s five is met by two
 
-Added under `WO-MOK-019` (implemented and verified under `VREC-MOK-012` at commit `50364a3` — see Phase 4a's
-status below for what that record accepts rather than satisfies, and for the merge it does not cover):
+Added under `WO-MOK-019` (implemented, merged to `master`, and verified at **two** commits — `VREC-MOK-012` at the
+branch candidate `50364a3` and `VREC-MOK-019` at the second merge commit `e96648a2` — see Phase 4a's status below
+for what those records accept rather than satisfy, and for the merge neither of them binds):
 
 - A structured record stream, `SPEC-MOK-006`, written to a file named by `--events-path` and to nothing by default:
   one record per line, four kinds — `header`, `event`, `metrics`, `run` — with every event record in one-to-one
@@ -465,6 +470,26 @@ branch merging *second*, and nothing was asked of either branch.
 
 Everything measured is in `engineering/simulation/evidence/WO-MOK-013` — start with its `README.md`.
 
+**That branch merged the same day, and its chain is a delivered one.** Pull request #33 merged
+`governance/adr-mok-006-third-party-crates` into `master` as `d8e2079` on 2026-08-20, so the blockquote's closing
+clause is overtaken: `WO-MOK-014` is `implemented`, and both `VREC-MOK-014` at the branch candidate `65ac88b0` and
+`VREC-MOK-015` at the merge commit `9599c0a9` are `verified` against `VER-MOK-014`. The renumbering above is the
+only trace this roadmap carried of that work until now, which understated it considerably — it is a governed chain
+with its own ADR and two permanent CI gates. It is accounted for under *Cross-cutting work* below, in
+*Governed chains delivered outside the phase sequence*.
+
+**Two further observer defects were closed on 2026-08-21 under `WO-MOK-018`.** It is recorded here because its
+verification record belongs to this phase's contract and would otherwise be unreachable from the roadmap. The work
+order — *"Close the two observer defects Phase 3.1 left: a stale filterable-type count, and a fourth attribute that
+becomes unreadable at death"* — is `implemented`, implements `REQ-MOK-021` and `REQ-MOK-022`, and therefore falls
+inside this phase's `CAP-MOK-004` rather than opening an intent of its own. **`VREC-MOK-018` is `verified`**, bound
+to `6051ef21`, against this phase's own `VER-MOK-005`. It reached `master` through pull request #37 as `7f4792a`.
+
+> **This is a pointer and not the account.** What the two defects were, why Phase 3.1 produced defects in a Phase
+> 1.5 component, what the fix traded, and how a contract approved for the terminal observer came to be the one a
+> later correction conforms to — none of that is written in this roadmap, and all of it is owed. A reader auditing
+> the verification records should find `VREC-MOK-018` referenced somewhere; that is all this paragraph achieves.
+
 ---
 
 ## Phase 2 — Individuality: traits and fear
@@ -742,7 +767,19 @@ rule 19's case 3 — walk toward food — precedes the social branches, `ENGAGEM
 amendment-record row, before any code was written. Measured at the resulting candidate: 9, 10, 9, 9 and 11
 survivors; combat deaths 1, 2, 2, 3 and 1; `surrender` proposed 5, 10, 8, 6 and 7 times; meals recovered to
 326–389 against 205–304, so the starvation mechanism is gone. Both obligations hold, and `WO-MOK-016` is
-`implemented` and verified at `VREC-MOK-017`.
+`implemented` and verified at `VREC-MOK-017`, bound to `ecba9fee`.
+
+**`VREC-MOK-017` is the second record written for this work order, and the first is `superseded`.**
+`VREC-MOK-016`, bound to the governance transition commit `45396016`, never reached `verified`: it was captured
+`ready` and moved straight to `superseded` on 2026-08-21 by the repository owner acting as accountable assurance
+owner, with `superseded_by = ["VREC-MOK-017"]`. Its own reason is that its candidate holds
+`manual-assessment.md` with **eight of eleven record blocks blank**, and `VER-MOK-016` counts an unrecorded
+assessment as an outstanding one — so `verified` at that commit would have asserted satisfaction of a contract the
+commit does not satisfy. The owner then took the eight assessments, and `ecba9fee` is the commit that holds them.
+**One trap for anyone reading its metadata:** `VREC-MOK-016` does carry a `verified_at`, and that field is a
+capture timestamp rather than an approval time — its own record says so — so the field is not evidence that the
+record was ever `verified`. The status is. The retired record is worth reading rather than skipping: its
+measurements are reproducible only at `45396016`, which is what a superseded record is for.
 
 **The mitigation is not a repair, and the diagnosis above is why.** Raising the gate to 95 buys ten perceiving
 ticks instead of three, which is enough to reach contact on the declared seeds; it does not change that `+10` up
@@ -756,8 +793,31 @@ side of it a holder falls on is decided by how long it has had company, not by a
 `REQ-MOK-060`'s resource-composition ceiling was the third failing measurement, 14 of 15 cells, deferred to a
 second amendment by the owner's decision of 2026-08-20 and descoped out of `WO-MOK-016` the following day. It is
 `WO-MOK-017`, recorded under *Current state* above: the ceiling amended to three fifths, and the allowance term
-rule 5 had lost restored. **Implemented and not verified** — the verification record is the assurance owner's act
-and has not been made.
+rule 5 had lost restored.
+
+**Its status is `in_progress`, and its chain is merged.** Those two facts sit oddly together and both are read
+rather than inferred. Pull request #39 merged `feature/resource-composition-ceiling` into `master` as `f7b1c45` on
+2026-08-21, carrying the candidate `26ae6ba` and the merge `ae2e44f` above it, so the corrected world rule is on
+the integration branch. `WO-MOK-017.md` still reads `status = "in_progress"`, and `preflight` reports it as such.
+**Two lifecycle acts behind the code are therefore unmade, and they belong to different owners:** the transition
+out of `in_progress` is the engineering owner's, and a verification record bound to `ae2e44f` is the assurance
+owner's. Neither has been taken, so nothing accepts this tree.
+
+**The record that is owed cannot be called `VREC-MOK-017`,** although the work order's own merge evidence
+(`evidence/WO-MOK-017/merge/README.md`) names it four times as the record for this tree. That identifier is spent:
+it is `verified` against `WO-MOK-016` at `ecba9fee`, two sections up. The record owed here needs an unused
+identifier, swept across every ref at the time it is written rather than taken as the local maximum plus one. This
+roadmap notes the collision and does not resolve it; correcting an evidence file is an act inside a work order.
+
+Also outstanding in that packet, and not closed by the merge: **three manual assessments prepared and unsigned**,
+all three the product owner's, and **nine findings**. Two of the packet's thirteen readers print `RESULT: FAIL` on
+the merged tree — both because `WO-MOK-019` rewrote `simulation.rs` underneath them, neither a world-rule failure,
+and both retained as they printed rather than repaired.
+
+> **Earlier form, for a reader diffing this file.** It read *"**Implemented and not verified** — the verification
+> record is the assurance owner's act and has not been made."* The second half stands. The first half was never
+> recorded: the work order did not reach `implemented` and has not left `in_progress`, so the roadmap was claiming
+> a transition the graph does not carry.
 
 `social` is therefore honestly described as **implemented, no longer starving, and still not the default**;
 `--policy` unspecified selects `reference`. On the corrected world it leaves 9, 7, 9, 8 and 9 of twelve alive
@@ -800,8 +860,8 @@ dependency to rely on.
 
 ### Phase 4a — Structured measurement in the engine
 
-**Status: implemented under `WO-MOK-019` and verified under `VREC-MOK-012` at commit `50364a3`. Not merged and not
-released.** The artifact packet — `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`,
+**Status: implemented under `WO-MOK-019`, verified at two commits, merged into `master`, and not released.** The
+artifact packet — `INT-MOK-009`, `CAP-MOK-009`, `REQ-MOK-042` through `REQ-MOK-046`, `SPEC-MOK-006`,
 `ADR-MOK-005`, `WO-MOK-019` and `VER-MOK-012` — was drafted, reviewed and validated by the owner on 2026-08-20, and
 the whole chain was implemented, evidenced, verified and closed the same day in seven commits, one act each.
 
@@ -818,11 +878,32 @@ accepts rather than satisfies is stated in it and is not smoothed over here:
   direction words in any of the seven retained streams.
 - **Three carried-forward `OUTSTANDING` amendment rows stand untouched**, none of them this chain's to pay.
 
-**Not merged.** `50364a3` is on `feature/phase-4a-definition` and is not yet an ancestor of `master`; pull request #31
-is open, out of draft and green. By the precedent of `VREC-MOK-009` through `VREC-MOK-011` — one record per work
-order, each binding a branch commit that became an ancestor of `master` through its merge — the merge does not call
-for a second record. **Not released**: no release record binds this work, and `WO-MOK-008`, the release-authorization
-chain, is unrelated and still `draft`.
+**Merged, and verified twice — at neither of the merges into `master`.** `50364a3` is an ancestor of `master`: pull
+request #31 merged `feature/phase-4a-definition` into `master` as `fac152f` on 2026-08-21, and pull request #38
+followed it as `3f47743` the same day, carrying the two governance commits that prepared `VREC-MOK-019` and moved it
+to `verified`. `master` moved under the branch twice while the packet was being built, so the branch merged forward
+twice — `1e09f85` for `WO-MOK-018` and `e96648a` for this work order — and the **second** of those was itself
+verified: `VREC-MOK-019` is `verified`, bound to `e96648a2`, against `VER-MOK-012`, and it records `00e58a9` as a
+provenance it rejected rather than silently discarding it. `VREC-MOK-012` at `50364a3` stands unchanged beside it;
+neither record is re-pointed, because a record binds the commit it was written against and there is no rebinding.
+Both bound commits are branch commits, so **no record binds `fac152f` or `3f47743`** and the pattern here is the
+one this repository has settled into: records bind branch commits, `master`'s merge carries none, and more than one
+record per work order is normal rather than exceptional.
+
+**Not released**: no release record binds this work. `RLS-MOK-001` is v0.1.0 at `755db72`, `REL-MOK-001` gates only
+`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`, so a v0.2.0 needs a new release contract; and `WO-MOK-008`, the
+release-authorization chain, is unrelated and still `draft`.
+
+> **Earlier form, for a reader diffing this file.** It read *"**Not merged.** `50364a3` is on
+> `feature/phase-4a-definition` and is not yet an ancestor of `master`; pull request #31 is open, out of draft and
+> green. By the precedent of `VREC-MOK-009` through `VREC-MOK-011` — one record per work order, each binding a
+> branch commit that became an ancestor of `master` through its merge — the merge does not call for a second
+> record."* The first two sentences were true when written and are now false. The third was an argument rather than
+> a measurement, and it did not survive: a second record was made for this very work order, and the practice it
+> appealed to had already been broken by `VREC-MOK-015` — `verified`, bound to `WO-MOK-014`'s merge commit
+> `9599c0a9`, and on `master` since 2026-08-20, before this paragraph's own chain merged. `VREC-MOK-019` names it
+> as the precedent it follows and reaches the same conclusion on the same fork, so the second record here is a
+> settled pattern rather than an exception.
 
 **What was built**
 
@@ -914,6 +995,50 @@ is that the conditions permit emergence and that observed outcomes are not engin
 
 ## Cross-cutting work
 
+### Governed chains delivered outside the phase sequence
+
+**Five work orders were authorized, implemented and verified without a numbered phase.** Each states a property of
+the repository or of the build rather than a behavior of the world, which is why none of them earned a phase — a
+phase in this document is a step toward the success criteria, and none of these moves the simulation. They are
+listed because the phase sequence is not a census of delivered work, and a reader who treats it as one will
+conclude either that this work was never planned or that it was never governed. Both would be wrong.
+
+| Work order | What it delivered | Where it hangs | Record | Released |
+|---|---|---|---|---|
+| `WO-MOK-003` | Library and binary targets split, tests placed by the access each needs | `REQ-MOK-016`, `REQ-MOK-017` → `CAP-MOK-003` | `VREC-MOK-003` at `a7f39f1` | v0.1.0 |
+| `WO-MOK-004` | Every option's effect and default stated in the help output | `REQ-MOK-018` → `CAP-MOK-001` | `VREC-MOK-004` at `95f0aa2` | v0.1.0 |
+| `WO-MOK-006` | Each package in its own directory, the observer given its own tested contract | `REQ-MOK-028` – `REQ-MOK-030` → `CAP-MOK-005` | `VREC-MOK-006` at `dd0c2c0` | v0.1.0 |
+| `WO-MOK-009` | The release authorization gate, the release process, the compiler declaration | `REQ-MOK-035` – `REQ-MOK-039` → `CAP-MOK-007` | `VREC-MOK-008` at `d35f817` | v0.1.0 |
+| `WO-MOK-014` | The engine's empty-dependency rule replaced by a declared-set comparison, checked on every pull request and at release | `REQ-MOK-050` → `CAP-MOK-004` | `VREC-MOK-014` at `65ac88b`, `VREC-MOK-015` at `9599c0a` | **no** |
+
+The first four are covered a second time by `VREC-MOK-009`, the aggregate candidate at `755db72` that names eight
+work orders and is the commit `RLS-MOK-001` released as v0.1.0.
+
+**`WO-MOK-014` is the one that needs more than a table row**, and until now the roadmap mentioned it only inside a
+footnote about identifier renumbering in Phase 1.5. It is the chain that ended `ARCH-MOK-001`'s empty-dependency
+rule as an absolute and replaced it with something checkable: **`ADR-MOK-006`** — *"Criteria-based admission of
+third-party crates in both packages, against a declared set, replacing the engine's empty-dependency rule"* —
+decides both `ARCH-MOK-001` and `ARCH-MOK-002`, and **`REQ-MOK-050`** states the resulting obligation normatively:
+each package's resolved dependency set must equal the set its specification declares, at the declared versions and
+feature sets, with no crate providing network access, credential handling, an asynchronous runtime, a database, a
+plugin system or dependency injection in either package, and no user-interface dependency outside the observer
+package.
+
+**Why it has no phase of its own is structural rather than an oversight.** `REQ-MOK-050` derives from
+`CAP-MOK-004`, Phase 1.5's capability, so the chain reused the observer phase's capability instead of opening a new
+intent. That is also the reason it is invisible: a reader walking intents down to phases never passes through it.
+
+**What it leaves behind is a standing gate rather than a delivered feature.** `scripts/check_declared_dependencies.py`
+is 1,225 lines and runs in two places — `.github/workflows/dependency-declarations.yml`, whose entire trigger list
+is `pull_request`, and `.github/workflows/release.yml`. So every proposed change to this repository is now measured
+against the declared sets, and **Phase 5 in particular cannot add a provider client without moving a declaration
+through the technical owner first.** Phase 5's section does not yet say so; that gap is noted and not closed here.
+
+Its governance reach was wide: **sixteen amendments, twelve of them in governed artifacts** — `ARCH-MOK-001`,
+`ARCH-MOK-002`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004` and `SPEC-MOK-005`, each with its own approval row
+by the technical owner on 2026-08-20 — and four in repository-owned files including
+`engineering/REPOSITORY_CONTEXT.md`. Measured in `evidence/WO-MOK-014/WO-MOK-014-amendments.md`.
+
 ### LLM feasibility experiment (parallel to Phases 1–2)
 
 A bounded, throwaway spike measuring cost per 1,000 ticks, latency per decision, and schema-valid response
@@ -941,6 +1066,8 @@ means to the same risk reduction.
 | 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
 | 6 | New verification contract; no existing artifact changed |
+| *No phase* — repository contract (`WO-MOK-003`, `WO-MOK-004`, `WO-MOK-006`, `WO-MOK-009`) | Delivered inside the v0.1.0 window against `CAP-MOK-001`, `CAP-MOK-003`, `CAP-MOK-005` and `CAP-MOK-007`, none of which any phase row above claims. Target split, per-package directories and contracts, help-output completeness, and the release authorization gate. All four released under `RLS-MOK-001`. See *Governed chains delivered outside the phase sequence* |
+| *No phase* — dependency declaration (`WO-MOK-014`) | New `ADR-MOK-006` **deciding both `ARCH-MOK-001` and `ARCH-MOK-002`**, which is the widest architecture delta any chain in this repository has taken: the engine's empty-dependency rule stops being absolute and becomes a declared-set comparison. New `REQ-MOK-050` under Phase 1.5's `CAP-MOK-004` rather than a new intent — which is why this chain has no phase and why it was invisible to this document until 2026-08-22. Sixteen amendments, twelve in governed artifacts: `ARCH-MOK-001`, `ARCH-MOK-002`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-005`. Two CI gates added, one on every pull request. **Constrains Phase 5**, whose row above does not yet say so |
 
 ## Open decisions requiring owner input
 
