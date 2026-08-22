@@ -9,9 +9,12 @@
 - **Created:** 2026-08-17
 - **Scope:** macro phases following the completed minimum simulation foundation (`WO-MOK-001`)
 - **Audience:** product owner, engineering owner, assurance owner
-- **Statuses re-measured against the artifact graph and against `master`:** 2026-08-22, at `f7b1c45`. Every
+- **Statuses re-measured against the artifact graph and against `master`:** 2026-08-22, at `5bdf607`. Every
   lifecycle word, commit and merge claim below was read from artifact metadata and from `git merge-base`
   rather than carried forward. Where a claim moved, the earlier form is retained in a blockquote beside it.
+  Phase 3's `WO-MOK-017` account was re-derived a second time on the same day, because pull request #41 merged
+  between the first measurement at `f7b1c45` and this one — which is the ordinary condition of this document, not
+  an incident.
 
 ## Purpose
 
@@ -75,8 +78,8 @@ failing and were resolved by a governed amendment inside the phase — see Phase
   `--policy individual` for a Mokiterion that perceives no company and holds an empty record
 - No entropy drawn by any targeted resolution, so the shared stream is untouched by everything the phase adds
 
-Added under `WO-MOK-017` (merged to `master` as `f7b1c45`, the work order still **`in_progress`** and the chain
-**not verified** — see Phase 3's status below for the two lifecycle acts that are unmade):
+Added under `WO-MOK-017` (merged to `master` as `f7b1c45`, the work order now **`implemented`** and the chain
+**verified** at `VREC-MOK-020` — see Phase 3's status below for what that record binds and what it leaves owed):
 
 - The missing term in `SPEC-MOK-001` rule 5's non-waste condition: a resource whose satiety restoration would
   be clipped is eaten and approached anyway while the clipped amount is no more than the resource's own
@@ -795,29 +798,54 @@ second amendment by the owner's decision of 2026-08-20 and descoped out of `WO-M
 `WO-MOK-017`, recorded under *Current state* above: the ceiling amended to three fifths, and the allowance term
 rule 5 had lost restored.
 
-**Its status is `in_progress`, and its chain is merged.** Those two facts sit oddly together and both are read
-rather than inferred. Pull request #39 merged `feature/resource-composition-ceiling` into `master` as `f7b1c45` on
-2026-08-21, carrying the candidate `26ae6ba` and the merge `ae2e44f` above it, so the corrected world rule is on
-the integration branch. `WO-MOK-017.md` still reads `status = "in_progress"`, and `preflight` reports it as such.
-**Two lifecycle acts behind the code are therefore unmade, and they belong to different owners:** the transition
-out of `in_progress` is the engineering owner's, and a verification record bound to `ae2e44f` is the assurance
-owner's. Neither has been taken, so nothing accepts this tree.
+**Both lifecycle acts have since been taken, and the chain is verified.** Pull request #39 merged
+`feature/resource-composition-ceiling` into `master` as `f7b1c45` on 2026-08-21, carrying the candidate `26ae6ba`
+and the merge `ae2e44f` above it, so the corrected world rule reached the integration branch a day before anything
+accepted it. Pull request #41 closed the governance tail on 2026-08-22, merging as `5bdf607`: `WO-MOK-017.md` now
+reads `status = "implemented"`, and **`VREC-MOK-020` is `verified`** against `VER-MOK-016`, bound to
+`a30ae327a92f5acdfb294a3c3d98e32b806300d1` with a clean worktree, 319 declared evidence paths and
+`artifact_snapshot_sha256 = 24a6fbd1…`. Between it and `VREC-MOK-017` all **93** of that contract's coverage rows
+are claimed.
 
-**The record that is owed cannot be called `VREC-MOK-017`,** although the work order's own merge evidence
-(`evidence/WO-MOK-017/merge/README.md`) names it four times as the record for this tree. That identifier is spent:
-it is `verified` against `WO-MOK-016` at `ecba9fee`, two sections up. The record owed here needs an unused
-identifier, swept across every ref at the time it is written rather than taken as the local maximum plus one. This
-roadmap notes the collision and does not resolve it; correcting an evidence file is an act inside a work order.
+**What that record binds, and the exposure it carries.** Its candidate is a governance commit on the closure
+branch, so it decided about a tree rather than about integrating one — it could not have gated #39's merge, which
+had already happened, and the record says so in its own text rather than leaving a reader to notice. `a30ae32`
+**is** now an ancestor of `master`, measured, because #41 merged; the binding therefore survives, and it survives
+only while that history stands. The record is `verified`, and `VERIFICATION_RECORD.template.md` admits supersession
+only from `ready` — so a rewrite of `a30ae32` would leave it binding a commit that does not exist, with no remedy
+available at all. That is a permanent constraint on this history, not a note about one pull request.
 
-Also outstanding in that packet, and not closed by the merge: **three manual assessments prepared and unsigned**,
-all three the product owner's, and **nine findings**. Two of the packet's thirteen readers print `RESULT: FAIL` on
-the merged tree — both because `WO-MOK-019` rewrote `simulation.rs` underneath them, neither a world-rule failure,
-and both retained as they printed rather than repaired.
+**The record was written as `VREC-MOK-020`, and the collision in the evidence file still stands.** The work order's
+own merge evidence (`evidence/WO-MOK-017/merge/README.md`) names `VREC-MOK-017` four times as the record for this
+tree, and that identifier was already spent — `verified` against `WO-MOK-016` at `ecba9fee`, two sections up. The
+free number was found by sweeping every ref rather than by taking the local maximum plus one, which is how `020` was
+reached. Note what that number is: a **verification-record** number, not a work-order one. The two sequences
+advance independently, so `VREC-MOK-020` sits over `WO-MOK-017` while `WO-MOK-019` carries `VREC-MOK-019` — a
+reader who assumes the pairing will mis-attribute records here. The evidence file is deliberately **not** corrected:
+a `verified` record's declared evidence is not rewritten after the decision, so the four wrong identifiers are named
+in the record and left exactly as they printed.
 
-> **Earlier form, for a reader diffing this file.** It read *"**Implemented and not verified** — the verification
-> record is the assurance owner's act and has not been made."* The second half stands. The first half was never
-> recorded: the work order did not reach `implemented` and has not left `in_progress`, so the roadmap was claiming
-> a transition the graph does not carry.
+**The packet's outstanding items were closed with the record, bar one.** The three manual assessments that were
+prepared and unsigned — all three the product owner's — are now **recorded, none outstanding**, and of the nine
+findings raised, **eight carry a disposition**. Finding 7 is the assurance owner's and was carried undecided
+*through* the verification decision rather than resolved by it: `VER-MOK-016`'s realignment row of 2026-08-21 reads
+*"Manual assessment 7"* where the item amended is *acceptance scenario 7*, and that row is **still owed**. Two of
+the packet's thirteen readers still print `RESULT: FAIL` on the merged tree — both because `WO-MOK-019` rewrote
+`simulation.rs` underneath them, neither a world-rule failure, and both retained as they printed rather than
+repaired. Both failures were read and **accepted** by the owner, corroborated by a re-taken 120-cell capture
+comparison from the merge commit's own archived tree: `RESULT: PASS — 120 of 120 cells identical on all four
+columns, 0 differing`. Identical output streams cannot come from a changed world rule, which is why the acceptance
+rests on that comparison rather than on the readers' own text.
+
+> **Earlier forms, for a reader diffing this file.** Two, and the sequence is the point. The original read
+> *"**Implemented and not verified** — the verification record is the assurance owner's act and has not been
+> made."* At `f7b1c45` neither half was safe: the work order had not reached `implemented` and had not left
+> `in_progress`, so the roadmap was claiming a transition the graph did not carry. The reconciliation of 2026-08-22
+> replaced it with *"Its status is `in_progress`, and its chain is merged … Neither has been taken, so nothing
+> accepts this tree"*, which was measured and true at that commit and was overtaken the same day by #41. So this
+> paragraph has claimed a transition that had not happened, then correctly recorded its absence, and now records
+> that it was made — which is what re-measuring against the graph rather than carrying a claim forward looks like
+> when the graph is moving faster than the document.
 
 `social` is therefore honestly described as **implemented, no longer starving, and still not the default**;
 `--policy` unspecified selects `reference`. On the corrected world it leaves 9, 7, 9, 8 and 9 of twelve alive
