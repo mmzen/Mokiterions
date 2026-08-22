@@ -141,11 +141,18 @@ For completeness, because a reader of this packet will otherwise not find it:
    raised, the accepted seed range is not narrowed, and the requirement is not amended. Recorded in `REQ-MOK-027`'s
    *Open decisions*, in `VER-MOK-005`'s *Residual uncertainty*, and in the same `SPEC-MOK-003` row.
 
-5. **`docs/ROADMAP.md` was reconciled.** Its one mention of this work order called it *"the release-authorization
-   chain, unrelated and still `draft`"* — three claims, all wrong by 2026-08-22 and one never right. The sentence is
-   corrected in the file's own idiom, with the earlier form quoted in a blockquote beside it. **One sentence is all
-   that changed**, so the roadmap still carries no account of the footer chain, and that gap is left open rather than
-   filled: filling it would be a roadmap-structure decision and nobody has taken one.
+5. **`docs/ROADMAP.md` was reconciled — twice, independently, by two sessions on the same afternoon.** Its one mention
+   of this work order called it *"the release-authorization chain, unrelated and still `draft`"*, three claims all
+   wrong by 2026-08-22 and one never right. This branch corrected the sentence; **pull request #46 corrected the same
+   sentence and merged first**, as `master` `e5bebf3`, so the two met at the merge of `master` into
+   `gov/wo-mok-008-close-out`. **#46's text is kept whole and this branch's is dropped**, because #46 says everything
+   it said and sources the mislabel better: the label belonged to `WO-MOK-009`, titled *"Implement the release
+   authorization gate…"*, rather than to `17be4ba`, the commit `WO-MOK-008` merely arrived in. One fact of this
+   branch's own survives as an added blockquote — that a release *"cannot stamp its own commit into the binary until
+   this is settled"* is the work order's own assurance rationale, that clause 4's ratification settled the commit as
+   the **first** field shed, and that whether release CI stamps a commit at all is still out of scope and undecided.
+   #46 also assigns the gap this note would otherwise have left open: the footer chain sits **within** Phase 1.5, so
+   an account of what it delivered is owed under that chain's own change and not this one's.
 
 **None of the five is covered by `VREC-MOK-021`**, and none has a verification record of its own. That is the settled
 pattern here rather than an omission: a record binds the commit it was written against, and `master`'s merge carries
