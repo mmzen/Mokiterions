@@ -385,9 +385,19 @@ stale.
   itself on this point.
 - **The `W-HEX-001` observation on `WO-MOK-008` will persist** until either an evidence file is named for the ID or the
   managed rule reads directories. Eight implemented work orders carry it today.
-- **CI's dashboard warning count will read 38 where this record declares 17**, and its snapshot will not match, for the
-  depth-1 and merge-ref reasons measured above. The remedy is upstream in the harness distribution or an owner decision
-  to deviate.
+- **CI's dashboard warning count reads 40 where this record declares 17, and its snapshot does not match. This bullet
+  predicted 38 and the prediction was wrong; the figure below is the run's.** The first `pull_request` run of
+  [#44](https://github.com/mmzen/Mokiterions/pull/44) reports **149 artifacts, 529 relations, 0 errors, 40 warnings** —
+  `W-HEX-001` × 9 + `W-HEX-003` × 9 + `W-REV-003` × 22. **Two mechanisms compose and the prediction used only one.** The
+  depth-1 checkout fires `W-REV-003` once per candidate-declaring artifact, which is the 38 measured above; and
+  `actions/checkout@v4` on a `pull_request` event reads the **ephemeral merge ref**, so CI's tree is this branch merged
+  with `master` rather than this branch. That merge brings `VREC-MOK-020` — one more artifact, two more relations, one
+  more `W-REV-003` — and `WO-MOK-017` at `implemented` with directory-keyed evidence, one more `W-HEX-001`. A depth-1
+  clone of this branch's own tip still reports 38: **the two figures describe two different trees, and CI's is a commit
+  that exists on no branch.** Its digest is deliberately not quoted here for that reason. **No figure this record binds
+  is affected** — the declared `4cb4044e…` and the candidate's 147 / 525 / 17 are unmoved, and CI reports 0 errors and
+  `PASS` on every job. The remedy for the count itself is upstream in the harness distribution or an owner decision to
+  deviate.
 - **`master` moved twice during this work and may move again before the merge.** The mergeability measurement above is a
   statement about `5bdf607`; a later tip could conflict where that one does not, and the identifier collision recorded
   above is what concurrent motion looks like when it reaches this branch. Re-deriving it is the reviewer's, since a
