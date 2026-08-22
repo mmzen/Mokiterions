@@ -2,7 +2,7 @@
 id = "VREC-MOK-022"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-024"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-22"
 updated = "2026-08-22"
@@ -23,6 +23,41 @@ conforms_to = ["VER-MOK-004"]
 This ready record binds retained evidence for `WO-MOK-024` to candidate commit `cdd88ddb1528681916dcb4523aab9ffbb67c4380`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
 
 The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+
+## The assurance decision, taken 2026-08-22
+
+**The assurance owner accepted this record and it is `verified`.** The words were *"i accept the record, you can
+transition it, commit, push and PR"*, given on 2026-08-22 after the record was presented complete, and they are
+quoted rather than paraphrased because the acceptance is the act and the wording is all there is of it.
+
+**This transition moved the `status` field and nothing else.** The title still says *candidate*, the two
+paragraphs above are the ones `harnessctl capture-verification` wrote, and every claim, table, figure and limit
+below is the candidate's own prose as the owner read it. Nothing was strengthened after acceptance and nothing
+was softened; a record that is edited to look better than what was accepted is not the thing that was accepted.
+`harnessctl` 0.4.0 has no `transition` subcommand, so the field was hand-edited, which is why this section
+exists to say who decided and on what.
+
+**The figures were re-measured in this commit, because a `verified` record can never be corrected.** All of
+them held: 303 tests passed with 0 failed and 0 ignored, `fmt` and `clippy` clean, `validate` 149 artifacts
+with 0 errors and 0 warnings with this file present and 148 without it, `doctor` 81 of 81 PASS,
+`preflight --phase review` PASS and `--phase start` FAIL by design, both help texts re-rendered byte-identical
+to `after/engine-usage.txt` and `after/observer-usage.txt`, the twenty-six `evidence_paths` equal to
+`git ls-files` for the directory, exactly one `pub` pair in the diff against the base and that pair the same
+item, and the one rustdoc warning still the inherited one. The identifiers were re-checked against every local
+and remote ref after a fetch: `WO-MOK-024` and `VREC-MOK-022` are used by nothing but this branch.
+
+**One statement in the retained evidence has aged and cannot be edited.** `evidence/WO-MOK-024/README.md`
+calls the base commit `f7b1c452039dc2f03010ca8b8cc81e73c54727c0` "the branch point and the tip of `master`".
+It is still the branch point and still an ancestor of `master`, but `origin/master` has since moved to
+`d4a17c1280e15d4a62c99756023c5896ee31136f`, ten commits ahead. That file is bound by this record and editing it
+would falsify the binding, so the correction is stated here instead: read "the tip of `master`" as of
+2026-08-22 at capture. **This branch must not be rebased.** A rebase would rewrite
+`cdd88ddb1528681916dcb4523aab9ffbb67c4380` and orphan the commit this verified record binds, and a verified
+record can be neither re-pointed nor superseded to repair that. If integration needs `master`'s later work,
+merge it.
+
+**Release is a separate act and is not taken here.** `verified` says the evidence was reviewed and accepted
+against `VER-MOK-004`; it does not authorize a release, a tag or a publish, and `REL-` records exist for that.
 
 ## What this record claims
 
