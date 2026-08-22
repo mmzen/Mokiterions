@@ -15,12 +15,15 @@
   Phase 3's `WO-MOK-017` account was re-derived a second time on the same day, because pull request #41 merged
   between the first measurement at `f7b1c45` and this one — which is the ordinary condition of this document, not
   an incident.
-- **Cross-cutting census re-measured a third time:** 2026-08-22, at `2a38b18`, after pull request #43 merged the
-  inspector's activity-profile chain. What it corrected was not a drifting figure but a section describing a state
-  that had ended: *Defined and awaiting approval outside the phase sequence* recorded four `draft` artifacts that
-  are all `approved`, a work order that is `verified`, code that "does not exist" and is on `master`, and a
-  `preflight` **FAIL** that returns **PASS**. Two delivered chains were also missing from the census table
-  altogether — `WO-MOK-020` and `WO-MOK-024` — and both are added.
+- **Cross-cutting census re-measured a third time:** 2026-08-22, at `2ecb78a`, after pull requests #43 and #44
+  merged. What #43 exposed was not a drifting figure but a section describing a state that had ended: *Defined and
+  awaiting approval outside the phase sequence* recorded four `draft` artifacts that are all `approved`, a work order
+  that is `verified`, code that "does not exist" and is on `master`, and a `preflight` **FAIL** that returns
+  **PASS**. Two delivered chains were also missing from the census table altogether — `WO-MOK-020` and `WO-MOK-024`
+  — and both are added. **#44 merged while this reconciliation was being written**, which moved `WO-MOK-008` out of
+  `draft` and exposed a second, older error beside it: this document called `WO-MOK-008` the release-authorization
+  chain, which is `WO-MOK-009`. Both are corrected, and the correction is reported apart from the status change
+  because only one of the two was caused by a merge.
 
 ## Purpose
 
@@ -944,8 +947,24 @@ one this repository has settled into: records bind branch commits, `master`'s me
 record per work order is normal rather than exceptional.
 
 **Not released**: no release record binds this work. `RLS-MOK-001` is v0.1.0 at `755db72`, `REL-MOK-001` gates only
-`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`, so a v0.2.0 needs a new release contract; and `WO-MOK-008`, the
-release-authorization chain, is unrelated and still `draft`.
+`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`, so a v0.2.0 needs a new release contract. **`WO-MOK-008` is
+absent from that gate list because it was `draft` when the release contract was written, and it is no longer
+`draft`**: it is the provenance-footer chain — *"Make the provenance footer shed fields without losing authoritative
+information"* — now `implemented`, verified at `VREC-MOK-021` bound to `3da6acc`, and merged to `master` inside merge
+commit `2ecb78a` under pull request #44. It is unreleased, so a v0.2.0 contract would have to name it too.
+
+> **Two corrections in that sentence, reported separately from the status change because one of them was wrong when
+> it was written.** It read: "and `WO-MOK-008`, the **release-authorization chain**, is unrelated and still `draft`."
+> `WO-MOK-008` is not the release-authorization chain — **`WO-MOK-009` is**, titled *"Implement the release
+> authorization gate, the release process and the compiler declaration"*, and it is already in the gate list the
+> sentence was explaining. The misidentification was independent of the merge and would have been wrong on any tree.
+> The `draft` was true until 2026-08-22 and stopped being true when pull request #44 merged.
+>
+> **What is deliberately not written here is Phase 1.5's account of that chain.** `WO-MOK-008` implements
+> `REQ-MOK-024` and `REQ-MOK-027`, both of which are inside Phase 1.5's drafted packet of `REQ-MOK-019` through
+> `REQ-MOK-027`, so it sits **within** the phase sequence and takes no row in the cross-cutting census above — unlike
+> `WO-MOK-020`, whose requirements derive from the same capability but were never part of that packet. Describing
+> what it delivered belongs to Phase 1.5's status section and is owed under that chain's own change, not this one's.
 
 > **Earlier form, for a reader diffing this file.** It read *"**Not merged.** `50364a3` is on
 > `feature/phase-4a-definition` and is not yet an ancestor of `master`; pull request #31 is open, out of draft and
@@ -1227,8 +1246,17 @@ nothing about this chain authorizes a tag, publish or deploy. Beyond that, four 
   test compares the two sides — nor can one easily, because `O19.2` forbids the engine from naming the observer's
   type. Parity was established by reading both files at the bound commit, and the owner declined to make a parity test
   a condition of the transition. It is the kind of agreement that goes stale silently.
-- **`SPEC-MOK-004`'s figures are true of a tree, not of the repository forever.** They were reconciled at this
-  chain's merge of `master`; the next chain that changes the test census re-measures them under rule 11.
+- **`SPEC-MOK-004`'s figures are true of a tree rather than of the repository, and they are already behind again.**
+  This chain reconciled them at its own merge of `master` to rule 9's **118**, the observer's **176** and the
+  workspace's **333**. Pull request #44 then merged the `WO-MOK-008` footer chain, which added tests to
+  `mokiterions-tui/tests/verification.rs` and to `mokiterions-tui/src/render.rs`. Measured at `2ecb78a`, six recorded
+  figures no longer match the tree: rule 9's `tests/verification.rs` is **31** against a recorded 29 and its total
+  **120** against 118; rule 10's `src/render.rs` is **28** against a recorded 20 and its internal total **66**
+  against 58; and rule 11's observer is **186** against 176 with the workspace at **343** against 333, which
+  `cargo test --workspace --locked` independently reports as 343 passed. The engine is unmoved at **157**, exactly as
+  recorded. Rule 11 obliges the work order that changes the census to correct the figures, so this is owed by the
+  chain that moved them. **This document neither corrects an approved specification nor can:** that amendment is the
+  technical owner's act.
 
 **This roadmap does not authorize any of it and cannot.** Formal authority comes from artifact metadata and
 accountable lifecycle decisions, per *Maintenance* below; this section records that the chain exists, what it
@@ -1277,7 +1305,7 @@ means to the same risk reduction.
 | 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
 | 6 | New verification contract; no existing artifact changed |
 | *No phase* — repository contract (`WO-MOK-003`, `WO-MOK-004`, `WO-MOK-006`, `WO-MOK-009`) | Delivered inside the v0.1.0 window against `CAP-MOK-001`, `CAP-MOK-003`, `CAP-MOK-005` and `CAP-MOK-007`, none of which any phase row above claims. Target split, per-package directories and contracts, help-output completeness, and the release authorization gate. All four released under `RLS-MOK-001`. See *Governed chains delivered outside the phase sequence* |
-| *No phase* — inspector activity profile (`WO-MOK-020`) | New `REQ-MOK-061` and `REQ-MOK-062` under Phase 1.5's `CAP-MOK-004` rather than a new intent, which is why this chain has no phase. `SPEC-MOK-003` and `SPEC-MOK-004` amended in place, one row each, both ratified by the technical owner on 2026-08-22: nine provisions of `SPEC-MOK-003` — seven additions and **two corrections of statements that were untrue when they were approved**, the *State model* table's silence about retention the observer already performed and rule 4's claim that it holds no name table — and `SPEC-MOK-004`'s recorded interface extent and test-tier figures. Those figures were ratified as measured at the candidate with a reconciliation owed at the next merge of `master`, and that reconciliation is written. **No engine change, and that is the boundary the chain rests on**: no new intent, capability, architecture or ADR; `ARCH-MOK-002` relied upon and not moved, on the triggers its own amendment record declares; the alternative of per-Mokiterion counters published on `AgentSnapshot` rejected in `REQ-MOK-061`'s rationale. `REQ-MOK-059`'s prohibition moves from being met by absence to being met by a measured boundary |
+| *No phase* — inspector activity profile (`WO-MOK-020`) | New `REQ-MOK-061` and `REQ-MOK-062` under Phase 1.5's `CAP-MOK-004` rather than a new intent, which is why this chain has no phase. `SPEC-MOK-003` and `SPEC-MOK-004` amended in place, one row each, both ratified by the technical owner on 2026-08-22: nine provisions of `SPEC-MOK-003` — seven additions and **two corrections of statements that were untrue when they were approved**, the *State model* table's silence about retention the observer already performed and rule 4's claim that it holds no name table — and `SPEC-MOK-004`'s recorded interface extent and test-tier figures. Those figures were ratified as measured at the candidate with a reconciliation owed at the next merge of `master`, and that reconciliation is written — though pull request #44 has since overtaken them again, which is measured in the owed note above rather than corrected here. **No engine change, and that is the boundary the chain rests on**: no new intent, capability, architecture or ADR; `ARCH-MOK-002` relied upon and not moved, on the triggers its own amendment record declares; the alternative of per-Mokiterion counters published on `AgentSnapshot` rejected in `REQ-MOK-061`'s rationale. `REQ-MOK-059`'s prohibition moves from being met by absence to being met by a measured boundary |
 | *No phase* — dependency declaration (`WO-MOK-014`) | New `ADR-MOK-006` **deciding both `ARCH-MOK-001` and `ARCH-MOK-002`**, which is the widest architecture delta any chain in this repository has taken: the engine's empty-dependency rule stops being absolute and becomes a declared-set comparison. New `REQ-MOK-050` under Phase 1.5's `CAP-MOK-004` rather than a new intent — which is why this chain has no phase and why it was invisible to this document until 2026-08-22. Sixteen amendments, twelve in governed artifacts: `ARCH-MOK-001`, `ARCH-MOK-002`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-005`. Two CI gates added, one on every pull request. **Constrains Phase 5**, whose row above does not yet say so |
 
 ## Open decisions requiring owner input
