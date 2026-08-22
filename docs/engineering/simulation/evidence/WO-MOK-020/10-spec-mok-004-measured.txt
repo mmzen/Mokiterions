@@ -1,0 +1,134 @@
+# SPEC-MOK-004's figures, measured at the base commit and at the candidate
+#
+# Recompute, from the workspace root of each tree:
+#   cargo test --workspace --locked -- --list > list.txt
+#   python docs/engineering/simulation/evidence/WO-MOK-020/09-measure-spec-mok-004.py list.txt
+#
+# The script is retained beside this file. Its head comment states each rule's counting
+# definition and why the two counts are anchored differently.
+#
+# The base tree is commit ccb0584 in a separate worktree, so nothing of the change surface is
+# present in it. The candidate is the working tree this packet is committed from.
+
+# ==== base commit ccb0584 ====
+
+# Rule 6: the observer's public surface, module by module
+module                      public items  pub lines  public fields
+authority.rs                           5          5              0
+export.rs                              3          3              0
+layout.rs                             10         17              7
+options.rs                             8         12              4
+render.rs                              2          2              0
+spatial.rs                            19         25              6
+state.rs                              47         55              8
+verification.rs                        0          0              0
+total                                 94        119             25
+
+# Rule 9: the observer's public verification tier, one row per test file
+test file                          tests
+tests/authority.rs                     4
+tests/export.rs                        7
+tests/layout.rs                       11
+tests/options.rs                       8
+tests/render.rs                       22
+tests/spatial.rs                       7
+tests/state.rs                        22
+tests/verification.rs                 22
+total                                103
+
+# Rule 10: the observer's internal tier, and the private items of each module
+module                     internal tests  private fns  private consts
+authority.rs                           0            0               0
+export.rs                              0            0               0
+layout.rs                              0            1               8
+lib.rs                                 0            0               0
+main.rs                                8            7               2
+options.rs                             0            1               0
+render.rs                             20           31              18
+spatial.rs                             0            0               1
+state.rs                               5            0               0
+verification.rs                        9           20               2
+total                                 42
+
+# Rule 11: the workspace's verification population
+observer public tier                 103
+observer internal tier                42
+observer total                       145
+engine internal tier                  97
+engine public tier                    60
+engine total                         157
+workspace total                      302
+
+# ==== candidate ====
+
+# Rule 6: the observer's public surface, module by module
+module                      public items  pub lines  public fields
+authority.rs                           5          5              0
+export.rs                              3          3              0
+layout.rs                             10         17              7
+options.rs                             8         12              4
+render.rs                              2          2              0
+spatial.rs                            19         25              6
+state.rs                              47         55              8
+verification.rs                        0          0              0
+total                                 94        119             25
+
+# Rule 9: the observer's public verification tier, one row per test file
+test file                          tests
+tests/authority.rs                     4
+tests/export.rs                        7
+tests/layout.rs                       11
+tests/options.rs                       8
+tests/render.rs                       29
+tests/spatial.rs                       7
+tests/state.rs                        22
+tests/verification.rs                 29
+total                                117
+
+# Rule 10: the observer's internal tier, and the private items of each module
+module                     internal tests  private fns  private consts
+authority.rs                           0            0               0
+export.rs                              0            0               0
+layout.rs                              0            1               8
+lib.rs                                 0            0               0
+main.rs                                8            7               2
+options.rs                             0            1               0
+render.rs                             20           34              21
+spatial.rs                             0            0               1
+state.rs                              21            0               0
+verification.rs                        9           20               2
+total                                 58
+
+# Rule 11: the workspace's verification population
+observer public tier                 117
+observer internal tier                58
+observer total                       175
+engine internal tier                  97
+engine public tier                    60
+engine total                         157
+workspace total                      332
+
+# What the tables establish
+#
+# Rule 6 is unchanged: 94 public items, 119 `pub` lines, 25 public fields, every module row
+# unmoved. The rule's Growth clause is therefore not invoked, which is what the amendment states
+# and the reason it states it: `Profile`, `ActionKind`, `ActionKind::label` and the three
+# accessors are `pub(crate)`, `Profile`'s counters are private fields, and `src/render.rs`'s six
+# arrivals are private.
+#
+# Rule 9 moves 103 -> 117: `tests/render.rs` 22 -> 29 and `tests/verification.rs` 22 -> 29.
+# Rule 10 moves 42 -> 58: `src/state.rs` 5 -> 21 internal tests. `src/render.rs`'s private items
+# move 49 -> 55 (31 -> 34 functions, 18 -> 21 consts).
+# Rule 11 moves 145 -> 175 for the observer; the workspace moves 302 -> 332.
+#
+# Three cross-checks, each of which would fail on a mis-strip or a double count:
+#   117 + 58 = 175, the observer's total against its two tiers;
+#   175 + 157 = 332, the workspace's total against its two packages;
+#   332 - 302 = 30, which is the arrivals count (16 + 7 + 7) and matches the passing-test delta
+#   between `05-test-base.txt` (302 passed) and `03-test-candidate.txt` (332 passed).
+#
+# The engine's total is 157, where SPEC-MOK-004 rule 11 recorded 156. That is not a figure this
+# work order moved: the engine's test count is identical in both tables above, and the base tree
+# already reports 157. The +1 is `WO-MOK-017`'s, added by commit 26ae6ba implementing
+# `REQ-MOK-060` and owed since that closure. It is recorded with that attribution in the rule 11
+# amendment rather than absorbed silently.

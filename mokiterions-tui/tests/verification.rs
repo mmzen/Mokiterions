@@ -1081,8 +1081,18 @@ fn every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms() {
 ///
 /// Two rule 10.6 cases need this state, and it is constructed here once rather than twice so that
 /// they cannot drift onto different deaths.
+///
+/// **The policy is `reference` and not `baseline`, under `WO-MOK-020`.** Rule 10 as amended there
+/// clears the selection when no living Mokiterion remains, and `baseline` starves the whole
+/// population on one tick: its first death *is* extinction, so the state this fixture is for — a
+/// retained selection on a dead subject — stopped existing under that policy at the moment the
+/// amendment landed. Under `reference` the first death leaves eleven living, so the selection is
+/// retained and every assertion below holds as written. The coverage this costs is stated in
+/// `WO-MOK-020`'s completion report rather than absorbed here: rule 10.6's retention is now
+/// exercised on a mid-run death and no longer on a terminal one, which is the case the amendment
+/// removed rather than a case that went untested.
 fn observer_holding_a_dead_selection() -> (Observer, String, String) {
-    let arguments = ["--policy", "baseline", "--ticks", "400", "--start-paused"];
+    let arguments = ["--policy", "reference", "--ticks", "400", "--start-paused"];
 
     let mut scout = observer_for(&arguments);
     let (victim, tick) = loop {
@@ -1307,5 +1317,371 @@ fn the_announcement_and_the_hint_survive_the_loss_of_colour() {
                 .any(|(_, modifier)| modifier.contains(Modifier::BOLD)),
             "{width}x{height} carries no emphasis in the header's first row"
         );
+    }
+}
+
+// ---- `VER-MOK-017`: the cumulative activity profile, cross-cutting -------------------------
+//
+// `WO-MOK-020` widens what the observer accumulates from the event stream, so `REQ-MOK-025`'s
+// non-perturbation obligation is in scope by construction and is measured here rather than
+// argued. The two cases below are the contract's O17 and O18; the five after them are its static
+// checks O19.1 to O19.4 and O20.1, which read the tree rather than a frame because each is a
+// claim about what the source does not contain.
+//
+// `VER-MOK-017`'s independence clause 1 forbids an oracle that reads the accumulator, so every
+// figure these cases compare against is the engine binary's own, reached through `unobserved`.
+
+/// The pane-only vocabulary of the activity profile: strings the inspector presents and that the
+/// authoritative stream must therefore never carry.
+///
+/// The list is written here as literals rather than imported from the presentation path, so that a
+/// label the implementation renames cannot silently make this case vacuous.
+const PANE_ONLY: [&str; 8] = [
+    "cumulative activity",
+    "population activity",
+    "no tick has completed",
+    "nothing selected",
+    "crossings",
+    "decisions",
+    "by a strike",
+    "unattributed",
+];
+
+/// The repository root, from this package's own manifest directory.
+///
+/// `SPEC-MOK-004` rule 1 makes the tree authoritative, so the static checks locate their subjects
+/// from the workspace layout rather than from a path written into a test.
+fn repository_root() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("the package sits under the workspace root")
+        .to_path_buf()
+}
+
+fn source(relative: &str) -> String {
+    let path = repository_root().join(relative);
+    std::fs::read_to_string(&path).unwrap_or_else(|error| panic!("{}: {error}", path.display()))
+}
+
+/// Every file under a directory whose name ends in one of `suffixes`, as `(path, text)` pairs.
+fn tree(relative: &str, suffixes: &[&str]) -> Vec<(String, String)> {
+    fn walk(at: &std::path::Path, suffixes: &[&str], into: &mut Vec<(String, String)>) {
+        let entries = std::fs::read_dir(at).unwrap_or_else(|error| panic!("{at:?}: {error}"));
+        let mut sorted: Vec<std::path::PathBuf> = entries
+            .map(|entry| entry.expect("a readable entry").path())
+            .collect();
+        sorted.sort();
+        for path in sorted {
+            if path.is_dir() {
+                walk(&path, suffixes, into);
+            } else if suffixes
+                .iter()
+                .any(|suffix| path.to_string_lossy().ends_with(suffix))
+            {
+                let text = std::fs::read_to_string(&path)
+                    .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+                into.push((path.display().to_string(), text));
+            }
+        }
+    }
+
+    let mut found = Vec::new();
+    walk(&repository_root().join(relative), suffixes, &mut found);
+    assert!(!found.is_empty(), "{relative} yielded no {suffixes:?} file");
+    found
+}
+
+/// Drives an observed run to the engine's own end with the inspector drawn in **both** pane states
+/// on every tick, at the reference viewport where every figure is presented.
+///
+/// This is deliberately not `observed_run`: that helper rotates the viewport, so on most ticks the
+/// inspector is absent and the totals are never computed for presentation. `REQ-MOK-062`'s claim is
+/// that summing the population on every tick perturbs nothing, and a run that presents the sums on
+/// one tick in ten cannot measure it.
+fn profiled_run(args: &[&str]) -> Observer {
+    let mut observer = observer_for(args);
+    let mut round = 0u64;
+    while !observer.is_finished() {
+        // Selected on even ticks, cleared on odd: the per-Mokiterion block and the population
+        // block are each drawn on every other tick, and both are drawn within every pair.
+        tap(
+            &mut observer,
+            if round.is_multiple_of(2) {
+                KeyCode::Tab
+            } else {
+                KeyCode::Esc
+            },
+        );
+        frame(&mut observer, 160, 48);
+        observer.advance().expect("the engine advances");
+        round += 1;
+    }
+    // A finished run is still drawn, in the state extinction or the tick limit left it in.
+    frame(&mut observer, 160, 48);
+    observer
+}
+
+/// `VER-MOK-017` O17: presenting the totals perturbs no run.
+///
+/// On every declared seed the observed run's records and final state are the engine binary's, and
+/// the per-tick entropy-bearing record counts are identical, while the inspector draws the
+/// per-Mokiterion totals and the population sums on every tick.
+#[test]
+fn presenting_the_totals_perturbs_no_run_on_any_declared_seed() {
+    fn entropy_bearing(line: &str) -> bool {
+        [
+            "event=food_regenerated",
+            "event=food_regeneration_skipped",
+            "event=action_trace",
+        ]
+        .iter()
+        .any(|marker| line.contains(marker))
+    }
+
+    for seed in SEEDS {
+        let seed = seed.to_string();
+        // `social` is the policy under which every one of the eleven kinds can occur, so the
+        // accumulation being measured is the one that runs over the widest set of records.
+        let args = ["--seed", &seed, "--ticks", "60", "--policy", "social"];
+        let (expected, summary) = unobserved(&args);
+        let observer = profiled_run(&args);
+        let observed = observed_lines(&observer);
+
+        assert_eq!(
+            observed.len(),
+            expected.len(),
+            "seed {seed}: {} records observed, {} unobserved",
+            observed.len(),
+            expected.len()
+        );
+        for (index, (left, right)) in observed.iter().zip(expected.iter()).enumerate() {
+            assert_eq!(left, right, "seed {seed} record {index}");
+        }
+        assert_eq!(summary_from(&observer), summary, "seed {seed} final state");
+
+        let mine = by_tick(&observed);
+        let theirs = by_tick(&expected);
+        assert_eq!(
+            mine.keys().collect::<Vec<_>>(),
+            theirs.keys().collect::<Vec<_>>(),
+            "seed {seed}: the runs cover different ticks"
+        );
+        for (tick, lines) in &mine {
+            let drawn = lines.iter().filter(|line| entropy_bearing(line)).count();
+            let reference = theirs[tick]
+                .iter()
+                .filter(|line| entropy_bearing(line))
+                .count();
+            assert_eq!(
+                drawn, reference,
+                "seed {seed} tick {tick}: {drawn} entropy-bearing records observed, {reference} \
+                 unobserved"
+            );
+        }
+
+        // The identity above is only evidence if the totals were in fact accumulated and drawn.
+        assert!(
+            observer.snapshot().tick > 0,
+            "seed {seed}: no tick completed, so nothing was accumulated"
+        );
+    }
+}
+
+/// `VER-MOK-017` O18: no total reaches the export, and the export is still the engine's records.
+///
+/// Rule 9.4 keeps the export the retained event stream in its text format. The comparison is
+/// against `unobserved`, so the assertion is that a run whose inspector presented every total on
+/// every tick exports the engine binary's bytes and nothing else.
+#[test]
+fn no_total_reaches_the_export_and_it_stays_the_engines_records() {
+    for seed in SEEDS {
+        let seed = seed.to_string();
+        let args = ["--seed", &seed, "--ticks", "40", "--policy", "social"];
+        let (expected, _) = unobserved(&args);
+        let observer = profiled_run(&args);
+
+        let mut bytes = Vec::new();
+        export::write_records(&mut bytes, observer.events()).expect("writing to a vector");
+        let text = String::from_utf8(bytes).expect("the export is text");
+
+        let lines: Vec<&str> = text.lines().collect();
+        assert_eq!(&lines[..lines.len() - 1], &expected[..], "seed {seed}");
+        assert_eq!(
+            lines[lines.len() - 1],
+            format!("# retained={} truncated=false", expected.len()),
+            "seed {seed}"
+        );
+
+        for phrase in PANE_ONLY {
+            assert!(
+                !text.contains(phrase),
+                "seed {seed}: the export carries the pane-only phrase {phrase:?}"
+            );
+        }
+    }
+}
+
+/// `VER-MOK-017` O19.1: the engine's declared dependency set does not name the observer.
+#[test]
+fn the_engine_declares_no_dependency_on_the_observer() {
+    let manifest = source("mokiterions-core/Cargo.toml");
+    assert!(
+        !manifest.contains("mokiterions-tui"),
+        "the engine's manifest names the observer package:\n{manifest}"
+    );
+    // The `[dependencies]` table carries no entry at all, which is the stronger statement and the
+    // one `ADR-MOK-006` decision 1 records. Reading to the next section header keeps the check
+    // honest if a later table is added.
+    let dependencies = manifest
+        .split_once("[dependencies]")
+        .expect("the manifest declares a dependencies table")
+        .1;
+    let body = match dependencies.find("\n[") {
+        Some(end) => &dependencies[..end],
+        None => dependencies,
+    };
+    let entries: Vec<&str> = body
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .collect();
+    assert!(
+        entries.is_empty(),
+        "the engine's dependencies table is no longer empty: {entries:?}"
+    );
+}
+
+/// `VER-MOK-017` O19.2: no name of the retained profile appears anywhere in the engine.
+///
+/// `WO-MOK-020` puts the accumulation in the observer and forbids per-Mokiterion counters in the
+/// engine, so the engine's own tree is the place that claim is falsifiable.
+///
+/// The counter *names* the observer shares with the engine are not in the list, and the omission is
+/// measured rather than assumed: the engine already keeps one private world-wide `crossings` total
+/// for its structured run record, which predates this work order and is neither per-Mokiterion nor
+/// public. Asserting that word's absence would fail on state this work order does not touch and
+/// would say nothing about what it adds. What is asserted is the absence of the retained profile
+/// itself — its type, its kind enumeration and its three accessors.
+#[test]
+fn no_profile_type_or_accessor_appears_in_the_engine() {
+    const ABSENT: [&str; 5] = [
+        "ActionKind",
+        "Profile",
+        "profile_of",
+        "population_profile",
+        "initialized_count",
+    ];
+
+    for (path, text) in tree("mokiterions-core", &[".rs", ".toml"]) {
+        for name in ABSENT {
+            assert!(
+                !text.contains(name),
+                "{path} names {name}, which belongs to the observer's retained profile"
+            );
+        }
+    }
+}
+
+/// `VER-MOK-017` O19.3: the engine's mutating surface is unchanged.
+///
+/// `SPEC-MOK-003`'s *Data and interface contracts* clause 2 fixes it at two functions, and
+/// `WO-MOK-020` constraint 5 restates the exact command. The parse here is the command's meaning
+/// rather than its text, so the check runs on any platform.
+#[test]
+fn the_engine_still_exposes_exactly_two_mutating_entry_points() {
+    let engine = source("mokiterions-core/src/simulation.rs");
+    let mutating: Vec<&str> = engine
+        .lines()
+        .filter(|line| line.contains("pub fn ") && line.contains("&mut self"))
+        .map(|line| {
+            let after = line.split_once("pub fn ").expect("checked by the filter").1;
+            after
+                .split(['(', '<'])
+                .next()
+                .expect("a name precedes the parameter list")
+                .trim()
+        })
+        .collect();
+    assert_eq!(
+        mutating,
+        vec!["run", "advance_tick"],
+        "the engine's mutating entry points moved"
+    );
+}
+
+/// `VER-MOK-017` O19.4: no total is placed in an `Observation` or reached by a `DecisionSource`.
+///
+/// `REQ-MOK-062`'s safety argument is a boundary claim, and the boundary is that the observer's
+/// package names neither of the engine's decision-side types. The one match that does exist is
+/// `DecisionSourceSelected`, an event-type variant the authority overlay reads by name; the check
+/// admits it explicitly rather than by a looser pattern that would admit anything.
+#[test]
+fn no_total_can_reach_an_observation_or_a_decision_source() {
+    for (path, text) in tree("mokiterions-tui/src", &[".rs"]) {
+        assert!(
+            !text.contains("Observation"),
+            "{path} names Observation, which carries values into a decision"
+        );
+        for (number, line) in text.lines().enumerate() {
+            for (index, _) in line.match_indices("DecisionSource") {
+                let rest = &line[index..];
+                assert!(
+                    rest.starts_with("DecisionSourceSelected"),
+                    "{path}:{} reaches a DecisionSource: {line}",
+                    number + 1
+                );
+            }
+        }
+    }
+}
+
+/// `VER-MOK-017` O20.1: no total is a float, and no presented figure is a ratio.
+///
+/// The scope is the observer code this work order touches. `spatial.rs` already computes canvas
+/// coordinates in `f64` and is untouched here, so a package-wide check would fail on state that
+/// predates this work order and would say nothing about it; the check therefore names the two
+/// modules the change surface names and asserts the exclusion there.
+#[test]
+fn no_total_is_a_float_and_no_presented_figure_is_a_ratio() {
+    for module in [
+        "mokiterions-tui/src/state.rs",
+        "mokiterions-tui/src/render.rs",
+    ] {
+        let text = source(module);
+        for name in ["f32", "f64"] {
+            assert!(
+                !text.contains(name),
+                "{module} uses {name}; every total is an integer"
+            );
+        }
+    }
+
+    // And the rendered pane, in both states, carries no percentage, no decimal separator between
+    // digits and no ratio between digits.
+    let mut observer = profiled_run(&["--seed", "123", "--ticks", "40", "--policy", "social"]);
+    for selected in [true, false] {
+        tap(
+            &mut observer,
+            if selected { KeyCode::Tab } else { KeyCode::Esc },
+        );
+        let buffer = frame(&mut observer, 160, 48).expect("the reference viewport renders");
+        let inspector = layout::resolve(*buffer.area())
+            .inspector
+            .expect("the reference viewport shows the inspector");
+        let text = region(&buffer, inspector);
+        assert!(
+            !text.contains('%'),
+            "the inspector presents a percentage:\n{text}"
+        );
+        let cells: Vec<char> = text.chars().collect();
+        for window in cells.windows(3) {
+            let [left, middle, right] = [window[0], window[1], window[2]];
+            assert!(
+                !(left.is_ascii_digit()
+                    && right.is_ascii_digit()
+                    && (middle == '.' || middle == '/')),
+                "the inspector presents {left}{middle}{right}, which is not an integer:\n{text}"
+            );
+        }
     }
 }

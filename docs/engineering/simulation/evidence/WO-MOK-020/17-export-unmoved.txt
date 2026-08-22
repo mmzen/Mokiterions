@@ -1,0 +1,113 @@
+# The observer's export, before and after the change
+
+VER-MOK-017 O18: "the rule 9.4 export for a given seed and configuration is byte-identical to its
+pre-change capture, and carries no total". This file is the evidence bullet "the pre-change and
+post-change export captures for O18, with digests".
+
+O18 is asserted inside the suite as well, in `mokiterions-tui/tests/verification.rs`. That assertion
+and this capture are not the same check: the assertion compares the export the observer builds
+against the engine's own records within one process at one tree, and this capture hashes the file an
+operator actually receives, at the base commit and at the candidate, from two separate processes.
+
+## What was run
+
+The driver is `16-export-capture-driver.rs`, retained beside this file. It is not part of the
+commit: it was copied to `mokiterions-tui/tests/capture.rs` in each tree for the capture and removed
+afterwards, and it reaches the observer only through items that were already public before this work
+order, so the identical file compiles against both trees. It observes
+`--policy social --seed 42 --ticks 200 --start-paused` to the engine's own end and then writes
+`export::write_file` output to the path in `MOK_EXPORT_CAPTURE`, drawing no frame.
+
+    cp docs/engineering/simulation/evidence/WO-MOK-020/16-export-capture-driver.rs \
+       mokiterions-tui/tests/capture.rs
+    MOK_EXPORT_CAPTURE=<path> cargo test --locked -p mokiterions-tui --test capture -- --nocapture
+    rm mokiterions-tui/tests/capture.rs
+
+Both runs reported `wrote <path> from 4348 retained records at tick 200` and passed.
+
+  pre-change   the base commit ccb0584, in a detached worktree
+  post-change  the candidate working tree
+
+## Digests
+
+  82a447067e38a8c51b6d6f36a8df34e332a687d62f038d3e63d7e49be74621fc *export-base.txt
+  82a447067e38a8c51b6d6f36a8df34e332a687d62f038d3e63d7e49be74621fc *export-candidate.txt
+
+  bytes  591607, both
+  lines  4349, both
+
+The two files are byte-identical: `cmp export-base.txt export-candidate.txt` is silent and the
+digests above are the same string. That is O18's "byte-identical to its pre-change capture", measured
+on the bytes rather than asserted about.
+
+## Why the export bytes are not retained a third time
+
+The export is byte-identical to `07-engine-stream-seed42-candidate.txt`, already retained in this
+packet, except for its last content line: the engine's stream ends with its own summary line and the
+observer's export ends with the rule 9.4 retention footer. `diff` between them is exactly:
+
+    4349c4349
+    < summary reason=tick_limit ticks=200 survivors=10 deaths=2 territory_a=4 territory_b=6 food_a_low=14 food_a_medium=19 food_a_high=28 food_b_low=17 food_b_medium=14 food_b_high=24
+    ---
+    > # retained=4348 truncated=false
+
+So the export's bytes are recoverable from this packet exactly, and adding 591607 bytes twice more
+would retain three near-copies of one run. That is a decision taken inside this work order's
+envelope and it is stated rather than left to inference; a reviewer who wants the file itself either
+reruns the driver above or reconstructs it:
+
+    head -n -1 07-engine-stream-seed42-candidate.txt > export.txt   # drops the engine's summary line
+    printf '# retained=4348 truncated=false\n' >> export.txt        # appends the retention footer
+    sha256sum export.txt        # 82a447067e38a8c51b6d6f36a8df34e332a687d62f038d3e63d7e49be74621fc
+
+The two commands above were run and the digest they produce is the one printed here.
+
+    sha256sum of 07-engine-stream-seed42-candidate.txt, for the reconstruction's input:
+        32aeba551640c20833b7118f01c83d2e69df9e2a607d158ec5055684e189cbe7 *07-engine-stream-seed42-candidate.txt
+
+This also says something O18 does not require but a reviewer may want: the export is the engine's
+own record stream with the retention footer substituted for the engine's summary line, so the export
+carries no figure the engine did not emit.
+
+## "carries no total"
+
+Counts of the pane's vocabulary in the export, `grep -c -i` over the 4348 records and the footer:
+
+  "profile"      0
+  "since init"   0
+  "population"   0
+  "moved"        0
+  "cumulative"   0
+  "attacks"      0
+  "killed"       0
+  "decisions"    0
+  "rejected"     0
+  "crossings"    0
+  "totals"       0
+  "activity"     0
+
+Zero for every one of them. The fifteen figures this work order adds are named in the pane with these
+words, and none of them appears anywhere in the export.
+
+## The security check on the same bytes
+
+VER-MOK-017's security items: no environment value, no path outside the resolved export path, no
+operator identity, and nothing written to disk by the accumulation.
+
+  "C:"           0
+  "Users"        0
+  "mathi"        0
+  "AppData"      0
+  "TOKEN"        0
+  "KEY"          0
+  "SECRET"       0
+  "PASSWORD"     0
+  "\"            0
+
+Zero for every one of them, including the capture host's own user name. The only path in the run is
+the one `MOK_EXPORT_CAPTURE` named, and it appears in the driver's stdout rather than in the file.
+
+Nothing written to disk by the accumulation, separately: the run above wrote exactly one file, the
+export, and the export is unchanged. The retained profile records live in the observer's
+`BTreeMap<String, Profile>` and have no serialization path - `14-long-run-truncation.txt` reports
+their size from the same in-process map.

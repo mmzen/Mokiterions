@@ -1,0 +1,153 @@
+# The declared dependency sets, at the candidate
+
+`WO-MOK-020` constraint 4: "The observer's declared dependency set is unchanged, and no
+`Cargo.toml` gains an entry." The review preflight states the same obligation as a repository
+command: "Each package's resolved dependency set must equal the set declared for it, at the declared
+versions and feature sets ... `cargo tree -p Mokiterions -e normal --locked --offline` resolving to
+one crate is what that comparison predicts today, because the engine's declared set is empty."
+`SPEC-MOK-004` rule 14 records both commands and their required outcomes.
+
+O19.1 asserts the engine half of this inside the suite, over the manifest text, in
+`the_engine_declares_no_dependency_on_the_observer`. This file is the resolved-graph half: what
+cargo actually resolves, which a manifest read cannot show.
+
+## No manifest and no lock file is touched
+
+$ git status --short -- Cargo.toml Cargo.lock mokiterions-core/Cargo.toml mokiterions-tui/Cargo.toml
+
+(no output)
+
+# exit=0
+
+Four paths were asked about and none is reported, so `Cargo.toml`, `Cargo.lock`,
+`mokiterions-core/Cargo.toml` and `mokiterions-tui/Cargo.toml` are byte-identical to the base commit
+ccb0584. `--locked` in every command in this packet means no run could have rewritten the lock file
+either; a run that needed to would have failed instead.
+
+## The engine
+
+$ cargo tree -p Mokiterions -e normal --locked --offline
+
+Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-core)
+
+# exit=0
+
+One crate, the engine package itself. That is rule 14's recorded outcome and the preflight's
+prediction, and it is what an empty declared set resolves to.
+
+## The observer
+
+$ cargo tree -p mokiterions-tui -e normal --locked --offline
+
+mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+├── Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-core)
+└── ratatui v0.30.2
+    ├── instability v0.3.13 (proc-macro)
+    │   ├── darling v0.24.0
+    │   │   ├── darling_core v0.24.0
+    │   │   │   ├── ident_case v1.0.1
+    │   │   │   ├── proc-macro2 v1.0.107
+    │   │   │   │   └── unicode-ident v1.0.24
+    │   │   │   ├── quote v1.0.47
+    │   │   │   │   └── proc-macro2 v1.0.107 (*)
+    │   │   │   ├── strsim v0.11.1
+    │   │   │   └── syn v3.0.3
+    │   │   │       ├── proc-macro2 v1.0.107 (*)
+    │   │   │       ├── quote v1.0.47 (*)
+    │   │   │       └── unicode-ident v1.0.24
+    │   │   └── darling_macro v0.24.0 (proc-macro)
+    │   │       ├── darling_core v0.24.0 (*)
+    │   │       ├── quote v1.0.47 (*)
+    │   │       └── syn v3.0.3 (*)
+    │   ├── indoc v2.0.7 (proc-macro)
+    │   ├── proc-macro2 v1.0.107 (*)
+    │   ├── quote v1.0.47 (*)
+    │   └── syn v3.0.3 (*)
+    ├── ratatui-core v0.1.2
+    │   ├── bitflags v2.13.1
+    │   ├── compact_str v0.9.1
+    │   │   ├── castaway v0.2.4
+    │   │   │   └── rustversion v1.0.23 (proc-macro)
+    │   │   ├── cfg-if v1.0.4
+    │   │   ├── itoa v1.0.18
+    │   │   ├── rustversion v1.0.23 (proc-macro)
+    │   │   ├── ryu v1.0.23
+    │   │   └── static_assertions v1.1.0
+    │   ├── critical-section v1.2.0
+    │   ├── hashbrown v0.17.1
+    │   │   ├── allocator-api2 v0.2.21
+    │   │   ├── equivalent v1.0.2
+    │   │   └── foldhash v0.2.0
+    │   ├── itertools v0.14.0
+    │   │   └── either v1.17.0
+    │   ├── kasuari v0.4.12
+    │   │   ├── hashbrown v0.16.1
+    │   │   │   ├── allocator-api2 v0.2.21
+    │   │   │   ├── equivalent v1.0.2
+    │   │   │   └── foldhash v0.2.0
+    │   │   └── thiserror v2.0.20
+    │   │       └── thiserror-impl v2.0.20 (proc-macro)
+    │   │           ├── proc-macro2 v1.0.107 (*)
+    │   │           ├── quote v1.0.47 (*)
+    │   │           └── syn v3.0.3 (*)
+    │   ├── lru v0.18.2
+    │   │   └── hashbrown v0.17.1 (*)
+    │   ├── strum v0.28.0
+    │   │   └── strum_macros v0.28.0 (proc-macro)
+    │   │       ├── heck v0.5.0
+    │   │       ├── proc-macro2 v1.0.107 (*)
+    │   │       ├── quote v1.0.47 (*)
+    │   │       └── syn v2.0.119
+    │   │           ├── proc-macro2 v1.0.107 (*)
+    │   │           ├── quote v1.0.47 (*)
+    │   │           └── unicode-ident v1.0.24
+    │   ├── thiserror v2.0.20 (*)
+    │   ├── unicode-segmentation v1.13.3
+    │   ├── unicode-truncate v2.0.1
+    │   │   ├── itertools v0.14.0 (*)
+    │   │   ├── unicode-segmentation v1.13.3
+    │   │   └── unicode-width v0.2.2
+    │   └── unicode-width v0.2.2
+    ├── ratatui-crossterm v0.1.2
+    │   ├── cfg-if v1.0.4
+    │   ├── crossterm v0.29.0
+    │   │   ├── bitflags v2.13.1
+    │   │   ├── crossterm_winapi v0.9.1
+    │   │   │   └── winapi v0.3.9
+    │   │   ├── derive_more v2.1.1
+    │   │   │   └── derive_more-impl v2.1.1 (proc-macro)
+    │   │   │       ├── convert_case v0.10.0
+    │   │   │       │   └── unicode-segmentation v1.13.3
+    │   │   │       ├── proc-macro2 v1.0.107 (*)
+    │   │   │       ├── quote v1.0.47 (*)
+    │   │   │       └── syn v2.0.119 (*)
+    │   │   ├── document-features v0.2.12 (proc-macro)
+    │   │   │   └── litrs v1.0.0
+    │   │   ├── parking_lot v0.12.5
+    │   │   │   ├── lock_api v0.4.14
+    │   │   │   │   └── scopeguard v1.2.0
+    │   │   │   └── parking_lot_core v0.9.12
+    │   │   │       ├── cfg-if v1.0.4
+    │   │   │       ├── smallvec v1.15.2
+    │   │   │       └── windows-link v0.2.1
+    │   │   └── winapi v0.3.9
+    │   ├── instability v0.3.13 (proc-macro) (*)
+    │   └── ratatui-core v0.1.2 (*)
+    └── ratatui-widgets v0.3.2
+        ├── bitflags v2.13.1
+        ├── hashbrown v0.17.1 (*)
+        ├── indoc v2.0.7 (proc-macro)
+        ├── instability v0.3.13 (proc-macro) (*)
+        ├── itertools v0.14.0 (*)
+        ├── line-clipping v0.3.8
+        │   └── bitflags v2.13.1
+        ├── ratatui-core v0.1.2 (*)
+        ├── strum v0.28.0 (*)
+        ├── unicode-segmentation v1.13.3
+        └── unicode-width v0.2.2
+
+# exit=0
+
+59 unique crates: the observer, the engine, and the 57-crate `ratatui` graph
+`SPEC-MOK-003`'s *Declared dependency set* fixes. That is rule 14's second row unchanged, and it is
+the figure `SPEC-MOK-004`'s 2026-08-20 amendment row records, so this work order moves it not at all.

@@ -1,0 +1,65 @@
+# The harness's own verdict at the candidate
+
+Both commands were run from the pinned 0.4.0 environment,
+`C:/Users/mathi/harness-venv-040/Scripts/python.exe -m se_harness`. The machine-wide 0.4.1 install
+is not used: it FAILs this repository on template skew alone, which is a property of that installed
+version rather than of this work order.
+
+`validate` covers the whole artifact tree, so it is the check that the two specification amendments
+written under this work order are well-formed and that no relation they touch is broken. `preflight
+--phase review` is the phase this work order is at: the code, the amendments and this packet exist,
+and the next act is somebody else's review.
+
+Both are read-only. The preflight says so itself, in the last line of its own output: it "does not
+approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or
+deploy." Nothing in this packet is a verification record, and this work order's *Lifecycle* stops at
+`implemented`.
+
+# ---- validate ----
+
+$ -m se_harness validate
+
+Engineering artifact validation: PASS
+Artifacts: 152 | Errors: 0 | Warnings: 0
+Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+# exit=0
+
+# ---- preflight, review phase ----
+
+$ -m se_harness preflight --work-order WO-MOK-020 --phase review
+
+Harness preflight: PASS
+Phase: review
+Work order: WO-MOK-020 (approved)
+
+Assurance classification:
+- Commit-bound verification: required
+- Decided by: engineering owner
+- Rationale: The scope is mixed, and `WORKFLOW.md` forbids inferring a classification for mixed scope, so the higher classification governs. Two parts are executable behaviour on the instrument every later phase is assessed with: the observer begins retaining derived per-Mokiterion state across ticks, and the inspector presents fourteen figures no pane has presented before. Neither load-bearing claim can be asserted from a diff. That each total equals an independent count over the engine's own records is a claim about arithmetic accumulated inside the single advance path, not about a value read from the read-only surface, and an off-by-one at a tick boundary or a double count on the final tick is invisible to review and indistinguishable from a correct figure on screen. That a population-level aggregate now computed in this process is unreachable from any rule or decision source is `REQ-MOK-059`'s obligation met by a boundary rather than by absence, and a boundary claim needs the run-identity property measured rather than argued. The work also amends `SPEC-MOK-004`'s recorded observer interface extent and test-tier figures, which are trusted engineering state that later censuses read, and it corrects two recorded statements in `SPEC-MOK-003` that the implementation has already outgrown, so a figure wrong here is wrong for every artifact that reads it. `REQ-MOK-025`'s non-perturbation obligation is in scope by construction, because the change widens what the observer accumulates from the event stream.
+
+Reading manifest:
+- ENGINEERING_HARNESS.md
+- docs/engineering/REPOSITORY_CONTEXT.md
+- docs/engineering/README.md
+- docs/engineering/WORKFLOW.md
+- docs/engineering/DECISION_RIGHTS.md
+- docs/engineering/QUALITY_GATES.md
+- docs/engineering/TRACEABILITY.md
+- docs/engineering/simulation/intent/INT-MOK-004.md
+- docs/engineering/simulation/capabilities/CAP-MOK-004.md
+- docs/engineering/simulation/requirements/REQ-MOK-061.md
+- docs/engineering/simulation/requirements/REQ-MOK-062.md
+- docs/engineering/simulation/specifications/SPEC-MOK-003.md
+- docs/engineering/simulation/specifications/SPEC-MOK-004.md
+- docs/engineering/simulation/verification/VER-MOK-017.md
+- docs/engineering/simulation/work-orders/WO-MOK-020.md
+
+Repository commands:
+- additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. Each package's resolved dependency set must equal the set declared for it, at the declared versions and feature sets: `SPEC-MOK-002` rule 13 declares the engine's and `SPEC-MOK-003`'s *Declared dependency set* declares the observer's, `SPEC-MOK-005` rule 8.4 is the check, and `REQ-MOK-050` is the obligation. `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate is what that comparison predicts today, because the engine's declared set is empty; it is a measurement of the declaration and no longer a rule of its own. Behavior-specific verification must be added as simulation requirements are approved.
+- build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+- lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`. `--locked` is not optional: `.github/workflows/release.yml` passes it, so a lint run without it can resolve around `Cargo.lock` and pass locally against dependencies the release would refuse.
+- setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
+- test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+
+Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+# exit=0
