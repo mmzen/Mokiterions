@@ -2,7 +2,7 @@
 id = "VREC-MOK-021"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-008"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-22"
 updated = "2026-08-22"
@@ -27,6 +27,97 @@ The record is intentionally created after the candidate commit it names, avoidin
 *Everything above this line is `capture-verification`'s output verbatim — the front matter, the heading and the two
 paragraphs. Everything below is authored, and every figure in it was measured at the candidate rather than carried from
 the evidence pack.*
+
+## The assurance decision, taken 2026-08-22
+
+**This record is `verified`.** The accountable assurance owner reviewed it and transitioned it from `ready` to
+`verified` on 2026-08-22, in the words *"i validate the verification record, you can transition it as verified, commit
+and push"*. `DECISION_RIGHTS.md` reserves that transition to the accountable assurance owner, and `WORKFLOW.md`'s step 8
+is the step taken. What is verified is the retained evidence declared above, bound to the tree at
+`3da6acca1e8cb53f20ea13869c6f4bc425b979f2`, and the decision was taken on this record with every disclosure, every
+residual and both unratified provisions still in it.
+
+**Exactly one front-matter field moved, and it is `status`.** `commit`, `git_object_format`, `worktree_state`,
+`verified_at`, `artifact_snapshot_sha256`, all ten `evidence_paths`, both declared relations, `owners`, `title`,
+`created` and `updated` are unchanged — `updated` because the decision fell on the day the record was created.
+`verified_at = "2026-08-22T08:35:53Z"` remains the **capture** timestamp and not the decision time: the decision is
+necessarily later than the capture, and the field is provenance rather than a record of the act. The declared digest is
+unmoved for the reason *One figure serves* gives below — this file does not exist at the commit it binds, so no edit to
+it, this transition included, can reach that figure. The provenance is now fixed permanently: `WORKFLOW.md` provides no
+re-pointing of a record at a later commit, and only a `ready` record may be superseded.
+
+**One figure below was corrected in this same commit, before the transition rather than after it, and it is named here
+rather than changed silently.** The `W-REV-003`-against-`I-REV-001` table in *The snapshot figure* reported `I-REV-001`
+at **19** for a full clone carrying this record; re-measured at `f97568d` it is **20**, and the row that read *not
+measured* now carries its measurement. The conclusion that the wrong figure supported — that the informational count is
+itself depth-sensitive — was false, and it is replaced by the mechanism the four measurements actually show:
+`I-REV-001` is depth-insensitive, and it sits one below `W-REV-003` at the same artifact set because it skips the
+superseded `VREC-MOK-016` where the warning does not. **No figure this record declares or predicts moves** —
+`4cb4044e…`, the candidate's 147 / 525 / 17, the 38 of a depth-1 clone of this branch's tip and CI's 40 are each
+unaffected, because the error was in the explanation of a difference and not in either count. It is corrected rather
+than disclosed and left, because **after this transition it could not be corrected at all**: only a `ready` record may
+be superseded, so a false measurement inside a verified record is permanent. It is the one departure from *the record as
+the candidate wrote it*; the owner's validation was given before the error was found, and the branch is unmerged, so the
+owner may still direct otherwise.
+
+**The title still reads *candidate*, and the capture's heading above it does too. Both are deliberate.** Seventeen of
+the eighteen `verified` records in this repository keep the capture's word; only `VREC-MOK-017`, hand-composed with no
+capture behind it, says *record*. This record's front matter is a capture, so it keeps the capture's vocabulary, and
+`VREC-MOK-018` and `VREC-MOK-019` retained their headings under the same status change.
+
+**Everything below this section is retained as the candidate wrote it, apart from that one figure.** A record binds a
+commit and stays true of that commit, so the sentences this decision falsifies are named here rather than edited in
+place — the practice `VREC-MOK-018` and `VREC-MOK-019` settled, against `VREC-MOK-015`, whose transition rewrote them.
+
+1. **The capture's own second sentence** — *"An accountable assurance owner must review the evidence and transition the
+   record to `verified`"*. That obligation is discharged by this section. The rest of the sentence stands exactly as
+   written: *"this command did not approve, commit, tag, release, or publish anything"* is a statement about
+   `capture-verification`, and the command took none of those acts.
+2. ***"This record is `ready`. It is not `verified`, and nothing in it asserts that it is"***, *"that decision has not
+   been taken"*, and the first paragraph of *What is still open* around them. Superseded here. Its narrower claim stays
+   exactly true and is worth keeping for that reason: **the transition was not among the four acts of the instruction it
+   quotes.** It came from a separate, later instruction, which is what `DECISION_RIGHTS.md` requires of it.
+3. **The queue paragraph.** `decision_required` held exactly `VREC-MOK-021 [ready] assurance-review` and is now
+   **empty**. Measured with this edit in the tree: validation **PASS**, 148 artifacts, 527 relations, 0 errors, 17
+   warnings, 37 findings at `0 error / 17 warning / 20 info`, with `decision_required`, `assurance_pending` and
+   `definitions_pending` all empty and `active_work` holding only `WO-MOK-017`, which is `in_progress` in this branch's
+   base. **The transition introduces no finding of its own**, and the counts are the candidate's plus this record. The
+   queue moved from *review* to nothing, and that is the whole of what this decision changes in the derived graph.
+4. **The `verified_at` row of the field-measurement table** — *"It is not the time of any decision, and no decision on
+   this record has been taken"*. The first half stands, and is why the field did not move; the second half is superseded
+   by this section.
+5. ***Two provisions this record does not ratify*** — *"A transition to `verified` **would be** a decision on the
+   evidence at this commit and would not be a ratification of these two"*. Only the tense is stale: the transition **is**
+   that decision, and it ratifies neither.
+6. **The first bullet of *What this record does not claim*** — *"It does not claim verification. The status is
+   `ready`."* Superseded. Every other bullet of that list stands unchanged, and so does every bullet of *Residual
+   uncertainty this record carries forward*.
+
+**Nothing in the retained evidence is falsified by this decision.** The pack's stale sentences are the five already
+disclosed below; no sentence in the ten declared files speaks to this record's status, so this decision adds no sixth.
+
+## What this decision does not do
+
+- **It ratifies neither unratified provision.** Clause 4's first row — the candidate commit shed ahead of every field
+  `REQ-MOK-027` names — remains **OUTSTANDING for the technical owner**, and the `REQ-MOK-027` floor residual remains
+  the **product owner's**. `verified` records the assurance owner's judgement of the evidence at this commit and reaches
+  neither, exactly as the table below says it would not.
+- **It retires no residual.** In particular **no person has yet looked at a shed footer**: all ten cases assert
+  in-memory character buffers, and the seven contracted manual assessments run at declared seeds where nothing sheds.
+  Three of the ten cases remain blind by construction, the derivation across the middle of the declared viewport range
+  still rests on its stated assumption, and `REQ-MOK-027`'s field set still cannot hold at `34 × 22`.
+- **It is not a merge, a tag, a release or a release-eligibility decision, and it creates no `RLS-*` record.** This
+  record binds a branch commit and never `master`'s merge; the merge is the owner's, and a rebase of this branch would
+  orphan the commit the record binds.
+- **It does not move `WO-MOK-008`, which stays at `implemented`.** `WORKFLOW.md` permits a work-order status of
+  `verified` only where configured provenance requires it, and the settled practice here is that work orders stop at
+  `implemented` — seventeen of this repository's eighteen do, `WO-MOK-017` among them, whose own record is `verified` on
+  `master`. **Its prose is left as its transition wrote it too**, including the sentence that this record *"is a `ready`
+  candidate and is not `verified`"*. The identical sentence stands in `WO-MOK-018` today, whose own record has been
+  `verified` since 2026-08-21: a work order records the state at its own transition and the record carries the decision.
+  That sentence is also true of the tree this record binds, where it appears.
+- **It changes no other artifact.** No other work order's evidence was read, and `VREC-MOK-020` — the concurrent
+  session's record that took this branch's intended identifier — is neither read nor touched.
 
 ## What is still open
 
@@ -255,14 +346,17 @@ neither is a proxy for the other — which the four measurements below establish
 | Tree | `W-REV-003` | `I-REV-001` |
 |---|---|---|
 | full clone at the candidate | does not fire — every candidate commit is reachable | 19 |
-| full clone carrying this record | does not fire | 19 |
-| `--depth 1` clone at the candidate | 20 | not measured |
+| full clone carrying this record | does not fire | **20** |
+| `--depth 1` clone at the candidate | 20 | 19 |
 | `--depth 1` clone carrying this record | **21** | 20 |
 
-So the informational count is itself depth-sensitive, and it neither equals nor tracks the warning's. Arithmetic on it is
-how `VREC-MOK-018` published a warning prediction that was wrong by one, and the correction is recorded in that record's
-own decision section. The figure here is taken from `W-REV-003`'s own count and **measured rather than derived**, at the
-commit that carries this record: a depth-1 clone of it reports **38** warnings — `W-HEX-001` × 8 + `W-HEX-003` × 9 +
+So the informational count neither equals nor tracks the warning's, and the reason is not depth. `I-REV-001` is
+**depth-insensitive** — 19 at the candidate and 20 with this record, at both depths — and it sits exactly one below
+`W-REV-003` at the same artifact set because it **skips the superseded `VREC-MOK-016` and the warning does not**.
+Arithmetic on it is how `VREC-MOK-018` published a warning prediction that was wrong by one, and that off-by-one is this
+same skipped record; the correction is recorded in that record's own decision section. The figure here is taken from
+`W-REV-003`'s own count and **measured rather than derived**, at the commit that carries this record: a depth-1 clone of
+it reports **38** warnings — `W-HEX-001` × 8 + `W-HEX-003` × 9 +
 `W-REV-003` × 21 — at 148 artifacts and 527 relations. **No digest is quoted for that clone, and none should be.** Its
 `HEAD` is this file's own commit, so the figure moves with every amendment of the commit that carries this record, while
 the warning count does not: the count is a property of the finding set and the clone's depth alone. The only digest this
