@@ -2,10 +2,10 @@
 id = "WO-MOK-017"
 type = "work_order"
 title = "Correct the resource composition drift: the numeric waste condition, and both survivor floors re-measured against the corrected world"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-21"
-updated = "2026-08-21"
+updated = "2026-08-22"
 
 [assurance]
 commit_bound_verification = "required"
@@ -173,6 +173,66 @@ authorize `implemented`, which requires the completed change and the retained ev
 which require separate commit-bound records, nor any push, pull request, tag or publication — those remain the owner's
 acts and are not authorized by this transition. *Out of scope*'s bar on the agent transitioning artifact status is lifted
 for these two transitions only, on the owner's explicit instruction, and remains in force for every other artifact.
+
+### Transition to `implemented`, 2026-08-22
+
+**Set to `implemented` on 2026-08-22 by the repository owner acting as engineering owner.** The instruction, verbatim and
+complete:
+
+> yes go for commits A and B + preparation of the verification record
+
+It was answered to a framing that named the three commits it authorizes and named what it does not: commit A, the three
+manual assessments and the findings' dispositions; commit B, this transition; and the composition of the verification
+record as `ready`. The `ready` → `verified` transition was excluded from the framing and is excluded here.
+
+**What the lifecycle clause requires of this status, and where each is met.** *Transition to `implemented` requires the
+completed change and the retained evidence.*
+
+- **The change is complete and merged.** `master` merged this work order's branch at
+  `f7b1c452039dc2f03010ca8b8cc81e73c54727c0`, pull request #39, and that pull request carried five passing checks — the
+  declared-dependency check, both candidate checks and both governor checks. The merge of `master` into the branch at
+  `ae2e44f2382fe89f2daf78a8e8aca37febb8bd0f` is accounted for in `evidence/WO-MOK-017/merge/`, which states the
+  byte-identity licence its carry-forward of source figures rests on rather than re-measuring 120 cells that did not
+  move.
+- **The evidence is retained**, under `evidence/WO-MOK-017/`, in the five sub-packets `pre/`, `post/`, `approval/`,
+  `analysis/` and `merge/`, with `capture.sh` retained beside them. Every item of *Evidence to record* above has a
+  record, including the one that could not be produced: `post/entropy.txt` §5 records why the per-run draw total is not
+  derivable at this candidate and what stands in its place, and that gap is finding 1 of `manual-assessment.md`, now
+  disposed.
+- **The manual assessments this work order reaches are recorded**, which is the last item of *Evidence to record* and is
+  the reason this transition follows commit A rather than preceding it. `VER-MOK-016`'s assessments 5a, 5b and 6's second
+  half were recorded on 2026-08-22 by the repository owner as product owner, and eight of the nine findings raised beside
+  them carry a disposition of the same date. **This ordering is deliberate and it is drawn from the precedent this chain
+  set:** `VREC-MOK-016` was captured at `4539601` before `WO-MOK-016`'s eight outstanding assessments were signed at
+  `ecba9fe`, and the record had to be superseded and rewritten at the later commit, because a verification record binds
+  one commit and cannot be re-pointed at another. Signing first is what keeps this work order's record from repeating it.
+- **The gates pass at the commit this transition is written on.** `cargo fmt --all -- --check` clean;
+  `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` clean; `cargo test` **302 passed, 0
+  failed** across both packages and both tiers; `scripts/check_declared_dependencies.py` reports every declared set
+  matching its resolved graph; `python -m se_harness validate` PASS at 147 artifacts, 0 errors and 0 warnings on all four
+  planes; and `python -m se_harness preflight --work-order WO-MOK-017 --phase review` PASS.
+
+**What this transition does not authorize, and what it does not assert.** It authorizes no push, pull request, tag,
+release or publication, and *Out of scope*'s bar on an implementation agent transitioning artifact status stays lifted for
+this transition only. It asserts nothing about the two retained reports that read `RESULT: FAIL` —
+`merge/world-rules-merged.txt` at 3 failed checks over 61 changed engine blocks, and `merge/reads-merged.md` at 1 failed
+check for `write_metrics_territory` — which are the assurance owner's to read, and which no self-assessment retires. The
+verification record composed against this commit is composed as `ready` for the same reason.
+
+**Acts owed in other artifacts, none of them taken here.** `SPEC-MOK-004` rule 11 still reads `301` on `master` and its
+amendment row of 2026-08-21 is still marked `**OUTSTANDING.**`; the correction to `302` is drafted and unapplied at
+`merge/SPEC-MOK-004-rule-11.md`, and ratifying both rows is one act of the technical owner in that specification's own
+record. `REQ-MOK-060`'s *Open decisions* third bullet still reads "remains deferred" where assessment 5b declined to bind
+a per-class floor. `VER-MOK-013` and `VER-MOK-005` each owe an amendment row for findings 2 and 3, and `VER-MOK-016` owes
+the further row finding 7 needs. None of the four is inside `evidence/WO-MOK-017/`, so none of them stales this packet or
+the record that declares it.
+
+**This is not the terminal status.** Commit-bound verification is classified `required` above, so a verification record
+closes this work order, against a commit that includes this transition. **That record is `VREC-MOK-020`.**
+`merge/README.md` nominated `VREC-MOK-017`, and that identifier is not free: it is `WO-MOK-016`'s record, already
+`verified`. The identifier space was swept across every local and remote ref before this number was taken —
+`VREC-MOK-001` through `VREC-MOK-019` exist and nothing at `VREC-MOK-020` or above appears anywhere in history — because
+that space is shared across branches and sessions and the local maximum is not the free number.
 
 ## Objective
 
