@@ -59,8 +59,12 @@ stand unmet here rather than reinterpreted into a pass.
 2. **The *Test placement* row names the wrong file.** It requires the added test to live in `tests/cli.rs`.
    This work order adds no test there. It adds one to `mokiterions-tui/tests/options.rs`, because the oracle
    is an identity between two constants in two packages and the engine's test target cannot see the
-   observer's. It changes exactly one line of `mokiterions-core/tests/cli.rs`, a helper's block terminator,
-   and touches none of that file's eighteen assertions. The row's intent — that a new oracle live in a
+   observer's. It does change `mokiterions-core/tests/cli.rs` — **twelve lines added and three removed** — but
+   all of it is one helper, `options_block()`: its terminating condition, because the new block separates
+   entries with blank lines where a blank line used to close the block, and the doc comment above it. That
+   file holds **eighteen tests before and eighteen after** and not one of its assertions is touched. **An
+   earlier draft of this record said "exactly one line", which was the count of changed behavior and not the
+   count of changed lines; the diff is the authority.** The row's intent — that a new oracle live in a
    committed test rather than in review prose — is met in a file the row does not name, which is not the same
    as the row being met.
 3. **The *Performance and resilience* survivor counts describe a tree that no longer exists.** The row fixes
