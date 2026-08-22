@@ -2,7 +2,7 @@
 id = "VREC-MOK-020"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-017"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-22"
 updated = "2026-08-22"
@@ -19,6 +19,140 @@ conforms_to = ["VER-MOK-016"]
 +++
 
 # Verification Record Candidate
+
+## The assurance decision, taken 2026-08-22
+
+**This record is `verified`.** The accountable assurance owner reviewed the **319** declared evidence files for
+`WO-MOK-017` at candidate commit `a30ae327a92f5acdfb294a3c3d98e32b806300d1` and transitioned this record from `ready` to
+`verified` on 2026-08-22, in the words:
+
+> i validate the verification record, you can transition it to verified and commit. Then you can push the branch +
+> create the PR
+
+`DECISION_RIGHTS.md` reserves this transition to the accountable assurance owner, and the repository owner holds that
+role. **Nothing here is approved by implication:** the instruction named one validation and four acts — the transition,
+the commit, the push and the pull request — and this commit is the first two of them.
+`evidence/WO-MOK-017/merge/assurance-decision.md` records the decision, the two readings it rests on, the
+before-and-after figures and what it does not retire.
+
+### The two `RESULT: FAIL` readings, both now read
+
+**Both were read before the transition, and both are accepted.** They were the whole of what the candidate said stood
+between `ready` and `verified` on the evidence side, and the candidate deliberately declined to adopt
+`merge/gates.txt` §5's argument on the assurance owner's behalf. **That argument is now adopted, on its measured
+content and not on its conclusion:**
+
+| Reading | Decided |
+|---|---|
+| `merge/world-rules-merged.txt`, `RESULT: FAIL -- 3 check(s) failed` | **Accepted: no world rule moved.** §5 diffs the two checks that bear on a world rule region by region with the reader's own extractors. `apply_action`'s eat arm goes from 44 lines to 46 and `regenerate_food` from 61 to 65, and the whole of both differences is `master`'s instrumentation — a `Sinks` parameter replacing `output`, and three `saturating_add` counters. **The restoration, the clip, the food table and the regeneration decision are untouched.** The 61 blocks are the record stream. Corroborated from the other end by `merge/capture-comparison.txt`: identical streams on 120 of 120 cells cannot come from a changed rule |
+| `merge/reads-merged.md`, `RESULT: FAIL -- 1 check(s) failed` | **Accepted: the oracle holds and the failure is a completeness check.** `Simulation::write_metrics_territory` is a new caller of `food_counts` that arrived with `master`. It takes `&self` and a `&mut dyn Write`, has exactly one caller — `write_metrics`, `SPEC-MOK-006` rule 7.6's metrics record — and writes JSON, so it is on the **observation side** of `INT-MOK-010`, which is the side permitted to read composition. The reader's substantive checks pass: each of the four `DecisionSource::decide` functions takes only an `Observation`, and `Observation` carries no composition field. What fails is a hand-written classification only a human can supply, and `analysis/reads.py` is retained evidence at the candidate and is **not** edited to quiet it |
+
+**Consequently `REQ-MOK-060`'s two `static-analysis` rows are satisfied on the merged source as well as at `26ae6ba`,
+and this record claims all five of its rows without qualification.** *The coverage matrix, row for row* below reads
+those two as claimed at the candidate and not at the merged tree; that is the candidate's text, it was accurate when
+written, and **this section is where it is superseded.** `VER-MOK-016`'s requirement-to-evidence matrix is satisfied for
+`REQ-MOK-060` — 5 rows here, 88 on `VREC-MOK-017`, 93 of 93 between them.
+
+**Neither acceptance edits a byte of evidence.** Both reports keep their `RESULT: FAIL` and their non-zero exit, which
+is the point: the readers are retained as they printed, and the reading is recorded beside them rather than inside them.
+
+### Finding 7's amendment row is not taken by this decision, and is still owed
+
+The candidate named a third prerequisite: a further amendment row on `VER-MOK-016`, because the realignment row of
+2026-08-21 says *"Manual assessment 7 carries it on both of its halves"* where the item amended on both halves is
+**acceptance scenario 7**. **The assurance owner verified this record without taking that act, deliberately**, on the
+finding's own ground that the substance landed correctly in the artifact and nothing depends on the label. **It remains
+owed by the assurance owner**, `VER-MOK-016`'s realignment row still reads *"Manual assessment 7"*, and this record does
+not discharge it. That follows `VREC-MOK-019`'s precedent, which carried two `OUTSTANDING` amendment rows through its
+own verification and closed neither.
+
+### Exactly one front-matter field moved, and it is `status`
+
+`commit`, `git_object_format`, `worktree_state`, `verified_at`, `artifact_snapshot_sha256`, all **319**
+`evidence_paths`, both declared relations, `owners`, `title` and `updated` are unchanged.
+`verified_at = "2026-08-22T07:39:33Z"` remains **the capture timestamp and not the decision time** — the decision is
+necessarily later than the capture, and the field is provenance rather than a record of the act. What is verified is the
+tree at `a30ae32`; `WORKFLOW.md` provides no re-pointing of a record at a later commit and none is attempted.
+
+**The title still reads *candidate*, and so does the heading above this section.** Both are deliberate, and it is what
+**eighteen of the nineteen** `verified` records in this repository do — only `VREC-MOK-017`, hand-composed with no
+capture behind it, says *record*. The word is the capture's, and a record binds the commit it was captured at.
+`VREC-MOK-018` and `VREC-MOK-019` are the precedents followed here.
+
+**`evidence/WO-MOK-017/merge/assurance-decision.md` is deliberately not added to `evidence_paths`**, on the same rule
+`VREC-MOK-019` stated and the `WO-MOK-011`, `WO-MOK-014` and `WO-MOK-019` precedents: a record's declared evidence is
+what the decision was taken *on*, not the account of the decision itself. It lands in a commit **after** `a30ae32`, so
+the candidate's tree still holds exactly the 319 files this record declares — *"319 declared against 319 in the
+candidate's tree, with nothing left over on either side"* stays true of the commit it is a statement about. And it cannot
+move `artifact_snapshot_sha256`: the hashed document's evidence node keys on a `WO-MOK-NNN-` **filename** prefix, this
+chain retains a **directory**, and no file inside it is discovered — which is `W-HEX-001`'s observation about
+`WO-MOK-017`, seen from the inside.
+
+### What this transition falsifies below, named rather than edited
+
+**Everything below this section is retained exactly as the candidate wrote it.** A record binds a commit and stays true
+of that commit, so the sentences the authorized acts falsify are named here instead of being rewritten in place —
+`VREC-MOK-018`'s and `VREC-MOK-019`'s settled practice, and a deliberate departure from `VREC-MOK-015`, which rewrote
+them.
+
+1. ***"This record is `ready`, and it decides nothing."*** — and with it *"Nothing here takes that act, and no part of
+   this record's preparation is an acceptance."* Both were true when written. The **preparation** still took no
+   decision; this section is a decision, and it is not preparation.
+2. ***"It cannot reach `verified` today, and the reason is not a missing measurement."*** — the whole paragraph,
+   including *"neither has been read by the accountable assurance owner."* Both have now been read. Its third sentence,
+   that an act is owed on `VER-MOK-016` for finding 7, **stands.**
+3. **The two coverage rows reading *"claimed at the candidate `26ae6ba`, and not at the merged source"***, and with them
+   *"Two of the five rows are exactly where the two `RESULT: FAIL` readings land, and that is the substance of what is
+   outstanding."* Superseded by *The two `RESULT: FAIL` readings, both now read* above.
+4. ***"They are retained as they printed, they are not adjusted, and this record does not read them as passing"*** and
+   ***"That is an argument offered to the assurance owner, and this record does not adopt it."*** The first half of each
+   stands — nothing was adjusted and both reports still print `FAIL`. The refusal to adopt is superseded.
+5. ***"It does not accept the two `RESULT: FAIL` readings"*** in *What this record does not claim*. Superseded.
+6. ***"Two retained reports read `RESULT: FAIL` and are unread. That is stated in three places in this record on
+   purpose."*** They are read. The three placements are why the reading was not overlooked.
+7. **Items 1 and 2 of *What must happen before this record can be verified* are discharged; item 3 is not**, and
+   *"Then, and only then, the transition of this record from `ready` to `verified` — a further act of the accountable
+   assurance owner, which the instruction this record is composed on does not name"* is superseded by an instruction
+   that names it.
+8. **Every claim that the branch is unpushed** — the `Branch` row's *"local at the moment of capture and **unpushed**"*,
+   *"`a30ae32` is not an ancestor of `origin/master` and has not been pushed"*, and *"before anything is pushed"* in the
+   rebase note. The same instruction authorized the push of this branch to `origin/governance/wo-mok-017-closure` and a
+   pull request over it. **Each was true at the commit it was written in, and the push follows this decision rather than
+   preceding it.** `a30ae32` is still not an ancestor of `origin/master`: a pull request is not a merge.
+9. **The working-tree figures paragraph's inspector reading** — *"the inspector's `decision_required` queue holds exactly
+   one entry — `VREC-MOK-020 [ready] assurance-review`"*. That queue is now **empty**, which is the transition's whole
+   effect on the inspector. The paragraph's `validate` and dashboard figures are scoped in their own sentence to *"`HEAD`
+   still at `a30ae32`"* and stay accurate for that reading; the digest `713aea5c…` is a figure of a tree holding a
+   **`ready`** record and is not re-derivable now. `evidence/WO-MOK-017/merge/assurance-decision.md` measures both sides
+   of the transition at `HEAD = b017e31` — `4c2d2679…` before and `62b586a3…` after, with 148 artifacts, 527 relations,
+   0 errors, 19 warnings and 39 findings on both sides — so the one digit that moves is attributable to the `status`
+   field alone.
+
+**The rebase note below is not falsified and is now load-bearing.** It states that `a30ae32` dies under a rebase and
+that a `verified` record can only be superseded, never re-pointed. **This transition removes even that remedy:**
+`VERIFICATION_RECORD.template.md` permits supersession of a **`ready`** record only, so the supersession route for this
+record is now foreclosed permanently — the exposure `evidence/WO-MOK-014/merge/assurance-decision.md` priced when
+`VREC-MOK-015` was transitioned. **The pull request over this branch must be merged without rewriting it.**
+
+### What this decision does not reach
+
+It is a decision on the evidence at one commit, and nothing more.
+
+- **`WO-MOK-017` stays `implemented`.** `WORKFLOW.md` uses work-order status `verified` only where configured provenance
+  requires it; the precedent is `WO-MOK-016`, still `implemented` under the `verified` `VREC-MOK-017`.
+- **No merge, tag or release follows, and no commit becomes release-eligible.** `origin/master` already carries this
+  work order's implementation through `f7b1c45`, taken on other grounds before this record existed. No release record
+  binds it.
+- **It ratifies no amendment.** `SPEC-MOK-004`'s 2026-08-21 row for rules 9, 10 and 11 still carries `**OUTSTANDING.**` in
+  its authority cell, so rule 11 still states the workspace's **301** against a tree that runs **302**, with the
+  correction drafted and unapplied; `REQ-MOK-060`'s *Open decisions* third bullet still reads "remains deferred"
+  where assessment 5b declined a per-class floor; `VER-MOK-013` and `VER-MOK-005` each still owe the amendment row
+  findings 2 and 3 name. All four are their owners' separate acts.
+- **It re-records no product-owner or technical-owner judgement.** The eight dispositions of 2026-08-22 stand as
+  recorded, and finding 7 is the only one this section touches.
+- **It closes none of the residuals below.** The per-run draw total stays undecidable at this candidate, the two floors
+  stay met at margin 0, nothing is measured past tick 1,000, and the density-`1.50` exception stays disclosed and
+  unbound.
 
 **This record is `ready`, and it decides nothing.** It names commit
 `a30ae327a92f5acdfb294a3c3d98e32b806300d1` as the candidate satisfying `VER-MOK-016`'s five `REQ-MOK-060` rows, and the
