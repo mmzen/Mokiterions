@@ -1,0 +1,184 @@
+Captured 2026-08-22 from the pinned 0.4.0 virtual environment at C:\Users\mathi\.harness040,
+with the work order at status 'implemented'. Transcription note: harnessctl writes cp1252 to a
+pipe on this machine, so the two em dashes it echoes out of WO-MOK-024's assurance rationale
+arrive as byte 0x97; they are decoded from cp1252 and stored here as UTF-8. Nothing else was
+altered, and no line was elided.
+
+This capture supersedes one taken the same day against the identifier WO-MOK-020, before the
+renumber recorded as act 11 of WO-MOK-024's Decision record. The superseded capture is retained
+verbatim at the foot of this file rather than deleted, because it is the run that this work
+order's gates.md was written against, and because the two readings are identical apart from the
+identifier and the file path the W005 diagnostic names. Both are true records; only the first
+names a path that no longer exists.
+
+$ harnessctl --version
+0.4.0
+
+$ harnessctl preflight --work-order WO-MOK-024 --phase start
+Harness preflight: FAIL
+Phase: start
+Work order: WO-MOK-024 (implemented)
+
+Assurance classification:
+- Commit-bound verification: required
+- Decided by: engineering owner
+- Rationale: The subject is operator-visible program output on both of its emission paths, and `WO-MOK-004` set the precedent that help content is verified by a commit-bound record rather than by inspection — `VREC-MOK-004` binds the earlier form of this same text and its assertions are the ones a restructure is most likely to break. Three claims here cannot be asserted: that every printed default is still the value the parser applies, which is `REQ-MOK-018`'s own equality and the reason that requirement exists; that no simulation output, no entropy draw and no exit code moved, which is a claim about every run rather than about the diff; and that the four entries the observer shares with the engine are byte-identical across two packages, which is a claim about two constants that no single build compares unless a test does. The work also amends two approved specifications, one approved requirement and one approved verification contract, so the artifacts a later reader would cite as the oracle are themselves part of what changed.
+
+Diagnostics:
+- [W005] docs/engineering/simulation/work-orders/WO-MOK-024.md: status 'implemented' is not eligible for start; expected one of approved, in_progress
+
+Reading manifest:
+- ENGINEERING_HARNESS.md
+- docs/engineering/REPOSITORY_CONTEXT.md
+- docs/engineering/README.md
+- docs/engineering/WORKFLOW.md
+- docs/engineering/DECISION_RIGHTS.md
+- docs/engineering/QUALITY_GATES.md
+- docs/engineering/TRACEABILITY.md
+- docs/engineering/simulation/intent/INT-MOK-001.md
+- docs/engineering/simulation/capabilities/CAP-MOK-001.md
+- docs/engineering/simulation/requirements/REQ-MOK-018.md
+- docs/engineering/simulation/specifications/SPEC-MOK-001.md
+- docs/engineering/simulation/specifications/SPEC-MOK-003.md
+- docs/engineering/simulation/verification/VER-MOK-004.md
+- docs/engineering/simulation/work-orders/WO-MOK-024.md
+
+Repository commands:
+- additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. Each package's resolved dependency set must equal the set declared for it, at the declared versions and feature sets: `SPEC-MOK-002` rule 13 declares the engine's and `SPEC-MOK-003`'s *Declared dependency set* declares the observer's, `SPEC-MOK-005` rule 8.4 is the check, and `REQ-MOK-050` is the obligation. `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate is what that comparison predicts today, because the engine's declared set is empty; it is a measurement of the declaration and no longer a rule of its own. Behavior-specific verification must be added as simulation requirements are approved.
+- build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+- lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`. `--locked` is not optional: `.github/workflows/release.yml` passes it, so a lint run without it can resolve around `Cargo.lock` and pass locally against dependencies the release would refuse.
+- setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
+- test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+
+Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+
+$ echo $?
+1
+
+$ harnessctl preflight --work-order WO-MOK-024 --phase review
+Harness preflight: PASS
+Phase: review
+Work order: WO-MOK-024 (implemented)
+
+Assurance classification:
+- Commit-bound verification: required
+- Decided by: engineering owner
+- Rationale: The subject is operator-visible program output on both of its emission paths, and `WO-MOK-004` set the precedent that help content is verified by a commit-bound record rather than by inspection — `VREC-MOK-004` binds the earlier form of this same text and its assertions are the ones a restructure is most likely to break. Three claims here cannot be asserted: that every printed default is still the value the parser applies, which is `REQ-MOK-018`'s own equality and the reason that requirement exists; that no simulation output, no entropy draw and no exit code moved, which is a claim about every run rather than about the diff; and that the four entries the observer shares with the engine are byte-identical across two packages, which is a claim about two constants that no single build compares unless a test does. The work also amends two approved specifications, one approved requirement and one approved verification contract, so the artifacts a later reader would cite as the oracle are themselves part of what changed.
+
+Reading manifest:
+- ENGINEERING_HARNESS.md
+- docs/engineering/REPOSITORY_CONTEXT.md
+- docs/engineering/README.md
+- docs/engineering/WORKFLOW.md
+- docs/engineering/DECISION_RIGHTS.md
+- docs/engineering/QUALITY_GATES.md
+- docs/engineering/TRACEABILITY.md
+- docs/engineering/simulation/intent/INT-MOK-001.md
+- docs/engineering/simulation/capabilities/CAP-MOK-001.md
+- docs/engineering/simulation/requirements/REQ-MOK-018.md
+- docs/engineering/simulation/specifications/SPEC-MOK-001.md
+- docs/engineering/simulation/specifications/SPEC-MOK-003.md
+- docs/engineering/simulation/verification/VER-MOK-004.md
+- docs/engineering/simulation/work-orders/WO-MOK-024.md
+
+Repository commands:
+- additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. Each package's resolved dependency set must equal the set declared for it, at the declared versions and feature sets: `SPEC-MOK-002` rule 13 declares the engine's and `SPEC-MOK-003`'s *Declared dependency set* declares the observer's, `SPEC-MOK-005` rule 8.4 is the check, and `REQ-MOK-050` is the obligation. `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate is what that comparison predicts today, because the engine's declared set is empty; it is a measurement of the declaration and no longer a rule of its own. Behavior-specific verification must be added as simulation requirements are approved.
+- build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+- lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`. `--locked` is not optional: `.github/workflows/release.yml` passes it, so a lint run without it can resolve around `Cargo.lock` and pass locally against dependencies the release would refuse.
+- setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
+- test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+
+Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+
+$ echo $?
+0
+
+================================================================================
+Retained verbatim: the superseded capture at WO-MOK-020, 2026-08-22
+================================================================================
+
+Captured 2026-08-22 from the pinned 0.4.0 virtual environment at C:\Users\mathi\.harness040,
+with the work order at status 'implemented'. Transcription note: harnessctl writes cp1252 to a
+pipe on this machine, so the two em dashes it echoes out of WO-MOK-020's assurance rationale
+arrive as byte 0x97; they are decoded from cp1252 and stored here as UTF-8. Nothing else was
+altered, and no line was elided.
+
+$ harnessctl --version
+0.4.0
+
+$ harnessctl preflight --work-order WO-MOK-020 --phase start
+Harness preflight: FAIL
+Phase: start
+Work order: WO-MOK-020 (implemented)
+
+Assurance classification:
+- Commit-bound verification: required
+- Decided by: engineering owner
+- Rationale: The subject is operator-visible program output on both of its emission paths, and `WO-MOK-004` set the precedent that help content is verified by a commit-bound record rather than by inspection — `VREC-MOK-004` binds the earlier form of this same text and its assertions are the ones a restructure is most likely to break. Three claims here cannot be asserted: that every printed default is still the value the parser applies, which is `REQ-MOK-018`'s own equality and the reason that requirement exists; that no simulation output, no entropy draw and no exit code moved, which is a claim about every run rather than about the diff; and that the four entries the observer shares with the engine are byte-identical across two packages, which is a claim about two constants that no single build compares unless a test does. The work also amends two approved specifications, one approved requirement and one approved verification contract, so the artifacts a later reader would cite as the oracle are themselves part of what changed.
+
+Diagnostics:
+- [W005] docs/engineering/simulation/work-orders/WO-MOK-020.md: status 'implemented' is not eligible for start; expected one of approved, in_progress
+
+Reading manifest:
+- ENGINEERING_HARNESS.md
+- docs/engineering/REPOSITORY_CONTEXT.md
+- docs/engineering/README.md
+- docs/engineering/WORKFLOW.md
+- docs/engineering/DECISION_RIGHTS.md
+- docs/engineering/QUALITY_GATES.md
+- docs/engineering/TRACEABILITY.md
+- docs/engineering/simulation/intent/INT-MOK-001.md
+- docs/engineering/simulation/capabilities/CAP-MOK-001.md
+- docs/engineering/simulation/requirements/REQ-MOK-018.md
+- docs/engineering/simulation/specifications/SPEC-MOK-001.md
+- docs/engineering/simulation/specifications/SPEC-MOK-003.md
+- docs/engineering/simulation/verification/VER-MOK-004.md
+- docs/engineering/simulation/work-orders/WO-MOK-020.md
+
+Repository commands:
+- additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. Each package's resolved dependency set must equal the set declared for it, at the declared versions and feature sets: `SPEC-MOK-002` rule 13 declares the engine's and `SPEC-MOK-003`'s *Declared dependency set* declares the observer's, `SPEC-MOK-005` rule 8.4 is the check, and `REQ-MOK-050` is the obligation. `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate is what that comparison predicts today, because the engine's declared set is empty; it is a measurement of the declaration and no longer a rule of its own. Behavior-specific verification must be added as simulation requirements are approved.
+- build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+- lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`. `--locked` is not optional: `.github/workflows/release.yml` passes it, so a lint run without it can resolve around `Cargo.lock` and pass locally against dependencies the release would refuse.
+- setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
+- test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+
+Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+$ echo $?
+1
+
+$ harnessctl preflight --work-order WO-MOK-020 --phase review
+Harness preflight: PASS
+Phase: review
+Work order: WO-MOK-020 (implemented)
+
+Assurance classification:
+- Commit-bound verification: required
+- Decided by: engineering owner
+- Rationale: The subject is operator-visible program output on both of its emission paths, and `WO-MOK-004` set the precedent that help content is verified by a commit-bound record rather than by inspection — `VREC-MOK-004` binds the earlier form of this same text and its assertions are the ones a restructure is most likely to break. Three claims here cannot be asserted: that every printed default is still the value the parser applies, which is `REQ-MOK-018`'s own equality and the reason that requirement exists; that no simulation output, no entropy draw and no exit code moved, which is a claim about every run rather than about the diff; and that the four entries the observer shares with the engine are byte-identical across two packages, which is a claim about two constants that no single build compares unless a test does. The work also amends two approved specifications, one approved requirement and one approved verification contract, so the artifacts a later reader would cite as the oracle are themselves part of what changed.
+
+Reading manifest:
+- ENGINEERING_HARNESS.md
+- docs/engineering/REPOSITORY_CONTEXT.md
+- docs/engineering/README.md
+- docs/engineering/WORKFLOW.md
+- docs/engineering/DECISION_RIGHTS.md
+- docs/engineering/QUALITY_GATES.md
+- docs/engineering/TRACEABILITY.md
+- docs/engineering/simulation/intent/INT-MOK-001.md
+- docs/engineering/simulation/capabilities/CAP-MOK-001.md
+- docs/engineering/simulation/requirements/REQ-MOK-018.md
+- docs/engineering/simulation/specifications/SPEC-MOK-001.md
+- docs/engineering/simulation/specifications/SPEC-MOK-003.md
+- docs/engineering/simulation/verification/VER-MOK-004.md
+- docs/engineering/simulation/work-orders/WO-MOK-020.md
+
+Repository commands:
+- additional_required_verification: Run the engine with `cargo run --bin Mokiterions -- <options>` and inspect its text output; run the observer with `cargo run -p mokiterions-tui -- <options>` in an interactive terminal. Each package's resolved dependency set must equal the set declared for it, at the declared versions and feature sets: `SPEC-MOK-002` rule 13 declares the engine's and `SPEC-MOK-003`'s *Declared dependency set* declares the observer's, `SPEC-MOK-005` rule 8.4 is the check, and `REQ-MOK-050` is the obligation. `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate is what that comparison predicts today, because the engine's declared set is empty; it is a measurement of the declaration and no longer a rule of its own. Behavior-specific verification must be added as simulation requirements are approved.
+- build: `cargo build`. `cargo build -p Mokiterions` builds the engine package alone, which is the form that answers a question about the engine. The root is a virtual workspace manifest, so a bare `cargo build` builds both members; the `-p` form is the one to reach for when the answer must be about one package.
+- lint_or_format: `cargo fmt --all -- --check` and `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`. `--locked` is not optional: `.github/workflows/release.yml` passes it, so a lint run without it can resolve around `Cargo.lock` and pass locally against dependencies the release would refuse.
+- setup: Install `rustup`. `rust-toolchain.toml` pins the toolchain, so the first `cargo` command run in this repository installs and selects that exact version together with `rustfmt` and `clippy`; do not install a toolchain by hand and do not override the pin with `+stable`. Harness commands run as `python -m se_harness` — `harnessctl` is not on `PATH`. No additional project setup is currently required.
+- test: `cargo test` runs both packages and both tiers of each. `cargo test -p Mokiterions` runs the engine package alone, with no terminal present; `cargo test -p mokiterions-tui` runs the observer package alone, also with no terminal present.
+
+Authority boundary: Preflight is derived, read-only evidence. It does not approve artifacts, authorize a diff, verify work, release software, commit, push, tag, publish, or deploy.
+$ echo $?
+0

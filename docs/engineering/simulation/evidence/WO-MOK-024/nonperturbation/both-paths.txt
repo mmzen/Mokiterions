@@ -1,0 +1,26 @@
+Both emission paths carry the same bytes
+=======================================
+
+REQ-MOK-018's *Preconditions and trigger* makes the obligation a property of the text,
+so it holds on both paths and cannot be satisfied on one alone. VER-MOK-004's matrix
+row asks for the same thing. This is the measurement rather than the argument.
+
+$ Mokiterions --help                       (stdout)
+$ Mokiterions --ticks 0                    (stderr, after the error line)
+
+exit code, --help ..................... 0
+exit code, --ticks 0 .................. 2
+first stderr line ..................... configuration error: --ticks must be greater than zero
+
+stdout of --help ...................... 3601 bytes, 71 lines
+appended block of --ticks 0 ........... 3601 bytes, 71 lines
+the two blocks are byte-identical ..... YES
+both equal after/engine-usage.txt ..... YES
+
+carriage returns in either stream ..... 0
+
+The carriage-return count is zero on this Windows machine, which is the property that
+survives a checkout: cli::USAGE is one string literal per line with an explicit \n
+rather than a multi-line literal that would inherit its endings from the working tree.
+The retained after/engine-usage.txt is stored CRLF like every other text file here, so
+the comparison above is made against it normalized to LF.

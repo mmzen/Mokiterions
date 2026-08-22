@@ -5,13 +5,20 @@ title = "Help output content verification"
 status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-22"
 
 [relations]
 verifies = ["REQ-MOK-018"]
 +++
 
 # Verification Contract: Help output content verification
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-22 | **Realigned to `REQ-MOK-018` as amended the same date, and three stale enumerations corrected.** The additions are in *Amendment of 2026-08-22* below: four matrix rows and two acceptance scenarios, covering the third clause of the amended statement, the retirement of the trailing prose, the two statements the text now makes about output and exit status, and the byte-identity of the four shared entries across the two targets. The corrections are stale counts this contract has carried since it was written for `WO-MOK-004`: "six options" and "all six" meant five options and `--help`, and `--policy`'s row named two accepted values when four have been accepted since 2026-08-20. **Nothing already in the matrix is withdrawn or weakened**, and the *Independence* section's hazard is unchanged and still the governing one: every check is written against a source outside `cli::USAGE`, and the new byte-identity check is written against the *other* target's constant rather than against a literal in a test file. The baseline figures for `WO-MOK-004` are historical and are not restated. | **Approved 2026-08-22 by the repository owner acting as assurance owner**, after the product owner's `REQ-MOK-018` amendment of the same date and not before it, since three of the four added rows verify clauses that amendment introduces. It was taken together with the engineering owner's transition of `WO-MOK-024` to `implemented`, in that order, because a work order cannot leave `draft` without assurance coverage of what it changed. `WO-MOK-024` states it in full in its *Required amendments* section. The alternatives put beside it were to approve these rows and leave that work order `draft`, and to decline the rows entirely — the second declined because the three stale enumerations are wrong today independently of this change, and leaving them would leave this contract asserting that `--policy` accepts two values. The implementation agent wrote the rows and the two scenarios; it decided no pass condition that the amended requirement does not already fix. |
+| 2026-08-22 | **Three checks realigned to the tree they are read against, and none of them withdrawn or weakened.** The corrections are in *Second amendment of 2026-08-22* below. The *Line width* row's parenthetical asserted a synopsis first line of 81 columns "before and after" and required the synopsis unchanged: the first line is **49** columns before and **55** after, the widest line in that block is **68**, the two 81-column lines in the pre-change text are prose lines 28 and 32, and the amendment above changed `<u64>` to `<number>` inside exactly that block — so the row contradicted an approved amendment of the same date. The *Test placement* row and the matching *Static and architecture checks* bullet named `tests/cli.rs` as the location of the new tests, and the cross-target byte-identity row the amendment above adds cannot be satisfied from that file, because the engine's test target cannot see the observer's package. The two *Performance and resilience* figures — survivor counts `8, 11, 8, 9, 11` and "the same termination ticks as recorded before" — were fixed on 2026-08-17 and `master` has since moved past both; they are re-anchored to the base commit of the work order under verification. **Nothing is withdrawn**: the 80-column bound now covers the whole of both rendered texts rather than one block of one of them, the placement rule keeps public tier, existing subject, no new test file and no test moved between tiers, and the resilience checks keep identity with a baseline rather than dropping to a bare floor. One consequence is recorded rather than left implicit: the *Independence* section's sentence disclaiming column widths predates `REQ-MOK-018`'s amended *Verbosity stays bounded* clause and is corrected below, because a contract cannot both require a bound and disclaim it. | **Approved 2026-08-22 by the repository owner acting as assurance owner**, in a separate and later act than the amendment above, because these three were not visible until this contract was executed: `WO-MOK-024`'s *Required verification* items 7 to 9 measured them while preparing `VREC-MOK-022`, after the six acts of that work order's *Decision record*. Each was put separately, with its measured cost. For *Line width* the declined alternatives were to strike the row, which would leave `REQ-MOK-018`'s amended 80-column bound with no verification row in any contract, and to leave the false parenthetical standing and record the row as unmet. For *Test placement* they were to leave it and record it unmet, which would have this contract require a check while forbidding the only file that check can live in, and to move the test into the engine's `tests/cli.rs` — measured as needing either `mokiterions-tui` as a dev-dependency of the engine, which inverts the direction `REQ-MOK-026` and `ADR-MOK-003` fix and breaks this contract's own empty-dependency-table row, or an `include_str!` reaching across the package boundary into another package's source rather than its interface. For the resilience figures they were to weaken to the declared floor of eight, which would let a later change shift survivor counts unnoticed, and to leave the fixed numbers, which would have every later reader report a regression that did not happen. The owner also directed that `VREC-MOK-022`, at `ready` and never accepted, be superseded and re-captured against the commit that carries this amendment rather than left describing this contract as it read before it. `WO-MOK-024` states all four decisions in full in its *Required amendments* and *Decision record* sections. |
 
 ## Independence
 
@@ -91,6 +98,110 @@ description beyond the substance the specification fixes and the readability ass
 | `REQ-MOK-018` | review | Readability | Each description is intelligible to a reader who has not read `SPEC-MOK-001`; a description that requires the specification to interpret is an adverse observation |
 | `REQ-MOK-018` | static-analysis | Line width | No line the options block introduces exceeds 80 columns; the reproduced synopsis block, whose first line is 81 columns before and after, is unchanged |
 | `REQ-MOK-018` | automated-test | Applied defaults unchanged | `cli::parse` on an empty argument list yields exactly the pre-change configuration: `seed 0`, `tick_limit 100`, `Policy::Reference`, `Density::DEFAULT`, `trace_actions false` |
+
+### Amendment of 2026-08-22
+
+Three rows above carry stale enumerations, corrected here rather than edited in place so that a reader of
+`VREC-MOK-004` can see what they said. **"An options entry exists for each of `--seed`, `--ticks`, `--policy`,
+`--density`, `--trace-actions`, and `--help`"** and its "All six present" pass condition were written when the
+program accepted five options and `--help`; the set is now `--seed`, `--ticks`, `--policy`, `--density`,
+`--trace-actions`, `--events-path` and `--help`, and the pass condition is that the options block and the synopsis
+name exactly the options the parser's own match arms accept, in the same order, with no surplus and no shortfall.
+**`--policy`'s row** named `baseline` and `reference` as the value set; it is `baseline`, `reference`, `individual`
+and `social`, each of which the parser must accept and none of which may be absent from the entry. **"Every declared
+default is stated"** counted five; it is six declared defaults, of which four are values stated once each and two are
+stated absences.
+
+These rows are added:
+
+| Requirement | Method | Case/evidence | Pass condition |
+|---|---|---|---|
+| `REQ-MOK-018` | automated-test | Each accepted value of a closed-set option is explained | The `--policy` entry contains all four value names *and* a description of each; a value named in the placeholder and not described in the entry is a failure |
+| `REQ-MOK-018` | automated-test | The retired prose is gone rather than duplicated | No text after the options block states a default or a value constraint; the decision-source descriptions and the `--density` explanation appear in their entries and nowhere else |
+| `REQ-MOK-018` | automated-test | The two added statements are present and true | The text states what it writes and to which stream, and states exit `0` for a finished run or printed help, `2` for invalid configuration and `1` for an output failure; the three codes are the three `SPEC-MOK-001` *Outputs* fixes and no fourth is named |
+| `REQ-MOK-018` | automated-test | The observer describes the shared inputs in the engine's words | Each of the `--seed`, `--ticks`, `--policy` and `--density` entries read out of `mokiterions_tui::options::USAGE` appears byte for byte in `mokiterions::cli::USAGE`; an edit to one alone fails and names the option |
+
+And these acceptance scenarios:
+
+6. An operator who has not read any specification runs `--help`, chooses a `--policy` value on the strength of the
+   entry alone, and can say what that choice will make the Mokiterions do — the failure this amendment exists to
+   remove being a choice made from four bare names.
+7. A description of one shared input is edited in one target and not the other in a scratch copy; the suite fails and
+   names the option. The scratch change is not committed, and its purpose is to show that the duplication is held
+   rather than merely intended.
+
+### Second amendment of 2026-08-22
+
+Three checks were written on 2026-08-17 for `WO-MOK-004` and are read here against a tree they predate. They are
+corrected in this section rather than edited in place, for the reason the subsection above gives: a reader of
+`VREC-MOK-004` must be able to see what they said. Each correction states what was measured, so that what replaces
+an assertion is a measurement and not a second assertion. All three were found by executing this contract — items
+7 to 9 of `WO-MOK-024`'s *Required verification* — and none of them changes a line of code or a byte of rendered
+text.
+
+**The *Line width* row.** It read: *"No line the options block introduces exceeds 80 columns; the reproduced
+synopsis block, whose first line is 81 columns before and after, is unchanged."* The first clause holds. The
+parenthetical is false, and was false for this text on the day it was written: the engine's synopsis first line
+measures **49** columns before the change and **55** after, the widest line of that block is **68**, and the two
+lines that exceed eighty in the pre-change text are the prose lines 28 and 32, both at **81**. The closing clause
+also contradicts the amendment above, which replaced `<u64>` with `<number>` inside exactly that block. The row is
+replaced by:
+
+| Requirement | Method | Case/evidence | Pass condition |
+|---|---|---|---|
+| `REQ-MOK-018` | static-analysis | Line width | No line of either rendered usage text exceeds 80 columns, which is `REQ-MOK-018`'s amended *Verbosity stays bounded* clause. The bound covers the whole of each text rather than one block of one of them, and it is met as a measurement: the engine's widest line is 81 columns before and 80 after, the observer's 84 before and 79 after, and the count of lines past column eighty falls from 2 to 0 and from 6 to 0. The synopsis is **not** asserted unchanged, and no figure in this row is fixed for a later work order to inherit |
+
+The *Independence* section says this contract "does not verify column alignment, column widths, or line wrapping,
+which `SPEC-MOK-001` leaves unspecified". That sentence predates `REQ-MOK-018`'s amended *Verbosity stays bounded*
+clause, and a contract cannot both require a width bound and disclaim one. It is corrected to: this contract
+verifies the 80-column bound the amended requirement fixes, and verifies nothing else about width — not column
+alignment within an entry, not the choice of wrap points, and not rendering in a terminal narrower than eighty
+columns. The tension is older than this amendment; the amendment resolves it in the direction the requirement now
+requires.
+
+**The *Test placement* row**, and the *Static and architecture checks* bullet that repeats it. Both named
+`tests/cli.rs`. The cross-target byte-identity row added by the amendment above compares
+`mokiterions_tui::options::USAGE` against `mokiterions::cli::USAGE`, and the engine's test target cannot see the
+observer's package, so that row cannot be satisfied from the file this one named: as written, this contract
+required a check and forbade the only place the check can live. The row is replaced by:
+
+| Requirement | Method | Case/evidence | Pass condition |
+|---|---|---|---|
+| `REQ-MOK-018` | static-analysis | Test placement | Each new test is in the public tier of the package whose interface its oracle needs — `mokiterions-core/tests/cli.rs` for a claim about the engine's own text, `mokiterions-tui/tests/options.rs` for a claim that spans both — and `SPEC-MOK-002` rule 8's subject discipline applies unchanged within each package. No new test file in either package, and no test moved between tiers |
+
+and the *Static and architecture checks* bullet reads: "`SPEC-MOK-002` rules 7 and 8 hold: the new tests require
+only rule 5's interface, so they belong in the public tier, and each sits in the existing public-tier file of the
+package that owns its subject. No new public-tier file is created and no test changes tier."
+
+**The two *Performance and resilience* figures.** They are re-anchored to the base commit of the work order under
+verification rather than to numbers fixed on 2026-08-17, which `master` has since moved past. Identity with a
+baseline is kept; weakening to the declared floor was declined as strictly weaker. The two bullets read:
+
+- The 1,000-tick population floor at the declared density is met on every declared seed, and the survivor counts
+  are identical to a baseline captured at the commit the work under verification begins from, rather than to any
+  figure fixed in this contract. For `WO-MOK-024` that base is
+  `f7b1c452039dc2f03010ca8b8cc81e73c54727c0` and the counts are `8, 9, 10, 9, 9` on seeds `0, 1, 42, 123, 777`,
+  against the `8, 11, 8, 9, 11` recorded on 2026-08-17. The declared per-seed floor of eight is met on every seed
+  on both sides of both captures.
+- A 10,000-tick run under each decision source completes without panic, with survivors plus deaths equal to
+  twelve, at the same termination reason and the same termination tick as that same base capture. Where a base
+  capture and this contract's 2026-08-17 figures disagree, the base capture governs and the disagreement is
+  recorded in the evidence rather than reported as a regression: under `WO-MOK-024`, `reference` at density
+  `0.75` reaches `tick_limit` at 10,000 ticks with 2 survivors on both sides, where extinction at tick 9154 was
+  recorded before.
+
+**What this amendment does not do.** It withdraws no row, admits no wider result set, and relaxes no pass
+condition. The width bound is wider in coverage than the row it replaces and unchanged in strictness; the
+placement rule keeps public tier, existing declared subject, no new test file and no test moved between tiers; and
+the resilience checks keep identity against a measured baseline rather than dropping to the floor. The 2026-08-17
+figures remain readable above and are historical: they describe the tree of that date, and a later reader who
+finds them unreproducible has found that `master` moved, not that a regression landed.
+
+**Identifier note, 2026-08-22.** The work order this subsection cites was renumbered `WO-MOK-020` → `WO-MOK-024`
+after both amendments were ratified, because a fetch of the remote found `WO-MOK-020` already held by an open draft
+pull request and `VREC-MOK-020` already held by a `verified` record on `master`. Only the identifiers moved; no row,
+figure, base commit or measurement in either amendment was reopened. The renumber is act 11 of `WO-MOK-024`'s
+*Decision record*, and the record bound to this contract is `VREC-MOK-022`.
 
 ## Acceptance scenarios
 
