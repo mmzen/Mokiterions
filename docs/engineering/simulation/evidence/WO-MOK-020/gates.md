@@ -7,6 +7,15 @@ nothing and authorize no release.
 Captured 2026-08-22 on branch `feature/help-output-clarity`, base
 `f7b1c452039dc2f03010ca8b8cc81e73c54727c0`.
 
+**Two capture points, and which sections belong to which.** Sections 1 to 5 and the `doctor` and `validate`
+readings were first taken at commit `6d6be40`, when the work order was `draft` and its five amendments were
+**OUTSTANDING**. The owner then ratified all five and directed the transition to `implemented`, which
+changed markdown only — no `.rs` file, no `Cargo.toml` and no lockfile. Section 6 was re-run in full after
+those edits and is reported at the ratified state; `doctor` and `validate` returned the same figures as
+before, which is expected, since neither reads amendment prose. The code gates were not re-run after the
+doc-only edits and are reported as taken at `6d6be40`. What binds a tree rather than a moment is
+`VREC-MOK-020`, prepared against the commit that carries both.
+
 ## Toolchain
 
 ```
@@ -31,7 +40,7 @@ harness command below was run from the 0.4.0 virtual environment at `C:\Users\ma
 | 3 | Tests | `cargo test --locked` | **PASS** — 303 passed, 0 failed, 0 ignored |
 | 4 | Drift test bites | scratch divergence, then `cargo test -p mokiterions-tui --test options` | **FAILED as intended**, naming `--density`; scratch reverted |
 | 5 | Rendered texts | `cargo run -q -p <pkg> -- --help` on both packages, before and after | **PASS** — both exit 0; retained in `before/` and `after/` |
-| 6 | Harness | `harnessctl doctor`, `validate_engineering_artifacts.py`, `harnessctl preflight` | doctor **PASS**, validate **PASS**, preflight **FAIL by design** |
+| 6 | Harness | `harnessctl doctor`, `validate_engineering_artifacts.py`, `harnessctl preflight` | doctor **PASS**, validate **PASS**, preflight `review` **PASS** and `start` **FAIL by design** |
 
 ## 1. Formatting
 
@@ -175,13 +184,28 @@ diffs and the rest of the measurements are in `usage-text.md`.
 
 Every touched source file is uniformly CRLF, matching the checkout, with **zero** bare LF:
 
-| File | CRLF | bare LF |
-| --- | ---: | ---: |
-| `mokiterions-core/src/cli.rs` | 231 | 0 |
-| `mokiterions-core/tests/cli.rs` | 577 | 0 |
-| `mokiterions-tui/src/options.rs` | 242 | 0 |
-| `mokiterions-tui/tests/options.rs` | 184 | 0 |
-| `docs/engineering/simulation/work-orders/WO-MOK-020.md` | 265 | 0 |
+| File | CRLF | bare LF | bare CR |
+| --- | ---: | ---: | ---: |
+| `mokiterions-core/src/cli.rs` | 231 | 0 | 0 |
+| `mokiterions-core/tests/cli.rs` | 577 | 0 | 0 |
+| `mokiterions-tui/src/options.rs` | 242 | 0 | 0 |
+| `mokiterions-tui/tests/options.rs` | 184 | 0 | 0 |
+| `work-orders/WO-MOK-020.md` | 390 | 0 | 0 |
+| `requirements/REQ-MOK-018.md` | 157 | 0 | 0 |
+| `specifications/SPEC-MOK-001.md` | 836 | 0 | 0 |
+| `specifications/SPEC-MOK-003.md` | 1265 | 0 | 0 |
+| `verification/VER-MOK-004.md` | 280 | 0 | 0 |
+| `evidence/WO-MOK-020/README.md` | 61 | 0 | 0 |
+| `evidence/WO-MOK-020/gates.md` | 324 | 0 | 0 |
+| `evidence/WO-MOK-020/usage-text.md` | 431 | 0 | 0 |
+| `evidence/WO-MOK-020/preflight-implemented.txt` | 85 | 0 | 0 |
+
+Re-measured 2026-08-22 after the ratification edits; the work-order row was 265 before them and the four
+amended artifacts and the preflight capture were not in this table at all. The **bare CR** column was added
+because the first attempt at `preflight-implemented.txt` had 69 of them: `harnessctl` already emits `CRLF`,
+so writing its output through a `CRLF` translation produced `\r\r\n` on every line the harness had wrapped.
+The capture was rewritten by normalizing to `LF` before the single translation, and the column exists so
+that a reader can see the check was run rather than assumed.
 
 And the measurement that survives a checkout: **both rendered texts contain zero carriage returns**,
 because both constants are one string literal per line with an explicit `\n` rather than a multi-line
@@ -214,33 +238,69 @@ Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
 is what confirms `WO-MOK-020`'s frontmatter and its four `[relations]` edges resolve: `REQ-MOK-018`,
 `SPEC-MOK-001`, `SPEC-MOK-003` and `VER-MOK-004` all exist and all accept the relation.
 
-### `harnessctl preflight --work-order WO-MOK-020 --phase start` — FAIL, by design
+### `harnessctl preflight` — three readings
+
+The full output of the two post-ratification runs is retained verbatim in `preflight-implemented.txt`.
+
+| # | When | Phase | Status read | Verdict | Exit | Diagnostic |
+| ---: | --- | --- | --- | --- | ---: | --- |
+| A | before ratification | `start` | `draft` | **FAIL** | 1 | `W005` status `draft` not eligible for start |
+| B | after ratification | `start` | `implemented` | **FAIL** | 1 | `W005` status `implemented` not eligible for start |
+| C | after ratification | `review` | `implemented` | **PASS** | 0 | none |
+
+**A.** Recorded rather than worked around:
 
 ```
 Harness preflight: FAIL
 Phase: start
 Work order: WO-MOK-020 (draft)
 
-Assurance classification:
-- Commit-bound verification: required
-- Decided by: engineering owner
-
 Diagnostics:
 - [W005] docs/engineering/simulation/work-orders/WO-MOK-020.md: status 'draft'
   is not eligible for start; expected one of approved, in_progress
 ```
 
-**This FAIL is the correct result and is recorded rather than worked around.** `W005` is the harness
-saying that a `draft` work order does not authorize implementation, which is exactly true here: the code
-was written on the owner's direct instruction of 2026-08-22 and the five amendments that instruction did
-not cover are **OUTSTANDING**. Moving the status to `approved` would clear the diagnostic and would be
-the implementation agent approving its own authorization, which `DECISION_RIGHTS.md` reserves to the
-engineering owner. `W005` is the one gate whose result is a governance fact rather than a code fact, and
-it stays red until the owner acts.
+`W005` was the harness saying a `draft` work order does not authorize implementation, which was exactly
+true: the code was written on the owner's direct instruction of 2026-08-22 and the five amendments that
+instruction did not cover were **OUTSTANDING**. Moving the status to `approved` would have cleared the
+diagnostic and would have been the implementation agent approving its own authorization, which
+`DECISION_RIGHTS.md` reserves to the engineering owner. It stayed red until the owner acted.
 
-There is exactly one diagnostic. Nothing else about the work order, its relations, its assurance
-classification or its reading manifest was flagged — the preflight resolved all fourteen documents of the
-manifest, from `INT-MOK-001` down through the four related artifacts.
+**B — and this is the correction.** `WO-MOK-020`'s *Lifecycle* first said the diagnostic "clears on this
+transition". It does not. The `start` phase admits `approved` and `in_progress` only, so at `implemented`
+it raises `W005` again, for the opposite reason:
+
+```
+Harness preflight: FAIL
+Phase: start
+Work order: WO-MOK-020 (implemented)
+
+Diagnostics:
+- [W005] docs/engineering/simulation/work-orders/WO-MOK-020.md: status
+  'implemented' is not eligible for start; expected one of approved, in_progress
+```
+
+Both readings are retained because a reader who sees only one of them learns the wrong thing. The status
+never passes `start`: it was short of the window, then past it. There is no moment in this work order's
+life at which `--phase start` returns PASS, and the `approved` state that would have produced one existed
+only as a step inside the single act the owner took on 2026-08-22.
+
+**C.** The phase that applies at `implemented`:
+
+```
+Harness preflight: PASS
+Phase: review
+Work order: WO-MOK-020 (implemented)
+```
+
+Exit 0, and **no `Diagnostics:` block at all** — not a block with zero entries. Nothing about the work
+order, its relations, its assurance classification or its reading manifest was flagged, and the preflight
+resolved all fourteen documents of the manifest, from `INT-MOK-001` down through the four related
+artifacts, all four of which are the amended ones.
+
+**Transcription note.** `harnessctl` writes cp1252 to a pipe on this machine, so the two em dashes it
+echoes out of the work order's assurance rationale leave as byte `0x97`. `preflight-implemented.txt`
+stores them decoded, as UTF-8. Nothing else in that capture was altered and no line was elided.
 
 ## What is not gated here
 
@@ -252,7 +312,13 @@ manifest, from `INT-MOK-001` down through the four related artifacts.
   neither renders as a table row. `validate` does not read markdown table structure, so its PASS is not
   evidence that they are fine. Recorded as an observation; moving an approved row is the technical owner's
   act.
-- **No verification record.** Item 6 of *Required verification* is the harness gates, not assurance.
-  `commit_bound_verification` is `required` and `VREC-MOK-020` does not exist, because a record binds a
-  candidate commit and there is nothing to bind while the artifacts it would cite as its oracle are
-  unapproved.
+- **Verification is not accepted here.** Item 6 of *Required verification* is the harness gates, not
+  assurance. `commit_bound_verification` is `required`, and `VREC-MOK-020` now exists at status `ready`,
+  prepared against the commit that carries the ratifications. `ready` is not `verified`: accepting a record
+  is the assurance owner's separate act, and nothing below this line was decided by the agent that wrote
+  it. Until that acceptance, the gates on this page are the strongest claim available — that the tree was
+  measured, not that the work is verified.
+- **The width argument put to the owner for amendment 2 was wrong**, and `WO-MOK-020` now records it as
+  wrong rather than dropping it. `--ticks <whole number>` would not have overrun any line: that synopsis
+  line is 55 columns after the change and 49 before, and the widest synopsis line is 68. The ratification
+  of `<number>` stands on its own; the cost figure offered beside it did not hold.

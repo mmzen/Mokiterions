@@ -5,15 +5,20 @@ captured on 2026-08-22.
 
 The records are observations of the working tree. They do not independently approve verification, create a
 candidate commit, or authorize release. `VER-MOK-004` is the verification contract they serve; the
-accountable assurance decision is the owner's act.
+accountable assurance decision is the owner's act. `VREC-MOK-020` cites this directory and stands at status
+`ready`, which means prepared and not accepted — the acceptance is the assurance owner's separate act and no
+file here anticipates its outcome.
 
-**`WO-MOK-020` is `draft` and five amendments are OUTSTANDING.** This evidence therefore documents a change
-that is written and measured but not yet authorized, which is unusual for this directory and is the reason
-`gates.md` records a `preflight` FAIL as a correct result rather than a problem. `WO-MOK-020`'s *Lifecycle*
-section states how that came about: the owner directed the implementation on 2026-08-22 after being shown
-both texts in full, and the amendments were found afterwards, in the course of writing the change against
-the artifacts that govern it. No verification record exists, because a record binds a candidate commit and
-there is nothing to bind while its oracle is unapproved.
+**The five amendments were ratified on 2026-08-22 and `WO-MOK-020` is now `implemented`.** This directory
+was written before that, while the work order was `draft` and all five amendments were **OUTSTANDING**, and
+it is left readable in that order rather than rewritten to look as though authorization came first. What
+actually happened is in `WO-MOK-020`'s *Lifecycle*: the owner directed the implementation on 2026-08-22
+after being shown both texts in full; the amendments were found afterwards, in the course of writing the
+change against the artifacts that govern it; and the owner then ratified all five in one act, as written,
+and directed the transition. `gates.md` therefore records **three** `preflight` readings rather than one —
+the `draft` FAIL, the `implemented` FAIL on the same `start` phase, and the `review` PASS that is the gate
+this status is measured by. The middle one exists because the work order first claimed the FAIL "clears on
+this transition", which measurement contradicted.
 
 ## Commit binding
 
@@ -21,7 +26,7 @@ there is nothing to bind while its oracle is unapproved.
 | --- | --- |
 | Base commit | `f7b1c452039dc2f03010ca8b8cc81e73c54727c0`, the branch point and the tip of `master` |
 | Implementation branch | `feature/help-output-clarity` |
-| Candidate commit | none; the work order is `draft` |
+| Candidate commit | the commit `VREC-MOK-020` binds. Its `commit` field is the authority and this table deliberately does not copy the hash: the commit that carries this file cannot state its own identity, and a second copy would be free to drift from the record's |
 | Pre-change texts rendered from | a `git worktree` at the base commit, built and run there |
 | Toolchain | rustc 1.97.1, cargo 1.97.1, clippy 0.1.97, rustfmt 1.9.0-stable, Python 3.14.6, se-harness 0.4.0 |
 
@@ -31,7 +36,10 @@ there is nothing to bind while its oracle is unapproved.
   `WO-MOK-020`'s *Objective* each traced to where it is now stated and to the approved artifact that
   governs it. Also records what the observer's text now discloses that its previous text did not, and why
   the four shared entries are a checked duplicate rather than a shared literal.
-- **`gates.md`** — all six items of *Required verification*, including the one that FAILs by design.
+- **`gates.md`** — all six items of *Required verification*, including the one that FAILs by design, and the
+  two capture points: the code gates at `6d6be40` and the harness readings re-run after ratification.
+- **`preflight-implemented.txt`** — both post-ratification `preflight` runs verbatim, `--phase start`
+  FAILing at exit 1 and `--phase review` PASSing at exit 0, with the version banner and the exit codes.
 - **`before/engine-usage.txt`**, **`before/observer-usage.txt`** — the texts at the base commit.
 - **`after/engine-usage.txt`**, **`after/observer-usage.txt`** — the texts from the finished tree.
 - **`engine-usage.diff.txt`**, **`observer-usage.diff.txt`** — the line-by-line diffs.
