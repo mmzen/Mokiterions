@@ -1036,72 +1036,201 @@ fn draw_log(frame: &mut Frame, area: Rect, observer: &Observer) {
 
 // ---- provenance footer -------------------------------------------------------------------
 
+/// The rule 8 fields other than the entropy seed, named in **clause 4's order of loss**: first
+/// shed first. The seed is never shed, so it is not a member of this enumeration.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Shed {
+    /// Clause 2's candidate commit. Shed before every field of the preamble, so stamping a build
+    /// never costs the row a field rule 8 requires.
+    Commit,
+    /// The retained-event count together with its truncation marker. Clause 5 makes the two one
+    /// field, so they are shed together and never separately.
+    Events,
+    Tick,
+    Source,
+    Density,
+    Ticks,
+}
+
+/// Clause 4's table, read top to bottom.
+const SHED_ORDER: [Shed; 6] = [
+    Shed::Commit,
+    Shed::Events,
+    Shed::Tick,
+    Shed::Source,
+    Shed::Density,
+    Shed::Ticks,
+];
+
+/// The order the row presents the fields it kept, which is the preamble's order and is **not** the
+/// order of loss. Shedding removes a field from the row; it never moves one.
+const PRESENTATION_ORDER: [Shed; 6] = [
+    Shed::Ticks,
+    Shed::Density,
+    Shed::Source,
+    Shed::Tick,
+    Shed::Events,
+    Shed::Commit,
+];
+
+/// Clause 8's latitude: four labellings of the same values, widest first. No value differs between
+/// them, and none is abbreviated or re-based; only the labels and the separators are.
+#[derive(Clone, Copy)]
+enum Spelling {
+    /// `seed 42  ticks 100  density 0.75%  source reference  tick 0  events 136`
+    Spaced,
+    /// The same labels, one space between fields.
+    Labelled,
+    /// `s42 t100 d0.75% reference @0 e136`
+    Terse,
+    /// The same, with the decision source as its initial.
+    Tersest,
+}
+
+const SPELLINGS: [Spelling; 4] = [
+    Spelling::Spaced,
+    Spelling::Labelled,
+    Spelling::Terse,
+    Spelling::Tersest,
+];
+
+/// The rule 8 values, read from the engine's configuration and the retained buffer and carried
+/// here as text.
+///
+/// Composing the row from a value struct rather than from the observer is what lets the in-crate
+/// tier reach states no run reaches — a 20-digit tick limit at its own final tick, for one — with
+/// nothing public widened. Every field is a copy, so nothing here can perturb a run.
+struct Provenance<'a> {
+    seed: u64,
+    tick_limit: u64,
+    /// Density as supplied, in the engine's own spelling (clause 1).
+    density: String,
+    source: String,
+    tick: u64,
+    retained: usize,
+    truncated: bool,
+    /// Clause 2. `None` covers an unstamped build and one stamped with the empty string alike.
+    commit: Option<&'a str>,
+}
+
+impl Provenance<'_> {
+    /// The entropy seed, which clause 4 never sheds.
+    fn seed_field(&self, spelling: Spelling) -> String {
+        match spelling {
+            Spelling::Spaced | Spelling::Labelled => format!("seed {}", self.seed),
+            Spelling::Terse | Spelling::Tersest => format!("s{}", self.seed),
+        }
+    }
+
+    /// One field in one spelling, or `None` where that field has nothing to present.
+    fn field(&self, field: Shed, spelling: Spelling) -> Option<String> {
+        let labelled = matches!(spelling, Spelling::Spaced | Spelling::Labelled);
+        Some(match field {
+            Shed::Ticks if labelled => format!("ticks {}", self.tick_limit),
+            Shed::Ticks => format!("t{}", self.tick_limit),
+            Shed::Density if labelled => format!("density {}%", self.density),
+            Shed::Density => format!("d{}%", self.density),
+            Shed::Source if labelled => format!("source {}", self.source),
+            Shed::Source => match spelling {
+                Spelling::Tersest => self.source.chars().next().unwrap_or('?').to_string(),
+                _ => self.source.clone(),
+            },
+            Shed::Tick if labelled => format!("tick {}", self.tick),
+            Shed::Tick => format!("@{}", self.tick),
+            // Clause 5: the marker travels with the count in every spelling. `trunc` abbreviates a
+            // label, which clause 8 permits; the count itself is never abbreviated.
+            Shed::Events if labelled => {
+                format!("events {}{}", self.retained, self.marker(" truncated"))
+            }
+            Shed::Events => format!("e{}{}", self.retained, self.marker(" trunc")),
+            Shed::Commit if labelled => format!("commit {}", self.commit?),
+            Shed::Commit => format!("#{}", self.commit?),
+        })
+    }
+
+    fn marker(&self, marker: &'static str) -> &'static str {
+        if self.truncated { marker } else { "" }
+    }
+
+    /// The row in one spelling with the first `shed` fields of clause 4's order removed.
+    fn row(&self, spelling: Spelling, shed: usize) -> String {
+        let dropped = &SHED_ORDER[..shed];
+        let separator = match spelling {
+            Spelling::Spaced => "  ",
+            _ => " ",
+        };
+        let mut row = self.seed_field(spelling);
+        for field in PRESENTATION_ORDER {
+            if dropped.contains(&field) {
+                continue;
+            }
+            if let Some(text) = self.field(field, spelling) {
+                row.push_str(separator);
+                row.push_str(&text);
+            }
+        }
+        row
+    }
+}
+
+/// Rule 8's row: every field the width holds, shed in clause 4's order until it fits, never cut.
+///
+/// Shedding is the last resort at each level rather than the first: the whole row in a terser
+/// spelling is always preferred to a row missing a field, because clause 4 sheds only where the
+/// width will not hold the field and clause 8 makes labelling free. So `shed` is the outer loop.
+///
+/// Clause 6 is why the ladder ends at the seed rather than at every field: a 20-digit seed beside a
+/// 20-digit tick limit is 43 of the floor's 34 columns, so no order over the other four fields
+/// reaches the floor there. Clause 7 is why the final fall-back returns the seed whole even where
+/// the seed alone would overflow — a value cut at the pane's edge reads as a different value, and
+/// rule 8 prefers a field absent to a field wrong. A `u64` seed is at most 20 characters and the
+/// floor is 34 columns, so no viewport the observer draws reaches that fall-back.
+fn footer_row(provenance: &Provenance, width: usize) -> String {
+    for shed in 0..=SHED_ORDER.len() {
+        for spelling in SPELLINGS {
+            let row = provenance.row(spelling, shed);
+            if count(&row) <= width {
+                return row;
+            }
+        }
+    }
+    provenance.seed_field(Spelling::Tersest)
+}
+
+/// Clause 2 as amended: *supplied* means non-empty.
+///
+/// `option_env!` reports a variable that is set to the empty string as `Some("")`, and a bare `#`
+/// carrying no value presents neither a commit nor the absence of one. The empty case is therefore
+/// an absent field, which is what the unset case already is.
+///
+/// Written over an argument rather than over [`COMMIT`] directly so that all three states can be
+/// asserted from one compilation. `COMMIT` is fixed when the crate is compiled, so a test reading
+/// it can only ever reach the state the test binary was built in; the three real builds are run and
+/// retained as evidence separately.
+fn supplied(commit: Option<&str>) -> Option<&str> {
+    commit.filter(|commit| !commit.is_empty())
+}
+
 fn draw_footer(frame: &mut Frame, area: Rect, observer: &Observer) {
     let config = observer.config();
     let snapshot = observer.snapshot();
     let events = observer.events();
-    let truncation = if events.truncated() {
-        "  truncated"
-    } else {
-        ""
-    };
-    let commit = COMMIT.map_or_else(String::new, |commit| format!("  commit {commit}"));
-    let short_commit = COMMIT.map_or_else(String::new, |commit| format!(" #{commit}"));
 
     // Rule 8: seed, configured tick limit, density as supplied, active decision source, current
-    // tick, retained-event count with a truncation marker. Rule 8.1: values come from the
-    // engine's configuration, so a defaulted and an explicit value present identically. Rule
-    // 8.3: no wall-clock time, no absolute path, no environment variable, no credential.
-    let long = format!(
-        "seed {}  ticks {}  density {}%  source {}  tick {}  events {}{truncation}{commit}",
-        config.seed,
-        config.tick_limit,
-        config.density,
-        config.policy,
-        snapshot.tick,
-        events.len()
-    );
-    let medium = format!(
-        "seed {} ticks {} density {}% source {} tick {} events {}{truncation}{commit}",
-        config.seed,
-        config.tick_limit,
-        config.density,
-        config.policy,
-        snapshot.tick,
-        events.len()
-    );
-    let short = format!(
-        "s{} t{} d{}% {} @{} e{}{truncation}{short_commit}",
-        config.seed,
-        config.tick_limit,
-        config.density,
-        config.policy,
-        snapshot.tick,
-        events.len()
-    );
-    let tiny = format!(
-        "s{} t{} d{}% {} @{} e{}{short_commit}",
-        config.seed,
-        config.tick_limit,
-        config.density,
-        config.policy.to_string().chars().next().unwrap_or('?'),
-        snapshot.tick,
-        events.len()
-    );
-
-    let width = usize::from(area.width);
-    let text = [long, medium, short, tiny]
-        .into_iter()
-        .find(|candidate| count(candidate) <= width)
-        .unwrap_or_else(|| {
-            format!(
-                "s{} t{} @{} e{}",
-                config.seed,
-                config.tick_limit,
-                snapshot.tick,
-                events.len()
-            )
-        });
+    // tick, retained-event count with a truncation marker. Clause 1: values come from the engine's
+    // configuration, so a defaulted and an explicit value present identically. Clause 3: no
+    // wall-clock time, no absolute path, no environment variable, no credential.
+    let provenance = Provenance {
+        seed: config.seed,
+        tick_limit: config.tick_limit,
+        density: config.density.to_string(),
+        source: config.policy.to_string(),
+        tick: snapshot.tick,
+        retained: events.len(),
+        truncated: events.truncated(),
+        commit: supplied(COMMIT),
+    };
+    let text = footer_row(&provenance, usize::from(area.width));
     frame.render_widget(Paragraph::new(Line::from(text)), area);
 }
 
@@ -1832,6 +1961,436 @@ mod tests {
         assert!(count(&footer) <= 34, "{footer}");
         for field in ["s0", "t100", "d0.75%", "@0", "e"] {
             assert!(footer.contains(field), "{footer} lacks {field}");
+        }
+    }
+
+    // ---- rule 8 as amended 2026-08-22: the order of loss ---------------------------------
+    //
+    // These cases are in this tier because they reach `footer_row`, `Provenance` and `SHED_ORDER`,
+    // which are private to this module. That is what lets them assert the arithmetic over states
+    // no run reaches — a 20-digit tick limit at its own final tick with the buffer truncated — with
+    // nothing public widened. The cross-crate tier asserts the same rule at rendered frames.
+
+    /// The `Provenance` cases the order-of-loss assertions sweep.
+    ///
+    /// Values are chosen so that no field's text is a substring of another's: the substring
+    /// assertions below would otherwise pass on a collision rather than on the field.
+    fn footer_cases() -> Vec<Provenance<'static>> {
+        vec![
+            // The default run at the floor. Every field fits.
+            Provenance {
+                seed: 0,
+                tick_limit: 100,
+                density: "0.75".to_string(),
+                source: "reference".to_string(),
+                tick: 3,
+                retained: 136,
+                truncated: false,
+                commit: None,
+            },
+            // The seed alone is unbounded.
+            Provenance {
+                seed: u64::MAX,
+                tick_limit: 100,
+                density: "0.75".to_string(),
+                source: "reference".to_string(),
+                tick: 3,
+                retained: 136,
+                truncated: false,
+                commit: None,
+            },
+            // The tick limit alone is unbounded.
+            Provenance {
+                seed: 7,
+                tick_limit: u64::MAX,
+                density: "0.75".to_string(),
+                source: "baseline".to_string(),
+                tick: 3,
+                retained: 136,
+                truncated: false,
+                commit: None,
+            },
+            // Both are, which clause 6 states cannot hold every field at the floor.
+            Provenance {
+                seed: u64::MAX,
+                tick_limit: 18_446_744_073_709_551_614,
+                density: "0.75".to_string(),
+                source: "social".to_string(),
+                tick: 3,
+                retained: 136,
+                truncated: false,
+                commit: None,
+            },
+            // Every field at its arithmetic maximum, stamped, buffer truncated. No run reaches it.
+            Provenance {
+                seed: u64::MAX,
+                tick_limit: 18_446_744_073_709_551_614,
+                density: "100.00".to_string(),
+                source: "individual".to_string(),
+                tick: 18_446_744_073_709_551_613,
+                retained: 100_000,
+                truncated: true,
+                commit: Some("0123456789abcdef0123456789abcdef01234567"),
+            },
+            // An ordinary long run with a truncated buffer.
+            Provenance {
+                seed: 42,
+                tick_limit: 1_000_000,
+                density: "12.50".to_string(),
+                source: "reference".to_string(),
+                tick: 999_999,
+                retained: 100_000,
+                truncated: true,
+                commit: None,
+            },
+            // A stamped short run.
+            Provenance {
+                seed: 314,
+                tick_limit: 500,
+                density: "2.25".to_string(),
+                source: "baseline".to_string(),
+                tick: 7,
+                retained: 1234,
+                truncated: false,
+                commit: Some("abcdef1"),
+            },
+        ]
+    }
+
+    /// Every declared `(shed, spelling)` form of one provenance, in the order `footer_row` tries
+    /// them.
+    fn footer_forms(provenance: &Provenance) -> Vec<(usize, String)> {
+        let mut forms = Vec::new();
+        for shed in 0..=SHED_ORDER.len() {
+            for spelling in SPELLINGS {
+                forms.push((shed, provenance.row(spelling, shed)));
+            }
+        }
+        forms
+    }
+
+    /// How many of clause 4's fields the chosen row shed, and how many of those are fields of the
+    /// preamble rather than clause 2's commit. The commit is the order's first row, so the second
+    /// figure is the first less one.
+    fn shed_counts(provenance: &Provenance, width: usize) -> (usize, usize) {
+        let row = footer_row(provenance, width);
+        let shed = footer_forms(provenance)
+            .into_iter()
+            .find(|(_, form)| *form == row)
+            .map_or(SHED_ORDER.len(), |(shed, _)| shed);
+        (shed, shed.saturating_sub(1))
+    }
+
+    /// Every maximal run of digits in a row.
+    fn digit_runs(row: &str) -> Vec<String> {
+        row.split(|character: char| !character.is_ascii_digit())
+            .filter(|run| !run.is_empty())
+            .map(str::to_string)
+            .collect()
+    }
+
+    /// Clause 4: the row sheds only where the width will not hold the field, so no field is lost
+    /// while any labelling of the fuller row fits.
+    #[test]
+    fn the_footer_sheds_no_more_fields_than_the_width_requires() {
+        for provenance in footer_cases() {
+            let forms = footer_forms(&provenance);
+            for width in 0..=200usize {
+                let row = footer_row(&provenance, width);
+                let least = forms
+                    .iter()
+                    .filter(|(_, form)| count(form) <= width)
+                    .map(|(shed, _)| *shed)
+                    .min();
+                match least {
+                    Some(least) => {
+                        let chosen = forms
+                            .iter()
+                            .find(|(_, form)| *form == row)
+                            .map(|(shed, _)| *shed)
+                            .unwrap_or_else(|| {
+                                panic!("width {width}: {row:?} is not a declared form")
+                            });
+                        assert_eq!(
+                            chosen, least,
+                            "width {width}: {row:?} shed {chosen}, {least} fits"
+                        );
+                        assert!(count(&row) <= width, "width {width} overflowed: {row:?}");
+                    }
+                    // Clause 7: where nothing fits, the seed is returned whole rather than cut. A
+                    // `u64` seed is at most 20 characters and the floor is 34 columns, so no
+                    // viewport the observer draws reaches this.
+                    None => assert_eq!(row, provenance.seed_field(Spelling::Tersest)),
+                }
+            }
+        }
+    }
+
+    /// Clause 4's table, field by field: the first `shed` fields of the order are gone, every
+    /// later one is present, and the entropy seed leads the row in every form.
+    #[test]
+    fn fields_leave_the_footer_in_the_order_clause_4_fixes() {
+        for provenance in footer_cases() {
+            for spelling in SPELLINGS {
+                for shed in 0..=SHED_ORDER.len() {
+                    let row = provenance.row(spelling, shed);
+                    assert!(
+                        row.starts_with(&provenance.seed_field(spelling)),
+                        "shed {shed}: the seed does not lead {row:?}"
+                    );
+                    for (rank, field) in SHED_ORDER.iter().enumerate() {
+                        let Some(text) = provenance.field(*field, spelling) else {
+                            continue;
+                        };
+                        // Every field but the seed is separator-prefixed, so matching on the
+                        // leading space cannot collide with a digit run inside another field.
+                        let present = row.contains(&format!(" {text}"));
+                        if rank < shed {
+                            assert!(!present, "shed {shed}: {field:?} survives in {row:?}");
+                        } else {
+                            assert!(present, "shed {shed}: {field:?} is missing from {row:?}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Clause 7 and `REQ-MOK-024`: no width produces a value a reader could take for another one.
+    ///
+    /// Every maximal digit run in the row must be a value the provenance actually carries. The
+    /// defect this work order closes fails here and nowhere else: at `34 × 22` with a 20-digit seed
+    /// and a 20-digit tick limit the superseded renderer drew `t18446744073`, whose digit run is a
+    /// proper prefix of the tick limit and equal to no value at all.
+    #[test]
+    fn no_footer_value_is_ever_cut_at_any_width() {
+        for provenance in footer_cases() {
+            let mut admissible: Vec<String> = vec![
+                provenance.seed.to_string(),
+                provenance.tick_limit.to_string(),
+                provenance.tick.to_string(),
+                provenance.retained.to_string(),
+            ];
+            admissible.extend(digit_runs(&provenance.density));
+            if let Some(commit) = provenance.commit {
+                admissible.extend(digit_runs(commit));
+            }
+            for width in 0..=200usize {
+                let row = footer_row(&provenance, width);
+                for run in digit_runs(&row) {
+                    assert!(
+                        admissible.contains(&run),
+                        "width {width}: {row:?} presents {run:?}, which is no value of this run"
+                    );
+                }
+                // A shed field is absent, never abbreviated: the seed is always present whole.
+                assert!(
+                    row.contains(&provenance.seed.to_string()),
+                    "width {width}: {row:?} lost the seed"
+                );
+                // And the row fits, which is what makes the assertion above a statement about
+                // what an operator reads. The pane keeps a prefix of whatever the row hands it, so
+                // a row wider than its pane is exactly how a cut value reaches an operator — the
+                // superseded renderer never cut a row itself and still presented cut values. The
+                // one exception is clause 7's fall-back, which no viewport the observer draws
+                // reaches, a `u64` seed being at most 20 characters against a floor of 34.
+                assert!(
+                    count(&row) <= width || row == provenance.seed_field(Spelling::Tersest),
+                    "width {width}: {row:?} overflows its pane"
+                );
+            }
+        }
+    }
+
+    /// `WO-MOK-008`'s own coverage requirement: the floor across the accepted `u64` range, not
+    /// only small seeds. Every decimal magnitude and both ends of the range, against the widest
+    /// tick limit the start-up contract accepts.
+    #[test]
+    fn the_entropy_seed_survives_the_floor_across_the_whole_u64_range() {
+        let mut seeds = vec![0, 1, u64::MAX, u64::MAX - 1];
+        for power in 0..20u32 {
+            let magnitude = 10u64.pow(power);
+            seeds.push(magnitude);
+            seeds.push(magnitude - 1);
+        }
+        for seed in seeds {
+            let provenance = Provenance {
+                seed,
+                tick_limit: u64::MAX,
+                density: "100.00".to_string(),
+                source: "individual".to_string(),
+                tick: 0,
+                retained: 100_000,
+                truncated: true,
+                commit: Some("0123456789abcdef0123456789abcdef01234567"),
+            };
+            let row = footer_row(&provenance, 34);
+            assert!(
+                count(&row) <= 34,
+                "seed {seed}: {row:?} overflows the floor"
+            );
+            assert!(
+                row.contains(&seed.to_string()),
+                "seed {seed}: {row:?} lost the seed"
+            );
+            let mut admissible = vec![seed.to_string(), u64::MAX.to_string()];
+            admissible.extend(digit_runs(&provenance.density));
+            for run in digit_runs(&row) {
+                assert!(
+                    admissible.contains(&run),
+                    "seed {seed}: {row:?} presents {run:?}, which is no value of this run"
+                );
+            }
+        }
+    }
+
+    /// Clause 5: the truncation marker is part of the retained-event count, so the two are shed
+    /// together and no row ever states a count a reader could take for the whole run.
+    #[test]
+    fn the_retained_count_and_its_marker_are_never_separated() {
+        for provenance in footer_cases().into_iter().filter(|case| case.truncated) {
+            for spelling in SPELLINGS {
+                for shed in 0..=SHED_ORDER.len() {
+                    let row = provenance.row(spelling, shed);
+                    // Matched on the whole separator-prefixed field, because the retained count's
+                    // digits can occur inside another field's value — a tick limit of `1000000`
+                    // contains a retained count of `100000`.
+                    let field = provenance
+                        .field(Shed::Events, spelling)
+                        .expect("the retained count always presents");
+                    // Both spellings of the marker begin `trunc`.
+                    assert_eq!(
+                        row.contains(&format!(" {field}")),
+                        row.contains("trunc"),
+                        "shed {shed}: the count and its marker parted in {row:?}"
+                    );
+                }
+            }
+        }
+        // And where the buffer is not truncated, no marker appears at any width.
+        for provenance in footer_cases().into_iter().filter(|case| !case.truncated) {
+            for width in 0..=200usize {
+                assert!(!footer_row(&provenance, width).contains("trunc"));
+            }
+        }
+    }
+
+    /// Clause 4's first row, measured rather than read off the constant: at no width and for no
+    /// stamp length does a stamped build's row carry fewer fields of the preamble than the same run
+    /// unstamped. Stamping costs the row nothing rule 8 requires.
+    ///
+    /// This is exactly `WO-MOK-008`'s reported obstacle — a stamp displacing density and the active
+    /// decision source at the floor, at every stamp length the defect report measured.
+    ///
+    /// The invariant is on the *fields* and not on the row: a stamp may still cost the active source
+    /// its full word, because the ladder reaches a terser labelling before it sheds anything and
+    /// clause 8 makes labelling free. `s0 t100 d0.75% r @0 e136 #0` sheds nothing.
+    #[test]
+    fn the_candidate_commit_is_shed_before_every_field_rule_8_requires() {
+        assert_eq!(SHED_ORDER[0], Shed::Commit);
+        let stamps = [
+            "0",
+            "abcdef1",
+            "0123456789ab",
+            "0123456789abcdef0123456789abcdef01234567",
+        ];
+        for seed in [0u64, 999, 1_000_000_000_000, u64::MAX] {
+            let bare = Provenance {
+                seed,
+                tick_limit: 100,
+                density: "0.75".to_string(),
+                source: "reference".to_string(),
+                tick: 0,
+                retained: 136,
+                truncated: false,
+                commit: None,
+            };
+            for stamp in stamps {
+                let stamped = Provenance {
+                    commit: Some(stamp),
+                    density: bare.density.clone(),
+                    source: bare.source.clone(),
+                    ..bare
+                };
+                for width in 0..=200usize {
+                    let (_, bare_preamble) = shed_counts(&bare, width);
+                    let (_, stamped_preamble) = shed_counts(&stamped, width);
+                    assert_eq!(
+                        stamped_preamble,
+                        bare_preamble,
+                        "seed {seed}, width {width}: a {}-character stamp shed {stamped_preamble} \
+                         preamble field(s) where the same run unstamped shed {bare_preamble}",
+                        stamp.len()
+                    );
+                }
+            }
+        }
+        // At a width that holds it, the commit is present and labelled.
+        let stamped = Provenance {
+            seed: 42,
+            tick_limit: 500,
+            density: "0.75".to_string(),
+            source: "baseline".to_string(),
+            tick: 0,
+            retained: 136,
+            truncated: false,
+            commit: Some("abcdef1"),
+        };
+        assert!(footer_row(&stamped, 160).contains("commit abcdef1"));
+    }
+
+    /// Clause 2 as amended: supplied means non-empty, so the three states of the compile-time
+    /// variable are two outcomes. `option_env!` reports a variable set to the empty string as
+    /// `Some("")`, and the superseded renderer drew it as a bare `#` carrying no value.
+    #[test]
+    fn a_commit_variable_set_to_the_empty_string_is_not_a_supplied_commit() {
+        assert_eq!(supplied(None), None);
+        assert_eq!(supplied(Some("")), None);
+        assert_eq!(supplied(Some("abcdef1")), Some("abcdef1"));
+
+        let empty = Provenance {
+            seed: 0,
+            tick_limit: 100,
+            density: "0.75".to_string(),
+            source: "reference".to_string(),
+            tick: 0,
+            retained: 136,
+            truncated: false,
+            commit: supplied(Some("")),
+        };
+        for width in 0..=200usize {
+            let row = footer_row(&empty, width);
+            assert!(
+                !row.contains('#'),
+                "width {width}: {row:?} marks an absent commit"
+            );
+            assert!(
+                !row.contains("commit"),
+                "width {width}: {row:?} labels an absent commit"
+            );
+        }
+    }
+
+    /// Clause 8: the labellings differ, the values never do. No spelling re-bases a `u64` or
+    /// rounds a density to make it fit.
+    #[test]
+    fn no_labelling_changes_a_value() {
+        for provenance in footer_cases() {
+            for spelling in SPELLINGS {
+                let row = provenance.row(spelling, 0);
+                for value in [
+                    provenance.seed.to_string(),
+                    provenance.tick_limit.to_string(),
+                    provenance.tick.to_string(),
+                    provenance.retained.to_string(),
+                ] {
+                    assert!(row.contains(&value), "{row:?} lacks {value}");
+                }
+                assert!(
+                    row.contains(&provenance.density),
+                    "{row:?} lacks the density"
+                );
+            }
         }
     }
 

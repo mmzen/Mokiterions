@@ -77,6 +77,38 @@ const RENDERABLE: [(u16, u16, u16, u16); 9] = [
     (34, 22, 32, 16),
 ];
 
+/// The declared footer seed set, fixed by `VER-MOK-005` so that rule 8's order of loss is measured
+/// across the whole accepted `u64` range rather than on small seeds only.
+///
+/// It carries both ends of the range and one seed of every decimal magnitude the range admits,
+/// because the row's width is decided by the seed's digit count and by nothing else about its value.
+/// The defect `WO-MOK-008` closes was reachable from 13 digits upward and no seed in `SEEDS` has
+/// more than three.
+const FOOTER_SEEDS: [u64; 22] = [
+    0,
+    1,
+    9,
+    99,
+    999,
+    9_999,
+    99_999,
+    999_999,
+    9_999_999,
+    99_999_999,
+    999_999_999,
+    9_999_999_999,
+    99_999_999_999,
+    999_999_999_999,
+    9_999_999_999_999,
+    99_999_999_999_999,
+    999_999_999_999_999,
+    9_999_999_999_999_999,
+    99_999_999_999_999_999,
+    999_999_999_999_999_999,
+    9_999_999_999_999_999_999,
+    u64::MAX,
+];
+
 fn observer_for(args: &[&str]) -> Observer {
     match options::parse(args.to_vec()) {
         Ok(options::Startup::Run(options)) => {
@@ -208,6 +240,16 @@ fn frame(observer: &mut Observer, width: u16, height: u16) -> Option<Buffer> {
 
 fn flatten(buffer: &Buffer) -> String {
     region(buffer, *buffer.area())
+}
+
+/// The bottommost row of a frame, which rule 5 fixes as the provenance footer.
+fn footer_of(buffer: &Buffer) -> String {
+    flatten(buffer)
+        .lines()
+        .last()
+        .expect("a frame has rows")
+        .trim_end()
+        .to_string()
 }
 
 /// One region's rows, joined. Reading a pane rather than the screen is what makes a claim about a
@@ -817,6 +859,118 @@ fn an_injected_export_failure_leaves_the_tick_intact() {
     assert_eq!(observer.snapshot().tick, 6);
 }
 
+// ---- rule 8's order of loss, at rendered frames ---------------------------------------------
+
+/// `REQ-MOK-024` and `REQ-MOK-027` through `SPEC-MOK-003` rule 8 clause 7: at every declared
+/// viewport, for every declared footer seed, the row fits its pane, presents the entropy seed whole,
+/// and presents no digit run that is not a value of the run.
+///
+/// The digit-run assertion is the one that fails on the defect this closes. At `34 x 22` with a
+/// 20-digit seed the superseded renderer drew a row 51 characters long into a 34-column pane, and
+/// the pane kept the first 34 — so an operator read a tick limit of `18446744073` where the run's
+/// was `18446744073709551615`. That is a value no field of the run holds, which is what this
+/// detects; a merely shorter row would not have been a defect at all.
+#[test]
+fn the_footer_never_clips_a_value_at_any_declared_viewport() {
+    // The row's width is decided by the digit counts of the entropy seed and the configured tick
+    // limit *together*, so the declared seeds are crossed with both ends of the tick limit's range.
+    //
+    // Sweeping the seed alone does not reach the defect, and a sweep that does not reach it is not
+    // a regression case however wide it looks: at the floor a 20-digit seed beside the default
+    // limit of 100 came to 34 characters exactly under the superseded renderer, so nothing was cut.
+    // A 20-digit seed beside a 20-digit limit came to 51, and the pane kept 34.
+    const MAX: &str = "18446744073709551615";
+    for seed in FOOTER_SEEDS {
+        let seed_text = seed.to_string();
+        for ticks in [None, Some(MAX)] {
+            let mut arguments = vec!["--seed", &seed_text];
+            if let Some(ticks) = ticks {
+                arguments.extend(["--ticks", ticks]);
+            }
+            arguments.push("--start-paused");
+            for (width, height, _, _) in RENDERABLE {
+                let mut observer = observer_for(&arguments);
+                let buffer = frame(&mut observer, width, height).expect("above the floor, a frame");
+                let row = footer_of(&buffer);
+                let case = format!(
+                    "seed {seed}, ticks {} at {width}x{height}",
+                    ticks.unwrap_or("100")
+                );
+
+                assert!(
+                    row.chars().count() <= usize::from(width),
+                    "{case}: the row overflows its pane: {row:?}"
+                );
+                assert!(
+                    row.contains(&seed_text),
+                    "{case}: the seed is gone from {row:?}"
+                );
+
+                // Every value this run carries, in the only radix rule 8 clause 8 admits. `0` and
+                // `75` are the default density's two digit runs, and `0` is also the current tick,
+                // the run being paused at its start.
+                let admissible = [
+                    seed_text.clone(),
+                    ticks.unwrap_or("100").to_string(),
+                    "0".to_string(),
+                    "75".to_string(),
+                    observer.events().len().to_string(),
+                ];
+                for run in row
+                    .split(|character: char| !character.is_ascii_digit())
+                    .filter(|run| !run.is_empty())
+                {
+                    assert!(
+                        admissible.contains(&run.to_string()),
+                        "{case}: {row:?} presents {run:?}, which is no value of this run"
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// Rule 8 clause 4's order of loss, read off rendered frames at the floor, character for character.
+///
+/// These four rows are the measurement the technical owner was shown when the order was fixed on
+/// 2026-08-22. The second is the case the order decides: a 20-digit seed leaves room for exactly one
+/// of the density and the active decision source, and clause 4 keeps the density. The fourth is
+/// clause 6's case, where the seed is all that fits and the row says so rather than cutting the tick
+/// limit.
+#[test]
+fn the_footer_sheds_the_specified_fields_at_the_floor() {
+    const MAX: &str = "18446744073709551615";
+    let cases: [(&[&str], &str); 4] = [
+        // Nothing shed: every field rule 8 requires fits at the floor.
+        (&["--seed", "0"], "s0 t100 d0.75% reference @0 e{e}"),
+        // Shed the event count, the current tick, then the active source. Density survives.
+        (&["--seed", MAX], "s18446744073709551615 t100 d0.75%"),
+        // Shed the event count and the current tick. Both density and the source survive.
+        (
+            &["--seed", "0", "--ticks", MAX],
+            "s0 t18446744073709551615 d0.75% r",
+        ),
+        // Clause 6: 21 columns of seed beside 22 of tick limit is 43 of 34, so the tick limit goes
+        // too and the seed is presented in the widest labelling the remaining width holds.
+        (
+            &["--seed", MAX, "--ticks", MAX],
+            "seed 18446744073709551615",
+        ),
+    ];
+    for (args, expected) in cases {
+        let mut arguments = args.to_vec();
+        arguments.push("--start-paused");
+        let mut observer = observer_for(&arguments);
+        let retained = observer.events().len().to_string();
+        let buffer = frame(&mut observer, 34, 22).expect("the floor draws");
+        assert_eq!(
+            footer_of(&buffer),
+            expected.replace("{e}", &retained),
+            "{args:?} at the floor"
+        );
+    }
+}
+
 // ---- the declared sets ---------------------------------------------------------------------
 
 /// Guards the declared sets themselves, so a later edit cannot quietly shrink coverage.
@@ -826,6 +980,19 @@ fn the_declared_sets_are_the_contracts() {
     assert_eq!(VIEWPORTS.len(), 10);
     assert_eq!(RENDERABLE.len(), 9);
     assert!(VIEWPORTS.contains(&(33, 21)));
+    // Rule 8's order of loss is decided by a seed's digit count, so the declared footer seeds
+    // cover every magnitude the accepted range admits, and both of its ends.
+    assert_eq!(FOOTER_SEEDS.len(), 22);
+    assert_eq!(FOOTER_SEEDS[0], 0);
+    assert_eq!(FOOTER_SEEDS[FOOTER_SEEDS.len() - 1], u64::MAX);
+    for digits in 1..=20usize {
+        assert!(
+            FOOTER_SEEDS
+                .iter()
+                .any(|seed| seed.to_string().len() == digits),
+            "no declared footer seed has {digits} digits"
+        );
+    }
     assert!(layout::below_floor(33, 21));
     for (width, height, _, _) in RENDERABLE {
         assert!(VIEWPORTS.contains(&(width, height)));
