@@ -2,7 +2,7 @@
 id = "WO-MOK-020"
 type = "work_order"
 title = "Give the inspector a cumulative activity profile per Mokiterion and a population total where nothing is selected"
-status = "implemented"
+status = "verified"
 owners = ["engineering owner"]
 created = "2026-08-22"
 updated = "2026-08-22"
