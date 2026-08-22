@@ -8,7 +8,7 @@ use crate::simulation::{Config, Density, Policy};
 /// escaped literal too long to read, and a multi-line literal would take its line endings
 /// from however the file was checked out.
 ///
-/// Amended 2026-08-22 under `WO-MOK-020`. What an option means, what its accepted values
+/// Amended 2026-08-22 under `WO-MOK-024`. What an option means, what its accepted values
 /// mean and what happens when it is omitted are stated in that option's own entry, so
 /// nothing an operator needs is carried by prose they have to find. The four `--policy`
 /// values and what `--density` binds together were previously stated below the block; they

@@ -215,7 +215,7 @@ fn density_is_accepted_in_the_specified_forms_and_rejected_otherwise() {
 ///
 /// The block closes at the first line that carries text in column one, which is where
 /// `SPEC-MOK-001`'s *Help output* section puts the statement on order and repetition. Under
-/// `WO-MOK-020` the block gained a blank line between entries, so a blank line no longer
+/// `WO-MOK-024` the block gained a blank line between entries, so a blank line no longer
 /// closes it; nothing else about how this reads the text changed, and no assertion below was
 /// touched.
 fn options_block() -> Vec<&'static str> {

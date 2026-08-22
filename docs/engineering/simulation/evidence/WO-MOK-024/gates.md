@@ -1,6 +1,6 @@
-# WO-MOK-020 gates
+# WO-MOK-024 gates
 
-`WO-MOK-020`'s *Required verification* lists nine items. All nine were run. Items 1 to 6 are reported below,
+`WO-MOK-024`'s *Required verification* lists nine items. All nine were run. Items 1 to 6 are reported below,
 including the one that **FAILs by design**; items 7 to 9 are `VER-MOK-004`'s own rows and are reported in
 `nonperturbation/`, `defaults-divergences.txt` and `resilience-and-interface.txt`, with their results
 summarized here. These are observations of the working tree; they approve nothing and authorize no release.
@@ -20,14 +20,14 @@ anything reused. Section 6 was then run a **third** time, on the finished tree, 
 figures a third time — 81 of 81 `doctor` checks PASS with 31 managed files `unchanged`, `validate` 148
 artifacts with 0 errors and 0 warnings, `preflight --phase review` PASS at exit 0 — which is what should
 happen, since items 7 to 9 added evidence files and amended no artifact the harness reads for structure.
-What binds a tree rather than a moment is `VREC-MOK-020`, prepared against the commit that carries all of
+What binds a tree rather than a moment is `VREC-MOK-022`, prepared against the commit that carries all of
 it.
 
 **A fourth reading, after amendment 6.** Ratifying amendment 6 changed `VER-MOK-004`, this work order and
 three files in this directory, all markdown. Section 6 was run a fourth time on the resulting tree and
 returned the same figures again — `doctor` 81 of 81 PASS with 0 FAIL and 31 managed files `unchanged`,
 `validate` PASS with 0 errors and 0 warnings, `preflight --phase review` PASS at exit 0. The artifact count
-reads **148** at that reading because the previous `VREC-MOK-020` had been deleted and the replacement was
+reads **148** at that reading because the previous `VREC-MOK-022` had been deleted and the replacement was
 not yet written; it reads 149 once the new record is committed. Neither figure is a finding: `validate`
 counts artifact files, and a verification record is by construction absent from the commit it binds.
 
@@ -59,9 +59,10 @@ harness command below was run from the 0.4.0 virtual environment at `C:\Users\ma
 | 7 | Non-perturbation | `nonperturbation/capture.sh`, unmodified, on a base worktree and on the candidate | **PASS** — 43 of 43 cells byte-identical; 1 of 16 named cases changed, and it is `--help` |
 | 8 | Printed defaults are the applied defaults | three scratch divergences against the **rewritten** text | **PASS** — each fails, and the load-bearing one fails exactly 1 test of 18; all three reverted |
 | 9 | Resilience and public surface | 10,000-tick runs, 1,000-tick survivor floor, `cargo doc` and a `pub` inventory | **PASS on the checks, with two of the contract's figures found stale** — amendment 6, ratified 2026-08-22 after this was measured |
+| 10 | The whole set, re-run after the `WO-MOK-020` → `WO-MOK-024` renumber | items 1, 2, 3, 5 and 6 again, on the renumbered tree | **PASS** — fmt clean, clippy clean, 303 passed / 0 failed / 0 ignored, both texts re-rendered **byte-identical** to `after/`, doctor 81/81, validate 148 / 0 / 0, preflight `review` PASS. Four `.rs` doc comments name the work order; no rendered text does |
 
 Items 7 to 9 were added to *Required verification* on 2026-08-22, while executing `VER-MOK-004` to prepare
-`VREC-MOK-020`. They are not gates this work order set itself; they are the contract's rows, and the work
+`VREC-MOK-022`. They are not gates this work order set itself; they are the contract's rows, and the work
 order's original case for them — that no engine source is in the diff — is a claim about a diff where the
 rows are claims about every run.
 
@@ -136,7 +137,7 @@ Measured in a `git worktree` at `f7b1c45` rather than inferred from the diff:
 
 The 18-to-18 row is the one that matters. `tests/cli.rs` is the file a restructure of this text is most
 likely to break, and the available shortcut was to relax an assertion; `WO-MOK-010`'s precedent forbids
-that, and `WO-MOK-020`'s first stop-and-escalate condition would have applied. **It was not needed.** One
+that, and `WO-MOK-024`'s first stop-and-escalate condition would have applied. **It was not needed.** One
 helper changed and no assertion did: `options_block()` now ends the block at the first line carrying text
 in column one rather than at the first blank line, because entries are separated by blank lines and a
 blank line no longer closes the block. That is the terminator, not the oracle.
@@ -214,37 +215,37 @@ uniformly CRLF with zero bare LF and zero bare CR; the two shell scripts are uni
 | `mokiterions-core/tests/cli.rs` | 577 | 0 | 0 |
 | `mokiterions-tui/src/options.rs` | 242 | 0 | 0 |
 | `mokiterions-tui/tests/options.rs` | 184 | 0 | 0 |
-| `work-orders/WO-MOK-020.md` | 547 | 0 | 0 |
-| `requirements/REQ-MOK-018.md` | 157 | 0 | 0 |
-| `specifications/SPEC-MOK-001.md` | 836 | 0 | 0 |
+| `work-orders/WO-MOK-024.md` | 579 | 0 | 0 |
+| `requirements/REQ-MOK-018.md` | 161 | 0 | 0 |
+| `specifications/SPEC-MOK-001.md` | 841 | 0 | 0 |
 | `specifications/SPEC-MOK-003.md` | 1265 | 0 | 0 |
-| `verification/VER-MOK-004.md` | 348 | 0 | 0 |
-| `evidence/WO-MOK-020/README.md` | 101 | 0 | 0 |
-| `evidence/WO-MOK-020/gates.md` | 475 | 0 | 0 |
-| `evidence/WO-MOK-020/usage-text.md` | 436 | 0 | 0 |
-| `evidence/WO-MOK-020/before/engine-usage.txt` | 38 | 0 | 0 |
-| `evidence/WO-MOK-020/before/observer-usage.txt` | 22 | 0 | 0 |
-| `evidence/WO-MOK-020/after/engine-usage.txt` | 71 | 0 | 0 |
-| `evidence/WO-MOK-020/after/observer-usage.txt` | 84 | 0 | 0 |
-| `evidence/WO-MOK-020/engine-usage.diff.txt` | 105 | 0 | 0 |
-| `evidence/WO-MOK-020/observer-usage.diff.txt` | 98 | 0 | 0 |
-| `evidence/WO-MOK-020/drift-demonstration.txt` | 26 | 0 | 0 |
-| `evidence/WO-MOK-020/preflight-implemented.txt` | 85 | 0 | 0 |
-| `evidence/WO-MOK-020/defaults-divergences.txt` | 60 | 0 | 0 |
-| `evidence/WO-MOK-020/resilience-and-interface.txt` | 91 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/README.md` | 69 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/manifest-base.txt` | 43 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/manifest-after.txt` | 43 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/summaries-base.txt` | 40 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/summaries-after.txt` | 40 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/exit-codes-base.txt` | 642 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/exit-codes-after.txt` | 1104 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/field-comparison.txt` | 36 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/both-paths.txt` | 26 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/resilience-10k-base.txt` | 16 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/resilience-10k-after.txt` | 16 | 0 | 0 |
-| `evidence/WO-MOK-020/nonperturbation/capture.sh` | 0 | **85** | 0 |
-| `evidence/WO-MOK-020/nonperturbation/resilience-10k.sh` | 0 | **11** | 0 |
+| `verification/VER-MOK-004.md` | 354 | 0 | 0 |
+| `evidence/WO-MOK-024/README.md` | 119 | 0 | 0 |
+| `evidence/WO-MOK-024/gates.md` | 502 | 0 | 0 |
+| `evidence/WO-MOK-024/usage-text.md` | 436 | 0 | 0 |
+| `evidence/WO-MOK-024/before/engine-usage.txt` | 38 | 0 | 0 |
+| `evidence/WO-MOK-024/before/observer-usage.txt` | 22 | 0 | 0 |
+| `evidence/WO-MOK-024/after/engine-usage.txt` | 71 | 0 | 0 |
+| `evidence/WO-MOK-024/after/observer-usage.txt` | 84 | 0 | 0 |
+| `evidence/WO-MOK-024/engine-usage.diff.txt` | 105 | 0 | 0 |
+| `evidence/WO-MOK-024/observer-usage.diff.txt` | 98 | 0 | 0 |
+| `evidence/WO-MOK-024/drift-demonstration.txt` | 26 | 0 | 0 |
+| `evidence/WO-MOK-024/preflight-implemented.txt` | 184 | 0 | 0 |
+| `evidence/WO-MOK-024/defaults-divergences.txt` | 60 | 0 | 0 |
+| `evidence/WO-MOK-024/resilience-and-interface.txt` | 91 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/README.md` | 69 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/manifest-base.txt` | 43 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/manifest-after.txt` | 43 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/summaries-base.txt` | 40 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/summaries-after.txt` | 40 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/exit-codes-base.txt` | 642 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/exit-codes-after.txt` | 1104 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/field-comparison.txt` | 36 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/both-paths.txt` | 26 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/resilience-10k-base.txt` | 16 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/resilience-10k-after.txt` | 16 | 0 | 0 |
+| `evidence/WO-MOK-024/nonperturbation/capture.sh` | 0 | **85** | 0 |
+| `evidence/WO-MOK-024/nonperturbation/resilience-10k.sh` | 0 | **11** | 0 |
 
 **The two bold cells are not defects.** `capture.sh` is `LF` because it is a byte-for-byte copy of
 `WO-MOK-004`'s script and `cmp` reports no difference; converting it would have broken the one property
@@ -254,18 +255,27 @@ direction on checkout. A first attempt wrote `capture.sh` with `CRLF`, `cmp` rep
 line 1`, and the copy was redone with `cp` — the claim that it is unmodified would otherwise have been
 false while looking true.
 
-Re-measured 2026-08-22 a third time, after amendment 6 was ratified. Five rows moved and nothing else did:
-the work order, `VER-MOK-004`, and this directory's `README.md`, `gates.md` and `usage-text.md`, all of them
-markdown and none of them a capture. The previous readings for those five were 493, 280, 92, 453 and 434.
-Before items 7 to 9 this table had thirteen rows and the work-order row read 390; before the ratification
-edits it read 265. The **bare CR** column was added because the first
+Re-measured 2026-08-22 a fourth time, after the `WO-MOK-020` → `WO-MOK-024` renumber. **Seven rows moved and
+the four `.rs` rows did not.** The renumber rewrites text inside four doc comments without adding or removing
+a line, so `cli.rs`, `tests/cli.rs`, `options.rs` and `tests/options.rs` hold 231, 577, 242 and 184 exactly as
+before — a row that does not move is stated here rather than left for a reader to wonder about. What moved, with the reading before
+this measurement first: `REQ-MOK-018` 157 → 161 and `SPEC-MOK-001` 836 → 841, an identifier note each;
+`VER-MOK-004` 348 → 354, the same; the work order 547 → 579, a *Lifecycle* subsection and a *Decision record*
+act; this directory's `README.md` 101 → 119 and this file 475 → 502, their own renumber notes and this
+paragraph; and `preflight-implemented.txt` 85 → 184, because the post-renumber capture of both phases now
+leads it and the superseded capture is retained verbatim beneath a divider rather than deleted.
+
+The third measurement, after amendment 6 was ratified, moved five rows and nothing else: the work order,
+`VER-MOK-004`, and this directory's `README.md`, `gates.md` and `usage-text.md`, all of them markdown and none
+of them a capture. The readings before it were 493, 280, 92, 453 and 434. Before items 7 to 9 this table had
+thirteen rows and the work-order row read 390; before the ratification edits it read 265. The **bare CR** column was added because the first
 attempt at `preflight-implemented.txt` had 69 of them: `harnessctl` already emits `CRLF`, so writing its
 output through a `CRLF` translation produced `\r\r\n` on every line the harness had wrapped. The capture was
 rewritten by normalizing to `LF` before the single translation, and the column exists so that a reader can
 see the check was run rather than assumed.
 
 Two rows are self-referential and are stated as such rather than left to look like independent
-measurements. `gates.md`'s own row and `work-orders/WO-MOK-020.md`'s row count files that this section's
+measurements. `gates.md`'s own row and `work-orders/WO-MOK-024.md`'s row count files that this section's
 last edit changed. Both were measured after that edit and then written in, which is possible only because
 writing a number into a table row does not change how many rows the table has.
 
@@ -284,7 +294,7 @@ $ harnessctl doctor; echo $?
 ```
 
 **81 checks, all PASS, no WARN and no FAIL.** All 31 managed files report `unchanged`, including
-`docs/engineering/templates/WORK_ORDER.template.md`, which is the template `WO-MOK-020.md` was written
+`docs/engineering/templates/WORK_ORDER.template.md`, which is the template `WO-MOK-024.md` was written
 against.
 
 ### `validate_engineering_artifacts.py` — PASS
@@ -297,10 +307,10 @@ Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
 ```
 
 148 artifacts, the new work order among them, across all four planes with no error and no warning. This
-is what confirms `WO-MOK-020`'s frontmatter and its four `[relations]` edges resolve: `REQ-MOK-018`,
+is what confirms `WO-MOK-024`'s frontmatter and its four `[relations]` edges resolve: `REQ-MOK-018`,
 `SPEC-MOK-001`, `SPEC-MOK-003` and `VER-MOK-004` all exist and all accept the relation.
 
-**148 is the count at the commit this page is committed in, which does not contain `VREC-MOK-020`.** The
+**148 is the count at the commit this page is committed in, which does not contain `VREC-MOK-022`.** The
 record is generated against that commit and committed after it, so its own file cannot be inside it. With
 the record present the same command reports **149 artifacts, 0 errors and 0 warnings**, which was run and is
 the figure a reader checking out the branch tip will see. Both are stated because neither alone matches
@@ -334,7 +344,7 @@ instruction did not cover were **OUTSTANDING**. Moving the status to `approved` 
 diagnostic and would have been the implementation agent approving its own authorization, which
 `DECISION_RIGHTS.md` reserves to the engineering owner. It stayed red until the owner acted.
 
-**B — and this is the correction.** `WO-MOK-020`'s *Lifecycle* first said the diagnostic "clears on this
+**B — and this is the correction.** `WO-MOK-024`'s *Lifecycle* first said the diagnostic "clears on this
 transition". It does not. The `start` phase admits `approved` and `in_progress` only, so at `implemented`
 it raises `W005` again, for the opposite reason:
 
@@ -369,6 +379,23 @@ artifacts, all four of which are the amended ones.
 **Transcription note.** `harnessctl` writes cp1252 to a pipe on this machine, so the two em dashes it
 echoes out of the work order's assurance rationale leave as byte `0x97`. `preflight-implemented.txt`
 stores them decoded, as UTF-8. Nothing else in that capture was altered and no line was elided.
+
+**Identifier note, 2026-08-22 — why the three transcripts above say `WO-MOK-020`.** They are verbatim
+captures of runs taken before this work order was renumbered `WO-MOK-020` → `WO-MOK-024`, which is act 11
+of its *Decision record* and was forced by a fetch finding both original identifiers already in use on the
+remote. Rewriting the identifier inside a transcript would turn a record of a command into a fabrication,
+so the three fenced blocks are left exactly as they were captured, and they are the only place in this
+directory where the old identifier survives. Every authored mention was renumbered.
+
+**Readings B and C were re-run against `WO-MOK-024` after the renumber, and are identical.** B: FAIL,
+phase `start`, exit 1, one diagnostic — `[W005] docs/engineering/simulation/work-orders/WO-MOK-024.md:
+status 'implemented' is not eligible for start; expected one of approved, in_progress`. C: PASS, phase
+`review`, exit 0, no `Diagnostics:` block, the same fourteen-document reading manifest with
+`work-orders/WO-MOK-024.md` in place of `WO-MOK-020.md`. Nothing but the identifier and that one path
+moved. `preflight-implemented.txt` now leads with the post-renumber capture of both phases and retains the
+superseded one verbatim beneath a divider, so both are readable and neither is presented as the other.
+Reading A cannot be re-run at all: it was taken while the status was `draft`, and the status is
+`implemented` and will not go back.
 
 ## 7. Non-perturbation — `VER-MOK-004`'s matrix, executed on both sides
 
@@ -452,7 +479,7 @@ rows above it as historical.
   evidence that they are fine. Recorded as an observation; moving an approved row is the technical owner's
   act.
 - **Verification is not accepted here.** Item 6 of *Required verification* is the harness gates, not
-  assurance. `commit_bound_verification` is `required`, and `VREC-MOK-020` stands at status `ready`, bound
+  assurance. `commit_bound_verification` is `required`, and `VREC-MOK-022` stands at status `ready`, bound
   to the commit that carries this page. `ready` is not `verified`: accepting a record is the assurance
   owner's separate act, and nothing below this line was decided by the agent that wrote it. Until that
   acceptance, the gates on this page are the strongest claim available — that the tree was measured, not
@@ -463,13 +490,13 @@ rows above it as historical.
   did change under ratified amendment 2. Its *Test placement* row named `tests/cli.rs` for the added test;
   this work order adds none there and adds one to `mokiterions-tui/tests/options.rs`. Its *Performance and
   resilience* survivor counts and its "same termination ticks" clause are the two stale figures in section 9
-  above. **Amendment 6 of `WO-MOK-020` is the fix, and the owner ratified all three parts on 2026-08-22 as
+  above. **Amendment 6 of `WO-MOK-024` is the fix, and the owner ratified all three parts on 2026-08-22 as
   acts 7, 8 and 9 of that work order's *Decision record*.** Every figure the replacement rows call for was
   measured on this page before the amendment was drafted; none was taken afterwards and none was adjusted.
   What this page cannot do, and does not do, is mark those rows met on its own authority: the amendment is
   the owner's act, and marking them met without it would be the implementation agent rewriting the contract
   it is measured against.
-- **The width argument put to the owner for amendment 2 was wrong**, and `WO-MOK-020` now records it as
+- **The width argument put to the owner for amendment 2 was wrong**, and `WO-MOK-024` now records it as
   wrong rather than dropping it. `--ticks <whole number>` would not have overrun any line: that synopsis
   line is 55 columns after the change and 49 before, and the widest synopsis line is 68. The ratification
   of `<number>` stands on its own; the cost figure offered beside it did not hold.

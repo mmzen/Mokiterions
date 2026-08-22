@@ -11,7 +11,7 @@ use mokiterions::simulation::Config;
 /// The observer's own usage text. It is not the engine's, because the binary name and the
 /// three additional inputs differ; every shared input keeps the engine's meaning.
 ///
-/// Amended 2026-08-22 under `WO-MOK-020`, to the shape the engine's text took in the same act:
+/// Amended 2026-08-22 under `WO-MOK-024`, to the shape the engine's text took in the same act:
 /// one entry per input, each stating what the input does, what its accepted values mean and
 /// what happens when it is omitted, and nothing left to prose the operator has to find. The
 /// four inputs the engine owns carry the engine's own entries **verbatim**, byte for byte, and

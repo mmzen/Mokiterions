@@ -1,5 +1,5 @@
 +++
-id = "WO-MOK-020"
+id = "WO-MOK-024"
 type = "work_order"
 title = "Make both help texts understandable: one entry per option, every accepted value explained, nothing left implicit"
 status = "implemented"
@@ -47,13 +47,13 @@ to authorize, which is the arrangement this repository's whole chain exists to p
 alternatives, and each recorded in its own artifact's amendment record naming the acting role. *Decision record*
 below is the account of those five acts and of the eleven alternatives declined. With them taken, this work order
 moved `draft` → `approved` → `implemented` in a single act of the engineering owner, on the completed change and the
-evidence retained under `evidence/WO-MOK-020/`. The two transitions are recorded as one because nothing happened
+evidence retained under `evidence/WO-MOK-024/`. The two transitions are recorded as one because nothing happened
 between them: implementation was already complete and its evidence already captured when approval was given, which
 is the sequence the paragraph above discloses rather than conceals.
 
-`harnessctl preflight --work-order WO-MOK-020 --phase start` raised `W005` — *status 'draft' is not eligible for
+`harnessctl preflight --work-order WO-MOK-024 --phase start` raised `W005` — *status 'draft' is not eligible for
 start* — at every capture taken while this document was `draft`. That diagnostic was retained in
-`evidence/WO-MOK-020/gates.md` rather than worked around, because it was correct: it is the harness saying a `draft`
+`evidence/WO-MOK-024/gates.md` rather than worked around, because it was correct: it is the harness saying a `draft`
 work order authorizes no implementation, which was exactly the state.
 
 **It does not clear on this transition, and saying so would be wrong.** The `start` phase admits `approved` and
@@ -63,10 +63,25 @@ retained beside the original failing one, so a later reader sees the whole seque
 screenshot: `draft` fails `start` because implementation was unauthorized, `implemented` fails `start` because
 implementation is finished, and `implemented` passes `review`, which is the gate this status is actually measured by.
 
-Commit-bound verification is classified `required` above. `VREC-MOK-020` is prepared against the commit that carries
+Commit-bound verification is classified `required` above. `VREC-MOK-022` is prepared against the commit that carries
 this transition and is `ready`, not `verified`: preparing a record is the implementation agent's act and accepting one
 is the assurance owner's, and this transition did not include that acceptance. Release requires a separate record
 again.
+
+### Renumbered from `WO-MOK-020`, 2026-08-22
+
+**This work order was drafted, approved, implemented and evidenced as `WO-MOK-020`, and renumbered to `WO-MOK-024`
+before anything was pushed.** Its record was renumbered `VREC-MOK-020` → `VREC-MOK-022` in the same act. Both original
+identifiers were already in use, which a fetch of the remote found and a local checkout cannot: `VREC-MOK-020` is a
+`verified` record on `origin/master` binding `WO-MOK-017`, and `WO-MOK-020` is held by open draft PR #43 on
+`origin/feature/observer-mokiterion-profile`. The renumber is act 11 of *Decision record*, taken by the engineering
+owner, and the alternative that was recommended and declined — that PR #43 move instead — is recorded there.
+
+`WO-MOK-020` survives in this work order's evidence in exactly five places, all of them inside fenced `harnessctl`
+transcripts in `evidence/WO-MOK-024/gates.md`, plus the whole of the original `preflight-implemented.txt` capture
+retained beneath its replacement. Those are verbatim records of commands run against a file that was named
+`work-orders/WO-MOK-020.md` at the time, and rewriting them would make them fabrications. Every authored mention was
+renumbered; no transcript was.
 
 ## Objective
 
@@ -241,7 +256,7 @@ them would leave the contract asserting that `--policy` accepts two values.
 
 ### 6. `VER-MOK-004` — three checks written for an engine-only change against a tree that has moved (assurance owner)
 
-**Found on 2026-08-22 after the five above were ratified, while executing the contract to prepare `VREC-MOK-020`, and
+**Found on 2026-08-22 after the five above were ratified, while executing the contract to prepare `VREC-MOK-022`, and
 ratified later the same day as three separate acts.** Stop-and-escalate condition 4 governed while it was outstanding:
 it was added here and marked OUTSTANDING rather than presented as approved, and this work order did not claim the three
 checks below passed as written until the owner acted. Nothing in the code changes for it; it realigns three checks to a
@@ -300,13 +315,15 @@ sentence beyond the three rows.
 
 ## Decision record
 
-Ten acts of 2026-08-22, each put as its own question with its alternatives, and seventeen alternatives declined. One
+Eleven acts of 2026-08-22, each put as its own question with its alternatives, and twenty alternatives declined. One
 person holds all three accountable roles in this repository, which makes each approval cheap to obtain and
 correspondingly easy to skip; the role each act was taken in is named because nothing here is approved by implication.
 
-The acts fall in two rounds. Acts 1 to 6 were put together, before the code was written against the artifacts and
+The acts fall in three rounds. Acts 1 to 6 were put together, before the code was written against the artifacts and
 before the contract was executed. Acts 7 to 10 were put after — they exist because executing `VER-MOK-004` found three
-of its own checks misaligned with the tree, which no reading of the artifacts would have surfaced.
+of its own checks misaligned with the tree, which no reading of the artifacts would have surfaced. Act 11 was put last
+of all, after the record was accepted, because it exists only because a fetch of the remote found the two identifiers
+this work order and its record were already using taken by other work.
 
 | # | Act | Role | Decision | Declined beside it |
 |---:|---|---|---|---|
@@ -319,17 +336,28 @@ of its own checks misaligned with the tree, which no reading of the artifacts wo
 | 7 | Amendment 6a, the *Line width* row replaced by a bound measured over both texts | assurance owner | as written | strike the row, leaving the amended 80-column bound unverified anywhere; leave the false parenthetical and record the row unmet |
 | 8 | Amendment 6b, *Test placement* widened to the public tier of the owning package | assurance owner | as written | leave it and record it unmet, requiring a check while forbidding its only possible location; move the test into the engine's `tests/cli.rs`, which needs an inverted dependency or a cross-package `include_str!` |
 | 9 | Amendment 6c, the two resilience bullets re-anchored to this work order's base commit | assurance owner | as written | weaken to the declared floor of eight; keep the 2026-08-17 figures and have later readers report a regression that did not happen |
-| 10 | `VREC-MOK-020` superseded and re-captured against the commit carrying amendment 6 | assurance owner | as written | leave the `ready` record describing the three rows as unmet; edit its prose in place without re-capturing, which would falsify its commit binding |
+| 10 | `VREC-MOK-022` superseded and re-captured against the commit carrying amendment 6 | assurance owner | as written | leave the `ready` record describing the three rows as unmet; edit its prose in place without re-capturing, which would falsify its commit binding |
+| 11 | This work order renumbered `WO-MOK-020` → `WO-MOK-024` and its record `VREC-MOK-020` → `VREC-MOK-022` | engineering owner | renumber this work order | have open draft PR #43 renumber instead, which was the recommendation put; `WO-MOK-021` and `WO-MOK-022`, adjacent to live work; keep `WO-MOK-020` and let two artifacts share one identifier |
 
 **Acts 7 to 10 were not available when acts 1 to 6 were put.** Amendment 6 was found by executing the contract to
 prepare the record, which happens after implementation by construction. The four are recorded as separate acts, in a
 second round, rather than folded into act 5, so that a reader can see which approvals preceded the code and which
 followed the measurement.
 
-**Act 10 is why two earlier captures of `VREC-MOK-020` were discarded.** A verification record binds a commit and
+**Act 10 is why two earlier captures of `VREC-MOK-022` were discarded.** A verification record binds a commit and
 cannot be re-pointed at a later one; a record whose prose says three contract rows are unmet cannot be edited to say
 they are met without either falsifying that binding or being replaced. Both discarded captures stood at `ready` and
-neither was ever accepted. `VREC-MOK-020` names them and says why.
+neither was ever accepted. `VREC-MOK-022` names them and says why.
+
+**Act 11 was forced by the remote, not by anything in this branch.** `VREC-MOK-020` is a `verified` record on
+`origin/master` that binds `WO-MOK-017`; `WO-MOK-020` is held by open draft PR #43 on
+`origin/feature/observer-mokiterion-profile`. Neither was visible when this work began, because the identifier space is
+shared across branches, sessions and agents and the highest identifier in a local checkout is not the next free one.
+The recommendation put to the owner was that PR #43 renumber, since this side holds an implemented work order, a
+twenty-six-file evidence directory and four ratified amendments against that side's three draft files; the owner
+declined it and directed that this side move. That is recorded here because the declined alternative was the one
+advised. The renumber is why the record was captured a fourth time: every one of its twenty-six `evidence_paths`
+changed with the directory rename, and a record's paths cannot be edited after capture any more than its commit can.
 
 **Act 1 is the one the change rests on**, and it is the one the owner's implementation instruction of the same date
 did not cover. The instruction was given on the text; this act is on the requirement the text turns out to need. Had
@@ -337,10 +365,10 @@ it been declined, acts 2 to 6 would have had nothing to serve and both help text
 
 **No product decision was reopened.** `--ticks`' default of `100` stayed at `100`; `REQ-MOK-018`'s *Open decisions*
 item 1 reserves it to the product owner and it was not put here. No default, accepted value, constraint, exit code,
-simulated behavior or record changed in any of the ten acts. Acts 7 to 9 change no code and no rendered text at all;
-they change three sentences of a verification contract.
+simulated behavior or record changed in any of the eleven acts. Acts 7 to 9 change no code and no rendered text at
+all; they change three sentences of a verification contract. Act 11 changes two identifiers and not one assertion.
 
-**The implementation agent decided none of the ten.** It found the four conflicts, wrote the amendments, measured the
+**The implementation agent decided none of the eleven.** It found the four conflicts, wrote the amendments, measured the
 gates, and put each act with its alternatives. It chose the wording of the descriptions and the layout of both texts,
 which `REQ-MOK-018`'s *Constraints* delegate to it, and it wrote the issue-40 disclosure before that sentence had been
 put to anyone — which act 4 has now made the owner's.
@@ -395,7 +423,7 @@ code, any simulated behavior, any record, or the classification above.
 | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` | amendments 2 and 3 |
 | `docs/engineering/simulation/specifications/SPEC-MOK-003.md` | amendment 4 |
 | `docs/engineering/simulation/verification/VER-MOK-004.md` | amendments 5 and 6, each in its own dated subsection and each with its own row in the amendment record. Amendment 6 also corrects one sentence of *Independence*, which is the consequence of putting a measured width bound in the matrix |
-| `docs/engineering/simulation/evidence/WO-MOK-020/` | the evidence below: 26 files, 15 of them under `nonperturbation/` or added with items 7 to 9 |
+| `docs/engineering/simulation/evidence/WO-MOK-024/` | the evidence below: 26 files, 15 of them under `nonperturbation/` or added with items 7 to 9 |
 
 Nothing under `mokiterions-core/src/simulation.rs` is touched: no engine code is in the diff at all.
 
@@ -415,7 +443,7 @@ measurement rather than a substitute for it.
 5. Both texts rendered and retained, with a column-width check.
 6. `harnessctl doctor` and `validate_engineering_artifacts.py` at the pinned harness version.
 
-**Items 7 to 9, added 2026-08-22** while executing `VER-MOK-004` to prepare `VREC-MOK-020`. The six above are the gates
+**Items 7 to 9, added 2026-08-22** while executing `VER-MOK-004` to prepare `VREC-MOK-022`. The six above are the gates
 this work order set itself; the three below are the contract's own rows, which no argument about the diff satisfies.
 
 7. `VER-MOK-004`'s 43-cell matrix and its 16 named cases, executed with `WO-MOK-004`'s `capture.sh` **unmodified** on a
@@ -429,7 +457,7 @@ this work order set itself; the three below are the contract's own rows, which n
 
 ## Evidence to record
 
-Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
+Under `docs/engineering/simulation/evidence/WO-MOK-024/`:
 
 - `README.md` — what the packet is, the commit binding, and the line-ending note.
 - `usage-text.md` — both texts as rendered, the width check, and the three implicit facts from *Objective* traced to
@@ -461,7 +489,7 @@ Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
    Amendments 1 to 5 came after the directed implementation and amendment 6 after executing the contract; each was
    drafted OUTSTANDING and carried that mark until the owner acted. See *Lifecycle* and *Decision record*.)*
 5. The owner declines any of the six amendments. The text reverts to whatever the surviving set permits, which for
-   amendment 1 declined is the previous text entirely; for amendment 6 declined nothing reverts, and `VREC-MOK-020`
+   amendment 1 declined is the previous text entirely; for amendment 6 declined nothing reverts, and `VREC-MOK-022`
    instead records the three contract rows as not satisfied as written. *(Did not occur; all six were ratified as
    written on 2026-08-22, in two rounds. See *Decision record*.)*
 
@@ -482,15 +510,16 @@ Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
 1. **What changed.** **Thirty-five paths** against `f7b1c45`, the shape of them in *Expected change surface* above. Two
    `USAGE` constants rewritten, one test helper's terminator, one test added, four governing artifacts amended, this
    work order, and **twenty-six** evidence files. The count is `git diff --name-only f7b1c45` at the commit
-   `VREC-MOK-020` binds, not the table's row count, which groups the evidence directory into one line, and it excludes
-   `VREC-MOK-020.md` itself, which is written against that commit and committed after it. No engine source is in the
+   `VREC-MOK-022` binds, not the table's row count, which groups the evidence directory into one line, and it excludes
+   `VREC-MOK-022.md` itself, which is written against that commit and committed after it. No engine source is in the
    diff. **The evidence count was ten at the first capture and eleven after the ratification**; the other fifteen files
    are *Required verification* items 7 to 9, the contract's own rows, executed after the ratification. That growth is
-   stated rather than smoothed over, because it is the reason this report was rewritten twice. **`VREC-MOK-020` was
-   captured three times.** The first two bound commits that the work then moved past — an evidence file was corrected
-   after the first, and amendment 6 was ratified after the second — and a record cannot be re-pointed at a later
-   commit. Both stood at `ready`, neither was accepted, and act 10 of *Decision record* is the owner's direction for
-   the third.
+   stated rather than smoothed over, because it is the reason this report was rewritten twice. **`VREC-MOK-022` was
+   captured four times.** The first three bound commits that the work then moved past — an evidence file was corrected
+   after the first, amendment 6 was ratified after the second, and act 11's renumber moved every one of the record's
+   twenty-six `evidence_paths` after the third — and a record cannot be re-pointed at a later commit or re-pathed after
+   capture. All three stood at `ready` and none was accepted. Act 10 of *Decision record* is the owner's direction for
+   the third; act 11 is what forced the fourth.
 2. **The amendments.** All six ratified as written on 2026-08-22, in two rounds. The first five are acts 1 to 5 of
    *Decision record*, in the product, technical, technical, technical and assurance owner roles respectively. **The
    sixth is acts 7, 8 and 9**, all in the assurance owner role, put after the first five and after the code because
@@ -538,10 +567,13 @@ Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
    Amendment 6 is the fix; the owner ratified all three parts on 2026-08-22 as acts 7 to 9, and each replacement is a
    measurement over both texts or against this work order's base commit rather than a figure fixed for later readers
    to inherit. **What is genuinely left undone under this heading is nothing about these three rows** — the residue is
-   issue 40 and the two misplaced `SPEC-MOK-001` rows above, and the limits of coverage `VREC-MOK-020` states in its
+   issue 40 and the two misplaced `SPEC-MOK-001` rows above, and the limits of coverage `VREC-MOK-022` states in its
    own words.
-5. **What remains for the owner.** Two acts, neither of them taken here. **Accepting `VREC-MOK-020`**, which stands at
-   `ready` — prepared, not accepted — and which states plainly the limits of what it covers. **Release**, which
-   requires a record again. Amendment 6 is no longer among them: it was put and ratified as acts 7 to 9, and act 10
-   directed the record superseded and re-captured against the commit that carries the amendment, which is what
-   happened. Nothing has been pushed and no pull request has been opened.
+5. **What remains for the owner.** **One act: release**, which requires a record again. **The record was accepted on
+   2026-08-22**, in the owner's words *"i accept the record, you can transition it, commit, push and PR"*, which also
+   authorized the push and the pull request; `VREC-MOK-022` moves `ready` → `verified` in the commit following this one,
+   because the record this document was written beside is the pre-renumber capture and act 11 required a fourth. The
+   acceptance was given against the third capture, whose prose, figures and claims the fourth carries unchanged; the
+   only fields that moved are the bound commit, the snapshot digest and the twenty-six evidence paths. Amendment 6 is
+   not among the remaining acts either: it was put and ratified as acts 7 to 9, and act 10 directed the record
+   superseded and re-captured against the commit carrying it.

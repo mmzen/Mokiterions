@@ -1,14 +1,14 @@
-# WO-MOK-020 evidence: both usage texts before and after
+# WO-MOK-024 evidence: both usage texts before and after
 
-`WO-MOK-020`'s *Evidence to record* requires both texts as rendered, the width check, and the three
+`WO-MOK-024`'s *Evidence to record* requires both texts as rendered, the width check, and the three
 implicit facts named in its *Objective* traced to where each is now stated. This is that record.
 
 These are observations of the working tree. They approve nothing, create no candidate commit, and
 authorize no release. `VER-MOK-004` is the verification contract they serve; the accountable assurance
-decision is the owner's act. **Updated 2026-08-22**: this paragraph read "`WO-MOK-020` is `draft` with five
+decision is the owner's act. **Updated 2026-08-22**: this paragraph read "`WO-MOK-024` is `draft` with five
 **OUTSTANDING** amendments, so no verification record exists yet", which was true when the texts were
 captured. The owner has since ratified those five and directed the transition to `implemented`, and
-`VREC-MOK-020` exists at status `ready` — prepared, not accepted. A **sixth** amendment, to `VER-MOK-004`
+`VREC-MOK-022` exists at status `ready` — prepared, not accepted. A **sixth** amendment, to `VER-MOK-004`
 itself, was found afterwards while executing that contract and was ratified later the same day; the width
 figures in *Measurements* below are the ones its replacement row asks for, and none of them changed to
 suit it.
@@ -21,7 +21,7 @@ suit it.
 | Method for the pre-change text | `git worktree add` at that commit, then `cargo run -- --help` in the clean tree. The text was **not** reconstructed from a diff. |
 | Post-change text rendered from | the working tree of `feature/help-output-clarity` that became the commit |
 | Implementation branch | `feature/help-output-clarity` |
-| Candidate commit | the commit `VREC-MOK-020` binds; its `commit` field is the authority. This row read "none yet; this work order is `draft`" when the texts were captured, which was true then and is corrected rather than back-dated. |
+| Candidate commit | the commit `VREC-MOK-022` binds; its `commit` field is the authority. This row read "none yet; this work order is `draft`" when the texts were captured, which was true then and is corrected rather than back-dated. |
 | Toolchain | rustc 1.97.1 (8bab26f4f 2026-07-14), cargo 1.97.1, clippy 0.1.97, rustfmt 1.9.0-stable |
 
 Both programs were invoked as `cargo run -q -p <package> -- --help` and both exited `0`. The four
@@ -81,7 +81,7 @@ shows it as reflowed paragraph lines.
 
 ## The three implicit facts, traced
 
-`WO-MOK-020`'s *Objective* names three things an operator could not learn from the engine's help. Each is
+`WO-MOK-024`'s *Objective* names three things an operator could not learn from the engine's help. Each is
 traced here to where it is now stated and to the approved artifact that governs it. **No fact below was
 invented by the implementation**: every one was already approved somewhere the operator could not see.
 
@@ -150,7 +150,7 @@ by its consequence rather than by an enumeration, because a runtime failure is n
 
 ## What the observer's text now discloses that its previous text did not
 
-Two of these are the reason `SPEC-MOK-003` needs the amendment `WO-MOK-020` lists fourth.
+Two of these are the reason `SPEC-MOK-003` needs the amendment `WO-MOK-024` lists fourth.
 
 | Disclosure | Where | Why it was silent before |
 | --- | --- | --- |

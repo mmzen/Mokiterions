@@ -158,7 +158,7 @@ fn entry(usage: &str, option: &str) -> String {
     text
 }
 
-/// `WO-MOK-020`: the four engine inputs are described here in the engine's own words.
+/// `WO-MOK-024`: the four engine inputs are described here in the engine's own words.
 ///
 /// `SPEC-MOK-003`'s *Start-up inputs* section gives them "identical names, identical parsing,
 /// identical validation, identical defaults and identical rejection behavior" and leaves their

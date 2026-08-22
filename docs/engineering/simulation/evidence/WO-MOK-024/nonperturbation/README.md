@@ -1,4 +1,4 @@
-# Non-perturbation capture for WO-MOK-020
+# Non-perturbation capture for WO-MOK-024
 
 `VER-MOK-004`'s *Requirement-to-evidence matrix* fixes three rows that no argument satisfies:
 
@@ -9,7 +9,7 @@
 | Both emission paths carry the same text | `--help` writes the new text to standard output; an invalid configuration writes the same text to standard error after the `configuration error:` line |
 
 **These were captured rather than reasoned about, and that is the point of this directory.**
-`WO-MOK-020`'s own case is that no engine source is in the diff at all, so no run can move — a
+`WO-MOK-024`'s own case is that no engine source is in the diff at all, so no run can move — a
 true statement and a weak one, because it is a claim about a diff and the rows are claims about
 every run. The contract's *Independence* section says as much: review cannot be re-run on a
 future change. So the matrix was executed on both sides.
@@ -24,7 +24,7 @@ trace settings at 1,000 ticks, plus two 20-tick traced runs and the no-argument 
 | | Value |
 | --- | --- |
 | Baseline side | a `git worktree` at `f7b1c452039dc2f03010ca8b8cc81e73c54727c0`, built there with `cargo build` |
-| Candidate side | this branch at the commit `VREC-MOK-020` binds, built with `cargo build` |
+| Candidate side | this branch at the commit `VREC-MOK-022` binds, built with `cargo build` |
 | Binary | `./target/debug/Mokiterions` on both sides, the profile `capture.sh` names |
 | Oracle | SHA-256 per cell, plus line count, exit code and the full final summary line |
 

@@ -1,18 +1,19 @@
-# Evidence for WO-MOK-020
+# Evidence for WO-MOK-024
 
-This directory retains implementation evidence for `WO-MOK-020`, *Make both help texts understandable*,
+This directory retains implementation evidence for `WO-MOK-024`, *Make both help texts understandable*,
 captured on 2026-08-22.
 
 The records are observations of the working tree. They do not independently approve verification, create a
 candidate commit, or authorize release. `VER-MOK-004` is the verification contract they serve; the
-accountable assurance decision is the owner's act. `VREC-MOK-020` cites this directory and stands at status
-`ready`, which means prepared and not accepted — the acceptance is the assurance owner's separate act and no
-file here anticipates its outcome.
+accountable assurance decision is the owner's act. `VREC-MOK-022` cites this directory and stands at status
+`ready` at the commit it binds, which means prepared and not accepted — no file here anticipates the outcome
+of that acceptance, and none was written or altered after it. The acceptance came afterwards, on 2026-08-22,
+and it is recorded in the record itself rather than backfilled here.
 
-**The five amendments were ratified on 2026-08-22 and `WO-MOK-020` is now `implemented`.** This directory
+**The five amendments were ratified on 2026-08-22 and `WO-MOK-024` is now `implemented`.** This directory
 was written before that, while the work order was `draft` and all five amendments were **OUTSTANDING**, and
 it is left readable in that order rather than rewritten to look as though authorization came first. What
-actually happened is in `WO-MOK-020`'s *Lifecycle*: the owner directed the implementation on 2026-08-22
+actually happened is in `WO-MOK-024`'s *Lifecycle*: the owner directed the implementation on 2026-08-22
 after being shown both texts in full; the amendments were found afterwards, in the course of writing the
 change against the artifacts that govern it; and the owner then ratified all five in one act, as written,
 and directed the transition. `gates.md` therefore records **three** `preflight` readings rather than one —
@@ -24,17 +25,32 @@ this transition", which measurement contradicted.
 prepare the record — items 7 to 9 of *Required verification*, the three files added last — found three of
 its checks misaligned with this change and with the tree: a false width assertion that also contradicts
 ratified amendment 2, a test-placement row naming the wrong file, and survivor figures master has moved
-past. That is amendment 6 of `WO-MOK-020`, and the owner ratified all three parts as acts 7, 8 and 9 of its
+past. That is amendment 6 of `WO-MOK-024`, and the owner ratified all three parts as acts 7, 8 and 9 of its
 *Decision record*, in the assurance owner role, having declined for each the alternative of leaving the row
 unmet. It changed no code and no rendered text, and **no measurement in this directory was taken or altered
 to suit it**: the figures were captured first and the amendment states them, which is the order that makes
 them evidence rather than decoration. `VER-MOK-004`'s *Second amendment of 2026-08-22* is the amendment
 itself.
 
-**The record was captured three times, and only the third survives.** The first binding was overtaken by a
-correction to `usage-text.md`, the second by this amendment; a verification record cannot be re-pointed at a
-later commit, so each was discarded and re-taken rather than edited. All three stood at `ready` and none was
-accepted. Act 10 of *Decision record* is the owner's direction for the third.
+**The record was captured four times, and only the fourth survives.** The first binding was overtaken by a
+correction to `usage-text.md`, the second by this amendment, and the third by the renumber below, which moved
+every one of the record's twenty-six evidence paths. A verification record cannot be re-pointed at a later
+commit or re-pathed after capture, so each was discarded and re-taken rather than edited. All four stood at
+`ready` when taken. Act 10 of *Decision record* is the owner's direction for the third; act 11 is what forced
+the fourth.
+
+**This directory was `evidence/WO-MOK-020/` until 2026-08-22.** The work order was renumbered
+`WO-MOK-020` → `WO-MOK-024` and its record `VREC-MOK-020` → `VREC-MOK-022`, as act 11 of *Decision record*,
+because a fetch of the remote found both original identifiers already taken: `VREC-MOK-020` by a `verified`
+record on `master` that binds `WO-MOK-017`, and `WO-MOK-020` by an open draft pull request on another branch.
+Nothing was re-measured to suit the renumber and nothing needed to be — it changes two identifiers and one
+directory name. The full gate set was re-run against it anyway, because four `.rs` doc comments name the work
+order: formatting clean, clippy clean, **303 tests pass with 0 failed and 0 ignored**, `validate` 148
+artifacts with 0 errors and 0 warnings, `doctor` 81/81 PASS, `preflight --phase review` PASS. Both help texts
+were re-rendered from the renumbered tree and are **byte-identical** to `after/engine-usage.txt` and
+`after/observer-usage.txt`, which is the check that matters: no rendered text contains the identifier, so
+none of it moved. The three fenced `preflight` transcripts in `gates.md` still say `WO-MOK-020`, and that is
+deliberate; `gates.md`'s own identifier note says why.
 
 ## Commit binding
 
@@ -42,14 +58,14 @@ accepted. Act 10 of *Decision record* is the owner's direction for the third.
 | --- | --- |
 | Base commit | `f7b1c452039dc2f03010ca8b8cc81e73c54727c0`, the branch point and the tip of `master` |
 | Implementation branch | `feature/help-output-clarity` |
-| Candidate commit | the commit `VREC-MOK-020` binds. Its `commit` field is the authority and this table deliberately does not copy the hash: the commit that carries this file cannot state its own identity, and a second copy would be free to drift from the record's |
+| Candidate commit | the commit `VREC-MOK-022` binds. Its `commit` field is the authority and this table deliberately does not copy the hash: the commit that carries this file cannot state its own identity, and a second copy would be free to drift from the record's |
 | Pre-change texts rendered from | a `git worktree` at the base commit, built and run there |
 | Toolchain | rustc 1.97.1, cargo 1.97.1, clippy 0.1.97, rustfmt 1.9.0-stable, Python 3.14.6, se-harness 0.4.0 |
 
 ## Contents
 
 - **`usage-text.md`** — both texts as rendered in full, the measurements, and the three implicit facts from
-  `WO-MOK-020`'s *Objective* each traced to where it is now stated and to the approved artifact that
+  `WO-MOK-024`'s *Objective* each traced to where it is now stated and to the approved artifact that
   governs it. Also records what the observer's text now discloses that its previous text did not, and why
   the four shared entries are a checked duplicate rather than a shared literal.
 - **`gates.md`** — all nine items of *Required verification*, including the one that FAILs by design, and
@@ -57,7 +73,9 @@ accepted. Act 10 of *Decision record* is the owner's direction for the third.
   items 7 to 9 run after `6d5b532`. It also states which of the contract's rows the evidence does **not**
   satisfy.
 - **`preflight-implemented.txt`** — both post-ratification `preflight` runs verbatim, `--phase start`
-  FAILing at exit 1 and `--phase review` PASSing at exit 0, with the version banner and the exit codes.
+  FAILing at exit 1 and `--phase review` PASSing at exit 0, with the version banner and the exit codes. Both
+  were re-run after the renumber and lead the file; the superseded pre-renumber capture is retained verbatim
+  beneath a divider rather than deleted.
 - **`before/engine-usage.txt`**, **`before/observer-usage.txt`** — the texts at the base commit.
 - **`after/engine-usage.txt`**, **`after/observer-usage.txt`** — the texts from the finished tree.
 - **`engine-usage.diff.txt`**, **`observer-usage.diff.txt`** — the line-by-line diffs.
