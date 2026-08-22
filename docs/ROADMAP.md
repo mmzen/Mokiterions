@@ -1067,6 +1067,73 @@ Its governance reach was wide: **sixteen amendments, twelve of them in governed 
 by the technical owner on 2026-08-20 — and four in repository-owned files including
 `engineering/REPOSITORY_CONTEXT.md`. Measured in `evidence/WO-MOK-014/WO-MOK-014-amendments.md`.
 
+### Defined and awaiting approval outside the phase sequence
+
+**One chain is fully drafted and has not been authorized.** It is recorded here rather than left to be discovered
+in the artifact tree, because the section above exists precisely to stop this document being read as a census of
+governed work — and a chain that is defined but unapproved is the case a reader is least likely to find on their
+own. Nothing below is approved, nothing is implemented, and no code exists.
+
+| Chain | What it would deliver | Where it hangs | Status |
+|---|---|---|---|
+| `WO-MOK-020` | A cumulative activity profile in the observer's inspector pane, per Mokiterion and for the population | `REQ-MOK-061`, `REQ-MOK-062` → `CAP-MOK-004`; specified by `SPEC-MOK-003` and `SPEC-MOK-004`; verified by `VER-MOK-017` | **all four `draft`** |
+
+**What it is.** The inspector answers *what is this Mokiterion doing now* — `REQ-MOK-021` fixes that scope to the
+proposal of the most recently completed tick and the engine's decision on it. Nothing in the observer answers *what
+has it been doing*, and after Phase 3.1 that is the question the instrument is most often put to: a Mokiterion that
+attacks at every opportunity and one that has attacked once read identically in every pane. `REQ-MOK-061` adds
+fourteen cumulative totals for a selected Mokiterion — one per action kind for all eleven kinds of the closed
+contract, plus rejected proposals, territory crossings and Mokiterions killed — beside a decision-opportunity count
+against which they are readable. `REQ-MOK-062` fills the same pane when nothing is selected, with those totals
+summed over every Mokiterion the run initialized, living and dead alike, plus the engine's own tick, living and
+death counts.
+
+**Every figure is a total over records the engine already states, and that is the whole of the claim.** The
+distinction the pack turns on is between a total and a proxy, and this specification had already drawn it:
+`SPEC-MOK-003` rule 10 item 7's re-check of 2026-08-20 holds that a count carried by `attack_resolved` events is a
+quantity *the engine computes*, even though no engine field holds it and no method returns it. So the pack claims
+nothing broader than the graph already admits, and it claims the converse too — a figure the observer would have to
+estimate, interpolate or infer from a correlate stays out, which is why `age`, remembered locations, model latency
+and per-agent entropy remain absent rather than zero-filled. Two of the six quantities `CAP-MOK-004`'s boundary
+named as *"panes [that] fill when the phases that create the data land"* are `kills` and `combats`; Phase 3.1 landed
+the records that state them, so this is that boundary's own fill rather than a widening of it.
+
+**Why it has no phase, structurally and not by oversight.** Both requirements derive from `CAP-MOK-004`, Phase
+1.5's capability — the same reason `WO-MOK-014` above is invisible to a reader walking intents down to phases. It
+adds no intent, no capability, no architecture and no engine change: the alternative of per-Mokiterion counters
+published on `AgentSnapshot` was considered and rejected in `REQ-MOK-061`'s rationale, because `SPEC-MOK-002`
+rule 6 admits a widening of the engine's public interface only for an approved requirement, and a presentation need
+does not justify moving arithmetic into the component this repository treats as the authority.
+
+**The one place it touches an approved obligation is worth a reviewer's attention.** `REQ-MOK-062` creates a
+population-level aggregate, and `REQ-MOK-059` forbids any rule, proposal validation or decision source from reading
+one. Until now that obligation was met by there being no such aggregate anywhere; it would be met by a boundary
+instead — the totals held in the observer, the engine holding no knowledge of the observer, a decision source
+receiving an `Observation` and returning a `ProposedAction` and able to reach nothing else. The two requirements are
+compatible only because the dependency direction is one-way, which is why `VER-MOK-017` verifies it by the
+run-identity property rather than asserting it, and why `WO-MOK-020` is classified `commit_bound_verification =
+"required"`.
+
+**What is outstanding is a single act, and it is the owner's.** All four artifacts are `draft`;
+`preflight --work-order WO-MOK-020 --phase review` returns **FAIL** on one `W005` and three `W013`, which is the
+correct reading of an unapproved chain and not a defect. Moving them to `approved` also requires replacing the
+**OUTSTANDING** cell in `SPEC-MOK-003`'s amendment row of 2026-08-22 — the row that added `REQ-MOK-061` and
+`REQ-MOK-062` to that specification's `specifies` list, on the precedent of the `CAP-MOK-010` row of 2026-08-20,
+because a requirement cannot leave `draft` without active specification coverage. The amendments that row
+anticipates — rule 10's presented-value list, item 7's removal of `kills` and `combats`, rule 11's authority
+mapping, the *State model* table and *Performance and capacity* — are `WO-MOK-020`'s to write and are not written.
+
+**This roadmap does not authorize it and cannot.** Formal authority comes from artifact metadata and accountable
+lifecycle decisions, per *Maintenance* below; this section records that the chain exists and what it is waiting for.
+
+> **The five identifiers above may not resolve yet.** The pack sits on `feature/observer-mokiterion-profile` and
+> reaches `master` under its own pull request, which is deliberately separate from this one: `WO-MOK-020` puts
+> `docs/ROADMAP.md` out of its own scope, on the ground that the roadmap is repository-owned planning reconciled
+> under its own change. So if this section merges first, `REQ-MOK-061`, `REQ-MOK-062`, `VER-MOK-017`, `WO-MOK-020`
+> and the `SPEC-MOK-003` amendment row are named here before they exist in the tree. That is stated rather than
+> hidden, and it resolves in one direction only — by the pack merging, or by this paragraph being corrected if it
+> does not.
+
 ### LLM feasibility experiment (parallel to Phases 1–2)
 
 A bounded, throwaway spike measuring cost per 1,000 ticks, latency per decision, and schema-valid response
