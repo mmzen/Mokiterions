@@ -2,10 +2,10 @@
 id = "WO-MOK-008"
 type = "work_order"
 title = "Make the provenance footer shed fields without losing authoritative information"
-status = "draft"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-19"
-updated = "2026-08-19"
+updated = "2026-08-22"
 
 [assurance]
 commit_bound_verification = "required"
