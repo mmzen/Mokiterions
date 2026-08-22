@@ -5,7 +5,7 @@ title = "Display run provenance and the authority for each event type"
 status = "approved"
 owners = ["product owner"]
 created = "2026-08-17"
-updated = "2026-08-17"
+updated = "2026-08-22"
 statement = "WHEN the observer displays simulation state or events, THE SYSTEM SHALL display alongside them the run's entropy seed, tick limit, resource density and active decision source, and SHALL name, for any displayed event type, the requirement that authorizes the behavior that event reports."
 verification_method = "automated-test"
 
@@ -14,6 +14,12 @@ derives_from = ["CAP-MOK-004"]
 +++
 
 # Requirement: Display run provenance and the authority for each event type
+
+## Amendment record
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-22 | **No normative provision changed. The statement, the required response, the constraints, the failure behaviour and both acceptance examples are untouched, and the requirement continues to oblige exactly what it obliged before.** What changes is *Open decisions*, which now records a matter deferred rather than open: `SPEC-MOK-003` rule 8 as amended on 2026-08-22 sheds provenance fields in a specified order when the footer row cannot hold them, and clause 6 concedes that at the declared floor of `34 × 22` a twenty-digit entropy seed beside a twenty-digit tick limit is 43 characters of 34 — so at that viewport this requirement is **not met**, and the concession is accepted knowingly instead of being closed. The statement is deliberately **not** narrowed to what the floor can hold. | **Accepted 2026-08-22 by the repository owner acting as accountable product owner**, the role `SPEC-MOK-003`'s rule 8 amendment row and `VER-MOK-005`'s *Residual uncertainty* both name for this residual, with the three courses those artifacts enumerate put alongside acceptance and the cost of each measured: raising rule 5's floor to the 50, 64 or 84 columns that carry all six fields, which is what `WO-MOK-008` names as its escalation trigger and which moves rule 5, `REQ-MOK-024` and two `VER-MOK-005` viewport rows; narrowing the accepted seed range; or amending this statement. None was taken. The implementation agent wrote the text, measured the arithmetic and decided nothing. The act is not covered by `VREC-MOK-021`, which is `verified` and bound to `3da6acc`, a commit that predates it. |
 
 ## Rationale
 
@@ -102,3 +108,17 @@ text is restated in place of the identifier.
 
 None. Provenance fields and placement, the event-type-to-requirement mapping, and the means of reaching it are fixed
 by `SPEC-MOK-003`.
+
+One matter is deferred rather than open, and it is a concession against this requirement rather than a gap in it.
+`SPEC-MOK-003` rule 8 as amended on 2026-08-22 sheds fields in a specified order when the footer row cannot hold them,
+and clause 6 concedes that at the declared floor of `34 × 22` a twenty-digit entropy seed beside a twenty-digit tick
+limit is 43 characters of 34, so what the floor guarantees is the entropy seed alone. This requirement states that
+provenance is never the information sacrificed to degradation, and at that viewport it is not met. **It is accepted
+knowingly by the product owner on 2026-08-22**, recorded in `VER-MOK-005` as residual uncertainty and in
+`SPEC-MOK-003`'s amendment row of that date. The statement above is left exactly as it stands: the requirement goes on
+obliging the whole of what it obliged, because narrowing it to what the narrowest viewport can hold would remove the
+pressure that any future widening answers. Three courses were put alongside acceptance and none was taken — raising
+rule 5's floor to the 50, 64 or 84 columns that carry all six fields, narrowing the accepted seed range, or amending
+this statement — and the first is what `WO-MOK-008` names as its escalation trigger, moving rule 5, `REQ-MOK-024` and
+two `VER-MOK-005` viewport rows. **The acceptance is void if the floor, the accepted seed range or rule 8's field set
+changes**, and any future requirement that widens the observer's declared viewports must address it.
