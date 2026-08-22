@@ -1,0 +1,30 @@
+# SHA-256 of every file in this packet except this manifest, in `sha256sum` format.
+# Written with LF endings, which are the bytes it hashes: `.gitattributes` pins `-text`
+# on docs/engineering/simulation/evidence/** so no conversion happens on checkout.
+#
+# Verify from this directory:  sha256sum -c MANIFEST.sha256
+#
+# 22 files, 1,899,864 bytes.
+#
+7f4d6bc170bcab1c7f103fec215a52508017f4e570649accc73c7fe49342bc45 *01-format-candidate.txt
+b85f453fb67fae4d3a076cf95d9e88b3fa1034eb55aa9fe65a97b80aa46e0585 *02-lint-candidate.txt
+0bd50f10bf72d9e5422122c90c168efeb83ada6100f7205a05d30f00ada761e3 *03-test-candidate.txt
+42f175ec682f46202588a1c5283d958d2b6b566c6c1b23778cd24e2733bb4605 *04-format-and-lint-base.txt
+5655da77ab856fe23b0eafdff72c0211048c9a164236987f5d863d850ef406f0 *05-test-base.txt
+592585c254bccfcee4cbb19ced4a8e3908d0094693670005e110d561ff885dfe *06-engine-records-seed42-candidate.jsonl
+32aeba551640c20833b7118f01c83d2e69df9e2a607d158ec5055684e189cbe7 *07-engine-stream-seed42-candidate.txt
+d9a8d5790bd9eee7ce6f10b35c1f8ddad56bfd0bc4e76963daf6b8e0b9ccbb95 *08-engine-output-unmoved.txt
+fc7e8b557af3a5c7405f4475b91f3e587f1ec2a1dd1abc72ccb63663a9664ef2 *09-measure-spec-mok-004.py
+686c03c311661d719a91b0b67b14c5fbbca4788b16ccd2a933f383aa607e6c54 *10-spec-mok-004-measured.txt
+98fab0bcb8936fc22185a1653a0b98f5325c0bf8d29fac2a5eca668b9d0d6cda *11-independent-count.txt
+82885c10040f6361d2505093ebb2f739bc141ad039d5004417464b85395518e4 *12-frames-and-columns.txt
+7f8a70bab4f47a5f4cb86f4b795423b30e9b34830df6b9983f6051c51fc6aa78 *13-extinction-frame.txt
+c1b396dc9f93fc0c4392ac8a97beacdbf0a041e975d6dd3053065f1f04fcc78b *14-long-run-truncation.txt
+63640c6c14303ed0bc635e282c2fbc5261345e3cef538fceeee5dc12db73602d *15-per-tick-cost-driver.rs
+1912de8dc63da6bce4012d52f75ee80155ebf6971410cb4ba90204d7065af982 *15-per-tick-cost.txt
+75d330c7be527890e5c14a8e2a8c024a41a49d965cc33bf69a511e267e0a2731 *16-export-capture-driver.rs
+82d7fc34563ada3e43f759d549d6dcc060380e3ba76ec5f4b879d8a9122a9ca8 *17-export-unmoved.txt
+6b5407d26dc1908ba6c173da680ca3467182f3b7e5a2390eb77502e27026d9e0 *18-dependency-sets-unmoved.txt
+1e273bc2eebc094d25a585a52fdb8a3ec95e4c14c493ebfd3d7020bcb10016c2 *19-harness-validate-and-preflight.txt
+9d2dc310b8ee67ae7a9bf04a95a92a396885fc22404833f58362ed36f1ce64e0 *README.md
+e06d748575004524f271629bec5189eb71a4290e6bf9152f148a7ab585fa115a *completion-report.md

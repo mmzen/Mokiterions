@@ -1,0 +1,4 @@
+# cargo fmt --all -- --check
+# candidate worktree, HEAD=ccb0584 plus the WO-MOK-020 change surface
+# re-taken from the tree as committed: neither non-committed instrument is present in it
+# exit=0

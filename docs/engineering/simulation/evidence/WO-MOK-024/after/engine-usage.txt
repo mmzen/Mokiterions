@@ -1,0 +1,71 @@
+Usage: Mokiterions [--seed <number>] [--ticks <number>]
+                   [--policy <baseline|reference|individual|social>]
+                   [--density <percent>] [--trace-actions]
+                   [--events-path <path>]
+       Mokiterions --help
+
+Mokiterions simulates a small closed world. Twelve creatures, each also called a
+Mokiterion, live on a 128 by 128 grid split into two territories, look for food,
+eat it, and can die. Nothing is learned and nothing is random beyond the seed:
+the same options always produce exactly the same run. Given no options at all it
+runs 100 turns of the default world and prints what happened.
+
+Options:
+
+  --seed <number>
+      Starting number for every random draw the run makes. Change it for a
+      different world; keep it to repeat one exactly. Default: 0.
+
+  --ticks <number>
+      How many turns to run. In one turn every living Mokiterion gets one
+      decision. Must be greater than zero. A run stops earlier only when no
+      Mokiterion is left alive. Default: 100.
+
+  --policy <baseline|reference|individual|social>
+      Which fixed set of rules each Mokiterion uses to choose its next action.
+      None of the four learns anything or calls a model; all four are
+      deterministic. Default: reference.
+      baseline    Chooses at random among the actions that are legal for it
+                  this turn. The control case, for comparison.
+      reference   Walks toward the nearest food it can see and eats it, but
+                  refuses food whose value it would partly waste.
+      individual  Like reference, except each Mokiterion will waste a little,
+                  by an amount the seed fixes for it alone, so two Mokiterions
+                  in the same position can act differently.
+      social      Like individual while it sees nobody else. When it does see
+                  another Mokiterion it may strike back, attack, threaten,
+                  close in, or keep away, depending on how afraid it is.
+
+  --density <percent>
+      How much food the world holds, as a percentage of one territory's 8192
+      cells, written with at most two decimal places. Default: 0.75. The one
+      value sets three things together: the food present at the start, the most
+      a territory can ever hold, and the level regrowth aims for. It must leave
+      at least one resource per territory and must not exceed 100. Runs are
+      comparable only with runs at the same density.
+
+  --trace-actions
+      Also print one trace line for every living Mokiterion every turn, giving
+      the action it proposed and whether the engine accepted it. Off unless
+      given. Tracing only observes: the same seed produces the same run either
+      way.
+
+  --events-path <path>
+      Also write a machine-readable record stream to this file, replacing any
+      file already there. No record stream is written unless given. Standard
+      output is byte-for-byte the same whether or not this option is used, and
+      nothing ever reads the file back.
+
+  --help
+      Print this text and exit without running a simulation.
+
+Options may appear in any order, and each may appear at most once.
+
+What is printed: one line naming the chosen policy, then one line per notable
+event as the run proceeds, then a closing summary of how the run ended. All of
+it goes to standard output. A configuration error goes to standard error,
+followed by this text.
+
+Exit status: 0 when the run finished or this text was printed, 2 when an option
+was unknown, repeated, missing its value, or outside what it accepts, and 1 when
+output could not be written.

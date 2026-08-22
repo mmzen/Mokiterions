@@ -1,0 +1,7 @@
+# cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+# both workspace packages cleaned first, so every unit is checked in this transcript
+# re-taken from the tree as committed: neither non-committed instrument is present in it
+    Checking Mokiterions v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-core)
+    Checking mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.33s
+# exit=0

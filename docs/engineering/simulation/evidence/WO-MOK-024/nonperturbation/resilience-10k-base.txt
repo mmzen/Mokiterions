@@ -1,0 +1,16 @@
+policy=baseline density=0.75 seed=123 ticks=10000 exit=0
+  summary reason=extinction ticks=168 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+policy=baseline density=1.50 seed=123 ticks=10000 exit=0
+  summary reason=extinction ticks=119 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=41 food_a_medium=41 food_a_high=40 food_b_low=41 food_b_medium=41 food_b_high=40
+policy=reference density=0.75 seed=123 ticks=10000 exit=0
+  summary reason=tick_limit ticks=10000 survivors=2 deaths=10 territory_a=0 territory_b=2 food_a_low=14 food_a_medium=22 food_a_high=25 food_b_low=9 food_b_medium=26 food_b_high=26
+policy=reference density=1.50 seed=123 ticks=10000 exit=0
+  summary reason=tick_limit ticks=10000 survivors=5 deaths=7 territory_a=3 territory_b=2 food_a_low=11 food_a_medium=33 food_a_high=78 food_b_low=24 food_b_medium=47 food_b_high=51
+policy=individual density=0.75 seed=123 ticks=10000 exit=0
+  summary reason=extinction ticks=8222 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=15 food_a_medium=24 food_a_high=22 food_b_low=9 food_b_medium=22 food_b_high=30
+policy=individual density=1.50 seed=123 ticks=10000 exit=0
+  summary reason=tick_limit ticks=10000 survivors=5 deaths=7 territory_a=2 territory_b=3 food_a_low=10 food_a_medium=36 food_a_high=76 food_b_low=17 food_b_medium=37 food_b_high=68
+policy=social density=0.75 seed=123 ticks=10000 exit=0
+  summary reason=extinction ticks=7444 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=7 food_a_medium=18 food_a_high=36 food_b_low=13 food_b_medium=25 food_b_high=23
+policy=social density=1.50 seed=123 ticks=10000 exit=0
+  summary reason=tick_limit ticks=10000 survivors=6 deaths=6 territory_a=3 territory_b=3 food_a_low=16 food_a_medium=39 food_a_high=67 food_b_low=20 food_b_medium=37 food_b_high=65

@@ -1,0 +1,385 @@
+# Per-tick cost: wall clock for the declared long run, before and after
+#
+# VER-MOK-017's per-tick cost check: "Measured as wall-clock for a declared long run before and
+# after, reported as a figure rather than as an assurance, with the measurement's own variance
+# stated."
+#
+# Platform: Windows 11 Home 10.0.26200; cargo and rustc 1.97.1; the release profile; one process
+# at a time; wall clock rather than CPU time, so the spread includes whatever else the machine was
+# doing. Seven repetitions per configuration, each reporting every repetition, the mean, the
+# median, the extremes, and the spread as a percentage of the mean.
+#
+# The run is --policy individual --ticks 6600 --start-paused, driven to the engine's own end. It is
+# the same run O8 uses and the longest this work order declares.
+#
+# The driver is `15-per-tick-cost-driver.rs`, retained beside this file. It is not part of either
+# commit: it is copied to `mokiterions-tui/tests/timing.rs` in each tree for the measurement and
+# removed afterwards, and it reaches the observer only through items that were already public
+# before this work order, so the same file compiles against both trees. It times `advance` alone and
+# draws no frame, because accumulation happens as a tick's records are ingested.
+#
+# The measurement did not come out as a clean before-and-after pair, so it is reported as the series
+# that was actually run. What the first two configurations alone would say is wrong, and the reason
+# is stated below the captures.
+#
+# Configurations
+#
+#   A  the candidate, default release profile
+#   B  the base commit ccb0584, default release profile
+#   C  the candidate with every accumulation path disabled, default release profile
+#      - `self.accumulate_decisions();` wrapped in `if false`, and the `TerritoryCrossed` and
+#        `AttackResolved` arms of `ingest` guarded by `if false`; nothing else touched
+#   D  the candidate's src/state.rs with the base's src/render.rs, default release profile
+#   E  the candidate tree with both changed sources replaced by the base's, default release profile
+#   F  the candidate, codegen-units = 1
+#   G  the base commit ccb0584, codegen-units = 1
+#
+# C, D and E are substitutions on the candidate tree, applied for the measurement and reverted
+# immediately; C's patch is reproduced at the end of this file. F and G are the same two trees as A
+# and B with CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 in the environment and nothing else changed.
+#
+# Configuration D's transcript carries three `never used` warnings, and they belong there rather than
+# being a defect in the candidate. D pairs the candidate's `src/state.rs` with the base's
+# `src/render.rs`, so the accumulation exists and nothing presents it: `ActionKind::ALL` and `label`,
+# the five `Profile` accessors with `absorb`, and the three `Observer` accessors have no caller in
+# that pairing. The candidate itself is clean, and `02-lint-candidate.txt` is the transcript that
+# says so - clippy at `-D warnings` from a cleaned tree, exit 0. No warning appears in A, B, C, E,
+# F or G.
+#
+# ==== the engine alone, for scale ====
+#
+# The engine binary at 6600 ticks, three runs at each tree, timed with a wall clock around the
+# process. The two binaries are byte-identical, per `08-engine-output-unmoved.txt`, so this is a
+# scale figure and not a comparison:
+#
+#   candidate      run 1: 0.1299 s, 19.685 us per tick
+#   candidate      run 2: 0.1068 s, 16.187 us per tick
+#   candidate      run 3: 0.1129 s, 17.111 us per tick
+#   base ccb0584   run 1: 0.1102 s, 16.694 us per tick
+#   base ccb0584   run 2: 0.1015 s, 15.375 us per tick
+#   base ccb0584   run 3: 0.1035 s, 15.684 us per tick
+#
+# So roughly 16 us of each per-tick figure below is the engine's own work, and the rest is the
+# observer's - overwhelmingly the world snapshot it takes after every tick, which this work order
+# does not touch.
+#
+
+# ---- A. candidate, default release profile ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 0.97s
+     Running tests\timing.rs (target\release\deps\timing-06d5105554eb1eb1.exe)
+
+running 1 test
+repetition 1: 1.7396 s, 263.579 us per tick
+repetition 2: 1.6884 s, 255.814 us per tick
+repetition 3: 1.8081 s, 273.960 us per tick
+repetition 4: 1.8046 s, 273.421 us per tick
+repetition 5: 1.7239 s, 261.195 us per tick
+repetition 6: 1.7518 s, 265.431 us per tick
+repetition 7: 1.7866 s, 270.691 us per tick
+ticks 6600, repetitions 7
+mean 1.7576 s
+median 1.7518 s
+least 1.6884 s
+greatest 1.8081 s
+spread 0.1198 s, 6.8% of the mean
+mean per tick 266.299 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.33s
+# exit=0
+
+# ---- B. base ccb0584, default release profile ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\mok-base-ccb0584\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 1.00s
+     Running tests\timing.rs (target\release\deps\timing-06d5105554eb1eb1.exe)
+
+running 1 test
+repetition 1: 0.9903 s, 150.042 us per tick
+repetition 2: 0.9837 s, 149.043 us per tick
+repetition 3: 1.0834 s, 164.145 us per tick
+repetition 4: 1.0186 s, 154.333 us per tick
+repetition 5: 0.9915 s, 150.222 us per tick
+repetition 6: 0.9957 s, 150.859 us per tick
+repetition 7: 1.0047 s, 152.220 us per tick
+ticks 6600, repetitions 7
+mean 1.0097 s
+median 0.9957 s
+least 0.9837 s
+greatest 1.0834 s
+spread 0.0997 s, 9.9% of the mean
+mean per tick 152.981 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.09s
+# exit=0
+
+# ---- C. candidate with every accumulation path disabled, default release profile ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 2.37s
+     Running tests\timing.rs (target\release\deps\timing-06d5105554eb1eb1.exe)
+
+running 1 test
+repetition 1: 1.7081 s, 258.796 us per tick
+repetition 2: 1.8010 s, 272.884 us per tick
+repetition 3: 1.7173 s, 260.191 us per tick
+repetition 4: 1.7491 s, 265.013 us per tick
+repetition 5: 1.7111 s, 259.265 us per tick
+repetition 6: 1.7157 s, 259.955 us per tick
+repetition 7: 1.7286 s, 261.904 us per tick
+ticks 6600, repetitions 7
+mean 1.7330 s
+median 1.7173 s
+least 1.7081 s
+greatest 1.8010 s
+spread 0.0930 s, 5.4% of the mean
+mean per tick 262.573 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.16s
+# exit=0
+
+# ---- D. candidate src/state.rs with the base's src/render.rs, default release profile ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+warning: associated items `ALL` and `label` are never used
+   --> mokiterions-tui\src\state.rs:168:22
+    |
+161 | impl ActionKind {
+    | --------------- associated items in this implementation
+...
+168 |     pub(crate) const ALL: [Self; Self::COUNT] = [
+    |                      ^^^
+...
+204 |     pub(crate) fn label(self) -> &'static str {
+    |                   ^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `applied`, `rejected`, `crossings`, `killed`, `opportunities`, and `absorb` are never used
+   --> mokiterions-tui\src\state.rs:252:19
+    |
+251 | impl Profile {
+    | ------------ methods in this implementation
+252 |     pub(crate) fn applied(&self, kind: ActionKind) -> u64 {
+    |                   ^^^^^^^
+...
+256 |     pub(crate) fn rejected(&self) -> u64 {
+    |                   ^^^^^^^^
+...
+260 |     pub(crate) fn crossings(&self) -> u64 {
+    |                   ^^^^^^^^^
+...
+264 |     pub(crate) fn killed(&self) -> u64 {
+    |                   ^^^^^^
+...
+268 |     pub(crate) fn opportunities(&self) -> u64 {
+    |                   ^^^^^^^^^^^^^
+...
+281 |     fn absorb(&mut self, other: &Self) {
+    |        ^^^^^^
+
+warning: methods `profile_of`, `population_profile`, and `initialized_count` are never used
+   --> mokiterions-tui\src\state.rs:606:19
+    |
+342 | impl Observer {
+    | ------------- methods in this implementation
+...
+606 |     pub(crate) fn profile_of(&self, id: &str) -> Option<&Profile> {
+    |                   ^^^^^^^^^^
+...
+612 |     pub(crate) fn population_profile(&self) -> Profile {
+    |                   ^^^^^^^^^^^^^^^^^^
+...
+622 |     pub(crate) fn initialized_count(&self) -> usize {
+    |                   ^^^^^^^^^^^^^^^^^
+
+warning: `mokiterions-tui` (lib) generated 3 warnings
+    Finished `release` profile [optimized] target(s) in 2.34s
+     Running tests\timing.rs (target\release\deps\timing-06d5105554eb1eb1.exe)
+
+running 1 test
+repetition 1: 1.0292 s, 155.945 us per tick
+repetition 2: 0.9812 s, 148.665 us per tick
+repetition 3: 1.0748 s, 162.844 us per tick
+repetition 4: 1.0538 s, 159.661 us per tick
+repetition 5: 1.0975 s, 166.284 us per tick
+repetition 6: 1.0783 s, 163.381 us per tick
+repetition 7: 1.0598 s, 160.576 us per tick
+ticks 6600, repetitions 7
+mean 1.0535 s
+median 1.0598 s
+least 0.9812 s
+greatest 1.0975 s
+spread 0.1163 s, 11.0% of the mean
+mean per tick 159.622 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.40s
+# exit=0
+
+# ---- E. the candidate tree with both changed sources replaced by the base's, default release profile ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 2.22s
+     Running tests\timing.rs (target\release\deps\timing-06d5105554eb1eb1.exe)
+
+running 1 test
+repetition 1: 1.0169 s, 154.080 us per tick
+repetition 2: 0.9711 s, 147.144 us per tick
+repetition 3: 0.9855 s, 149.324 us per tick
+repetition 4: 1.0173 s, 154.136 us per tick
+repetition 5: 1.0597 s, 160.563 us per tick
+repetition 6: 1.0264 s, 155.517 us per tick
+repetition 7: 1.0543 s, 159.743 us per tick
+ticks 6600, repetitions 7
+mean 1.0188 s
+median 1.0173 s
+least 0.9711 s
+greatest 1.0597 s
+spread 0.0886 s, 8.7% of the mean
+mean per tick 154.358 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.16s
+# exit=0
+
+# ---- F. candidate, codegen-units = 1 ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 4.15s
+     Running tests\timing.rs (target\release\deps\timing-8f5e60916f0da553.exe)
+
+running 1 test
+repetition 1: 1.5711 s, 238.042 us per tick
+repetition 2: 1.5689 s, 237.709 us per tick
+repetition 3: 1.6286 s, 246.764 us per tick
+repetition 4: 1.6202 s, 245.492 us per tick
+repetition 5: 1.6966 s, 257.058 us per tick
+repetition 6: 1.5813 s, 239.589 us per tick
+repetition 7: 1.5876 s, 240.547 us per tick
+ticks 6600, repetitions 7
+mean 1.6078 s
+median 1.5876 s
+least 1.5689 s
+greatest 1.6966 s
+spread 0.1277 s, 7.9% of the mean
+mean per tick 243.600 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.28s
+# exit=0
+
+# ---- G. base ccb0584, codegen-units = 1 ----
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\mok-base-ccb0584\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 1.38s
+     Running tests\timing.rs (target\release\deps\timing-8f5e60916f0da553.exe)
+
+running 1 test
+repetition 1: 1.6088 s, 243.764 us per tick
+repetition 2: 1.6034 s, 242.938 us per tick
+repetition 3: 1.6540 s, 250.606 us per tick
+repetition 4: 1.7488 s, 264.970 us per tick
+repetition 5: 1.6410 s, 248.631 us per tick
+repetition 6: 1.6658 s, 252.393 us per tick
+repetition 7: 1.6332 s, 247.460 us per tick
+ticks 6600, repetitions 7
+mean 1.6507 s
+median 1.6410 s
+least 1.6034 s
+greatest 1.7488 s
+spread 0.1454 s, 8.8% of the mean
+mean per tick 250.109 us
+test wall_clock_for_the_declared_long_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.58s
+# exit=0
+
+# ==== What the series measures ====
+#
+# The figures, mean per tick:
+#
+#   A  candidate, default profile                               266.3 us
+#   B  base, default profile                                    153.0 us
+#   C  candidate, accumulation disabled, default profile        262.6 us
+#   D  candidate state.rs, base render.rs, default profile      159.6 us
+#   E  candidate tree, both sources from base, default profile  154.4 us
+#   F  candidate, codegen-units = 1                             243.6 us
+#   G  base, codegen-units = 1                                  250.1 us
+#
+# A against B looks like a 74% regression. It is not one, and three configurations say so:
+#
+#   C. Disabling every accumulation path in the candidate leaves the figure at 262.6 us, inside the
+#   spread of A's 266.3 us. If the accumulation were the cost, removing it would have recovered it.
+#
+#   D. Restoring the base's `src/render.rs` while keeping the candidate's `src/state.rs` with the
+#   accumulation live gives 159.6 us, which is the base's figure. The driver draws no frame, so no
+#   line of `src/render.rs` executes in this measurement at all, and a file that is never called
+#   cannot cost 100 us per tick.
+#
+#   E. The candidate tree with both changed sources replaced by the base's gives 154.4 us, so the
+#   working tree, its target directory and the platform are not the variable either.
+#
+# What is left is the compiler. The release profile defaults to sixteen codegen units, and which
+# unit a function lands in decides whether its callers can inline it. Adding roughly 130 lines to
+# `src/render.rs` re-partitions the crate, and the hot path here - `Observer::advance` and the
+# engine snapshot it copies - loses an inlining decision it happened to win before. F and G remove
+# that variable: at codegen-units = 1 the candidate is 243.6 us and the base is 250.1 us, a 2.6%
+# difference against spreads of 9% to 13%, with the candidate the faster of the two.
+#
+# The measured conclusion, as a figure rather than an assurance:
+#
+#   With the codegen partition held fixed, the accumulation's per-tick cost is below this
+#   measurement's resolution: 243.6 us against 250.1 us over 6600 ticks, a difference smaller than
+#   the run-to-run spread of either configuration. An upper bound of about 25 us per tick - one
+#   spread - is all this instrument supports. It cannot report a positive figure, because it cannot
+#   separate the accumulation from noise.
+#
+#   Under the default release profile the candidate measures 266.3 us per tick against the base's
+#   153.0 us. That difference is real for anyone running this build, and it is reported here rather
+#   than suppressed; C, D and E establish that its cause is codegen partitioning rather than
+#   accumulation, since it survives removing the accumulation and disappears on restoring a file the
+#   measured path never calls.
+#
+# Two things this does not establish, stated rather than left implied:
+#
+#   1. It does not establish that the default-profile figure is unimportant. Anyone looking at the
+#   observer's frame budget has a real 113 us per tick to account for, and the place to look is the
+#   partitioning, not the totals.
+#
+#   2. It does not measure drawing. Presenting fifteen figures costs something per frame, and this
+#   instrument times `advance` only. The bound that matters for drawing is structural instead: a
+#   frame reads the retained records and formats fifteen integers, with no iteration over the event
+#   buffer and no allocation per figure.
+#
+# ==== C's patch ====
+#
+# Applied to `mokiterions-tui/src/state.rs` for configuration C only and reverted immediately
+# afterwards, reproduced here so C is recomputable:
+#
+#   -        self.accumulate_decisions();
+#   +        if false {
+#   +            self.accumulate_decisions();
+#   +        }
+#
+#   -                EventDetail::TerritoryCrossed { .. } => {
+#   -                    if let Some(profile) = self.profiles.get_mut(&event.subject) {
+#   -                        profile.crossings = profile.crossings.saturating_add(1);
+#   -                    }
+#   -                }
+#   +                EventDetail::TerritoryCrossed { .. } if false => {}
+#
+#   -                EventDetail::AttackResolved { target_died, .. } => {
+#   -                    if *target_died && let Some(p) = self.profiles.get_mut(&event.subject) {
+#   -                        p.killed = p.killed.saturating_add(1);
+#   -                    }
+#   -                }
+#   +                EventDetail::AttackResolved { .. } if false => {}
+#
+# After every substitution the candidate sources were compared against their pristine text and
+# restored. `01-format-candidate.txt`, `02-lint-candidate.txt` and `03-test-candidate.txt` were
+# taken from the restored tree.

@@ -1,0 +1,517 @@
+# Frame captures and the widest-line measurement, from the rendered inspector interior
+#
+# VER-MOK-017 O16 and SPEC-MOK-003 rule 10 clauses 5, 8 and 9. Each capture is the pane's
+# interior - the bordered rect less one column and one row on each side, which is the width the
+# paragraph's wrapping is measured against. Each row is bounded by a bar so trailing blanks are
+# unambiguous.
+#
+# Recompute with:
+#   cargo test --locked -p mokiterions-tui --test render -- --nocapture --test-threads 1 \
+#       no_line_the_inspector_presents_is_clipped_or_wrapped_at_either_width \
+#       a_selected_mokiterion_that_dies_keeps_its_death_lines_and_its_frozen_totals
+#
+# The three viewports are the reference 160x48, the presence threshold 140x48 and 140x44.
+# INSPECTOR_MIN_WIDTH is 140, so the second is the narrowest viewport that presents the pane at
+# all. The four states are both selection states before tick 1 and both mid-run; the death capture
+# is a fifth state, a selected Mokiterion that died with its totals frozen.
+#
+
+running 2 tests
+test a_selected_mokiterion_that_dies_keeps_its_death_lines_and_its_frozen_totals ... --- inspector interior: 160x48, selected and dead, mid-run ---
+|Zug  M01|
+|died on tick 295|
+|final health 0  satiety 0|
+|energy 23  fear 0|
+||
+|cumulative activity|
+|wait          0  surrender     3|
+|sleep         5  approach     14|
+|eat           9  avoid        22|
+|move        242  rejected      0|
+|attack        0  crossings     3|
+|threaten      0  killed        0|
+|fight         0  decisions   295|
+|retreat       0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 160x48, selected and dead, mid-run ---
+ok
+test no_line_the_inspector_presents_is_clipped_or_wrapped_at_either_width ... 160x48  nothing selected, before tick 1: widest 40 of interior 42
+--- inspector interior: 160x48, nothing selected, before tick 1 ---
+|nothing selected|
+|Tab selects a Mokiterion in roster order|
+||
+|no tick has completed|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 160x48, nothing selected, before tick 1 ---
+160x48  selected, before tick 1: widest 35 of interior 42
+--- inspector interior: 160x48, selected, before tick 1 ---
+|Zug  M01|
+|position  89:34  territory A|
+|sharing   1 in this rendered cell|
+|health 100  satiety 100  energy 100|
+||
+|no proposal has yet been made|
+||
+|no tick has completed|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 160x48, selected, before tick 1 ---
+160x48  selected, mid-run: widest 33 of interior 42
+--- inspector interior: 160x48, selected, mid-run ---
+|Zug  M01|
+|position  105:61  territory A|
+|sharing   1 in this rendered cell|
+|health 15  satiety 86  energy 83|
+||
+|decision, tick 60|
+|proposed  move:east|
+|outcome   + accepted|
+|applied   move:east|
+|authority REQ-MOK-004|
+||
+|cumulative activity|
+|wait          0  surrender     3|
+|sleep         0  approach      8|
+|eat           4  avoid         0|
+|move         45  rejected      0|
+|attack        0  crossings     0|
+|threaten      0  killed        0|
+|fight         0  decisions    60|
+|retreat       0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 160x48, selected, mid-run ---
+160x48  nothing selected, mid-run: widest 40 of interior 42
+--- inspector interior: 160x48, nothing selected, mid-run ---
+|nothing selected|
+|Tab selects a Mokiterion in roster order|
+||
+|population activity|
+|wait          0  surrender     6|
+|sleep         0  approach     50|
+|eat          21  avoid        58|
+|move        385  rejected      0|
+|attack       15  crossings     0|
+|threaten     14  killed        3|
+|fight         6  decisions   561|
+|retreat       6|
+||
+|tick 60  living 9|
+|initialized 12  deaths 3|
+|by a strike 3  unattributed 0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 160x48, nothing selected, mid-run ---
+140x48  nothing selected, before tick 1: widest 40 of interior 42
+--- inspector interior: 140x48, nothing selected, before tick 1 ---
+|nothing selected|
+|Tab selects a Mokiterion in roster order|
+||
+|no tick has completed|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x48, nothing selected, before tick 1 ---
+140x48  selected, before tick 1: widest 35 of interior 42
+--- inspector interior: 140x48, selected, before tick 1 ---
+|Zug  M01|
+|position  89:34  territory A|
+|sharing   1 in this rendered cell|
+|health 100  satiety 100  energy 100|
+||
+|no proposal has yet been made|
+||
+|no tick has completed|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x48, selected, before tick 1 ---
+140x48  selected, mid-run: widest 33 of interior 42
+--- inspector interior: 140x48, selected, mid-run ---
+|Zug  M01|
+|position  105:61  territory A|
+|sharing   1 in this rendered cell|
+|health 15  satiety 86  energy 83|
+||
+|decision, tick 60|
+|proposed  move:east|
+|outcome   + accepted|
+|applied   move:east|
+|authority REQ-MOK-004|
+||
+|cumulative activity|
+|wait          0  surrender     3|
+|sleep         0  approach      8|
+|eat           4  avoid         0|
+|move         45  rejected      0|
+|attack        0  crossings     0|
+|threaten      0  killed        0|
+|fight         0  decisions    60|
+|retreat       0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x48, selected, mid-run ---
+140x48  nothing selected, mid-run: widest 40 of interior 42
+--- inspector interior: 140x48, nothing selected, mid-run ---
+|nothing selected|
+|Tab selects a Mokiterion in roster order|
+||
+|population activity|
+|wait          0  surrender     6|
+|sleep         0  approach     50|
+|eat          21  avoid        58|
+|move        385  rejected      0|
+|attack       15  crossings     0|
+|threaten     14  killed        3|
+|fight         6  decisions   561|
+|retreat       6|
+||
+|tick 60  living 9|
+|initialized 12  deaths 3|
+|by a strike 3  unattributed 0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x48, nothing selected, mid-run ---
+140x44  nothing selected, before tick 1: widest 40 of interior 42
+--- inspector interior: 140x44, nothing selected, before tick 1 ---
+|nothing selected|
+|Tab selects a Mokiterion in roster order|
+||
+|no tick has completed|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x44, nothing selected, before tick 1 ---
+140x44  selected, before tick 1: widest 35 of interior 42
+--- inspector interior: 140x44, selected, before tick 1 ---
+|Zug  M01|
+|position  89:34  territory A|
+|sharing   1 in this rendered cell|
+|health 100  satiety 100  energy 100|
+||
+|no proposal has yet been made|
+||
+|no tick has completed|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x44, selected, before tick 1 ---
+140x44  selected, mid-run: widest 33 of interior 42
+--- inspector interior: 140x44, selected, mid-run ---
+|Zug  M01|
+|position  105:61  territory A|
+|sharing   1 in this rendered cell|
+|health 15  satiety 86  energy 83|
+||
+|decision, tick 60|
+|proposed  move:east|
+|outcome   + accepted|
+|applied   move:east|
+|authority REQ-MOK-004|
+||
+|cumulative activity|
+|wait          0  surrender     3|
+|sleep         0  approach      8|
+|eat           4  avoid         0|
+|move         45  rejected      0|
+|attack        0  crossings     0|
+|threaten      0  killed        0|
+|fight         0  decisions    60|
+|retreat       0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x44, selected, mid-run ---
+140x44  nothing selected, mid-run: widest 40 of interior 42
+--- inspector interior: 140x44, nothing selected, mid-run ---
+|nothing selected|
+|Tab selects a Mokiterion in roster order|
+||
+|population activity|
+|wait          0  surrender     6|
+|sleep         0  approach     50|
+|eat          21  avoid        58|
+|move        385  rejected      0|
+|attack       15  crossings     0|
+|threaten     14  killed        3|
+|fight         6  decisions   561|
+|retreat       6|
+||
+|tick 60  living 9|
+|initialized 12  deaths 3|
+|by a strike 3  unattributed 0|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+--- end: 140x44, nothing selected, mid-run ---
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.15s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running tests\render.rs (target\debug\deps\render-672d1ffbd6e3eb65.exe)
+# exit=0
