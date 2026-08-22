@@ -919,8 +919,13 @@ one this repository has settled into: records bind branch commits, `master`'s me
 record per work order is normal rather than exceptional.
 
 **Not released**: no release record binds this work. `RLS-MOK-001` is v0.1.0 at `755db72`, `REL-MOK-001` gates only
-`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`, so a v0.2.0 needs a new release contract; and `WO-MOK-008`, the
-release-authorization chain, is unrelated and still `draft`.
+`WO-MOK-001` through `WO-MOK-007` and `WO-MOK-009`, so a v0.2.0 needs a new release contract. `WO-MOK-008` is a
+separate chain and is **`implemented`**, not `draft`: it made the observer's provenance footer shed fields in a
+specified order, `VREC-MOK-021` is `verified` against it at `3da6acc`, and it merged to `master` as `2ecb78a` on
+2026-08-22 through pull request #44. It is **not unrelated to a release** either. Its own assurance rationale says a
+release *"cannot stamp its own commit into the binary until this is settled"*, and what it settled is that the commit
+is the **first** field the footer sheds — `SPEC-MOK-003` clause 4's first row, ratified by the technical owner on
+2026-08-22. Whether release CI stamps a commit at all was out of that work order's scope and is still undecided.
 
 > **Earlier form, for a reader diffing this file.** It read *"**Not merged.** `50364a3` is on
 > `feature/phase-4a-definition` and is not yet an ancestor of `master`; pull request #31 is open, out of draft and
@@ -932,6 +937,18 @@ release-authorization chain, is unrelated and still `draft`.
 > `9599c0a9`, and on `master` since 2026-08-20, before this paragraph's own chain merged. `VREC-MOK-019` names it
 > as the precedent it follows and reaches the same conclusion on the same fork, so the second record here is a
 > settled pattern rather than an exception.
+
+> **Earlier form, for a reader diffing this file.** The paragraph above ended *"and `WO-MOK-008`, the
+> release-authorization chain, is unrelated and still `draft`."* All three of its claims about that work order were
+> wrong by 2026-08-22, in different ways. **The status** was true when written and is not now. **The label was never
+> right**: `WO-MOK-008` implements `REQ-MOK-024` and `REQ-MOK-027` through `SPEC-MOK-003` and `VER-MOK-005`, which is
+> the observer's footer, and it has carried that title since it was created — in `17be4ba`, the commit that added the
+> release process and its authorization gate, which is the likeliest source of the mislabel. **And *unrelated***
+> contradicted the work order's own assurance rationale, which names release decisions as depending on the outcome.
+> The rest of the sentence stands unchanged and is re-measured here: `RLS-MOK-001` is still v0.1.0 at `755db72`,
+> `REL-MOK-001`'s gated set is still those eight work orders, and a v0.2.0 still needs a new release contract. What
+> is corrected is one sentence and nothing else: **this file still carries no account of the footer chain**, whose
+> work belongs to no phase section here, and that gap is left open rather than filled by this edit.
 
 **What was built**
 
