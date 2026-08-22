@@ -2,7 +2,7 @@
 id = "WO-MOK-008"
 type = "work_order"
 title = "Make the provenance footer shed fields without losing authoritative information"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-19"
 updated = "2026-08-22"
@@ -22,7 +22,7 @@ verification = ["VER-MOK-005"]
 
 ## Lifecycle
 
-This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the completed change and retained evidence. Verification and release require separate commit-bound records.
+This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the completed change and retained evidence, and **it is `implemented` as of 2026-08-22** — see *Lifecycle record* below. Verification and release require separate commit-bound records.
 
 ### Approval preconditions
 
@@ -32,6 +32,20 @@ Approval requires the technical owner to decide the `SPEC-MOK-003` rule 8 questi
 2. **`VER-MOK-005`'s case list must be extended** by the assurance owner. It verifies `REQ-MOK-024` and `REQ-MOK-027` and did not catch this, so its cases are part of what changes.
 
 The relation to architecture is deliberately absent. `ARCH-MOK-002` addresses `REQ-MOK-021`, `REQ-MOK-025`, `REQ-MOK-026` and `REQ-MOK-028`, none of which this work order implements, and no other active architecture addresses `REQ-MOK-024` or `REQ-MOK-027`.
+
+### Lifecycle record: three transitions, all directed by the owner
+
+`WO-MOK-008` is **`implemented`** as of 2026-08-22. All three of its status transitions were taken on that day by the repository owner, who holds every accountable role here, and each is recorded with the act that authorized it — because this work order's own *Authorized decision envelope* forbids the implementation agent from transitioning any artifact's status, and the agent applied all three under an explicit override rather than on its own authority.
+
+**`draft` → `approved` → `in_progress`, 2026-08-22.** *Approval preconditions* above makes two acts precede approval: the technical owner must decide the `SPEC-MOK-003` rule 8 question, and the assurance owner must extend `VER-MOK-005`. The owner was shown the floor arithmetic and the measured cost of all four candidates before deciding, chose the specified shedding order, fixed clause 4's order over the six preamble fields, and then authorized the whole sequence in one act, conditional on the drafted text matching those decisions: *"I may mark the amendment row ratified, add the `VER-MOK-005` cases, and transition `WO-MOK-008` `draft` → `approved` → `in_progress`, then implement and gather evidence in this session"*. That act names the override in terms — it *"overrides `WO-MOK-008`'s own prohibition on status transitions by the implementation agent"* — and it ended at a commit on a branch, with no push and no pull request.
+
+**`in_progress` → `implemented`, 2026-08-22.** The instruction, verbatim: *"ok, you can (1) transition the work order to implemented, (2) prepare the verification record as ready, (3) commit, (4) create the PR"*. The implementation agent held the status at `in_progress` through implementation and reported the transition as the owner's to take, on the ground that `implemented` asserts the completed change **and** the retained evidence as an accountable judgement — `WO-MOK-018`, `WO-MOK-013`, `WO-MOK-011` and `WO-MOK-007` each stayed at their pre-implementation status through their own implementation on the same reasoning. The status moved when that judgement was given, and not before. That instruction also authorizes the push and the pull request the retained evidence says do not exist; `VREC-MOK-021` discloses those sentences as falsified rather than editing the pack.
+
+**Only this work order moved.** `WO-MOK-017` is also `in_progress`, so *"the work order"* had two referents in the tree and one in the conversation. `WO-MOK-008` is this session's subject; `WO-MOK-017` was implemented and merged in another session under [#39](https://github.com/mmzen/Mokiterions/pull/39), and none of its evidence was read here. Judging another work order's completeness is exactly the judgement the paragraph above reserves to the owner, so `WO-MOK-017` was not touched and its status is left to whoever holds its evidence.
+
+**What the status records is authority, not confidence.** `WORKFLOW.md`: *"A status change records authority; it is not a confidence estimate."* So `implemented` records that the accountable engineering owner judges every in-scope item complete and its evidence retained. It does **not** record that clause 4's first row is ratified — the candidate commit's position ahead of every other field is **OUTSTANDING** in `SPEC-MOK-003`'s row of 2026-08-22 — nor that `REQ-MOK-027` is satisfied at the floor, which rule 8 as amended concedes it cannot be, nor that `VREC-MOK-021` is `verified`, nor that anything is merged, tagged or released.
+
+**Commit-bound verification is classified `required` above, and `VREC-MOK-021` binds it**, at `docs/engineering/simulation/verification-records/VREC-MOK-021.md`. It is a **`ready` candidate and is not `verified`**: `DECISION_RIGHTS.md` reserves that transition to the accountable assurance owner, and only such an owner may move a record to `verified`. This status and that record are independent, and neither substitutes for the other in either direction. The record is captured against **the commit that carries this transition** rather than against the implementation commit, on `VREC-MOK-017`'s and `VREC-MOK-018`'s reasoning that a work order classified `required` must be verified at a commit carrying both the change and the transition — a commit that record names and this paragraph cannot, since `WORKFLOW.md` holds that a record *"cannot contain the hash of its own commit"* and the same reasoning forbids a file naming the commit it is part of. **The record is `VREC-MOK-021` and not `VREC-MOK-020`**, which this transition named when it was first committed. `VREC-MOK-020` was unclaimed in the working tree, in every remote ref and in all fifteen pull requests at the time it was chosen; a concurrent session's record for `WO-MOK-017` then claimed it on `master` through [#41](https://github.com/mmzen/Mokiterions/pull/41), merged at `2026-08-22T10:31:37+02:00`, before this branch was pushed. The identifier space is shared across branches and sessions, so the number was re-checked against `origin`'s refreshed refs and this commit was amended to carry the free one — done before any record existed to bind it, since a record cannot be re-pointed at a later commit.
 
 ## Objective
 
