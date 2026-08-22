@@ -23,6 +23,14 @@ happen, since items 7 to 9 added evidence files and amended no artifact the harn
 What binds a tree rather than a moment is `VREC-MOK-020`, prepared against the commit that carries all of
 it.
 
+**A fourth reading, after amendment 6.** Ratifying amendment 6 changed `VER-MOK-004`, this work order and
+three files in this directory, all markdown. Section 6 was run a fourth time on the resulting tree and
+returned the same figures again — `doctor` 81 of 81 PASS with 0 FAIL and 31 managed files `unchanged`,
+`validate` PASS with 0 errors and 0 warnings, `preflight --phase review` PASS at exit 0. The artifact count
+reads **148** at that reading because the previous `VREC-MOK-020` had been deleted and the replacement was
+not yet written; it reads 149 once the new record is committed. Neither figure is a finding: `validate`
+counts artifact files, and a verification record is by construction absent from the commit it binds.
+
 ## Toolchain
 
 ```
@@ -50,7 +58,7 @@ harness command below was run from the 0.4.0 virtual environment at `C:\Users\ma
 | 6 | Harness | `harnessctl doctor`, `validate_engineering_artifacts.py`, `harnessctl preflight` | doctor **PASS**, validate **PASS**, preflight `review` **PASS** and `start` **FAIL by design** |
 | 7 | Non-perturbation | `nonperturbation/capture.sh`, unmodified, on a base worktree and on the candidate | **PASS** — 43 of 43 cells byte-identical; 1 of 16 named cases changed, and it is `--help` |
 | 8 | Printed defaults are the applied defaults | three scratch divergences against the **rewritten** text | **PASS** — each fails, and the load-bearing one fails exactly 1 test of 18; all three reverted |
-| 9 | Resilience and public surface | 10,000-tick runs, 1,000-tick survivor floor, `cargo doc` and a `pub` inventory | **PASS on the checks, with two of the contract's figures found stale** — see amendment 6 |
+| 9 | Resilience and public surface | 10,000-tick runs, 1,000-tick survivor floor, `cargo doc` and a `pub` inventory | **PASS on the checks, with two of the contract's figures found stale** — amendment 6, ratified 2026-08-22 after this was measured |
 
 Items 7 to 9 were added to *Required verification* on 2026-08-22, while executing `VER-MOK-004` to prepare
 `VREC-MOK-020`. They are not gates this work order set itself; they are the contract's rows, and the work
@@ -206,14 +214,14 @@ uniformly CRLF with zero bare LF and zero bare CR; the two shell scripts are uni
 | `mokiterions-core/tests/cli.rs` | 577 | 0 | 0 |
 | `mokiterions-tui/src/options.rs` | 242 | 0 | 0 |
 | `mokiterions-tui/tests/options.rs` | 184 | 0 | 0 |
-| `work-orders/WO-MOK-020.md` | 493 | 0 | 0 |
+| `work-orders/WO-MOK-020.md` | 547 | 0 | 0 |
 | `requirements/REQ-MOK-018.md` | 157 | 0 | 0 |
 | `specifications/SPEC-MOK-001.md` | 836 | 0 | 0 |
 | `specifications/SPEC-MOK-003.md` | 1265 | 0 | 0 |
-| `verification/VER-MOK-004.md` | 280 | 0 | 0 |
-| `evidence/WO-MOK-020/README.md` | 92 | 0 | 0 |
-| `evidence/WO-MOK-020/gates.md` | 453 | 0 | 0 |
-| `evidence/WO-MOK-020/usage-text.md` | 434 | 0 | 0 |
+| `verification/VER-MOK-004.md` | 348 | 0 | 0 |
+| `evidence/WO-MOK-020/README.md` | 101 | 0 | 0 |
+| `evidence/WO-MOK-020/gates.md` | 475 | 0 | 0 |
+| `evidence/WO-MOK-020/usage-text.md` | 436 | 0 | 0 |
 | `evidence/WO-MOK-020/before/engine-usage.txt` | 38 | 0 | 0 |
 | `evidence/WO-MOK-020/before/observer-usage.txt` | 22 | 0 | 0 |
 | `evidence/WO-MOK-020/after/engine-usage.txt` | 71 | 0 | 0 |
@@ -246,8 +254,11 @@ direction on checkout. A first attempt wrote `capture.sh` with `CRLF`, `cmp` rep
 line 1`, and the copy was redone with `cp` — the claim that it is unmodified would otherwise have been
 false while looking true.
 
-Re-measured 2026-08-22 after items 7 to 9. Before them this table had thirteen rows and the work-order row
-read 390; before the ratification edits it read 265. The **bare CR** column was added because the first
+Re-measured 2026-08-22 a third time, after amendment 6 was ratified. Five rows moved and nothing else did:
+the work order, `VER-MOK-004`, and this directory's `README.md`, `gates.md` and `usage-text.md`, all of them
+markdown and none of them a capture. The previous readings for those five were 493, 280, 92, 453 and 434.
+Before items 7 to 9 this table had thirteen rows and the work-order row read 390; before the ratification
+edits it read 265. The **bare CR** column was added because the first
 attempt at `preflight-implemented.txt` had 69 of them: `harnessctl` already emits `CRLF`, so writing its
 output through a `CRLF` translation produced `\r\r\n` on every line the harness had wrapped. The capture was
 rewritten by normalizing to `LF` before the single translation, and the column exists so that a reader can
@@ -422,6 +433,14 @@ runs to the 10,000-tick limit with 2 survivors, where `WO-MOK-004` recorded exti
 are recorded as amendment 6 rather than quietly reinterpreted, because a contract row that names wrong
 numbers cannot be marked satisfied by measuring different ones.
 
+**Ratified 2026-08-22, after this section was captured.** The owner, in the assurance owner role, replaced
+both bullets so that they require identity with a baseline taken at the work order's own base commit and
+keep the declared floor of eight, declining the alternative of weakening to the floor alone. The figures
+above are unchanged by that act — they were measured before it and the amendment states them — so what
+follows is that the checks are now met by the same numbers that showed the contract stale. `VER-MOK-004`'s
+*Second amendment of 2026-08-22* carries the replacement, and the 2026-08-17 figures remain readable in the
+rows above it as historical.
+
 ## What is not gated here
 
 - **GitHub issue 40**, the observer's `--events-path` silently writing nothing. Deferred by the owner on
@@ -438,15 +457,18 @@ numbers cannot be marked satisfied by measuring different ones.
   owner's separate act, and nothing below this line was decided by the agent that wrote it. Until that
   acceptance, the gates on this page are the strongest claim available — that the tree was measured, not
   that the work is verified.
-- **Three of `VER-MOK-004`'s checks are not satisfied as written, and no gate here can satisfy them.** Its
-  *Line width* row asserts a synopsis first line of 81 columns before and after and calls the synopsis
+- **Three of `VER-MOK-004`'s checks were not satisfiable as written, and no gate here could satisfy them.**
+  Its *Line width* row asserted a synopsis first line of 81 columns before and after and called the synopsis
   unchanged: the before synopsis first line is 49 columns, the widest synopsis line is 68, and the synopsis
-  did change under ratified amendment 2. Its *Test placement* row names `tests/cli.rs` for the added test;
+  did change under ratified amendment 2. Its *Test placement* row named `tests/cli.rs` for the added test;
   this work order adds none there and adds one to `mokiterions-tui/tests/options.rs`. Its *Performance and
   resilience* survivor counts and its "same termination ticks" clause are the two stale figures in section 9
-  above. **Amendment 6 of `WO-MOK-020` is the fix and it is OUTSTANDING** — it was found after the owner's
-  six acts and was not put to them. Marking those rows met would be the implementation agent rewriting the
-  contract it is measured against.
+  above. **Amendment 6 of `WO-MOK-020` is the fix, and the owner ratified all three parts on 2026-08-22 as
+  acts 7, 8 and 9 of that work order's *Decision record*.** Every figure the replacement rows call for was
+  measured on this page before the amendment was drafted; none was taken afterwards and none was adjusted.
+  What this page cannot do, and does not do, is mark those rows met on its own authority: the amendment is
+  the owner's act, and marking them met without it would be the implementation agent rewriting the contract
+  it is measured against.
 - **The width argument put to the owner for amendment 2 was wrong**, and `WO-MOK-020` now records it as
   wrong rather than dropping it. `--ticks <whole number>` would not have overrun any line: that synopsis
   line is 55 columns after the change and 49 before, and the widest synopsis line is 68. The ratification

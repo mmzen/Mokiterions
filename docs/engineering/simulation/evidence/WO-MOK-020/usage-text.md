@@ -9,7 +9,9 @@ decision is the owner's act. **Updated 2026-08-22**: this paragraph read "`WO-MO
 **OUTSTANDING** amendments, so no verification record exists yet", which was true when the texts were
 captured. The owner has since ratified those five and directed the transition to `implemented`, and
 `VREC-MOK-020` exists at status `ready` — prepared, not accepted. A **sixth** amendment, to `VER-MOK-004`
-itself, is now **OUTSTANDING** and was not put to the owner.
+itself, was found afterwards while executing that contract and was ratified later the same day; the width
+figures in *Measurements* below are the ones its replacement row asks for, and none of them changed to
+suit it.
 
 ## Commit binding
 

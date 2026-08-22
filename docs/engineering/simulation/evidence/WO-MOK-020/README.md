@@ -20,12 +20,21 @@ the `draft` FAIL, the `implemented` FAIL on the same `start` phase, and the `rev
 this status is measured by. The middle one exists because the work order first claimed the FAIL "clears on
 this transition", which measurement contradicted.
 
-**A sixth amendment is OUTSTANDING and was never put to the owner.** Executing `VER-MOK-004` to prepare the
-record — items 7 to 9 of *Required verification*, the three files added last — found three of its checks
-misaligned with this change and with the tree: a false width assertion that also contradicts ratified
-amendment 2, a test-placement row naming the wrong file, and survivor figures master has moved past. That is
-amendment 6 of `WO-MOK-020`. It changes no code and no rendered text, and it is the assurance owner's act.
-No file here treats it as ratified.
+**A sixth amendment was found after all of this and ratified the same day.** Executing `VER-MOK-004` to
+prepare the record — items 7 to 9 of *Required verification*, the three files added last — found three of
+its checks misaligned with this change and with the tree: a false width assertion that also contradicts
+ratified amendment 2, a test-placement row naming the wrong file, and survivor figures master has moved
+past. That is amendment 6 of `WO-MOK-020`, and the owner ratified all three parts as acts 7, 8 and 9 of its
+*Decision record*, in the assurance owner role, having declined for each the alternative of leaving the row
+unmet. It changed no code and no rendered text, and **no measurement in this directory was taken or altered
+to suit it**: the figures were captured first and the amendment states them, which is the order that makes
+them evidence rather than decoration. `VER-MOK-004`'s *Second amendment of 2026-08-22* is the amendment
+itself.
+
+**The record was captured three times, and only the third survives.** The first binding was overtaken by a
+correction to `usage-text.md`, the second by this amendment; a verification record cannot be re-pointed at a
+later commit, so each was discarded and re-taken rather than edited. All three stood at `ready` and none was
+accepted. Act 10 of *Decision record* is the owner's direction for the third.
 
 ## Commit binding
 
