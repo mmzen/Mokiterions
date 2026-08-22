@@ -20,6 +20,13 @@ the `draft` FAIL, the `implemented` FAIL on the same `start` phase, and the `rev
 this status is measured by. The middle one exists because the work order first claimed the FAIL "clears on
 this transition", which measurement contradicted.
 
+**A sixth amendment is OUTSTANDING and was never put to the owner.** Executing `VER-MOK-004` to prepare the
+record — items 7 to 9 of *Required verification*, the three files added last — found three of its checks
+misaligned with this change and with the tree: a false width assertion that also contradicts ratified
+amendment 2, a test-placement row naming the wrong file, and survivor figures master has moved past. That is
+amendment 6 of `WO-MOK-020`. It changes no code and no rendered text, and it is the assurance owner's act.
+No file here treats it as ratified.
+
 ## Commit binding
 
 | Fact | Value |
@@ -36,8 +43,10 @@ this transition", which measurement contradicted.
   `WO-MOK-020`'s *Objective* each traced to where it is now stated and to the approved artifact that
   governs it. Also records what the observer's text now discloses that its previous text did not, and why
   the four shared entries are a checked duplicate rather than a shared literal.
-- **`gates.md`** — all six items of *Required verification*, including the one that FAILs by design, and the
-  two capture points: the code gates at `6d6be40` and the harness readings re-run after ratification.
+- **`gates.md`** — all nine items of *Required verification*, including the one that FAILs by design, and
+  the three capture points: the code gates at `6d6be40`, the harness readings re-run after ratification, and
+  items 7 to 9 run after `6d5b532`. It also states which of the contract's rows the evidence does **not**
+  satisfy.
 - **`preflight-implemented.txt`** — both post-ratification `preflight` runs verbatim, `--phase start`
   FAILing at exit 1 and `--phase review` PASSing at exit 0, with the version banner and the exit codes.
 - **`before/engine-usage.txt`**, **`before/observer-usage.txt`** — the texts at the base commit.
@@ -46,13 +55,35 @@ this transition", which measurement contradicted.
 - **`drift-demonstration.txt`** — the cross-target identity test failing on a one-character divergence,
   captured rather than asserted. The scratch change that produced it was reverted and is not committed;
   `gates.md` item 4 records both checks that confirm it.
+- **`defaults-divergences.txt`** — the three divergences of `VER-MOK-004` acceptance scenario 3, re-run
+  against the **rewritten** text rather than cited from `VREC-MOK-004`: the applied `--ticks` default moved
+  with the text left alone, the printed `--seed` default moved with the parser left alone, and a parser arm
+  added with no help entry. The second is the load-bearing one — it fails exactly one test of eighteen.
+- **`resilience-and-interface.txt`** — the 10,000-tick runs under all four decision sources, the 1,000-tick
+  survivor floor, and the public-surface check. Also reports two figures the contract fixes that master has
+  since moved past, and one inherited rustdoc warning.
+- **`nonperturbation/`** — `VER-MOK-004`'s 43-cell matrix and its 16 named cases, executed on a worktree at
+  the base commit and on the candidate. All 43 cells byte-identical; one of sixteen cases changed, and it is
+  `--help`. See that directory's own `README.md`.
 
 ## A note on line endings
 
-The repository is worked on under Windows with `core.autocrlf = true`, so every text file here is stored in
-the object database with `LF` and appears in a Windows working tree with `CRLF`. Re-hashing a retained file
-after a checkout will therefore not reproduce a digest taken before it, which is the checkout's conversion
-and not drift. `WO-MOK-003`'s and `WO-MOK-004`'s evidence is stored the same way.
+**Corrected 2026-08-22.** This section previously said that every text file here is stored in the object
+database with `LF`, appears in a Windows working tree with `CRLF`, and therefore cannot be re-hashed to a
+digest taken before a checkout. That is the behavior `.gitattributes` exists to prevent, and it is not what
+this directory does.
+
+`.gitattributes` carries `docs/engineering/simulation/evidence/** -text`, added while committing
+`WO-MOK-010` after `WO-MOK-006`'s retained stream hashed differently from its own manifest. `-text`
+disables end-of-line conversion in both directions, so **a retained file is stored exactly as it appears in
+the working tree and comes back out of a checkout unchanged, on any platform**. Re-hashing a retained file
+does reproduce a digest taken before a checkout, which is the whole point.
+
+What follows from that is a rule for this directory rather than a caveat: the endings a file is written
+with are the endings it keeps forever. The text files here are `CRLF`, matching the Windows working tree
+they were captured in and matching `WO-MOK-004`'s retained evidence. The two shell scripts,
+`nonperturbation/capture.sh` and `nonperturbation/resilience-10k.sh`, are `LF`; `capture.sh` is `LF`
+because it is a byte-for-byte copy of `WO-MOK-004`'s, and `cmp` reports no difference.
 
 The measurement that survives that conversion is in `usage-text.md`: the bytes both programs emit contain
 **zero** carriage returns, on this machine and on any other, because both `USAGE` constants are built from

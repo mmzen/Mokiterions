@@ -1,0 +1,60 @@
+The printed-equals-applied check is load-bearing on the rewritten text
+======================================================================
+
+VER-MOK-004 acceptance scenario 3 asks for the equality between printed and applied
+defaults to be shown by making it fail, in both directions, and for the coverage
+totality property to be shown the same way. VREC-MOK-004 recorded three such
+divergences against the PREVIOUS twelve-then-thirty-eight-line text. This work order
+restructured that text, which is precisely the change that could leave the tests
+passing while no longer reading the thing they name. So all three were re-run against
+the rewritten text rather than cited from the earlier record.
+
+Each scratch change was made with an editor, run, and reverted individually. None is
+in the commit; the confirmation is at the bottom of this file.
+
+--- Divergence A: applied --ticks default 100 -> 1000, help text untouched
+    mokiterions-core/src/cli.rs:215  ticks.unwrap_or(100) -> ticks.unwrap_or(1000)
+    test result: FAILED. 12 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+    failing tests (6): both_policies_are_selectable_and_reference_is_the_default, defaults_are_stable, density_is_accepted_in_the_specified_forms_and_rejected_otherwise, each_documented_default_parses_to_the_applied_default, the_social_policy_is_selectable_and_does_not_become_the_default, the_trait_aware_policy_is_selectable_and_does_not_become_the_default
+      assertion `left == right` failed: the help states 100 as the default for --ticks, which is not the value the program applies when --ticks is omitted
+      (the other five report the same assertion without a message; elided here)
+
+--- Divergence B: printed --seed default 0 -> 1, parser untouched
+    mokiterions-core/src/cli.rs:38  "... Default: 0." -> "... Default: 1."
+    test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+    failing tests (1): each_documented_default_parses_to_the_applied_default
+      assertion `left == right` failed: the help states 1 as the default for --seed, which is not the value the program applies when --seed is omitted
+
+--- Divergence C: a "--verbose" arm added to parse, with no help entry
+    mokiterions-core/src/cli.rs:206  a new match arm before the catch-all
+    test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+    failing tests (1): the_documented_options_are_exactly_the_options_the_parser_accepts
+      assertion `left == right` failed: every option the parser accepts is described, and nothing else is
+      left: ["--density", "--events-path", "--help", "--policy", "--seed", "--ticks", "--trace-actions"]
+      right: ["--density", "--events-path", "--help", "--policy", "--seed", "--ticks", "--trace-actions", "--verbose"]
+
+Reading
+-------
+A fails six tests because moving an applied default moves it for every test that
+asserts a parsed configuration, not only for the equality test. The equality test is
+among the six and is the one that says WHY in words: "the help states 100 as the
+default for --ticks, which is not the value the program applies when --ticks is
+omitted".
+
+B is the stronger of the two directions and the reason it is run: moving the PRINTED
+default alone fails exactly one test of eighteen, the equality test, naming --seed and
+the wrong value. Seventeen tests pass, so no other test in the file would have caught
+a help text that lies about a default. Without this check the drift would be silent.
+
+C fails exactly one test, the coverage-totality test, which prints both sorted lists
+side by side so the surplus option is visible without reading the source. This is the
+check that a future option added to the parser and not to the help cannot pass.
+
+Confirmation that nothing scratch is committed
+---------------------------------------------
+$ git status --porcelain            (only the new evidence directory, untracked)
+$ cargo test                        303 passed, 0 failed, 0 ignored
+$ Mokiterions --help | cmp - after/engine-usage.txt
+                                    identical, 3601 bytes both sides
+The last is the stronger check: the program's live text is byte-identical to the text
+retained as evidence, so the retained text is what the reverted tree prints.

@@ -1,0 +1,91 @@
+Resilience, the viability floor, and the public interface
+========================================================
+
+Three of VER-MOK-004's checks are measurements against figures the contract fixed in
+2026-08-17 for WO-MOK-004. Two of those figures no longer describe this repository,
+because master has moved since: phase 3 and the resource-composition ceiling both
+landed. The measurements are therefore taken base-against-candidate, which is the
+comparison that answers whether THIS change perturbs anything, and the divergence
+from the contract's stale numbers is reported rather than hidden.
+
+1. The 10,000-tick resilience run under each decision source
+-----------------------------------------------------------
+
+Run at seed 123 at both declared densities under all four decision sources, on a
+worktree at f7b1c45 and on the candidate. The two captures are byte-identical:
+
+  $ diff base after
+  $ echo $?
+  0
+
+The candidate side, retained in full:
+
+  policy=baseline density=0.75 seed=123 ticks=10000 exit=0
+    summary reason=extinction ticks=168 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=21 food_b_medium=20 food_b_high=20
+  policy=baseline density=1.50 seed=123 ticks=10000 exit=0
+    summary reason=extinction ticks=119 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=41 food_a_medium=41 food_a_high=40 food_b_low=41 food_b_medium=41 food_b_high=40
+  policy=reference density=0.75 seed=123 ticks=10000 exit=0
+    summary reason=tick_limit ticks=10000 survivors=2 deaths=10 territory_a=0 territory_b=2 food_a_low=14 food_a_medium=22 food_a_high=25 food_b_low=9 food_b_medium=26 food_b_high=26
+  policy=reference density=1.50 seed=123 ticks=10000 exit=0
+    summary reason=tick_limit ticks=10000 survivors=5 deaths=7 territory_a=3 territory_b=2 food_a_low=11 food_a_medium=33 food_a_high=78 food_b_low=24 food_b_medium=47 food_b_high=51
+  policy=individual density=0.75 seed=123 ticks=10000 exit=0
+    summary reason=extinction ticks=8222 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=15 food_a_medium=24 food_a_high=22 food_b_low=9 food_b_medium=22 food_b_high=30
+  policy=individual density=1.50 seed=123 ticks=10000 exit=0
+    summary reason=tick_limit ticks=10000 survivors=5 deaths=7 territory_a=2 territory_b=3 food_a_low=10 food_a_medium=36 food_a_high=76 food_b_low=17 food_b_medium=37 food_b_high=68
+  policy=social density=0.75 seed=123 ticks=10000 exit=0
+    summary reason=extinction ticks=7444 survivors=0 deaths=12 territory_a=0 territory_b=0 food_a_low=7 food_a_medium=18 food_a_high=36 food_b_low=13 food_b_medium=25 food_b_high=23
+  policy=social density=1.50 seed=123 ticks=10000 exit=0
+    summary reason=tick_limit ticks=10000 survivors=6 deaths=6 territory_a=3 territory_b=3 food_a_low=16 food_a_medium=39 food_a_high=67 food_b_low=20 food_b_medium=37 food_b_high=65
+
+Every row: exit 0, no panic, and survivors plus deaths equal to twelve. The contract
+names only baseline and reference, because individual and social did not exist when it
+was written; all four are run here, which is wider than asked and no weaker.
+
+STALE FIGURE. The contract's bullet says the run completes "at the same termination
+ticks as recorded before". WO-MOK-004's retained resilience-10k.txt records
+reference/0.75 as extinction at tick 9154 with survivors 0; it is now tick_limit at
+10000 with survivors 2. That is master moving between 2026-08-17 and 2026-08-22, not
+this change moving it: base and candidate agree exactly. The clause cannot be read
+against those numbers any more, and doing so would report a false regression.
+
+2. The 1,000-tick population floor at the declared density
+---------------------------------------------------------
+
+From nonperturbation/summaries-after.txt, the reference source at density 0.75:
+
+  seed      0    1   42  123  777
+  survivors 8    9   10    9    9      candidate
+  survivors 8    9   10    9    9      base f7b1c45 (identical manifest)
+
+Every seed is at or above the per-seed survivor floor of eight that REQ-MOK-014 and
+VER-MOK-002 state, and every cell is byte-identical between base and candidate, which
+is the stronger of the two claims.
+
+STALE FIGURE. The contract fixes these as "8, 11, 8, 9, 11 on seeds 0, 1, 42, 123,
+777" and asks for identity with them rather than merely clearing the floor. Measured
+at f7b1c45 they are 8, 9, 10, 9, 9. Same cause as above; the floor of eight still
+holds on every seed.
+
+3. The public interface did not grow
+-----------------------------------
+
+  $ git diff f7b1c45 -- mokiterions-core/src mokiterions-tui/src | grep -E '^[+-].*pub'
+
+returns exactly one pair of lines, and they are the same item: the observer's
+
+  -pub const USAGE: &str = "Usage: mokiterions-tui [--seed <u64>] ... ";
+  +pub const USAGE: &str = concat!(
+
+One escaped single-line literal became a concat! of one literal per line. The name, the
+visibility and the type are unchanged, and both constants are still
+`pub const USAGE: &str` — cli.rs:21 and options.rs:24. No public item was added,
+removed, or changed in signature, so SPEC-MOK-002 rules 5 and 6 and SPEC-MOK-004's
+equivalent hold, and the observer's new test reaches mokiterions::cli::USAGE, which was
+already public and is read by the engine's own tests.
+
+`cargo doc --no-deps --lib -p Mokiterions` lists 30 public items. It also emits one
+warning, `public documentation for 'suffered' links to private item 'SufferedAttack'`
+at mokiterions-core/src/simulation.rs:1542. That is inherited from master and not from
+this work order: `git diff f7b1c45 -- mokiterions-core/src/simulation.rs` is empty. It
+is recorded here because a reader running cargo doc will see it, and rustdoc is not one
+of the repository's gate commands, so nothing else would mention it.

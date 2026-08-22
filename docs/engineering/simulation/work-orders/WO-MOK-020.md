@@ -122,6 +122,11 @@ each shared entry out of the observer's constant and requires the engine's const
 
 ### 4. The five amendments in *Required amendments* below
 
+A sixth is recorded there as well. It was found after the five were ratified, while executing `VER-MOK-004` to prepare
+the verification record, and it is **OUTSTANDING**: three of that contract's checks were written for an engine-only
+change against a tree that master has since moved past. It changes no code and this work order does not claim those
+three checks pass as written.
+
 ## Out of scope
 
 - **Fixing the observer's `--events-path` defect.** The owner deferred it on 2026-08-22 and it is tracked as GitHub
@@ -229,6 +234,43 @@ Two alternatives declined: ratifying these rows while leaving this work order `d
 entirely — the second because the three stale enumerations are wrong today independently of this change, and leaving
 them would leave the contract asserting that `--policy` accepts two values.
 
+### 6. `VER-MOK-004` — three checks written for an engine-only change against a tree that has moved (assurance owner) — **OUTSTANDING**
+
+**Found on 2026-08-22 after the five above were ratified, while executing the contract to prepare `VREC-MOK-020`.**
+Stop-and-escalate condition 4 governs: it is added here and marked OUTSTANDING rather than presented as approved, and
+this work order does **not** claim the three checks below pass as written. Nothing in the code changes for it; it
+realigns three checks to a tree they predate. It is separable from amendments 1 to 5 and could not have been put with
+them, because it was not visible until the matrix was run.
+
+**6a. The *Line width* row is wrong twice.** It reads: *"No line the options block introduces exceeds 80 columns; the
+reproduced synopsis block, whose first line is 81 columns before and after, is unchanged."* The first clause holds —
+zero lines over eighty on either text. The parenthetical is **false and always was for this text**: the synopsis's
+first line is 49 columns before and 55 after, the widest synopsis line is 68, and the two 81-column lines in the
+before text are prose lines 28 and 32. And the final clause is **contradicted by ratified amendment 2**, which changed
+`<u64>` to `<number>` inside exactly that block. A row cannot both require the synopsis unchanged and be read beside an
+approved amendment that changes it.
+
+**6b. The *Test placement* row and the matching *Static and architecture checks* bullet name the wrong file.** Both say
+the new tests sit in `tests/cli.rs`. This work order adds **no** test to `tests/cli.rs` — that file is 18 tests before
+and after, with no assertion touched — and adds one to `mokiterions-tui/tests/options.rs`. The row's substance is
+satisfied (public tier, existing subject, no new file, no test moved between tiers) and only its location clause is
+stale, having been written when `REQ-MOK-018` could only be served from one package.
+
+**6c. Two *Performance and resilience* figures describe a tree that no longer exists.** The bullets fix survivor counts
+as *"8, 11, 8, 9, 11 on seeds 0, 1, 42, 123, 777"* and ask for the 10,000-tick runs to end *"at the same termination
+ticks as recorded before"*. Measured at the base commit `f7b1c45` the counts are **8, 9, 10, 9, 9**, and
+reference/0.75 at 10,000 ticks is `tick_limit` with 2 survivors where `WO-MOK-004` recorded extinction at tick 9154.
+That is master moving between 2026-08-17 and 2026-08-22 — phase 3 and the resource-composition ceiling — not this
+change moving it: base and candidate are byte-identical on all 43 cells and on both 10,000-tick captures. Read against
+the fixed numbers, these bullets report a regression that did not happen. The per-seed floor of eight still holds on
+every seed. `resilience-and-interface.txt` holds both measurements.
+
+**What is proposed**: replace the *Line width* parenthetical and its synopsis-unchanged clause with a bound measured
+rather than asserted; widen the *Test placement* location clause to the public tier of whichever package owns the
+subject; and restate the two resilience checks as base-against-candidate identity plus the declared floor, rather than
+as identity with figures fixed on 2026-08-17. The assurance owner may instead decline, in which case `VREC-MOK-020`
+must record these three as checks not satisfied as written — which is what it does now.
+
 ## Decision record
 
 Five acts of 2026-08-22, each put as its own question with its alternatives, and eleven alternatives declined. One
@@ -243,6 +285,11 @@ correspondingly easy to skip; the role each act was taken in is named because no
 | 4 | `SPEC-MOK-003` *Start-up inputs* disclosure | technical owner | as written, defect characterization kept | record without calling it a defect; drop the disclosure from spec and help text |
 | 5 | `VER-MOK-004`'s four rows, two scenarios, three corrections | assurance owner | as written | ratify but hold this work order at `draft`; decline the rows |
 | 6 | This work order `draft` → `approved` → `implemented` | engineering owner | taken with act 5 | hold at `draft` |
+| — | Amendment 6, `VER-MOK-004`'s three misaligned checks | assurance owner | **not put; OUTSTANDING** | — |
+
+**Amendment 6 is not one of the six acts and is not approved.** It was found after them, while executing the contract,
+and it is listed in this table only so that a reader counting acts against amendments does not conclude one is missing.
+It is deliberately not numbered as an act, because no act was taken.
 
 **Act 1 is the one the change rests on**, and it is the one the owner's implementation instruction of the same date
 did not cover. The instruction was given on the text; this act is on the requirement the text turns out to need. Had
@@ -306,11 +353,16 @@ code, any simulated behavior, any record, or the classification above.
 | `docs/engineering/simulation/requirements/REQ-MOK-018.md` | amendment 1 |
 | `docs/engineering/simulation/specifications/SPEC-MOK-001.md` | amendments 2 and 3 |
 | `docs/engineering/simulation/specifications/SPEC-MOK-003.md` | amendment 4 |
-| `docs/engineering/simulation/verification/VER-MOK-004.md` | amendment 5 |
-| `docs/engineering/simulation/evidence/WO-MOK-020/` | evidence below |
+| `docs/engineering/simulation/verification/VER-MOK-004.md` | amendment 5. Amendment 6 is **OUTSTANDING** and adds nothing to this file until it is ratified, so the path's contents do not yet reflect it |
+| `docs/engineering/simulation/evidence/WO-MOK-020/` | the evidence below: 26 files, 15 of them under `nonperturbation/` or added with items 7 to 9 |
 
-Nothing under `mokiterions-core/src/simulation.rs` is touched, which is the whole of the non-perturbation claim: no
-engine code is in the diff at all.
+Nothing under `mokiterions-core/src/simulation.rs` is touched: no engine code is in the diff at all.
+
+**Corrected 2026-08-22.** That sentence previously read "which is the whole of the non-perturbation claim", and it
+should not have. It is a claim about a diff; `VER-MOK-004`'s three non-perturbation rows are claims about every run,
+and the contract's *Independence* section says review cannot be re-run on a future change. The rows were therefore
+executed on both sides — *Required verification* item 7 — and the diff argument is now a corroboration of that
+measurement rather than a substitute for it.
 
 ## Required verification
 
@@ -321,6 +373,18 @@ engine code is in the diff at all.
    change, must fail it and name the option. The scratch change is reverted and not committed.
 5. Both texts rendered and retained, with a column-width check.
 6. `harnessctl doctor` and `validate_engineering_artifacts.py` at the pinned harness version.
+
+**Items 7 to 9, added 2026-08-22** while executing `VER-MOK-004` to prepare `VREC-MOK-020`. The six above are the gates
+this work order set itself; the three below are the contract's own rows, which no argument about the diff satisfies.
+
+7. `VER-MOK-004`'s 43-cell matrix and its 16 named cases, executed with `WO-MOK-004`'s `capture.sh` **unmodified** on a
+   worktree at the base commit and on the candidate. All 43 cells byte-identical; the fourteen invalid-configuration
+   cases identical on exit code, empty standard output and the `configuration error:` line; and the two emission paths
+   carrying the same bytes.
+8. Acceptance scenario 3's three divergences re-run against the **rewritten** text rather than cited from
+   `VREC-MOK-004`, which recorded them against the previous one.
+9. The 10,000-tick resilience runs and the 1,000-tick survivor floor, base against candidate, and the public-surface
+   check.
 
 ## Evidence to record
 
@@ -336,6 +400,12 @@ Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
 - `drift-demonstration.txt` — the cross-target identity test failing on a one-character divergence.
 - `preflight-implemented.txt` — both post-ratification `preflight` runs verbatim, with the version banner and the exit
   codes: `--phase start` FAIL at exit 1, `--phase review` PASS at exit 0.
+- `defaults-divergences.txt` — item 8, the three divergences against the rewritten text.
+- `resilience-and-interface.txt` — item 9, and the two figures the contract fixes that master has moved past.
+- `nonperturbation/` — item 7: both manifests, both summary files, both raw `exit-codes.txt` captures, the per-case
+  comparison, the emission-path check, both 10,000-tick captures, and the two scripts. Its own `README.md` states what
+  is retained and what is deliberately not: the four full 20-tick traces, identical by `diff -r` and by the digests in
+  both manifests.
 
 ## Stop and escalate conditions
 
@@ -355,21 +425,30 @@ Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
 ## Completion report format
 
 1. What changed, by path.
-2. The five amendments, each with its acting role and its ratification state.
-3. The six verification results, with the scratch demonstration.
-4. What was left undone and why: issue 40, and the two misplaced amendment rows.
+2. The amendments, each with its acting role and its ratification state. **Widened 2026-08-22 from "the five
+   amendments": a sixth was found while executing `VER-MOK-004`, and a format that named a count would have had no
+   place to put it.**
+3. The verification results, with the scratch demonstration. **Nine items, not the six this section first named**; see
+   *Required verification*.
+4. What was left undone and why: issue 40, the two misplaced amendment rows, and anything the evidence shows a
+   required check does not cover.
 5. What remains for the owner.
 
 ### Completion report, 2026-08-22
 
-1. **What changed.** Twenty paths against `f7b1c45`, the shape of them in *Expected change surface* above. Two `USAGE`
-   constants rewritten, one test helper's terminator, one test added, four governing artifacts amended, this work
-   order, and **eleven** evidence files — the eleventh is `preflight-implemented.txt`, added with the ratification.
-   The count is `git diff --name-only f7b1c45`, not the table's row count, which groups the evidence directory into
-   one line. No engine source is in the diff.
-2. **The five amendments.** All five ratified as written on 2026-08-22 — acts 1 to 5 of *Decision record*, in the
+1. **What changed.** **Thirty-five paths** against `f7b1c45`, the shape of them in *Expected change surface* above. Two
+   `USAGE` constants rewritten, one test helper's terminator, one test added, four governing artifacts amended, this
+   work order, and **twenty-six** evidence files. The count is `git diff --name-only f7b1c45` at the commit
+   `VREC-MOK-020` binds, not the table's row count, which groups the evidence directory into one line, and it excludes
+   `VREC-MOK-020.md` itself, which is written against that commit and committed after it. No engine source is in the
+   diff. **The evidence count was ten at the first capture and eleven after the ratification**; the other fifteen files
+   are *Required verification* items 7 to 9, the contract's own rows, executed after the ratification. That growth is
+   stated rather than smoothed over, because it is the reason this report was rewritten twice.
+2. **The amendments.** Five ratified as written on 2026-08-22 — acts 1 to 5 of *Decision record*, in the
    product, technical, technical, technical and assurance owner roles respectively. No `OUTSTANDING` mark remains in
-   any of the four artifacts for this work order.
+   any of the four artifacts for those five. **A sixth is OUTSTANDING and was never put to the owner**: three of
+   `VER-MOK-004`'s checks are misaligned, found after the five were ratified while executing that contract to prepare
+   the record. It is amendment 6 of *Required amendments*, it needs the assurance owner, and it changes no code.
 3. **The six verification results.** `gates.md`. Formatting clean; clippy clean under
    `--workspace --all-targets --all-features --locked -- -D warnings`; 303 tests pass with 0 failed and 0 ignored;
    the cross-target identity test demonstrated failing on a one-character divergence and the scratch reverted, checked
@@ -382,9 +461,33 @@ Under `docs/engineering/simulation/evidence/WO-MOK-020/`:
    "clears on the transition"; it does not, and the correction is recorded in *Lifecycle* rather than overwritten.
    **`tests/cli.rs` is 18 tests before and 18 after, with no assertion touched** — the number measured in a worktree
    at the base commit rather than inferred from the diff.
+
+   **Items 7 to 9.** `nonperturbation/`, `defaults-divergences.txt` and `resilience-and-interface.txt`. All 43 matrix
+   cells byte-identical base against candidate, on digest, line count and exit code, with `WO-MOK-004`'s `capture.sh`
+   copied byte for byte and `cmp`-clean; all 40 matrix summary lines identical; the two 20-tick traced runs identical
+   by `diff -r`. **One of the sixteen named cases changed and it is `--help`**, 2195 → 3600 bytes of standard output;
+   each of the fourteen invalid-configuration cases holds exit `2`, an empty standard output and a byte-identical
+   `configuration error:` line, their standard error growing 39 → 72 lines because the appended usage block grew
+   38 → 71. Both emission paths carry the same 3601 bytes and 71 lines, equal to the retained text, with zero carriage
+   returns. Acceptance scenario 3's three divergences re-run against the **rewritten** text: the printed-equals-applied
+   direction fails exactly one test of eighteen and names `--seed`, which is the load-bearing demonstration. The
+   10,000-tick runs are identical across all four decision sources and the 1,000-tick survivor floor is `8 9 10 9 9` on
+   both sides. One public-surface line pair changed, the observer's `USAGE` reformat, across 30 public items.
+   **Two of the contract's figures and two of its checks are not satisfied as written**, which is amendment 6.
 4. **What was left undone.** GitHub issue 40, the observer's `--events-path` writing nothing, deferred by the owner
    and disclosed in the observer's text until it is closed; and the two misplaced amendment rows in `SPEC-MOK-001`,
    recorded in *Out of scope* as observations. `validate` does not read markdown table structure, so its PASS is not
    evidence that those two rows are fine.
-5. **What remains for the owner.** `VREC-MOK-020` is `ready` and not `verified`: accepting it is the assurance owner's
-   separate act. Release requires a record again. Nothing has been pushed and no pull request has been opened.
+
+   **And three of `VER-MOK-004`'s checks are not satisfied as written.** Its *Line width* row asserts a synopsis first
+   line of 81 columns before and after and calls the synopsis unchanged; both halves are false, and the second
+   contradicts ratified amendment 2. Its *Test placement* row names `tests/cli.rs` for the added test; this work order
+   adds none there and one to `mokiterions-tui/tests/options.rs`. Its *Performance and resilience* survivor counts and
+   its "same termination ticks" clause describe a tree master has moved past. **Amendment 6 is the fix, it is
+   OUTSTANDING, and it was not put to the owner** — it was found after the six acts of *Decision record* were taken. It
+   changes no code and no rendered text. Until it is ratified or declined, `VREC-MOK-020` cannot claim those rows are
+   met, and it says so.
+5. **What remains for the owner.** Three acts, none of them taken here. **Ratifying or declining amendment 6**, in the
+   assurance owner role. **Accepting `VREC-MOK-020`**, which stands at `ready` — prepared, not accepted — and which
+   states plainly which of the contract's rows it does not cover. **Release**, which requires a record again. Nothing
+   has been pushed and no pull request has been opened.
