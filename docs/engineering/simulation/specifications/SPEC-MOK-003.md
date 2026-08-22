@@ -79,6 +79,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-20 | Three provisions amended under `CAP-MOK-010`, and the frontmatter's `specifies` gains `REQ-MOK-052`, `REQ-MOK-053`, `REQ-MOK-055`, `REQ-MOK-056` and `REQ-MOK-057`. **Rule 11's** authority table gains three rows, one per added event type — `attack_resolved` to `REQ-MOK-053`, `threat_resolved` to `REQ-MOK-055`, `surrender_resolved` to `REQ-MOK-056` — and `decision_source_selected` gains `REQ-MOK-057` for its fourth value; **`REQ-MOK-052` takes no row**, because the three verbs it authorizes that emit no new type are reported by `action_trace`, whose row already maps to `REQ-MOK-012`. **Rule 4's** roster and **rule 10's** inspector present a targeted action's subject as well as its verb — `attack M03`, by identifier and never by name, whose widest rendering under this amendment is `surrender M12` at thirteen columns, inside the seventeen the reference roster's 45-column interior leaves. **Rule 4 clause 5's** refusal of inert values is unchanged and is now satisfied differently for `fear`, which has a reader; the clause cited `fear` as its precedent, so the ground for filling its slot is now stronger than computation alone. No pane geometry, key binding, export format, snapshot contract or figure changes, no gauge is added, and the observer stays read-only. | Approved 2026-08-20 by the repository owner acting as technical owner, in the **single act this amendment's own ordering requires**: together with `REQ-MOK-051` through `REQ-MOK-060`, `VER-MOK-016` and `WO-MOK-016`. The act is single because this amendment's `specifies` relation is what makes those ten requirements approvable at all — without it `validate` raises `E007` on every one of them and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. Implementation begins after this act and not before. It is stated in full in `WO-MOK-016`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Eight consequences the text derived rather than decided are named in that work order's *Required amendments* section; the owner took the four of them that were genuinely open before approving, and those four are recorded in its decision table with the alternatives declined. |
 | 2026-08-20 | **No rule changed. This row records the reconciliation of the `CAP-MOK-010` rule 4 amendment above with the `WO-MOK-013` amendments above it, which were written against different trees and met in a merge.** Both are retained verbatim and neither owner act is edited, summarised or folded into the other. They meet at rule 4, at exactly two points, and both hold. **Line one is untouched by `REQ-MOK-047`**, which divided the four gauges across two new bar lines and moved item 5's overhead from `35` to `19` without reading or writing any field of line one; the `REQ-MOK-041` paragraph asserts that in its own words and gives line one's fixed fields as `6 + 5 + 3 + 14 = 28` columns of the reference roster's 45-column interior, leaving **17**. So `CAP-MOK-010`'s applied-action field, whose widest rendering is `surrender M12` at thirteen columns, still fits with four columns to spare, and it is still the last field on line one and still truncates before any other field loses a column. **The `fear` gauge's justification and its rendering are likewise unaffected**: `REQ-MOK-047` moved which line a gauge is drawn on, `CAP-MOK-010` changed why the slot may be filled at all, and the two do not overlap — `fear` stays unbanded under clause 7, keeps clause 4's zero rendering, and gains no band by moving to the second bar line. **What the merge changes is a count of lines and not of gauges**: the entry is three lines rather than two and the four gauges are read across two bar lines, so `CAP-MOK-010`'s closing phrase "this row carries four gauges" is restated on the moved figures in item 5 rather than left to be read against a one-line row. No provision, figure, threshold, glyph, band, key binding or derived consequence of either amendment is added, removed or reworded by this row. | Recorded by the implementation agent as a statement of fact about amendments it holds no authority over, on the precedent of the two 2026-08-19 reconciliation rows above. Nothing is ratified here and no provision changes. The arithmetic it reports is `REQ-MOK-041`'s and `REQ-MOK-047`'s and is read, not written, here: the 28-column total and the 17 columns it leaves are stated in rule 4 by the amendment that moved the bars, and this row checks `CAP-MOK-010`'s thirteen-column field against them rather than recomputing either. |
 | 2026-08-22 | **No rule of this specification changed and no figure moved. The frontmatter's `specifies` gains `REQ-MOK-061` and `REQ-MOK-062`, and nothing else in this document is amended by this row.** The relation is added on its own, ahead of the provisions it will govern, for the reason the 2026-08-20 `CAP-MOK-010` row above gives for the same act: this relation is what makes those two requirements approvable at all. Measured on 2026-08-22 in this checkout, `preflight --work-order WO-MOK-020 --phase start` raises **`W016` — "specification coverage is missing REQ-MOK-061, REQ-MOK-062"** — against `WO-MOK-020`, and by that row's precedent `validate` raises `E007` on each requirement the moment either leaves `draft`; validation reports `PASS` at 0 errors and 0 warnings today only because both are still `draft`. **The provisions `WO-MOK-020` §3 enumerates are not made here and are OUTSTANDING**, that work order's to write and the technical owner's to approve: rule 10's presented-value list, rule 10 clause 5's no-selection state, rule 10 item 7's removal of `kills` and `combats` by the procedure its own 2026-08-19 amendment established, rule 10's extinction consequence, rule 11's authority mapping for the new content, the *State model* table's new retained record together with the two corrections that work order states, and *Performance and capacity*'s bound on the retained state. Until they are written this document declares two requirements whose presentation it does not yet fix, and the gap is stated here rather than left for a reader to find. **Two grounds this row does not disturb.** Rule 10 item 7's 2026-08-20 re-check keeps the suffered-attack record and the count of attacks suffered outside this pane on a ground of their own; `REQ-MOK-061` excludes them from scope for that reason and this row neither reads nor touches it. And `ARCH-MOK-002` is unamended, because nothing here moves a dependency edge, a trust boundary, a target shape, a framework selection or the non-perturbation property, which are the triggers that architecture's own amendment record declares. | **Approved 2026-08-22 by the repository owner acting as accountable technical owner**, who is the role this relation is theirs to grant. The text was written on 2026-08-22 by the implementation agent, which measured the `W016` finding and added the relation, and which has authority to approve neither the relation nor the requirements it makes approvable; it decided none of the substance. The act was the **single** one this row anticipated, taken in one instruction — *"i validate the artifact chain, including the work order, so can you transition them approved"* — covering this relation, `REQ-MOK-061`, `REQ-MOK-062`, `VER-MOK-017` and `WO-MOK-020` together, on the precedent the 2026-08-20 `CAP-MOK-010` row sets and for its stated reason: this relation, `REQ-MOK-061`, `REQ-MOK-062`, `VER-MOK-017` and `WO-MOK-020` are approvable only together, since each requirement needs active specification and verification coverage to leave `draft` and the work order needs approved requirements before it can be authorized. Implementation begins after that act and not before. `VREC-MOK-005`, which binds this specification, is not edited, and no file under `evidence/` is edited. |
+| 2026-08-22 | **Nine provisions amended under `WO-MOK-020`, so that `REQ-MOK-061` and `REQ-MOK-062` are governed before they are conformed to. Seven are additions and two are corrections, and the two are stated separately because each fixes a statement that was untrue when it was approved rather than adding one.** *The additions.* **Rule 10's presented-value list** gains the selected subject's fifteen cumulative activity totals beneath the decision record — one applied count per action kind for the eleven kinds `SPEC-MOK-001` rule 21 closes the contract at, counted by kind and not by target, plus the rejected, crossing, kill and decision-opportunity counts — with every derived form prohibited and with the ground on which a presented zero is a measurement rather than an invention. **Rule 10 clause 5** gains the no-selection state: the statement and the selecting control are retained and stay above every figure, then the population sums, then the engine's own tick, living, initialized and death counts with the death count split into strike-attributed and unattributed; the prohibition on defaulting to an arbitrary Mokiterion is restated as satisfied by construction, since a population sum is nobody's figure. **Rule 10 item 7** loses `kills` and `combats` from the list of values the engine does not compute, by the procedure its own 2026-08-19 amendment established and on the ground its 2026-08-20 re-check already holds — `attack_resolved` states a fatal strike and the four conflict verbs are each reported, so both are counts of records rather than inventions; age, remembered locations, model latency and per-agent entropy stay named, and the item gains the record-set test that tells a measured zero from a zero-filled field in both directions. **Rule 10 gains clause 8**, which requires the statement that no tick has completed and prohibits any figure before tick 1 in both selection states, and **clause 9**, the extinction consequence: the observer clears the selection when no living Mokiterion remains, so a run ending in extinction presents the population's completed totals with no operator act. **Rule 11** gains the mapping of the new content to `REQ-MOK-061` and `REQ-MOK-062`, beside the existing `REQ-MOK-004` sentence, naming identifiers only per clause 1 and adding no row to the event-type table. **The *State model* table** gains `profiles`, the retained per-Mokiterion record, with its domain and initial value. ***Performance and capacity*** gains the bound on that state — one record per initialized Mokiterion, fixed by the population and not growing with ticks, with the counter width argued from the tick count rather than from saturation — and the prohibition on recomputing a total from the retained event buffer. *The corrections.* **1. The *State model* table declared ten fields and is completed to fourteen more.** It was incomplete rather than wrong, and the material omission was three fields of *derived retention* the observer already performed — `names`, `latest_survival` and `deaths` — so a reader checking whether the observer retains anything derived would have concluded that it does not. The remaining bookkeeping fields are declared with them, because a table that omits a field cannot be read as closed. No obligation and no code changes. **2. Rule 4's naming paragraph said "the observer holds no name table and no identifier-to-name derivation".** The second clause is true and load-bearing; the first was not true of the implementation on the day it was approved, which holds a map from identifier to the name the engine reported. The sentence's subject was derivation and is corrected in those terms — the observer derives no name and retains the engine's — rather than by changing an implementation that does the right thing. This is a strict narrowing of an overstated prohibition, not a relaxation of a met one: `REQ-MOK-041` is unaffected, since no presented name is one the engine did not report. **What this row does not touch.** Rule 10 item 7's 2026-08-20 ground for keeping the suffered-attack record and the count of attacks suffered off this pane is neither read nor reopened; `REQ-MOK-061`'s *Open decisions* records it. `ARCH-MOK-002` is unamended, on the triggers its own amendment record declares. No engine rule, event, stream byte or public item moves, and rule 12 is unaffected: the accumulation reads the tick's own records and calls nothing. | **OUTSTANDING as of 2026-08-22.** The text was written on 2026-08-22 by the implementation agent under `WO-MOK-020` §3 and §4, and **the accountable technical owner has not yet ratified it.** What the owner has already decided is which provisions are to be amended and to what effect: `WO-MOK-020` §3 enumerates all nine by rule and clause, including both corrections and the requirement that item 7's amendment state why a zero total is a measurement, and that work order was approved on 2026-08-22 in the single instruction the row above records. What remains the owner's act is the **wording** of these nine provisions and the **substance of the two corrections**, neither of which an implementation may decide: `WO-MOK-020`'s decision envelope withholds "the substance of any specification amendment" by name. The agent decided none of the substance and is not a party that can approve a specification. This row is written OUTSTANDING rather than as approved on the precedent of the two 2026-08-18 rows above, which stood outstanding until the owner ratified them: a work order's approval authorizes an amendment to be written, and it is not the approval of the amendment's text. The chain cannot be presented as verified until this row is ratified, and `WO-MOK-020`'s completion report states it as owed. `VREC-MOK-005`, which binds this specification, is not edited, and no file under `evidence/` is edited. |
 
 ## Actors and external systems
 
@@ -160,10 +161,43 @@ state, is never persisted, and never influences any engine computation.
 | `overlay` | none \| roster \| log \| inspector \| help \| authority | none |
 | `events` | ring buffer, capacity `100_000` records | empty |
 | `truncated` | bool — capacity was reached and records were dropped | false |
+| `snapshot` | the engine's own read-only world snapshot, replaced whole after each completed tick | the pre-tick-1 snapshot |
+| `config` | the engine's own configuration, read once at construction | the engine's |
+| `log_cursor` | offset of the highlighted record from the newest presented one | `0` |
+| `names` | identifier → the name the engine reported for it, filled from `agent_initialized` | empty |
+| `latest_survival` | identifier → the satiety, energy and fear the engine last reported for it | empty |
+| `deaths` | retained deaths, each with its tick and the final attribute values rule 10.6 presents | empty |
+| `profiles` | identifier → the cumulative activity totals of `REQ-MOK-061`, one record per initialized Mokiterion, never removed | empty |
+| `export_path` | the `--export` value, validated as a string and never opened until asked | `--export`, or none |
+| `notice` | the most recent observer condition the header reports | none |
+| `ended_early` | bool — the operator ended the run before the engine did | false |
+| `last_canvas` | the canvas size of the most recent frame, which panning is relative to | `0 × 0` |
+| `last_log_rows` | the log height of the most recent frame, which paging is relative to | `0` |
 
 `events` retains the authoritative events the observer has seen this run. It is a presentation buffer: dropping the
 oldest record when full loses presentability, never authority, because the engine binary's text stream remains the
 unbounded record. `truncated` is displayed and exported when true.
+
+**Amended 2026-08-22 under `WO-MOK-020`, in two parts, of which one is a correction and one an addition.**
+
+*The correction.* **This table declared ten fields and was incomplete, not wrong**, and it is completed here rather
+than left to be read as exhaustive when it was not. Every row from `snapshot` down to `last_log_rows` was already
+held by the implementation on the day this table was approved. Three of them are *derived retention* — state the
+observer accumulates from the engine's own records rather than reading whole from the read-only interface — and
+their absence was the material omission, because this table is this specification's statement of what the observer
+holds and a reader checking whether the observer retains anything derived would have concluded that it does not:
+`names`, filled from `agent_initialized` and presented by rule 2 and rule 10; `latest_survival`, the last reported
+values rule 10.6 presents for a dead subject; and `deaths`, the retained records rule 10.6 presents at all. The
+remaining rows are cursor, session and frame-geometry bookkeeping governed by rules 1, 7, 8 and 9, and they are
+declared here for the same reason: **a table that omits a field cannot be read as closed**, so the omission of a
+harmless field costs as much in trust as the omission of a load-bearing one. No obligation on the observer changes
+with this correction and no code changes; what changes is that the table is now closed and a later reader can tell
+a growth from a pre-existing omission.
+
+*The addition.* `profiles` is `REQ-MOK-061`'s retained per-Mokiterion record, and it is the one row of this
+amendment that is new state. Its domain and initial value are stated above; rule 10 states what is presented from
+it, *Performance and capacity* states its bound, and rule 12 is unaffected, because accumulating into it reads the
+tick's own records and calls nothing.
 
 ## Behavioral rules
 
@@ -242,10 +276,23 @@ character and this table is amended; nothing here anticipates that value". That 
 amendment. The anticipation is retained here rather than deleted: it is why the identifier-derived assignment was
 correct while no name existed, and it is the condition this amendment satisfies rather than waives.
 
-The glyph is derived from the name and from nothing else. The observer holds no name table and no identifier-to-name
-derivation; the name reaches it in the engine's own `agent_initialized` record. A Mokiterion for which no name was
-received is drawn as `?` — a stated character, not the identifier, not a digit and not a guess — which is
-unreachable in a run the engine initialized, because `SPEC-MOK-001` rule 1 names every Mokiterion before tick 1.
+The glyph is derived from the name and from nothing else. The observer derives no name and holds no
+identifier-to-name derivation; it retains the names the engine reported, and each reaches it in the engine's own
+`agent_initialized` record. A Mokiterion for which no name was received is drawn as `?` — a stated character, not
+the identifier, not a digit and not a guess — which is unreachable in a run the engine initialized, because
+`SPEC-MOK-001` rule 1 names every Mokiterion before tick 1.
+
+**Corrected 2026-08-22 under `WO-MOK-020`.** The sentence above read "The observer holds no name table and no
+identifier-to-name derivation". Its second clause is true, is the load-bearing one and is unchanged in substance;
+its first clause was **not true of the implementation on the day it was approved**, which holds a map from
+identifier to the name the engine reported — now declared in the *State model* table by the same amendment. The
+sentence's subject was derivation, so it is corrected in those terms rather than by changing an implementation that
+does the right thing: what `REQ-MOK-041` forbids is inventing a name, and retaining one the engine stated is the
+opposite of inventing it. The correction is a strict narrowing of a prohibition that was overstated, not a
+relaxation of one that was met: no presented name is a name the engine did not report, which is `REQ-MOK-041`'s
+own claim and is unaffected. A reader who relied on the retired clause to conclude that the observer cannot present
+a name for a subject absent from the current snapshot would have been wrong about the implementation and wrong
+about rule 10.6, which presents exactly that.
 
 4. **Shared cells.** When two or more Mokiterions fall in the same rendered cell, the one with the lowest identifier
    is drawn and the cell is underlined to mark the cell as shared. The count of Mokiterions in the selected cell is
@@ -675,12 +722,65 @@ dead subject has left the roster, so on the previous text the value became absen
 moment it stopped changing. Nothing else in this list moves: for a living subject this pane presents exactly what
 it presented before, and the fourth attribute reaches it only through item 6.
 
+**Amended 2026-08-22 under `REQ-MOK-061`: the presented-value list gains the selected subject's cumulative activity
+totals, beneath the decision record.** Fifteen figures are presented, each an integer count over the whole run to
+the most recently completed tick, and each a count of records the engine itself stated:
+
+- one **applied count per action kind**, for each of the eleven kinds `SPEC-MOK-001` rule 21 closes the action
+  contract at, counted by kind and not by target — `eat:f07` and `eat:f11` are one kind, and a directed verb's
+  target is no part of its count;
+- the count of **rejected proposals**;
+- the count of **territory crossings**;
+- the count of **kills**, meaning strikes by this subject that the engine reported as fatal to their target;
+- the count of **decision opportunities**, meaning completed ticks on which the engine recorded a decision for this
+  subject.
+
+The figures are cumulative and never reset while the run lives. They are presented **beneath** the decision record
+of items 1 to 4, which is unchanged and keeps its position and every line it had: this rule's existing content is
+what the pane opens with, and no total displaces any of it. A total is presented **as an integer with no unit and no
+derived form**: no average, no ratio, no percentage, no per-tick normalisation and no floating-point value is
+presented, because each of those is a quantity the engine does not compute and item 7 would forbid it.
+
+**A zero among these figures is presented, and presenting it is not in tension with item 7.** The distinction item 7
+turns on is whether the engine computed the value, not whether the value is non-zero. A kind that has not yet
+occurred has a count, and that count is zero: the observer measured every record the engine stated and none of them
+was of that kind, so the zero is the measurement. A field for a value the engine does not compute has no count at
+all, and a zero there would assert a measurement that was never taken. Item 7 forbids the second and has never
+reached the first; what it forbids is an *invented* value, and the two are told apart by whether a record exists to
+count. The absence of a record set is therefore presented as absence and not as zero: where the engine never named a
+subject there is no record for it, so no total is presented for it at all rather than fifteen zeros — a state
+`SPEC-MOK-001` rule 1 makes unreachable in a run the engine initialized, and stated because the pane's behaviour in
+it must not be inferred.
+
 1. Accepted and rejected are distinguished by an explicit word and by symbol, not by colour alone.
 2. A rejection is presented as an expected outcome of the authority boundary, never as a program fault or warning.
 3. The proposal and the outcome presented are always from the same tick. Presenting a proposal from one tick beside
    an outcome from another is a defect.
 4. Before tick 1 completes, the pane states that no proposal has yet been made.
 5. With nothing selected, the pane states that nothing is selected. It never defaults to an arbitrary Mokiterion.
+
+   **Amended 2026-08-22 under `REQ-MOK-062`: this state presents the population's totals, and the two obligations
+   above are satisfied by construction rather than waived.** The pane presents, in this order: the statement that
+   nothing is selected; the control that selects a Mokiterion; the **population activity totals**, which are the
+   fifteen figures of the presented-value list summed over every initialized Mokiterion; and then the engine's own
+   figures for the run — the tick, the living count, the initialized count, and the death count split into deaths the
+   engine attributed to a strike and deaths it did not.
+
+   **The statement and the control are retained and stay above every figure**, which is the whole of how this clause
+   survives the amendment. The prohibition on defaulting to an arbitrary Mokiterion is met **more strictly than
+   before, not less**: a population sum is nobody's figure, so there is no Mokiterion for the pane to have silently
+   chosen, and the sentence that says whose figures these are not is on screen above them at every tick. A pane that
+   presented one Mokiterion's totals here would violate this clause; a pane that presented the population's cannot,
+   and the ordering is specified rather than left to the implementation so that no frame can carry a figure without
+   its disclaimer.
+
+   The population figures are obtained **by summing the per-Mokiterion records and by no second accumulation**. One
+   accumulation with one summation cannot disagree with itself, and a dead Mokiterion stays in the sum, because its
+   record is never removed: the population total is the run's history and not the survivors' history. The tick, the
+   living count and the death count are the engine's own values read from the snapshot and are not re-derived, so
+   this pane and the footer cannot disagree about them. The death split is the strongest statement the engine's
+   records support and no stronger: a death the engine reported a fatal strike for is attributed to one, and the
+   remainder is presented as **unattributed** rather than assigned a cause the engine did not state.
 6. When the selected Mokiterion dies, the selection is retained and the pane presents the death, the tick of death,
    and the final attribute values. The next selection control moves to the nearest living Mokiterion in roster
    order.
@@ -695,8 +795,8 @@ it presented before, and the fourth attribute reaches it only through item 6.
    field whose value was withheld, which item 7 forbids as directly as a zero would. And `fear` carries **no
    band** here, as it carries none in rule 4 clause 7 and for that clause's own reason: the bands are a survival
    scale on which a high value is a good one, and `fear` inverts it.
-7. Fields for values the engine does not compute — age, kills, combats, remembered locations, model latency
-   and per-agent entropy — are absent, not blank-labelled and not zero-filled.
+7. Fields for values the engine does not compute — age, remembered locations, model latency and per-agent
+   entropy — are absent, not blank-labelled and not zero-filled.
 
    Amended 2026-08-19 under `REQ-MOK-041`: this list named `name`, and the engine now reports one, so this rule's
    presented-value list above carries it and this list must not. The principle is unchanged and is the reason the
@@ -738,6 +838,55 @@ it presented before, and the fourth attribute reaches it only through item 6.
    has to name the states in which it is reachable, because a value present for the living and absent for the dead is
    not a value that is present.
 
+   **Amended 2026-08-22 under `REQ-MOK-061`: `kills` and `combats` leave this list, by the procedure the 2026-08-19
+   amendment above established for `fear` and traits.** Naming them here asserts something untrue of the engine:
+   `CAP-MOK-010` landed `attack_resolved`, which carries the striker, the target and whether the target died, so a
+   count of kills is a count of records the engine states, and the 2026-08-20 re-check above already holds — in the
+   paragraph that keeps the suffered-attack record out of this pane — that a count carried by `attack_resolved` is
+   computed by the engine. `combats` goes with it and for the same reason: `attack`, `threaten`, `fight` and
+   `surrender` are verbs of the contract `REQ-MOK-052` opened and each is reported, so a count of them is a count of
+   records rather than an invention. Both are now presented, under the presented-value list above and as verb and kill
+   counts rather than under these two names. **Age, remembered locations, model latency and per-agent entropy stay
+   named**, and each still stands on its own ground: no record carries any of them, and no count over the event stream
+   yields one.
+
+   **The suffered-attack record and the count of attacks suffered keep their own ground, untouched and unread.** The
+   2026-08-20 re-check keeps them off this pane on a different basis from this item's — the engine does compute both,
+   so they were never on this list — and this amendment neither reads that basis nor reopens it. `REQ-MOK-061`'s *Open
+   decisions* records it as the open decision it is. What this pane counts is what its subject **did**, and the
+   presented-value list is written in those terms; what was done to it is a separate presentation and needs that list
+   amended first.
+
+   **Why a zero total is a measurement here while a zero for an uncomputed value stays forbidden.** This is stated
+   rather than left to be inferred, because the amendment above adds fifteen figures that can each read zero and this
+   item's prohibition is the one they must be told apart from. The prohibition is on presenting a **value that was
+   never computed**, and its failure mode is that the operator cannot tell a computed zero from a missing one — a
+   zero-filled `age` field says the engine measured an age of zero when it measured no age at all. A total is a
+   different kind of value: it is a count over a record set that exists, and the count is defined for the empty
+   subset. When no `attack` was applied, the engine's records are complete on the point and their count is zero, so
+   the pane presenting `attack 0` states exactly what was measured; there is no missing measurement for the reader to
+   mistake it for. The test is therefore **whether a record set exists to count**, and it separates the two cases
+   cleanly in both directions: where no record set exists — a subject the engine never named — no total is presented
+   at all rather than fifteen zeros, as the presented-value list states, and where one exists its count is presented
+   whatever its value. Nothing in this item is weakened: every value it still names is a value for which no record
+   set exists, so none of them acquires a defensible zero by this reasoning.
+
+8. **Before the first completed tick, in both selection states, the pane states that no tick has completed and
+   presents no figure.** Added 2026-08-22 under `REQ-MOK-061` and `REQ-MOK-062`. Item 4 already governs the decision
+   record in this state and is unchanged; this clause governs the totals, which item 4 could not have anticipated. The
+   statement is required and a block of zeros is prohibited, on item 7's own test: before tick 1 no record set has
+   been accumulated, so there is nothing to count and fifteen zeros would assert fifteen measurements that were never
+   taken. The population state is governed identically, and the statement replaces the totals there rather than
+   accompanying them.
+
+9. **When no living Mokiterion remains, the observer clears the selection.** Added 2026-08-22 under `REQ-MOK-062` as
+   declared behaviour rather than left as an implementation detail, because it is what an operator sees at the end of
+   a run that ends in extinction: the pane moves to the no-selection state of clause 5 and presents the population's
+   completed totals **with no operator act**. Retaining a selection here would present one dead Mokiterion's frozen
+   record as the run's last word, and there is no living Mokiterion for the next selection control of clause 6 to
+   move to. Clause 6 is unaffected while any Mokiterion lives, and clause 5's prohibition is unaffected in both
+   cases: the pane defaults to no Mokiterion rather than to an arbitrary one.
+
 ### Rule 11 — Authority mapping
 
 The observer carries a static, exhaustive mapping from event type to the identifier of the requirement that
@@ -763,6 +912,16 @@ authorizes the behavior the event reports. The `t` control presents it for the h
 
 The inspector's proposal-and-outcome presentation maps to `REQ-MOK-004`, and perceived-entity information maps to
 `REQ-MOK-013`.
+
+**Amended 2026-08-22: the inspector's cumulative activity totals map to `REQ-MOK-061` and its population totals to
+`REQ-MOK-062`.** This sits beside the sentence above and takes the same form, because it answers the same question
+about a second body of presented content and clause 1 admits only identifiers. The event-type table is untouched and
+takes no row: the totals are counts over records whose types the table already maps, so an operator asking what
+authorizes a `move` count is asking about `action_trace` or `territory_crossed` and those rows already answer, while
+the pane's own presentation of the count is what these two identifiers authorize. The engine's tick, living count,
+initialized count and death count presented beside the population totals map to `REQ-MOK-001`, `REQ-MOK-002`,
+`REQ-MOK-003` and `REQ-MOK-011` as the table's own rows already state for the records they come from; no requirement
+is invented for them here, and clause 2's exhaustiveness still runs from the event side.
 
 **Amended 2026-08-20: three rows added, and `REQ-MOK-052` takes none.** The table maps event types, and `REQ-MOK-052`
 authorizes seven verbs while adding no event type of its own — `approach`, `avoid` and `retreat` resolve as
@@ -1072,6 +1231,18 @@ packages equally. There is no crate-count ceiling and no numeric threshold for e
   `SPEC-MOK-001` and unchanged.
 - The event buffer is bounded at `100_000` records. Memory is therefore bounded for an unbounded run, and the bound
   is declared rather than silent.
+- The retained cumulative activity state is **one record per initialized Mokiterion**, so it is bounded by the
+  population and does not grow with ticks. Added 2026-08-22 under `REQ-MOK-061`. At the twelve `SPEC-MOK-001` rule 1
+  initializes that is twelve records, each of fifteen counters, and no run can add a thirteenth because no run
+  initializes a Mokiterion after tick 1. **The bound is the record count and not the counter width**: each counter is
+  a 64-bit unsigned integer taking at most one increment per completed tick, so its value is bounded by the tick
+  count, which is itself a 64-bit figure in the engine's own configuration, and no admissible run reaches the width.
+  Saturating arithmetic is the discipline at that limit rather than the mechanism the bound rests on. Population
+  figures are summed on demand from the same records and are retained nowhere, so they add no state at all.
+- Work per completed tick for the accumulation is bounded by the tick's own decision records and events — twelve
+  decisions and the events of one tick — and by nothing cumulative. **No total is recomputed by scanning the retained
+  event buffer**, which would make per-tick work grow with the run and would begin returning a wrong figure once the
+  buffer truncated.
 - Falling behind the requested speed slows the run and never alters it.
 
 ## Observability

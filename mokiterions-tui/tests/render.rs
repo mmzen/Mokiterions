@@ -1570,3 +1570,460 @@ fn no_entry_is_lost_silently_at_any_viewport_presenting_the_roster() {
         "no roster the plane can produce hides an entry, so the reporting clause is unexercised"
     );
 }
+
+// ---- `VER-MOK-017`: the cumulative activity profile at the frame ----------------------------
+//
+// The frame-level cases of the contract. `SPEC-MOK-004` rule 9 places a test that reaches the code
+// through items that are already public here, and independence clause 3 places the oracles that
+// would need a private item in the internal tier instead — which is where the exhaustive
+// per-Mokiterion counts live, because the totals are `pub(crate)`. Nothing below reads a total
+// except off the pane, so no item was widened to bring these out.
+
+/// The columns a totals row occupies, as a reader counts them rather than as the constants the
+/// implementation holds: this tier cannot see those, and a test that imported them would assert the
+/// implementation against itself.
+const TOTALS_ROW_COLUMNS: usize = 32;
+
+/// The inspector pane's interior rows and the interior's own width.
+///
+/// The interior is the bordered rect less one column and one row on each side, which is the width
+/// the paragraph's wrapping is measured against.
+fn inspector_interior(buffer: &Buffer) -> (Vec<String>, usize) {
+    let area = layout::resolve(*buffer.area())
+        .inspector
+        .expect("this viewport presents the inspector");
+    let interior = Rect {
+        x: area.x + 1,
+        y: area.y + 1,
+        width: area.width - 2,
+        height: area.height - 2,
+    };
+    let text = (interior.top()..interior.bottom())
+        .map(|y| {
+            (interior.left()..interior.right())
+                .map(|x| buffer.cell((x, y)).unwrap().symbol().to_string())
+                .collect()
+        })
+        .collect();
+    (text, usize::from(interior.width))
+}
+
+/// Prints the inspector interior under a name, bracketed by rules and with each row bounded by a
+/// bar so trailing blanks are unambiguous.
+///
+/// This exists so that a retained transcript of `cargo test -- --nocapture` **is** the frame
+/// capture, rather than a description of one a reviewer cannot recompute.
+fn capture(state: &str, text: &[String]) {
+    println!("--- inspector interior: {state} ---");
+    for row in text {
+        println!("|{}|", row.trim_end());
+    }
+    println!("--- end: {state} ---");
+}
+
+/// The figure `label` heads and the index of the row it is on — but only where both are on the
+/// **same** row.
+///
+/// A wrapped line puts the label and its figure on different rows, so this returning `None` is how
+/// a wrap is detected from outside the crate. Words are runs of ASCII alphanumerics, because a
+/// label is adjacent to the block's border glyph on the first column of every row.
+fn figure_row(text: &[String], label: &str) -> Option<(usize, u64)> {
+    text.iter().enumerate().find_map(|(index, row)| {
+        let words: Vec<&str> = row
+            .split(|character: char| !character.is_ascii_alphanumeric())
+            .filter(|word| !word.is_empty())
+            .collect();
+        words
+            .windows(2)
+            .find(|pair| pair[0] == label && pair[1].parse::<u64>().is_ok())
+            .map(|pair| (index, pair[1].parse().expect("checked in the predicate")))
+    })
+}
+
+fn figure(text: &[String], label: &str) -> Option<u64> {
+    figure_row(text, label).map(|(_, figure)| figure)
+}
+
+/// The row a phrase is on, where the whole phrase is on one row.
+fn phrase_row(text: &[String], phrase: &str) -> Option<usize> {
+    text.iter().position(|row| row.contains(phrase))
+}
+
+/// The eleven verbs of the closed action contract and the four derived figures, as the labels a
+/// reader sees. Restated here rather than imported: this tier is outside the crate, and the internal
+/// tier already asserts that the presented labels are the contract's own and not a list copied from
+/// it.
+const TOTAL_LABELS: [&str; 15] = [
+    "wait",
+    "sleep",
+    "eat",
+    "move",
+    "attack",
+    "threaten",
+    "fight",
+    "retreat",
+    "surrender",
+    "approach",
+    "avoid",
+    "rejected",
+    "crossings",
+    "killed",
+    "decisions",
+];
+
+fn advanced(args: &[&str], ticks: usize) -> Observer {
+    let mut observer = start(args);
+    for _ in 0..ticks {
+        observer.advance().unwrap();
+    }
+    observer
+}
+
+fn send(observer: &mut Observer, code: ratatui::crossterm::event::KeyCode) {
+    observer.handle_key(press(code)).unwrap();
+}
+
+/// A run far enough in that every figure the pane presents has something in it.
+fn a_run_with_a_profile() -> Observer {
+    advanced(
+        &[
+            "--policy",
+            "social",
+            "--seed",
+            "123",
+            "--ticks",
+            "400",
+            "--start-paused",
+        ],
+        60,
+    )
+}
+
+/// O13: with nothing selected the pane states that nothing is selected and states the control that
+/// selects one, and states both **above** the totals. No figure is presented without them.
+#[test]
+fn the_population_pane_states_what_it_is_not_above_every_total() {
+    let mut observer = a_run_with_a_profile();
+    assert_eq!(observer.selection(), None);
+    let buffer = frame_of(&mut observer, 160, 48);
+    let (text, _) = inspector_interior(&buffer);
+
+    let absence = phrase_row(&text, "nothing selected").expect("the statement of absence");
+    let control = phrase_row(&text, "Tab").expect("the control that selects");
+    for label in TOTAL_LABELS {
+        let (row, _) = figure_row(&text, label)
+            .unwrap_or_else(|| panic!("`{label}` heads no figure:\n{}", text.join("\n")));
+        assert!(
+            row > absence && row > control,
+            "`{label}`'s figure is presented above the statement of whose it is not:\n{}",
+            text.join("\n")
+        );
+    }
+}
+
+/// O16: nothing the pane presents is clipped or wrapped, at the reference viewport and at the
+/// inspector's presence threshold, in every state a run reaches.
+///
+/// The pane is a fixed 44 columns wherever rule 5 presents it at all, so the interior is 42 at both
+/// widths and the two viewports differ in the rows available rather than in the columns. The
+/// measurement is retained by printing it: the widest presented row against the interior width.
+/// Residual uncertainty 2 records that a pair of viewports is a sample of a plane.
+#[test]
+fn no_line_the_inspector_presents_is_clipped_or_wrapped_at_either_width() {
+    for (width, height) in [(160u16, 48u16), (140, 48), (140, 44)] {
+        // Four states: nothing selected before tick 1, a selected Mokiterion before tick 1, a
+        // selected living Mokiterion mid-run, and the population mid-run.
+        let mut fresh = start(&["--start-paused"]);
+        let mut running = a_run_with_a_profile();
+        let cases = [
+            ("nothing selected, before tick 1", false, false),
+            ("selected, before tick 1", false, true),
+            ("selected, mid-run", true, true),
+            ("nothing selected, mid-run", true, false),
+        ];
+        for (state, mid_run, select) in cases {
+            let observer: &mut Observer = if mid_run { &mut running } else { &mut fresh };
+            if select {
+                send(observer, ratatui::crossterm::event::KeyCode::Tab);
+                assert!(observer.selection().is_some());
+            } else {
+                send(observer, ratatui::crossterm::event::KeyCode::Esc);
+                assert_eq!(observer.selection(), None);
+            }
+            let buffer = frame_of(observer, width, height);
+            let (text, interior) = inspector_interior(&buffer);
+            let widest = text
+                .iter()
+                .map(|row| row.trim_end().chars().count())
+                .max()
+                .unwrap_or(0);
+            assert!(
+                widest <= interior,
+                "{width}x{height}, {state}: a row of {widest} columns in an interior of {interior}"
+            );
+            println!("{width}x{height}  {state}: widest {widest} of interior {interior}");
+            capture(&format!("{width}x{height}, {state}"), &text);
+
+            // The measurement above cannot fail on its own, because the widget wraps rather than
+            // overflowing. What a wrap breaks is the label and its figure sharing a row, so that is
+            // what is asserted, on every figure the state presents.
+            if observer.snapshot().tick == 0 {
+                assert!(
+                    phrase_row(&text, "no tick has completed").is_some(),
+                    "{width}x{height}, {state}: the pre-tick statement is not on one row:\n{}",
+                    text.join("\n")
+                );
+                continue;
+            }
+            for label in TOTAL_LABELS {
+                assert!(
+                    figure_row(&text, label).is_some(),
+                    "{width}x{height}, {state}: `{label}` and its figure are not on one row:\n{}",
+                    text.join("\n")
+                );
+            }
+            assert!(
+                widest >= TOTALS_ROW_COLUMNS,
+                "{width}x{height}, {state}: no row reaches the {TOTALS_ROW_COLUMNS} columns a \
+                 totals row occupies, so the block was not measured"
+            );
+        }
+    }
+}
+
+/// Acceptance scenario 4: `Esc` reaches the population state and a following `Tab` returns to a
+/// selected Mokiterion with its totals intact. Traversing the states resets nothing.
+#[test]
+fn traversing_the_selection_states_resets_no_total() {
+    let mut observer = a_run_with_a_profile();
+    send(&mut observer, ratatui::crossterm::event::KeyCode::Tab);
+    let selected = observer.selection().expect("a selection").to_string();
+
+    let before = {
+        let buffer = frame_of(&mut observer, 160, 48);
+        let (text, _) = inspector_interior(&buffer);
+        assert!(
+            phrase_row(&text, &selected).is_some(),
+            "{}",
+            text.join("\n")
+        );
+        TOTAL_LABELS.map(|label| {
+            figure(&text, label).unwrap_or_else(|| panic!("`{label}` heads no figure"))
+        })
+    };
+
+    send(&mut observer, ratatui::crossterm::event::KeyCode::Esc);
+    assert_eq!(observer.selection(), None);
+    let population = {
+        let buffer = frame_of(&mut observer, 160, 48);
+        let (text, _) = inspector_interior(&buffer);
+        TOTAL_LABELS.map(|label| figure(&text, label).expect("a population figure"))
+    };
+
+    send(&mut observer, ratatui::crossterm::event::KeyCode::Tab);
+    assert_eq!(
+        observer.selection(),
+        Some(selected.as_str()),
+        "`Tab` from the population state did not return to the first Mokiterion in roster order"
+    );
+    let after = {
+        let buffer = frame_of(&mut observer, 160, 48);
+        let (text, _) = inspector_interior(&buffer);
+        TOTAL_LABELS.map(|label| figure(&text, label).expect("a figure"))
+    };
+
+    assert_eq!(
+        before, after,
+        "a total moved across `Esc` and `Tab`, and no tick completed between them"
+    );
+    // The population figures are the population's, not the selected Mokiterion's: a pane that
+    // presented one for the other would pass the equality above.
+    for (index, label) in TOTAL_LABELS.iter().enumerate() {
+        assert!(
+            population[index] >= before[index],
+            "the population's `{label}` is below one Mokiterion's"
+        );
+    }
+    assert_ne!(
+        population, before,
+        "the population state presented one Mokiterion's figures"
+    );
+}
+
+/// P5: two frames of the same tick present identical figures, in both selection states.
+#[test]
+fn two_frames_of_the_same_tick_present_identical_figures() {
+    let mut observer = a_run_with_a_profile();
+    for state in ["nothing selected", "selected"] {
+        if state == "selected" {
+            send(&mut observer, ratatui::crossterm::event::KeyCode::Tab);
+        }
+        let first = frame_of(&mut observer, 160, 48);
+        let second = frame_of(&mut observer, 160, 48);
+        let (first, _) = inspector_interior(&first);
+        let (second, _) = inspector_interior(&second);
+        assert_eq!(
+            first,
+            second,
+            "{state}: two frames of tick {} differ",
+            observer.snapshot().tick
+        );
+        for label in TOTAL_LABELS {
+            assert!(figure(&first, label).is_some(), "{state}: `{label}`");
+        }
+    }
+}
+
+/// Acceptance scenario 6: below the inspector's threshold both states are reachable as rule 5's
+/// overlay and present the same figures the pane presents.
+#[test]
+fn both_pane_states_present_the_same_figures_as_the_overlay_below_the_threshold() {
+    for select in [false, true] {
+        let mut observer = a_run_with_a_profile();
+        if select {
+            send(&mut observer, ratatui::crossterm::event::KeyCode::Tab);
+            assert!(observer.selection().is_some());
+        }
+        // The pane, at a width that presents it.
+        let buffer = frame_of(&mut observer, 160, 48);
+        let (pane, _) = inspector_interior(&buffer);
+        let in_the_pane = TOTAL_LABELS.map(|label| {
+            figure(&pane, label).unwrap_or_else(|| panic!("`{label}` heads no figure in the pane"))
+        });
+
+        // The overlay, at a width that presents no inspector pane at all.
+        send(&mut observer, ratatui::crossterm::event::KeyCode::Char('i'));
+        assert_eq!(observer.overlay(), Overlay::Inspector);
+        let buffer = frame_of(&mut observer, 120, 48);
+        assert!(
+            layout::resolve(*buffer.area()).inspector.is_none(),
+            "120 columns presents an inspector pane, so the overlay was not the only route"
+        );
+        let overlaid = rows(&buffer);
+        let in_the_overlay = TOTAL_LABELS.map(|label| {
+            figure(&overlaid, label)
+                .unwrap_or_else(|| panic!("`{label}` heads no figure in the overlay"))
+        });
+
+        assert_eq!(
+            in_the_pane, in_the_overlay,
+            "the overlay and the pane present different figures for the same tick (selected: \
+             {select})"
+        );
+    }
+}
+
+/// Acceptance scenario 2: the current tick's decision record keeps its lines, and the totals are
+/// beneath it.
+#[test]
+fn the_totals_are_beneath_the_decision_record_and_displace_none_of_its_lines() {
+    let mut observer = a_run_with_a_profile();
+    send(&mut observer, ratatui::crossterm::event::KeyCode::Tab);
+    let buffer = frame_of(&mut observer, 160, 48);
+    let (text, _) = inspector_interior(&buffer);
+
+    // `REQ-MOK-021`'s lines, in the order rule 10.3 gives them.
+    let decision = [
+        "decision, tick",
+        "proposed",
+        "outcome",
+        "applied",
+        "authority",
+    ]
+    .map(|line| {
+        phrase_row(&text, line).unwrap_or_else(|| panic!("`{line}`:\n{}", text.join("\n")))
+    });
+    for pair in decision.windows(2) {
+        assert!(
+            pair[0] < pair[1],
+            "the decision record's lines are out of order:\n{}",
+            text.join("\n")
+        );
+    }
+    let heading = phrase_row(&text, "cumulative activity").expect("the totals heading");
+    assert!(
+        heading > decision[decision.len() - 1],
+        "the totals are not beneath the decision record:\n{}",
+        text.join("\n")
+    );
+    for label in TOTAL_LABELS {
+        let (row, _) = figure_row(&text, label).unwrap_or_else(|| panic!("`{label}`"));
+        assert!(row > heading, "`{label}` is above its own heading");
+    }
+}
+
+/// Acceptance scenario 3: a selected Mokiterion that dies keeps the death, the tick of death and
+/// the final attributes `WO-MOK-018` left, with its totals frozen beside them.
+#[test]
+fn a_selected_mokiterion_that_dies_keeps_its_death_lines_and_its_frozen_totals() {
+    let mut observer = start(&[
+        "--policy",
+        "social",
+        "--seed",
+        "123",
+        "--ticks",
+        "400",
+        "--start-paused",
+    ]);
+    // The first Mokiterion in roster order is selected before any death, so the selection is one an
+    // operator made and not one chosen with hindsight; the run then advances until it dies.
+    observer.advance().unwrap();
+    send(&mut observer, ratatui::crossterm::event::KeyCode::Tab);
+    let selected = observer.selection().expect("a selection").to_string();
+    while observer
+        .snapshot()
+        .agents
+        .iter()
+        .any(|agent| agent.id == selected)
+    {
+        assert!(
+            !observer.is_finished(),
+            "{selected} outlived the run, so the death frame was never reached"
+        );
+        observer.advance().unwrap();
+    }
+    assert_eq!(
+        observer.selection(),
+        Some(selected.as_str()),
+        "the death cleared the selection, which rule 10.6 retains"
+    );
+
+    let buffer = frame_of(&mut observer, 160, 48);
+    let (text, _) = inspector_interior(&buffer);
+    capture("160x48, selected and dead, mid-run", &text);
+    assert!(
+        phrase_row(&text, "died on tick").is_some(),
+        "{}",
+        text.join("\n")
+    );
+    assert!(
+        phrase_row(&text, "final health").is_some(),
+        "{}",
+        text.join("\n")
+    );
+    let frozen = TOTAL_LABELS.map(|label| {
+        figure(&text, label).unwrap_or_else(|| panic!("`{label}` for a dead subject"))
+    });
+    assert!(
+        frozen.iter().any(|figure| *figure > 0),
+        "every total of a Mokiterion that lived and died is zero:\n{}",
+        text.join("\n")
+    );
+
+    // The totals stay where they were for the rest of the run, and the pane keeps presenting them.
+    for _ in 0..20 {
+        if observer.is_finished() {
+            break;
+        }
+        observer.advance().unwrap();
+    }
+    let buffer = frame_of(&mut observer, 160, 48);
+    let (text, _) = inspector_interior(&buffer);
+    let later = TOTAL_LABELS.map(|label| figure(&text, label).expect("a frozen figure"));
+    assert_eq!(
+        frozen,
+        later,
+        "a dead Mokiterion's totals moved after its death:\n{}",
+        text.join("\n")
+    );
+}

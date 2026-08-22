@@ -24,7 +24,7 @@ use ratatui::widgets::{Block, Clear, Paragraph, Wrap};
 use crate::authority;
 use crate::layout::{self, Pane, Panes};
 use crate::spatial::{self, Viewport, Zoom};
-use crate::state::{Observer, Overlay, Progression};
+use crate::state::{ActionKind, Observer, Overlay, Profile, Progression};
 
 /// The candidate commit, supplied to the build as a compile-time value.
 ///
@@ -730,14 +730,132 @@ fn draw_inspector(frame: &mut Frame, area: Rect, observer: &Observer) {
     );
 }
 
+/// The width the totals block gives a label and a figure.
+///
+/// `9` fits the longest label of the fifteen — `surrender`, `crossings` and `decisions` are nine
+/// columns — and `6` is eight columns wider than any figure an admissible run reaches, so two
+/// columns and a two-column gap occupy 32 of the inspector's 42 interior columns at the reference
+/// viewport. Widening a figure past six digits widens the line rather than truncating it, which is
+/// why the headroom is there; a total is never abbreviated.
+const TOTAL_LABEL_WIDTH: usize = 9;
+const TOTAL_FIGURE_WIDTH: usize = 6;
+
+/// What the pane states before the first completed tick, in both selection states.
+///
+/// Not fifteen zeros: rule 10 makes a zero a *measurement* here, and nothing has been measured yet,
+/// so a zero would assert a count that was never taken.
+const NO_TICK_COMPLETED: &str = "no tick has completed";
+
+/// The fifteen figures of `REQ-MOK-061`, in the order the pane presents them.
+///
+/// The eleven verb totals are read from `ActionKind::ALL` rather than from a list restated here, so
+/// a twelfth kind of the engine's contract reaches the pane without this function being edited —
+/// `VER-MOK-017` P3's "reads the contract rather than a list copied from it".
+fn totals(profile: &Profile) -> Vec<(&'static str, u64)> {
+    let mut figures: Vec<(&'static str, u64)> = ActionKind::ALL
+        .iter()
+        .map(|kind| (kind.label(), profile.applied(*kind)))
+        .collect();
+    figures.push(("rejected", profile.rejected()));
+    figures.push(("crossings", profile.crossings()));
+    figures.push(("killed", profile.killed()));
+    figures.push(("decisions", profile.opportunities()));
+    figures
+}
+
+/// The totals block: a blank separator, a heading, and the figures in two columns.
+///
+/// The figures fill column-major, so the eleven verbs read down the first column and into the
+/// second in the contract's own order rather than zig-zagging across a row-major grid. An odd
+/// figure count leaves the second column one row short, which is why the second cell of a row is
+/// admitted to be absent instead of assumed present.
+fn totals_lines(heading: &'static str, profile: &Profile) -> Vec<Line<'static>> {
+    let figures = totals(profile);
+    let rows = figures.len().div_ceil(2);
+    let mut lines = vec![
+        Line::from(""),
+        Line::from(Span::styled(
+            heading,
+            Style::new().add_modifier(Modifier::BOLD),
+        )),
+    ];
+    for row in 0..rows {
+        let mut text = String::new();
+        for index in [row, row + rows] {
+            let Some((label, figure)) = figures.get(index) else {
+                continue;
+            };
+            if !text.is_empty() {
+                text.push_str("  ");
+            }
+            text.push_str(&format!(
+                "{label:<TOTAL_LABEL_WIDTH$}{figure:>TOTAL_FIGURE_WIDTH$}"
+            ));
+        }
+        lines.push(Line::from(text));
+    }
+    lines
+}
+
+/// The selected subject's totals, beneath whatever the pane presented above them.
+///
+/// Absent in full for an identifier the engine never named: there is no record for it, and fifteen
+/// zeros for a subject that was never measured is the invented value rule 10.7 forbids and is
+/// indistinguishable on the pane from a measured zero. That state is unreachable through a run,
+/// because `SPEC-MOK-001` rule 1 names every Mokiterion before tick 1.
+fn selected_totals(observer: &Observer, profile: Option<&Profile>) -> Vec<Line<'static>> {
+    let Some(profile) = profile else {
+        return Vec::new();
+    };
+    if observer.snapshot().tick == 0 {
+        return vec![Line::from(""), Line::from(NO_TICK_COMPLETED)];
+    }
+    totals_lines("cumulative activity", profile)
+}
+
 fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
-    // Rule 10.5: nothing selected is stated, never defaulted to an arbitrary Mokiterion.
+    // Rule 10.5: nothing selected is stated, never defaulted to an arbitrary Mokiterion. Both that
+    // statement and the control that selects one are retained and stay above the totals, so no
+    // figure is ever presented without the sentence that says whose it is not.
     let Some(selection) = observer.selection() else {
-        return vec![
+        let snapshot = observer.snapshot();
+        let mut lines = vec![
             Line::from("nothing selected"),
             Line::from("Tab selects a Mokiterion in roster order"),
         ];
+        if snapshot.tick == 0 {
+            lines.push(Line::from(""));
+            lines.push(Line::from(NO_TICK_COMPLETED));
+            return lines;
+        }
+
+        // `REQ-MOK-062`: the population sums, then the engine's own figures beside them. The tick,
+        // the living count and the death count are read from the snapshot and not re-derived, so
+        // the pane cannot disagree with the footer about them.
+        let population = observer.population_profile();
+        lines.extend(totals_lines("population activity", &population));
+        lines.push(Line::from(""));
+        lines.push(Line::from(format!(
+            "tick {}  living {}",
+            snapshot.tick, snapshot.living_count
+        )));
+        lines.push(Line::from(format!(
+            "initialized {}  deaths {}",
+            observer.initialized_count(),
+            snapshot.deaths
+        )));
+        // The split the engine's own records support: a death it reported a strike for, and the
+        // remainder, which carries no cause because the engine attributed none.
+        let struck = population.killed();
+        let unattributed = u64::try_from(snapshot.deaths)
+            .unwrap_or(u64::MAX)
+            .saturating_sub(struck);
+        lines.push(Line::from(format!(
+            "by a strike {struck}  unattributed {unattributed}"
+        )));
+        return lines;
     };
+    let profile = observer.profile_of(selection);
 
     // Rule 10 as amended on 2026-08-19: the name precedes the identifier, and this line is above
     // the living-or-dead branch below, so rule 10.6's retained selection is identified the same
@@ -797,6 +915,10 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
                 "no longer living, and no death record was retained",
             )),
         }
+        // `REQ-MOK-061`'s frozen totals. A dead Mokiterion's record is never removed, so its
+        // profile is the complete one it ended with — which is what the pane is for after the
+        // subject has stopped changing.
+        lines.extend(selected_totals(observer, profile));
         return lines;
     };
 
@@ -860,6 +982,9 @@ fn inspector_lines(observer: &Observer) -> Vec<Line<'static>> {
             )));
         }
     }
+    // Beneath the decision record, never displacing it: the current tick's proposal and outcome are
+    // rule 10.3's obligation and keep the lines they had.
+    lines.extend(selected_totals(observer, profile));
     lines
 }
 

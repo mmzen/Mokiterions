@@ -1,0 +1,34 @@
+# The engine's own output, before and after the change surface
+#
+# VER-MOK-017 O17 and O18: the accumulation reads the engine's records and writes
+# nothing back, so neither the structured record stream nor the operator-facing
+# stream may move. Both are captured from the engine binary at the base commit
+# ccb0584 in a separate worktree and at the candidate tree, with identical arguments.
+#
+# Recompute with, for each seed S in 0 1 42 123 777:
+#   cargo run --quiet --locked --bin Mokiterions -- --policy social --seed S \
+#       --ticks 200 --trace-actions --events-path records-S.jsonl > stream-S.txt
+#   sha256sum records-S.jsonl stream-S.txt
+#
+# `records` is the --events-path file; `stream` is the operator-facing standard output.
+
+seed   capture  base ccb0584                                                     candidate                                                        verdict
+0      records  129bdf9aa1127c8bbabfeaf8c04e990baf5a800b1e2694383659dc73b7fec40c 129bdf9aa1127c8bbabfeaf8c04e990baf5a800b1e2694383659dc73b7fec40c identical
+0      stream   fe4583947ec6b64c345933044a7deab6d78a994f9b262e4045ad5c470463aea8 fe4583947ec6b64c345933044a7deab6d78a994f9b262e4045ad5c470463aea8 identical
+1      records  89b365a194fabe948aaecda81119e86d72c258ec628924c3f88e7842460c94b7 89b365a194fabe948aaecda81119e86d72c258ec628924c3f88e7842460c94b7 identical
+1      stream   010b8239892948f20333bd924e45ce585911825fabfbcbc65e562dc45f419e21 010b8239892948f20333bd924e45ce585911825fabfbcbc65e562dc45f419e21 identical
+42     records  592585c254bccfcee4cbb19ced4a8e3908d0094693670005e110d561ff885dfe 592585c254bccfcee4cbb19ced4a8e3908d0094693670005e110d561ff885dfe identical
+42     stream   32aeba551640c20833b7118f01c83d2e69df9e2a607d158ec5055684e189cbe7 32aeba551640c20833b7118f01c83d2e69df9e2a607d158ec5055684e189cbe7 identical
+123    records  10a8e820c40b459bea9abe6c929ec7f17f2494403dd2315a59210c013aa4154b 10a8e820c40b459bea9abe6c929ec7f17f2494403dd2315a59210c013aa4154b identical
+123    stream   7c5d3fca66c8723a271f16bda7ac8d8d65d809500312beb4c14224d66e4051a3 7c5d3fca66c8723a271f16bda7ac8d8d65d809500312beb4c14224d66e4051a3 identical
+777    records  0c0812085d5e893b006fb7b1686312ca123112809f1b3e410c39ed30b78ad84e 0c0812085d5e893b006fb7b1686312ca123112809f1b3e410c39ed30b78ad84e identical
+777    stream   b5a620dabe577b8c1868abecfea4901ace87d000798e0fc07b4f32ffd9cb712f b5a620dabe577b8c1868abecfea4901ace87d000798e0fc07b4f32ffd9cb712f identical
+
+Ten of ten captures are byte-identical, so the change surface moved neither stream.
+
+Seed 42's two captures are retained beside this file in full, as
+`06-engine-records-seed42-candidate.jsonl` and
+`07-engine-stream-seed42-candidate.txt`. The remaining eight are not retained: they
+are 1.1 MB and 0.6 MB each and identical on both sides, so the digest above plus the
+command is what a reviewer recomputes. This is a deliberate omission, not an
+oversight.

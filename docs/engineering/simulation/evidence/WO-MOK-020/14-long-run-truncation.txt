@@ -1,0 +1,67 @@
+# The long run: the totals survive the retained event buffer dropping its oldest record
+#
+# VER-MOK-017 O8 and P4. `--policy individual --ticks 6600` is the shortest declared configuration
+# that reaches EVENT_CAPACITY: the buffer fills at tick 6476 and the run continues past it. The
+# comparison against the independent count is made on every hundredth tick past the boundary and
+# once at the end. The buffer's own state is printed with the final tables, so the `truncated`
+# indicator is in the capture rather than asserted out of sight.
+#
+# The case matters because it is the one the design is exposed to: a total computed from the
+# retained buffer would fall the moment the buffer dropped a record. No total is computed from it.
+#
+# Recompute with:
+#   cargo test --locked -p mokiterions-tui --lib --release -- --nocapture --exact \
+#       state::tests::totals_survive_the_event_buffer_dropping_its_oldest_record
+#
+
+
+running 1 test
+retained events 100000 of capacity 100000, truncated true, tick 6600
+--- seed individual, 6600 ticks: tick 6600 ---
+subject       table              wait      sleep        eat       move     attack   threaten      fight    retreat  surrender   approach      avoid   rejected  crossings     killed  decisions
+M01           accumulated           0         46         51       1475          0          0          0          0          0          0          0          0          2          0       1572
+M01           counted               0         46         51       1475          0          0          0          0          0          0          0          0          2          0       1572
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M02           accumulated           0        175        245       5983          0          0          0          0          0          0          0          0         71          0       6403
+M02           counted               0        175        245       5983          0          0          0          0          0          0          0          0         71          0       6403
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M03           accumulated           0        155        206       5318          0          0          0          0          0          0          0          0         12          0       5679
+M03           counted               0        155        206       5318          0          0          0          0          0          0          0          0         12          0       5679
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M04           accumulated           0        125        173       4157          0          0          0          0          0          0          0          0         14          0       4455
+M04           counted               0        125        173       4157          0          0          0          0          0          0          0          0         14          0       4455
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M05           accumulated           0         16         18        524          0          0          0          0          0          0          0          0          2          0        558
+M05           counted               0         16         18        524          0          0          0          0          0          0          0          0          2          0        558
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M06           accumulated           0        176        234       6023          0          0          0          0          0          0          0          0         63          0       6433
+M06           counted               0        176        234       6023          0          0          0          0          0          0          0          0         63          0       6433
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M07           accumulated           0         29         34        999          0          0          0          0          0          0          0          0          0          0       1062
+M07           counted               0         29         34        999          0          0          0          0          0          0          0          0          0          0       1062
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M08           accumulated           0        179        259       6162          0          0          0          0          0          0          0          0         15          0       6600
+M08           counted               0        179        259       6162          0          0          0          0          0          0          0          0         15          0       6600
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M09           accumulated           0        176        258       6166          0          0          0          0          0          0          0          0         10          0       6600
+M09           counted               0        176        258       6166          0          0          0          0          0          0          0          0         10          0       6600
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M10           accumulated           0         26         29        895          0          0          0          0          0          0          0          0         10          0        950
+M10           counted               0         26         29        895          0          0          0          0          0          0          0          0         10          0        950
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M11           accumulated           0        133        170       4564          0          0          0          0          0          0          0          0         12          0       4867
+M11           counted               0        133        170       4564          0          0          0          0          0          0          0          0         12          0       4867
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+M12           accumulated           0         86        114       2800          0          0          0          0          0          0          0          0          0          0       3000
+M12           counted               0         86        114       2800          0          0          0          0          0          0          0          0          0          0       3000
+              difference            0          0          0          0          0          0          0          0          0          0          0          0          0          0          0
+retained state at tick 6600: 12 records of 120 bytes plus 36 bytes of identifiers, at least 1476 bytes, one record per initialized Mokiterion
+--- end seed individual, 6600 ticks ---
+test state::tests::totals_survive_the_event_buffer_dropping_its_oldest_record ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 49 filtered out; finished in 1.84s
+
+   Compiling mokiterions-tui v0.1.0 (C:\Users\mathi\Mokiterions-understand-20260822-085810-1018\mokiterions-tui)
+    Finished `release` profile [optimized] target(s) in 3.59s
+     Running unittests src\lib.rs (target\release\deps\mokiterions_tui-21b5ac5876868320.exe)
+# exit=0

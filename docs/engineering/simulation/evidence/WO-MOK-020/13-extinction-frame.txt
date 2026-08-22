@@ -1,0 +1,59 @@
+# The extinction frame: the population's completed totals, presented with no operator act
+#
+# SPEC-MOK-003 rule 10 clause 9, acceptance scenario 5 and VER-MOK-017 O14. The selection is made
+# on tick 1 and the run is advanced to extinction. The selection is cleared by the extinction
+# itself, and the final frame presents the population's completed totals with nothing pressed.
+#
+# Recompute with:
+#   cargo test --locked -p mokiterions-tui --lib -- --nocapture --exact \
+#       state::tests::extinction_clears_the_selection_and_presents_the_completed_totals_unprompted
+#
+
+running 1 test
+--- inspector interior: 160x48, extinction ---
+┌ inspector ───────────────────────────────┐
+│nothing selected                          │
+│Tab selects a Mokiterion in roster order  │
+│                                          │
+│population activity                       │
+│wait        234  surrender     0          │
+│sleep       259  approach      0          │
+│eat           0  avoid         0          │
+│move        935  rejected      0          │
+│attack        0  crossings     4          │
+│threaten      0  killed        0          │
+│fight         0  decisions  1428          │
+│retreat       0                           │
+│                                          │
+│tick 119  living 0                        │
+│initialized 12  deaths 12                 │
+│by a strike 0  unattributed 12            │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+│                                          │
+└──────────────────────────────────────────┘
+--- end ---
+test state::tests::extinction_clears_the_selection_and_presents_the_completed_totals_unprompted ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 49 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src\lib.rs (target\debug\deps\mokiterions_tui-2fbcc6609753ce76.exe)
+# exit=0
