@@ -2,7 +2,7 @@
 id = "REQ-MOK-062"
 type = "requirement"
 title = "Present the population's cumulative totals where no Mokiterion is selected"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-22"
 updated = "2026-08-22"

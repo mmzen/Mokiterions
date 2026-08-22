@@ -2,7 +2,7 @@
 id = "VER-MOK-017"
 type = "verification"
 title = "Cumulative activity totals equal an independent count over the engine's own records, and computing them changes no run"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-22"
 updated = "2026-08-22"

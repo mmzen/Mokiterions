@@ -2,7 +2,7 @@
 id = "REQ-MOK-061"
 type = "requirement"
 title = "Present a selected Mokiterion's cumulative activity as totals over records the engine stated"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-22"
 updated = "2026-08-22"
