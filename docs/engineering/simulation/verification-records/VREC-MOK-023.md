@@ -2,7 +2,7 @@
 id = "VREC-MOK-023"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-020"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-22"
 updated = "2026-08-22"
@@ -23,6 +23,100 @@ conforms_to = ["VER-MOK-017"]
 This ready record binds retained evidence for `WO-MOK-020` to candidate commit `f633edaebe712ad8e6b139691db001458cf87867`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
 
 The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+
+## The decision: transitioned to `verified` on 2026-08-22
+
+The repository owner, acting as accountable **assurance owner**, took this transition on 2026-08-22. Their
+instruction, verbatim:
+
+> i validate the verification record that can be transitioned, you can also commit + push, I will merge the PR
+> (ignore PR #44)
+
+**`status` moved from `ready` to `verified`, and nothing else in the frontmatter moved.** The harness at 0.4.0 has no
+`transition` subcommand, so the field was hand-edited in this commit; `commit`, `worktree_state`, `verified_at`,
+`artifact_snapshot_sha256`, `evidence_paths` and both relations stand exactly as `capture-verification` wrote them.
+So `verified_at = "2026-08-22T16:47:09Z"` is the **capture** time and not the decision time: the tool wrote it, and a
+transition that moves only `status` does not get to rewrite provenance to read better. The document's heading still
+says *Candidate* for the same reason.
+
+### The seven manual assessments, now recorded
+
+`VER-MOK-017` requires each assessment "with the assessing role, the date, and the evidence read" and states that **an
+unsigned assessment is not a recorded one**. All seven were put to the owner on 2026-08-22, each separately and each
+with the evidence displayed rather than described, and each was answered separately. **One person holds all three
+roles in this repository**, which is disclosed here rather than left to be inferred: no assessment was answered by
+implication from another, and the three roles are that person's three distinct acts.
+
+| # | Role | Assessment | Recorded answer | Evidence read |
+|---|---|---|---|---|
+| 1 | product owner | Does the pane answer the question it was added for? | **Met.** A Mokiterion's profile is legible from the two pane states without reference to the log. | The selected and no-selection panes of `12-frames-and-columns.txt`, displayed in full |
+| 2 | product owner | Can the population state be misread as one Mokiterion's? | **Met — it cannot.** `nothing selected` and the selecting hint stand above the figures, and the heading reads `population activity` rather than a name and an identifier. | The same two panes and the extinction pane of `13-extinction-frame.txt`, judged as frames and not against the specification text, as the row requires |
+| 3 | technical owner | Is the rule 10 item 7 amendment sound? | **Met on all three grounds.** Removing `kills` and `combats` follows the 2026-08-19 procedure; the suffered-attack ground is untouched; and the amendment states the zero-is-a-measurement distinction rather than assuming it. | `SPEC-MOK-003` rule 10 item 7 and its amendment row, and the ground recorded in `f633eda` that `attack_resolved` states a fatal strike and each conflict verb is a reported record |
+| 4 | technical owner | Are `WO-MOK-020` §3's two corrections correct and correctly scoped? | **Met on both.** The *State model* table can now be read as exhaustive at twenty-four fields, and rule 4's corrected sentence still forbids deriving a name, which is the clause `REQ-MOK-041` rests on. | `WO-MOK-020` §3, the amended table, rule 4's corrected sentence, and the measured cost of the declined alternative recorded in `f633eda` — `name_of` plus fourteen references, two failing tests and a `REQ-MOK-041` amendment |
+| 5 | assurance owner | Is `REQ-MOK-059` still met, and are O17 and O19 sufficient evidence? | **Met, and sufficient.** The aggregate exists only where nothing the engine reads can see it. | `O19.1`–`O19.4` and `O17` as executed: `03-test-candidate.txt`, `08-engine-output-unmoved.txt` and `18-dependency-sets-unmoved.txt` |
+| 6 | assurance owner | Are the `SPEC-MOK-004` figures right? | **Met.** Rule 9's amended `117` was recomputed independently of the retained output and agrees. | A static count of `#[test]` across the eight public-tier files — 4, 7, 11, 8, 29, 7, 22, 29 — summing to **117**, taken without reading `10-spec-mok-004-measured.txt`, which is the `cargo test -- --list` output the row forbids relying on |
+| 7 | technical owner | Are the labels the engine's own vocabulary rather than an interpretation of it? | **Met.** | `mokiterions-tui/src/state.rs:206`–`214` read against `mokiterions-core/src/simulation.rs:615`–`623`: nine of the eleven labels are byte-identical, and `eat` and `move` are the engine's verb without the payload its records carry after the colon, because a label heads a count of a kind and `eat:f07` is not a kind |
+
+**Two things about assessment 6 are stated rather than glossed.** The contract asks the *assessor* to recompute, and
+the recomputation was performed by the implementation agent and shown to the owner, who accepted it. So this row
+records the owner's **reliance on a measurement the agent took**, not the owner's own arithmetic; the method and the
+eight per-file counts are written above so that anyone can repeat it in one command. And the recount is independent of
+the retained output but not of the tree: it reads the same test files `cargo test -- --list` enumerates.
+
+**Assessment 7 carries one finding worth naming**, because it is the kind of thing that goes silently stale. The
+observer's label strings are its own copy, not a call into the engine's `Display`, and **no test asserts the two
+sides agree** — nor can one easily, because `O19.2` forbids the engine from naming the observer's type at all. The
+parity above was established by reading both sites at this commit. The owner assessed the labels as met on that basis
+and declined to make a parity test a condition of this transition.
+
+### What this transition supersedes in the text below
+
+The sections that follow are the candidate's own case, left **unedited**, because they are the record of what was
+true when the decision was asked for and a transition adds a decision rather than rewriting the argument for it.
+Four statements in them are superseded by this section and by nothing else:
+
+1. **"All seven of `VER-MOK-017`'s manual assessments are outstanding"**, in the next section. They are recorded
+   above.
+2. **The coverage table's *Manual assessments* row, "none answered".** Read it as 7 of 7 answered, above.
+3. **"That the change is verified"**, in *What this record does not claim*. It is now claimed, by the owner and on
+   this date.
+4. **"That a human has seen the pane"** — superseded only in part. Assessments 1, 2 and 7 are recorded, and they
+   were taken against rendered-buffer captures, because no interactive terminal exists in this environment. That
+   remains `VER-MOK-017`'s *Residual uncertainty* 2 and is carried forward unchanged.
+
+Every other claim, figure and caveat below stands as written and is part of what is verified here.
+
+### The figures re-measured before the field moved
+
+A `verified` record can never be corrected, so this commit is the last point at which any figure in it could be
+fixed. Each was measured again at this commit, in this checkout, from the pinned 0.4.0 environment. **All seven are
+identical to what the record already states, so nothing was corrected.**
+
+| Re-measured | Result | Matches the record |
+|---|---|---|
+| `cargo fmt --all -- --check` | `exit=0` | yes |
+| `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | no warning, no error | yes |
+| `cargo test --workspace --locked` | 332 passed, 0 failed, 0 ignored | yes |
+| `se_harness validate` | PASS, 0 errors, 0 warnings, **153** artifacts; **152** with this file moved aside and the worktree clean again afterwards | yes |
+| `se_harness preflight --work-order WO-MOK-020 --phase review` | PASS | yes |
+| `sha256sum -c MANIFEST.sha256` | 22 of 22 `OK`, exit 0 | yes |
+| `evidence_paths` against `git ls-files` | 23 and 23, equal as sets | yes |
+
+The identifier was also re-checked after a fetch against **every** local and remote ref, not against the local
+maximum: `VREC-MOK-023` exists on this branch alone, and `WO-MOK-020` on this branch and its remote alone, `master`
+having renumbered its own to `WO-MOK-024`.
+
+### What `verified` authorizes, and what it does not
+
+It authorizes nothing beyond itself. **No release, tag or publish** — that needs a `REL-` record and none is
+written. It does not discharge the reconciliation `SPEC-MOK-004`'s ratified row owes at the next merge, it does not
+make `docs/ROADMAP.md` accurate, and it does not retire the residual uncertainties below.
+
+The owner authorized the push of this branch in the same instruction and **reserved the merge to themselves**. The
+constraint in *This branch must not be rebased* is now load-bearing rather than advisory: a squash-merge produces a
+different commit object, and this record can be neither re-pointed at it nor corrected, because it is `verified`.
+**Merge, do not squash and do not rebase.** If integration is taken as a squash anyway, the remedy is a successor
+record with every field measured afresh.
 
 ## What this record is, and why it is `ready` rather than `verified`
 
