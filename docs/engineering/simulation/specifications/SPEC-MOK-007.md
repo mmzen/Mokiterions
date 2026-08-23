@@ -23,6 +23,7 @@ specifies = [
   "REQ-MOK-074",
   "REQ-MOK-075",
   "REQ-MOK-076",
+  "REQ-MOK-077",
 ]
 +++
 
@@ -36,7 +37,7 @@ response does not satisfy it, the transcript a live run retains, how a replay co
 cost accounting a live run performs, the conditions under which a provider call may happen at all, and the failure
 behavior of each.
 
-It specifies `REQ-MOK-063` through `REQ-MOK-076` and nothing else.
+It specifies `REQ-MOK-063` through `REQ-MOK-077` and nothing else.
 
 It does not restate the simulation's rules. `SPEC-MOK-001` remains the sole authority for what a Mokiterion may
 propose, what an observation carries, how a proposal is validated and resolved, and what the text stream contains; this
@@ -44,18 +45,24 @@ specification refers to that authority rather than copying it, so that every rul
 does not restate the structured record stream either, whose authority is `SPEC-MOK-006`. The transcript this
 specification defines is a **third** stream, distinct from both.
 
-**One provision here depends on a decision the repository owner has not taken.** `ADR-MOK-007` puts two transport
-bindings for the provider: an HTTPS client inside the workspace, or a separate provider program the host drives over
-pipes. This specification is written against the second, which `ADR-MOK-007` recommends. If the owner selects the
-first, **rules 10 and 18.4 change and no other rule does** — the port of rule 1, the request of rules 2 through 7, the
-response grammar of rule 8, the transcript of rule 11 and the replay of rule 12 are identical under either binding.
-That localisation is deliberate and is the reason the port is specified before the transport.
+**The transport binding is settled, and it costs no crate.** `ADR-MOK-007` decision 3 reaches the provider through a
+**connector**: an executable the operator names by path, which a host spawns and exchanges lines with. The connector is
+not a package, not a workspace member, and this specification does not require it to live in this repository. Rule 10
+is therefore the whole of what the binding costs, and it costs nothing to any approved artifact: `REQ-MOK-050`,
+`ARCH-MOK-001`'s conformance check, `SPEC-MOK-002` rule 13, `SPEC-MOK-003`'s declared set and `SPEC-MOK-004` rules 1
+and 2 are all untouched. The port of rule 1, the request of rules 2 through 7, the response grammar of rule 8, the
+transcript of rule 11 and the replay of rule 12 do not depend on the binding at all — which is why the port is specified
+before the transport, and why a later change of binding would reopen rule 10 and nothing else.
 
-Throughout, *the port* means the interface the engine obtains a proposal through; *the host* means the code outside the
-engine that connects the port to something; *the provider* means the language model service; *an exchange* means one
-request sent to the provider and the response or error that came back; *a live run* means a run that makes provider
-calls; *a replay* means a run that obtains its decisions from a retained transcript; and *the transcript* means the
-stream rule 11 defines.
+**This source has two hosts and they are not equally capable.** Rule 20 states which host may do what, and the reason is
+measured rather than preferred: an interactive host owes a frame every 33 milliseconds and a live exchange costs
+hundreds of them.
+
+Throughout, *the port* means the interface the engine obtains a proposal through; *a host* means the code outside the
+engine that connects the port to something; *the connector* means the executable a host spawns to reach the provider;
+*the provider* means the language model service; *an exchange* means one request sent to the provider and the response
+or error that came back; *a live run* means a run that makes provider calls; *a replay* means a run that obtains its
+decisions from a retained transcript; and *the transcript* means the stream rule 11 defines.
 
 Amounts in currency and token counts given as *estimated* are estimates made on 2026-08-23 against the published
 `gpt-5.6-luna` prices and a measured count of 10,954 decision opportunities in a 1,000-tick `social` run at seed 0 and
@@ -68,12 +75,19 @@ conformance condition. The conformance conditions are rule 14's ratio and rule 1
   port, and receives a proposal. It resolves no path, opens no file, creates no directory, removes no file, opens no
   socket, spawns no process and reads no environment variable. It is the sole author of every request's content and of
   every transcript record's content.
-- **The engine's binary target — the host** parses the options, reads the credential from the process environment,
-  establishes whatever the transport binding requires, resolves the transcript path, opens the transcript for writing or
-  for reading, hands the library a connected port and an open stream, and flushes and closes what it opened. It authors
-  no request content and no transcript record content.
-- **The provider** is `gpt-5.6-luna`, reached in the manner `ADR-MOK-007` decides. It is not part of this repository, it
-  is not deterministic, and nothing here assumes it is.
+- **The engine's binary target — the recording host** parses the options, resolves the connector path and the transcript
+  path, spawns the connector, opens the transcript for writing or for reading, hands the library a connected port, and
+  flushes and closes what it opened. It authors no request content and no transcript record content, and **it does not
+  read the credential**: rule 10.5 places that in the connector alone.
+- **The terminal observer's binary target — the replay host** resolves a transcript path, opens it for reading, hands
+  the library a connected port, and closes it. It spawns nothing, reads no credential, takes no ceiling and has no
+  live mode. Rule 20 states why, and `ARCH-MOK-002` is amended to record it.
+- **The connector** is an executable the operator names by path. It receives request lines, reaches the provider, and
+  returns response lines. It reads the credential from its own process environment and is the only component that holds
+  one. It is not a package, not a workspace member, and this specification does not require it to be in this repository —
+  which is a limit as well as a freedom, and rule 10.6 states the limit.
+- **The provider** is `gpt-5.6-luna`, reached only by the connector. It is not part of this repository, it is not
+  deterministic, and nothing here assumes it is. No component other than the connector names it in a network sense.
 - **The repository owner** authorises a live run. The authorization is a retained artifact, rule 17, and no code
   consults it.
 - **A consumer** is any program that reads a retained transcript. No consumer is specified. The transcript is specified
@@ -84,19 +98,22 @@ conformance condition. The conformance conditions are rule 14's ratio and rule 1
 The decision source is selected by a command-line option, rule 18. Beyond the inputs every run already takes — seed,
 tick limit, density, tracing selection, record-stream sink — a run under this source takes:
 
-- **A mode**: live or replay. Replay is the default, rule 13.1.
-- **A transcript**: an open stream the host supplies. Written in live mode, read in replay mode. The engine never names
+- **A mode**: live or replay. Replay is the default, rule 13.1, and it is the only mode the replay host offers.
+- **A transcript**: an open stream a host supplies. Written in live mode, read in replay mode. The engine never names
   it.
-- **In live mode only**: a provider credential from the process environment, a spend ceiling, and a model
-  identifier with its reasoning level. The credential never reaches the library target.
+- **In live mode only**: a connector path, a spend ceiling, and a model identifier with its reasoning level. The
+  **credential is not an input to the run.** It lives in the connector's own environment, rule 10.5; no host reads it,
+  no option carries it, and it reaches the library target by no route at all.
 
 No input reaches the simulation's rules. A Mokiterion's behaviour is a function of the observation and the response,
 and of nothing else in this list.
 
 ## Outputs
 
-- The **standard output text stream** of `SPEC-MOK-001`, unchanged in form. Under this source it carries `luna` where
-  it carries a source name, and nothing else about it moves.
+- The **standard output text stream** of `SPEC-MOK-001`, unchanged in form. Under this source it carries `llm` where
+  it carries a source name, and nothing else about it moves. **The emitted name and the option value are the same string**,
+  as they are for the four existing sources, so `SPEC-MOK-006` rule 3.2's two domains gain one value between them rather
+  than one each.
 - The **structured record stream** of `SPEC-MOK-006`, unchanged in form, with `config.policy` and `result.source`
   admitting the new value.
 - The **transcript**, rule 11. Written in live mode only.
@@ -349,32 +366,55 @@ substitution.
 15.4. The run itself is not aborted: its transcript replays and its ticks are real, and an abort would make one
 transport hiccup cost an **estimated** $1.04 and hours of wall time.
 
-### 10. The provider binding
+### 10. The connector binding
 
-*Under the binding `ADR-MOK-007` recommends. See Scope.*
+10.1 A live run reaches the provider through a **connector**: an executable the operator names by path as a host option.
+The host spawns it as a child process and exchanges with it over that child's standard input and standard output.
+**Neither Rust package acquires a crate.** Spawning a child and reading its lines is standard-library work in both, so
+`REQ-MOK-050`, `ARCH-MOK-001`'s conformance check, `SPEC-MOK-002` rule 13, `SPEC-MOK-003`'s declared dependency set and
+`SPEC-MOK-004` rules 1 and 2 are untouched, and this specification requires no amendment to any of them. That is the
+binding's principal merit and the reason it was chosen over the two `ADR-MOK-007` records as rejected.
 
-10.1 The host drives a **separate provider program** and exchanges with it over that program's standard input and
-standard output. The engine's workspace acquires no HTTPS client, no TLS stack and no asynchronous runtime, so
-`REQ-MOK-050`'s dependency prohibition and `ARCH-MOK-001`'s conformance check are untouched and need no amendment.
-
-10.2 The framing is one JSON object per line in each direction: one request object per line to the program's standard
+10.2 The framing is one JSON object per line in each direction: one request object per line to the child's standard
 input, one response object per line from its standard output, in the same order. Lines are newline-terminated and
 contain no newline within an object.
 
 10.3 A request object carries the prompt text rules 3 through 7 compose, the model identifier, the reasoning level and
 the response schema rule 8.4 needs. It carries no credential.
 
-10.4 A response object carries the action, the provider's reported usage counts, and either success or an error. The
-usage counts are the provider's own figures, passed through unmodified; the program computes none of them.
+10.4 A response object carries the action, the reported usage counts, and either success or an error. The usage counts
+are the provider's own figures as the connector reports them; no component recomputes or adjusts them.
 
-10.5 The provider program reads the credential from its own process environment. It is the only component that holds
-one, and it never writes one to its standard output, its standard error or any file.
+10.5 **The connector reads the credential from its own process environment, and no other component reads it at all.**
+Neither host reads it, no command-line option carries it, and it appears in no request object. A host may pass its own
+environment through to the child, which is how the credential reaches the connector without any component in this
+repository naming it. The connector never writes it to its standard output, its standard error or any file.
 
-10.6 The provider program's own dependency surface is constrained to its language's standard library. This is stated as
-a rule because option B's honest cost, recorded in `ADR-MOK-007`, is that it moves a dependency surface outside the
-declared-set discipline unless something holds it; rule 10.6 is that something.
+10.6 **This specification does not constrain the connector's dependency surface, and cannot.** The connector is an
+operator-supplied executable that need not be in this repository, so no check here can reach it. This is stated as a
+rule because it is a deliberate limit and not an oversight: the earlier draft of this specification constrained a
+repository-owned provider program to its language's standard library, and that constraint is **withdrawn** along with
+the program it applied to. What this repository does own and does constrain is the **canned connector** of rule 20.5,
+which exists for offline verification. `VER-MOK-018`'s `S2` checks that one and states plainly that it can check no
+other.
 
-10.7 The engine does not know rule 10 exists. Everything in it is on the host's side of rule 1.1's interface.
+10.7 **The connector's output is untrusted in whole.** A response passes rule 8's grammar check and then `SPEC-MOK-001`
+rule 6's validation, unchanged, exactly as a local source's proposal does. `ADR-MOK-001`'s *"Model output is untrusted
+input and must pass the same validation as the local baseline"* is read here as reaching the connector's entire output
+and not only the model's action text — the usage counts and the success flag included, because a connector is a program
+the operator supplied and not a component this repository verified.
+
+10.8 **The ceiling of rule 14 protects against an honest connector, not a dishonest one.** Cost is computed from the
+usage counts rule 10.4 passes through, so a connector that under-reports usage spends past the ceiling and the run
+cannot tell. This is recorded as a limit rather than defended against: the operator writes the connector, and a
+containment that assumes otherwise would be theatre. Rule 13's two gates and the absence of any credential in automation
+are the containment that does not depend on the connector behaving.
+
+10.9 **The engine's library target does not know rule 10 exists.** Everything in it is on a host's side of rule 1.1's
+interface. The library resolves no path, spawns no process, opens no file and reads no environment variable, exactly as
+`SPEC-MOK-001` and the library's own documented guarantee already require. **The connector path never enters the
+configuration value the library holds**: a host parses it, spawns the child, and hands the library a connected port and
+nothing else. Rule 20.4 is why that matters beyond tidiness.
 
 ### 11. The transcript
 
@@ -409,8 +449,15 @@ where is `VER-MOK-018`'s.
 12.1 A replay obtains each decision from the transcript, in order, through the same port rule 1.1 defines and the same
 code path a live run uses.
 
-12.2 A replay makes no provider call, opens no socket, spawns no provider program and reads no credential. This holds
-whether or not a credential is present in the environment.
+12.1.1 **The host opens the transcript and lends the engine an already-open reader**, which is rule 11.1 mirrored and
+holds for the same reason: the library resolves no path and performs no filesystem operation. The transcript path no more
+enters the configuration value the library holds than the connector path does, per rules 10.9 and 18.4. This is the one
+place where the two hosts do the same work, so the reader-backed port is the engine library's own item and each host
+supplies only the open stream — otherwise the replay reader would be written twice, once per host, and the two copies
+would drift.
+
+12.2 A replay makes no provider call, opens no socket, spawns no connector and reads no credential. This holds whether
+or not a credential is present in the environment, and it holds in both hosts.
 
 12.3 Before using a record, the replay checks that the record's tick and acting Mokiterion match the opportunity the
 engine has reached. On a mismatch the replay **fails**, names the mismatch, and produces no further ticks. A transcript
@@ -431,19 +478,26 @@ recorded run. A replay reproduces the run that happened, contamination included.
 
 ### 13. Live mode, the credential and automation
 
-13.1 Replay is the default. A live run happens only when **both** an explicit live-mode selection was made **and** a
-provider credential is present in the process environment. `REQ-MOK-072` states this and rule 13.1 is its whole
-mechanism.
+13.1 Replay is the default. A live run happens only when **both** an explicit live-mode selection was made, **and** a
+provider credential is present in the connector's environment. `REQ-MOK-072` states this, and rule 13.1 is its whole
+mechanism. **The two conditions are checked in two different components** — the selection by the host, the credential by
+the connector — and neither component can satisfy the other's condition. That separation is a consequence of rule 10.5
+and it strengthens the gate rather than complicating it: no single component can authorise spending.
 
 13.2 When the live-mode selection is absent, the run replays if a transcript was supplied and otherwise refuses with the
-usage-error status, rule 19.2. A present credential is never taken as consent.
+usage-error status, rule 19.2. **No connector is spawned at all in this case**, so a present credential is not merely
+"never taken as consent" — under this binding no component in the run is even in a position to observe that it is present.
 
-13.3 When the credential is absent, empty or malformed, no provider call is made. The run reports which condition was
-missing and names no value. The credential is looked for in the process environment and nowhere else: no file, no
-keychain, no configuration directory is searched.
+13.3 When the credential is absent, empty or malformed, **the connector makes no provider call** and returns an error on
+the first exchange. The run reports which condition was missing, in the terms the connector reported it, and names no
+value. The credential is looked for in the connector's process environment and nowhere else: no file, no keychain and no
+configuration directory is searched. The refusal therefore arrives after the connector was spawned and before any network
+was reached, which costs nothing and calls nothing.
 
-13.4 The credential is read by the host, never by the library target. It is never written to a tracked file, never
-printed to either output stream, never placed in a request record and never placed in an error message.
+13.4 **Neither host reads the credential, and the library target reaches it by no route**, per rule 10.5. It is never
+written to a tracked file, never printed to either output stream, never placed in a request record and never placed in an
+error message. A host that passes its own environment through to the child transmits the value without observing it, and
+that is the whole of how the credential travels.
 
 13.5 A live run also requires a declared spend ceiling, rule 14.6. A live run with no ceiling is refused before the
 first exchange rather than run unbounded.
@@ -543,22 +597,52 @@ is not written, because it would record a decision nobody made at the time.
 
 ### 18. The command-line surface
 
-18.1 The decision-source option admits a fifth value. The four existing values, their order and their help text are
-unchanged.
+18.1 **Both hosts'** decision-source option admits a fifth value, `llm`. The four existing values, their order and their
+help text are unchanged in both.
 
-18.2 The usage text gains the fifth value with its own description, in the form the existing four use. Its description
-states that this source calls a model, is not deterministic in itself, and replays deterministically from a transcript.
+18.2 Each host's usage text gains the fifth value with its own description, in the form the existing four use. The
+description states that this source reaches a model **through a connector program the operator supplies**, is not
+deterministic in itself, and replays deterministically from a transcript. It does not say that the program calls a
+model, because neither program does: the connector does, and naming it is what keeps the text honest.
 
 18.3 The existing sentence *"None of the four learns anything or calls a model; all four are deterministic"* becomes
-wrong when a fifth exists and is corrected in the same change. Rule 18.3 is stated because a usage text that contradicts
-the program is a defect a reader meets before any other.
+wrong when a fifth exists and is corrected in the same change, in both hosts' texts. Rule 18.3 is stated because a usage
+text that contradicts the program is a defect a reader meets before any other.
 
-18.4 The live-mode selection, the transcript path, the spend ceiling, the model identifier and the reasoning level are
-options of the host. They are rejected when any source other than this one is selected, rather than accepted and
-ignored.
+18.4 **The new options are parsed by the engine's shared parser, which validates each value and then discards it.** This
+is not a new mechanism: `--events-path` already works this way, and the parser's own comment records why — the parser
+holds a `bool` rather than the path, so that `SPEC-MOK-006` rule 1.2 keeps every path out of the library target, and the
+binary target re-reads the raw argument it will open. Both new options follow it exactly. The parser recognizes each,
+enforces at-most-once, rejects an empty value and the single character `-` for the reason `SPEC-MOK-001`'s `--events-path`
+bullet gives, and **retains neither value**. The configuration value the library holds gains no field, which is rule
+10.9's *"the connector path never enters the configuration value the library holds"* satisfied by an existing precedent
+rather than by a new rule. Each host then re-reads the raw argument it is the one to act on.
 
-18.5 The terminal observer's authority mapping gains an entry for the fifth source, and its hard-coded four-source
-description is corrected. It maps the new source to `REQ-MOK-063`.
+18.4.1 A consequence of 18.4 is worth stating, because it is the difference between this specification and a defect this
+repository already has. The observer recognizes its own inputs and hands **every other argument** to the engine's parser,
+which `SPEC-MOK-003`'s *Start-up inputs* fixes and which is how the two hosts' parsing, validation, defaults and
+rejection behaviour stay identical by construction. So the observer **accepts the connector path whether or not it wants
+it**, exactly as it accepts `--events-path` today and then acts on neither. `SPEC-MOK-003`'s 2026-08-22 amendment records
+that outcome as a **defect**, tracked as GitHub issue 40, on the ground that "an operator who passes the option and
+receives no file and no diagnostic is worse served by silence". This specification does not reproduce it. The observer
+**diagnoses** a connector path rather than ignoring it, and rule 18.4.2 fixes the diagnosis.
+
+18.4.2 **The option sets differ by host, and the difference is rule 20 made operator-visible.** The engine's binary
+target acts on the connector path, the live-mode selection, the transcript path and the spend ceiling. The terminal
+observer acts on the transcript path and on nothing else. Given a connector path, a live-mode selection or a ceiling, the
+observer **refuses at start-up with the usage-error status and states that this host replays only**. It is not an unknown
+option — the shared parser accepts it, so calling it unknown would be false — and it is not silently ignored, which is
+issue 40. It is a host that cannot do what it was asked, saying so. Each host's usage text states which options are its
+own, per rule 18.2.
+
+18.4.3 Every one of these options is **rejected when a source other than `llm` is selected**, rather than accepted and
+ignored, in both hosts. This differs from rule 20.9's treatment of a supplied port for a good reason: a port is a value a
+program passes to itself, while an option is an operator's stated intent, and an operator who names a transcript for a
+`social` run has misunderstood something that a silent success would leave misunderstood.
+
+18.5 The terminal observer accepts `llm` **only with a transcript** and refuses it without one, per rule 20.3. Its
+authority mapping gains an entry for the fifth source, and its hard-coded four-source description is corrected. It maps
+the new source to `REQ-MOK-063`.
 
 ### 19. Error and recovery behavior
 
@@ -585,6 +669,76 @@ recorded has produced cost and no evidence, which is the one failure worth abort
 19.7 No error message contains a credential, and no error message contains a path the engine resolved, because the
 engine resolves none.
 
+### 20. The two hosts, and where the port is wired
+
+20.1 There are two hosts and their capabilities differ. **The engine's binary target is the recording host**: it may run
+live and it may replay. **The terminal observer is the replay host**: it may replay only.
+
+20.2 **The reason is latency against an interactive frame budget, and it is measured rather than preferred.** The observer
+owes a frame every 33 milliseconds and an input poll every 16, which `SPEC-MOK-003` rules 6.1 and 6.2 fix. One exchange
+takes an **estimated** 0.4 to 0.8 seconds, and a tick holds an **estimated** eleven decision opportunities — 10,954
+measured over a 1,000-tick run. A single live tick would therefore block the observer's loop for an **estimated** 4 to 9
+seconds, rendering no frame, polling no input and accepting no request to quit. Both rules would be violated for the
+whole of every run, not marginally but by two orders of magnitude. The available remedies are concurrency or an
+asynchronous runtime: rule 16 forbids the first and `REQ-MOK-050` the second. The restriction is structural, and it is
+written here so that an implementer meets it in the specification rather than at the first live run.
+
+20.3 The observer, given this source and **no** transcript, refuses at start-up with the usage-error status and names the
+missing transcript. It does not begin a run whose decisions it cannot obtain, and it never falls back to another source:
+a substituted source would present a run under the wrong label, which is what `ADR-MOK-007` decision 6 refuses for the
+fallback case and refuses here for the same reason.
+
+20.4 **The host builds the port, owns it for the whole run, and lends it to the library. The library builds none, holds
+none and closes none.** The port arrives already connected, from a caller that owns the far side, in exactly the form
+`SPEC-MOK-002` rule 4 fixed for the record sink: one optional parameter carrying a borrowed trait object, which is `None`
+for the four existing sources and needs no type annotation at a call site that has no port. The reason is not symmetry
+for its own sake. What sits behind the port is a resource the library is **forbidden** to hold — a spawned child process
+in live mode, an open file in replay — and `SPEC-MOK-006` rule 1.2 places every filesystem operation in the binary
+target, which is what keeps `SPEC-MOK-001`'s *"the library target interprets no path at all and performs no filesystem
+operation"* true. A library that opened the transcript itself would falsify that sentence, and `SPEC-MOK-001` records it
+under *Security and privacy properties* rather than as a convenience.
+
+20.4.1 The consequence worth stating separately is that **the port is built once and lent per tick, never rebuilt per
+tick.** The engine's four existing sources are stateless values constructed at the point of use, and following that
+precedent here is wrong in a way that still compiles and still runs: a port backed by a connector or a transcript holds
+the transcript cursor that rule 12.1's ordering depends on, the accumulated cost that rule 14's ceiling depends on, and
+the fallback count that `REQ-MOK-074` depends on. A port rebuilt each tick resets all three — the cursor restarts from
+the first record, the accumulated cost stays at zero, and the ceiling therefore never triggers. Caller ownership makes
+this error unavailable rather than merely prohibited, which is why rule 20.4 is written as ownership rather than as a
+warning.
+
+20.5 **Both of the engine's run entry points take the port, as one new optional parameter each.** The two hosts enter
+the library by different doors: the recording host drives a whole run to completion through the process boundary, and the
+replay host advances a single tick and returns. Wiring the port into only one door excludes the host that uses the other
+from this source entirely, while every rule above still reads as satisfied — so this is stated as an obligation rather
+than left to follow from rule 20.1. A **canned connector**, a small executable in this repository that answers from a
+fixed script and reaches no network, exists so that the live path's wiring is exercised offline at no cost and on every
+push. Rule 10.6 records that it is the only connector this repository is able to constrain.
+
+20.6 **The port is a new public interface, and the engine's existing decision-source abstraction stays private.** That
+abstraction takes the observation type, which is private and which carries `ADR-MOK-001`'s trust boundary; publishing it
+in order to reach this source would export the boundary itself. Rule 1.1's interface takes rule 2's request type by value
+instead, and a private adapter inside the engine implements the existing abstraction in terms of it. `ADR-MOK-007`
+decision 1's *"one interface and one request type and by nothing else"* fixes the extent, and `SPEC-MOK-002` rules 5 and
+6 govern it unchanged.
+
+20.7 **The entropy stream is untouched by this source.** The adapter of rule 20.6 receives whatever entropy handle the
+existing abstraction passes it and draws from it not at all, so `REQ-MOK-009` does not move. This is a verified check and
+not an assumption: one draw here would shift every subsequent draw in the run, and the four existing sources would then
+behave differently at the same seed — which `REQ-MOK-068`'s byte-identity comparison exists to catch.
+
+20.8 **This source selected with no port supplied is an invalid configuration and the run refuses.** The library makes
+this check, and it is the one check of rule 13 that the library rather than a host makes. It never substitutes a source,
+never proceeds with no decisions and never treats the absence as the fallback of rule 9: those would each produce a run
+under the wrong label, which rule 20.3 and `ADR-MOK-007` decision 6 refuse. The rule earns its place because it converts
+the failure rule 20.5 exists to prevent into a loud one — a host that admits `llm` on its command line and then omits the
+port from its call is refused on the first tick instead of quietly running something else.
+
+20.9 The mirror case is unremarkable and is stated so that it is not read into rule 20.8: a port supplied while one of
+the four existing sources is selected is ignored, exactly as an absent sink is, and is not an error. The four sources
+consult no port, so a host that supplies one has done something useless rather than something wrong, and rule 16's
+non-perturbation obligation is what holds their runs byte-identical either way.
+
 ## Data and interface contracts
 
 - **Rule 1.1's interface** is the only interface this specification adds to the engine's public surface. It carries the
@@ -592,9 +746,24 @@ engine resolves none.
   transport's, and no type owned by a dependency.
 - **The request type** is composed of the engine's existing observation-derived values and owned strings. It exposes no
   reference into engine state, honouring `SPEC-MOK-006` rule 12.3's borrow prohibition.
-- **The engine's dependency table does not grow.** Under rule 10's binding the workspace acquires no crate, so
-  `REQ-MOK-050` and `ARCH-MOK-001` are unamended. Under the alternative binding `ADR-MOK-007` puts, they are not, and
-  the ADR states the amendment.
+- **Neither package's dependency table grows, and no approved dependency artifact is amended.** Rule 10.1's binding adds
+  no crate to either package, so `REQ-MOK-050`, `ARCH-MOK-001`'s conformance check, `SPEC-MOK-002` rule 13 and
+  `SPEC-MOK-003`'s declared dependency set all stand unamended, and `SPEC-MOK-004` rules 1 and 2 acquire neither a package
+  directory nor a workspace member. This is a stronger claim than any earlier draft of this specification could make, and
+  it is the reason `ADR-MOK-007` decision 3 changed.
+- **The port is public and the engine's existing decision-source abstraction is not**, per rule 20.6. The public surface
+  gains one interface and one request type; the observation type and the existing abstraction stay private, so
+  `ADR-MOK-001`'s boundary is reached by neither.
+- **The port reaches the library as one new optional parameter on each of the two run entry points**, carrying a borrowed
+  trait object owned by the caller — the shape `SPEC-MOK-002` rule 4 fixed for the record sink, for the reason rule 20.4
+  gives. Two public signatures therefore change, which rule 4's own precedent covers: the sink amendment changed one the
+  same way and `SPEC-MOK-002` treated it as one parameter added rather than as an interface replaced. `Config` gains no
+  field, so a caller that passes `None` is the caller that exists today.
+- **The library performs no filesystem operation and spawns no process, for this source as for every other.** Both
+  streams this source needs — the transcript it writes in live mode and the transcript it reads in replay — arrive as
+  already-open streams from the host that owns them, rules 11.1 and 12.1.1. `SPEC-MOK-001`'s *"the library target
+  interprets no path at all and performs no filesystem operation"* is preserved verbatim and is not scoped, qualified or
+  excepted by this specification.
 - **The transcript** is a data contract with no consumer in this repository. Rule 11.3's fields and rule 11.4's
   constraints are the whole of it.
 
@@ -612,6 +781,21 @@ engine resolves none.
   privacy property of the population as well as an experimental one.
 - Nothing leaves this repository except the request text: the world's rules, one Mokiterion's own state, and a list of
   actions. No source code, no path, no identity and no repository content is sent.
+- **Three new capabilities enter this repository, all three in binary targets and none in the library**: a process spawn,
+  an environment pass-through and a second and third operator-supplied value interpreted as a filesystem path. Each is
+  named here rather than left to be inferred from the rules, because `SPEC-MOK-002` records under its own *Security and
+  privacy properties* that "No network access, credential read, filesystem access, environment read, or wall-clock read
+  is introduced", and that sentence stops being true of the engine **package** on the day this source lands. It stays true
+  of the library target, which is the target rule 20.4 and rule 12.1.1 protect. The amendment is `ADR-MOK-007`'s and is
+  stated there in full; what this specification is responsible for is that the difference is not silent.
+- **`SPEC-MOK-001`'s "`--events-path`'s value is the one operator-supplied value that is interpreted as a filesystem
+  path" becomes false and is amended, not scoped.** There will be three such values, and each is interpreted only by a
+  binary target, only as a path, and never as code, a format string, an option or engine input — which is the property
+  that sentence exists to hold, and it holds of all three. No credential is ever one of them, per rule 13.4.
+- **No network access is added to either package.** The provider is reached by the connector, which is not in this
+  repository, so the network capability lives in a process this repository neither builds nor declares. This is the
+  security consequence of `ADR-MOK-007` decision 3, and rule 10.8 records its cost honestly: a containment that assumes
+  the operator's own connector behaves is not containment.
 
 ## Performance and capacity
 
@@ -624,6 +808,10 @@ engine resolves none.
   be engineered away here: no concurrency across Mokiterions is specified, because concurrent exchanges would make the
   order of transcript records depend on timing and rule 11.2's order is what rule 12.1 replays.
 - A replay is bounded by reading the transcript and is free.
+- **The exchange latency is what confines live runs to one host.** At an **estimated** eleven decision opportunities per
+  tick, one live tick costs an **estimated** 4 to 9 seconds, against the 33-millisecond frame and 16-millisecond input
+  budgets `SPEC-MOK-003` rules 6.1 and 6.2 fix for the observer — over by two orders of magnitude. Rule 20.2 is that
+  arithmetic turned into a rule. A replayed tick has none of this cost, which is why the observer replays.
 - Rule 11.7's transcript sizes bound the evidence a measurement retains.
 
 ## Observability
@@ -648,6 +836,32 @@ engine resolves none.
 - No existing requirement's outcome obligation is amended. `REQ-MOK-014`, `REQ-MOK-034`, `REQ-MOK-058` and
   `REQ-MOK-060` each name the source or sources they bind, so a fifth source inherits none of them, and
   `INT-MOK-011` records the absence of a floor for this one positively rather than by silence.
+- **`ARCH-MOK-002` is amended, and by more than a name.** The observer becomes this source's replay host, rules 20.1 and
+  20.3: it gains a transcript option, opens that file for reading, and hands the library a connected port. It still spawns
+  nothing, holds no credential, takes no ceiling and has no live mode. `ADR-MOK-007` states the amendment; it is not made
+  here.
+- **`SPEC-MOK-003` is amended in three provisions**, and its *Declared dependency set* is not one of them. Rule 11's
+  authority mapping gains a row for the fifth source; *Start-up inputs* gains this specification's four options with each
+  one's disposition in the observer, per rule 18.4.1; and the usage text's byte-identity obligation extends to the shared
+  options' new descriptions. **Rules 6.1 and 6.2 are not amended** — they are the reason rule 20.1 exists, and this
+  specification is satisfied by leaving them intact.
+- **`SPEC-MOK-001` is amended in seven provisions**, which is the largest amendment this initiative requires, because two
+  of its recorded claims stop being true: "There are no external systems and no network calls", which the connector
+  falsifies, and "no filesystem location is a source of engine input", which the transcript falsifies. Its
+  *Security and privacy properties* sentence naming `--events-path` as "the one operator-supplied value that is
+  interpreted as a filesystem path" becomes three values. The property that sentence carries is preserved: each is
+  interpreted only by a binary target and only as a path. `ADR-MOK-007` states all seven.
+- **`SPEC-MOK-002` is amended in four provisions**: rule 4 gains one optional port parameter on each run entry point, rule
+  5 gains the port and the request type, and its *Actors* and *Security and privacy properties* sections gain a target
+  scope, because the engine **package** does now spawn a process, pass an environment through and interpret two more paths
+  while the **library target** still does none of those. Rule 13's empty dependency table does not move.
+- **No dependency artifact is amended at all.** `REQ-MOK-050`, `ARCH-MOK-001`'s conformance check, `SPEC-MOK-002` rule 13,
+  `SPEC-MOK-003`'s declared dependency set and `SPEC-MOK-004` rules 1 and 2 all stand as written, because rule 10.1's
+  binding adds no crate, no package directory and no workspace member. This is the one migration cost this initiative does
+  **not** have, and it is stated positively so that a later reader does not assume it was overlooked.
+- **`SPEC-MOK-003`'s GitHub issue 40 is neither closed nor worsened.** The observer's silent acceptance of `--events-path`
+  is an existing recorded defect; this specification does not repeat its shape for the new options, rule 18.4.1, and does
+  not fix it either, because that paragraph calls closing it "a governed change of its own".
 - The four existing sources are unchanged, rule 16. No retained capture is retired and no published figure is
   invalidated.
 
@@ -746,8 +960,6 @@ from being spendable. Rule 13.6 forbids the reference, and the containment is th
 
 ## Explicitly unspecified decisions
 
-- **The transport binding.** `ADR-MOK-007`'s, and the owner's to take. Rules 10 and 18.4 are written against the
-  recommended binding; Scope states what changes under the other.
 - **Block A's exact wording.** Rules 4.1 through 4.6 fix its content, its prohibitions and its constancy. The prose is
   the implementation's, and its token count is what rule 14.5's ratio measures.
 - **Block C's and block D's exact rendering.** Rules 6.1 and 7.7 fix the fields and their order; the separators,
@@ -758,7 +970,12 @@ from being spendable. Rule 13.6 forbids the reference, and the containment is th
   more variable tokens, a nested one is shorter and may be harder to answer well. Rule 7.1's completeness holds either
   way.
 - **The retry count and its backoff.** Rule 19.5 requires a bounded retry; the bound is the implementation's.
-- **The provider program's language.** Rule 10.6 constrains its dependency surface and not its language.
+- **The connector's language, its dependency surface, its internal design and its location.** Rule 10.6 states that this
+  specification constrains none of them, and why it cannot. The **canned connector** of rule 20.5 is the single exception,
+  because that one is this repository's own; its language is still unspecified.
+- **How a host passes its environment to the connector.** Rule 10.5 fixes that the credential reaches the connector by its
+  own environment and by no option; whether the host inherits, filters or extends that environment is the
+  implementation's, subject to security check `C1` finding no credential in any produced byte.
 - **The transcript's exact serialisation.** Rule 11.3's fields and rule 11.4's constraints hold; the encoding is the
   implementation's, provided it is diffable and stable.
 - **Concurrency.** Not specified, and rule 11.2's ordering is why. A later intent may propose it.

@@ -36,6 +36,20 @@ record, and it states what an authorization would have to say. The runs themselv
 naming the horizon, the seed set and the spend ceiling — the second act `REQ-MOK-076` requires, and the act the owner
 described in their own words as *an explicit permission from the repository owner is needed to launch a real run*.
 
+**The horizon and the seed set are deliberately absent from this work order, and that absence is a recorded decision
+rather than a gap.** Asked on 2026-08-23 what horizon to fix for this stage, the repository owner answered **deferred**,
+and `ADR-MOK-007`'s *Decision record* holds it as act 8. The reason it is a decision and not an omission: the only
+figures that could justify a horizon — the real per-exchange cost and the real round-trip latency — do not exist yet, and
+`WO-MOK-026` is what produces them. Fixing a horizon now would fix it against an estimate, and the estimate is the thing
+this initiative is least confident about. So this work order specifies **what an authorization must say** and leaves the
+values to the act that says them.
+
+**Two consequences follow, and both are stated here so that neither is discovered late.** The owner's declared ceiling of
+**$2**, decided on 2026-08-23, governs `WO-MOK-026`'s single instrument run and **does not reach this stage**: five
+1,000-tick seeds are an **estimated** $5.20, so this stage needs its own ceiling in its own authorization. And a deferred
+horizon means this work order cannot be estimated, scheduled or approved as a fixed quantity of spend — its approval
+authorizes the *machinery* of the measurement, never its cost.
+
 **This work order publishes no threshold and asserts no outcome.** There is no survivor floor, no death ceiling and no
 expected result, because `ADR-MOK-007` decision 7 records the owner's decision that defining one would defeat the
 purpose. What is verified is that the measurement was taken and reported honestly. What the population does is the
@@ -120,13 +134,26 @@ the figures exist.
   the report says which.
 - **The estimated cost is stated against the ceiling before the first run.** At an **estimated** $1.04 per 1,000-tick
   run, five seeds are an **estimated** $5.20; the owner's ceiling governs, and the estimate is what makes the ceiling
-  meaningful rather than arbitrary.
+  meaningful rather than arbitrary. The estimate is re-derived from `WO-MOK-026`'s **measured** per-exchange cost before
+  the authorization is sought, because that stage exists in part to replace this figure.
+- **The ceiling for this stage is not the $2 declared for `WO-MOK-026`.** That figure is below the five-seed estimate and
+  was declared for a 200-exchange instrument run. Proceeding under it would either stop every run early or exceed it, and
+  neither is a measurement.
+- **The horizon and the seed set come from the authorization, not from this work order.** Deferring them is act 8 of
+  `ADR-MOK-007`'s *Decision record*; an implementation agent that supplies a default for either has taken the owner's
+  decision.
+- **Every measurement run is executed from the engine's binary target.** `REQ-MOK-077` makes a live run reachable from
+  that host and no other, so a figure sourced from an observer run is not merely wrong provenance — it could not have
+  been produced.
 - **Every run's evidence is committed complete**: transcript, record stream, run record, authorization. An **estimated**
   4.7 MB per transcript and 23 MB for five seeds is what the repository takes on, and that figure is confirmed against
   the tree rather than assumed.
 - **The evidence path is named before the first capture**, and never renamed. Here a rename means paying for the runs
   again.
-- **Newly written files match the repository's stored line endings**, CRLF.
+- **Governance artifacts are written CRLF and retained evidence LF.** This stage commits the initiative's largest
+  volume of evidence, all of it under the tree `.gitattributes` exempts from end-of-line conversion, where the bytes
+  written are the bytes hashed. A digest taken over CRLF is one no reviewer can reproduce, and the remedy is the same as
+  a rename's: paying for the runs again.
 
 ## Expected change surface
 
@@ -163,6 +190,10 @@ report is where a threshold naturally wants to be written.
 **Cases L9 and L10 re-run** — the four existing sources stay byte-identical, since this stage re-runs two of them and any
 drift would silently change the comparison's baseline.
 
+**Case L31 re-run** — the observer replays. Each published run's transcript is replayed in the observer as well as in the
+engine's binary, because a transcript that cannot be watched is worse evidence than one that can, and this is the only
+stage that produces transcripts a reader will actually want to watch.
+
 **Security check C1 re-run** over every newly committed evidence file, because this stage commits the largest volume of
 provider-derived bytes in the initiative.
 
@@ -190,25 +221,29 @@ Under the evidence path this work order names, fixed before the first capture:
 
 1. **`WO-MOK-026`'s cache ratio failed**, or the measured per-run cost is materially above the estimate. The
    authorization's basis is wrong and the owner must re-authorize against real figures.
-2. **Any run's fallback count is non-zero.** Do not publish it, do not average around it, do not repeat the run without
+2. **An authorization arrives without a horizon, without a seed set, or with a ceiling below the re-derived estimate for
+   the seed set it names.** Do not fill in the missing value and do not run partially to stay inside a low ceiling. The
+   horizon and seed set were deferred to this act precisely so that this act supplies them; an authorization that does not
+   supply them is incomplete rather than permissive.
+3. **Any run's fallback count is non-zero.** Do not publish it, do not average around it, do not repeat the run without
    authorization. Report it and escalate: a systematic fallback means the instrument is not ready, and a one-off means
    the seed set is incomplete, and which it is changes what the owner should do.
-3. **A run stops on its ceiling before the declared horizon.** Its figures are not at the declared horizon and so are not
+4. **A run stops on its ceiling before the declared horizon.** Its figures are not at the declared horizon and so are not
    comparable. Escalate for a ceiling decision rather than publishing a short run beside full-horizon ones.
-4. **The authorized ceiling would be exceeded to complete the seed set.** Stop at the ceiling. Report which seeds were
+5. **The authorized ceiling would be exceeded to complete the seed set.** Stop at the ceiling. Report which seeds were
    measured and which were not.
-5. **`reference` or `social` cannot be re-run at the declared horizon**, or their re-run figures differ from
+6. **`reference` or `social` cannot be re-run at the declared horizon**, or their re-run figures differ from
    `INT-MOK-001`'s at their own horizon in a way that is not explained by the horizon. The second case means something
    moved that `L9` should have caught.
-6. **Any request arrives to add a threshold, an expectation, a target or a success criterion to the report.** `L26` fails
+7. **Any request arrives to add a threshold, an expectation, a target or a success criterion to the report.** `L26` fails
    on it and `ADR-MOK-007` decision 7 is the recorded reason. If the owner wants one, that is an amendment to a decision,
    not an edit to a report.
-7. **The evidence volume exceeds what the repository should carry**, or an evidence path must be renamed after a capture.
+8. **The evidence volume exceeds what the repository should carry**, or an evidence path must be renamed after a capture.
    A rename here costs the price of every run again.
-8. **A credential or any provider-side identifier appears in any committed evidence file.** Stop before committing.
-9. **Either Rust package needs a source change.** Escalate to the prior work order rather than changing code under a
-   measurement work order.
-10. **The comparison shows something that invites interpretation.** Report the numbers and escalate the interpretation.
+9. **A credential or any provider-side identifier appears in any committed evidence file.** Stop before committing.
+10. **Either Rust package needs a source change.** Escalate to the prior work order rather than changing code under a
+    measurement work order.
+11. **The comparison shows something that invites interpretation.** Report the numbers and escalate the interpretation.
     Concluding anything about the model from one horizon, one seed set, one reasoning level and no repetition is the
     error this whole stage's limits section exists to prevent.
 

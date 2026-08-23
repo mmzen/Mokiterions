@@ -18,6 +18,35 @@
 | Date | What moved |
 |---|---|
 | 2026-08-23 | Created. |
+| 2026-08-23 | **Superseded in part.** The artifact packet was written and the open decisions were answered. See *What this document no longer decides* immediately below. |
+
+## What this document no longer decides
+
+Everything below was written before the artifact packet existed. Where a formal artifact under
+`docs/engineering/simulation/` now covers the same ground, **the artifact governs and this document is background**.
+Three parts are superseded outright rather than merely overtaken, and they are named here so that a later reader does not
+act on them.
+
+1. **The transport comparison — *Where the provider lives*, options A and B — is superseded.** Neither was adopted. On
+   2026-08-23 the repository owner proposed a third shape: the engine's core accepts a new decision-source value and a
+   separate argument naming a **connector** binary that the host spawns and exchanges decisions with. The core is
+   indifferent to what the connector does; in this initiative it talks to the model. `ADR-MOK-007` decision 3 records it,
+   and `ADR-MOK-007`'s *Considered options* keeps A and B on the record as 3a and 3b with the reasons neither was taken.
+   The practical difference from option B is that the connector is **not in this repository at all** — so the
+   standard-library constraint this document's table proposed for it is withdrawn as unenforceable, `SPEC-MOK-007` rule
+   10.6 says so plainly, and the one connector the repository does own is a test fixture rather than a shipped program.
+2. **The claim that the observer is not involved is superseded.** The terminal observer is a **replay host** of the new
+   source: it may replay a committed transcript through every pane it already has, and it may not run live. The reason is
+   arithmetic rather than preference — it owes a frame every 33 milliseconds and one live tick costs an **estimated** 4 to
+   9 seconds. `REQ-MOK-077` carries the split and `ADR-MOK-007` decision 8 records it.
+3. **The open decisions are closed.** All four were answered by the repository owner on 2026-08-23: the connector rather
+   than a workspace package; verification tier 1 accepted; a declared spend ceiling of **$2**; and the horizon for the
+   measurement stage **deferred** until the instrument stage has measured real cost and latency. `ADR-MOK-007`'s
+   *Decision record* holds all of them with the words they were given in.
+
+The requirement count also moved: the packet has **fifteen** requirements, `REQ-MOK-063` through `REQ-MOK-077`, against
+the "roughly ten to fourteen" this document estimated. The fifteenth is the host split, which nothing in this document
+anticipated because the design that needed it came later.
 | 2026-08-23 | **Five owner decisions recorded** (see below) and the document rewritten around them. Isolation and reasoning level move from open questions to fixed inputs. Cache optimisation becomes a measurable requirement with a stated threshold, and the cost figures are restated for a cache-ordered prompt. The recommendation that the LLM policy get "its own floor at its own horizon" is **withdrawn**: it has no outcome floor at all, and the verification section is rewritten to hold the instrument rather than the result. A run-authorisation and cost-containment section is added. Two findings reduce the amendment set rather than growing it: the four existing outcome floors name their sources explicitly and so bind no fifth source, and the dependency prohibitions are package-scoped, so with the recommended transport nothing in them is relaxed. |
 
 ## Decisions recorded
@@ -313,6 +342,10 @@ timestamps, closed value alphabet, byte-comparable between runs. That makes a tr
 than a log, and it means two runs can be compared with `cmp`.
 
 ### Where the provider lives, and the one dependency question it decides
+
+> **Superseded.** Neither option below was adopted. `ADR-MOK-007` decision 3 selects a **connector outside this
+> repository**, named by the operator as a path and spawned by the host. The comparison is kept because the ADR's option
+> 3a and 3b are these two, and because the reasoning about dependency surface is what ruled 3a out.
 
 Finding 7 leaves exactly one structural choice. Both options keep the engine clean; they differ in whether the
 workspace acquires a network and credential surface.

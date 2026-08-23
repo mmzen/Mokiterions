@@ -100,13 +100,25 @@ and *Non-goals* explains why.
   ask for them. Reproducibility comes from the transcript.
 - **No emergence verdict.** Deciding what would count as emergence, and against what, is `ROADMAP.md` Phase 6's
   problem. This initiative produces the material that question needs and does not answer it.
-- **No second host.** The observer is untouched, beyond naming the fifth source where it names the other four.
+- **No live run outside the engine's own binary.** The observer becomes a host of this source, but a **replay-only**
+  one: it may replay a committed transcript and it may not run live. The reason is measured rather than preferred — the
+  observer owes a frame every 33 milliseconds and one live tick costs an **estimated** 4 to 9 seconds — and
+  `ADR-MOK-007` decision 8 records it. An earlier draft of this intent said "No second host", which was wrong in both
+  directions: there are already two hosts of the engine library, and this initiative gives the second one real work.
 
 ## Principles and immutable constraints
 
-1. **The engine decides nothing about the network.** No socket, no credential, no asynchronous runtime and no
-   model-provider crate reaches `mokiterions-core`. Its declared dependency set stays empty, and
-   `ARCH-MOK-001`'s by-name conformance check keeps passing unchanged.
+1. **The engine decides nothing about the network.** No socket, no asynchronous runtime and no model-provider crate
+   reaches `mokiterions-core`, in either of its targets. Its declared dependency set stays empty, and `ARCH-MOK-001`'s
+   by-name conformance check keeps passing unchanged — which matters because that check scans the engine **package**, and
+   the package's own binary target is the host of a live run.
+   *Stated precisely, because one word of it is easy to overstate:* **neither target reads a credential.** The engine's
+   binary target starts the connector and may hand it the environment it inherited, and a credential in that environment
+   passes through untouched — inherited, not read, not parsed, not logged and never in an argument. `SPEC-MOK-007` rules
+   10.5 and 13.4 fix this, and the connector is the one component that reads the value.
+   The library target keeps a stronger property than the package does: it resolves no path, opens no file, spawns no
+   process and reads no environment variable. Both of this initiative's streams reach it as already-open handles from the
+   host that owns them, which is `SPEC-MOK-006` rule 1.2 extended to a second stream rather than excepted for one.
 2. **The engine remains the sole authority.** A proposal from a model is a proposal. It is validated, and rejected
    when illegal, by the same code path that validates the other four sources.
 3. **A decision request carries one Mokiterion's observation and nothing else.** No attribute of another Mokiterion,
@@ -143,11 +155,15 @@ and *Non-goals* explains why.
   round-robin ordering. *Estimate.*
 - A model handed the rule 6 set will mostly propose from it. The rejection rate is unknown and is measured.
 
-**Open decisions, none of which this intent takes.**
+**Decisions this intent does not take. All four were taken by the repository owner on 2026-08-23 and are recorded in
+`ADR-MOK-007`'s *Decision record*; they are listed here with their answers so that this intent is not read as still
+open.**
 
-- Where the provider lives: a third package inside the workspace, or a separate program the host speaks to. This
-  changes whether `REQ-MOK-050` moves at all, and is `ADR-MOK-007`'s to record.
-- Whether a short committed transcript may be replayed in continuous integration. Replay costs nothing and makes no
-  call, so this is a question about what belongs in the source tree, not about spend.
-- The spend ceiling to declare, per run and in total.
-- The horizon and seed set for the measurement stage.
+- **Where the provider lives**: settled as an **external connector the operator names by path**, spawned by the host, not
+  a package in this workspace. `REQ-MOK-050` does not move, and neither does any other dependency artifact.
+- **Whether a short committed transcript may be replayed in continuous integration**: settled as **yes**, and it is the
+  whole of verification tier 1. Replay costs nothing, makes no call and needs no credential.
+- **The spend ceiling to declare**: settled as **$2**, which governs the single instrument run of `WO-MOK-026`. It is
+  below the **estimated** $5.20 that five 1,000-tick seeds cost, so the measurement stage needs its own ceiling.
+- **The horizon and seed set for the measurement stage**: **deferred**, deliberately, until `WO-MOK-026` has measured the
+  real per-exchange cost and latency. The deferral is a decision and `WO-MOK-027` records it as one.

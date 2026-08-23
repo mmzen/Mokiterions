@@ -23,6 +23,7 @@ verifies = [
   "REQ-MOK-074",
   "REQ-MOK-075",
   "REQ-MOK-076",
+  "REQ-MOK-077",
 ]
 +++
 
@@ -89,17 +90,26 @@ decision 5 keep the provider credential out of continuous integration entirely, 
 call runs in automation.**
 
 A green build establishes: the port, the request composition, the enumeration, the isolation properties, the cache
-layout, the replay identity, the byte-identity of the four existing sources, the gating, the ceiling arithmetic, the
-fallback accounting, and the absence of an outcome threshold. That is twenty-two of the twenty-eight cases below, and
-all of them run free and offline against a committed transcript and a stubbed port.
+layout, the replay identity, the byte-identity of the four existing sources, the two hosts and their split, the gating,
+the ceiling arithmetic, the fallback accounting, and the absence of an outcome threshold. That is thirty of the
+thirty-five cases below, and all of them run free and offline against a committed transcript, a stubbed port and the
+canned connector.
+
+That the free set is thirty of thirty-five is itself an owner decision, taken on 2026-08-23: *"CI can not replay the LLM
+policy after push, release etc … same for unit and automated tests"*, and, asked whether a short committed transcript
+may nonetheless be replayed in automation, **yes**. Replay makes no call and needs no credential, so it is the whole of
+verification tier 1 and the reason this contract is mostly free rather than mostly gated. `ADR-MOK-007`'s *Decision
+record* holds both halves.
 
 A green build does **not** establish: `REQ-MOK-070`'s cache ratio, `REQ-MOK-075`'s measurement, or that any model was
-ever consulted. Those are cases **L15**, **L24** and **L25**, marked **owner-gated** in the matrix, and each requires
-an authorised live run under `REQ-MOK-076`. Two more, **L21** and **L28**, are owner attestations that no check can
-make: that the credential is not configured in the repository's automation secrets, and that the retained
-authorization is genuine.
+ever consulted. Those are cases **L15b**, **L24** and **L25**, marked **owner-gated** in the matrix, and each requires
+an authorised live run under `REQ-MOK-076`. Two more are judgements rather than runs: **L27** is the assurance owner's
+manual assessment that the shared rules block carries no strategy — free and offline, but not a build — and **L28**'s
+static half runs everywhere while *whether the retained authorization is genuine* is an owner attestation. A sixth fact
+sits outside the matrix entirely: check **C6**, that the credential is not configured in the repository's automation
+secrets, which no check inside the repository can see.
 
-Six cases therefore cannot be satisfied by a build. That is a consequence of the owner's cost decision and is recorded
+Five cases therefore cannot be satisfied by a build. That is a consequence of the owner's cost decision and is recorded
 as a limit rather than engineered around.
 
 ## Requirement-to-evidence matrix
@@ -126,16 +136,21 @@ as a limit rather than engineered around.
 | `REQ-MOK-069` | static check | **L17** the transcript's constraints | no floating-point value, no timestamp, no path and no value outside the closed alphabet appears in a transcript, and two transcripts of the same recorded run compare equal with `cmp` |
 | `REQ-MOK-071` | automated test | **L18** the ceiling bounds | against a stubbed port with declared unit prices and synthetic usage, a run declared with a ceiling reached mid-run issues no exchange after the ceiling, ends with the transcript and record stream complete to that tick, reports the ceiling, the accumulated cost and the tick reached, and exits with a status distinct from a clean completion and from an error |
 | `REQ-MOK-071` | automated test | **L19** the check precedes the spend | no exchange is issued whose cost would cross the ceiling; a ceiling equal to the cost of two exchanges yields exactly two |
-| `REQ-MOK-072` | automated test | **L20** both conditions required | with a credential present and no live-mode selection, no provider call occurs and the run replays or refuses; with a live-mode selection and no credential, no provider call occurs and the run reports which condition was missing without printing any value; an empty or malformed credential is treated as absent; a live run with no declared ceiling is refused before the first exchange. Verified with no real credential ever present |
+| `REQ-MOK-072` | automated test | **L20** both conditions required | **in the engine's binary target**, which is the only host a live run is reachable from at all: with a credential present and no live-mode selection, no provider call occurs and the run replays or refuses; with a live-mode selection and no credential, no provider call occurs and the run reports which condition was missing without printing any value; an empty or malformed credential is treated as absent; a live run with no declared ceiling is refused before the first exchange. Verified with no real credential ever present. In the observer the two conditions are unreachable rather than satisfied, which case **L32** checks instead |
 | `REQ-MOK-073` | static check | **L21a** automation holds no credential | no workflow file in the repository references a model-provider credential as a secret, an environment variable, an input, or through a step that fetches one, and no workflow selects live mode; the check fails on the pull request that introduces such a reference |
 | `REQ-MOK-073` | automated test | **L21b** automation still exercises the source | a workflow step runs the model-backed source in replay mode against the committed transcript, and that step's presence is checked rather than assumed |
 | `REQ-MOK-074` | automated test | **L22** the fallback is counted | an exchange yielding no response and an exchange yielding an unenumerated action each propose `wait`, increment the count, record the cause in the transcript, and mark the run unfit; a response naming a target the observation did not carry does the same |
 | `REQ-MOK-074` | automated test | **L23** a rejection is not a fallback | a well-formed enumerated proposal that the engine's rules reject increments the existing rejection counter and does **not** increment the fallback count and does **not** mark the run; a clean run reports the fallback count as `0` rather than omitting it |
 | `REQ-MOK-075` | manual assessment | **L24** the comparison is published — **owner-gated** | for the declared seed set at the declared horizon, survivors, deaths and combat deaths are reported for the model-backed source and for `reference` and `social` **re-run at the same seeds and horizon**, with the seed set, horizon, density and source run records named, and with **no threshold applied to any figure** |
 | `REQ-MOK-075` | automated test | **L25** only fit runs are published — **owner-gated** | every run whose figures are published reports a fallback count of `0` and did not stop at its ceiling; a seed whose run was unfit is reported as a gap rather than substituted |
-| all fourteen | static check | **L26** no outcome threshold exists | no survivor floor, death ceiling, combat-rate bound or outcome comparison assertion for the model-backed source appears anywhere in the verification suite. **This case fails when such an assertion is added.** See the opening section for why an absence is checked |
+| all fifteen | static check | **L26** no outcome threshold exists | no survivor floor, death ceiling, combat-rate bound or outcome comparison assertion for the model-backed source appears anywhere in the verification suite. **This case fails when such an assertion is added.** See the opening section for why an absence is checked |
 | `REQ-MOK-063`–`REQ-MOK-076` | manual assessment | **L27** the prompt carries no strategy | the shared rules block states the world's rules, the attribute ranges, the verbs, the perception radius and the response grammar, and states no goal, preference, objective or advice; assessed against `SPEC-MOK-007` rule 4.4 by the assurance owner and recorded as an assessment |
 | `REQ-MOK-076` | static check + attestation | **L28** the authorization is retained | every live run's retained evidence includes an authorization record naming the authorizing owner, the date, the horizon, the seed set and the ceiling; each run's actual seed, horizon and ceiling falls within it; the record contains no credential and no account identifier. **Whether the authorization is genuine is an owner attestation**, not a check |
+| `REQ-MOK-077` | automated test | **L29** both entry points carry the port | a port that supplies proposals drives a run through the whole-run entry point, and a replay drives the same source through the single-tick entry point, in one suite; a build in which either door lacks the port fails here rather than at the first host that tries it. Runs free: the port is the scripted stub in `WO-MOK-025` and the canned connector in `WO-MOK-026`, and the case is the same case in both |
+| `REQ-MOK-077` | automated test | **L30** the port is lent, not rebuilt | a replay of at least three ticks through the single-tick entry point consumes successive transcript records rather than the first record three times, and a stubbed live run's accumulated cost rises across ticks and trips a ceiling set to the cost of two exchanges. **A port rebuilt each tick passes neither half**: the cursor restarts and the accumulated cost stays at zero, so the ceiling never triggers. This is the case for the defect that compiles, runs and reports success |
+| `REQ-MOK-077` | automated test | **L31** the observer replays | the observer, given this source and a committed transcript with no credential in the environment and no network reachable, advances to the transcript's horizon under operator control; the roster, map, event log, inspector, filter and export behave as they do under `social`, and the provenance footer names the fifth source |
+| `REQ-MOK-077` | automated test | **L32** the observer refuses a live run | the observer given a connector path, a live-mode selection or a spend ceiling exits `2` before entering the terminal, names on standard error that this host replays only, starts no run and spawns no child process; given this source and **no** transcript it exits `2` and names the missing transcript. It never falls back to another source, and it never accepts the option and acts on nothing — which is what distinguishes this case from the `--events-path` defect GitHub issue 40 tracks |
+| `REQ-MOK-077` | automated test | **L33** no port is an invalid configuration | this source selected with no port supplied refuses as an invalid configuration, in both hosts, rather than substituting a source, producing no decisions or applying the fallback of `REQ-MOK-074` |
 
 ## Acceptance scenarios
 
@@ -159,6 +174,13 @@ and the run continues to its tick limit.
 
 **A6 — a workflow tries to spend.** A pull request adds a provider key to a workflow's environment. The static check
 fails, names the file and the line, and the build is red until the reference is removed.
+
+**A7 — the observer watches, and declines to spend.** The observer is started with the model-backed source and a
+committed transcript, and it presents the run through every pane it already has, tick by tick, under the operator's
+control. Started instead with a connector path, it exits `2` before the terminal is entered and says that this host
+replays only. Neither invocation makes a provider call, and the second starts no child process. This is the pair of
+behaviours `REQ-MOK-077` exists for, and the second is the one a build is most likely to get wrong quietly, because the
+observer forwards options it does not recognise to the engine's shared parser, which now accepts them.
 
 ## Property and invariant tests
 
@@ -185,20 +207,48 @@ fails, names the file and the line, and the build is red until the reference is 
 ## Static and architecture checks
 
 - **S1** The engine's and the observer's resolved dependency graphs equal the declared sets, unchanged from the base
-  commit. `ARCH-MOK-001`'s by-name scan for a network, asynchronous-runtime, database, model-provider or user-interface
-  crate is re-run and continues to find none. **This check is what makes `ADR-MOK-007` decision 3 true rather than
-  intended**, and it fails under transport option 3a unless that option's amendments have been made.
-- **S2** Under `ADR-MOK-007` decision 3 as recommended, the provider program's own dependency declaration is checked
-  against its language's standard library. This is the check that closes the honest cost the ADR records for that
-  option; without it the decision relocates the dependency surface rather than avoiding it.
+  commit — the engine's table empty, the observer's one entry with every other crate reached transitively through
+  `ratatui`. `ARCH-MOK-001`'s by-name scan for a network, asynchronous-runtime, database, model-provider or
+  user-interface crate is re-run and continues to find none. **This check is what makes `ADR-MOK-007` decision 3 true
+  rather than intended.** It is run over the engine **package**, whose `[[bin]]` target is the recording host, so a crate
+  admitted for the host alone would be found here.
+- **S2** The connector's dependency surface is **not** checked, and the absence is the finding rather than a gap in this
+  contract. `SPEC-MOK-007` rule 10.6 withdraws the standard-library constraint an earlier draft placed on the provider
+  program, because the connector is named by the operator and this repository neither builds it nor ships it, so no check
+  here can see it. What **is** checked is the **canned connector** of rule 20.5 — the one connector this repository owns —
+  against its own dependency declaration and against reaching no network. The report states plainly that this establishes
+  nothing about an operator's connector, and `ADR-MOK-007`'s *Negative* consequences record the same limit. Verifying a
+  claim about a program outside the repository is not possible, and pretending otherwise would be the worst kind of green.
+- **S2a** No third workspace member, no third package directory, no connector source outside the canned one, and no
+  connector path compiled into either package as a default. A default path would make a live run reachable without the
+  operator naming anything, which is `REQ-MOK-072`'s gate defeated by a constant.
 - **S3** The library target performs no filesystem operation, opens no socket, spawns no process and reads no
-  environment variable, extending `ARCH-MOK-001`'s 2026-08-20 prohibition to the three new capability classes.
+  environment variable, extending `ARCH-MOK-001`'s 2026-08-20 prohibition to the three new capability classes. **Both of
+  this source's streams are covered**: the transcript it writes in live mode and the transcript it reads in replay both
+  arrive as already-open handles, per `SPEC-MOK-007` rules 11.1 and 12.1.1. This check is what keeps `SPEC-MOK-001`'s
+  *"The library target interprets no path at all and performs no filesystem operation"* a measurement rather than a
+  memory.
+- **S3a** The process spawn and the environment pass-through appear in the engine's binary target and nowhere else in
+  either package. The observer's source contains no process spawn at all, which is `REQ-MOK-077`'s prohibition checked
+  statically rather than assumed from its absence today.
 - **S4** The added public surface is exactly one interface and one request type. No transport type and no dependency-owned
   type appears on it.
-- **S5** The usage text's fifth policy value is present, and the sentence *"None of the four learns anything or calls a
-  model; all four are deterministic"* no longer appears. A usage text that contradicts the program is the first defect a
-  reader meets, so it is checked rather than reviewed.
-- **S6** The observer's authority mapping contains the fifth source and its hard-coded four-source description is gone.
+- **S5** The usage text's fifth policy value is present in both hosts' texts, and the sentence *"None of the four learns
+  anything or calls a model; all four are deterministic"* no longer appears in either. A usage text that contradicts the
+  program is the first defect a reader meets, so it is checked rather than reviewed.
+- **S5a** The observer's descriptions of the shared options remain byte-identical to `mokiterions::cli::USAGE`, which
+  `mokiterions-tui/tests/options.rs` already holds. The fifth policy value's description and the transcript option's
+  description are therefore the engine's words in both texts; what the observer states in its own words is only that this
+  host replays only, which is the observer's own fact and not a shared input's meaning.
+- **S6** The observer's authority mapping contains the fifth source, mapped to `REQ-MOK-063`, and its hard-coded
+  four-source description is gone. The mapping is exhaustive by construction — the observer resolves it in a `match` over
+  the policy — which is why `SPEC-MOK-003`'s 2026-08-19 amendment record treats a missing row as a compiler-visible gap.
+- **S6a** The configuration value the library holds gains no field for either new path. Both are validated by the shared
+  parser and discarded there, on the `--events-path` precedent, so a path cannot reach the simulation's rules by
+  travelling inside the configuration. `SPEC-MOK-007` rules 10.9 and 18.4 are what this measures.
+- **S6b** Neither host contains a live-versus-replay branch inside the library target, and the observer contains no live
+  path at all: no ceiling parsing that reaches a run, no connector spawn, no credential read. `REQ-MOK-077`'s prohibition
+  is checked as an absence, and an absence nobody looks for is indistinguishable from an oversight.
 - **S7** The shared rules block exists in exactly one place in the source, so that case **L27**'s assessment has one
   object and a drift between two copies is impossible.
 
@@ -285,10 +335,12 @@ Three retention decisions are stated rather than left to the work order:
   behaviour: it is a signal to re-measure and bring the layout or the floor back to the owner, not a reason to soften
   the number in place. This contract cannot distinguish a regression in the repository from a change at the provider,
   and the transcript's retained usage figures are what a person uses to tell them apart.
-- **Six cases cannot be satisfied by a build.** **L15b**, **L24**, **L25** need an authorised live run; **L21a** is
-  checkable but **C6**'s attestation behind it is not; **L28**'s genuineness is not; **M1** through **M3** are
-  assessments. A green build is not a satisfied contract here, which is a weaker position than any previous contract in
-  this repository has been in, and it follows directly from the cost decision rather than from a shortcut.
+- **Five cases cannot be satisfied by a build.** **L15b**, **L24** and **L25** need an authorised live run; **L27** is
+  the assurance owner's assessment, and **M2** and **M3** sit beside it; **L28**'s static half is checkable and its
+  genuineness is not. **L21a** *is* fully checkable, but **C6**'s attestation behind it is not, and that attestation is
+  the single fact the whole cost containment rests on — it is outside the matrix because it is outside the repository.
+  A green build is not a satisfied contract here, which is a weaker position than any previous contract in this
+  repository has been in, and it follows directly from the cost decision rather than from a shortcut.
 - **Cases L4, L5, L12, L13 and L14 are only as good as the transcript they read.** They check the requests a particular
   run produced. A code path that composes a different request under a configuration no retained transcript covers is not
   reached. The mitigation is that the committed transcript covers a run in which every Mokiterion acts, targeted actions

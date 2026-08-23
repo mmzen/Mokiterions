@@ -91,7 +91,7 @@ run's evidence.
 
 ## Candidate requirements
 
-Fourteen, `REQ-MOK-063` through `REQ-MOK-076`. Grouped by what they are for rather than by number.
+Fifteen, `REQ-MOK-063` through `REQ-MOK-077`. Grouped by what they are for rather than by number.
 
 **The source and the boundary.**
 
@@ -99,6 +99,13 @@ Fourteen, `REQ-MOK-063` through `REQ-MOK-076`. Grouped by what they are for rath
 - `REQ-MOK-064` — present the set rule 6 permits, targeted actions included, not `Observation.valid_actions`.
 - `REQ-MOK-065` — carry no other Mokiterion's state, and nothing derived from another exchange, into a request.
 - `REQ-MOK-066` — answer each decision from a self-contained request that carries no earlier exchange.
+
+**The hosts.** One requirement, added after the other fourteen because the design that needed it came later: the
+repository owner's decision of 2026-08-23 that the terminal observer hosts this source too, for replay only.
+
+- `REQ-MOK-077` — replay a model-backed run in either host, and run live only from the engine's binary. The prohibition
+  is the substance: the observer owes a frame every 33 milliseconds and one live tick costs an **estimated** 4 to 9
+  seconds, so a live run there is not slow but impossible, and no other requirement here says so.
 
 **Evidence and determinism.**
 
