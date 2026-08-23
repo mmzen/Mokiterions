@@ -4,7 +4,9 @@ This directory retains implementation evidence for `WO-MOK-025`, the first of Ph
 `VER-MOK-018` is the verification contract it serves.
 
 **This packet is incomplete and is committed incomplete on purpose.** What is here is the base-commit
-capture and nothing else: the state of the engine's output *before* any change of this work order. The
+capture, and one governance act that came out of taking it: the state of the engine's output *before* any
+change of this work order, plus the owner's ratification of the `SPEC-MOK-006` row that the capture proved
+was still outstanding at a third commit. Neither is an implementation of this work order's scope. The
 work order's *Constraints* require it first and say why — "**The base-commit captures are taken first.** A
 capture taken after the change is not a base-commit capture, and `REQ-MOK-068` becomes uncheckable without
 one. This is the one ordering constraint that cannot be repaired later." A capture is the one kind of
@@ -54,6 +56,11 @@ re-measures rather than assumes.
   the record stream where there is one.
 - **`entropy-manifest.sh`** — reduces the per-boundary entropy capture to one line per configuration.
 - **`base/nosink-manifest.txt`**, **`base/sink-manifest.txt`** — those manifests for the two modes.
+  **`base/sink-manifest.txt`'s record-stream digests were superseded the same day** by the owner's
+  ratification of `SPEC-MOK-006`'s 2026-08-21 amendment row, which moved `schema` from `1` to `2` and with it
+  all forty of them. It is left uncorrected because it is a base-commit capture and the base commit emitted
+  `1`; `ratification/sink-manifest.txt` is the schema-2 baseline the later record-stream comparison uses.
+  The text-stream digests beside them are untouched, and `base/nosink-manifest.txt` stands as taken.
 - **`base/entropy-manifest.txt`** — the twenty configurations' tick-boundary entropy states, as a boundary
   count, a digest of that configuration's own lines, and the final state.
 - **`base/entropy-instrument.patch`** — the instrument that produces the entropy capture, as a patch
@@ -65,7 +72,12 @@ re-measures rather than assumes.
   L9 check run there, and the entropy manifest regenerated and found byte-identical to the committed one.
 - **`base/wo-019-comparison.txt`** — a free cross-check against `WO-MOK-019`'s retained capture.
 - **`base/schema-divergence.txt`** — the record stream's `schema` value at the base commit, measured. This
-  is the basis of an escalation, not a change.
+  was the basis of the escalation `WO-MOK-025` stop-and-escalate condition 5 requires. **The owner settled it
+  on 2026-08-23**, and `ratification/` holds that act and its measurement; the file is left as written,
+  before the answer, because it is the escalation's evidence and not a summary of the outcome.
+- **`ratification/`** — the owner's ratification of `SPEC-MOK-006`'s 2026-08-21 amendment row, the two-line
+  product change it obliged, and the measurement that the increment changes one integer in every header
+  record and nothing else. See that directory's own `README.md`.
 
 ## Retention: what is kept whole, what is kept as a digest, and why
 
@@ -155,5 +167,6 @@ written that way and cannot now be changed.
 - **That `REQ-MOK-068` holds.** It fixes the figures the later comparison is made against. The comparison
   is the next capture's, and a difference in it is a finding, not a failure of this one.
 - **That the `llm` source works.** No live run is authorized and none was made.
-- **That the record stream's `schema` question is settled.** `base/schema-divergence.txt` measures it and
-  says explicitly that it is not.
+- **That `WO-MOK-025`'s own `schema` value is written.** The row it depended on is ratified and `2` now
+  stands, so the value this work order writes is `3` — but it is written under the work order's own change,
+  measured there, and nothing here writes it.

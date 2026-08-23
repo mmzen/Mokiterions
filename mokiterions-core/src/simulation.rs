@@ -1837,7 +1837,15 @@ pub struct TickOutcome {
 /// identifies the producer and this identifies the contract, so an engine release that
 /// changes no byte any conforming writer produces does not move it. Rule 10.2 fixes what
 /// does move it, and it is a declared compatibility surface of this product.
-const RECORD_SCHEMA_VERSION: u32 = 1;
+///
+/// `2` since 2026-08-23, when the repository owner ratified `SPEC-MOK-006`'s 2026-08-21
+/// amendment row. That row is the first exercise of rule 10.2: the merge that brought
+/// `CAP-MOK-010`'s combat and this stream into one tree added fourteen field names and
+/// thirteen domain members, and the stream carried them for three commits while still
+/// declaring `1`. The row states the divergence itself and left the increment to the
+/// owner, because moving a declared compatibility surface is not an implementation
+/// agent's decision.
+const RECORD_SCHEMA_VERSION: u32 = 2;
 
 /// The two streams a run writes: the text stream `SPEC-MOK-001` fixes, and the optional
 /// structured record stream `SPEC-MOK-006` fixes.
@@ -7599,7 +7607,7 @@ mod tests {
 
         assert_eq!(
             record,
-            "{\"record\":\"header\",\"schema\":1,\"engine\":\"0.1.0\",\
+            "{\"record\":\"header\",\"schema\":2,\"engine\":\"0.1.0\",\
              \"config\":{\"seed\":777,\"ticks\":1000,\"policy\":\"individual\",\
              \"density\":\"1.50\",\"trace_actions\":true}}\n"
         );
