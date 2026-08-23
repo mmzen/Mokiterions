@@ -226,15 +226,17 @@ at least eighty-five percent of total prompt tokens.
 full including the live half, **L21a** and **L21b** re-run, **L22** with a real transport failure, **L26** re-run,
 **L29** re-run with the canned connector standing where `WO-MOK-025` used an in-process stub, and **L32** in full —
 including the connector-path, live-mode and ceiling halves `WO-MOK-025` could not reach because the options did not
-exist. **L30**, **L31** and **L33** are re-run unchanged, since this stage moves the two entry points' signatures no
-further.
+exist. **L30**, **L31** and **L33** are re-run unchanged, since this stage moves `execute`'s and `advance_tick`'s
+signatures no further.
 
 **Acceptance scenario A4**, **A7** in full including its refusal half, and **A1**, **A5** and **A6** re-run — **A1**
 because "a run nobody paid for" is the property most at risk from this stage's existence.
 
 **Properties P5** and **P6** against real usage figures, and **P1** and **P7** re-run against the live transcript.
 
-**Static checks S1**, **S2**, **S2a**, **S3**, **S3a**, **S5** and **S5a**, with **S6a** and **S6b** re-run. **S2** now
+**Static checks S1**, **S2**, **S2a**, **S3**, **S3a**, **S5** and **S5a**, with **S4a**, **S6a** and **S6b** re-run.
+**S4a** is re-run rather than skipped because it costs nothing and because a stage that adds options to both hosts is
+exactly where a fifth parameter could reappear on a signature this stage claims not to touch. **S2** now
 applies, in exactly the scope `VER-MOK-018` gives it: the **canned** connector's dependency declaration and its reaching
 no network. It says nothing about an operator's connector, and the report states that limit rather than implying
 coverage. **S3a** applies in full for the first time — the spawn and the environment pass-through appear in the engine's

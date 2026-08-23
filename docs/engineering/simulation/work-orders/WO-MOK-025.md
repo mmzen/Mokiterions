@@ -54,7 +54,7 @@ exist yet to be used by accident.
 ## Objective
 
 Build the fifth decision source's whole structure with the provider replaced by a scripted stub and by a retained
-transcript: one port at the engine boundary, wired into **both** of the engine's run entry points, the cache-ordered
+transcript: one port at the engine boundary, wired into **both** of rule 20.5's two doors, the cache-ordered
 request, the complete action enumeration, the transcript format, the replay, the fallback accounting, the command-line
 and observer surfaces, and the workflow check that keeps a provider credential out of continuous integration — while
 leaving the four existing decision sources byte-identical.
@@ -71,12 +71,25 @@ keeps the provider itself out of automation entirely.
    a proposal or the absence of one, per `SPEC-MOK-007` rules 1 and 2. No transport type, no mode value, no branch on
    live-versus-replay in the library target.
 
-   **The port reaches both run entry points**, per `SPEC-MOK-007` rules 20.4 and 20.5: one new optional parameter each, of
-   the same borrowed shape `SPEC-MOK-002` rule 4 already fixes for the record sink. The whole-run path and the
-   single-tick path are the two doors the two hosts enter by, and **two existing public signatures change here** — before
-   any live path exists, which is the cheapest moment in this initiative for a signature change. The host builds the port,
-   owns it for the run, and lends it per tick; the library builds none, holds none and closes none, which is
-   `SPEC-MOK-006` rule 1.2 satisfied rather than excepted. Rule 20.8's refusal — this source selected with no port
+   **The port reaches both of rule 20.5's doors**, per `SPEC-MOK-007` rules 20.4 and 20.5: one new optional parameter
+   each, of the same borrowed shape `SPEC-MOK-002` rule 4 already fixes for the record sink. The two public signatures
+   that change here are **`execute`**, which reaches five parameters, and **`Simulation::advance_tick`** — the process
+   boundary the recording host drives a whole run through, and the single tick the replay host advances. They change here,
+   before any live path exists, which is the cheapest moment in this initiative for a signature change.
+
+   Three things follow, and each is a place a plausible implementation goes wrong. **`pub fn run` is not amended**: it
+   delegates with the port absent, its enumerated form in `SPEC-MOK-002` rule 5's first list stands, and adding the
+   parameter to it would grow the interface by something no approved artifact authorizes. **`pub(crate) fn run_recording`
+   does take the port**, as the crate-private carrier down the call chain, exactly as it carries the record sink today;
+   `ADR-MOK-007` discloses this so it is an expected diff rather than an undeclared third signature change. And
+   **`SPEC-MOK-002` rule 5's mechanical checks must be updated in the same commit as the code**, because the standing text
+   reads "A fifth parameter, a second sink, or a sink that is not optional fails the second" and the port on `execute` is
+   that fifth parameter — a build that adds the port and leaves the check as written fails its own specification. The
+   amendment `ADR-MOK-007` authorizes restates the checks; writing the code without writing the restatement is the defect
+   to avoid. `grep -n 'pub fn .*&mut self' src/simulation.rs` must still return exactly `run` and `advance_tick`.
+
+   The host builds the port, owns it for the run, and lends it per tick; the library builds none, holds none and closes
+   none, which is `SPEC-MOK-006` rule 1.2 satisfied rather than excepted. Rule 20.8's refusal — this source selected with no port
    supplied is an invalid configuration — is built here, and it is the one check of rule 13 that the library rather than a
    host makes.
 2. **Request composition** in the cache order `SPEC-MOK-007` rules 3 through 7 fix: the shared rules block, the actor
@@ -173,9 +186,10 @@ move; or the wording of any amendment, all of which are the owner's.
 - **The engine consumes no entropy under this source.** Not "the same amount"; none.
 - **The observation's core-proposal list does not change**, in members, order or length.
 - **The public surface grows by exactly one interface and one request type**, and **two existing public signatures gain
-  one optional parameter each** — the two run entry points, per `SPEC-MOK-007` rule 20.5. Nothing else on the public
-  surface moves. Those two signature changes are the whole of this initiative's breakage of existing callers, and they
-  happen here rather than in a later stage so that no caller is broken twice.
+  one optional parameter each — `execute` and `Simulation::advance_tick`**, per `SPEC-MOK-007` rule 20.5. Nothing else on
+  the public surface moves; in particular `pub fn run` does not. Those two signature changes are the whole of this
+  initiative's breakage of existing callers, and they happen here rather than in a later stage so that no caller is broken
+  twice.
 - **The library holds no resource this source needs.** Not the connector's process, not the transcript's file handle, not
   the reader's cursor. Each arrives per tick as a borrowed parameter from the host that owns it, which is why the defect
   case **L30** exists to catch — a port rebuilt each tick — is structurally unavailable rather than merely prohibited.
@@ -202,8 +216,10 @@ Components rather than files, since the shape of some of them is what this stage
 - **The engine's library target**: the decision port interface and the request type on its public surface; the source
   selection's fifth arm; the request composition; the transcript writer and reader; the fallback accounting; the run
   record.
-- **The engine's library target, at its two run entry points**: one optional port parameter each. This is the only part of
-  the surface that existing callers see change.
+- **The engine's library target, at `execute` and at `Simulation::advance_tick`**: one optional port parameter each. This
+  is the only part of the surface that existing callers see change. `pub fn run` keeps its signature;
+  `pub(crate) fn run_recording` gains the parameter as the crate-private carrier, which is a change to the diff and not to
+  the surface.
 - **The engine's binary target**: the transcript path resolution, the stream opening and closing, the replay selection,
   the port construction and the per-tick lending, and the usage text. The shared parser validates the new path option and
   discards its value on the `--events-path` precedent; this target re-reads the raw argument, which is where a path is
@@ -247,8 +263,10 @@ ceiling, which needs the option that declares one, so it is `WO-MOK-026`'s, as i
 
 **Properties P1** through **P7** — all seven, all checkable over a committed transcript and a stubbed port.
 
-**Static checks S1**, **S2a**, **S3**, **S3a**, **S4**, **S5**, **S5a**, **S6**, **S6a**, **S6b** and **S7**. **S2** does
-not apply: no connector exists yet, canned or otherwise. **S3a** applies in its negative half only — that no process spawn
+**Static checks S1**, **S2a**, **S3**, **S3a**, **S4**, **S4a**, **S5**, **S5a**, **S6**, **S6a**, **S6b** and **S7**.
+**S4a** is this stage's check on itself: the port lands here, so `SPEC-MOK-002` rule 5's restated drift checks must land
+here too, and a build that adds the fifth parameter without restating them fails the specification it implements. **S2**
+does not apply: no connector exists yet, canned or otherwise. **S3a** applies in its negative half only — that no process spawn
 appears anywhere in either package, which at this stage is the whole of it.
 
 **Security checks C1**, **C2** and **C4** in full. **C3** and **C5** in their negative half only — that the library
@@ -284,7 +302,8 @@ provenance:
    confirmation of byte-identity across the run.
 7. **The assessment records** for **M1** and **M2**, naming the assurance owner and the date, with the shared rules
    block quoted in full in the **M1** record.
-8. **The public-surface diff** and the dependency-graph comparison for **S1** and **S4**.
+8. **The public-surface diff** and the dependency-graph comparison for **S1** and **S4**, together with the output of each
+   of `SPEC-MOK-002` rule 5's restated mechanical checks and the amended text of the rule itself, for **S4a**.
 9. **The workflow check's output** for **L21a**, run against the repository's workflows at the candidate commit.
 10. **The two-host capture set** for `REQ-MOK-077`: the same transcript replayed through the engine's binary and through
     the observer, with the observer's run reaching the transcript's horizon; and the observer's refusal outputs — this
@@ -318,7 +337,7 @@ Stop and escalate — do not decide locally — if any of these is reached.
 6. **An amendment turns out to be needed that `ADR-MOK-007` does not name.** No approved artifact is amended on an
    implementation agent's judgement.
 7. **A verification case in the required list cannot be written** as `VER-MOK-018` states it.
-8. **Either run entry point cannot take the port as a borrowed optional parameter**, or the observer cannot lend an
+8. **`execute` or `Simulation::advance_tick` cannot take the port as a borrowed optional parameter**, or the observer cannot lend an
    already-open reader to the single-tick path without the library opening something. That would mean the design rests on
    the library holding a resource `SPEC-MOK-006` rule 1.2 forbids it, and the shape of the parameter is the owner's, not
    an implementation agent's, to change.
@@ -333,8 +352,11 @@ Stop and escalate — do not decide locally — if any of these is reached.
 ## Completion report format
 
 1. **What was built**, component by component, against the *In scope* list, with each item marked done or escalated.
-2. **The public surface**, before and after, as a diff, with the two changed run-entry-point signatures shown in full and
-   the callers they broke named — the engine's binary target and the observer, and no others.
+2. **The public surface**, before and after, as a diff, with `execute`'s and `Simulation::advance_tick`'s changed
+   signatures shown in full, `pub fn run`'s shown unchanged, `pub(crate) fn run_recording`'s disclosed as the
+   crate-private carrier that also took the parameter, and the callers the two public changes broke named — the engine's
+   binary target and the observer, and no others. `SPEC-MOK-002` rule 5's restated mechanical checks and their output go
+   here too, because the diff and the check that guards it are one claim.
 3. **The four sources' byte-identity**: the base commit, the candidate commit, the twenty configurations, and the
    comparison result for each, with the draw-count comparison stated separately from the output comparison.
 4. **The replay identity**: seeds, tracing selections, and the `cmp` results.

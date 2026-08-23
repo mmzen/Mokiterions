@@ -707,13 +707,29 @@ the first record, the accumulated cost stays at zero, and the ceiling therefore 
 this error unavailable rather than merely prohibited, which is why rule 20.4 is written as ownership rather than as a
 warning.
 
-20.5 **Both of the engine's run entry points take the port, as one new optional parameter each.** The two hosts enter
-the library by different doors: the recording host drives a whole run to completion through the process boundary, and the
-replay host advances a single tick and returns. Wiring the port into only one door excludes the host that uses the other
-from this source entirely, while every rule above still reads as satisfied — so this is stated as an obligation rather
-than left to follow from rule 20.1. A **canned connector**, a small executable in this repository that answers from a
-fixed script and reaches no network, exists so that the live path's wiring is exercised offline at no cost and on every
-push. Rule 10.6 records that it is the only connector this repository is able to constrain.
+20.5 **Two entry points take the port, as one new optional parameter each: `execute` and `Simulation::advance_tick`.**
+The two hosts enter the library by different doors: the recording host drives a whole run to completion through the
+process boundary, and the replay host advances a single tick and returns. Wiring the port into only one door excludes the
+host that uses the other from this source entirely, while every rule above still reads as satisfied — so this is stated as
+an obligation rather than left to follow from rule 20.1. A **canned connector**, a small executable in this repository
+that answers from a fixed script and reaches no network, exists so that the live path's wiring is exercised offline at no
+cost and on every push. Rule 10.6 records that it is the only connector this repository is able to constrain.
+
+20.5.1 **The two are named rather than described as "the engine's run entry points", because that description has a third
+referent and it is not one of them.** `SPEC-MOK-002` rule 5's first list enumerates `Simulation::run`, a public whole-run
+method, and it is **not** amended: it delegates with the port absent, as it delegates today with the record sink absent,
+and its enumerated form is unchanged. Neither host reaches this source through it. A library consumer that wants a whole
+run under this source drives `advance_tick`, which is what the observer does. Stated as its own provision because the
+description and the enumeration diverge here, and a reader who resolves "both run entry points" to `run` and
+`advance_tick` builds the wrong two doors while every other rule still reads as satisfied.
+
+20.5.2 The consequence for `SPEC-MOK-002` is that the amendment is **not** one rule applied twice. Rule 4 governs
+`execute` alone and gains one parameter there, bringing that signature to five. `advance_tick` is enumerated by rule 5,
+so its parameter is a rule 5 amendment. And rule 5's mechanical drift checks must be restated in the same change as the
+code, because their standing text makes "a fifth parameter" on `execute` a failure and the port is that fifth parameter;
+the crate-private carrier `run_recording` also takes the port and is disclosed rather than relied on silently, so
+`grep -n 'pub fn .*&mut self' src/simulation.rs` still returns exactly `run` and `advance_tick`. `ADR-MOK-007` records the
+amendment in these terms and `VER-MOK-018`'s `S4a` measures the result.
 
 20.6 **The port is a new public interface, and the engine's existing decision-source abstraction stays private.** That
 abstraction takes the observation type, which is private and which carries `ADR-MOK-001`'s trust boundary; publishing it
@@ -754,11 +770,14 @@ non-perturbation obligation is what holds their runs byte-identical either way.
 - **The port is public and the engine's existing decision-source abstraction is not**, per rule 20.6. The public surface
   gains one interface and one request type; the observation type and the existing abstraction stay private, so
   `ADR-MOK-001`'s boundary is reached by neither.
-- **The port reaches the library as one new optional parameter on each of the two run entry points**, carrying a borrowed
+- **The port reaches the library as one new optional parameter on each of rule 20.5's two doors**, carrying a borrowed
   trait object owned by the caller — the shape `SPEC-MOK-002` rule 4 fixed for the record sink, for the reason rule 20.4
-  gives. Two public signatures therefore change, which rule 4's own precedent covers: the sink amendment changed one the
+  gives. The two public signatures that change are therefore **`execute`**, which reaches five parameters, and
+  **`Simulation::advance_tick`**. Rule 4's own precedent covers the form: the sink amendment changed one signature the
   same way and `SPEC-MOK-002` treated it as one parameter added rather than as an interface replaced. `Config` gains no
-  field, so a caller that passes `None` is the caller that exists today.
+  field, so a caller that passes `None` is the caller that exists today. `SPEC-MOK-002` rule 5's `pub fn run` is not among
+  the two and is not amended — it delegates with the port absent — and the crate-private carrier that does take the port
+  down the call chain is disclosed by `ADR-MOK-007` rather than left to be found in a diff.
 - **The library performs no filesystem operation and spawns no process, for this source as for every other.** Both
   streams this source needs — the transcript it writes in live mode and the transcript it reads in replay — arrive as
   already-open streams from the host that owns them, rules 11.1 and 12.1.1. `SPEC-MOK-001`'s *"the library target
@@ -851,10 +870,15 @@ non-perturbation obligation is what holds their runs byte-identical either way.
   *Security and privacy properties* sentence naming `--events-path` as "the one operator-supplied value that is
   interpreted as a filesystem path" becomes three values. The property that sentence carries is preserved: each is
   interpreted only by a binary target and only as a path. `ADR-MOK-007` states all seven.
-- **`SPEC-MOK-002` is amended in four provisions**: rule 4 gains one optional port parameter on each run entry point, rule
-  5 gains the port and the request type, and its *Actors* and *Security and privacy properties* sections gain a target
-  scope, because the engine **package** does now spawn a process, pass an environment through and interpret two more paths
-  while the **library target** still does none of those. Rule 13's empty dependency table does not move.
+- **`SPEC-MOK-002` is amended in four provisions**: rule 4 gains one optional port parameter on `execute` and on nothing
+  else, because rule 4 is the process-boundary rule and governs that signature alone; rule 5 gains the port and the
+  request type as items, gains the parameter on `Simulation::advance_tick`'s enumerated row, and has its mechanical drift
+  checks restated, because the standing text makes "a fifth parameter" on `execute` a failure and the port is one; and its
+  *Actors* and *Security and privacy properties* sections gain a target scope, because the engine **package** does now
+  spawn a process, pass an environment through and interpret two more paths while the **library target** still does none
+  of those. Rule 13's empty dependency table does not move. `ADR-MOK-007` states all four, and the reason the count is
+  four rather than five is that the restated checks live inside rule 5 — which is how the 2026-08-20 amendment for
+  `REQ-MOK-042` counted its own restatement.
 - **No dependency artifact is amended at all.** `REQ-MOK-050`, `ARCH-MOK-001`'s conformance check, `SPEC-MOK-002` rule 13,
   `SPEC-MOK-003`'s declared dependency set and `SPEC-MOK-004` rules 1 and 2 all stand as written, because rule 10.1's
   binding adds no crate, no package directory and no workspace member. This is the one migration cost this initiative does

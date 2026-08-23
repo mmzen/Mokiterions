@@ -224,9 +224,21 @@ no provider, no transport, no model, no credential, no file and no mode. The req
 mutable borrow of and no reference into authoritative state, which is `ADR-MOK-001`'s boundary and `SPEC-MOK-002` rule
 6's prohibition adopted unchanged rather than reinterpreted. Latency, failure and transport are handled on the host's
 side of it, which is what `ADR-MOK-001` required of *"a later network-backed model adapter"*. The engine's public surface
-grows by one interface and one request type, and **two existing signatures each gain one optional parameter** — the two
-run entry points, so that both hosts can reach the port. Nothing else on the surface moves, and the four existing sources
-do not move onto the port.
+grows by one interface and one request type, and **two existing public signatures each gain one optional parameter** —
+`execute`, the process boundary the recording host drives a whole run through, and `Simulation::advance_tick`, the single
+tick the replay host advances. Those are the two doors `SPEC-MOK-007` rule 20.5 names, and they are named here rather than
+called "the two run entry points" because the engine has a third public way to drive a run and it is deliberately not one
+of them: **`pub fn run` is not amended.** It delegates to a crate-private carrier with the port absent, exactly as it
+delegates today with the record sink absent, so its enumerated form in `SPEC-MOK-002` rule 5's first list — "`&mut self`
+and a writer in, `io::Result<RunSummary>` out" — is unchanged. Neither host reaches this source through it: the recording
+host enters at the process boundary and the replay host advances tick by tick. A library consumer that wants a whole run
+under this source drives `advance_tick`, which is what the observer does.
+
+The carrier is `pub(crate) fn run_recording`, and it **does** gain the parameter. That is disclosed here for the same
+reason `SPEC-MOK-002`'s 2026-08-20 amendment disclosed it rather than relying on its non-match silently: a reader
+comparing this decision against the diff would otherwise find a third changed signature the ADR does not account for. It
+is crate-private, is not on the interface, and is not reachable from any item that is. Nothing else on the surface moves,
+and the four existing sources do not move onto the port.
 
 **The source is named `llm`.** That is the value an operator passes to the policy option and the value the record stream
 emits for the decision source; they are the same string, as they are for the four existing sources. The word names *how
@@ -298,7 +310,7 @@ Two further obligations travel with this decision, because the engine's existing
 that still compile and still run. **The port is supplied at construction and held for the whole run**: the four existing
 sources are stateless values built at the point of use, and a port built on that precedent would reset the transcript
 cursor, the accumulated cost and the fallback count every tick — so the cursor would restart, the cost would stay at zero
-and the ceiling would never trigger. And **both of the engine's run entry points accept the port**: the two hosts enter the
+and the ceiling would never trigger. And **both of rule 20.5's two doors accept the port**: the two hosts enter the
 library by different doors, one driving a whole run and one advancing a single tick, so wiring only one door silently
 excludes the other host from this source while every other rule still reads as satisfied. `SPEC-MOK-007` rule 20 is the
 whole of this decision, and `ARCH-MOK-002` is amended for the observer's half of it.
@@ -415,18 +427,36 @@ the rows are kept in summary rather than in full so that the deleted cost stays 
 
 ### `SPEC-MOK-002` — technical owner
 
-- **Rule 5, the authorized public interface**, gains the decision port's interface and the decision request type, and
-  nothing else.
-- **Rule 4 gains one optional parameter on each of the two run entry points**, carrying a borrowed port the caller owns.
-  This is rule 4's own shape reused, not a new one: the rule already fixes the record sink as `Option<&mut dyn Write>`
-  rather than a generic, "so that a caller with no sink passes `None` and needs no type annotation for a writer it does
-  not have", and it already records that the entry point "does not resolve it, open it, create it or remove it". Every
-  word of that carries over to the port, with a spawned child process or an open transcript in place of a created file.
-  The rule's closing clause — that `src/lib.rs` is "the process boundary and nothing more" — is what forbids the
-  alternative of the library owning the connector, and it is cited rather than amended.
-- **Two existing public signatures change**, which rule 4's 2026-08-18 precedent covers: the sink amendment changed one
-  the same way and this specification treated it as one parameter added rather than as an interface replaced. `Config`
-  gains no field, so a caller that passes `None` twice is the caller that exists today.
+- **Rule 4 gains a second optional parameter on `execute`, bringing it to five**, carrying a borrowed port the caller
+  owns. Rule 4 governs `execute` and nothing else — it is the process-boundary rule, and its own text says "`execute`'s
+  signature is enumerated by rule 4 and by nothing else" — so this is the whole of rule 4's amendment, and the
+  single-tick door is a rule 5 change rather than a second half of this one. The shape is rule 4's own reused, not a new
+  one: the rule already fixes the record sink as `Option<&mut dyn Write>` rather than a generic, "so that a caller with
+  no sink passes `None` and needs no type annotation for a writer it does not have", and it already records that the
+  entry point "does not resolve it, open it, create it or remove it". Every word of that carries over to the port, with
+  a spawned child process or an open transcript in place of a created file. The rule's closing clause — that `src/lib.rs`
+  is "the process boundary and nothing more" — is what forbids the alternative of the library owning the connector, and
+  it is cited rather than amended.
+- **Rule 5, the authorized public interface, is amended in three ways and not one.** It gains the decision port's
+  interface and the decision request type as items, and nothing else. `Simulation::advance_tick`'s row in the
+  observation-surface list gains the parameter, which is where the single-tick door is amended: `advance_tick` is
+  enumerated by that list and not by rule 4, and reading rule 4 as covering both doors is the error this row exists to
+  keep out of the specification. And **rule 5's mechanical checks are restated**, on the exact precedent of its
+  2026-08-20 restatement for `REQ-MOK-042`, for a reason that is not editorial: the standing text reads "**A fifth
+  parameter**, a second sink, or a sink that is not optional fails the second", and a decision port on `execute` is a
+  fifth parameter. An amendment that added the port and left that sentence standing would produce a specification whose
+  own drift check condemns the build the specification requires. The restatement adds a third `grep` for the port
+  parameter and states the failure conditions against five parameters rather than four; `VER-MOK-018`'s `S4a` runs it.
+- **The two changed public signatures are `execute` and `Simulation::advance_tick`.** Rule 4's 2026-08-18 precedent
+  covers the form: the sink amendment changed one signature the same way and this specification treated it as one
+  parameter added rather than as an interface replaced. `Config` gains no field, so a caller that passes `None` twice is
+  the caller that exists today.
+- **`pub fn run` is not amended, and `pub(crate) fn run_recording` is.** `run` delegates with the port absent, so its
+  enumerated form in rule 5's first list is unchanged and no existing caller of it sees anything move. The carrier that
+  takes the port down the call chain is crate-private, and this row discloses that it changes rather than relying on its
+  non-match silently — which is the disclosure the 2026-08-20 amendment made for the same carrier and the same reason.
+  The consequence is that `grep -n 'pub fn .*&mut self' src/simulation.rs` still returns exactly `run` and
+  `advance_tick`: the interface still has exactly two mutating methods and both are still simulation steps.
 - **Rule 6 does not move.** The prohibited public interface stands as written: the request crosses as values, so no
   public item yields a mutable borrow of, or a reference into, authoritative state. Decision 1 is a use of rule 6, not an
   exception to it. This row exists to record that the rule was checked and holds, because a reader would otherwise expect
@@ -689,9 +719,11 @@ are summarised here so that a later reader can see what the connector binding bo
 - **A second program is a second thing to build, test and version, and it is not in this repository.** The pipe protocol
   is a contract that can drift, and it can drift against a program under nobody's version control. Rule 10.2's
   one-JSON-object-per-line framing is deliberately the simplest contract that can carry the exchange, for that reason.
-- **Two public signatures change** so that both hosts can reach the source. `SPEC-MOK-002` rule 4's sink precedent makes
-  this routine rather than novel, but it is still a change to an interface that has been stable, and a caller outside this
-  repository — there is none today — would have to pass `None`.
+- **Two public signatures change — `execute` and `Simulation::advance_tick`** — so that both hosts can reach the source.
+  `SPEC-MOK-002` rule 4's sink precedent makes this routine rather than novel, but it is still a change to an interface
+  that has been stable, and a caller outside this repository — there is none today — would have to pass `None`. The cost
+  is bounded by what does *not* change: `pub fn run` keeps its enumerated form, so the whole-run library entry point
+  existing code is likeliest to call is source-compatible.
 - **The prompt's shared rules block is a restatement of `SPEC-MOK-001` and can fall out of agreement with it.**
   `SPEC-MOK-007` rule 4.2 fixes which one governs, but nothing detects drift automatically, and `VER-MOK-018` must say
   how it is checked.
@@ -746,6 +778,7 @@ see which decision is held by what.
 |---|---|
 | 1 — the port at the boundary | Static analysis of the engine's public surface: one interface and one request type added, no transport type, no reference or mutable borrow exposed. `SPEC-MOK-002` rule 6's existing check is re-run unchanged. |
 | 1 — no mode branch | Static analysis: no live-versus-replay branch and no mode value in the library target. |
+| 1 — two changed signatures, and only two | `SPEC-MOK-002` rule 5's mechanical drift checks, run in their **restated** form: `execute` matches rule 4's amended five-parameter literal, `grep -n 'pub fn .*&mut self' src/simulation.rs` returns exactly `run` and `advance_tick`, and `Simulation::run`'s enumerated form is unchanged. The restatement is itself part of what is checked, because the standing text of check 2 makes "a fifth parameter" a failure and the port is that parameter — so a build that adds the port and leaves the check as written is condemned by its own interface authority, silently. `VER-MOK-018`'s `S4a`. Free, offline, every push. |
 | 2 — replay byte-identity | A recorded run and a replay of it are compared with `cmp` on standard output, on the record stream and on the exit code, with no credential in the environment and no network reachable. |
 | 2 — mismatch detection | A replay at a different seed fails and names the mismatch, rather than producing a run. |
 | 3 — no dependency added | The engine's and the observer's resolved dependency graphs are compared against their declared sets and found unchanged — the engine's empty, the observer's one entry reached transitively through `ratatui`. `ARCH-MOK-001`'s existing scan for a network, asynchronous-runtime, database, model-provider or user-interface crate is re-run over the engine package, whose `[[bin]]` target is the recording host, and continues to find none. Free, offline, every push. |
@@ -759,7 +792,7 @@ see which decision is held by what.
 | 6 — the fallback | An unanswered and an unparseable exchange each yield `wait`, increment the count, and mark the run. A proposal the rules reject does neither. |
 | 7 — no floor | Static analysis: no survivor threshold, death ceiling or outcome assertion exists for this source anywhere in the verification suite. The check is that an assertion is **absent**, which is stated as a check because an absence nobody looks for is indistinguishable from an oversight. |
 | 7 — no strategy in the prompt | Manual assessment of the shared rules block against rule 4.4's prohibitions, by the assurance owner, recorded as an assessment rather than a test. |
-| 8 — both entry points wired | The canned connector drives a live-path run through the whole-run entry point, and a replay drives the same source through the single-tick entry point, in the same suite. Wiring one and not the other fails here rather than at the first host that tries. Free, offline, every push. |
+| 8 — both doors wired | The canned connector drives a live-path run through `execute`, and a replay drives the same source through `Simulation::advance_tick`, in the same suite. Wiring one and not the other fails here rather than at the first host that tries. Free, offline, every push. |
 | 8 — the port is lent, not rebuilt | A replay of more than one tick through the single-tick entry point consumes successive transcript records, and a stubbed live run's accumulated cost rises across ticks and trips a low ceiling. A port rebuilt per tick passes neither: the cursor restarts and the cost stays at zero. This is the check that catches the compiling, running, silent version of the defect. Free. |
 | 8 — the library owns neither stream | Static analysis of the library target: no path resolution, no file open, no process spawn, no environment read. Both streams enter as already-open handles. `SPEC-MOK-001`'s and `SPEC-MOK-006` rule 1.2's existing property is re-measured rather than assumed. Free. |
 | 8 — the observer replays and refuses live | The observer given this source with a transcript replays to completion; given it without one, or given a connector path, a live-mode selection or a ceiling, it exits with the usage-error status and a message naming the reason. It never falls back to another source and it never accepts silently, which is what distinguishes this from GitHub issue 40. Free. |
