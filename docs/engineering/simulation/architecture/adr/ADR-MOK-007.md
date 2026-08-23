@@ -36,16 +36,22 @@ target artifact and is `WO-MOK-025`'s, `WO-MOK-026`'s or `WO-MOK-027`'s to write
 precedent `WO-MOK-020`'s transition set. The amendment record rows those provisions call for do not exist yet, and the
 figures each row obliges to be re-measured are to be measured when the row is written rather than copied from here.
 
-**What the acceptance does not cover: no work order is approved by it.** `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027`
-remain `draft`, and no implementation is authorized. `WO-MOK-025`'s *Lifecycle* makes this explicit — *"the approval of
-the packet is a distinct act from the approval of this work order"* — and the instruction names the pack and not the work
-orders, where the same owner's instruction of 2026-08-22 said *"including the work order"* when a work order was meant.
-Nothing here is approved by implication.
+**What the acceptance does not cover: no work order is approved by it.** `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027` were
+not approved by this act and no implementation was authorized by it. `WO-MOK-025`'s *Lifecycle* makes the separation
+explicit — *"the approval of the packet is a distinct act from the approval of this work order"* — and the instruction
+names the pack and not the work orders, where the same owner's instruction of 2026-08-22 said *"including the work
+order"* when a work order was meant. Nothing here is approved by implication.
 
-**The consequence for `WO-MOK-025`'s *Lifecycle* is that one of its two conditions is now met and the other is not.** Its
-approval was written as *"the same act as the approval of every row in `ADR-MOK-007`'s *Required amendments* that this
-stage needs"*. Those rows are approved as of this section, so that work order's approval now authorizes its scope alone.
-Its own transition remains outstanding.
+**The three work orders were approved later the same day, by a second and separate act**, in the owner's words *"i
+approve the 3 work orders"*. *Decision record* act 12 holds it. It is recorded there rather than in this section because
+this section records what accepting this ADR settled, and that act settled something else: it is a work-order transition,
+not an architecture decision. The paragraph above therefore stands as the record of what this acceptance covered, not as
+a description of the work orders' current status.
+
+**The consequence for `WO-MOK-025`'s *Lifecycle* is that both of its conditions are now met, by two acts and not one.**
+Its approval was written as *"the same act as the approval of every row in `ADR-MOK-007`'s *Required amendments* that
+this stage needs"*. Those rows were approved by this section, so that work order's own transition, when it came,
+authorized its scope alone.
 
 Three decisions are taken together because they are one shape and separating them would leave each incoherent. Decision
 1 puts the port where the trust boundary already is; decision 2 makes the provider's answers a run input rather than a
@@ -381,9 +387,21 @@ approved by implication, so each act is recorded separately with what it settled
     `CAP-MOK-011`, `REQ-MOK-063` through `REQ-MOK-077`, `SPEC-MOK-007`, `VER-MOK-018` and this ADR move from `draft` to
     `approved` — twenty artifacts in one act. Because it is this ADR's acceptance, it is also the approval of every row
     under *Required amendments*, which the *Status* section states in the terms `ADR-MOK-006` set. **It approves no work
-    order and authorizes no implementation**: `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027` stay `draft`, and the act that
-    moves the first of them is a separate one that has not been taken. Recorded as its own act, rather than folded into
-    acts 1 to 10, because those settled what the design is and this one settles that the design may be built from.
+    order and authorizes no implementation**: `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027` stayed `draft`, and the act that
+    moves them is a separate one, recorded below as act 12. Recorded as its own act, rather than folded into acts 1 to 10,
+    because those settled what the design is and this one settles that the design may be built from.
+12. **The three work orders are approved**, in the owner's words *"i approve the 3 work orders"*: `WO-MOK-025`,
+    `WO-MOK-026` and `WO-MOK-027` move from `draft` to `approved` — three artifacts in one act, taken after act 11 and on
+    the same day. This is the second act act 11 said had not been taken, and with it **implementation of stage 5a is
+    authorized**. Three things it does not do, each of which a later reader could otherwise assume from the status field
+    alone. It does not lift `WO-MOK-026`'s and `WO-MOK-027`'s **sequencing gates**: those work orders each require the
+    previous stage to be *verified*, not merely implemented, and that requirement is standing text in their *Lifecycle*
+    sections rather than a status the tooling can see — `preflight` reports all three as start-eligible from this act
+    onward, and the artifacts, not the tool, are the authority on the order. It does not authorize any **live run**: every
+    run against the provider needs its own owner instruction under `REQ-MOK-076`, naming the horizon, the seed set and the
+    ceiling, which is the act the owner described as *"an explicit permission from the repository owner is needed to launch
+    a real run"*. And it **writes no amendment**: the provisions under *Required amendments* were approved by act 11 and
+    remain unwritten, so this act is what makes writing them permitted, not what performs it.
 
 ## Required amendments
 

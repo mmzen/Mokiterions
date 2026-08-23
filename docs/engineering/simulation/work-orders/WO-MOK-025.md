@@ -2,7 +2,7 @@
 id = "WO-MOK-025"
 type = "work_order"
 title = "Stage 5a: the decision port, the request, the transcript and the replay — everything the model-backed source needs, with no provider and no cost"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-23"
 updated = "2026-08-23"
@@ -37,15 +37,17 @@ This work order remains a proposal while its status is `draft`. Transition to `a
 below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
 completed change and the retained evidence. Verification requires a separate commit-bound record.
 
-**The definition layer was approved on 2026-08-23 and this work order was not.** The repository owner, acting as
-accountable product, technical, engineering and assurance owner, approved `INT-MOK-011`, `CAP-MOK-011`, `REQ-MOK-063`
-through `REQ-MOK-077`, `SPEC-MOK-007`, `VER-MOK-018` and `ADR-MOK-007` in one act, in the words *"i approve the artifact
-pack"*. `ADR-MOK-007`'s *Status* records it and its *Decision record* holds it as act 11. **Nothing in this stage may be
-started yet**: in this repository one person holds all governance roles, which means nothing here is approved by
-implication, and the approval of the packet is a distinct act from the approval of this work order. That second act has
-not been taken.
+**This work order was approved on 2026-08-23, by the second of two acts taken that day.** The repository owner, acting as
+accountable product, technical, engineering and assurance owner, first approved `INT-MOK-011`, `CAP-MOK-011`,
+`REQ-MOK-063` through `REQ-MOK-077`, `SPEC-MOK-007`, `VER-MOK-018` and `ADR-MOK-007` in one act, in the words *"i approve
+the artifact pack"*; `ADR-MOK-007`'s *Status* records it and its *Decision record* holds it as act 11. That act did not
+approve this work order, because in this repository one person holds all governance roles and so nothing here is approved
+by implication: the approval of the packet is a distinct act from the approval of this work order. The second act
+followed, in the words *"i approve the 3 work orders"*, and moved this work order together with `WO-MOK-026` and
+`WO-MOK-027` from `draft` to `approved`. `ADR-MOK-007`'s *Decision record* holds it as act 12. **Implementation of this
+stage is authorized as of that act**, within the scope below and no further.
 
-**One consequence of the first act is that this work order's own transition now authorizes less than it was drafted to.**
+**One consequence of the first act is that this work order's own transition authorizes less than it was drafted to.**
 It was written so that approving it would *also* be "the same act as the approval of every row in `ADR-MOK-007`'s
 *Required amendments* that this stage needs" — the amendments to `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`,
 `SPEC-MOK-004`, `ARCH-MOK-001`, `ARCH-MOK-002` and `INT-MOK-001`, five of which are prerequisites of the change rather

@@ -2,7 +2,7 @@
 id = "WO-MOK-026"
 type = "work_order"
 title = "Stage 5b: the connector, the live path, the two gates, the usage accounting and the spend ceiling"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-23"
 updated = "2026-08-23"
@@ -26,6 +26,13 @@ architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-007"]
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope below.
 Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the completed
 change and the retained evidence. Verification requires a separate commit-bound record.
+
+**This work order was approved on 2026-08-23**, by the repository owner acting as accountable product, technical,
+engineering and assurance owner, in the words *"i approve the 3 work orders"* — one act covering `WO-MOK-025`,
+`WO-MOK-026` and `WO-MOK-027`. `ADR-MOK-007`'s *Decision record* holds it as act 12. **That approval does not make this
+work order startable**, for the reason the next paragraph gives: its precondition is a verification record, not a status,
+and `preflight` cannot see it. From this act onward the tooling reports this work order as start-eligible; the gate below
+is the authority on whether it may actually begin.
 
 **`WO-MOK-025` must be verified before this work order may begin.** Not merely implemented — verified, with a
 commit-bound record. Every offline property this stage's live path depends on is established there: the port, the

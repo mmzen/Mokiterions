@@ -2,7 +2,7 @@
 id = "WO-MOK-027"
 type = "work_order"
 title = "Stage 5c: the authorized measurement — the model-backed source published beside the reference and social sources at the same seeds and horizon"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-23"
 updated = "2026-08-23"
@@ -26,6 +26,14 @@ architecture = ["ARCH-MOK-001", "ADR-MOK-007"]
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope below.
 Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the completed
 change and the retained evidence. Verification requires a separate commit-bound record.
+
+**This work order was approved on 2026-08-23**, by the repository owner acting as accountable product, technical,
+engineering and assurance owner, in the words *"i approve the 3 work orders"* — one act covering `WO-MOK-025`,
+`WO-MOK-026` and `WO-MOK-027`. `ADR-MOK-007`'s *Decision record* holds it as act 12. **That approval does not make this
+work order startable and it does not authorize a single run.** Two gates stand between the approval and any work here:
+the verification of `WO-MOK-026` with its cache-ratio result passed, stated in the next paragraph, and the separate owner
+instruction each live run needs. From this act onward `preflight` reports this work order as start-eligible; it cannot see
+either gate, and the gates are the authority.
 
 **`WO-MOK-026` must be verified before this work order may begin**, and its cache-ratio result must have passed. If the
 ratio missed, the per-run cost estimate this work order's authorization rests on is wrong, and the owner is authorizing
