@@ -69,20 +69,24 @@ fn simulation_inputs_keep_the_engine_parser_and_its_rejections() {
 fn the_usage_text_advertises_every_policy_the_engine_accepts() {
     // `SPEC-MOK-003` rule 5 requires identical parsing, not identical prose, so the observer's
     // usage text is its own and nothing but this test keeps the list it advertises from falling
-    // behind the list the engine parses. The match is exhaustive deliberately: a fifth policy
+    // behind the list the engine parses. The match is exhaustive deliberately: a sixth policy
     // stops the compilation here rather than shipping an accepted value the help omits. The
-    // fourth one did exactly that under `WO-MOK-016`.
+    // fourth one did exactly that under `WO-MOK-016`, and the fifth is why this comment now
+    // says sixth — `WO-MOK-025`'s `llm` was stopped here, as designed, and the entry it forced
+    // into the observer's usage text is the engine's own verbatim.
     for policy in [
         Policy::Baseline,
         Policy::Reference,
         Policy::Individual,
         Policy::Social,
+        Policy::Llm,
     ] {
         let name = match policy {
             Policy::Baseline => "baseline",
             Policy::Reference => "reference",
             Policy::Individual => "individual",
             Policy::Social => "social",
+            Policy::Llm => "llm",
         };
         assert_eq!(Policy::parse(name), Some(policy), "{name}");
         assert_eq!(run(&["--policy", name]).config.policy, policy, "{name}");

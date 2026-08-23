@@ -5,7 +5,7 @@ title = "Crate targets, public interface, and test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-20"
+updated = "2026-08-23"
 
 [relations]
 specifies = [
@@ -37,6 +37,7 @@ specifies = [
 | 2026-08-20 | Rule 5's enumeration amended and rule 6 re-checked, under `CAP-MOK-010`, and the frontmatter's `specifies` gains `REQ-MOK-052` through `REQ-MOK-057`. `simulation::Policy` gains a fourth variant, `Social`; `simulation::Action` gains seven target-carrying variants; `simulation::EventType` gains `AttackResolved`, `ThreatResolved` and `SurrenderResolved` with their three `EventDetail` payloads, and `EventType::ALL`'s length moves from `12` to `15`, which is public-surface growth because that array is a `pub const`. A growth table states each figure and a paragraph states what does **not** grow: no verb reaches rule 3's valid-proposal list, so the observation's existing fields keep their types. **The observation's two new fields are not interface growth**, because `Observation` is declared without `pub` at `mokiterions-core/src/simulation.rs:500` and rule 6 lists it among the ten names that stay private; the distinction is load-bearing, and it is the one place `WO-MOK-016` stated the opposite, which is corrected there. Rule 6 is re-checked and recorded as **not amended**, cross-agent mutation being introduced for the first time: a target is an identifier and not a reference, the mutation is entirely inside the engine, the three event types carry copies of printed values, all ten prohibited names stay private, and no `pub(crate)` is widened. | Approved 2026-08-20 by the repository owner acting as technical owner, in the **single act this amendment's own ordering requires**: together with `REQ-MOK-051` through `REQ-MOK-060`, `VER-MOK-016` and `WO-MOK-016`. The act is single because this amendment's `specifies` relation is what makes those ten requirements approvable at all — without it `validate` raises `E007` on every one of them and `preflight --phase start` raises `W016`, both measured on 2026-08-20 and recorded in that work order. Implementation begins after this act and not before. It is stated in full in `WO-MOK-016`'s *Required amendments* section. The implementation agent wrote the text and did not decide the substance: the eleven values it fixes were the owners' decisions of 2026-08-19 and 2026-08-20, and the three the validation did not supply were taken on 2026-08-20, all recorded in that work order's *Decision record*. Eight consequences the text derived rather than decided are named in that work order's *Required amendments* section; the owner took the four of them that were genuinely open before approving, and those four are recorded in its decision table with the alternatives declined. |
 | 2026-08-20 | **Rule 5's growth table gains a fourth row, which the amendment above omitted**: `simulation::EventDetail`'s pre-existing `ActionTrace` variant gains one field, `suffered: Vec<(String, u8)>`, appended after `fear`. Growth under `CAP-MOK-010` is therefore `1 + 7 + 3 + 3 + 1` and the table says "four items change shape" where it said three. The omission was a defect in the enumeration and not in the implementation: the row above enumerates added *variants*, and a field appended to a public variant that already existed is the one form of growth such an enumeration does not catch. `SPEC-MOK-001` rule 7 obliges the trace line to report the suffered-attack record and its rule 6 fixes the line's shape, but neither can admit a field to this interface, which is closed here. The field is a `Vec` of pairs of a `String` and a `u8` rather than of the engine's `SufferedAttack`, so **no type is added and rule 6's ten private names are untouched** — both halves of a pair are already public values. Rule 6 needs no further re-check: a pair of copies grants no path into engine-owned state, which is what the 2026-08-20 re-check above establishes for the three event payloads on identical grounds. | Approved 2026-08-20 by the repository owner acting as technical owner, in a **separate act** from the amendment above, the omission having been found after that act was taken. The alternatives were put with it and declined: bundling the row with `REQ-MOK-060`'s deferred numeric amendment, which would leave this record knowingly incomplete in the interval, and treating the field as covered by `SPEC-MOK-001`'s trace provision, which would let a behavior authority admit an item to an interface this specification closes. The implementation agent found the omission while comparing the engine's public surface against this table for `VER-MOK-016`, and wrote the row; it did not decide the substance. **The implementation is unchanged by this amendment** — the field was already present and already in pair form, at `mokiterions-core/src/simulation.rs:1425` where its own comment gives that reason — so this row records the interface authority catching up with an approved obligation, not a code change. It is stated in full in `WO-MOK-016`'s *Required amendments* section as provision 3. |
 | 2026-08-20 | Five provisions amended so that `SPEC-MOK-006`'s record stream can be conformed to, under `REQ-MOK-042` through `REQ-MOK-046`. **Rule 4**: `execute` gains exactly one parameter, `records: Option<&mut dyn Write>`, and nothing else; the exit codes are unchanged and none is added, a record-sink write, flush or close failure being an output failure and therefore `1`. **Rule 5**: the `execute` row reworded from "two writers" to "the caller's writers", the enumeration otherwise untouched — a parameter is not an item, so the interface grows by no item, and the rows for `cli::Command`, `simulation::Config` and `simulation::Simulation::run` are **not** amended. **Rule 5's mechanical checks**: restated as two greps for `execute`'s signature, and the mutating-method check recorded as still returning exactly `run` and `advance_tick`, with the crate-private carrier `run_recording` named so that its non-match is disclosed rather than relied on silently. **Rule 6**: **not** amended, and the omission recorded at the rule — `SplitMix64` stays private, the ten prohibited names stay ten, and the entropy value the projection reads is an owned `u64` behind `#[cfg(test)]`. **Scope and *Compatibility and migration***: `SPEC-MOK-006` named as the authority on the stream and this specification as the authority on the seam, with the four `execute` call sites listed and `mokiterions-tui` recorded as passing `None`. Nothing about mutation, dependency direction, determinism or observable text behavior is relaxed, no target or package changes, and this amendment adds no row to the engine package's declared dependency set, which is still empty. This sentence originally read "the engine package's dependency table stays empty", invoking a rule of rule 1 that `ADR-MOK-006` withdrew on the same date for the declared-set form; the superseded wording is recorded rather than deleted, and the `ADR-MOK-006` row above is the authority. | Approved 2026-08-20 by the repository owner acting as technical owner, by way of `ADR-MOK-005`, whose *Required amendments* section states this amendment in full and which the same owner accepted on the same date. The implementation agent wrote the text under `WO-MOK-019`; it did not decide the substance. **The first 2026-08-18 row above was not touched.** It was **OUTSTANDING** when this row was written, and the repository owner acting as technical owner ratified it as written on 2026-08-20 under `WO-MOK-012`, in the assessment review that reached this branch by merge after this row was written. It was `WO-MOK-005`'s precondition; nothing here depended on it, and this approval neither cleared nor inherited it. `VREC-MOK-003` and `VREC-MOK-010`, which bind earlier content of this specification to their commits, are not edited; `VER-MOK-012` covers this amendment. This row reached the table by merge, after the three rows above it, which is why it is last on a date it shares with them. |
+| 2026-08-23 | **Rules 4 and 5 amended so that `SPEC-MOK-007`'s decision port can be conformed to, under `REQ-MOK-063`, and rules 6 and 13 re-checked and recorded as unmoved.** **Rule 4**: `execute` gains exactly one parameter, `port: Option<&mut dyn Proposer>`, bringing it to five, and nothing else; the exit codes are unchanged and none is added, `SPEC-MOK-007` rule 20.8's refusal — this source selected with no port supplied — being an invalid configuration and therefore `2`. Where the port and the record sink part company is recorded at the rule: a missing sink is silently no records, a missing port under the one source that needs it is refused, because rule 9.7 forbids borrowing another source's selection and there is no run left to fall back to. **Rule 5, amended in three ways**: it gains `simulation::Proposer` and `simulation::DecisionRequest` as items, both values or a function of a value; `Simulation::advance_tick`'s row in the observation-surface list gains the parameter, which is where the second of `SPEC-MOK-007` rule 20.5's two doors is amended, `advance_tick` being enumerated by that list and not by rule 4; and the mechanical checks are restated. Growth is enumerated item by item as `1 + 1 + 1 + 1` — one `Policy` variant `Llm`, one parameter on `advance_tick`, and the two added items — with `execute`'s parameter counted at rule 4 and not twice, and no `pub const` changed. **Rule 5's mechanical checks**: `execute`'s form becomes three greps rather than two, the third being `port: Option<&mut dyn Proposer>`, and the failure conditions are stated against five parameters rather than four. This restatement is not editorial: the standing 2026-08-20 text reads "A fifth parameter, a second sink, or a sink that is not optional fails the second", and the port on `execute` **is** that fifth parameter, so leaving it standing would give this specification a drift check that condemns the build the specification requires. The mutating-method check still returns exactly `run` and `advance_tick`, and it **gains a second obligation it did not have**: `advance_tick`'s signature must be one line in the source, because a signature the formatter wraps separates the declaration keyword from the receiver and the check would then report one door where there are two — passing while doing so, which is a weakened check and not a failing one. That obligation is why `Proposer` is spelled as it is, and the rule records the width measurement rather than the preference. The pattern must also not appear in prose in that file; it matched a documentation comment during implementation and the comment was reworded rather than the check loosened. **Rule 5's first list**: `simulation::Policy`'s row gains the variant `Llm`; `Default` is unchanged and still resolves to `Reference`, and `simulation::Simulation::run`'s row is **not** amended — it delegates with the port absent, for the second amendment running. **Rule 6**: **not** amended, and the check recorded at the rule because a reader would expect the opposite of a public trait a caller implements. The request crosses by value and the proposal returns by value, so the port is a use of rule 6 rather than an exception to it; the ten prohibited names stay ten and stay private, `Observation` never crossing and `DecisionSource` gaining a fifth implementation that stays internal. **Rule 13**: **not** amended, and re-measured rather than asserted — the table is still empty and `cargo tree -p Mokiterions -e normal --locked --offline` still resolves to one crate on 2026-08-23, which is `ADR-MOK-007` decision 3's whole point. **What this row does not do**: the four remaining amendments `ADR-MOK-007` requires of this specification are **not** made here. Two of them — *Security and privacy properties*' first bullet and *Actors and external systems* — describe the binary target spawning a connector, passing its environment to the child and interpreting two more operator-supplied paths, and **no commit has yet made that true of this tree**; writing them now would put a false statement in an approved specification. They land with the code they describe, under `WO-MOK-025` scope item 14. Nothing about mutation, dependency direction, determinism or observable text behavior is relaxed, no target or package changes, and no `Config` field is added. | Approved 2026-08-23 by the repository owner acting as technical owner, by way of `ADR-MOK-007`, whose *Required amendments* section states rule 4's amendment and rule 5's three amendments in full and which the same owner approved on the same date, together with `WO-MOK-025`, whose scope item 1 requires that rule 5's restated checks land in the same commit as the code. The implementation agent wrote the text under `WO-MOK-025`; it did not decide the substance. **Two things in this row are the implementation agent's and are marked as such.** The identifier `Proposer` is one: `SPEC-MOK-007` rule 1.1 fixes the interface's shape and no approved artifact names it, `WO-MOK-025`'s decision envelope leaves local naming to the agent, and the choice was forced by the line-width consequence this row records rather than preferred on its merits — `DecisionPort`, the artifacts' own words, does not fit. The second is the **second obligation now attached to the mutating-method check**, which no artifact anticipated: it was found by the check failing, on `mokiterions-tui/tests/verification.rs`'s `the_engine_still_exposes_exactly_two_mutating_entry_points`, and the alternative considered and **rejected** was restating the check as two greps on `execute`'s own 2026-08-20 precedent, which would have contradicted a literal sentence of the approved work order. Both are disclosed here rather than left in a diff. `VER-MOK-018`'s `S4a` runs the restated checks. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification to their commits and are not edited. |
 
 ## Scope
 
@@ -222,6 +223,41 @@ character `-` rejected — and retains nothing. The value is the destination, th
 under `ADR-MOK-005`, and the library has no use for a path it may not interpret. `cli::Command` and
 `simulation::Config` are therefore unchanged, which is what keeps this amendment to one parameter and no item.
 
+**Amended 2026-08-23 for `REQ-MOK-063`, by way of `ADR-MOK-007`.** The signature is
+
+```rust
+pub fn execute<I, S, W, E>(
+    args: I,
+    stdout: &mut W,
+    stderr: &mut E,
+    records: Option<&mut dyn Write>,
+    port: Option<&mut dyn Proposer>,
+) -> u8
+```
+
+one parameter more than the 2026-08-20 form and nothing else. `SPEC-MOK-007` rule 20.5 names this as one of the two
+doors the port reaches, and rule 20.4 fixes its shape: borrowed, optional, and built and owned by the caller. That is
+the shape the record sink established three months of artifacts ago rather than a new convention, which is why
+`ADR-MOK-007` treats it as one parameter added and not as an interface replaced.
+
+The exit codes are unchanged and none is added. Rule 20.8's refusal — the `llm` source selected with no port supplied —
+is an **invalid configuration** and is therefore `2`, the code this rule already fixes for one. It is not an output
+failure and not a new code. The refusal is reported before a `Simulation` is constructed, so it reads like every other
+configuration rejection; unlike them it is not followed by the usage text, for the reason `Simulation::new`'s own
+failures are not.
+
+Proposals are obtained through this parameter when, and only when, it is `Some` **and** the selected policy is the one
+that uses it. The four existing sources ignore a port exactly as an absent sink is ignored, per `SPEC-MOK-007` rule
+20.9, and that is not an error. Where the sink and the port part company is the other direction: a missing sink is
+silently no records, whereas a missing port under the one source that needs it is refused rather than substituted.
+`SPEC-MOK-007` rule 9.7 forbids borrowing another source's selection, so there is no run left to fall back to — a run
+that proceeded would be a run of a different source reported under this one's name.
+
+`execute` does not build the port, does not close it, and cannot know what is behind it. `SPEC-MOK-007` rules 10.5 and
+13.4 place the provider credential in a component this target does not contain; `cli::parse` gains no option naming a
+port and `simulation::Config` gains no field. Every item this change adds to rule 5's lists is enumerated by rule 5's
+own 2026-08-23 amendment and by nothing here, which is what keeps this rule's amendment to one parameter.
+
 ### 5. Authorized public interface
 
 The library target's public interface is exactly the union of the three lists below.
@@ -235,7 +271,7 @@ The library target's public interface is exactly the union of the three lists be
 | `cli::parse` | function returning `Result<Command, String>` |
 | `simulation::Config` | struct with public fields `seed`, `tick_limit`, `policy`, `density`, `trace_actions` |
 | `simulation::Density` | value type with associated constant `DEFAULT` and function `parse` |
-| `simulation::Policy` | enum with variants `Baseline`, `Reference`, `Individual` and `Social`, with `parse` and `Default` |
+| `simulation::Policy` | enum with variants `Baseline`, `Reference`, `Individual`, `Social` and `Llm`, with `parse` and `Default` |
 | `simulation::RunSummary` | opaque value type; its fields stay private |
 | `simulation::Simulation::new` | `Config` in, `Result<Simulation, String>` out |
 | `simulation::Simulation::run` | `&mut self` and a writer in, `io::Result<RunSummary>` out |
@@ -262,7 +298,7 @@ every item below; this list is the enumeration that closes the interface, and th
 | Item | Form | Why it is admissible |
 |---|---|---|
 | `Simulation::snapshot` | `&self` in, `WorldSnapshot` out | Returns an owned tree of copies; borrows nothing and mutates nothing |
-| `Simulation::advance_tick` | `&mut self` in, `Result<TickOutcome, String>` out | The single mutating operation; refuses a finished run and consumes entropy exactly as `run` does, because both route through one internal step |
+| `Simulation::advance_tick` | `&mut self` and an optional borrowed port in, `Result<TickOutcome, String>` out | The single mutating operation; refuses a finished run and consumes entropy exactly as `run` does, because both route through one internal step. The parameter is rule 5's 2026-08-23 amendment; a host with no port passes `None` |
 | `Simulation::is_finished` | `&self` in, `bool` out | A copy of a termination fact the summary line already reports |
 | `Simulation::termination_reason` | `&self` in, `Option<TerminationReason>` out | Same fact, already public as a `RunSummary` accessor |
 | `Simulation::configuration` | `&self` in, `Config` out | A copy of the operator's own input; `Config` is already public |
@@ -359,6 +395,65 @@ from any item that is, so the interface still has exactly two mutating methods a
 `Simulation::run`'s enumerated form — `&mut self` and a writer in, `io::Result<RunSummary>` out — is unchanged, and it
 delegates to `run_recording` with no sink.
 
+**Amended 2026-08-23 for `REQ-MOK-063`, by way of `ADR-MOK-007`, and the growth is again enumerated item by item so that
+it can be checked rather than described.** Two items on the lists above change shape, two items are added, and nothing is
+removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::Policy` | one variant, `Llm`, last. `Default` is unchanged and still resolves to `Reference`, so no existing caller's behaviour moves | 1 |
+| `simulation::Simulation::advance_tick` | one parameter, `Option<&mut dyn Proposer>`, appended. A caller that passes `None` is the caller that exists today | 1 |
+| `simulation::Proposer` | **added**: trait with one method taking a request by value and returning `Option<Action>` | 1 |
+| `simulation::DecisionRequest` | **added**: opaque value type of four owned or `'static` string parts, with per-part accessors returning `&str` and one accessor returning them in the composition order | 1 |
+
+`execute`'s fifth parameter is rule 4's amendment of the same date and is not counted a second time here. Interface
+growth under `REQ-MOK-063` is therefore `1 + 1 + 1 + 1`, and no `pub const` changes.
+
+| Item | Form | Why it is admissible |
+|---|---|---|
+| `simulation::Proposer` | `&mut self` and a `DecisionRequest` in, `Option<Action>` out | `SPEC-MOK-007` rule 1.1: the engine's one means of obtaining a proposal from outside itself. It must be public because rule 20.4 puts the implementation in a host, and it names no provider, no transport, no model, no credential, no file and no mode |
+| `simulation::DecisionRequest` | struct of four string parts — the shared rules, the actor block, the observation block, the permitted set — carried by value | `SPEC-MOK-007` rule 1.3: what crosses is a copy. It holds no reference into engine state, no mutable borrow and no handle, so an implementation cannot reach what it was told about |
+
+**Both additions are values or a function of a value, as `ADR-MOK-002` requires of an admission.** `DecisionRequest`
+carries strings the engine composed from one `Observation`; `Proposer` carries no state of the engine's at all. Rule 6 is
+untouched by either: `Observation` and `DecisionSource` stay private and stay named there, per `SPEC-MOK-007` rule 20.6,
+so a host implementing the port sees a rendered request and never the observation behind it, and cannot implement the
+engine's internal source abstraction.
+
+**`Proposer`'s spelling is this specification's to record and was nobody's to fix.** `SPEC-MOK-007` rule 1.1 fixes the
+interface's shape and no approved artifact names the identifier. It is recorded here because the mechanical check below
+depends on it: the name is short enough that `advance_tick`'s amended signature fits the formatter's line limit and stays
+on one line. `DecisionPort`, the artifacts' own words for the concept, reaches 109 columns in that signature and 104 with
+the shortest sensible parameter name. The word *port* is kept in the parameter name, in the source's documentation and in
+the refusal's message constant, where it costs no width.
+
+**Mutating methods on the interface: still exactly two, and both are still simulation steps.** `advance_tick` gains a
+parameter and does not stop being one door; `run` is not amended at all — it delegates with the port absent, so its
+enumerated form in the first list stands unchanged for the second time. `run_recording` takes the port down the call
+chain as it already takes the sink, and is still crate-private, still not on the interface, and still not reachable from
+any item that is. No accessor is added, no method is added, and no `&self` method mutates through interior mutability,
+because no engine type contains a `Cell`, a `RefCell`, an `Rc`, an `Arc`, a lock or an atomic.
+
+**The checks, restated so that they still detect drift after the port exists.** The 2026-08-20 restatement above reads "a
+fifth parameter … fails the second", and the port on `execute` **is** that fifth parameter, so leaving that sentence
+standing would make a conforming build fail its own specification. The mechanical form for `execute` is now three greps,
+each returning exactly one line: `grep -n 'pub fn execute' src/lib.rs`, `grep -n 'records: Option<&mut dyn Write>'
+src/lib.rs`, and `grep -n 'port: Option<&mut dyn Proposer>' src/lib.rs`. A sixth parameter, a second sink, a second port,
+a sink that is not optional or a port that is not optional fails one of the last two; a second public process-boundary
+function fails the first. Rule 4's literal remains the reference all three compare against.
+
+`grep -n 'pub fn .*&mut self' src/simulation.rs` **still returns exactly `run` and `advance_tick`, and this rule now
+depends on how those two lines are formatted.** A signature the formatter wraps puts the declaration keyword and the
+receiver on different lines, and this check matches neither line: it would then report one door where there are two and
+pass while doing so, which is a weakened check rather than a failing one. So the check has a second obligation attached
+to it — `advance_tick`'s signature is one line in the source, and it is the reason `Proposer` is named as it is above. A
+future parameter on either method that cannot be added within the line limit must change this check's form in the same
+commit, exactly as this amendment changes `execute`'s.
+
+The pattern must also not appear in prose in that file. It matched a documentation comment during this stage's
+implementation, which is a third way the check reports the wrong number, and the comment was reworded rather than the
+check loosened.
+
 ### 6. Prohibited public interface
 
 None of the following may be public, and none may be reached from a public item by reference, borrow, public field,
@@ -430,6 +525,22 @@ borrow — and `SplitMix64` stays on the second bullet, private in every build c
 stay ten. The sink the projection writes to is a `Write` the caller owns and passes in; it is not engine-owned state,
 so handing the projection a borrow of it grants no reach into the engine. Nothing on this list becomes public, and
 nothing public becomes a path to anything on it.
+
+**Not amended on 2026-08-23 either, and recorded here for the same reason.** `ADR-MOK-007` requires no change to this
+rule and states why: the decision port is a **use** of it, not an exception to it. A reader would expect the opposite,
+because the port is a public trait a caller implements and this rule's opening sentence names "trait method, callback,
+or closure argument" among the ways a prohibited item must not be reachable — so the check is worth stating rather than
+assuming. The port's one method takes a `DecisionRequest` **by value** and returns an `Option<Action>` by value. Both
+are values; neither is a borrow of engine state, an index into a collection or a handle. An implementation therefore
+receives a rendered copy of what one Mokiterion perceived and can reach nothing behind it, which is `SPEC-MOK-007` rule
+1.3 and this rule's first bullet meeting at the same conclusion.
+
+The ten prohibited names stay ten and all ten stay private. `Observation` is the one to check by name: the request is
+composed *from* an observation and the observation itself does not cross, so a host implementing the port sees the four
+rendered blocks and never the type. `DecisionSource` stays private too, and the `llm` source is its fifth
+implementation — `SPEC-MOK-007` rule 20.6 fixes that asymmetry deliberately, so that a host can supply a proposal
+without being able to implement the engine's own dispatch. No `pub(crate)` item is widened, and the one that carries
+the port down the call chain stays `pub(crate)`.
 
 ### 7. Tiers and the placement rule
 
@@ -548,6 +659,15 @@ a feature the manifest declares and the resolved set must contain. The check is 
 equals the declared features together with the implied ones, and intersects the prohibited ones nowhere. This
 convention binds `SPEC-MOK-003`'s declared set too, which is the only cell that has content today. It is written here
 rather than left to the checking program because a program that guessed at the reading would be a second declaration.
+
+**Not amended on 2026-08-23, and re-measured rather than asserted.** `ADR-MOK-007` decision 3 is the reason this rule
+survives a model-backed decision source at all: the provider client, its transport and its credential handling live in
+a connector program this repository does not build, so nothing in this package needs a crate to reach a model. The table
+is still empty, and `cargo tree -p Mokiterions -e normal --locked --offline` still resolves to one crate, this package
+itself, measured on 2026-08-23 in this checkout under `cargo 1.97.1 (c980f4866 2026-06-30)`. The same command without
+`-e normal`, which includes dev-dependencies, resolves to the same one crate. An earlier draft of `ADR-MOK-007`
+estimated this table growing to forty to sixty entries; the option the owner accepted is the one that leaves it empty,
+and that is worth recording here because the estimate is what the emptiness was traded against.
 
 ## Error and recovery behavior
 

@@ -54,7 +54,7 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     };
 
     let Some(destination) = destination else {
-        let mut code = execute(arguments.iter().cloned(), stdout, stderr, None);
+        let mut code = execute(arguments.iter().cloned(), stdout, stderr, None, None);
         if stdout.flush().is_err() {
             code = 1;
         }
@@ -91,7 +91,13 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     };
 
     let mut sink = BufWriter::new(file);
-    let mut code = execute(arguments.iter().cloned(), stdout, stderr, Some(&mut sink));
+    let mut code = execute(
+        arguments.iter().cloned(),
+        stdout,
+        stderr,
+        Some(&mut sink),
+        None,
+    );
 
     // One flush, and then the buffer and the file are taken apart by hand. `BufWriter`'s `Drop`
     // flushes and discards the result, and after a failed flush that is precisely the retry

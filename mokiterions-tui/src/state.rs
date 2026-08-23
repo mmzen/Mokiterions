@@ -382,7 +382,14 @@ impl Observer {
         if self.simulation.is_finished() {
             return Ok(());
         }
-        let outcome = self.simulation.advance_tick()?;
+        // No port. `SPEC-MOK-007` rule 20.3 makes this host the replay host and nothing else,
+        // and rule 20.2's reason is measured rather than stylistic: a frame is budgeted at 33 ms
+        // and an exchange with a provider is estimated at 0.4 to 0.8 s, so a live exchange here
+        // would stall the interface for the length of twenty frames per decision. The port the
+        // replay host lends arrives with `WO-MOK-025`'s later scope; until then this host has
+        // none, and rule 20.8 refuses `llm` on the first tick rather than running something
+        // else. Rule 20.9 covers the four existing sources: `None` is what they take.
+        let outcome = self.simulation.advance_tick(None)?;
         self.ingest(outcome.events);
         self.snapshot = self.simulation.snapshot();
         // After the refresh, and only here: the snapshot the engine produces once a tick has been
@@ -1263,7 +1270,7 @@ mod tests {
 
         while !observer.is_finished() {
             observer.advance().unwrap();
-            let outcome = engine.advance_tick().expect("the same tick");
+            let outcome = engine.advance_tick(None).expect("the same tick");
             for event in &outcome.events {
                 let Some(entry) = counted.get_mut(&event.subject) else {
                     continue;

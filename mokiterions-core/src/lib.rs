@@ -28,10 +28,28 @@
 //! observation carries all stay on the private side of the same boundary, so a Mokiterion's
 //! trait reaches a host only as text in the retained event log.
 //!
+//! `WO-MOK-025` grows it by one interface and one value type: `simulation::Proposer`, which
+//! is `SPEC-MOK-007` rule 1.1's single door for a decision source that does not live here, and
+//! `simulation::DecisionRequest`, the one decision opportunity it carries. Both carry values
+//! only — the request is composed of the engine's own observation-derived values and owned
+//! strings, and a proposal comes back as `Action` or as nothing. **The port names no provider,
+//! no transport, no model, no credential, no file and no mode**, so nothing about how a
+//! proposal was obtained is expressible in this crate's interface, and rule 20.6's reason for
+//! the shape holds: a private adapter implements the private `DecisionSource` in terms of the
+//! public port, which is what keeps `Observation` and `DecisionSource` off the public side of
+//! the `ADR-MOK-001` boundary while the source itself is public.
+//!
+//! **This crate builds no port, holds none and closes none, and performs no filesystem
+//! operation and spawns no process — for that source as for every other.** Rule 20.4 puts the
+//! port's construction and lifetime in the host, which is why both entry points that take one
+//! borrow it rather than own it.
+//!
 //! Two hosts drive the same interface: the `Mokiterions` binary, which streams the
 //! `REQ-MOK-010` text record to standard output, and the `mokiterions-tui` observer, which
 //! advances one tick at a time and reads snapshots. Neither is privileged; the engine owns
-//! all mutable state and validates every proposed action regardless of its source.
+//! all mutable state and validates every proposed action regardless of its source — including a
+//! proposal that arrived through the port, which `ADR-MOK-001` fixes as untrusted input and
+//! `SPEC-MOK-007` rule 9.6 counts as an ordinary rejected proposal when the rules reject it.
 
 use std::io::Write;
 
@@ -39,7 +57,7 @@ pub mod cli;
 pub mod simulation;
 
 use cli::Command;
-use simulation::Simulation;
+use simulation::{MISSING_DECISION_PORT, Policy, Proposer, Simulation};
 
 /// The process boundary. Maps arguments and the caller's writers to an exit code and owns
 /// no state: `0` on success or help, `1` on output failure, `2` on invalid configuration,
@@ -54,14 +72,24 @@ use simulation::Simulation;
 /// library target. A failure to write the sink is an output failure and exits `1`, like a
 /// failure to write standard output; rule 13.6 adds no code and changes the meaning of none.
 ///
-/// The parameter takes `&mut dyn Write` rather than a second type parameter so that a caller
-/// with no sink writes `None` and nothing else: an `Option<&mut W>` would leave `W`
+/// `port` is `SPEC-MOK-007`'s decision port, the interface through which the `llm` source
+/// obtains a proposal from outside this engine. It is `None` for the four deterministic sources
+/// and is ignored when one of them is selected, exactly as an absent sink is ignored and
+/// without being an error, which is rule 20.9. **Like the sink it arrives already built, from a
+/// host that owns it for the whole run**: rule 20.4 puts the port's construction, its lifetime
+/// and its closure in the host, so this function spawns no process, opens no connection, reads
+/// no environment variable and knows neither what is behind the port nor whether the run is
+/// live or a replay.
+///
+/// Both parameters take `&mut dyn` rather than a further type parameter so that a caller with
+/// neither writes `None, None` and nothing else: an `Option<&mut W>` would leave `W`
 /// unconstrained at every such call site, and every existing call site is one.
 pub fn execute<I, S, W, E>(
     args: I,
     stdout: &mut W,
     stderr: &mut E,
     records: Option<&mut dyn Write>,
+    port: Option<&mut dyn Proposer>,
 ) -> u8
 where
     I: IntoIterator<Item = S>,
@@ -78,6 +106,22 @@ where
             }
         },
         Ok(Command::Run(config)) => {
+            // `SPEC-MOK-007` rule 20.8's refusal, stated here as well as in the library's own
+            // check, and for the exit code rather than for the diagnosis. Reaching the same
+            // refusal through `run_recording` would report it as a runtime error and exit `1`,
+            // an *output* failure, which this is not: it is an invalid configuration and rule 4
+            // fixes `2` for one. Rule 19.2 additionally requires it before any tick, which
+            // being before `Simulation::new` satisfies with room to spare.
+            //
+            // The usage text is not written after it, following `Simulation::new`'s precedent
+            // rather than the argument parser's. The operator's arguments may be well-formed:
+            // what is missing is something only the calling host can supply, so pointing the
+            // operator at their own command line would name the wrong mistake.
+            if config.policy == Policy::Llm && port.is_none() {
+                let _ = writeln!(stderr, "configuration error: {MISSING_DECISION_PORT}");
+                return 2;
+            }
+
             let mut simulation = match Simulation::new(config) {
                 Ok(simulation) => simulation,
                 Err(error) => {
@@ -86,7 +130,7 @@ where
                 }
             };
 
-            match simulation.run_recording(stdout, records) {
+            match simulation.run_recording(stdout, records, port) {
                 Ok(_) => 0,
                 Err(error) => {
                     let _ = writeln!(stderr, "runtime error: {error}");

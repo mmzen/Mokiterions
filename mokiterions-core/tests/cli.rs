@@ -145,7 +145,7 @@ fn the_unknown_policy_diagnostic_names_every_accepted_value() {
         .expect_err("an unknown policy is a configuration error")
         .to_string();
 
-    for name in ["baseline", "reference", "individual", "social"] {
+    for name in ["baseline", "reference", "individual", "social", "llm"] {
         assert!(message.contains(name), "{message} omits {name}");
         assert!(parse(["--policy", name]).is_ok(), "{name} is not accepted");
     }
@@ -413,17 +413,41 @@ fn the_entries_state_the_constraints_that_decide_validity() {
 
     // The value set is stated in the placeholder, so the whole entry is read here. Every value
     // the parser accepts is named and every value it names is accepted, so the help can neither
-    // hide the third source nor advertise a fourth.
+    // hide a source nor advertise one that does not exist.
     let policy = entry("--policy");
     assert!(policy.contains("baseline"), "{policy}");
     assert!(policy.contains("reference"), "{policy}");
     assert!(policy.contains("individual"), "{policy}");
     assert!(policy.contains("social"), "{policy}");
+    assert!(policy.contains("llm"), "{policy}");
     assert!(parse(["--policy", "baseline"]).is_ok());
     assert!(parse(["--policy", "reference"]).is_ok());
     assert!(parse(["--policy", "individual"]).is_ok());
     assert!(parse(["--policy", "social"]).is_ok());
+    assert!(parse(["--policy", "llm"]).is_ok());
     assert!(parse(["--policy", "random"]).is_err());
+
+    // `SPEC-MOK-007` rule 18.2's three claims about the fifth value, each asserted against the
+    // entry rather than trusted: it reaches a model through a connector program the operator
+    // supplies, it is not deterministic in itself, and it replays deterministically from a
+    // transcript. The wording is free to change; what it has to keep saying is not.
+    let policy = policy.to_lowercase();
+    assert!(policy.contains("connector"), "{policy}");
+    assert!(policy.contains("transcript"), "{policy}");
+    assert!(policy.contains("replays"), "{policy}");
+    assert!(policy.contains("not fixed by the seed"), "{policy}");
+
+    // Rule 18.3: the sentence that said this of all four became false of five, and the entry now
+    // says of which values determinism holds. An entry that still claimed it of every value would
+    // pass every assertion above.
+    assert!(
+        !policy.contains("all five are"),
+        "the entry claims determinism of the fifth value: {policy}"
+    );
+    assert!(
+        policy.contains("all four are"),
+        "the entry no longer states which values are deterministic: {policy}"
+    );
 
     let density = description("--density").to_lowercase();
     assert!(density.contains("two"), "{density}");

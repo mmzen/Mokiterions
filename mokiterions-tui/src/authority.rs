@@ -25,6 +25,12 @@ pub fn for_type(event_type: EventType, source: Option<Policy>) -> Option<&'stati
             Policy::Reference => "REQ-MOK-015",
             Policy::Individual => "REQ-MOK-033",
             Policy::Social => "REQ-MOK-057",
+            // `SPEC-MOK-007` rule 18.5 names this row. It is `REQ-MOK-063`, the requirement for
+            // the source itself, and not `REQ-MOK-067`'s replay determinism: the row answers
+            // "what authorizes this source to exist", and the observer reaches this source in
+            // replay only, so mapping it to the replay requirement would name the observer's
+            // restriction rather than the record's authority.
+            Policy::Llm => "REQ-MOK-063",
         },
         EventType::SurvivalChanged | EventType::AgentDied => "REQ-MOK-003",
         EventType::FoodConsumed => "REQ-MOK-006",

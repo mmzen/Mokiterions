@@ -192,6 +192,20 @@ pub enum Policy {
     /// Rule 26's source. It is not the default and is not proposed as one: the survivor
     /// floor `REQ-MOK-058` states for it is three below `REQ-MOK-014`'s for the default.
     Social,
+    /// `SPEC-MOK-007`'s source, and the one that is unlike the other four.
+    ///
+    /// The four above are functions of the observation and of `REQ-MOK-009`'s entropy stream, and
+    /// are deterministic at a seed. This one asks something outside the engine, through
+    /// [`Proposer`], and the engine neither knows nor can know what: rule 1.1's interface
+    /// names no provider, no transport, no model and no mode. It is deterministic only in
+    /// replay, where a host has connected a port backed by a recorded transcript.
+    ///
+    /// Selecting it with no port supplied is an invalid configuration and the run refuses, per
+    /// rule 20.8 and [`MISSING_DECISION_PORT`]. That refusal is the one check of rule 13 the
+    /// library makes rather than a host: this variant is reachable from any caller of
+    /// [`Policy::parse`], and a host that accepts `llm` on its command line and then omits the
+    /// port must not quietly run something else.
+    Llm,
 }
 
 impl Policy {
@@ -201,6 +215,7 @@ impl Policy {
             "reference" => Some(Self::Reference),
             "individual" => Some(Self::Individual),
             "social" => Some(Self::Social),
+            "llm" => Some(Self::Llm),
             _ => None,
         }
     }
@@ -213,6 +228,7 @@ impl fmt::Display for Policy {
             Self::Reference => formatter.write_str("reference"),
             Self::Individual => formatter.write_str("individual"),
             Self::Social => formatter.write_str("social"),
+            Self::Llm => formatter.write_str("llm"),
         }
     }
 }
@@ -1215,6 +1231,510 @@ impl DecisionSource for SocialDecisionSource {
     }
 }
 
+/// `SPEC-MOK-007` rule 20.8's refusal, in one sentence held in one place because two doors
+/// state it and a third checks it for its own exit code.
+pub(crate) const MISSING_DECISION_PORT: &str =
+    "policy llm requires a decision port and none was supplied";
+
+/// The `llm` source's name, as `SPEC-MOK-006` rule 3.2 admits it into `result.source`.
+///
+/// The four existing sources each answer with their own literal and nothing needs the string
+/// before one exists. This one does: [`Simulation::initialization_events`] reports the selected
+/// source and cannot build a [`PortDecisionSource`], having no port. Holding the string here
+/// makes `config.policy`'s rendering, `result.source`'s value and that report one string rather
+/// than three that agree today.
+const LLM_SOURCE_NAME: &str = "llm";
+
+/// Block A: the world's rules as prose, byte-identical across every request of every run.
+///
+/// `SPEC-MOK-007` rule 4 fixes what this states and rule 3.3 fixes that it never varies. It is
+/// the leading span a provider's prompt cache matches, so a name, a tick, a count or a
+/// whitespace difference inside it would destroy the shared prefix for every request of the run
+/// at once. Rule 4.5 restates that as a content rule — no identity, no tick, no seed, no count
+/// of anything that varies — so the property is checked when this text is edited rather than
+/// only when a cache ratio regresses.
+///
+/// **It contains no strategy, no goal, no preference and no advice**, which is rule 4.4 and is
+/// the reason `INT-MOK-011` sets no viability floor for this source: a block A that told the
+/// model to survive would measure the instruction rather than the model. Every sentence below
+/// states a mechanism the engine implements, and stops there. Nothing says that health is
+/// better high, that combat is risky, or that any action is preferable to any other.
+///
+/// Rule 4.2 makes it a restatement for a reader and not a second authority: where it and
+/// `SPEC-MOK-001` disagree, `SPEC-MOK-001` governs and this text is wrong and is corrected.
+/// Rule 4.6 is why the closing section states the answer's grammar — a response has to be
+/// well-formed from block A alone.
+///
+/// One literal per line, concatenated at compile time, on [`crate::cli::USAGE`]'s precedent and
+/// for its reason: a multi-line literal would take its line endings from however the file was
+/// checked out, and rule 3.3 does not admit bytes that depend on a checkout.
+const SHARED_RULES: &str = concat!(
+    "You are one Mokiterion. You will be given what you can see and the actions you may\n",
+    "take, and you answer with exactly one of them.\n",
+    "\n",
+    "THE WORLD\n",
+    "The world is a grid 128 cells wide and 128 cells tall. A cell has an x coordinate from\n",
+    "0 to 127 and a y coordinate from 0 to 127. x rises toward the east and y rises toward\n",
+    "the south. The grid is split into two territories: territory A is every cell with y\n",
+    "from 0 to 63, territory B is every cell with y from 64 to 127. The boundary is a line\n",
+    "on the map and not a barrier, and crossing it is an ordinary move. Nothing exists\n",
+    "outside the grid, and a move that would leave it does not happen.\n",
+    "\n",
+    "Time passes in turns called ticks. In one tick every living Mokiterion is asked for one\n",
+    "action, one after another, and each action is resolved before the next Mokiterion is\n",
+    "asked. Food resources occupy cells. Any number of Mokiterions and resources may share\n",
+    "one cell.\n",
+    "\n",
+    "YOUR ATTRIBUTES\n",
+    "health, satiety, energy and fear are each an integer from 0 to 100.\n",
+    "  health   A Mokiterion whose health reaches 0 is dead and acts no further. Nothing\n",
+    "           raises health.\n",
+    "  satiety  Falls by 1 at the end of every tick. Eating raises it.\n",
+    "  energy   Falls by 1 at the end of every tick. Sleeping and eating raise it.\n",
+    "  fear     Rises by 10 at the end of a tick in which another Mokiterion was perceived,\n",
+    "           and falls by 5 at the end of a tick in which none was. Being threatened\n",
+    "           raises it by 30 at the moment of the threat.\n",
+    "At the end of a tick in which either satiety or energy is 0, health falls by 5.\n",
+    "\n",
+    "waste_tolerance is an integer from 0 to 40. It never changes and it permits and forbids\n",
+    "nothing; it is stated because it is part of what a Mokiterion is.\n",
+    "\n",
+    "PERCEPTION\n",
+    "A Mokiterion perceives every resource and every living Mokiterion at a distance of 16\n",
+    "or less, where the distance between two cells is the larger of the two coordinate\n",
+    "differences. Of each one it is given the identifier, the compass direction toward it\n",
+    "and that distance. A distance of 0 means the same cell. Two Mokiterions at a distance\n",
+    "of 1 or less — the same cell, or one of the eight cells around it — are in contact.\n",
+    "Nothing else about another Mokiterion is perceived: not its health, not its satiety,\n",
+    "not its energy, not its fear.\n",
+    "\n",
+    "RESOURCES\n",
+    "A resource has a class, which is low, medium or high. Eating one raises satiety by 15,\n",
+    "30 or 50 and energy by 5, 10 or 20 for those three classes. Neither attribute passes\n",
+    "100, and whatever would have gone above 100 is lost. An eaten resource is removed from\n",
+    "the world.\n",
+    "\n",
+    "THE FOUR CORE ACTIONS\n",
+    "  wait                Nothing happens.\n",
+    "  sleep               energy rises by 20, to no more than 100. Not permitted while\n",
+    "                      energy is already 100.\n",
+    "  eat <resource>      The resource must be in this Mokiterion's own cell. It is eaten\n",
+    "                      and removed from the world.\n",
+    "  move <direction>    One cell north, east, south or west. Not permitted where the\n",
+    "                      destination would be outside the grid.\n",
+    "\n",
+    "THE SEVEN TARGETED ACTIONS\n",
+    "Each names exactly one other living Mokiterion by its identifier. A step toward or away\n",
+    "from a target moves on one axis: east or west while the target lies to the east or the\n",
+    "west, otherwise north or south, and on the other axis when the first would leave the\n",
+    "grid.\n",
+    "  attack <who>        The target must be in contact. Its health falls by 10 plus a\n",
+    "                      tenth of the sum of this Mokiterion's own energy and health, so\n",
+    "                      by 10 to 30. This Mokiterion's energy falls by 5. A target whose\n",
+    "                      health reaches 0 is dead.\n",
+    "  threaten <who>      The target must be in contact. Its fear rises by 30, to no more\n",
+    "                      than 100. Nothing else changes.\n",
+    "  fight <who>         An attack, resolved identically, permitted only against a\n",
+    "                      Mokiterion that struck this one since its previous action, and\n",
+    "                      only while that Mokiterion is in contact.\n",
+    "  retreat <who>       One cell away from the target. Permitted only against a\n",
+    "                      Mokiterion that struck this one since its previous action.\n",
+    "  surrender <who>     Permitted only against a Mokiterion that struck this one since\n",
+    "                      its previous action. Half of this Mokiterion's satiety, rounded\n",
+    "                      down, is taken from it and added to the target's, to no more than\n",
+    "                      100; whatever would have gone above 100 is lost.\n",
+    "  approach <who>      One cell toward the target. The target must be perceived and must\n",
+    "                      not be in the same cell.\n",
+    "  avoid <who>         One cell away from the target. The target must be perceived.\n",
+    "\n",
+    "REJECTION\n",
+    "Every proposed action is checked against the world before it is applied, against the\n",
+    "conditions stated with it above. A rejected action changes nothing. The tick then moves\n",
+    "on, and the end-of-tick changes to satiety, energy, fear and health happen whether the\n",
+    "action was applied or rejected. The actions offered already exclude those whose\n",
+    "conditions what you are given shows to be unmet.\n",
+    "\n",
+    "YOUR ANSWER\n",
+    "Answer with exactly one action from the set you are given. Name the verb, and where the\n",
+    "verb takes a resource, a direction or another Mokiterion, name exactly one and write it\n",
+    "exactly as that set writes it. Give no second action, no alternative, no explanation,\n",
+    "no reason and no confidence.\n",
+);
+
+/// One decision opportunity, composed for a decision source that does not live in this engine.
+///
+/// `SPEC-MOK-007` rule 2.1: one tick, one living Mokiterion, one observation. Rule 2.2 fixes
+/// that it carries four parts and nothing else, and rule 3.1 fixes their order, which
+/// [`DecisionRequest::blocks`] is the single statement of. The order is not cosmetic: a
+/// provider's prompt cache matches the longest identical leading span, blocks A and B do not
+/// vary within a run, and blocks C and D sit last where varying costs nothing.
+///
+/// **It carries values only** — rule 1.3. There is no reference into engine state, no mutable
+/// borrow and no handle, so holding one for any length of time cannot influence the run it came
+/// from. Rules 2.3 and 2.4 are discharged by construction rather than by a check: there is no
+/// part in which another Mokiterion's condition, a population aggregate, an earlier request, an
+/// earlier response or a conversation identifier could be placed.
+///
+/// A host receives one of these and never builds one. That is what keeps the private
+/// `Observation` and the private decision-source abstraction private while this source is
+/// public, which is rule 20.6 and `ADR-MOK-001`'s trust boundary left where it was.
+///
+/// Block A is a `&'static str` and the other three are owned, which is deliberate rather than
+/// an optimisation: the type then cannot hold a block A that differs from
+/// [`SHARED_RULES`], so rule 3.3's byte-identity across a run is a property of the type and
+/// not of a copy made correctly every time.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DecisionRequest {
+    shared_rules: &'static str,
+    actor: String,
+    observation: String,
+    permitted_set: String,
+}
+
+impl DecisionRequest {
+    /// The four parts in rule 3.1's order, which is stated here and nowhere else.
+    ///
+    /// Rule 3.6 refuses an implementation that "composes the parts in this order and then
+    /// serialises them through a structure whose field order is not guaranteed". A caller that
+    /// wants the request's bytes takes them from here; a caller that wants to send blocks A and
+    /// B as a cacheable prefix and C and D after it takes the first two and the last two of the
+    /// same array, and cannot reorder them by accident.
+    pub fn blocks(&self) -> [&str; 4] {
+        [
+            self.shared_rules,
+            self.actor.as_str(),
+            self.observation.as_str(),
+            self.permitted_set.as_str(),
+        ]
+    }
+
+    /// Block A, rule 4: the shared rules, identical in every request of every run.
+    pub fn shared_rules(&self) -> &str {
+        self.shared_rules
+    }
+
+    /// Block B, rule 5: the acting Mokiterion's identifier and its `waste_tolerance`, and
+    /// nothing else. Identical in every request for that Mokiterion in a run.
+    pub fn actor(&self) -> &str {
+        &self.actor
+    }
+
+    /// Block C, rule 6: the observation's varying fields, in the order rule 6.1 fixes.
+    pub fn observation(&self) -> &str {
+        &self.observation
+    }
+
+    /// Block D, rule 7: every action the specification permits at this opportunity.
+    pub fn permitted_set(&self) -> &str {
+        &self.permitted_set
+    }
+
+    /// Composes the four blocks from one observation and from nothing else.
+    ///
+    /// Rule 2.5 is what this being a pure function of the observation buys: the request is a
+    /// run input, identical across two runs of the same seed, tick limit, density and tracing
+    /// selection, which is what later lets a replay detect a transcript from a different
+    /// configuration.
+    fn compose(observation: &Observation) -> Self {
+        Self {
+            shared_rules: SHARED_RULES,
+            actor: actor_block(observation),
+            observation: observation_block(observation),
+            permitted_set: permitted_set_block(observation),
+        }
+    }
+}
+
+/// The engine's one interface for obtaining a proposal from outside itself.
+///
+/// `SPEC-MOK-007` rule 1.1: it takes a request by value and returns either a proposal or the
+/// fact that none was obtained. **It names no provider, no transport, no model, no credential,
+/// no file and no mode**, and there is no branch on live-versus-replay anywhere in this target.
+/// The difference between recording a run and replaying one is entirely a difference in what
+/// the host connected, which is what makes `REQ-MOK-067`'s byte-identity structural instead of
+/// a second implementation to be kept in agreement with the first.
+///
+/// `None` is not an error type and carries no diagnosis. Rule 9.5 fixes what the engine does
+/// with it — propose `wait`, the least consequential action and the one available at every
+/// opportunity — and rule 9.7 forbids the alternative of borrowing another source's selection,
+/// which would make the run a mixture of two sources under one label.
+///
+/// **The host builds this, owns it for the whole run, and lends it per tick.** The engine
+/// builds none, holds none and closes none: what sits behind the port is a resource this target
+/// is forbidden to hold, and rule 20.4.1 records the failure caller-ownership makes
+/// unavailable — a port rebuilt each tick still compiles and still runs, and resets the
+/// transcript cursor, the accumulated cost and the fallback count every tick.
+///
+/// `&mut self` for that reason: an implementation is expected to carry state across a run.
+pub trait Proposer {
+    /// Proposes one action for one decision opportunity, or reports that none was obtained.
+    fn propose(&mut self, request: DecisionRequest) -> Option<Action>;
+}
+
+/// Block B, rule 5: the identifier and the trait constant, and rule 5.2's nothing else.
+///
+/// Rule 3.4 is why `waste_tolerance` is here and `health`, `satiety`, `energy` and `fear` are
+/// not: this block must not vary within a run, and a trait constant does not.
+fn actor_block(observation: &Observation) -> String {
+    format!(
+        "YOU\nidentifier: {}\nwaste_tolerance: {}\n",
+        observation.agent_id, observation.waste_tolerance
+    )
+}
+
+/// Block C, rule 6.1's fields in rule 6.1's order.
+///
+/// Every list states its emptiness rather than omitting its line, which is rule 6.5, and an
+/// absent relative direction states `same_cell` rather than being omitted or given a sentinel,
+/// which is rule 6.3 adopting `SPEC-MOK-006` rule 4.4's principle that an absence is stated as
+/// an absence.
+///
+/// **There is no aggregate here and no count of anything**, rule 6.6: not a population figure,
+/// not a mean, not a ranking, and not a length of any of the lists below. `REQ-MOK-059` already
+/// forbids the engine to read a population-level aggregate, and rule 6.6 forbids composing one
+/// out of what it may read — including out of a list whose entries are all present anyway.
+fn observation_block(observation: &Observation) -> String {
+    let mut block = format!(
+        "WHAT YOU SEE\ntick: {}\nposition: {} in territory {}\nhealth: {}\nsatiety: {}\nenergy: {}\nfear: {}\n",
+        observation.tick,
+        observation.position,
+        observation.territory,
+        observation.health,
+        observation.satiety,
+        observation.energy,
+        observation.fear
+    );
+
+    // Rule 6.4: the engine's own one-tick memory, rendered as part of the observation and in
+    // the order the attacks resolved. An attacker's identifier renders; nothing about an
+    // attacker's condition renders, because nothing about it is carried.
+    block.push_str("attacks suffered since your previous action:\n");
+    if observation.suffered.is_empty() {
+        block.push_str("  none\n");
+    } else {
+        for attack in &observation.suffered {
+            block.push_str(&format!("  {} for {}\n", attack.attacker, attack.damage));
+        }
+    }
+
+    block.push_str("resources in your cell:\n");
+    if observation.co_located_food.is_empty() {
+        block.push_str("  none\n");
+    } else {
+        for food_id in &observation.co_located_food {
+            block.push_str(&format!("  {food_id}\n"));
+        }
+    }
+
+    block.push_str("resources perceived:\n");
+    if observation.perceived_food.is_empty() {
+        block.push_str("  none\n");
+    } else {
+        for food in &observation.perceived_food {
+            block.push_str(&format!(
+                "  {} class {} direction {} distance {}\n",
+                food.id,
+                food.class,
+                relative_direction_form(food.direction),
+                food.distance
+            ));
+        }
+    }
+
+    // Rule 6.2: exactly the three values the observation carries, because no attribute of a
+    // perceived Mokiterion is available to render.
+    block.push_str("mokiterions perceived:\n");
+    if observation.perceived_mokiterions.is_empty() {
+        block.push_str("  none\n");
+    } else {
+        for other in &observation.perceived_mokiterions {
+            block.push_str(&format!(
+                "  {} direction {} distance {}\n",
+                other.id,
+                relative_direction_form(other.direction),
+                other.distance
+            ));
+        }
+    }
+
+    block
+}
+
+/// Rule 6.3's stated word for the co-located case.
+fn relative_direction_form(direction: Option<RelativeDirection>) -> String {
+    match direction {
+        Some(direction) => direction.to_string(),
+        None => "same_cell".to_string(),
+    }
+}
+
+/// Block D, rule 7: every action the specification permits this Mokiterion to propose at this
+/// opportunity, with each targeted action named against each target it may name.
+///
+/// **It is composed beside the observation's core-proposal list and never by extending it**,
+/// which is rule 7.2 and `SPEC-MOK-001` rule 3's own reason: rule 4's baseline consumes one
+/// entropy selection over that list's length, so a longer list would move that selection and
+/// every run ever recorded under `baseline` would diverge. The core proposals are read from it;
+/// the seven targeted verbs are enumerated here and never pushed onto it.
+///
+/// **Rule 7.4 is what each loop below implements.** A verb is enumerated against a target only
+/// where the preconditions `SPEC-MOK-001` rule 6 states for it are met by what the observation
+/// carries, so block D never offers an action the engine would reject on a ground block D could
+/// have known about — an `approach` against a Mokiterion in the same cell is the case that
+/// makes the difference visible, and it is excluded. What rule 7.5 keeps *in* is an action the
+/// engine may still reject on a ground the observation does not carry; that is an ordinary
+/// rejected proposal, and rule 9.6 keeps it out of the fallback count.
+///
+/// Rule 7.7: the order is derived from the observation's order and is therefore fixed. The core
+/// proposals come in the order the observation carries them, and the seven verbs come in
+/// `SPEC-MOK-001` rule 21's order, each against the perceived Mokiterions in the observation's
+/// own ascending distance-then-identifier order.
+fn permitted_set_block(observation: &Observation) -> String {
+    let mut block = String::from("ACTIONS YOU MAY TAKE\n");
+    for action in &observation.valid_actions {
+        push_permitted(&mut block, action);
+    }
+
+    let in_contact = |other: &PerceivedMokiterion| other.distance <= CONTACT_RADIUS;
+    let struck_me = |other: &PerceivedMokiterion| {
+        observation
+            .suffered
+            .iter()
+            .any(|attack| attack.attacker == other.id)
+    };
+    let others = || observation.perceived_mokiterions.iter();
+
+    for other in others().filter(|other| in_contact(other)) {
+        push_permitted(
+            &mut block,
+            &Action::Attack {
+                target: other.id.clone(),
+            },
+        );
+    }
+    for other in others().filter(|other| in_contact(other)) {
+        push_permitted(
+            &mut block,
+            &Action::Threaten {
+                target: other.id.clone(),
+            },
+        );
+    }
+    for other in others().filter(|other| in_contact(other) && struck_me(other)) {
+        push_permitted(
+            &mut block,
+            &Action::Fight {
+                target: other.id.clone(),
+            },
+        );
+    }
+    for other in others().filter(|other| struck_me(other)) {
+        push_permitted(
+            &mut block,
+            &Action::Retreat {
+                target: other.id.clone(),
+            },
+        );
+    }
+    for other in others().filter(|other| struck_me(other)) {
+        push_permitted(
+            &mut block,
+            &Action::Surrender {
+                target: other.id.clone(),
+            },
+        );
+    }
+    for other in others().filter(|other| other.distance > 0) {
+        push_permitted(
+            &mut block,
+            &Action::Approach {
+                target: other.id.clone(),
+            },
+        );
+    }
+    for other in others() {
+        push_permitted(
+            &mut block,
+            &Action::Avoid {
+                target: other.id.clone(),
+            },
+        );
+    }
+
+    block
+}
+
+fn push_permitted(block: &mut String, action: &Action) {
+    block.push_str("  ");
+    block.push_str(&permitted_form(action));
+    block.push('\n');
+}
+
+/// The port's rendering of an action: the verb, then its one parameter where it has one,
+/// separated by a space.
+///
+/// **This is not [`Action`]'s `Display`, and the two are deliberately different.** That one is
+/// the `REQ-MOK-010` text stream's, where `CAP-MOK-010` holds every line a core verb appears on
+/// byte-identical and where a targeted verb renders as the bare verb because its target is a
+/// field of its own beside `proposal`. A request that dropped the target would name no action at
+/// all, so this rendering is the port's own and is the single place the port's grammar is
+/// written: block A describes this form, block D enumerates in it, and rule 8.2's closed
+/// grammar is checked against it.
+fn permitted_form(action: &Action) -> String {
+    match action {
+        Action::Wait => "wait".to_string(),
+        Action::Sleep => "sleep".to_string(),
+        Action::Eat { food_id } => format!("eat {food_id}"),
+        Action::Move { direction } => format!("move {direction}"),
+        Action::Attack { target } => format!("attack {target}"),
+        Action::Threaten { target } => format!("threaten {target}"),
+        Action::Fight { target } => format!("fight {target}"),
+        Action::Retreat { target } => format!("retreat {target}"),
+        Action::Surrender { target } => format!("surrender {target}"),
+        Action::Approach { target } => format!("approach {target}"),
+        Action::Avoid { target } => format!("avoid {target}"),
+    }
+}
+
+/// The private adapter of `SPEC-MOK-007` rule 20.6: it implements the engine's own decision-source
+/// abstraction in terms of the public port.
+///
+/// It exists so that the abstraction stays private. That abstraction takes [`Observation`],
+/// which carries `ADR-MOK-001`'s trust boundary, and publishing it in order to reach this source
+/// would export the boundary itself. `SPEC-MOK-002` rule 6 keeps both names on its prohibited
+/// list, and this type is the whole of what stands between them and [`Proposer`].
+///
+/// **It draws no entropy**, rule 20.7. It receives the handle the abstraction passes every
+/// source and never touches it, so `REQ-MOK-009`'s stream does not move. One draw here would
+/// shift every subsequent draw in the run and the four existing sources would then behave
+/// differently at the same seed, which is exactly what `REQ-MOK-068`'s byte-identity comparison
+/// exists to catch.
+struct PortDecisionSource<'port> {
+    port: &'port mut dyn Proposer,
+}
+
+impl DecisionSource for PortDecisionSource<'_> {
+    fn name(&self) -> &str {
+        LLM_SOURCE_NAME
+    }
+
+    /// Rule 9.5's fallback: where no proposal was obtained the source proposes `wait`.
+    ///
+    /// `wait` and not a substitute from another source, per rule 9.7, and not an abort, per rule
+    /// 9.8 — a run whose transport hiccupped once has real ticks and a replayable transcript.
+    /// The *accounting* rule 9.5 also requires, and the run-record field rule 15.4 marks the run
+    /// with, arrive with the run record; there is nothing yet that reads a count, and a counter
+    /// nothing reads would be a figure no one had checked.
+    ///
+    /// A proposal the engine then rejects is not this case and is not a fallback, rule 9.6.
+    fn decide(&mut self, observation: &Observation, _entropy: &mut DecisionEntropy<'_>) -> Action {
+        debug_assert!(observation.is_consistent());
+        self.port
+            .propose(DecisionRequest::compose(observation))
+            .unwrap_or(Action::Wait)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct SplitMix64 {
     state: u64,
@@ -1845,7 +2365,17 @@ pub struct TickOutcome {
 /// declaring `1`. The row states the divergence itself and left the increment to the
 /// owner, because moving a declared compatibility surface is not an implementation
 /// agent's decision.
-const RECORD_SCHEMA_VERSION: u32 = 2;
+///
+/// `3` in the same change that adds [`Policy::Llm`], and for a smaller reason than the move to
+/// `2`: rule 10.2 moves this when "a value's domain in rule 3.2 gains or loses a member", and
+/// `llm` joins two of them — `config.policy` in the header record and `result.source` in the
+/// decision record. No field is added, no field is removed and no field's meaning changes, so a
+/// reader of a `3` stream that ignores the two new members reads a `2` stream correctly. The
+/// increment is still owed: rule 10.2 does not grade a domain change by how much a reader
+/// notices, and `ADR-MOK-007` requires the increment to be "one more than whatever value the
+/// ratification leaves standing" rather than a number chosen when this was written. The owner
+/// declined folding the two moves into a single one, which is why this is `3` and not `2`.
+const RECORD_SCHEMA_VERSION: u32 = 3;
 
 /// The two streams a run writes: the text stream `SPEC-MOK-001` fixes, and the optional
 /// structured record stream `SPEC-MOK-006` fixes.
@@ -2007,24 +2537,38 @@ impl Simulation {
 
     /// Runs to termination, writing the `SPEC-MOK-001` text record to `output`.
     ///
-    /// The signature `SPEC-MOK-002` rule 5 enumerates, unchanged by the record stream: a host
-    /// that wants no records calls this and passes nothing extra.
+    /// The signature `SPEC-MOK-002` rule 5 enumerates, unchanged by the record stream and
+    /// unchanged by the decision port: `SPEC-MOK-007` rule 20.5.1 fixes that this is **not**
+    /// amended, and it delegates with the port absent. A host that wants either calls the
+    /// entry point that takes it; a host that wants neither passes nothing extra, and its call
+    /// site is the same character for character as it was before either existed.
+    ///
+    /// The consequence is that a `Policy::Llm` run cannot be started through here: it is an
+    /// invalid configuration with no port, and this reports [`MISSING_DECISION_PORT`] rather
+    /// than substituting a source. That is rule 20.8 and not an oversight of rule 20.5.1.
     pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
-        self.run_recording(output, None)
+        self.run_recording(output, None, None)
     }
 
     /// [`Simulation::run`], additionally projecting every record `SPEC-MOK-006` fixes onto
-    /// `records` when a sink is supplied.
+    /// `records` when a sink is supplied, and obtaining proposals through `port` when a
+    /// decision port is.
     ///
-    /// `pub(crate)` rather than `pub`: the only caller is `execute`, the sink is the *host's*
-    /// to open, and `SPEC-MOK-006` rule 12.2 grows the public interface by nothing beyond
-    /// `execute`'s one parameter. With no sink this is [`Simulation::run`] exactly — the same
-    /// text bytes, the same draws, the same outcome — which is rule 11 stated as a call graph
-    /// rather than as a promise.
+    /// `pub(crate)` rather than `pub`: the only caller is `execute`, the sink and the port are
+    /// both the *host's* to build, and `SPEC-MOK-006` rule 12.2 grows the public interface by
+    /// nothing beyond `execute`'s parameters. `SPEC-MOK-007` rule 20.5.2 names this the
+    /// crate-private carrier of the port down the call chain and discloses that it takes it, so
+    /// that the parameter's appearance here is a stated part of the change and not something a
+    /// reader finds. `pub(crate) fn` is not `pub fn`, so rule 5's public-surface grep does not
+    /// match this line and still returns exactly `run` and `advance_tick`.
+    ///
+    /// With neither this is [`Simulation::run`] exactly — the same text bytes, the same draws,
+    /// the same outcome — which is rule 11 stated as a call graph rather than as a promise.
     pub(crate) fn run_recording<W: Write>(
         &mut self,
         output: &mut W,
         records: Option<&mut dyn Write>,
+        port: Option<&mut dyn Proposer>,
     ) -> io::Result<RunSummary> {
         let mut sinks = Sinks {
             text: output,
@@ -2047,6 +2591,24 @@ impl Simulation {
                 let mut source = SocialDecisionSource;
                 self.run_with_source(&mut sinks, &mut source)
             }
+            // Rule 20.8: this source with no port is an invalid configuration and the run
+            // refuses. It does not substitute a source, does not proceed with no decisions, and
+            // does not treat the absence as rule 9's fallback — a run of `wait` for a thousand
+            // ticks would produce a stream a reader could mistake for a measurement.
+            //
+            // Rule 20.9 is the other half, and it is the four arms above: a port supplied while
+            // one of them is selected is ignored exactly as an absent sink is, and is not an
+            // error. `port` is dropped there, which is that rule and not a leak.
+            Policy::Llm => match port {
+                Some(port) => {
+                    let mut source = PortDecisionSource { port };
+                    self.run_with_source(&mut sinks, &mut source)
+                }
+                None => Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    MISSING_DECISION_PORT,
+                )),
+            },
         }
     }
 
@@ -2106,7 +2668,29 @@ impl Simulation {
     /// The error is the engine's own: `SPEC-MOK-001` rule 15 finding no free cell for a
     /// resource it must place. `Simulation::new` reports its own failures the same way, and
     /// `ARCH-MOK-001` requires ordinary `Result` propagation rather than a panic.
-    pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+    ///
+    /// `port` is `SPEC-MOK-007` rule 20.5's second door, and it is lent per tick rather
+    /// than held because rule 20.4 puts the port's whole lifetime in the host: **the host builds
+    /// it once, owns it for the run, and lends it here.** Rule 20.4.1 is why that matters and is
+    /// not a preference — a port rebuilt for each call compiles and runs, and resets the
+    /// transcript cursor, the accumulated cost and the fallback count every tick, so a replay
+    /// would return the transcript's first entry a thousand times and report no drift.
+    ///
+    /// A host with no port passes `None` and needs no type annotation for a port it does not
+    /// have, which is the shape `SPEC-MOK-002` rule 4 already fixed for the record sink.
+    ///
+    /// This signature is one line deliberately, and the interface is named for its width.
+    /// `SPEC-MOK-002` rule 5 detects a third public mutating entry point by matching the
+    /// declaration keyword and the receiver on one line, so a signature rustfmt wraps drops
+    /// this method out of the check's own result — the check would then pass while reporting
+    /// one door instead of two, which is a weakened check rather than a failing one.
+    /// `DecisionPort` reaches 109 columns here, and 104 with the shortest sensible parameter
+    /// name, both past rustfmt's 100. The interface's shape is `SPEC-MOK-007` rule 1.1's and
+    /// its spelling is nobody's: no artifact fixes the identifier, and rule 1.1's own words are
+    /// "obtains a **proposal**", which is what `propose` is called. The word *port* is the
+    /// artifacts' and is kept everywhere it costs no width — this parameter, these doc
+    /// comments, `PortDecisionSource` and `MISSING_DECISION_PORT`.
+    pub fn advance_tick(&mut self, port: Option<&mut dyn Proposer>) -> Result<TickOutcome, String> {
         if let Some(reason) = self.outcome {
             return Ok(TickOutcome {
                 events: Vec::new(),
@@ -2132,6 +2716,19 @@ impl Simulation {
                 let mut source = SocialDecisionSource;
                 self.advance_tick_with_source(&mut source)
             }
+            // Rule 20.8, on the observer host's door, and the check sits in the arm rather than
+            // above the dispatch on purpose: a fresh `Simulation` has no outcome, so the first
+            // call reaches here, which is rule 20.8's "refused on the first tick" literally. A
+            // finished run reports finished above, and it can only have finished by having had
+            // a port every tick, so that path never reaches a refusal it would be wrong to
+            // report.
+            Policy::Llm => match port {
+                Some(port) => {
+                    let mut source = PortDecisionSource { port };
+                    self.advance_tick_with_source(&mut source)
+                }
+                None => Err(MISSING_DECISION_PORT.to_string()),
+            },
         }
     }
 
@@ -2254,6 +2851,11 @@ impl Simulation {
             Policy::Reference => ReferenceDecisionSource.name().to_string(),
             Policy::Individual => IndividualDecisionSource.name().to_string(),
             Policy::Social => SocialDecisionSource.name().to_string(),
+            // Named rather than asked, because the source that would answer needs a port and
+            // this method takes none: it reports the *selected* source before any tick, and the
+            // selection is the configuration's, not the port's. `LLM_SOURCE_NAME` is the one
+            // place the string lives, so this and the record the run writes cannot disagree.
+            Policy::Llm => LLM_SOURCE_NAME.to_string(),
         };
         let mut events = self.entity_initialization_events();
         events.push(Event::new(
@@ -7179,7 +7781,7 @@ mod tests {
             let mut simulation = Simulation::new(social_config(seed, 60, false)).unwrap();
             // Rule 3's consistency test requires a started run, so the first tick is taken
             // before the first opportunity is inspected.
-            simulation.advance_tick().unwrap();
+            simulation.advance_tick(None).unwrap();
             while !simulation.is_finished() {
                 for index in 0..simulation.agents.len() {
                     if !simulation.agents[index].alive {
@@ -7191,7 +7793,7 @@ mod tests {
                         assert_eq!(draws, 0, "{action} drew at seed {seed}");
                     }
                 }
-                simulation.advance_tick().unwrap();
+                simulation.advance_tick(None).unwrap();
             }
         }
     }
@@ -7208,7 +7810,7 @@ mod tests {
         let mut compared = 0usize;
         for seed in DECLARED_SEEDS {
             let mut simulation = Simulation::new(social_config(seed, 60, false)).unwrap();
-            simulation.advance_tick().unwrap();
+            simulation.advance_tick(None).unwrap();
             while !simulation.is_finished() {
                 for index in 0..simulation.agents.len() {
                     if !simulation.agents[index].alive {
@@ -7238,7 +7840,7 @@ mod tests {
                     );
                     compared += 1;
                 }
-                simulation.advance_tick().unwrap();
+                simulation.advance_tick(None).unwrap();
             }
         }
         // The comparison is worth nothing if its condition never held.
@@ -7607,7 +8209,7 @@ mod tests {
 
         assert_eq!(
             record,
-            "{\"record\":\"header\",\"schema\":2,\"engine\":\"0.1.0\",\
+            "{\"record\":\"header\",\"schema\":3,\"engine\":\"0.1.0\",\
              \"config\":{\"seed\":777,\"ticks\":1000,\"policy\":\"individual\",\
              \"density\":\"1.50\",\"trace_actions\":true}}\n"
         );
@@ -7866,6 +8468,12 @@ mod tests {
                 Policy::Reference => entropy_trace(config, ReferenceDecisionSource, false).0,
                 Policy::Individual => entropy_trace(config, IndividualDecisionSource, false).0,
                 Policy::Social => entropy_trace(config, SocialDecisionSource, false).0,
+                // The table is the four existing sources' and nothing else. `REQ-MOK-068` is a
+                // statement about them, and the `llm` source has no base-commit figure because
+                // it did not exist at the base commit. It also has no source to trace without a
+                // port — which rule 20.7 makes moot, since it draws nothing and would add a row
+                // of zeroes.
+                Policy::Llm => panic!("the base-commit entropy table names no llm row"),
             };
             assert_eq!(
                 states.len(),
@@ -7910,6 +8518,8 @@ mod tests {
                     Policy::Reference => entropy_trace(config, ReferenceDecisionSource, false).0,
                     Policy::Individual => entropy_trace(config, IndividualDecisionSource, false).0,
                     Policy::Social => entropy_trace(config, SocialDecisionSource, false).0,
+                    // As above: the instrument regenerates the four existing sources' table.
+                    Policy::Llm => panic!("the base-commit entropy table names no llm row"),
                 };
                 println!(
                     "        ({}, Policy::{:?}, {}, {:#018x}),",
@@ -8247,7 +8857,7 @@ mod tests {
                     let mut recorded_text = Vec::new();
                     let mut records = Vec::new();
                     let recorded_summary = recorded
-                        .run_recording(&mut recorded_text, Some(&mut records))
+                        .run_recording(&mut recorded_text, Some(&mut records), None)
                         .unwrap();
 
                     assert_eq!(plain_text, recorded_text, "{seed} {density} {policy}");
@@ -8293,7 +8903,7 @@ mod tests {
                 let mut recorded_text = Vec::new();
                 let mut records = Vec::new();
                 let recorded_summary = recorded
-                    .run_recording(&mut recorded_text, Some(&mut records))
+                    .run_recording(&mut recorded_text, Some(&mut records), None)
                     .unwrap();
 
                 assert_eq!(plain_text, recorded_text, "{policy:?} {trace_actions}");
@@ -8787,12 +9397,12 @@ mod tests {
         let mut plain_text = Vec::new();
         let mut plain_records = Vec::new();
         plain
-            .run_recording(&mut plain_text, Some(&mut plain_records))
+            .run_recording(&mut plain_text, Some(&mut plain_records), None)
             .unwrap();
         let mut loaded_text = Vec::new();
         let mut loaded_records = Vec::new();
         loaded
-            .run_recording(&mut loaded_text, Some(&mut loaded_records))
+            .run_recording(&mut loaded_text, Some(&mut loaded_records), None)
             .unwrap();
 
         assert_eq!(plain_text, loaded_text);
@@ -8832,7 +9442,7 @@ mod tests {
         let mut text = Vec::new();
         let mut records = Vec::new();
         simulation
-            .run_recording(&mut text, Some(&mut records))
+            .run_recording(&mut text, Some(&mut records), None)
             .unwrap();
 
         assert_eq!(simulation.crossings, u64::MAX);
@@ -8850,7 +9460,7 @@ mod tests {
         let mut text = Vec::new();
         let mut sink = FailingSink::after(0);
         let error = simulation
-            .run_recording(&mut text, Some(&mut sink))
+            .run_recording(&mut text, Some(&mut sink), None)
             .unwrap_err();
 
         // Rule 13.5: distinguishable from a text-stream failure, deterministic in form, and
@@ -8871,7 +9481,7 @@ mod tests {
         let mut text = Vec::new();
         let mut sink = FailingSink::after(2000);
         let error = simulation
-            .run_recording(&mut text, Some(&mut sink))
+            .run_recording(&mut text, Some(&mut sink), None)
             .unwrap_err();
 
         assert_eq!(error.to_string(), "record sink: closed");
@@ -9005,21 +9615,26 @@ mod tests {
             member(&mut evidence, "reason.termination", &reason.to_string());
         }
 
-        sizes.push(("policy", 4));
+        sizes.push(("policy", 5));
         for policy in [
             Policy::Baseline,
             Policy::Reference,
             Policy::Individual,
             Policy::Social,
+            Policy::Llm,
         ] {
             match policy {
-                Policy::Baseline | Policy::Reference | Policy::Individual | Policy::Social => {}
+                Policy::Baseline
+                | Policy::Reference
+                | Policy::Individual
+                | Policy::Social
+                | Policy::Llm => {}
             }
             member(&mut evidence, "policy", &policy.to_string());
         }
 
         // The `status` and `target_died` fields' two values each, and the `source` field's
-        // four, which are the three string domains that have no type of their own. `target_died`
+        // five, which are the three string domains that have no type of their own. `target_died`
         // is one of them because rule 6.3 carries it as the text stream's own word rather than
         // as the `bool` the engine holds, on the same terms as `status`.
         sizes.push(("status", 2));
@@ -9034,12 +9649,19 @@ mod tests {
                 if died { "yes" } else { "no" },
             );
         }
-        sizes.push(("source", 4));
+        sizes.push(("source", 5));
         for source in [
             BaselineDecisionSource.name(),
             ReferenceDecisionSource.name(),
             IndividualDecisionSource.name(),
             SocialDecisionSource.name(),
+            // Asked of the source itself like the other four, through a port that is never
+            // consulted: `name` does not reach it, and a source constructed only to be named is
+            // the closest this enumeration can come to the four above.
+            PortDecisionSource {
+                port: &mut ForbiddenPort,
+            }
+            .name(),
         ] {
             member(&mut evidence, "source", source);
         }
@@ -9094,6 +9716,710 @@ mod tests {
             "domains={} members={} off_alphabet=0",
             sizes.len(),
             evidence.len(),
+        );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007`: the decision port, the request it carries, and rule 20.8's refusal.
+    //
+    // Every port here is an in-process value. Nothing in this module spawns a process, opens a
+    // connection, reads an environment variable or names a model, which is `WO-MOK-025`'s
+    // *Out of scope* stated as a property of the tests rather than only of the product.
+    // -----------------------------------------------------------------------------------
+
+    /// A port that answers from a script and keeps every request it was given.
+    ///
+    /// It is `SPEC-MOK-007` rule 13.7's shape at its simplest: the source is exercised without a
+    /// provider, without a credential and without a transport, because rule 1.1 leaves the
+    /// engine unable to tell the difference. `answers` is consumed front to back and an
+    /// exhausted script answers `None`, which is rule 9's no-proposal case.
+    #[derive(Default)]
+    struct ScriptedPort {
+        answers: Vec<Option<Action>>,
+        seen: Vec<DecisionRequest>,
+    }
+
+    impl ScriptedPort {
+        /// A port that never obtains a proposal, so every decision takes rule 9.5's `wait`.
+        fn silent() -> Self {
+            Self::default()
+        }
+
+        fn answering(answers: Vec<Option<Action>>) -> Self {
+            Self {
+                answers,
+                seen: Vec::new(),
+            }
+        }
+    }
+
+    impl Proposer for ScriptedPort {
+        fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+            let answer = if self.seen.len() < self.answers.len() {
+                self.answers[self.seen.len()].clone()
+            } else {
+                None
+            };
+            self.seen.push(request);
+            answer
+        }
+    }
+
+    /// A port that must never be consulted. Rule 20.9's test needs one: a port that is *ignored*
+    /// cannot be distinguished from a port that is called and whose answer is discarded, unless
+    /// being called is itself the failure.
+    struct ForbiddenPort;
+
+    impl Proposer for ForbiddenPort {
+        fn propose(&mut self, _request: DecisionRequest) -> Option<Action> {
+            panic!(
+                "rule 20.9: a port supplied under another source must be ignored, not consulted"
+            );
+        }
+    }
+
+    /// `SPEC-MOK-001` rule 21's seven verbs against one target, in rule 21's order.
+    ///
+    /// Written out rather than derived, so that an eighth targeted verb makes this list wrong in
+    /// a way a reader sees rather than making the comparison it feeds quietly narrower.
+    fn every_targeted_action(target: &str) -> [Action; 7] {
+        let target = target.to_string();
+        [
+            Action::Attack {
+                target: target.clone(),
+            },
+            Action::Threaten {
+                target: target.clone(),
+            },
+            Action::Fight {
+                target: target.clone(),
+            },
+            Action::Retreat {
+                target: target.clone(),
+            },
+            Action::Surrender {
+                target: target.clone(),
+            },
+            Action::Approach {
+                target: target.clone(),
+            },
+            Action::Avoid { target },
+        ]
+    }
+
+    fn llm_config(seed: u64, tick_limit: u64, trace_actions: bool) -> Config {
+        Config {
+            seed,
+            tick_limit,
+            policy: Policy::Llm,
+            density: Density::DEFAULT,
+            trace_actions,
+        }
+    }
+
+    /// Rule 3.1's order, and rule 3.6's reason for stating it in exactly one place.
+    ///
+    /// The assertion is on `blocks()` rather than on a concatenation, because the failure rule
+    /// 3.6 describes is a *reordering*, and a concatenation of the four in the wrong order is a
+    /// string a test of the whole prompt would still accept if it were assembled the same wrong
+    /// way twice.
+    #[test]
+    fn the_request_carries_four_blocks_in_the_cacheable_order() {
+        let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        let request = DecisionRequest::compose(&simulation.observation(0));
+
+        let blocks = request.blocks();
+        assert_eq!(blocks.len(), 4);
+        assert_eq!(blocks[0], request.shared_rules());
+        assert_eq!(blocks[1], request.actor());
+        assert_eq!(blocks[2], request.observation());
+        assert_eq!(blocks[3], request.permitted_set());
+
+        // Rule 3.1's assignment of content to position. Block A is the constant, B names the
+        // actor, C is headed by the tick and D by the actions — so a rotation of the four, which
+        // would keep every assertion above true, fails here.
+        assert_eq!(blocks[0], SHARED_RULES);
+        assert!(blocks[1].starts_with("YOU\n"), "{}", blocks[1]);
+        assert!(
+            blocks[2].starts_with("WHAT YOU SEE\ntick:"),
+            "{}",
+            blocks[2]
+        );
+        assert!(
+            blocks[3].starts_with("ACTIONS YOU MAY TAKE\n"),
+            "{}",
+            blocks[3]
+        );
+    }
+
+    /// Rule 3.3: block A is byte-identical across every request of a run, including across
+    /// Mokiterions and across ticks, and rule 3.5's cache estimate rests on nothing else.
+    ///
+    /// Rule 5.3 is measured in the same pass: block B is byte-identical per Mokiterion per run,
+    /// which is what puts it inside the cacheable prefix rather than beside the observation.
+    #[test]
+    fn block_a_is_one_string_for_the_run_and_block_b_is_one_per_mokiterion() {
+        let mut port = ScriptedPort::silent();
+        let mut simulation = Simulation::new(llm_config(42, 20, false)).unwrap();
+        simulation
+            .run_recording(&mut io::sink(), None, Some(&mut port))
+            .unwrap();
+        assert!(
+            port.seen.len() > 100,
+            "too few requests to be a measurement"
+        );
+
+        let mut actors: HashSet<&str> = HashSet::new();
+        for request in &port.seen {
+            assert_eq!(request.shared_rules(), SHARED_RULES);
+            actors.insert(request.actor());
+        }
+        // Twelve Mokiterions, so twelve distinct block Bs and no more: a block B that carried a
+        // tick or an attribute would produce one per opportunity instead, and this would be the
+        // request count.
+        assert_eq!(actors.len(), 12, "{actors:?}");
+    }
+
+    /// Rules 4.4 and 4.5, as the two prohibitions that make the source measure a model rather
+    /// than an instruction.
+    ///
+    /// Rule 4.4 is the one this asserts by vocabulary, which is a weaker instrument than the
+    /// rule and is used deliberately: advice can be written in words no list anticipates, so the
+    /// list catches the *ordinary* way it arrives — a sentence that says one action is better
+    /// than another — and the review of block A's text is the rest of the check.
+    #[test]
+    fn block_a_gives_no_strategy_and_names_nothing_that_varies() {
+        let lowered = SHARED_RULES.to_lowercase();
+        for advice in [
+            "should",
+            "better",
+            "best",
+            "prefer",
+            "goal",
+            "strategy",
+            "survive",
+            "recommend",
+            "important",
+            "aim to",
+            "in order to",
+            "so that you",
+            "risky",
+            "safe",
+        ] {
+            assert!(
+                !lowered.contains(advice),
+                "block A advises: it contains {advice:?}"
+            );
+        }
+
+        // Rule 4.5. The identifiers of an actual run are the exact strings that must not be in
+        // it, so they are taken from one rather than guessed at.
+        let simulation = Simulation::new(llm_config(777, 5, false)).unwrap();
+        for agent in &simulation.agents {
+            assert!(
+                !SHARED_RULES.contains(&agent.id),
+                "block A names {}",
+                agent.id
+            );
+        }
+        for food in &simulation.foods {
+            assert!(
+                !SHARED_RULES.contains(&food.id),
+                "block A names {}",
+                food.id
+            );
+        }
+        assert!(!lowered.contains("seed"), "block A names the seed");
+        assert!(!lowered.contains("777"), "block A carries a run's figure");
+
+        // Rule 4.3's ranges and rule 4.1's verb list, which block A must state because rule 8's
+        // grammar is unreadable without them. This is the positive half: the checks above would
+        // all pass on an empty string.
+        for required in [
+            "0 to 100",
+            "0 to 40",
+            "distance of 16",
+            "wait",
+            "sleep",
+            "eat <resource>",
+            "move <direction>",
+            "attack <who>",
+            "threaten <who>",
+            "fight <who>",
+            "retreat <who>",
+            "surrender <who>",
+            "approach <who>",
+            "avoid <who>",
+        ] {
+            assert!(
+                SHARED_RULES.contains(required),
+                "block A omits {required:?}"
+            );
+        }
+    }
+
+    /// Rule 6: block C's fields, in rule 6.1's order, with rule 6.5's stated emptiness and rule
+    /// 6.6's absence of any aggregate.
+    #[test]
+    fn block_c_states_the_observation_in_order_and_states_its_empty_lists() {
+        let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        let block = observation_block(&simulation.observation(0));
+
+        let order = [
+            "tick:",
+            "position:",
+            "health:",
+            "satiety:",
+            "energy:",
+            "fear:",
+            "attacks suffered since your previous action:",
+            "resources in your cell:",
+            "resources perceived:",
+            "mokiterions perceived:",
+        ];
+        let mut cursor = 0;
+        for field in order {
+            let at = block[cursor..]
+                .find(field)
+                .unwrap_or_else(|| panic!("block C omits or misplaces {field:?}:\n{block}"));
+            cursor += at + field.len();
+        }
+
+        // Rule 6.5. At tick 1 nothing has attacked anyone, so this is the case the rule is about.
+        assert!(
+            block.contains("attacks suffered since your previous action:\n  none\n"),
+            "{block}"
+        );
+
+        // Rule 6.6. No count of anything appears, and the list headings are the place one would
+        // arrive: `resources perceived: 4` reads naturally and is exactly what the rule forbids.
+        for heading in [
+            "resources in your cell:",
+            "resources perceived:",
+            "mokiterions perceived:",
+        ] {
+            let line = block
+                .lines()
+                .find(|line| line.starts_with(heading))
+                .unwrap_or_else(|| panic!("{heading:?} is not a line of its own:\n{block}"));
+            assert_eq!(line, heading, "the heading carries an aggregate: {line:?}");
+        }
+        for aggregate in ["living:", "population", "count", "total", "average", "mean"] {
+            assert!(
+                !block.to_lowercase().contains(aggregate),
+                "block C carries an aggregate: {aggregate:?}"
+            );
+        }
+    }
+
+    /// Rule 6.3: a co-located entity's relative direction is a stated word, and neither an
+    /// omission nor a sentinel.
+    #[test]
+    fn block_c_states_the_same_cell_as_a_word() {
+        assert_eq!(relative_direction_form(None), "same_cell");
+        assert_eq!(
+            relative_direction_form(Some(RelativeDirection::NorthEast)),
+            "north_east"
+        );
+
+        // The distinction the rule exists to force: `direction ` followed by nothing, or by a
+        // number, would both be read as data by a parser and as an error by a reader.
+        let mut observation = Simulation::new(llm_config(42, 10, false))
+            .unwrap()
+            .observation(0);
+        observation.perceived_mokiterions = vec![PerceivedMokiterion {
+            id: "M11".to_string(),
+            direction: None,
+            distance: 0,
+        }];
+        let block = observation_block(&observation);
+        assert!(
+            block.contains("  M11 direction same_cell distance 0\n"),
+            "{block}"
+        );
+    }
+
+    /// Rule 7, and rule 7.4 in particular: every targeted verb is enumerated against exactly the
+    /// targets whose preconditions the observation shows to be met.
+    ///
+    /// The observation is built by hand because the case that decides the rule — a perceived
+    /// Mokiterion in the same cell, which `approach` may not name and `avoid` may — occurs in a
+    /// real run at a tick no test should have to search for.
+    #[test]
+    fn block_d_enumerates_a_targeted_verb_only_where_its_preconditions_are_met() {
+        let mut observation = Simulation::new(llm_config(42, 10, false))
+            .unwrap()
+            .observation(0);
+        observation.valid_actions = vec![Action::Wait, Action::Sleep];
+        observation.perceived_mokiterions = vec![
+            // Same cell: in contact, and the one target `approach` may not name.
+            PerceivedMokiterion {
+                id: "M01".to_string(),
+                direction: None,
+                distance: 0,
+            },
+            // In contact and one cell away, so every contact verb applies and `approach` does.
+            PerceivedMokiterion {
+                id: "M02".to_string(),
+                direction: Some(RelativeDirection::East),
+                distance: 1,
+            },
+            // Perceived but not in contact: `approach` and `avoid` only.
+            PerceivedMokiterion {
+                id: "M03".to_string(),
+                direction: Some(RelativeDirection::South),
+                distance: 9,
+            },
+        ];
+        // `M02` struck the observer and `M03` did not, so the three answer-to-an-attack verbs
+        // separate the two. `M03`'s entry additionally shows that `retreat` and `surrender` need
+        // the attack and not the contact.
+        observation.suffered = vec![
+            SufferedAttack {
+                attacker: "M02".to_string(),
+                damage: 12,
+            },
+            SufferedAttack {
+                attacker: "M03".to_string(),
+                damage: 20,
+            },
+        ];
+
+        assert_eq!(
+            permitted_set_block(&observation),
+            concat!(
+                "ACTIONS YOU MAY TAKE\n",
+                "  wait\n",
+                "  sleep\n",
+                "  attack M01\n",
+                "  attack M02\n",
+                "  threaten M01\n",
+                "  threaten M02\n",
+                "  fight M02\n",
+                "  retreat M02\n",
+                "  retreat M03\n",
+                "  surrender M02\n",
+                "  surrender M03\n",
+                "  approach M02\n",
+                "  approach M03\n",
+                "  avoid M01\n",
+                "  avoid M02\n",
+                "  avoid M03\n",
+            )
+        );
+    }
+
+    /// Rule 7.4 again, against the engine's own validator rather than against an expectation.
+    ///
+    /// The test above fixes the enumeration; this one checks it agrees with the rule that will
+    /// judge the proposal. Every targeted action block D offers is put to `validate_targeted`,
+    /// and every one it does not offer is put to it as well — the second half is what catches an
+    /// enumeration that is merely *safe*, by being empty, rather than complete.
+    #[test]
+    fn block_d_offers_exactly_what_the_engine_would_accept_from_the_observation() {
+        let mut simulation = Simulation::new(llm_config(1, 400, true)).unwrap();
+        let mut port = ScriptedPort::silent();
+        let mut examined = 0;
+
+        // A live world rather than a crafted observation, so the cases are the ones a run
+        // actually reaches. One tick at a time, because the observation and the validator have to
+        // be read at the same instant for the comparison to mean anything.
+        for _ in 0..400 {
+            if simulation.is_finished() {
+                break;
+            }
+            for index in 0..simulation.agents.len() {
+                if simulation.agents[index].health == 0 {
+                    continue;
+                }
+                let observation = simulation.observation(index);
+                let offered: HashSet<String> = permitted_set_block(&observation)
+                    .lines()
+                    .skip(1)
+                    .map(|line| line.trim().to_string())
+                    .collect();
+
+                for other in &observation.perceived_mokiterions {
+                    for action in every_targeted_action(&other.id) {
+                        let accepted = simulation.validate_targeted(index, &action).is_ok();
+                        let entry = permitted_form(&action);
+                        assert_eq!(
+                            offered.contains(&entry),
+                            accepted,
+                            "tick {}: {entry} is {} by the validator and {} by block D",
+                            observation.tick,
+                            if accepted { "accepted" } else { "rejected" },
+                            if offered.contains(&entry) {
+                                "offered"
+                            } else {
+                                "withheld"
+                            }
+                        );
+                        examined += 1;
+                    }
+                }
+            }
+            simulation
+                .advance_tick(Some(&mut port))
+                .expect("the port is present");
+        }
+
+        assert!(
+            examined > 500,
+            "only {examined} verb-target pairs were reached, too few to be a measurement"
+        );
+    }
+
+    /// Rule 20.7: the adapter draws nothing from `REQ-MOK-009`'s stream.
+    ///
+    /// Asserted on the draw counter and on the stream's own state, which are two readings of one
+    /// fact: `SplitMix64` advances by a fixed odd constant per draw, so an unmoved state is an
+    /// unmoved draw count whether or not the counter was incremented honestly.
+    #[test]
+    fn the_port_source_draws_no_entropy() {
+        // One tick first, because rule 3's consistency invariant is a property of a started run
+        // and `decide` asserts it in a debug build like every other source's does.
+        let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        simulation
+            .advance_tick(Some(&mut ScriptedPort::silent()))
+            .unwrap();
+        let observation = simulation.observation(0);
+
+        let mut port = ScriptedPort::answering(vec![Some(Action::Sleep)]);
+        let mut source = PortDecisionSource { port: &mut port };
+        let mut stream = simulation.entropy;
+        let before = stream;
+        let mut entropy = DecisionEntropy::new(&mut stream);
+
+        assert_eq!(source.decide(&observation, &mut entropy), Action::Sleep);
+        assert_eq!(entropy.draws, 0);
+        assert_eq!(stream, before);
+
+        // And the same on the fallback path, which is the branch a later change is most likely
+        // to reach for a number.
+        let mut port = ScriptedPort::silent();
+        let mut source = PortDecisionSource { port: &mut port };
+        let mut stream = simulation.entropy;
+        let before = stream;
+        let mut entropy = DecisionEntropy::new(&mut stream);
+        assert_eq!(source.decide(&observation, &mut entropy), Action::Wait);
+        assert_eq!(entropy.draws, 0);
+        assert_eq!(stream, before);
+    }
+
+    /// Rule 9.5: no proposal obtained is `wait`, and rule 9.7: never another source's selection.
+    #[test]
+    fn no_proposal_obtained_is_wait_and_nothing_else() {
+        let mut port = ScriptedPort::silent();
+        let mut text = Vec::new();
+        let mut simulation = Simulation::new(llm_config(42, 30, true)).unwrap();
+        simulation
+            .run_recording(&mut text, None, Some(&mut port))
+            .unwrap();
+        let text = String::from_utf8(text).unwrap();
+
+        let traces: Vec<&str> = text
+            .lines()
+            .filter(|line| line.contains("event=action_trace"))
+            .collect();
+        assert!(!traces.is_empty());
+        for trace in &traces {
+            assert!(
+                trace.contains("result=proposal:wait"),
+                "a fallback proposed something other than wait: {trace}"
+            );
+        }
+        assert_eq!(traces.len(), port.seen.len());
+    }
+
+    /// Rule 20.8, on both doors, and rule 20.5.1's consequence for `run`.
+    #[test]
+    fn this_source_with_no_port_refuses_and_runs_nothing() {
+        // `run`, which rule 20.5.1 leaves unamended and which therefore never has a port.
+        let mut text = Vec::new();
+        let error = Simulation::new(llm_config(42, 10, false))
+            .unwrap()
+            .run(&mut text)
+            .expect_err("rule 20.8: no port is an invalid configuration");
+        assert_eq!(error.kind(), io::ErrorKind::InvalidInput);
+        assert_eq!(error.to_string(), MISSING_DECISION_PORT);
+        // Nothing ran: no header, no event, no summary. A refusal that had produced a stream
+        // would be a run somebody could read.
+        assert!(text.is_empty(), "{}", String::from_utf8_lossy(&text));
+
+        // `advance_tick`, on the first call, with no prior state change.
+        let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        assert_eq!(
+            simulation.advance_tick(None),
+            Err(MISSING_DECISION_PORT.to_string())
+        );
+        assert_eq!(simulation.tick, 0);
+        assert!(!simulation.is_finished());
+        // Refused again on the second call rather than becoming something else on it.
+        assert_eq!(
+            simulation.advance_tick(None),
+            Err(MISSING_DECISION_PORT.to_string())
+        );
+        assert_eq!(simulation.tick, 0);
+    }
+
+    /// Rule 20.9: a port supplied under one of the four existing sources is ignored, exactly as
+    /// an absent sink is, and is not an error.
+    #[test]
+    fn a_port_under_another_source_is_ignored_and_is_not_an_error() {
+        for policy in [
+            Policy::Baseline,
+            Policy::Reference,
+            Policy::Individual,
+            Policy::Social,
+        ] {
+            let mut without = Vec::new();
+            let mut with = Vec::new();
+            let config = Config {
+                seed: 42,
+                tick_limit: 40,
+                policy,
+                density: Density::DEFAULT,
+                trace_actions: true,
+            };
+
+            Simulation::new(config)
+                .unwrap()
+                .run_recording(&mut without, None, None)
+                .unwrap();
+            Simulation::new(config)
+                .unwrap()
+                .run_recording(&mut with, None, Some(&mut ForbiddenPort))
+                .unwrap();
+
+            assert_eq!(without, with, "{policy}: the port changed the run");
+        }
+    }
+
+    /// Rule 20.4.1's failure, stated as the difference it makes, because the rule is about a
+    /// shape the compiler accepts either way.
+    ///
+    /// A port built once and lent every tick sees the whole run; one rebuilt per tick sees one
+    /// decision and forgets it. Here the state is the request log, and a per-tick port would
+    /// leave it holding one tick's requests rather than the run's.
+    #[test]
+    fn a_port_lent_for_the_run_accumulates_across_ticks() {
+        let mut port = ScriptedPort::silent();
+        let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        let mut ticks = 0;
+        while !simulation.is_finished() {
+            simulation.advance_tick(Some(&mut port)).unwrap();
+            ticks += 1;
+        }
+        assert_eq!(ticks, 10);
+
+        // Twelve Mokiterions alive for ten ticks with nothing but `wait`, so a request per
+        // Mokiterion per tick and none lost between ticks.
+        assert_eq!(port.seen.len(), 120);
+        let mut ticks_seen: Vec<u64> = port
+            .seen
+            .iter()
+            .map(|request| {
+                request
+                    .observation()
+                    .lines()
+                    .nth(1)
+                    .and_then(|line| line.strip_prefix("tick: "))
+                    .and_then(|value| value.parse().ok())
+                    .expect("block C states the tick")
+            })
+            .collect();
+        ticks_seen.dedup();
+        assert_eq!(ticks_seen, (1..=10).collect::<Vec<u64>>());
+    }
+
+    /// Rule 2.5: the request is a run input, identical across two runs of the same configuration.
+    ///
+    /// This is what later lets a replay detect a transcript recorded against a different
+    /// configuration, so it is the property and not the transcript that is asserted here.
+    #[test]
+    fn the_same_configuration_composes_the_same_requests() {
+        let mut first = ScriptedPort::silent();
+        let mut second = ScriptedPort::silent();
+        Simulation::new(llm_config(123, 25, false))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut first))
+            .unwrap();
+        Simulation::new(llm_config(123, 25, false))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut second))
+            .unwrap();
+
+        assert!(!first.seen.is_empty());
+        assert_eq!(first.seen, second.seen);
+
+        // A different seed is a different run, so equal requests there would mean the request
+        // carries nothing of the world.
+        let mut other = ScriptedPort::silent();
+        Simulation::new(llm_config(777, 25, false))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut other))
+            .unwrap();
+        assert_ne!(first.seen, other.seen);
+    }
+
+    /// Rules 8.2 and 8.3 through the rendering they are checked against, and the reason it is not
+    /// [`Action`]'s `Display`: that one drops a targeted verb's target, which `CAP-MOK-010` holds
+    /// it to for the text stream and which would make a request name no action at all.
+    #[test]
+    fn the_port_renders_a_targeted_action_with_its_target() {
+        assert_eq!(permitted_form(&Action::Wait), "wait");
+        assert_eq!(permitted_form(&Action::Sleep), "sleep");
+        assert_eq!(
+            permitted_form(&Action::Eat {
+                food_id: "F0012".to_string()
+            }),
+            "eat F0012"
+        );
+        assert_eq!(
+            permitted_form(&Action::Move {
+                direction: Direction::North
+            }),
+            "move north"
+        );
+
+        let attack = Action::Attack {
+            target: "M07".to_string(),
+        };
+        assert_eq!(permitted_form(&attack), "attack M07");
+        assert_eq!(attack.to_string(), "attack");
+    }
+
+    /// The record stream's declared version, and the two domains rule 3.2 gains a member in.
+    ///
+    /// `SPEC-MOK-006` rule 10.2 moves `schema` when a rule 3.2 domain gains a member, so the
+    /// increment and the members are one fact and are asserted together: a stream that carried
+    /// `llm` under `schema` 2 would be non-conformant, and so would one that declared 3 without
+    /// it.
+    #[test]
+    fn the_llm_source_reaches_both_record_domains_under_schema_three() {
+        assert_eq!(RECORD_SCHEMA_VERSION, 3);
+        assert_eq!(Policy::Llm.to_string(), LLM_SOURCE_NAME);
+        assert_eq!(Policy::parse("llm"), Some(Policy::Llm));
+
+        let mut port = ScriptedPort::silent();
+        let mut records = Vec::new();
+        let mut simulation = Simulation::new(llm_config(42, 5, true)).unwrap();
+        simulation
+            .run_recording(&mut io::sink(), Some(&mut records), Some(&mut port))
+            .unwrap();
+        let records = String::from_utf8(records).unwrap();
+
+        let header = records.lines().next().expect("a header record");
+        assert!(header.contains("\"schema\":3"), "{header}");
+        assert!(header.contains("\"policy\":\"llm\""), "{header}");
+        assert!(
+            records.contains("\"event\":\"decision_source_selected\""),
+            "no decision-source event"
+        );
+        assert!(
+            records.contains("\"source\":\"llm\""),
+            "result.source does not carry the new member"
         );
     }
 }

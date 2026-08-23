@@ -10,17 +10,33 @@ use crate::simulation::{Config, Density, Policy};
 ///
 /// Amended 2026-08-22 under `WO-MOK-024`. What an option means, what its accepted values
 /// mean and what happens when it is omitted are stated in that option's own entry, so
-/// nothing an operator needs is carried by prose they have to find. The four `--policy`
+/// nothing an operator needs is carried by prose they have to find. The `--policy`
 /// values and what `--density` binds together were previously stated below the block; they
 /// are stated in their entries now, and once, as `SPEC-MOK-001` requires. Blank lines
 /// separate the entries: the options block ends at the first line that is not indented.
+///
+/// Amended again 2026-08-23 under `WO-MOK-025` for `SPEC-MOK-007` rule 18. `--policy` gained a
+/// fifth value, and rule 18.1 leaves the four existing values, their order and their own text
+/// alone: `llm` is added after them and nothing above it moved. Two sentences did have to
+/// change, and rule 18.3 names one of them — "None of the four learns anything or calls a
+/// model; all four are deterministic" was a true statement about a closed set of four and
+/// became false about a set of five, so it now says of which values it holds. The description
+/// above the options block said "the same options always produce exactly the same run", which
+/// the fifth value falsifies just as squarely; rule 18.3 does not name it, and it is corrected
+/// anyway, because shipping a help text that states something untrue is a defect whichever rule
+/// happened to notice it.
+///
+/// The `llm` entry names no option. Rule 20.4 puts the connector in a host's hands and the
+/// options that reach one arrive with the transcript, so the entry states what the value is and
+/// what happens with no connector — rule 20.8's refusal, which is permanent — rather than
+/// naming a flag that does not exist yet.
 ///
 /// The four entries `--seed`, `--ticks`, `--policy` and `--density` are shared verbatim with
 /// the observer's own usage text. `mokiterions-tui/tests/options.rs` holds each of them equal
 /// to this constant, so the two texts cannot drift apart while describing the same input.
 pub const USAGE: &str = concat!(
     "Usage: Mokiterions [--seed <number>] [--ticks <number>]\n",
-    "                   [--policy <baseline|reference|individual|social>]\n",
+    "                   [--policy <baseline|reference|individual|social|llm>]\n",
     "                   [--density <percent>] [--trace-actions]\n",
     "                   [--events-path <path>]\n",
     "       Mokiterions --help\n",
@@ -28,8 +44,9 @@ pub const USAGE: &str = concat!(
     "Mokiterions simulates a small closed world. Twelve creatures, each also called a\n",
     "Mokiterion, live on a 128 by 128 grid split into two territories, look for food,\n",
     "eat it, and can die. Nothing is learned and nothing is random beyond the seed:\n",
-    "the same options always produce exactly the same run. Given no options at all it\n",
-    "runs 100 turns of the default world and prints what happened.\n",
+    "the same options produce exactly the same run, with the one exception named in\n",
+    "the policy entry below. Given no options at all it runs 100 turns of the default\n",
+    "world and prints what happened.\n",
     "\n",
     "Options:\n",
     "\n",
@@ -42,10 +59,10 @@ pub const USAGE: &str = concat!(
     "      decision. Must be greater than zero. A run stops earlier only when no\n",
     "      Mokiterion is left alive. Default: 100.\n",
     "\n",
-    "  --policy <baseline|reference|individual|social>\n",
-    "      Which fixed set of rules each Mokiterion uses to choose its next action.\n",
-    "      None of the four learns anything or calls a model; all four are\n",
-    "      deterministic. Default: reference.\n",
+    "  --policy <baseline|reference|individual|social|llm>\n",
+    "      How each Mokiterion chooses its next action. The first four are fixed sets\n",
+    "      of rules: none of them learns anything or calls a model, and all four are\n",
+    "      deterministic. The fifth asks a model and is neither. Default: reference.\n",
     "      baseline    Chooses at random among the actions that are legal for it\n",
     "                  this turn. The control case, for comparison.\n",
     "      reference   Walks toward the nearest food it can see and eats it, but\n",
@@ -56,6 +73,13 @@ pub const USAGE: &str = concat!(
     "      social      Like individual while it sees nobody else. When it does see\n",
     "                  another Mokiterion it may strike back, attack, threaten,\n",
     "                  close in, or keep away, depending on how afraid it is.\n",
+    "      llm         Asks a language model, one question per Mokiterion per turn,\n",
+    "                  each in its own context with no memory of any other. The\n",
+    "                  model is reached through a separate connector program you\n",
+    "                  supply, never by this program itself, so what it answers is\n",
+    "                  not fixed by the seed and two runs may differ. A recorded\n",
+    "                  run replays exactly from its transcript. Given no connector,\n",
+    "                  the run is refused rather than run some other way.\n",
     "\n",
     "  --density <percent>\n",
     "      How much food the world holds, as a percentage of one territory's 8192\n",
@@ -152,7 +176,7 @@ where
                 let value = option_value(&args, index, "--policy")?;
                 policy = Some(Policy::parse(value).ok_or_else(|| {
                     format!(
-                        "invalid --policy value: {value}; expected baseline, reference, individual, or social"
+                        "invalid --policy value: {value}; expected baseline, reference, individual, social, or llm"
                     )
                 })?);
                 index += 2;
