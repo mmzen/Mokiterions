@@ -2,7 +2,7 @@
 id = "REQ-MOK-068"
 type = "requirement"
 title = "Leave the four existing decision sources byte-identical, entropy draws included"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

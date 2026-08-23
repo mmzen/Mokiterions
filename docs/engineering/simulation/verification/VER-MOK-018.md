@@ -2,7 +2,7 @@
 id = "VER-MOK-018"
 type = "verification"
 title = "The instrument is verified, the outcome is not: replay identity, isolation over transcripts, cache order, and a deliberate absence of an outcome oracle"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

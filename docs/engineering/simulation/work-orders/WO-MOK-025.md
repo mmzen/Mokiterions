@@ -34,18 +34,27 @@ architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-007"]
 ## Lifecycle
 
 This work order remains a proposal while its status is `draft`. Transition to `approved` authorizes only the scope
-below, and **it is the same act as the approval of every row in `ADR-MOK-007`'s *Required amendments* that this stage
-needs** — the amendments to `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `ARCH-MOK-001`,
-`ARCH-MOK-002` and `INT-MOK-001`. Five of those are prerequisites of the change rather than consequences of it: without
-them the change contradicts an approved artifact on the day it lands. Transition to `in_progress` records that implementation has begun.
-Transition to `implemented` requires the completed change and the retained evidence. Verification requires a separate
-commit-bound record.
+below. Transition to `in_progress` records that implementation has begun. Transition to `implemented` requires the
+completed change and the retained evidence. Verification requires a separate commit-bound record.
 
-**The definition-layer artifacts this work order implements are all `draft` and none has been approved.** Nothing in
-this stage may be started before `INT-MOK-011`, `CAP-MOK-011`, `REQ-MOK-063` through `REQ-MOK-077`, `SPEC-MOK-007`,
-`ADR-MOK-007` and `VER-MOK-018` have been approved by the roles that own them. In this repository one person holds all
-three governance roles, which means nothing here is approved by implication: the approval of the packet is a distinct
-act from the approval of this work order.
+**The definition layer was approved on 2026-08-23 and this work order was not.** The repository owner, acting as
+accountable product, technical, engineering and assurance owner, approved `INT-MOK-011`, `CAP-MOK-011`, `REQ-MOK-063`
+through `REQ-MOK-077`, `SPEC-MOK-007`, `VER-MOK-018` and `ADR-MOK-007` in one act, in the words *"i approve the artifact
+pack"*. `ADR-MOK-007`'s *Status* records it and its *Decision record* holds it as act 11. **Nothing in this stage may be
+started yet**: in this repository one person holds all governance roles, which means nothing here is approved by
+implication, and the approval of the packet is a distinct act from the approval of this work order. That second act has
+not been taken.
+
+**One consequence of the first act is that this work order's own transition now authorizes less than it was drafted to.**
+It was written so that approving it would *also* be "the same act as the approval of every row in `ADR-MOK-007`'s
+*Required amendments* that this stage needs" — the amendments to `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`,
+`SPEC-MOK-004`, `ARCH-MOK-001`, `ARCH-MOK-002` and `INT-MOK-001`, five of which are prerequisites of the change rather
+than consequences of it, because without them the change contradicts an approved artifact on the day it lands. Those rows
+were approved by `ADR-MOK-007`'s acceptance instead, on the `ADR-MOK-006` precedent that accepting an ADR accepts its
+*Required amendments* in full. So the precondition is met, and this work order's approval now authorizes **only the scope
+below**. What that act does not do is write the amendments: every provision remains unwritten in its target artifact and
+is this stage's to write, with each row's re-measured figures measured when the row is written rather than copied from the
+ADR.
 
 **No provider is contacted in this stage and nothing is spent.** That is not a limitation of the stage, it is its point.
 Everything `VER-MOK-018` can check without money is checked before any money can be spent, and the live path does not

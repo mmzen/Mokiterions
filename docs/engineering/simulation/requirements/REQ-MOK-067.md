@@ -2,7 +2,7 @@
 id = "REQ-MOK-067"
 type = "requirement"
 title = "Replay a recorded model-backed run byte-identically, offline"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

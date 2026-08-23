@@ -2,7 +2,7 @@
 id = "REQ-MOK-063"
 type = "requirement"
 title = "Obtain each decision from the decision port and validate it like any other proposal"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

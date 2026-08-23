@@ -2,7 +2,7 @@
 id = "CAP-MOK-011"
 type = "capability"
 title = "Model-backed decisions: a decision port outside the engine, an exactly replayable transcript, and a source held to no outcome"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

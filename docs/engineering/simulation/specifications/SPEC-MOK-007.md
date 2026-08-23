@@ -2,7 +2,7 @@
 id = "SPEC-MOK-007"
 type = "specification"
 title = "Model-backed decision source: the decision port, the cache-ordered request, and the transcript"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

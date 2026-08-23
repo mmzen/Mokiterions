@@ -2,7 +2,7 @@
 id = "REQ-MOK-066"
 type = "requirement"
 title = "Answer each decision from a self-contained request that carries no earlier exchange"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

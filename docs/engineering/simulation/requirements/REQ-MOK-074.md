@@ -2,7 +2,7 @@
 id = "REQ-MOK-074"
 type = "requirement"
 title = "Count every fallback and disqualify the run from sourcing a published figure"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

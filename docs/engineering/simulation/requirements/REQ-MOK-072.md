@@ -2,7 +2,7 @@
 id = "REQ-MOK-072"
 type = "requirement"
 title = "Require both an explicit live selection and a credential before any provider call"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

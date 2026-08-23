@@ -2,7 +2,7 @@
 id = "REQ-MOK-071"
 type = "requirement"
 title = "Stop rather than exceed the spend ceiling declared for the run"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

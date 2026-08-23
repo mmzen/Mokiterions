@@ -2,7 +2,7 @@
 id = "REQ-MOK-077"
 type = "requirement"
 title = "Replay a model-backed run in either host, and run live only from the engine's binary"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

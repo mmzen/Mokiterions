@@ -2,7 +2,7 @@
 id = "REQ-MOK-076"
 type = "requirement"
 title = "Retain an owner authorization record with every live run's evidence"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

@@ -2,7 +2,7 @@
 id = "REQ-MOK-070"
 type = "requirement"
 title = "Hold the cached share of prompt tokens at or above 85 percent"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

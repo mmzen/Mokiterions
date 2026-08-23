@@ -2,7 +2,7 @@
 id = "REQ-MOK-069"
 type = "requirement"
 title = "Record every exchange with the provider's reported token usage"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

@@ -2,7 +2,7 @@
 id = "REQ-MOK-073"
 type = "requirement"
 title = "Keep the provider credential and every provider call out of continuous integration"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

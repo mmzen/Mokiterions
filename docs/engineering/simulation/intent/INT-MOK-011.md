@@ -2,7 +2,7 @@
 id = "INT-MOK-011"
 type = "intent"
 title = "Let a language model decide, and record what happens without deciding in advance what should"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

@@ -2,7 +2,7 @@
 id = "ADR-MOK-007"
 type = "adr"
 title = "A decision port at the existing trust boundary, a retained transcript as the second determinand of a run, and the model provider outside the workspace"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-23"
 updated = "2026-08-23"
@@ -15,8 +15,37 @@ decides = ["ARCH-MOK-001", "ARCH-MOK-002"]
 
 ## Status
 
-Proposed. It decides `ARCH-MOK-001` and `ARCH-MOK-002`, and it is a precondition of `WO-MOK-025`, `WO-MOK-026` and
-`WO-MOK-027`.
+**Accepted 2026-08-23 by the repository owner acting as accountable technical owner.** The instruction, verbatim and
+complete, in the turn it was given: *"i approve the artifact pack"*. It decides `ARCH-MOK-001` and `ARCH-MOK-002`, and it
+is a precondition of `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027`.
+
+It was drafted by an implementation agent on the repository owner's instruction to realize a model-backed decision
+source, and the agent did not take this decision. `DECISION_RIGHTS.md` reserves acceptance to the technical owner and
+states that an implementation agent "may not self-approve that assessment unless it is separately named as the
+accountable technical owner".
+
+**What the acceptance covers is the *Required amendments* section, in full**, on the `ADR-MOK-006` precedent recorded in
+that ADR's own *Status*: each amendment here is stated completely, so accepting this one file approves the whole change.
+**Two** of those amendments are not the technical owner's — `INT-MOK-001` is the product owner's and
+`REPOSITORY_CONTEXT.md` is the repository owner's. The owner holds all of those roles and approved them here, by way of
+this section; each amended artifact will record which role approved it and that it was approved through this ADR rather
+than separately.
+
+**No amendment is written by this acceptance.** Every provision under *Required amendments* remains unwritten in its
+target artifact and is `WO-MOK-025`'s, `WO-MOK-026`'s or `WO-MOK-027`'s to write under this authorization, on the
+precedent `WO-MOK-020`'s transition set. The amendment record rows those provisions call for do not exist yet, and the
+figures each row obliges to be re-measured are to be measured when the row is written rather than copied from here.
+
+**What the acceptance does not cover: no work order is approved by it.** `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027`
+remain `draft`, and no implementation is authorized. `WO-MOK-025`'s *Lifecycle* makes this explicit — *"the approval of
+the packet is a distinct act from the approval of this work order"* — and the instruction names the pack and not the work
+orders, where the same owner's instruction of 2026-08-22 said *"including the work order"* when a work order was meant.
+Nothing here is approved by implication.
+
+**The consequence for `WO-MOK-025`'s *Lifecycle* is that one of its two conditions is now met and the other is not.** Its
+approval was written as *"the same act as the approval of every row in `ADR-MOK-007`'s *Required amendments* that this
+stage needs"*. Those rows are approved as of this section, so that work order's approval now authorizes its scope alone.
+Its own transition remains outstanding.
 
 Three decisions are taken together because they are one shape and separating them would leave each incoherent. Decision
 1 puts the port where the trust boundary already is; decision 2 makes the provider's answers a run input rather than a
@@ -348,6 +377,13 @@ approved by implication, so each act is recorded separately with what it settled
     in-process, that the host of a live run is the engine package's own binary target, and that option 3a therefore
     contaminates **both** packages rather than one. Act 10 is what changed decision 3, the option table under *Considered
     options*, and the six amendment rows this ADR no longer requires.
+11. **The definition layer is approved**, in the owner's words *"i approve the artifact pack"*: `INT-MOK-011`,
+    `CAP-MOK-011`, `REQ-MOK-063` through `REQ-MOK-077`, `SPEC-MOK-007`, `VER-MOK-018` and this ADR move from `draft` to
+    `approved` — twenty artifacts in one act. Because it is this ADR's acceptance, it is also the approval of every row
+    under *Required amendments*, which the *Status* section states in the terms `ADR-MOK-006` set. **It approves no work
+    order and authorizes no implementation**: `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027` stay `draft`, and the act that
+    moves the first of them is a separate one that has not been taken. Recorded as its own act, rather than folded into
+    acts 1 to 10, because those settled what the design is and this one settles that the design may be built from.
 
 ## Required amendments
 

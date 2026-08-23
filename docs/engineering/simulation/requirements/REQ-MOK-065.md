@@ -2,7 +2,7 @@
 id = "REQ-MOK-065"
 type = "requirement"
 title = "Carry no other Mokiterion's state into a decision request"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

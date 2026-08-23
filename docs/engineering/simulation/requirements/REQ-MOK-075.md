@@ -2,7 +2,7 @@
 id = "REQ-MOK-075"
 type = "requirement"
 title = "Publish the model-backed outcome beside the existing sources at the same seeds and horizon"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"

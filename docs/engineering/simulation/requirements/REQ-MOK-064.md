@@ -2,7 +2,7 @@
 id = "REQ-MOK-064"
 type = "requirement"
 title = "Present the set rule 6 permits, targeted actions included"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-23"
 updated = "2026-08-23"
