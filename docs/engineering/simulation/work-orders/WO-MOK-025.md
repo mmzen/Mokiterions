@@ -2,7 +2,7 @@
 id = "WO-MOK-025"
 type = "work_order"
 title = "Stage 5a: the decision port, the request, the transcript and the replay — everything the model-backed source needs, with no provider and no cost"
-status = "approved"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-23"
 updated = "2026-08-23"
@@ -61,6 +61,31 @@ ADR.
 **No provider is contacted in this stage and nothing is spent.** That is not a limitation of the stage, it is its point.
 Everything `VER-MOK-018` can check without money is checked before any money can be spent, and the live path does not
 exist yet to be used by accident.
+
+### Transition to `in_progress`, 2026-08-23
+
+**Set to `in_progress` on 2026-08-23 by the repository owner acting as engineering owner.** The instruction, verbatim and
+complete, in the turn it was given:
+
+> you can start
+
+It answers the framing that named what starting begins with: this transition, and the base-commit captures the next
+paragraph makes unrepairable if they are taken late. It is the third owner act of the day on this stage, after act 11 and
+act 12 of `ADR-MOK-007`'s *Decision record*, and it is recorded here rather than there because a work order's own status
+is not an architecture decision.
+
+`in_progress` records that implementation has begun and authorizes nothing wider than the scope below. It does not
+authorize `implemented`, which requires the completed change and the retained evidence; nor verification or release, which
+require separate commit-bound records; nor any push, pull request, tag or publication. Those remain the owner's acts. It
+authorizes no provider call and no spend, which no act of this stage can, and it does not lift a single stop-and-escalate
+condition.
+
+**The base commit for `REQ-MOK-068`'s captures is the commit that carries this transition.** It is fixed here, before the
+first capture, because a capture taken after the change is not a base-commit capture and the obligation becomes
+uncheckable without one — the one ordering constraint *Constraints* says cannot be repaired later. The evidence path is
+fixed with it, for the same reason: `docs/engineering/simulation/evidence/WO-MOK-025/`, on the convention every evidence
+packet in this repository follows, and it is fixed before the first capture because a bound evidence path can never be
+corrected.
 
 ## Objective
 
