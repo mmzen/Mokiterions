@@ -7712,6 +7712,219 @@ mod tests {
         }
     }
 
+    /// The per-tick entropy sequence of each of the twenty configurations `REQ-MOK-068` covers, as
+    /// measured at the base commit `cc54185`: the seed, the source, the number of tick boundaries,
+    /// and an order-sensitive fold of every boundary state.
+    ///
+    /// Every value here was measured, none inferred. `print_base_commit_entropy_literals` is the
+    /// instrument that printed it and `docs/engineering/simulation/evidence/WO-MOK-025/base/`
+    /// retains the full per-boundary capture the same run produced.
+    ///
+    /// It is a base-commit figure and therefore frozen: a later change that moves one of these
+    /// numbers has changed an existing source's entropy consumption, which is the failure
+    /// `INT-MOK-010` promises against and `WO-MOK-025` stop condition 1 says not to work around.
+    const BASE_COMMIT_ENTROPY: [(u64, Policy, usize, u64); 20] = [
+        (0, Policy::Baseline, 121, 0xcda87ab9a4f25e4f),
+        (0, Policy::Reference, 1002, 0xa293b8339d738ece),
+        (0, Policy::Individual, 1002, 0x2e5e2007476de58d),
+        (0, Policy::Social, 1002, 0xa55cd2954c2862e8),
+        (1, Policy::Baseline, 121, 0x404595b2bcb1bbe6),
+        (1, Policy::Reference, 1002, 0xaf7e27eb201edede),
+        (1, Policy::Individual, 1002, 0x28b3b59e2e12143a),
+        (1, Policy::Social, 1002, 0x084b84b3a501749d),
+        (42, Policy::Baseline, 144, 0x85734ce1ccbf1fb2),
+        (42, Policy::Reference, 1002, 0x929d7a4bb284a75a),
+        (42, Policy::Individual, 1002, 0xdaa8511eca8bb837),
+        (42, Policy::Social, 1002, 0x0c2f708da471ee93),
+        (123, Policy::Baseline, 170, 0xadd3f3a9e0663338),
+        (123, Policy::Reference, 1002, 0x76f23f60eace018c),
+        (123, Policy::Individual, 1002, 0x751c89e7f2916755),
+        (123, Policy::Social, 1002, 0xb88c3a3e3acc34a5),
+        (777, Policy::Baseline, 136, 0x95c2001684ce93ca),
+        (777, Policy::Reference, 1002, 0x30f44986c7380cb7),
+        (777, Policy::Individual, 1002, 0xa119b216c00c6aca),
+        (777, Policy::Social, 1002, 0xea2fb88317fa8b31),
+    ];
+
+    /// `REQ-MOK-068` and `VER-MOK-018` case **L9**, the entropy half: the per-tick entropy state
+    /// of each of the four existing decision sources, at every declared seed and the default
+    /// density, printed one line per tick boundary.
+    ///
+    /// This is an **instrument, not an assertion**. What L9 obliges is that these figures equal
+    /// the base-commit captures for the whole run, and the base commit is `cc54185` — the commit
+    /// that carried `WO-MOK-025`'s transition to `in_progress` and no code change. A test cannot
+    /// compare against a tree it is not in, so the comparison is external: this test's output is
+    /// reduced to one line per configuration by
+    /// `docs/engineering/simulation/evidence/WO-MOK-025/entropy-manifest.sh` and the two manifests
+    /// are compared with `diff`. `the_four_existing_sources_draw_what_the_base_commit_drew` below
+    /// is the in-crate half, so the obligation is also checked on every push with no external
+    /// file.
+    ///
+    /// It names only the four sources that exist at the base commit, deliberately: the same test
+    /// body has to compile in a worktree at `cc54185` in order to produce the base capture at all,
+    /// and a reference to this initiative's fifth source would make that impossible. The
+    /// instrument is retained as a patch beside the capture it produced.
+    ///
+    /// No sink is configured. `REQ-MOK-045` and rule 11.2 already hold a sink entropy-neutral at
+    /// every boundary, `a_record_sink_moves_no_entropy_draw_at_any_tick_boundary` is the test, and
+    /// capturing both modes here would double the output to establish something already
+    /// established.
+    #[test]
+    #[ignore = "instrument: prints ~20,000 lines for an external capture, run it by name"]
+    fn the_four_existing_sources_entropy_state_at_every_tick_boundary() {
+        for seed in DECLARED_SEEDS {
+            let base = Config {
+                seed,
+                tick_limit: 1000,
+                policy: Policy::Baseline,
+                density: Density::DEFAULT,
+                trace_actions: false,
+            };
+            print_entropy_trace(
+                Config {
+                    policy: Policy::Baseline,
+                    ..base
+                },
+                BaselineDecisionSource,
+            );
+            print_entropy_trace(
+                Config {
+                    policy: Policy::Reference,
+                    ..base
+                },
+                ReferenceDecisionSource,
+            );
+            print_entropy_trace(
+                Config {
+                    policy: Policy::Individual,
+                    ..base
+                },
+                IndividualDecisionSource,
+            );
+            print_entropy_trace(
+                Config {
+                    policy: Policy::Social,
+                    ..base
+                },
+                SocialDecisionSource,
+            );
+        }
+    }
+
+    /// One line per tick boundary of one configuration, for the instrument above.
+    ///
+    /// The line carries the configuration on every line rather than under a header, so that the
+    /// output can be reduced per configuration by a filter that needs no state.
+    fn print_entropy_trace<D: DecisionSource>(config: Config, source: D) {
+        let (states, _) = entropy_trace(config, source, false);
+        for (boundary, state) in states.iter().enumerate() {
+            println!(
+                "seed={} density={} policy={} boundary={boundary} state={state:#018x}",
+                config.seed, config.density, config.policy,
+            );
+        }
+    }
+
+    /// `REQ-MOK-068` and `VER-MOK-018` case **L9**, the entropy half as an automated check.
+    ///
+    /// The instrument above produces the retained capture; this is the same measurement reduced to
+    /// two numbers per configuration and compared against the numbers measured at the base commit
+    /// `cc54185`. It runs on every push, needs no external file and no network, and fails naming
+    /// the configuration that moved.
+    ///
+    /// **Why two numbers and not a digest.** This package declares no dependencies, so there is no
+    /// hash function available and one written here would be a constant the specification does not
+    /// have. `fold_states` is order-sensitive over the whole sequence, which is what distinguishes
+    /// this from an end-state comparison: two runs that drew differently in the middle and
+    /// reconverged agree on the final state and disagree here. The boundary count is carried
+    /// beside it because a sequence that is a prefix of another folds differently but for a reason
+    /// worth naming separately — a run that ended early.
+    ///
+    /// **Where the expected values come from.** They were measured at `cc54185`, in a worktree at
+    /// that commit with this test's own body applied and nothing else, and the same worktree
+    /// produced the retained capture. They are not copied from any artifact.
+    #[test]
+    fn the_four_existing_sources_draw_what_the_base_commit_drew() {
+        for (seed, policy, boundaries, fold) in BASE_COMMIT_ENTROPY {
+            let config = Config {
+                seed,
+                tick_limit: 1000,
+                policy,
+                density: Density::DEFAULT,
+                trace_actions: false,
+            };
+            let states = match policy {
+                Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
+                Policy::Reference => entropy_trace(config, ReferenceDecisionSource, false).0,
+                Policy::Individual => entropy_trace(config, IndividualDecisionSource, false).0,
+                Policy::Social => entropy_trace(config, SocialDecisionSource, false).0,
+            };
+            assert_eq!(
+                states.len(),
+                boundaries,
+                "seed {seed} policy {policy}: tick boundary count moved from the base commit"
+            );
+            assert_eq!(
+                fold_states(&states),
+                fold,
+                "seed {seed} policy {policy}: the per-boundary entropy sequence moved from the \
+                 base commit"
+            );
+        }
+    }
+
+    /// The instrument that produced `BASE_COMMIT_ENTROPY`, retained so the constant above is
+    /// re-derivable rather than trusted.
+    ///
+    /// It prints the array in Rust source form. Run it in a worktree at the base commit with this
+    /// module's test body applied and paste the output; that is how the constant was written, and
+    /// running it at any later commit is how a reader checks whether it still holds.
+    #[test]
+    #[ignore = "instrument: prints the base-commit constant in source form, run it by name"]
+    fn print_base_commit_entropy_literals() {
+        println!("    const BASE_COMMIT_ENTROPY: [(u64, Policy, usize, u64); 20] = [");
+        for seed in DECLARED_SEEDS {
+            for policy in [
+                Policy::Baseline,
+                Policy::Reference,
+                Policy::Individual,
+                Policy::Social,
+            ] {
+                let config = Config {
+                    seed,
+                    tick_limit: 1000,
+                    policy,
+                    density: Density::DEFAULT,
+                    trace_actions: false,
+                };
+                let states = match policy {
+                    Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
+                    Policy::Reference => entropy_trace(config, ReferenceDecisionSource, false).0,
+                    Policy::Individual => entropy_trace(config, IndividualDecisionSource, false).0,
+                    Policy::Social => entropy_trace(config, SocialDecisionSource, false).0,
+                };
+                println!(
+                    "        ({}, Policy::{:?}, {}, {:#018x}),",
+                    seed,
+                    policy,
+                    states.len(),
+                    fold_states(&states),
+                );
+            }
+        }
+        println!("    ];");
+    }
+
+    /// An order-sensitive fold over a boundary sequence, for the check above.
+    ///
+    /// Rotation before the exclusive-or is what makes it order-sensitive: without it, two
+    /// sequences that are permutations of one another would fold equal.
+    fn fold_states(states: &[u64]) -> u64 {
+        states.iter().fold(0u64, |accumulator, state| {
+            accumulator.rotate_left(7) ^ state
+        })
+    }
+
     /// `REQ-MOK-045` and rule 11.2: a record sink moves no entropy draw.
     ///
     /// The state is compared at **every** tick boundary rather than only at the end, because two

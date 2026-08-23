@@ -1,0 +1,83 @@
+Gate readings at the base-capture commit
+========================================
+
+Taken 2026-08-23 in the implementation tree on feature/phase-5-definition, with the
+instrument present and no behavioural change of this work order yet made. These are the
+gates that guard the commit carrying this directory, not VER-MOK-018's acceptance
+evidence: that comes with the change.
+
+--- Formatting and lint, in the forms preflight prescribes -------------------------------
+
+    cargo fmt --all -- --check
+      -> clean, no output
+
+    cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      -> exit 0, no warnings
+
+--locked is not optional here. Preflight's own repository_commands entry says why: the
+release workflow passes it, so a lint run without it can resolve around Cargo.lock and pass
+locally against dependencies the release would refuse. The engine's declared dependency set
+is empty, so this resolves to one crate, but the flag is passed because the check is on the
+declaration and not on today's outcome.
+
+The instrument needed one formatting correction before this was clean, and it was made
+before the patch in base/entropy-instrument.patch was generated, so the retained patch is
+the formatted form. The correction traded three lines for three: the addition is still
+213 insertions and 0 deletions.
+
+--- Tests --------------------------------------------------------------------------------
+
+    cargo test --workspace
+      -> 344 passed, 0 failed, 2 ignored, across 22 test binaries
+
+The two ignored tests are this work order's own instruments, both ignored deliberately and
+both named in their attributes:
+
+  the_four_existing_sources_entropy_state_at_every_tick_boundary
+      ignored because it prints roughly 20,000 lines for an external capture
+
+  print_base_commit_entropy_literals
+      ignored because it exists to print the constant the assertion test holds, and is
+      retained so that constant is re-derivable rather than trusted
+
+The third test added here is NOT ignored and runs on every invocation:
+
+  the_four_existing_sources_draw_what_the_base_commit_drew
+      VER-MOK-018 case L9's in-crate half. It passes at the base commit and here.
+
+--- Harness ------------------------------------------------------------------------------
+
+    python -m se_harness validate
+      Engineering artifact validation: PASS
+      Artifacts: 179 | Errors: 0 | Warnings: 0
+      Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+      exit 0
+
+    python -m se_harness preflight --work-order WO-MOK-025 --phase start
+      Harness preflight: PASS
+      Phase: start
+      Work order: WO-MOK-025 (in_progress)
+      Commit-bound verification: required, decided by the engineering owner
+      exit 0
+
+Run from the pinned 0.4.0 virtual environment. The machine-wide 0.4.1 install reports FAIL
+on template skew alone and is not the governing tool for this repository.
+
+--- What these readings do not establish -------------------------------------------------
+
+Preflight reporting PASS on the start phase does not mean the work order's own sequencing
+is satisfied, and it does not authorize anything. Its closing line states the boundary
+itself: "Preflight is derived, read-only evidence. It does not approve artifacts, authorize
+a diff, verify work, release software, commit, push, tag, publish, or deploy."
+
+No gate here reads on REQ-MOK-068, which is what the manifests in this directory exist for
+and which cannot be read until there is a change to compare against.
+
+--- Toolchain ----------------------------------------------------------------------------
+
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+cargo 1.97.1 (c980f4866 2026-06-30)
+clippy 0.1.97 (8bab26f4f6 2026-07-14)
+rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)
+Python 3.14.6
+se-harness 0.4.0

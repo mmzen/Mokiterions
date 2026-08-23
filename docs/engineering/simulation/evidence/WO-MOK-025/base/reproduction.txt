@@ -1,0 +1,64 @@
+Round-trip: the committed entropy manifest reproduced from the retained patch
+============================================================================
+
+Base commit: cc5418553cb433715b7d6b15dea3886bff30ffaa
+
+The packet's central claim is that what it does not retain whole is reproducible, and that
+the manifests are what detect a reproduction that failed. This file is that claim exercised
+once, on the manifest whose instrument does not exist at the base commit and therefore has
+the furthest to go.
+
+Executed 2026-08-23 in a detached `git worktree` at the base commit.
+
+--- 1. A pristine base worktree, then the retained patch --------------------------------
+
+    git checkout -- mokiterions-core/src/simulation.rs
+    git apply --check docs/engineering/simulation/evidence/WO-MOK-025/base/entropy-instrument.patch
+      -> exit 0, no output
+    git apply       docs/engineering/simulation/evidence/WO-MOK-025/base/entropy-instrument.patch
+      -> applied
+
+    git diff --numstat -- mokiterions-core/src/simulation.rs
+      -> 213   0   mokiterions-core/src/simulation.rs
+
+213 insertions, 0 deletions. No existing line of the file is touched, which is what makes
+the instrument behaviourally neutral by inspection rather than by assertion.
+
+    cargo fmt --all -- --check
+      -> clean
+
+--- 2. VER-MOK-018 case L9's in-crate half, at the base commit --------------------------
+
+    cargo test -p Mokiterions --lib --release -q -- --exact \
+        simulation::tests::the_four_existing_sources_draw_what_the_base_commit_drew
+
+      test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 99 filtered out
+
+The twenty figures the test holds as a `const` are the figures the base commit produces.
+The same test passes in the implementation tree, which is the point of it: it is the check
+that fails if the change perturbs any of the four existing sources.
+
+--- 3. The manifest, regenerated ---------------------------------------------------------
+
+    cargo test -p Mokiterions --lib --release -q -- --exact --ignored --nocapture \
+        simulation::tests::the_four_existing_sources_entropy_state_at_every_tick_boundary \
+        > reproduce-entropy.txt
+      -> 15727 lines
+
+    entropy-manifest.sh reproduce-entropy.txt \
+        'base-commit capture at cc5418553cb433715b7d6b15dea3886bff30ffaa, no sink -- REQ-MOK-068 / VER-MOK-018 L9, entropy half' \
+        > reproduced-manifest.txt
+
+    cmp reproduced-manifest.txt base/entropy-manifest.txt
+      -> no output: byte-identical
+
+The committed manifest is reproducible from the committed patch at the committed base
+commit. Nothing in the chain rests on this working tree still existing.
+
+--- What this does not establish --------------------------------------------------------
+
+The two capture manifests, base/nosink-manifest.txt and base/sink-manifest.txt, were NOT
+round-tripped this way. They come from capture.sh, which needs no patch — it drives the
+committed CLI — and reproducing them costs the full eighty runs and 246 MB of scratch
+output. They are reproducible by the same argument and were not re-measured a second time,
+and that is a difference in how much work was done rather than in how much is claimed.

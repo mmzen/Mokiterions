@@ -1,0 +1,68 @@
+Comparison of the WO-MOK-025 base-commit capture against WO-MOK-019's retained capture
+=====================================================================================
+
+Base commit of this capture: cc5418553cb433715b7d6b15dea3886bff30ffaa
+WO-MOK-019 capture commit:   de33d7440c323a98ac88db3fabaf87bea48ebf4e
+
+This file is a free cross-check, not a requirement of VER-MOK-018. Two captures taken by
+two work orders at two different commits, on the same seeds and the same density, agree
+exactly where the engine has not moved and disagree exactly where it has. That confirms
+the capture method reproduces across commits, which is what makes the base manifests
+usable as a later comparison at all.
+
+Cell names differ between the packets: WO-MOK-019 writes seed42-baseline-d0.75-traceoff,
+this packet writes seed42-baseline-traceoff. Density is 0.75 in both and is dropped from
+the name here because this capture varies only seed, source and tracing.
+
+--- 1. Text stream, all ten baseline cells: sha256 of stdout ---------------------------
+
+WO-MOK-019 cell                    this packet cell                   verdict
+seed0-baseline-d0.75-traceoff      seed0-baseline-traceoff            identical
+seed0-baseline-d0.75-traceon       seed0-baseline-traceon             identical
+seed1-baseline-d0.75-traceoff      seed1-baseline-traceoff            identical
+seed1-baseline-d0.75-traceon       seed1-baseline-traceon             identical
+seed42-baseline-d0.75-traceoff     seed42-baseline-traceoff           identical
+seed42-baseline-d0.75-traceon      seed42-baseline-traceon            identical
+seed123-baseline-d0.75-traceoff    seed123-baseline-traceoff          identical
+seed123-baseline-d0.75-traceon     seed123-baseline-traceon           identical
+seed777-baseline-d0.75-traceoff    seed777-baseline-traceoff          identical
+seed777-baseline-d0.75-traceon     seed777-baseline-traceon           identical
+
+All ten baseline cells are byte-identical. The baseline decision source and the text
+stream it produces have not moved between the two commits.
+
+--- 2. Text stream, the three whole cells WO-MOK-019 retained -------------------------
+
+seed42-baseline    cmp: identical  (171046 bytes)
+seed42-reference   cmp: DIFFERS    (WO-MOK-019 1191182 bytes, this packet 1279118 bytes)
+seed42-individual  cmp: DIFFERS    (WO-MOK-019 1276985 bytes, this packet 1248404 bytes)
+
+baseline is unmoved. reference and individual have both moved, so WO-MOK-019's whole
+streams cannot stand in for this packet's, and this packet retains its own four in
+base/full/ rather than citing them. This packet does not attribute either movement: what
+a base capture is for is comparison against the tree this work order produces, and
+movement since a capture taken under an earlier work order is out of its scope.
+
+--- 3. Record stream, the baseline cell in both trace modes ---------------------------
+
+seed42-baseline-traceoff  cmp: identical  (370148 bytes)
+seed42-baseline-traceon   cmp: DIFFERS    (WO-MOK-019 743029 bytes, this packet 763343 bytes, both 3225 lines)
+
+The untraced record stream is byte-identical and is therefore NOT retained again here:
+it already exists in the repository at
+  docs/engineering/simulation/evidence/WO-MOK-019/post/full/seed42-baseline-d0.75-traceoff.jsonl
+and a second copy would only be free to drift from the first.
+
+The traced one moved. Isolating the difference:
+
+  differing lines: 1451 of 3225
+  first differing line, WO-MOK-019 then this packet:
+
+    < {"record":"event","tick":1,"subject":"M01","event":"action_trace","result":{"proposal":{"action":"move","direction":"west"},"status":"accepted","detail":"position:10:1","position":{"x":10,"y":1},"territory":"A","health":100,"satiety":100,"energy":100,"fear":0}}
+    > {"record":"event","tick":1,"subject":"M01","event":"action_trace","result":{"proposal":{"action":"move","direction":"west"},"status":"accepted","detail":"position:10:1","position":{"x":10,"y":1},"territory":"A","health":100,"satiety":100,"energy":100,"fear":0,"suffered":[]}}
+
+  stripping the suffered field from this packet's differing lines:
+    the two streams become identical. The whole difference is that one field.
+
+That field is SPEC-MOK-006 rule 6.9, added by its 2026-08-21 amendment row. The row is
+still OUTSTANDING. See schema-divergence.txt in this directory.
