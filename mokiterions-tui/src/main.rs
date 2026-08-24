@@ -4,13 +4,26 @@
 //! authoritative state through the engine's read-only observation surface and changes simulation
 //! state only through the single-tick advance of `SPEC-MOK-003` rule 1.
 //!
-//! Start-up order is fixed by the specification's error table: inputs are parsed and rejected,
-//! then the configuration is rejected, then the viewport floor is checked — all on standard error,
-//! all before the terminal is entered. Nothing is written to the alternate screen until every
-//! refusal has had its chance, and the terminal is restored on every exit path including a panic.
+//! Start-up order is fixed by the specification's error table: inputs are parsed and rejected, then
+//! the viewport floor is checked, then the transcript is opened, then the configuration is rejected
+//! — all on standard error, all before the terminal is entered. Nothing is written to the alternate
+//! screen until every refusal has had its chance, and the terminal is restored on every exit path
+//! including a panic.
+//!
+//! Amended 2026-08-24 under `WO-MOK-025`. This target is the observer's replay host — `SPEC-MOK-007`
+//! rule 20.3 — so it opens the transcript, which is the one file it reads and the only thing it does
+//! with `--policy llm`. Both of the checks that used to follow the observer's construction now
+//! precede it, because the port is a constructor argument and cannot be supplied after the fact.
+//! **Every row of the error table keeps the exit code it had**: the two refusals that moved are the
+//! viewport floor, which moved earlier and can therefore only fire sooner, and the engine's own
+//! configuration rejection, which moved later and is reached by no input the shared parser accepts —
+//! it re-checks a tick limit and a density that parser has already refused. A transcript that cannot
+//! be read is a row the table did not have; it exits `1`, like the terminal that cannot be entered,
+//! because it is a runtime failure and not a configuration the operator can be told to correct.
 
 use std::env;
-use std::io::{self, Write};
+use std::fs;
+use std::io::{self, BufReader, Write};
 use std::process::ExitCode;
 use std::time::{Duration, Instant};
 
@@ -23,6 +36,7 @@ use ratatui::crossterm::event::{self, Event as TerminalEvent};
 // the modules twice and give the package two copies of every type.
 use mokiterions_tui::{layout, options, render};
 
+use mokiterions::simulation::{Policy, Proposer, ReplayPort};
 use mokiterions_tui::options::Startup;
 use mokiterions_tui::state::{Observer, Progression};
 
@@ -76,16 +90,8 @@ where
         }
     };
 
-    // The engine's own rejection, in the engine's own words, with the engine's own exit code.
-    let observer = match Observer::new(options) {
-        Ok(observer) => observer,
-        Err(error) => {
-            let _ = writeln!(stderr, "configuration error: {error}");
-            return Launch::Exit(2);
-        }
-    };
-
-    // Rule 5's floor. Refusing here means a terminal too small to observe in is never altered.
+    // Rule 5's floor. Refusing here means a terminal too small to observe in is never altered, and
+    // means a run that could not be observed at all opens no file.
     if let Some((width, height)) = viewport
         && layout::below_floor(width, height)
     {
@@ -97,6 +103,41 @@ where
         );
         return Launch::Exit(2);
     }
+
+    // The observer's whole share of `--policy llm`: one file, opened for reading, never created,
+    // never written and never removed. `SPEC-MOK-007` rule 12.1.1 puts the opening in the host and
+    // rule 20.4 has the host own the port for the run, so what crosses into the library is an
+    // already-open reader and never a path — which is what keeps rule 19.7's "no path the engine
+    // resolved" true of every message the engine can produce. The path named below is this target's
+    // own argument, and naming it is the whole use of the message.
+    let port: Option<Box<dyn Proposer>> =
+        match (options.config.policy, options.transcript_path.as_deref()) {
+            (Policy::Llm, Some(path)) => match fs::File::open(path) {
+                // Buffered because `ReplayPort` reads a line at a time; an unbuffered `File` would
+                // reach the platform once per byte for every record in the transcript.
+                Ok(file) => Some(Box::new(ReplayPort::new(BufReader::new(file)))),
+                Err(error) => {
+                    let _ = writeln!(stderr, "runtime error: transcript {path}: {error}");
+                    return Launch::Exit(1);
+                }
+            },
+            // The other three pairs cannot arrive from a command line: the shared parser refuses `llm`
+            // with no transcript and refuses a transcript under any other source, so each is already an
+            // exit `2` above. They are matched rather than asserted, and they take no port — which for
+            // the four deterministic sources is what rule 20.9 requires, and for the impossible fourth
+            // pair means the engine's own rule 20.8 refusal fires on the first tick, in the engine's
+            // words rather than in a second copy of them here.
+            _ => None,
+        };
+
+    // The engine's own rejection, in the engine's own words, with the engine's own exit code.
+    let observer = match Observer::with_port(options, port) {
+        Ok(observer) => observer,
+        Err(error) => {
+            let _ = writeln!(stderr, "configuration error: {error}");
+            return Launch::Exit(2);
+        }
+    };
 
     Launch::Observe(Box::new(observer))
 }

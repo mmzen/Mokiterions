@@ -89,9 +89,24 @@ fn the_usage_text_advertises_every_policy_the_engine_accepts() {
             Policy::Llm => "llm",
         };
         assert_eq!(Policy::parse(name), Some(policy), "{name}");
-        assert_eq!(run(&["--policy", name]).config.policy, policy, "{name}");
+        assert_eq!(run(&selecting(name)).config.policy, policy, "{name}");
         assert!(USAGE.contains(name), "the usage text omits --policy {name}");
     }
+}
+
+/// The arguments that select a source, together with whatever else that source requires.
+///
+/// Added 2026-08-24 under `WO-MOK-025`, and the engine's own `tests/cli.rs` holds the same helper
+/// for the same reason: `--policy llm` alone stopped parsing when `--transcript-path` arrived,
+/// because `SPEC-MOK-007` rules 13.2 and 19.2 make a replay with no transcript a usage error and the
+/// observer inherits that refusal from the engine's parser rather than making it again.
+fn selecting(policy: &str) -> Vec<&str> {
+    let mut args = vec!["--policy", policy];
+    if policy == "llm" {
+        args.push("--transcript-path");
+        args.push("transcript.jsonl");
+    }
+    args
 }
 
 #[test]
@@ -162,7 +177,12 @@ fn entry(usage: &str, option: &str) -> String {
     text
 }
 
-/// `WO-MOK-024`: the four engine inputs are described here in the engine's own words.
+/// `WO-MOK-024`: the engine inputs are described here in the engine's own words.
+///
+/// Extended 2026-08-24 under `WO-MOK-025` from four options to five. `--transcript-path` joins the
+/// list because it is the first engine option **both hosts act on**: `SPEC-MOK-007` rule 18.4.2 makes
+/// it the whole of the observer's share of the fifth source, so an operator reads about it in this
+/// program's help and has to be told the same thing the engine tells them.
 ///
 /// `SPEC-MOK-003`'s *Start-up inputs* section gives them "identical names, identical parsing,
 /// identical validation, identical defaults and identical rejection behavior" and leaves their
@@ -174,7 +194,13 @@ fn entry(usage: &str, option: &str) -> String {
 /// compared to a literal declared in this file, which would move the drift one level up.
 #[test]
 fn the_shared_entries_are_the_engines_own_words() {
-    for option in ["--seed", "--ticks", "--policy", "--density"] {
+    for option in [
+        "--seed",
+        "--ticks",
+        "--policy",
+        "--density",
+        "--transcript-path",
+    ] {
         let ours = entry(USAGE, option);
         assert!(
             ours.lines().count() > 1,
@@ -184,5 +210,172 @@ fn the_shared_entries_are_the_engines_own_words() {
             mokiterions::cli::USAGE.contains(&ours),
             "the observer describes {option} in words the engine's own help does not use:\n{ours}"
         );
+    }
+}
+
+/// `SPEC-MOK-007` rule 18.4: the observer re-reads the raw transcript argument, because the engine's
+/// parser validates it and retains nothing.
+///
+/// The value reaching the field is the operator's own, verbatim, and the engine's configuration is
+/// untouched by it — which is the observable form of "the library resolves no path". A path that
+/// looks like a flag, a traversal or a name with spaces is a string here, exactly as `--export` is.
+#[test]
+fn the_transcript_path_is_re_read_verbatim_and_reaches_no_configuration() {
+    for path in [
+        "transcript.jsonl",
+        "-x",
+        "a b/c.jsonl",
+        "../../t.jsonl",
+        "sub/dir/t.jsonl",
+    ] {
+        let options = run(&["--policy", "llm", "--transcript-path", path]);
+        assert_eq!(options.transcript_path.as_deref(), Some(path), "{path}");
+        // Every other resolved input is what the same run without a transcript would carry, so
+        // nothing about the run is decided by the path.
+        assert_eq!(options.config, run(&selecting("llm")).config, "{path}");
+    }
+
+    // Read out of the list the engine's parser accepted, so the scan cannot pick up a value: the
+    // token appears only at an option position.
+    assert_eq!(
+        run(&["--transcript-path", "t.jsonl", "--policy", "llm"])
+            .transcript_path
+            .as_deref(),
+        Some("t.jsonl")
+    );
+    // No value can ever be this token, which is what makes the positional scan exact: every value
+    // option in either parser refuses a value beginning with `--`.
+    assert!(parse(vec!["--export", "--transcript-path"]).is_err());
+    assert!(parse(vec!["--policy", "llm", "--seed", "--transcript-path"]).is_err());
+}
+
+/// Rule 18.4.2 and stop condition 9 of `WO-MOK-025`: the observer diagnoses this option rather than
+/// accepting it and ignoring it.
+///
+/// The observer forwards every argument it does not recognise to the engine's parser, so an option
+/// that parser accepts reaches this program whether or not this program does anything with it. That
+/// is what produced GitHub issue 40 for `--events-path`, and it is the failure this asserts is not
+/// repeated: the transcript path is present exactly when the source that needs it was selected, and
+/// absent otherwise, so there is no invocation in which it is accepted and dropped.
+#[test]
+fn the_transcript_option_is_never_accepted_and_ignored() {
+    assert!(run(&selecting("llm")).transcript_path.is_some());
+
+    for policy in ["baseline", "reference", "individual", "social"] {
+        // Refused, not carried and not dropped.
+        assert!(
+            parse(vec!["--policy", policy, "--transcript-path", "t.jsonl"]).is_err(),
+            "{policy}"
+        );
+        assert_eq!(run(&selecting(policy)).transcript_path, None, "{policy}");
+    }
+    assert_eq!(run(&[]).transcript_path, None);
+}
+
+/// Rules 13.2, 19.2 and 20.3: this program refuses the fifth source with no transcript, at start-up.
+///
+/// It refuses because the engine's shared parser refuses — the observer makes no second copy of the
+/// rule — and the refusal reaches the operator as an ordinary configuration error, before the terminal
+/// is entered. Rule 20.3's other half is asserted as the absence of a fallback: no other source's name
+/// appears in the message, because the run is refused rather than run some other way.
+#[test]
+fn the_replay_source_with_no_transcript_is_refused_at_start_up() {
+    let refusal = parse(vec!["--policy", "llm"])
+        .expect_err("a replay with no transcript is refused before the terminal is entered");
+    assert!(refusal.contains("--transcript-path"), "{refusal}");
+    assert!(refusal.contains("llm"), "{refusal}");
+    for other in ["baseline", "reference", "individual", "social"] {
+        assert!(
+            !refusal.contains(other),
+            "{refusal} offers {other} as a substitute"
+        );
+    }
+
+    // The engine's own words, so the two hosts refuse identically.
+    assert_eq!(
+        Some(refusal),
+        mokiterions::cli::parse(vec!["--policy", "llm"]).err()
+    );
+}
+
+/// A usage text with its line wrapping removed and lowercased.
+///
+/// A sentence in this text is wrapped at 79 columns, so an assertion written against the text as
+/// printed is partly an assertion about where the sentence happened to break — and rewrapping a
+/// paragraph would fail it while changing nothing an operator reads differently.
+fn unwrapped(text: &str) -> String {
+    text.split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+}
+
+/// This program's usage text says what its share of the fifth source is, and that it is required.
+///
+/// The prose is the observer's own — `SPEC-MOK-003` rule 5 requires identical parsing and not
+/// identical prose — but what it has to keep saying is fixed by rule 20.2: this host replays and never
+/// asks a model, and the reason is the frame budget rather than a preference. An operator who reads
+/// only this program's help must not come away expecting it to run a live exchange.
+#[test]
+fn the_usage_text_states_that_this_host_only_replays() {
+    let text = unwrapped(USAGE);
+    assert!(text.contains("only replays --policy llm"), "{USAGE}");
+    assert!(text.contains("never asks a model"), "{USAGE}");
+    assert!(text.contains("required"), "{USAGE}");
+
+    // The two exit-status clauses the option added, and both are the parser's behaviour.
+    assert!(text.contains("do not go together"), "{USAGE}");
+    assert!(text.contains("transcript could not be read"), "{USAGE}");
+    assert!(parse(vec!["--policy", "llm"]).is_err());
+    assert!(parse(vec!["--transcript-path", "t.jsonl"]).is_err());
+}
+
+/// All three targets spell the option identically.
+///
+/// It is spelled in the engine's parser, which validates it and keeps nothing; in the engine's binary
+/// target, which opens it; and in this program, which also opens it. Rule 18.4 is what makes three
+/// copies necessary, and this is what keeps them one option: a rename in any single place leaves a
+/// program that accepts a transcript and replays nothing.
+#[test]
+fn every_target_spells_the_transcript_option_the_same_way() {
+    let source = include_str!("../src/options.rs");
+    let declaration = source
+        .lines()
+        .map(str::trim)
+        .find(|line| line.starts_with("const TRANSCRIPT_PATH_OPTION"))
+        .expect("this program declares the option whose value it reads");
+    let spelling = declaration
+        .split('"')
+        .nth(1)
+        .expect("the declaration states a string literal");
+
+    // Accepted by the engine's parser, and by this program's, which is the same parser.
+    assert!(
+        parse(vec!["--policy", "llm", spelling, "t.jsonl"]).is_ok(),
+        "{spelling} is not the option the parser accepts"
+    );
+    assert!(
+        entry(USAGE, spelling).lines().count() > 1,
+        "{spelling} has no entry in this program's help"
+    );
+    assert!(
+        mokiterions::cli::USAGE.contains(&format!("  {spelling} ")),
+        "{spelling} has no entry in the engine's help"
+    );
+
+    // Spelled once outside its own declaration in each of the two targets that read a value with it.
+    for (label, target) in [
+        ("this program's parser", source),
+        (
+            "this program's binary target",
+            include_str!("../src/main.rs"),
+        ),
+    ] {
+        let uses = target
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.starts_with("//") && line.contains(&format!("\"{spelling}\"")))
+            .count();
+        assert!(uses <= 1, "{label} spells {spelling} {uses} times");
     }
 }
