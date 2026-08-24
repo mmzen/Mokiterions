@@ -5,7 +5,7 @@ title = "Model-backed decision source: the decision port, the cache-ordered requ
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-23"
-updated = "2026-08-23"
+updated = "2026-08-24"
 
 [relations]
 specifies = [
@@ -68,6 +68,18 @@ Amounts in currency and token counts given as *estimated* are estimates made on 
 `gpt-5.6-luna` prices and a measured count of 10,954 decision opportunities in a 1,000-tick `social` run at seed 0 and
 density 0.75. They are stated so that a later reader can see what the design was sized against; none of them is a
 conformance condition. The conformance conditions are rule 14's ratio and rule 14's ceiling.
+
+## Amendment record
+
+**This section did not exist until 2026-08-24.** This specification was approved on 2026-08-23 and had no amendment
+behind it until the row below, which is the only reason it shipped without the table every other specification in this
+repository carries. The table is placed where those keep theirs — immediately after *Scope*, on `SPEC-MOK-003`'s
+arrangement — so that the next amendment of this artifact finds it rather than has to decide where it goes.
+
+| Date | Change | Approval |
+|---|---|---|
+| 2026-08-23 | Original content for `ADR-MOK-007`, covering `REQ-MOK-063` through `REQ-MOK-077`. | Approved 2026-08-23 by the repository owner acting as accountable technical owner, as part of the artifact pack `ADR-MOK-007`'s *Status* records, on the instruction *"i approve the artifact pack"*. |
+| 2026-08-24 | **Rule 11 amended in five places so that the transcript this repository now commits is described truthfully, discharging six rulings the repository owner took on 2026-08-24.** Every one of the five was found by building the transcript and measuring it, and every one is a place where this specification as approved is contradicted by the bytes in `mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl`. **Rule 11.2** gains the second record kind: the framing is two kinds and not one, a **prefix** record stating blocks A and B for one Mokiterion once and an **exchange** record naming that prefix instead of repeating it, with rule 3.4 cited as what makes the split sound and rule 11.7's figures as why it was chosen. Nothing is abbreviated by the split, so rule 11.7's first sentence is undisturbed and is stated to be. **Rule 11.3** is reworded to the two kinds and gains the fallback flag, which rule 15.4's count is reconciled against, and **three sub-rules arrive**: 11.3.1, that the response and the usage figures are present and empty until a provider is called, read through rule 11.5 as an absent response and four **absent** counts rather than four zeros, with `WO-MOK-026` named as where either first carries a value; 11.3.2, that the prefix reference carries an FNV-1a 64 digest of the prefix it names, that rule 12.3's mismatch check extends to it, and that it is **not cryptographic and not required to be**, with both alternatives recorded — a crate, which `SPEC-MOK-006` rule 12.4 forbids, and a hand-written cryptographic digest, which verifies a property nothing here needs; and 11.3.3, that the action's second field is **`parameter`, not `target`**, because rule 8.1 admits a direction and a field named `target` would be false of every `move`. **Rule 11.4** loses "no value outside a closed alphabet" from the constraints it adopts, and **11.4.1** states why it cannot hold and what replaces it: blocks A to D are multi-line English prose against a record-stream alphabet of `A-Z a-z 0-9 _ . - + : ; >`, `SPEC-MOK-006` rule 3.4 names this exact branch, and the transcript takes that rule's second option — the named function **`escape_transcript_text`** with its own verification. **The obligation is stated as a round trip rather than as an alphabet**, which is what carries block C verbatim, and the unescaping is stated to be ungenerous so a hand-edited transcript fails rather than replaying as something the escaper could not have written. **Rule 11.7's estimated band is withdrawn for measured figures**, and 11.7.1 records the withdrawn wording rather than deleting it: the committed transcript is **305,568 bytes** at 20 ticks — twelve prefix records totalling 67,447, block A 5,385 bytes each time, 221 exchange records totalling 238,121, a mean exchange record of 1,078 — against a superseded band of "100 to 260 KB for a 20-to-50-tick run", which 298 KiB at 20 ticks already exceeds, and an extrapolated 12 MB at 1,000 ticks against a superseded estimate of 4.7 MB. The estimate was low because blocks C and D are larger than it assumed and not because anything is written twice, which is measured rather than argued: inlining blocks A and B would take the mean record to 6,502 bytes. **No size ceiling is added**, and rule 11.7's first sentence is given as the reason. **What this row does not do**: no rule outside rule 11 is amended, `schema` is not touched — the transcript is not `SPEC-MOK-006`'s stream and carries no `schema` — and no relation, actor, input, output or security property of this specification moves. Rules 8.1 and 8.2 are **not** amended: 8.2 already reads "its parameter", so 11.3.3 records the field name agreeing with the grammar rather than changing it. | **Approved 2026-08-24 by the repository owner acting as accountable technical owner**, in two acts, both recorded because neither alone is sufficient. The **substance** is the owner's six rulings of 2026-08-24, taken over commit `bfdbf71` when the implementation of rule 11 reached each contradiction in turn, and taken as rulings rather than as an amendment because an implementation agent may not amend an approved artifact: that the response and usage fields be present and empty until `WO-MOK-026`; that rule 11.4's closed alphabet be replaced by a named escaping function with a round-trip obligation so block C is carried verbatim; that the prefix digest be FNV-1a 64 for drift detection and not adversary resistance; that the action's second field be `parameter` and not `target`; that rule 11.7 carry the measured figures and drop its estimated band, with no size ceiling added; and that `--transcript-path` and both hosts' wiring go with `WO-MOK-025` scope item 9. **The sixth ruling amends nothing here** and is recorded as discharged rather than omitted: it is a scheduling decision about a work order's items, it was carried out at commit `8f31792`, and it leaves no text in this specification. The **routing** is the second act: `ADR-MOK-007`'s *Required amendments* section does not name this artifact and `WO-MOK-025` scope item 14 does not list it, so writing these rows was put to the owner under that work order's stop-and-escalate condition 6 with three options measured — write them here now, defer them to `WO-MOK-026`, or approve a draft in a separate act first — and the owner chose to write them here now, in the turn the question was asked. The alternative of deferring was declined on the ground the question stated: this branch would otherwise merge carrying an approved specification whose stated size band is measurably false. The implementation agent measured every figure in this row at the candidate commit and wrote the text; it decided none of the substance. **The estimated figures elsewhere in this specification are untouched** and remain estimates: rule 3.5's cacheable prefix share, the *Scope* preamble's 10,954 decision opportunities and its `gpt-5.6-luna` prices, and rule 9.8's $1.04. Only rule 11.7's became measurable, because only rule 11.7's describe a file that now exists; the others describe a provider call, and no provider has been called. |
 
 ## Actors and external systems
 
@@ -421,16 +433,52 @@ nothing else. Rule 20.4 is why that matters beyond tidiness.
 11.1 A live run writes a transcript. The engine authors every record; the host owns the destination and hands the
 engine an already-open stream, on `SPEC-MOK-006` rule 1.2's precedent — the engine resolves no path and opens no file.
 
-11.2 The framing is one record per line, one line per exchange, in the order the run made them. A retry is its own
-record, because it was its own billed exchange.
+11.2 The framing is one record per line, in the order the run made them, and there are **two record kinds**. An
+**exchange** record is one line per exchange, and a retry is its own record, because it was its own billed exchange. A
+**prefix** record states blocks A and B for one Mokiterion, once, before that Mokiterion's first exchange. Rule 3.4 is
+what makes the split sound — neither of those two blocks varies within a run for a given Mokiterion — and rule 11.7's
+figures are why it was chosen. An exchange record therefore carries blocks C and D and **names** its prefix rather than
+repeating it, and this costs a reader nothing: the request as sent is the named prefix's blocks followed by the exchange
+record's own, concatenated in rule 3.1's order. Nothing is abbreviated, so rule 11.7's first sentence still holds.
 
-11.3 A record carries: the tick and the acting Mokiterion, so the exchange is bound to its opportunity; the request as
-sent, in full; the response as received, in full, or the error; the provider's reported prompt, cached-prompt, output
-and reasoning token counts; and the action the response was parsed into, or the fact that it was not parsed and why.
+11.3 An **exchange** record carries: the tick and the acting Mokiterion, so the exchange is bound to its opportunity;
+the request as sent, in full, as the prefix it names together with this exchange's own blocks; the response as received,
+in full, or the error; the provider's reported prompt, cached-prompt, output and reasoning token counts; the action the
+response was parsed into, or the fact that it was not parsed and why; and whether the decision was rule 9.5's fallback,
+which rule 15.4's count is reconciled against. A **prefix** record carries the Mokiterion it belongs to, that
+Mokiterion's two blocks, and the digest rule 11.3.2 fixes.
 
-11.4 `SPEC-MOK-006`'s constraints are adopted for the transcript: no floating-point value, no timestamp, no path, no
-value outside a closed alphabet, and bytes comparable between runs. A transcript is diffable evidence, comparable with
-`cmp`, rather than a log.
+11.3.1 **The response and the usage figures are present and empty until a provider is called.** No exchange this
+repository has recorded came from a provider, so both are written as the format's empty value in every record that
+exists; they are present rather than omitted so that the format does not change when the first live run writes into
+them. Rule 11.5 is how they are read while empty: an empty response is not a response, and an empty usage is four
+**absent** counts rather than four zeros. `WO-MOK-026` is where either first carries a value.
+
+11.3.2 **The prefix reference carries a digest of the prefix it names, and the digest is FNV-1a 64.** Rule 12.3's
+mismatch check extends to it, so an edit to block A invalidates every transcript taken before the edit, loudly, at the
+first exchange, rather than replaying against a prefix the recorded run was never composed with. **It is not
+cryptographic and is not required to be.** Its job is drift detection between a prefix and the run that replays against
+it, over bytes that sit in the same file as the digest: an adversary who can edit the prefix can edit the digest beside
+it, and no digest of any strength changes that. The alternatives were a crate, which `SPEC-MOK-006` rule 12.4 forbids,
+and a hand-written cryptographic digest, which would be a second thing to verify for no property this needs.
+
+11.3.3 **The action's second field is `parameter`, not `target`.** Rule 8.1 admits an identifier **or a direction** and
+rule 8.2 already calls it a parameter; a field named `target` would be false of every `move`, which names a direction
+and targets nothing.
+
+11.4 `SPEC-MOK-006`'s constraints are adopted for the transcript: no floating-point value, no timestamp, no path, and
+bytes comparable between runs. A transcript is diffable evidence, comparable with `cmp`, rather than a log.
+
+11.4.1 **The closed alphabet is not among them, and cannot be.** The record stream's alphabet is `A-Z a-z 0-9 _ . - + :
+; >`, and blocks A to D are English prose: block A alone carries spaces, commas, parentheses, full stops and an em dash,
+and all four blocks are multi-line. `SPEC-MOK-006` rule 3.4 names this exact branch — a value outside the enumeration
+"must either be added to that enumeration or arrive together with an escaping function and its own verification". The
+transcript takes the second of those, and this rule names the function: **`escape_transcript_text`**, which escapes the
+framing characters and nothing else, and whose inverse the replay applies before a block is used. **The obligation is a
+round trip rather than an alphabet**: every block survives escaping and unescaping byte-identically, which is what
+carries block C **verbatim** and lets a reader compare what was sent rather than a rendering of it. The unescaping is
+not generous — a sequence the function never writes is refused rather than interpreted, so a hand-edited transcript
+fails instead of replaying as something the escaper could not have produced.
 
 11.5 A reported count that the provider did not report is recorded as **absent**, not as zero. A missing count and a
 count of zero mean different things, and rule 14.5 depends on telling them apart.
@@ -438,9 +486,23 @@ count of zero mean different things, and rule 14.5 depends on telling them apart
 11.6 A transcript contains no credential, no authorization header and no provider account identifier. It is retained
 inside the repository, and `REPOSITORY_CONTEXT.md` requires credentials to remain outside it.
 
-11.7 A transcript is never truncated or abbreviated to fit a size budget. Its size is bounded by the horizon chosen: an
-**estimated** 4.7 MB for a 1,000-tick run, an **estimated** 100 to 260 KB for a 20-to-50-tick run. What is retained
+11.7 A transcript is never truncated or abbreviated to fit a size budget. Its size is bounded by the horizon chosen, and
+**the figures are measured rather than estimated**, against the transcript this repository commits —
+`mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl`, a 20-tick run at seed 0 and density 0.75 in which all
+twelve Mokiterions act. It is **305,568 bytes**: twelve prefix records totalling **67,447**, of which block A is
+**5,385** bytes each time, and 221 exchange records totalling **238,121**, a mean exchange record of **1,078** bytes.
+Extrapolating that mean at the same exchanges per tick, a 1,000-tick run is an **estimated** 12 MB. What is retained
 where is `VER-MOK-018`'s.
+
+11.7.1 **The estimates this rule carried are recorded rather than deleted, because the measurement exceeded both.** It
+read "an **estimated** 4.7 MB for a 1,000-tick run, an **estimated** 100 to 260 KB for a 20-to-50-tick run". The
+committed transcript's 305,568 bytes is 298 KiB at **20** ticks, already above the top of a band that was meant to reach
+50, and the 1,000-tick figure is about two and a half times the 4.7 MB. The estimate was low because blocks C and D are
+larger than it assumed, and **not** because anything is written twice: rule 11.2's split already removes every
+repetition there is to remove. A record that carried blocks A and B inline as well would average **6,502** bytes rather
+than 1,078, those two blocks being 5,424 or 5,425 bytes at every exchange of a given Mokiterion. **No size ceiling is
+added**, and this rule's first sentence is the reason — a ceiling on a transcript is an
+instruction to abbreviate one, which is the single thing this rule forbids.
 
 11.8 A replay writes no transcript. It has one; it is reading it.
 

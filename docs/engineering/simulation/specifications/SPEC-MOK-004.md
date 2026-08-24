@@ -5,7 +5,7 @@ title = "Package directories, observer targets, and observer test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-18"
-updated = "2026-08-22"
+updated = "2026-08-24"
 
 [relations]
 specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
@@ -30,6 +30,7 @@ specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
 | 2026-08-21 | **Rules 9, 10 and 11 re-measured on the second merge of `master`, at `7f4792a`, into this chain, and this chain renumbered from `WO-MOK-018` to `WO-MOK-019`.** Rule 11 reads the workspace **301**, the engine **156** and the observer **145**, against the 267 the row above records and the 298 this chain's own superseded draft row recorded for the first merge. **The figure is established by structure rather than by a census diff, which is what makes it checkable in one command each.** The merged tree's `mokiterions-tui/src` and `mokiterions-tui/tests` are **byte-identical to `master`'s** at `7f4792a`, and its `mokiterions-core/src` and `mokiterions-core/tests` are **byte-identical to this chain's** at `efe20e3`: `git diff origin/master -- mokiterions-tui` and `git diff efe20e3 -- mokiterions-core` are both empty. So the observer half's figures are `master`'s own and the engine half's are this chain's own, neither half is a merge of anything, and the workspace total is their sum — 145 + 156 = 301. It reconciles from both predecessors as well: 298 + 3, `master`'s three observer arrivals under its `WO-MOK-018`, and 267 + 34, this chain's engine additions. **Rules 9 and 10's tables therefore take the row above's approved figures unchanged** — the public tier at **103** with `tests/state.rs` and `tests/verification.rs` at 22 each, the internal tier at **42** with `src/state.rs` at 5 — not because this row re-decides them but because the half they count is `master`'s byte for byte, and they were re-measured at 22, 22, 103 and 42 rather than carried over. **Rule 10's private-item count of 49 is retained and its ground strengthened**: `src/render.rs` declares **31** private functions and **18** private constants, measured on the merged tree, on `master` at `7f4792a` and on this chain at `efe20e3` — the same figure on all three, so the 48 this rule recorded is one low on every tree that exists and not an artefact of either merge. **Rule 6 takes the row above's 94 items, 119 `pub` lines and 25 public fields**, which follows from the same byte-identity and is not independently re-derived here. The engine's **156** is 96 internal and 60 public under `SPEC-MOK-002` rules 7 and 8 rather than this rule, recorded because 301 is otherwise not reproducible. Nothing else changes — no target, target name, path, package name, tier boundary, hook or prohibition, and no item's visibility widens. Every figure is one `cargo test --workspace` invocation's per-target output on the merged tree, retained with the qualified-name census in `evidence/WO-MOK-019/merge/second/`. | **OUTSTANDING.** Drafted by the implementation agent for ratification by the repository owner acting as technical owner, under the correction procedure the owner set on 2026-08-21: the agent drafts each correction and the owner ratifies each. **Every figure in this row is a measured outcome rather than a decision**, and **no provision of this specification is added, removed or reworded.** Two things are put for ratification rather than the numbers. First, that this chain's own 2026-08-21 draft row is **replaced rather than kept**: it was OUTSTANDING, and it was drafted to answer the referral `WO-MOK-016` made about which work order re-derives rule 11's figures — a referral the row above has since answered on the owner's authority, under `master`'s `WO-MOK-018`. Keeping both would leave two unratified answers to a question already decided, so the draft is withdrawn and what survives of it is the one figure the approved row does not state, rule 10's 49. Second, that rule 10's 48 is a defect no record has reported: it is not on `VREC-MOK-016`, whose packet names the private `action_text` in a change-surface table and connects it to no item count, and it is not in the approved row above. **No row above is touched by this one**, and no record bound to a commit is re-opened. The implementation agent measured, wrote this text and decided none of it. |
 | 2026-08-22 | **Rules 6, 9, 10 and 11's recorded figures re-measured at `WO-MOK-020`'s candidate commit, and one figure of another work order's corrected rather than absorbed.** **Rule 6 is unchanged and is recorded as re-measured**, at 94 items, 119 `pub` lines and 25 public fields with every module row unmoved: everything that work order adds to `src/state.rs` and `src/render.rs` is `pub(crate)` or private — the `Profile` record, the `ActionKind` enumeration, its `label`, the three `Observer` accessors, `Profile`'s five private counters and `src/render.rs`'s six private declarations — so the **Growth** clause is not invoked and no item's visibility is widened. **Rule 9** reads `tests/render.rs` 29 rather than 22, `tests/verification.rs` 29 rather than 22 and the total 117 rather than 103, with the fourteen arrivals named and their obligations stated, and with the scope of the two static checks that are scoped rather than global measured rather than assumed. **Rule 10** reads `src/state.rs` 21 rather than 5 and the total 58 rather than 42, with the sixteen arrivals named; its `src/render.rs` row's private-item count reads 55 rather than 49, being 34 functions and 21 constants, and the previous 49 is **confirmed** at the base commit under the same counting method rather than corrected; that row's test count stays 20 and its hook figure stays 7 of 20. **Rule 11** reads the observer 175, which is 117 public and 58 internal, and the workspace 332. **The engine reads 157 rather than 156, and the one test is not `WO-MOK-020`'s**: `mokiterions-core/src/simulation.rs` carries 97 internal-tier tests at this candidate against 96 on the tree the 2026-08-21 row measured, and the arrival is `WO-MOK-017`'s, added by commit `26ae6ba` implementing `REQ-MOK-060`. It is stated with its origin rather than absorbed into this work order's thirty, on the precedent of the row above that reported a figure as one high. That correction was owed from `WO-MOK-017`'s closure by this rule's own closing sentence and was not made then, so the owner is shown the engine's 157 here for the first time — a weaker position than a correction already reported, and stated as such. **No approved figure is contradicted**: each superseded figure is true of the tree it names, and none is edited. No rule's substance changes, no obligation on any test or item changes, and no row above is touched. | **Approved 2026-08-22 by the repository owner acting as accountable technical owner**, ratifying these figures as this rule's record and, separately, accepting the engine's 157 as `WO-MOK-017`'s uncorrected arrival rather than as a defect of this work order. The text was written on 2026-08-22 by the implementation agent under `WO-MOK-020` §4, which requires rule 6 and rule 9 re-measured **at the candidate commit and not projected** and one amendment row. Every figure above was measured on the candidate tree by `cargo test --workspace --locked` and by counting declarations per file, and the agent decided none of the substance: what a figure is, is measured rather than chosen. **These figures are true of `WO-MOK-020`'s candidate and are already known to move at the next merge, which is why they are ratified with a reconciliation owed rather than as this rule's settled state.** The owner was shown that measurement before ratifying. On 2026-08-22 the implementation agent trial-merged the `WO-MOK-008` branch, whose pull request changes `src/render.rs` and `tests/verification.rs` and amends this specification nowhere, and measured on the merged tree — green, with no test failing — `tests/verification.rs` at 31, rule 9's total at 119, rule 10's total at 66 with `src/render.rs`'s private items at 60, the observer at 185 and the workspace at 342. Ratifying at that merged tree instead was declined, because it would have closed this work order with its own specification figures unratified and would have ratified figures no retained evidence covers; leaving the merged figures unrecorded was declined too, since that branch amends this document nowhere and the staleness would be silent. **A reconciliation row re-measuring rules 9, 10 and 11 is therefore owed at that merge**, on the precedent of the two 2026-08-20 reconciliation rows of `SPEC-MOK-003` and of this table's own 2026-08-21 re-measurement row. The trial figures in this cell are a measurement of a worktree that was discarded and are not this rule's record: whoever merges second re-measures rather than copies them. No record bound to a commit is re-opened. |
 | 2026-08-22 | **Rules 9 and 11's figures reconciled at the merge of `master` at `3ca2028`, which the row above records as owed. No rule's substance changes, no obligation on any test or item changes, and no row above is touched.** **Rule 9** reads `tests/options.rs` 9 rather than 8 and the total 118 rather than 117. **Rule 11** reads the observer 176, which is 118 public and 58 internal, and the workspace 333. The single arrival is `the_shared_entries_are_the_engines_own_words` in `tests/options.rs`, and **it is not `WO-MOK-020`'s**: it comes from `master`'s usage-text work, which amends this specification nowhere, and it is stated with its origin rather than absorbed, on the precedent of the engine's 157 in the row above. **Rules 6 and 10 are re-measured unmoved** — 94 items, 119 `pub` lines and 25 public fields with every module row unchanged, and an internal total of 58 with every row unchanged — and **the engine is unmoved at 157**, 97 internal and 60 public, measured rather than inferred: no `#[test]` attribute and no `fn` declaration is added or removed in either `mokiterions-core` file the merge touches. **No approved figure is contradicted**: the 117, the 175 and the 332 are true of `WO-MOK-020`'s candidate commit `f633eda`, the paragraphs recording them are kept as figures of that tree, and `VREC-MOK-023`, which binds that commit and is `verified`, is not re-opened. | **Approved 2026-08-22 by the repository owner acting as accountable technical owner**, in the same instruction that directed the merge. The owner was asked who should resolve this branch's one conflict with `master` and chose that the merge be taken and this row written; the question stated beforehand that the suite was expected at 333 and rule 9 at 118, from a trial merge of 2026-08-22 in a worktree since discarded. Both were then measured on the real merge rather than assumed, and both are what the question predicted. The instrument is `cargo test --workspace --locked` with `docs/engineering/simulation/evidence/WO-MOK-020/09-measure-spec-mok-004.py` run over its `--list` output, which is the same instrument the row above used, and the four tier figures are independently reproduced by counting `#[test]` per file. That script is a file of a packet a `verified` record binds; it was executed and not edited. The implementation agent wrote this text and decided none of the substance: what a figure is, is measured rather than chosen. **This row discharges the reconciliation the row above leaves owed and no other obligation**: the trial figures that cell records against the `wo-mok-008-footer-shedding` branch — rule 9 at 119, rule 10 at 66 with `src/render.rs`'s private items at 60, the observer at 185 and the workspace at 342 — remain a measurement of a discarded worktree, and whoever merges that branch re-measures rather than copies them. |
+| 2026-08-24 | **Rule 11 admits `#[ignore]` for instruments, and rules 9, 10 and 11's figures are corrected for `WO-MOK-025`.** **Rule 11's opening** loses `#[ignore]` from the list of things no tier requires and gains the class that replaces it: an **instrument** is a `#[test]` function that asserts nothing and exists to produce something a human reads or commits, three exist and all three are named in the rule by file, and no test that asserts anything carries the attribute. The obligation the opening exists for is therefore undisturbed — every tier's assertions still run on a bare `cargo test` — and the attribute is what keeps that true rather than what weakens it: without it the suite prints roughly 20,000 lines of capture output and one member rewrites a committed file as a side effect, which would make the suite's verdict depend on the order its tests ran in. This rule's figures consequently carry **two** totals, the tests that exist and the tests that execute. **Rule 9** reads `tests/authority.rs` **5** rather than 4, `tests/options.rs` **14** rather than 9, `tests/verification.rs` **31** rather than 29, `tests/replay.rs` arriving with **4**, and the total **130** rather than 118; ten of the twelve are this work order's and two are `master`'s, so the baseline at the merge base `2a93914` is 120 and not the recorded 118, and each of the ten is named with the obligation it carries. `mokiterions-tui/tests/replay.rs` is a **new** public-tier target, admitted by that rule's own "A further file may be added when a further public subject appears", so **the observer's public-tier target count moves from eight to nine for the first time since this specification was written**, and every sentence stating it as eight is superseded and kept. **Rule 6's interface grows by one item and one public field, and neither is any test's**: `state::Observer::with_port` is a public item, so the `state` row reads **48** rather than 47 and the total **95** rather than 94; `options::Options::transcript_path` is a public field, so the pair reads **26** and **121** rather than 25 and 119 while the `options` row stays at 8, a field being part of the item that declares it. `SPEC-MOK-007` rule 20.4.1 is the requirement behind the first and rule 18.4 behind the second, and both are forced by this specification's own rule 4: `mokiterions-tui/src/main.rs` is a separate crate from the library, it is the target that opens the transcript because rule 12.1.1 puts the opening in the host and rule 19.7 forbids an engine message from naming a path the engine resolved, and `src/main.rs:134` is the caller that makes the constructor `pub`. Three alternatives are recorded in rule 6 as measured and worse. Rule 7 is untouched, since both arrivals are new declarations and no existing item's visibility widens. The other five module rows and `authority`'s 5 items are re-measured unchanged. **Rule 10** reads `src/render.rs` **29** rather than 20 and the total **67** rather than 58, with the hook figure moving from 7 of 20 to **8 of 29** and the private-item count from 55 to **60**, being 36 functions and 24 constants. **Only one of the nine tests and none of the five declarations is this work order's**: measured at three revisions, `master` at `3ca2028` carries 20 tests with 34 and 21 declarations, the merge base `2a93914` carries 28 with 36 and 24, and the candidate carries 29 with 36 and 24 — so the eight tests and all five declarations are `master`'s gauge and footer work, arriving through a merge this work order did not make, and the correction was owed from that merge. The one arrival is named and is a hook user. The other three rows are re-measured unmoved at 9, 21 and 8. **Rule 11** reads the observer **197**, the engine **221** and the workspace **418**, of which **415** execute; the observer's before-figure is **186** and not the recorded 176, the ten between them being `master`'s two in `tests/verification.rs` and eight in `src/render.rs`, and the engine is unmoved at 157 across that same span, measured rather than inferred. Seventy-five tests arrive, **none departs and none is renamed**: 64 engine and 11 observer, attributed to the eight targets that run them, so 343 + 75 = 418 from the merge base and 333 + 10 + 75 = 418 from the approved figure. The engine's 221 is 143 internal and 78 public under `SPEC-MOK-002` rules 7 and 8, recorded because 418 is otherwise not reproducible, and `mokiterions-core/tests/replay.rs` is a new engine public-tier target under that rule's closing sentence, taking its public-tier target count from eight to nine. All three instruments are the engine's, so it executes 218 of 221 and the observer executes all 197. **No approved figure is contradicted**: each superseded figure is true of the tree it names and none is edited. **What this row does not do.** It does not move **rule 1's layout or rule 2's manifest**: `ADR-MOK-007` states positively that decision 3 leaves both alone, this stage adds no directory and no workspace member, and the one connector this repository owns is a fixture inside an existing package. It does not add a fifth member to any census of decision sources, **because this specification carries none that is live** — measured rather than assumed: the four enumerations of sources in it are `WO-MOK-011`'s and `WO-MOK-016`'s historical arrival tables, `WO-MOK-020`'s row describing what `the_verb_totals_and_the_rejections_account_for_every_opportunity` asserts, which genuinely loops four sources in the code at this candidate, and rule 13's byte-identity clause, which the 2026-08-19 amendment scoped to the `WO-MOK-006` restructuring and which stood unamended through the third and fourth sources' arrival. Writing "five" into any of them would put a false statement in an approved specification. It amends no placement rule, tier boundary, target name, path, package name, hook or prohibition, and widens no item's visibility. | **Three approvals, and they cover different things; the third is OUTSTANDING.** The figure corrections are covered by `ADR-MOK-007`, approved 2026-08-23 by the repository owner acting as accountable technical owner with the words "i approve the artifact pack", whose *Required amendments* section names this specification and states its part as the census, rule 1's layout not moving, "**Rule 11's test-count figures** move for every stage that adds a test, by that rule's own delegating clause", and an amendment record row; that section's *Status* clause distributes its provisions across `WO-MOK-025`, `WO-MOK-026` and `WO-MOK-027`, and this row writes this stage's share. **The `#[ignore]` amendment is not in that ADR and was not approved by it.** It was escalated in this session under `WO-MOK-025`'s stop-and-escalate condition 6 — "An amendment turns out to be needed that `ADR-MOK-007` does not name. No approved artifact is amended on an implementation agent's judgement" — and the repository owner acting as accountable technical owner decided on **2026-08-24** to amend rule 11's opening to admit instruments, in preference to the two alternatives measured and put with it: dropping the attribute from all three, which makes the suite's verdict order-dependent and adds roughly 20,000 lines to its output, and reclassifying the transcript regenerator as a script outside the test corpus, which removes it from `cargo test`'s reach and so from the one command this rule exists to make sufficient. **Rule 6's growth is neither approval's and is OUTSTANDING for the technical owner's ratification as of 2026-08-24.** `ADR-MOK-007`'s *Required amendments* section names this specification's census, rule 1's layout and rule 11's figures, and it names **no** rule 6 amendment; its `mokiterions-tui/src/options.rs` and `state.rs` section describes both changes as source with no authority and does not state that either becomes public. The owner has not been shown this consequence. It is reported here rather than treated as covered, on the exact precedent of the 2026-08-21 row above, which was OUTSTANDING for the same reason and for the same cause: rule 6 counts public fields separately from items, and a change scoped by its effect on behaviour can move a figure nobody predicted. **The growth is nonetheless forced by work the owner did approve**, and it is the narrowest available form — rule 6 records the three alternatives, of which the only one that avoids a public item puts a library-resolved path inside the library and so breaks rule 19.7. What is put for ratification is the growth and the two figures, not the implementation: the item and the field are what decision 3 needs, and the agent chose neither. **Every other figure in this row is a measured outcome rather than a decision**: the test counts are `cargo test --workspace --locked`'s per-target output at the candidate, reproduced independently by counting `#[test]` per file, and the declaration, hook and interface counts are enumerations of the named modules at the three revisions the row states. The implementation agent measured, wrote this text and decided none of the substance. **No row above is touched by this one**, and no record bound to a commit is re-opened: the 118, the 58, the 176 and the 333 are true of the tree that merged `master` at `3ca2028`, and `VREC-MOK-023` binds `f633eda` and is not re-opened. **Rule 6's module table is edited rather than corrected beneath**, on the 2026-08-19 precedent that edited its `layout` row from 13 to 10 and kept the superseded figure in the prose above it; the 47 and the 94 are recorded in rule 6 as what the table read until this amendment. **Rules 9 and 10's tables are edited to the candidate's figures in the same way**, which is how both have been maintained since `WO-MOK-006` — rule 9's `authority.rs` to 5, `options.rs` to 14, `verification.rs` to 31, a `tests/replay.rs` row at 4 and the total to 130, and rule 10's `src/render.rs` row to 29 tests, 60 private items and 8 hook users with the total at 67 — and every superseded figure is kept in the correcting paragraph beneath each table, as every row above has done. Rule 11 states its figures only in paragraphs and has no table to edit. |
 
 ## Scope
 
@@ -275,8 +276,8 @@ above is scoped to the `WO-MOK-006` restructuring and does not reach this commit
 | `options` | 8 | the observer's own argument handling |
 | `render` | 2 | the frame entry points |
 | `spatial` | 19 | world-to-canvas mapping |
-| `state` | 47 | the observer's state, its accessors, its filters and its event buffer |
-| **Total** | **94** | |
+| `state` | 48 | the observer's state, its accessors, its filters and its event buffer |
+| **Total** | **95** | |
 
 **Re-measured 2026-08-22 under `WO-MOK-020` and unchanged: 94 items, 119 `pub` lines, 25 public fields, and every
 module row above at the figure it already carries.** The re-measurement is recorded rather than the figures being
@@ -290,6 +291,38 @@ private to that module. So the **Growth** clause is not invoked, no item's visib
 119 is reproducible by the counting rule stated above at the candidate commit. The interface is deliberately not
 widened to let a test reach these items: the sixteen cases that need them are in rule 10's tier for that reason, and
 rule 6's **Growth** clause is why — a test is never the requirement that grows the interface.
+
+**Amended 2026-08-24 under `WO-MOK-025`: the interface grows by one item and one public field, so the figures read 95
+items, 26 public fields and 121 `pub` lines**, and the `state` row of the table above reads **48** rather than 47. It read
+47 and the total 94 until this amendment, and the pair read 25 and 119. The two arrivals, with the requirement that
+authorizes each:
+
+- `state::Observer::with_port(options: Options, port: Option<Box<dyn Proposer>>) -> Result<Self, String>`, a public
+  **item**, so it moves the item count and the `state` row. `SPEC-MOK-007` rule 20.4.1 needs it: the replay port is built
+  once and held for the whole run, so the transcript cursor, the accumulated cost and the fallback count are the run's and
+  not a tick's. `Observer::new` remains and delegates to it with no port, so no existing signature changes.
+- `options::Options::transcript_path: Option<String>`, a public **field** of a public struct, so it moves the field count
+  and the pair while leaving the `options` row at 8 items — a field is part of the item that declares it, which is this
+  rule's own counting. `SPEC-MOK-007` rule 18.4 needs it: this host re-reads the raw `--transcript-path` argument and the
+  value has to cross from the parser to the start-up path.
+
+**Both are forced by rule 4's own target structure and not by a test.** `mokiterions-tui/src/main.rs` is a separate crate
+from the library and can reach only `pub` items; it is the target that opens the transcript, because `SPEC-MOK-007` rule
+12.1.1 puts the opening in the host and rule 19.7 requires that no engine message name a path the engine resolved, so what
+crosses into the library is an already-open reader and never a path. So the binary reads `options.transcript_path`, builds
+the port, and hands it to `Observer::with_port`. The **Growth** clause's "A test is never that requirement" is satisfied:
+the four public-tier cases in `tests/replay.rs` call `with_port` because the binary already does, not the other way round —
+`src/main.rs:134` is the caller that makes it `pub`.
+
+Three alternatives were each measured and each is worse. **Opening the transcript inside `Observer::new`** adds no public
+item, and it puts a path the library resolved inside the library, which is what rule 19.7 forbids a diagnostic to name and
+what rule 12.1.1 divides the other way; it would also make the observer's start-up failure the library's message rather
+than the host's. **A `pub(crate)` field beside four `pub` siblings** on `Options` would make one struct partly opaque for
+no reason but visibility, which the 2026-08-21 amendment above already rejected for `Death`, and it would not work at all:
+`src/main.rs` is outside the crate. **Rebuilding the port per tick** inside `advance` would need no constructor and is
+prohibited outright by rule 20.4.1. Rule 7 is untouched, since no existing item's visibility widens — both arrivals are new
+declarations — and the byte-identity check above is scoped to the `WO-MOK-006` restructuring and does not reach this
+commit.
 
 The `layout` row read 13 items and "viewport tiers and the pane geometry of each" until the 2026-08-19 amendment. The
 three items it lost are the `Tier` enum, that enum's `label` method and the `tier_for` function, together with the
@@ -361,15 +394,16 @@ reaching the code as `use mokiterions_tui::…`. The arrangement, with the count
 
 | File | Subject | Tests |
 |---|---|---|
-| `tests/authority.rs` | the engine's verdict and its presentation | 4 |
+| `tests/authority.rs` | the engine's verdict and its presentation | 5 |
 | `tests/export.rs` | export content and its rendered form | 7 |
 | `tests/layout.rs` | the pane thresholds, the floor and pane geometry | 11 |
-| `tests/options.rs` | the observer's argument handling | 9 |
+| `tests/options.rs` | the observer's argument handling | 14 |
 | `tests/render.rs` | frame content asserted through the frame entry points | 29 |
+| `tests/replay.rs` | the observer as a host of the decision port | 4 |
 | `tests/spatial.rs` | world-to-canvas mapping | 7 |
 | `tests/state.rs` | observer state, accessors, filters and the event buffer | 22 |
-| `tests/verification.rs` | the cross-cutting properties: non-perturbation, export fidelity, presented-value fidelity, the authority verdict, colour independence | 29 |
-| **Total** | | **118** |
+| `tests/verification.rs` | the cross-cutting properties: non-perturbation, export fidelity, presented-value fidelity, the authority verdict, colour independence | 31 |
+| **Total** | | **130** |
 
 The counts began as the measured outcome of applying rule 8 to the 109 tests at the `WO-MOK-006` predecessor commit —
 77 in this table — and they are stated so that a relocation that loses or invents a test is detectable. They are not a
@@ -534,17 +568,62 @@ and no member of the interface. That file's subject line is not extended. **No a
 117 stands in the paragraph above as the figure of `WO-MOK-020`'s candidate commit `f633eda`, which `VREC-MOK-023`
 binds, and is not edited; the table carries this tree's figure.
 
+`tests/authority.rs` reads **5** rather than 4, `tests/options.rs` **14** rather than 9, **`tests/replay.rs` arrives with
+4**, `tests/verification.rs` reads **31** rather than 29, and the total **130** rather than 118, as corrected for
+`WO-MOK-025` and measured at its candidate commit. **Two of the twelve tests behind those movements are not this work
+order's**, and they are separated before this work order's ten are stated, because a total that mixed them would
+attribute `master`'s work here. The baseline is this branch's merge base `2a93914`, at which this tier measures **120**: `tests/verification.rs`
+had already risen from 29 to **31** on `master` after the tree the paragraph above measured, and that is the whole of the
+difference between 118 and 120. **This work order adds ten and loses none:**
+
+| Added | Where | Obligation it carries |
+|---|---|---|
+| `the_source_row_names_every_source_and_agrees_with_the_mapping` | `tests/authority.rs` | `SPEC-MOK-007` rule 18.5's second obligation: the overlay's source row names all five sources and names each with the identifier `for_type` gives, compared against that function rather than against a written-out expectation, because a written-out expectation is the hard-coded description that rule corrects |
+| `the_replay_source_with_no_transcript_is_refused_at_start_up` | `tests/options.rs` | `SPEC-MOK-007` rules 18.5 and 20.3: this host accepts the fifth source only with a transcript and refuses it without one, and the refusal names the option that would satisfy it |
+| `the_transcript_option_is_never_accepted_and_ignored` | `tests/options.rs` | rule 18.4.2, which is the defect GitHub issue 40 tracks and which this option was forbidden to repeat: an option the shared parser accepts reaches a diagnosis rather than silence |
+| `the_transcript_path_is_re_read_verbatim_and_reaches_no_configuration` | `tests/options.rs` | rule 12.1.1's division of labour: the observer re-reads the argument and holds no path the library could reach |
+| `the_transcript_option_states_when_it_is_required_and_when_it_is_refused` | `tests/options.rs` | `SPEC-MOK-003`'s usage-text obligation for the one new option this host acts on, in both directions |
+| `the_usage_text_states_that_this_host_only_replays` | `tests/options.rs` | `REQ-MOK-077` in the observer's own words, which is the one thing this host may say that is not the engine's text byte for byte |
+| `every_target_spells_the_transcript_option_the_same_way` | `tests/options.rs` | `SPEC-MOK-003`'s byte-identity obligation extended to the new shared option, asserted across both targets rather than within one |
+| `the_replay_source_with_no_port_is_refused_on_the_first_tick` | `tests/replay.rs` | rule 20.8 through this host: a selected source with no port refuses rather than borrowing another source's decision, and rule 9.7 is why there is no run left to fall back to |
+| `a_source_that_decides_for_itself_needs_no_port` | `tests/replay.rs` | rule 20.9's other side: a port is ignored under the four sources that decide for themselves, exactly as an absent record sink is, and is not an error |
+| `one_port_serves_the_whole_run_and_is_never_rebuilt` | `tests/replay.rs` | rule 20.4.1: one port is lent for the run, so the transcript cursor, the accumulated cost and the fallback count are the run's and not a tick's |
+| `a_port_failure_ends_the_run_in_the_ports_own_words` | `tests/replay.rs` | rules 12.4 and 19.7: a replay that cannot satisfy an opportunity fails in the port's own diagnosis, and the engine adds no words of its own to a failure it cannot diagnose |
+
+The table above lists **eleven** rows against ten arrivals, because `the_usage_text_states_that_this_host_only_replays`
+and `every_target_spells_the_transcript_option_the_same_way` are both `tests/options.rs`'s and both counted once:
+`tests/options.rs` moves by **five** and `tests/replay.rs` arrives with **four**, which with `tests/authority.rs`'s one
+is the ten. The count is stated this way rather than left to a reader's addition because five plus four plus one is the
+only arithmetic that reaches 120 + 10 = **130**.
+
+**`tests/replay.rs` is a new file of this tier and rule 9's own text admits it**: "A further file may be added when a
+further public subject appears." The subject is **the observer as a host of the decision port** — `REQ-MOK-077`'s
+division, which belongs to no file above: its cases are neither argument handling nor frame content, and placing them in
+`tests/options.rs` would have made that file's subject line false while hiding the one target whose existence is the
+requirement. The observer's public-tier target count therefore moves from **eight to nine**, for
+the first time since this rule was written, and rule 11's sentence that names it moves with it. All ten reach the code as
+`use mokiterions_tui::…`, so rule 8 places them here. **Rule 6's interface does move at this candidate — by one item and
+one public field, to 95 items, 26 public fields and 121 `pub` lines — and none of the ten is the reason.** Rule 6 records
+the growth, the requirement behind each arrival and the three measured alternatives; what belongs here is only that the
+**Growth** clause's "A test is never that requirement" holds of these ten. `Observer::with_port` is `pub` because
+`mokiterions-tui/src/main.rs` is a separate crate and is the target that opens the transcript, and
+`Options::transcript_path` is `pub` because that target reads it; the four cases in `tests/replay.rs` call the constructor
+the binary already calls, which is the opposite of an item widened to be reached. `authority.rs` stays at 5 items, measured
+rather than assumed: the fifth source's identifier is a new arm of an existing `match`, the row that presents it is derived
+from that function, and the list of sources the overlay walks is a function-local `const`. **No approved figure is
+contradicted**: the 118 stands in the paragraph above as the figure of the tree it names and is not edited.
+
 ### 10. Internal tier
 
 Located in a `#[cfg(test)]` module inside the crate, beside the code it covers:
 
 | Location | Tests | Why they cannot move |
 |---|---|---|
-| `mokiterions-tui/src/render.rs` | 20 | assert drawing internals; the module declares 55 private items — 34 functions and 21 constants — against 2 public ones, and 7 of the 20 additionally reach a hook |
+| `mokiterions-tui/src/render.rs` | 29 | assert drawing internals; the module declares 60 private items — 36 functions and 24 constants — against 2 public ones, and 8 of the 29 additionally reach a hook |
 | `mokiterions-tui/src/verification.rs` | 9 | reach several modules **and** a hook, so they belong to no single module's tier and cannot leave the crate |
 | `mokiterions-tui/src/state.rs` | 21 | 3 use a hook; 1 asserts a private detail of the state type; 1 calls the private `ingest` directly and then renders through a hook; 16 name the `pub(crate)` retained profile, its kind enumeration or its three accessors, none of which exists in the build a public-tier test links |
 | `mokiterions-tui/src/main.rs` | 8 | every one requires a private item of the binary: 4 name `tick_interval`, `due`, `idle_for` or `report` directly, and 4 reach the start-up function and the private `Launch` type through two helpers in the test module |
-| **Total** | **58** | |
+| **Total** | **67** | |
 
 `mokiterions-tui/src/render.rs` reads 17 rather than 12 as corrected for `master`'s `WO-MOK-007`. Its five arrivals
 are `the_survival_bands_are_the_three_the_rule_fixes`, `banding_changes_no_character_of_an_entry`,
@@ -686,10 +765,64 @@ with every row of the table above unchanged, `src/render.rs`'s 20 tests and 55 p
 arrival is a public-tier test, and its change to `src/options.rs` adds a single private function and no
 `#[cfg(test)]` module, so the paragraph above still holds as written: that module declares no internal-tier test.
 
+`mokiterions-tui/src/render.rs` reads **29** rather than 20 and the total **67** rather than 58, as corrected for
+`WO-MOK-025`. **Only one of the nine is this work order's**, and the eight are separated from it rather than absorbed,
+on the precedent of the rule 11 paragraph that reported an engine figure "one higher … and the one is not this work
+order's". Measured at three revisions rather than inferred: `master` at `3ca2028` carries 20, the merge base `2a93914`
+carries **28**, and the candidate carries **29**. The eight between the first two are `master`'s own gauge and footer
+work, arriving on this chain through a merge this work order did not make, and the correction was owed from that merge
+rather than from here. This work order's one arrival:
+
+| Added | Where, and why it cannot move |
+|---|---|
+| `the_authority_overlay_shows_every_source_at_a_width_that_would_have_cut_one` | `src/render.rs`: `SPEC-MOK-007` rule 18.5's row is now one line per source, and the claim is that a 132-column terminal shows all five rather than four and a truncation. The overlay renders a paragraph that truncates rather than wraps, so the case reaches the drawn cells through the `#[cfg(test)]` snapshot hook and reads them at a width that would have cut the single-line form. No public entry point yields the overlay's cells at a chosen width |
+
+**So the hook figure of that row moves from 7 of 20 to 8 of 29**, measured at both revisions: seven of the twenty-eight
+at `2a93914` reach one of the four hooks and eight of the twenty-nine do at the candidate, so the arrival is a hook user
+and none of `master`'s eight is. The row's private-item count moves from 55 to **60** — **36** functions and **24**
+constants — and **all five of those are `master`'s too**, measured the same way: 34 and 21 on the tree that merged
+`3ca2028`, 36 and 24 at `2a93914`, and 36 and 24 unchanged at the candidate. **This work order adds no declaration to
+this module at all.** The five `Policy` values the overlay's row iterates are a `const` local to `authority::table`
+rather than a module-level item — deliberately, as that function records — so they are in none of these counts and in
+rule 6's none either.
+
+**The other three rows are re-measured unmoved**: `src/verification.rs` **9**, `src/state.rs` **21** and `src/main.rs`
+**8**, so the total is 29 + 9 + 21 + 8 = **67**. `src/main.rs`'s eight are unmoved although this host gains an option:
+`--transcript-path` is validated in `src/options.rs`, which rule 9 sends to the public tier and which still declares no
+`#[cfg(test)]` module, and the four cases that reach the private start-up function assert the launch it produces rather
+than enumerating the options that reach it. `src/authority.rs` also still declares no `#[cfg(test)]` module, although
+this work order changes it: rule 8 sends both of its arrivals to the public tier, one to `tests/authority.rs` and one to
+this rule's `src/render.rs` row, and the second is here for the drawn cells rather than for the mapping.
+
+**One coincidence in these figures is stated so that it cannot be mistaken for a check.** `cargo test --lib -p
+mokiterions-tui` reports 58 at the merge base, which is this rule's own standing total, and the two 58s are unrelated:
+the rule's folds in `src/main.rs`'s eight, which is a separate cargo target that `--lib` never builds, while the
+harness's is 28 + 9 + 21 with `src/render.rs` already eight higher than the rule records. At the candidate the two
+diverge — 59 from `--lib` and 67 here — and the divergence is the correction rather than a defect. Rule 6's interface
+**does move**, to **95** items, **26** public fields and **121** `pub` lines, and rule 6 above records both arrivals with
+the requirement behind each; neither is in this tier and neither is reached by any test of it. The `state` row of that
+rule's table moves from 47 to 48 with `Observer::with_port`, and this rule's `src/state.rs` row is unaffected, because a
+public constructor is not an internal-tier test.
+
 ### 11. One invocation
 
-`cargo test` compiles and runs every tier of both packages. No tier requires a feature, an environment variable, an
-`#[ignore]` attribute, a separate command, a terminal, a pseudo-terminal, or a particular working directory.
+`cargo test` compiles and runs every tier of both packages. No tier requires a feature, an environment variable, a
+separate command, a terminal, a pseudo-terminal, or a particular working directory.
+
+**`#[ignore]` is admitted for instruments and for nothing else, as amended 2026-08-24.** An **instrument** is a `#[test]`
+function that asserts nothing and exists to produce something a human reads or commits: a capture, a generated constant,
+or a regenerated fixture. Three exist, all in the engine, and they are named here so that the class stays closed rather
+than becoming a habit — `print_base_commit_entropy_literals` and
+`the_four_existing_sources_entropy_state_at_every_tick_boundary` in `mokiterions-core/src/simulation.rs`, which print a
+generated constant and a base-commit capture, and `regenerate_the_committed_transcript` in
+`mokiterions-core/tests/replay.rs`, which rewrites a committed fixture. **No test that asserts anything carries the
+attribute**, so the obligation the paragraph above exists for is undisturbed: every tier's assertions still run on a bare
+`cargo test`, because an instrument has none to run. **The attribute is what keeps that true rather than what weakens
+it.** Without it `cargo test` would print roughly 20,000 lines of capture output, and one member of the suite would
+rewrite a committed file as a side effect — which would make the suite's verdict depend on the order its tests ran in and
+would quietly repair a divergence a reader needs to see. Each of the three states its own reason at its own attribute. An
+instrument is run by name, and this rule's figures therefore state **two** totals: the tests that exist and the tests
+that execute.
 
 `cargo test -p mokiterions-tui` runs the observer's three internal-tier targets and its eight public-tier targets and
 nothing else. `cargo test -p Mokiterions` runs the engine's two tiers and nothing else, with the observer excluded
@@ -893,6 +1026,56 @@ changes what those tests assert and not whether they exist. **No approved figure
 332 are true of `WO-MOK-020`'s candidate `f633eda`, which `VREC-MOK-023` binds, and the paragraph above keeps them.
 Measured by `cargo test --workspace --locked`, which reports **333 passed, 0 failed, 0 ignored** on this tree, and
 independently by counting `#[test]` per file, which agrees target by target.
+
+As corrected for `WO-MOK-025` and measured at its candidate commit, the observer's total is **197** and the engine's is
+**221**, so the workspace's is **418** — of which **415** execute, the other three being the instruments the opening of
+this rule admits. The observer's 197 is rule 10's internal **67** and rule 9's public **130**, which is the cross-check
+that makes 418 reproducible from the two tables above rather than only from this paragraph. The seventy-five arrivals,
+each measured from the target that runs it and none departing:
+
+| Where | Tests | What arrives |
+|---|---|---|
+| `mokiterions-core/src/simulation.rs` | 46 | the request's four blocks in the cacheable order and what each block may and may not say; the transcript's two record kinds, its head and its escaping round trip; one port lent for the run, its accumulated cost and its integer ceiling arithmetic; the fallback, its count and its distinction from a proposed `wait`; a replay reproducing the recorded run's bytes and the refusals a wrong prefix, a wrong opportunity, an early end or a surplus tail reach; that the four existing sources draw what the base commit drew; and the two entropy instruments — all under `SPEC-MOK-002` rules 7 and 8 rather than this rule |
+| `mokiterions-core/tests/replay.rs` | 10 | the committed transcript replayed through the binary into the recorded run's bytes, its own coverage of what the reading cases rest on, that it carries no credential and no conversion, the two refusals and their exit statuses, and the instrument that regenerates it — the same, and a **new** public-tier target of the engine |
+| `mokiterions-core/tests/cli.rs` | 7 | the transcript option validated and its value not retained, the binary and the parser spelling it the same way, the usage text stating when it is required and when it is refused, both refused combinations with their exit statuses, and help surviving both — the same |
+| `mokiterions-core/tests/process.rs` | 1 | that the library never opens the transcript it was told about, observed from outside the process — the same |
+| `mokiterions-tui/tests/options.rs` | 5 | rule 9 above |
+| `mokiterions-tui/tests/replay.rs` | 4 | rule 9 above, and a **new** public-tier target of the observer |
+| `mokiterions-tui/tests/authority.rs` | 1 | rule 9 above |
+| `mokiterions-tui/src/render.rs` | 1 | rule 10 above |
+
+**Sixty-four of the seventy-five are the engine's and eleven the observer's**, so the engine moves 157 → 221 and the
+observer 186 → 197. **The observer's before-figure is 186 and not the 176 the paragraph above records**, and the ten
+between them are `master`'s rather than this work order's: `tests/verification.rs` reads 29 at the tree that merged
+`3ca2028` and **31** at the merge base `2a93914`, and `src/render.rs` reads 20 and **28**, which is the +2 and +8 rule 10
+above separates arrival by arrival. Both are measured at both revisions rather than inferred. **This is not a
+contradiction of an approved figure**: the 176 and the 333 are true of the tree they name, and this rule's own closing
+sentence — that a work order which adds a test corrects these figures here — is what leaves the correction owed. The
+engine's 157 is unmoved across that same span and that too is measured rather than inferred from an unchanged total: no
+`#[test]` attribute is added or removed in any `mokiterions-core` file between `3ca2028` and `2a93914`. So 343 + 75 = 418
+from the merge base, and 333 + 10 + 75 = 418 from the approved figure, and both directions are stated because the first
+would fail if an arrival had been double-counted and the second if `master`'s ten had been.
+
+The engine's **221** is 143 internal and 78 public, under `SPEC-MOK-002` rules 7 and 8 rather than this rule; it is
+recorded here for the reason the earlier paragraphs record a split, which is that 418 is otherwise not reproducible. **The
+three instruments are all the engine's** — two in its internal tier and one in `tests/replay.rs` — so the engine executes
+218 of its 221 and the observer executes all 197. `mokiterions-core/tests/replay.rs` is admitted by `SPEC-MOK-002` rule
+8's closing sentence, in the same way `tests/naming.rs`, `tests/decisions.rs` and `tests/records.rs` were, and it takes
+the engine's public-tier target count from eight to nine under that rule rather than this one.
+
+**The observer's public-tier target count moves from eight to nine, for the first time since this rule was written**, and
+rule 9 above is the authority: `mokiterions-tui/tests/replay.rs` arrives under that rule's own "A further file may be
+added when a further public subject appears". Every sentence of this rule that states the count as eight is superseded by
+this paragraph and kept on the record; the sentence above naming "its eight public-tier targets" for
+`cargo test -p mokiterions-tui` reads **nine** as of this correction, and the observer's internal-tier count is unchanged
+at three. **No test is lost**: seventy-five arrive, none departs and none is renamed. The figures are measured by
+`cargo test --workspace --locked`, which reports **415 passed, 0 failed, 3 ignored** across the twenty-two test binaries
+it builds — eleven per package, of which the engine's `src/main.rs` declares no test and both packages' doc-test targets
+declare none — and independently by counting `#[test]` per file, which agrees binary by binary and yields 418 because the
+count reads the attribute and not the run. **Rule 6's interface is not unmoved**: it reads **95** items, **26** public
+fields and **121** `pub` lines at this candidate, against the 94, 25 and 119 the paragraphs above record, and rule 6 itself
+carries the two arrivals, the requirement behind each and the three measured alternatives. No test of either tier is the
+reason for either, which is that rule's **Growth** clause satisfied rather than waived.
 
 An observer test asserts a rendering claim against an in-memory character buffer. A test requiring a terminal, a
 pseudo-terminal, a screenshot, or a recording is not admissible in either tier; `SPEC-MOK-003` is the authority and
