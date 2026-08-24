@@ -2,7 +2,7 @@
 id = "VREC-MOK-024"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-025"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-24"
 updated = "2026-08-24"
@@ -23,6 +23,141 @@ conforms_to = ["VER-MOK-018"]
 This ready record binds retained evidence for `WO-MOK-025` to candidate commit `b0c18b8078aa7f26b645ce88140b6d3a152bbd65`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
 
 The record is intentionally created after the candidate commit it names, avoiding self-referential commit metadata.
+
+## The decision: transitioned to `verified` on 2026-08-24
+
+The repository owner, acting as accountable **assurance owner**, took this transition on 2026-08-24. Their
+instruction, verbatim:
+
+> i accept the verification record, you can commit it, push it, and I will merge the PR
+
+**`status` moved from `ready` to `verified`, and nothing else in the frontmatter moved.** The harness at 0.4.0
+has no `transition` subcommand, so the field was hand-edited in this commit; `commit`, `worktree_state`,
+`verified_at`, `artifact_snapshot_sha256`, `evidence_paths` and both relations stand exactly as
+`capture-verification` wrote them. So `verified_at = "2026-08-24T19:27:13Z"` is the **capture** time and not the
+decision time: the tool wrote it, and a transition that moves only `status` does not get to rewrite provenance
+to read better. The document's heading still says *Candidate* for the same reason.
+
+### The three assessments and the attestation, as recorded
+
+`VER-MOK-018` requires each assessment with the assessing role and the date, and **an unsigned assessment is not
+a recorded one**. **One person holds all three governance roles in this repository**, which is disclosed here
+rather than left to be inferred: no assessment was answered by implication from another.
+
+| # | Role | Assessment | Recorded answer | Evidence read |
+|---|---|---|---|---|
+| **M1** | assurance owner | the shared rules block carries no strategy | **Met — it carries no strategy.** Made 2026-08-24 over `4cfb297` | `manual-assessment.md` section 1: the block quoted in full and re-hashed inside its own fence, rule 4.4's four prohibitions, the mechanical half at `simulation.rs:11212` with its fourteen advice substrings and its own admission that it is "a weaker instrument than the rule", and a four-item case against |
+| **M2** | assurance owner | the block agrees with `SPEC-MOK-001` | **Met — it agrees.** Made 2026-08-24 over `4cfb297` | `manual-assessment.md` section 2: rule 4.2's direction of authority and a claim-by-claim cross-check of roughly thirty rows against `SPEC-MOK-001` line numbers |
+| **M3** | assurance owner | the published comparison is honest | **Not taken, and not this record's.** It belongs to case `L24`, which needs authorised live runs; it is `WO-MOK-027`'s | — |
+| **C6** | repository owner | the credential is not configured in the repository's automation secrets | **Attest — none is configured.** Made 2026-08-24 over `4cfb297` | `credential-attestation.md`: **0** secrets and **0** variables at repository Actions, at Dependabot and at each of the two environments, no organization scope because the account is a User, and three stated limits on what such a measurement can do |
+
+**The material was assembled before the decision and the records carry no recommendation.**
+`DECISION_RIGHTS.md` bars an implementation agent from self-approving an assessment unless separately named as
+the accountable owner, and it is not; recommending an outcome would have been that by the back door. Each
+section states the case against as well as the case for.
+
+**One finding in `manual-assessment.md` was in front of the owner when this decision was taken, and is repeated
+here because it is the kind of thing that goes silently stale.** The one sentence in the block that comes
+closest to a value statement, *"Nothing raises health."*, is also the one claim in M2's cross-check whose
+agreement with `SPEC-MOK-001` rests on the **absence** of a provision rather than on one. A later amendment
+adding a way to raise health would falsify that line of the block without contradicting any rule the block
+quotes, and **no mechanical check in this repository would catch it** — check `S7` keeps the block to one
+object and detects no drift in its content.
+
+### Three byte figures in the packet are wrong at the bound commit, and this is where they are corrected
+
+**This is a defect of the implementation agent's own, found while re-measuring for this transition, and it is
+reported rather than presented as sound.** `README.md`'s cost paragraph and section 1 of this record both state
+the packet as **5,251,984 bytes**. Re-measured at the bound commit, over the same 46 tracked files, in the
+worktree and independently over the staged blobs, it is **5,264,543 bytes**. Two further figures in the same
+paragraph are wrong by the same cause.
+
+| Figure | As stated | Measured at the bound commit | Wrong by |
+|---|---|---:|---:|
+| packet total | 5,251,984 | **5,264,543** | 12,559 |
+| `candidate/`, seventeen files | 368,481 | **372,283** | 3,802 |
+| the seven top-level files | 155,629 | **164,386** | 8,757 |
+| `base/full/`, five files | 4,537,713 | 4,537,713 | correct |
+| `analysis/`, five instruments | 119,243 | 119,243 | correct |
+| `base/full/`'s share of the total | 86 percent | 86.19 percent | correct |
+
+**The cause is fully accounted for, and it is a measurement taken at a state that was never committed.** The sum
+was taken after the two owner records were written but before three later edits: `manual-assessment.md` grew by
+286 bytes when three imprecise `SPEC-MOK-001` citations were corrected before committing, and the three packet
+files updated afterwards grew by 1,854, 3,802 and 6,617 — `README.md`, `candidate/verification-cases.txt` and
+`completion-report.md`. 286 + 12,273 = 12,559, and 3,802 + 8,757 = 12,559, so the two decompositions agree and
+nothing else moved.
+
+**The packet is not edited to repair it, and that is deliberate.** `README.md` is one of this record's
+`evidence_paths` and the bound commit's bytes are what was verified; a packet edited after a record binds it
+would no longer be the evidence the record names, which is a worse defect than a wrong figure disclosed. So the
+three figures stand wrong in `README.md` at this commit and are corrected here, in the artifact that governs
+them. A later reader who opens the packet alone will read 5,251,984; this record is the correction.
+
+**No figure that any verification case rests on is affected.** These are the cost of retaining the packet, not a
+measurement of the engine, the transcript or the replay. Nothing in `candidate/`'s captures, the manifests, the
+`REQ-MOK-068` matrix or the case account is downstream of them.
+
+### What this transition supersedes in the text below
+
+The sections that follow are the candidate's own case, left **unedited**, because they are the record of what
+was true when the decision was asked for and a transition adds a decision rather than rewriting the argument
+for it. Three statements in them are superseded by this section and by nothing else:
+
+1. **"46 tracked files, 5,251,984 bytes"**, in section 1. Read it as 46 tracked files and **5,264,543** bytes,
+   for the reason the subsection above gives.
+2. **"It does not verify. `status` is `ready`."**, the first bullet of section 8. It is verified, by the owner
+   and on this date.
+3. **The heading's word *Candidate*, and the paragraph above beginning "This ready record binds"**, which
+   `capture-verification` wrote and which says an assurance owner must still review and transition. That review
+   has happened. Both are left as the tool wrote them because this transition moves only `status`.
+
+Every other claim, figure and caveat below stands as written and is part of what is verified here — including
+the eight rows that are not a plain green, the ten entries that were not verified, the two structural gaps that
+remain recorded and open, and the disclosure that two captures were replaced rather than annotated.
+
+### The figures re-measured before the field moved
+
+A `verified` record can never be corrected, so this commit is the last point at which any figure in it could be
+fixed. Each was measured again at the bound commit, in this checkout, from the pinned 0.4.0 environment.
+**All but the packet's byte total are identical to what the record already states; that one is corrected
+above.** The four Rust gates were taken **on Windows**, which is stated because a gate reading is
+per-platform and this repository has two.
+
+| Re-measured | Result | Matches the record |
+|---|---|---|
+| `cargo fmt --all -- --check` | `exit=0` | yes |
+| `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | `exit=0`, no warning, no error | yes |
+| `cargo test --workspace --locked` | **422 passed, 0 failed, 3 ignored**, 25 result lines across 23 test binaries; the three ignored are `print_base_commit_entropy_literals`, `the_four_existing_sources_entropy_state_at_every_tick_boundary` and `regenerate_the_committed_transcript`, each an instrument | yes — identical to `candidate/gates.txt` |
+| `harnessctl validate` | PASS, **180** artifacts, 0 errors, 0 warnings, all four planes E0/W0 | yes |
+| `harnessctl preflight --work-order WO-MOK-025 --phase review` | PASS, work order reported as `implemented` | yes |
+| `evidence_paths` against `git ls-files` | 46 and 46, **equal as sets** | yes |
+| carriage returns across all 46 evidence files | **0** | yes |
+| the shared rules block, re-extracted from `simulation.rs` | 90 literals, 5,381 characters, 5,385 bytes, 90 line breaks, 2 em dashes, sha256 `39baca0f8665b17a519eb0b315443c667bdc1d6f5e9c90f343744303915a646a` | yes |
+| the block's quotation inside `manual-assessment.md` | the file's single `text` fence re-hashes to that same digest | yes |
+| everything outside `docs/` between `dbc9e6d` and the bound commit | **empty diff** | yes |
+| the packet's byte total | **5,264,543**, not 5,251,984 | **no — corrected above** |
+
+The identifier was also re-checked after a fetch against **every** local and remote ref rather than against the
+local maximum: across all **seventeen** refs in this clone — two local branches and fifteen remote refs,
+`origin/HEAD` included — the identifiers run `VREC-MOK-001` to `VREC-MOK-024` with no gap, and `VREC-MOK-024`
+appears on this branch alone.
+
+### What `verified` authorizes, and what it does not
+
+It authorizes nothing beyond itself. **No release, tag or publish** — that needs a `REL-` record and none is
+written. It does not discharge `E18`: `REPOSITORY_CONTEXT.md`'s amendment, which `ADR-MOK-007` requires, is
+drafted outside the repository and remains the repository owner's act, and it is the one escalation of twenty
+whose written outcome is still owed. It does not authorise a live run, which the standing instruction places
+behind the repository owner's explicit permission and which no artifact here supplies. It does not close the
+observer's untested path through the real `ReplayPort`, which stays recorded as a gap.
+
+The owner authorized the push of this branch in the same instruction and **reserved the merge to themselves**.
+The constraint is now load-bearing rather than advisory: a squash-merge produces a different commit object, and
+this record can be neither re-pointed at it nor corrected, because it is `verified`. **Merge, do not squash and
+do not rebase.** Merging a pull request below this one in a stack is enough to orphan the bound commit. If
+integration is taken as a squash anyway, the remedy is to supersede this record and write a successor with every
+field measured afresh.
 
 ## 1. What this record binds
 
