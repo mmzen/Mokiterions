@@ -728,9 +728,13 @@ could have been run here and was not.**
 Two structural gaps belong here rather than in the list above, because they are about the required list
 and about coverage rather than about a case being owner-gated:
 
-- **The required list's enumerated matrix omits L20 and L32** while its prose brings each in by half.
-  That is escalation **E12**, and it is the owner's to settle before a verification record can bind
-  anything.
+- **The required list's enumerated matrix omitted L20 and L32** while its prose brought each in by half.
+  That was escalation **E12**, and **the owner settled it on 2026-08-24**: the `**Matrix cases**`
+  enumeration now names `L20` *(in part)* and `L32` *(in part)*, and *Required verification*'s opening
+  sentence names the connector-path, live-mode and ceiling halves of `L32` rather than the connector half
+  alone. The defect was in the work order's wording rather than in coverage — the halves this stage can
+  run were run, and the halves it cannot are the two entries above. **This no longer blocks a verification
+  record**, which is why it is recorded here as settled rather than removed.
 - **The observer's path through the real `ReplayPort` over a real file has no automated test.** It is
   exercised by this packet's captures alone. L31 uses a scripted stub, for the reason its own header
   gives, and that reason is sound; the consequence is still a gap and is recorded as one.
@@ -976,6 +980,12 @@ after this one.
   **Ruled: draft it as a diff for the owner to approve or replace.** Drafting is not approving, and the
   draft is held outside the file until the owner acts on it. It stays in the list of acts that are not the
   implementation agent's, below, unchanged.
+  The draft was written on 2026-08-24 and is **held outside this repository**, not under `docs/`, so that
+  nothing in the tree reads as though the owner had acted and so that the worktree stays clean for the
+  capture a verification record needs. It replaces one bullet — *Restricted or sensitive paths* — carrying
+  the existing sentence character for character and adding the operational fact `ADR-MOK-007` decision 5
+  states. It is not evidence and is not listed as evidence; it is a proposal awaiting an owner act, and this
+  packet records only that it exists.
 
 ### The acts that are not the implementation agent's
 
