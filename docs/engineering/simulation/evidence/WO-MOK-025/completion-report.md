@@ -14,16 +14,20 @@ order exactly, so a numbered heading below is that clause and not a topic chosen
 | Evidence packet | `docs/engineering/simulation/evidence/WO-MOK-025/`, whose `README.md` is the reader's entry point |
 
 **This work order is not complete and does not claim to be.** All fourteen *In scope* items are built.
-Of the sixty-seven required verification rows, fifty-nine pass, three are the assurance owner's
-assessments and are not mine to make, three pass in part and are escalated for the part that does not
-run, one passes and is escalated anyway, and one does not apply at this stage. **Nineteen escalations were raised.
-Seven were resolved as they arose; eleven were put to the owner in one pass on
-2026-08-24 and all eleven were ruled in the turn the question was asked; the nineteenth was raised after
-them, at `dbc9e6d`, and is open** (item 11). What the rulings
+Of the **sixty-eight** required verification rows — sixty-seven when this report was first written, plus
+**L34**, which the owner's ruling on `E19` added to `VER-MOK-018` on 2026-08-24 — sixty pass, three are the
+assurance owner's assessments and are **recorded** rather than outstanding, three pass in part and are
+escalated for the part that does not run, one passes and is escalated anyway, and one does not apply at this
+stage. **Twenty escalations were raised. Seven were resolved as they arose; eleven were put to the owner in
+one pass on 2026-08-24 and all eleven were ruled in the turn the question was asked; `E19` and `E20` were
+raised after those rulings — one out of the defect CI found, one out of a measurement taken while assembling
+the material for `C6` — and both were ruled later the same day** (item 11). What the rulings
 authorized is written; what they left to an owner is in the section after them, and one of those is
 `E15`, deferred to `WO-MOK-026` and recorded as untriggered rather than met. `VER-MOK-018`'s **C6** — the attestation
-that no provider credential is configured in the repository's automation secrets — is outstanding, and
-it is the single fact the cost containment rests on. The transition of this work order to `implemented`
+that no provider credential is configured in the repository's automation secrets — **is attested**: the owner
+made that statement on 2026-08-24 and `credential-attestation.md` retains it beside the measurement that
+corroborates it. It remains the single fact the cost containment rests on, and a retained zero is not a
+substitute for it. The transition of this work order to `implemented`
 is the engineering owner's act; the verification decision and its record are the assurance owner's; no
 verification record for `WO-MOK-025` exists yet.
 
@@ -179,9 +183,12 @@ exits `1` after **12,859 bytes** on both.
   output, and the one that would have named the defect was never strict enough to fire at all. It now
   asserts the missing file's case exactly: exit `1`, empty standard output, the host's message naming the
   path, and no usage text.
-- **No case in the required list covers this**, which is escalation **E19** below. `L32` covers the
-  parser's exit `2` and `L8` covers a mismatch found while replaying; a transcript the platform refuses
-  has no case on either host. Running the whole of `VER-MOK-018` would not have found this.
+- **No case in the required list covered this**, which was escalation **E19** below. `L32` covers the
+  parser's exit `2` and `L8` covers a mismatch found while replaying; a transcript the platform refuses had
+  no case on either host, so running the whole of `VER-MOK-018` would not have found this. **The owner ruled
+  on 2026-08-24 that the case be added**, and `L34` is it: both hosts, exit `1`, empty standard output, the
+  host's own message prefix, no tick started, and exercise on more than one platform as a pass condition. The
+  gap is closed for the contract; the sentences above stand as the account of what it cost while it lasted.
 - **The observer's half had no automated test of any kind**, and its failure was the worse of the two — a
   live observer over a transcript that cannot be read, with nothing to end it but a key press. That gap
   was already recorded in this packet before the defect was found; the defect is what it costs.
@@ -668,6 +675,17 @@ own: *"A case that cannot be run is escalated, not omitted."*
     acts and are not mine to make. One does not apply at this stage. No required case is omitted,
     and none is reported green on evidence that does not reach it.
 
+**Amended 2026-08-24, at the owner's later rulings of that day.** The quoted `RESULT` above is the account
+at the reading it names and is left as written. Three things in it have since moved. `L34` was added to
+`VER-MOK-018` and passes on evidence that already existed, so the account is **68 rows and 60 pass**; **M1**
+and **M2** are **recorded**, in `manual-assessment.md`, and with **M1** so is **L27**; and **C6** is
+**attested**, in `credential-attestation.md`. `candidate/verification-cases.txt`'s third amendment block
+carries the same three facts where a reader of the rows will meet them, and adds this row:
+
+| row | case | state | why |
+|---|---|---|---|
+| **L34** | a transcript the platform refuses | PASS | added to the required list on 2026-08-24 by the owner's ruling on `E19`. Satisfied by evidence measured on Windows and on Linux at `dbc9e6d`, none of it taken after the ruling: the directory case in `mokiterions-core/tests/replay.rs`, whose assertion is now the missing file's case exactly, and `candidate/replay-identity.txt`'s case `R3c` and row `O6` |
+
 The eight rows that are not a plain green:
 
 | row | case | state | why |
@@ -676,8 +694,8 @@ The eight rows that are not a plain green:
 | **L16** | every exchange retained | PASS IN PART | not exercised: "a retried exchange appears as two records". A retry needs transport retry, which this stage does not build |
 | **L17** | the transcript's constraints | PASS IN PART | the fourth clause, "no value outside the closed alphabet", was **withdrawn** by rule 11.4.1 as amended 2026-08-24 and replaced by a round trip through `escape_transcript_text`. `VER-MOK-018` still states the withdrawn clause. Stop condition 6; **E9**. What holds instead is checked, in-crate |
 | **L30** | the port is lent, not rebuilt | PASS, figure disclosed | both halves hold. **The ceiling is eighteen exchanges, not the case's two**, deliberately; **E10** below and `candidate/per-tick-lending.txt` in full |
-| **L27 / M1** | the prompt carries no strategy | NOT MINE TO MAKE | one assessment seen from two sections, and it is the assurance owner's. `DECISION_RIGHTS.md` is explicit that an implementation agent may not self-approve an assessment unless separately named as the accountable owner, and it is not |
-| **M2** | the block agrees with `SPEC-MOK-001` | NOT MINE TO MAKE | also the assurance owner's. Nothing in this packet detects drift between the block and those rules automatically; the assessment is the mechanism |
+| **L27 / M1** | the prompt carries no strategy | **RECORDED 2026-08-24** | one assessment seen from two sections, and it was the assurance owner's to make: `DECISION_RIGHTS.md` is explicit that an implementation agent may not self-approve an assessment unless separately named as the accountable owner, and it is not. The owner made it on 2026-08-24 over `4cfb297` — *"Met — it carries no strategy"* — and `manual-assessment.md` is the record item 7 requires, with the block quoted in full |
+| **M2** | the block agrees with `SPEC-MOK-001` | **RECORDED 2026-08-24** | also the assurance owner's. Nothing in this packet detects drift between the block and those rules automatically; the assessment is the mechanism. Made 2026-08-24 — *"Met — it agrees"* — and recorded in `manual-assessment.md` with the claim-by-claim cross-check against `SPEC-MOK-001` behind it |
 | **S2** | the connector's dependency surface | N/A | no connector exists, canned or otherwise, so there is no surface to check. The required list states this exclusion |
 | **C1** | no credential in any produced byte | PASS IN PART | cannot be run: "a test that sets a synthetic credential value and asserts it appears in no produced byte". No code path reads a credential, so there is no value to set and no byte for it to appear in. Reported as a FINDING by the instrument itself, so the row appears in its own summary table and cannot be lost |
 
@@ -770,10 +788,17 @@ could have been run here and was not.**
 - **L28** — the retained authorization record for a live run. There is no live run to authorise, and
   whether an authorisation is genuine is an owner attestation and not a check.
 - **C6** — the attestation that the credential is not configured in the repository's automation
-  secrets. **No check can see this.** `scripts/check_workflow_credentials.py` says so in its own output:
-  "NOT CHECKABLE HERE: whether a provider credential is present in the repository's Actions secrets."
-  `VER-MOK-018` calls it the single fact the whole cost containment rests on. It is the repository
-  owner's statement to make.
+  secrets. **It was the repository owner's statement to make, and it was made on 2026-08-24** —
+  *"Attest — none is configured"* — and is retained in `credential-attestation.md`. It stays in this list
+  because it is still not a check that was run: no check inside this repository can make it, which is what
+  `scripts/check_workflow_credentials.py` says in its own output — "NOT CHECKABLE HERE: whether a provider
+  credential is present in the repository's Actions secrets." **`VER-MOK-018`'s broader claim that "no check
+  can see this" was withdrawn the same day**, as escalation `E20`: secret *names* are enumerable through the
+  hosting platform's API at every scope a workflow can read a secret from, measured **0** at repository
+  Actions secrets, Dependabot secrets, Actions variables and each of the two environments, with no
+  organization scope because the account is personal. A *value* is what no check can see, and no measurement
+  covers a moment other than its own, so the measurement corroborates the attestation and does not make it.
+  `VER-MOK-018` still calls it the single fact the whole cost containment rests on, and it is.
 - **L20**, live half — a live-mode selection with no credential present. Needs the live-mode flag.
 - **L32**, three halves — the connector-path, live-mode and ceiling cases. Need options this stage does
   not add.
@@ -782,8 +807,8 @@ could have been run here and was not.**
 - **A4** — the money runs out. Needs a declared ceiling, which needs the option that declares one.
 - **A7**, refusal half — needs the connector-path option.
 
-Two structural gaps belong here rather than in the list above, because they are about the required list
-and about coverage rather than about a case being owner-gated:
+Three structural gaps belong here rather than in the list above, because they are about the required list
+and about coverage rather than about a case being owner-gated. Two are recorded and one is closed:
 
 - **The required list's enumerated matrix omitted L20 and L32** while its prose brought each in by half.
   That was escalation **E12**, and **the owner settled it on 2026-08-24**: the `**Matrix cases**`
@@ -795,6 +820,11 @@ and about coverage rather than about a case being owner-gated:
 - **The observer's path through the real `ReplayPort` over a real file has no automated test.** It is
   exercised by this packet's captures alone. L31 uses a scripted stub, for the reason its own header
   gives, and that reason is sound; the consequence is still a gap and is recorded as one.
+- **The required list had no case for a transcript the platform refuses**, which was escalation **E19**, and
+  this one is **closed rather than recorded**: the owner ruled on 2026-08-24 that `VER-MOK-018` gain the
+  case, and `L34` is it. The gap was real while it lasted — running the required list in full would not have
+  found the defect `dbc9e6d` fixes — and the case rests on evidence measured on both platforms at that
+  commit, so no coverage is asserted ahead of its evidence.
 
 ## 10. Every local decision taken
 
@@ -898,9 +928,11 @@ assurance owner's.
 
 ## 11. Every escalation raised, and how it was resolved
 
-**Nineteen were raised. Seven were resolved as they arose. Eleven were put to the owner in one pass on
+**Twenty were raised. Seven were resolved as they arose. Eleven were put to the owner in one pass on
 2026-08-24 — each with its measurement displayed — and all eleven were ruled in the turn the question was
-asked. `E19` was raised after those rulings, at `dbc9e6d`, out of the defect CI found, and is open.** A ruling is not the same as the work it authorizes: each entry below states the
+asked. `E19` and `E20` were raised after those rulings, out of the defect CI found and out of a measurement
+taken while assembling the material for `C6`, and both were ruled later the same day. All twenty are
+settled.** A ruling is not the same as the work it authorizes: each entry below states the
 ruling and what was written under it, and the acts that remain nobody's but an owner's are in the section
 after this one.
 
@@ -1044,6 +1076,29 @@ after this one.
   behaviour itself is now tested and measured on both platforms; what is missing is the contract's row
   for it. `candidate/verification-cases.txt` raises the same escalation where a reader of the required
   list will meet it.
+  **Ruled 2026-08-24, over commit `4cfb297`: add the case.** The deferral to `WO-MOK-026` was put beside it
+  and **declined**. `VER-MOK-018` gains `L34` under `REQ-MOK-077` — a host refusal in the shape of `L33`
+  rather than a content comparison in the shape of `L8` — with the exit code, the empty standard output and
+  the host's own message prefix as its conditions, the message text left to the platform, and exercise on
+  more than one platform as a pass condition rather than a precaution. `WO-MOK-025`'s *Matrix cases*
+  enumeration names it in the same commit, `bf027c8`, so the list and the matrix agree. The case passes on
+  evidence that already existed at `dbc9e6d`, and nothing was measured for it after the ruling.
+- **E20 — `VER-MOK-018`'s `C6` claims more ignorance than the repository is in.** Raised 2026-08-24 while
+  assembling the material for the attestation itself. `C6` said "No check can see this" of the credential's
+  presence in the repository's automation secrets. Secret **names** are enumerable through the hosting
+  platform's API at every scope a workflow can read a secret from, so the clause is stronger than the truth.
+  The restatement of the same idea under *What a green build does and does not establish* is **not** wrong:
+  it carries the qualifier "inside the repository" and is correct as written, so only `C6`'s own bullet is at
+  issue. Not repaired when found — stop-and-escalate condition 6 forbids amending an approved artifact on an
+  implementation agent's judgement, and this is the wording of the one check the whole cost containment rests
+  on.
+  **Ruled 2026-08-24: amend `C6`'s wording.** The clause is withdrawn and replaced by the measurement —
+  repository Actions secrets, Dependabot secrets, Actions variables and each of the two environments, **0**
+  at every one, and no organization scope because the account is personal — together with the two things that
+  measurement does not do: a **value** is what no check can see, and no measurement covers a moment other
+  than the one it was taken at. **So it corroborates the attestation and does not make it.** `bf027c8` writes
+  the amendment; `credential-attestation.md` retains the measurement and states all three of its limits,
+  including that a reading of a live remote surface is not re-derivable by a later reader as it was taken.
 - **E18 — `REPOSITORY_CONTEXT.md`'s amendment,** which `ADR-MOK-007` requires and which is the
   repository owner's to write.
   **Ruled: draft it as a diff for the owner to approve or replace.** Drafting is not approving, and the
@@ -1060,16 +1115,21 @@ after this one.
 
 Listed here so that no reader takes this report for a completion.
 
-- **The transition of `WO-MOK-025` to `implemented`** — the engineering owner's. It needs its own commit,
-  and it must land before any verification record can bind a commit.
-- **The verification decision and its record** — the assurance owner's. No verification record for this
-  work order exists.
-- **The M1 and M2 assessment records** — the assurance owner's. Required evidence item 7 asks for a
-  record naming the owner and the date, with the shared rules block quoted in full. What is prepared for
-  them is in item 7 above and is not a substitute for them.
-- **C6's attestation** — the repository owner's, and it is the fact the cost containment rests on.
-- **`REPOSITORY_CONTEXT.md`'s amendment** — the repository owner's, per `ADR-MOK-007`.
-- **`E19`'s ruling** — whether `VER-MOK-018` gains a case for a transcript the platform refuses, or the
-  gap is recorded and deferred. The behaviour is implemented, tested and measured on two platforms; what
-  is missing is the required list's row for it, and a required list is not extended by the agent whose
-  code it verifies.
+- **The transition of `WO-MOK-025` to `implemented`** — the engineering owner's, and **decided on
+  2026-08-24**. It needs its own commit, and it must land before any verification record can bind a commit,
+  so the transition commit follows the one this report is amended in. At this commit the work order is still
+  `in_progress`.
+- **The verification decision and its record** — the assurance owner's, and **taken on 2026-08-24** on the
+  record drafted for it. `VREC-MOK-024` does not exist in the tree at this commit: `capture-verification`
+  binds a commit that must already contain this packet and the `implemented` transition, so the record is
+  captured later and its `verified` transition carries the owner's acceptance verbatim.
+- **The M1 and M2 assessment records** — the assurance owner's, and **made on 2026-08-24**. Required
+  evidence item 7 asks for a record naming the owner and the date, with the shared rules block quoted in
+  full; `manual-assessment.md` is that record. What was prepared for them is in item 7 above and was not a
+  substitute for them.
+- **C6's attestation** — the repository owner's, **made on 2026-08-24** and retained in
+  `credential-attestation.md`. It is the fact the cost containment rests on.
+- **`E19`'s and `E20`'s rulings** — both taken on 2026-08-24 over commit `4cfb297`, and both written in
+  `bf027c8`: `VER-MOK-018` gains `L34`, and `C6`'s wording is corrected.
+- **`REPOSITORY_CONTEXT.md`'s amendment** — the repository owner's, per `ADR-MOK-007`. **Still
+  outstanding.** Drafted as a one-bullet diff and held outside the repository; drafting is not approving.

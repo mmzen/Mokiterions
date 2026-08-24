@@ -221,13 +221,24 @@ repository rather than a build, so a reader who distrusts them can re-derive the
   - **`analysis/observer-screen.py`** — the observer's panes read out of the drawn screen region by region.
   - **`analysis/lending-cursor.py`** — the committed transcript's per-tick record layout, measured from
     outside the crate, which is the outside-in half of `L30`.
+- **`manual-assessment.md`** and **`credential-attestation.md`** — the **three owner acts** of 2026-08-24
+  that this packet retains, and the only two files here that are neither a measurement nor an instrument.
+  `manual-assessment.md` is required evidence item 7: the assessment records for **M1** — the shared rules
+  block carries no strategy — and **M2** — it agrees with `SPEC-MOK-001` — each naming the assurance owner
+  and the date, with the block quoted in full and its digest given so that the quotation is checkable
+  against the constant. `credential-attestation.md` is `VER-MOK-018`'s **C6**, which that contract requires
+  to be "retained with the evidence": the repository owner's statement that no provider credential is
+  configured in this repository's automation secrets, together with the measurement that corroborates it
+  and the three limits on what a measurement of that surface can do. Neither file verifies anything, and
+  the judgement in each is the owner's rather than the agent's — the material was assembled before the
+  decision and states the case against.
 - **`completion-report.md`** — the work order's completion report, in the eleven-item order
   `WO-MOK-025`'s *Completion report format* fixes. It cites the captures above rather than restating
   their figures, and it is the account of a candidate written by the agent that wrote the code: it
-  verifies nothing. It names all nineteen escalations — the seven resolved as they arose, the eleven the
-  owner ruled in one pass on 2026-08-24, each with what was written under its ruling, and `E19`, raised
-  after those rulings out of the defect CI found — and the acts that belong to an owner and are still
-  outstanding.
+  verifies nothing. It names all twenty escalations — the seven resolved as they arose, the eleven the
+  owner ruled in one pass on 2026-08-24, each with what was written under its ruling, and `E19` and `E20`,
+  raised after those rulings and ruled later the same day — and the acts that belong to an owner, of which
+  one is still outstanding.
 
 ## Retention: what is kept whole, what is kept as a digest, and why
 
@@ -261,9 +272,17 @@ here.** It already exists in the repository at
 second copy would only be free to drift from the first. The identity is measured in
 `base/wo-019-comparison.txt` section 3.
 
-**What the packet costs, measured.** 43 tracked files, 5,096,271 bytes, of which `base/full/`'s five whole
-streams are 4,537,713 — 89 percent. The candidate side is 349,382 bytes across seventeen files and the
-instruments are 119,243 across five.
+**What the packet costs, re-measured 2026-08-24.** **46 tracked files, 5,251,984 bytes**, of which
+`base/full/`'s five whole streams are 4,537,713 — 86 percent. The candidate side is 368,481 bytes across
+seventeen files, the instruments are 119,243 across five, and the seven files at the top of this directory
+are 155,629.
+
+**Three figures in that sentence were stale, and the correction is stated rather than made silently.** It
+read "43 tracked files, 5,096,271 bytes … The candidate side is 349,382 bytes", and it was true when it was
+written. `completion-report.md` was added to the packet after it, so the count was one low; the two captures
+re-run and replaced at `dbc9e6d` moved the candidate side's bytes; and the two owner records described under
+*Contents* are the 45th and 46th files. The `base/full/` figure never moved, so its share of the total fell
+from 89 to 86 percent without a byte of it changing.
 
 A reviewer cannot inspect an arbitrary cell's output without re-running the capture. That is real, and it is
 accepted because a digest already establishes what reading the cell would. Everything not retained is
@@ -348,9 +367,10 @@ tree and comes back out of a checkout unchanged, so re-hashing it reproduces a d
 checkout. That is the whole point, and it makes the endings a file is written with the endings it keeps
 forever.
 
-**Every one of the 43 tracked files in this directory is `LF`, and none contains a `CR`** — re-measured over
-the whole packet on 2026-08-24, counting carriage returns per file rather than matching them per line, which
-is the form that does not report a file's line count as its `CR` count. That matches `WO-MOK-019`, the
+**Every one of the 46 tracked files in this directory is `LF`, and none contains a `CR`** — re-measured over
+the whole packet on 2026-08-24, and again over the two owner records as they were written, counting carriage
+returns per file rather than matching them per line, which is the form that does not report a file's line
+count as its `CR` count. That matches `WO-MOK-019`, the
 packet this one is shaped after, and it is required rather than stylistic for the five `.sh` files, which do
 not run with `CRLF`. `WO-MOK-024`'s packet is `CRLF` throughout for the same reason in reverse — its files
 were written that way and cannot now be changed.

@@ -50,6 +50,57 @@ and the suite reading below was taken on Windows and does not say so.
   whose assertion was too weak to fire. No row below is changed, because there is no row to
   change. The completion report carries E19 with what it would take to close it.
 
+AMENDED A THIRD TIME 2026-08-24, at the owner's rulings later that day. Rows are never rewritten in
+this file, so the rows below stand as taken and what changed is recorded here.
+
+  E19 IS SETTLED, AND NOT THE WAY THE PARAGRAPH ABOVE LEFT OPEN. The owner ruled over commit
+  4cfb297 that VER-MOK-018 gain the case rather than that the gap be recorded and deferred to
+  WO-MOK-026; the deferral was put beside it and declined. The case is L34, under REQ-MOK-077: a
+  transcript path naming something the platform will not read exits 1, writes nothing to standard
+  output, names the path on standard error behind the host's own prefix, and starts no tick -- in
+  both hosts, and exercised on more than one platform as a pass condition rather than as a
+  precaution. Commit bf027c8 writes it into VER-MOK-018's matrix and its amendment record, and
+  names it in WO-MOK-025's Matrix cases enumeration in the same commit, so the list and the matrix
+  agree.
+
+  L34  a transcript the platform refuses                                                PASS
+       Its evidence existed already, measured on both platforms at dbc9e6d. Nothing was read for
+       it after the ruling, which is what keeps the case from asserting coverage ahead of its
+       evidence:
+       mokiterions-core/tests/replay.rs   the directory case, whose assertion is now the missing
+         file's case exactly - exit 1, empty standard output, the host's message naming the path -
+         where before it asserted only that the exit code was not 0. That weakness is why the
+         defect reached CI rather than a gate.
+       candidate/replay-identity.txt   case R3c, which pins the engine host's directory refusal on
+         Windows and on Linux, and row O6, which records that the observer's refusal was true of
+         Windows only before the fix.
+       candidate/gates.txt   the third amendment: the suite green on both platforms at dbc9e6d.
+
+  SO THE ACCOUNT IS 68 ROWS AND 60 PASS, NOT 67 AND 59. The RESULT block below was written before
+  this ruling and is left as written, because it is the account at the reading it names.
+
+  M1 AND M2 ARE RECORDED, AND C6 IS ATTESTED. All three were owner acts, made 2026-08-24 over
+  commit 4cfb297, and all three are now files in this packet rather than rows waiting on someone:
+
+       M1  the shared rules block carries no strategy   RECORDED - met     manual-assessment.md
+       M2  the block agrees with SPEC-MOK-001           RECORDED - met     manual-assessment.md
+       C6  no credential in the automation secrets      ATTESTED           credential-attestation.md
+
+  L27 is M1 seen from the required list, so it is recorded with it. The rows below still read NOT
+  MINE TO MAKE, and that stays correct as a statement about the agent that wrote them: it did not
+  make them, and DECISION_RIGHTS.md is why. WO-MOK-025 required evidence item 7 is what
+  manual-assessment.md satisfies, block quoted in full.
+
+  E20 IS SETTLED TOO, AND IT CORRECTS ONE SENTENCE OF THIS FILE'S OWN ACCOUNT. The entry under What
+  was not verified reads "C6 ... No check can see this", quoting VER-MOK-018 as it then stood. That
+  clause is now withdrawn. Secret NAMES are enumerable through the hosting platform's API at every
+  scope a workflow can read a secret from, measured 0 at repository Actions secrets, Dependabot
+  secrets, Actions variables and each of the two environments, with no organization scope because
+  the account is a personal one. A VALUE is what no check can see, and no measurement covers a
+  moment other than the one it was taken at, so the measurement corroborates the attestation and
+  does not make it. C6 stays in that list because it is still not a check that was run.
+  credential-attestation.md carries the measurement and states all three of its limits.
+
     RESULT: 67 rows, one per case and per required half-case. 59 pass, one of those against a
     figure this work order and VER-MOK-018 both state differently (L30's ceiling: eighteen
     exchanges rather than two, deliberately, and the row says why). One passes and is
