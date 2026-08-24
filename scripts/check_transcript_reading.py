@@ -4,8 +4,10 @@
 Repository-owned, absent from `.engineering-harness.lock`, decides nothing, writes
 nothing, reaches no network and reads no credential of its own.
 
-This carries `VER-MOK-018` cases **L4**, **L5**, **L6**, **L12**, **L13**, **L14** and
-**L15a**, every one of which states its condition *"over a retained transcript"*. The
+This carries `VER-MOK-018` cases **L4**, **L5**, **L6**, **L12**, **L13**, **L14**,
+**L15a** and **L17**, every one of which states its condition over a retained transcript
+— seven of them in those words, and `L17` because a constraint on what a transcript may
+contain is a statement about the file and not about the composition. The
 engine's own tiers already check the composition of a request as the engine builds it —
 `block_d_offers_exactly_what_the_engine_would_accept_from_the_observation` puts every
 targeted verb to the engine's own validator, and `block_a_is_one_string_for_the_run_…`
@@ -22,7 +24,7 @@ language, sharing nothing with the engine — which is what `L4` means by *"an
 independently written enumerator"*. A helper shared with the code under test would agree
 with it by construction, and a reviewer could not tell that from agreement.
 
-The seven checks:
+The eight checks:
 
   **L4 — the enumeration is complete.** For every exchange, the enumerated set equals the
   set this file computes from that request's observation: `wait`; `sleep` unless energy is
@@ -64,6 +66,14 @@ The seven checks:
   and the observation and the enumerated set follow both, checked as the order of the
   fields in the retained record.
 
+  **L17 — the transcript's constraints.** No floating-point value, no timestamp and no
+  path appears in any record: floats by their type and as a decimal fraction rendered into
+  prose, a timestamp as a field that names one and as a value shaped like a clock reading,
+  a path as a separator, a parent reference or a file extension. The case's fourth clause —
+  *"no value outside the closed alphabet"* — is **withdrawn** and is reported rather than
+  checked; see `LIMITS`. Its fifth clause, that two transcripts of the same recorded run
+  compare equal with `cmp`, is `mokiterions-core/tests/replay.rs`.
+
 LIMITS — what this program does not decide:
 
   * **`L5`'s literal wording.** The case reads *"no request's enumerated set equals the
@@ -75,6 +85,16 @@ LIMITS — what this program does not decide:
     literal count, so the figure the question turns on is in the evidence either way. Which
     reading `VER-MOK-018` intends is not an implementation agent's to decide;
     `WO-MOK-025` stop condition 7 is the route for it.
+  * **`L17`'s closed-alphabet clause, which no longer applies.** `SPEC-MOK-007` rule
+    11.4.1, amended 2026-08-24, removed the closed alphabet from what rule 11.4 adopts and
+    replaced it with a round trip through `escape_transcript_text`: blocks A to D are
+    multi-line English prose, and block A alone carries an em dash. So a transcript that
+    satisfied the clause as written could not carry block C verbatim, which is the property
+    the clause was there to protect. This program reports the count of characters outside
+    ASCII rather than refusing them, and the obligation that replaced the clause is checked
+    in-crate by `the_escaping_survives_the_framing_and_round_trips`. `VER-MOK-018` still
+    states the clause; correcting a verification artifact is not an implementation agent's
+    act, and `WO-MOK-025` stop condition 6 is the route for it.
   * **whether the transcript is the run it claims to be.** That is
     `mokiterions-core/tests/replay.rs`, which records the same configuration in-process and
     compares byte for byte, and it is why this program can treat the file as a measurement.
@@ -171,8 +191,8 @@ AGGREGATES = (
 )
 
 # `L14`'s second half. A provider-side identifier is how a stateful conversation arrives, and rule
-# 11.4's closed alphabet is not enough on its own to keep one out: an opaque identifier is spelled
-# in the same characters an identifier of ours is.
+# 11.4.1's round trip is not enough on its own to keep one out: an opaque identifier survives an
+# escaping unchanged, exactly as an identifier of ours does.
 SESSION_KEYS = (
     "session",
     "conversation",
@@ -185,6 +205,42 @@ SESSION_KEYS = (
     "trace_id",
     "correlation",
 )
+
+# `L17`'s three checkable clauses. A timestamp arrives either as a field that names one or as a value
+# shaped like one, so both are looked for: the field names are compared exactly, because "at" as a
+# substring is in "attacks" and a substring rule would refuse rule 6.1's own heading.
+TIMESTAMP_KEYS = (
+    "time",
+    "timestamp",
+    "datetime",
+    "date",
+    "clock",
+    "epoch",
+    "elapsed",
+    "duration",
+    "started",
+    "finished",
+    "at",
+    "created",
+    "updated",
+)
+
+# A ten-digit integer. Nothing in a transcript counts that high — the largest figures are a tick, a
+# distance and a token count — so a value in this range is a clock that arrived as a number.
+EPOCH_FLOOR = 1_000_000_000
+
+# A date, a wall-clock time, or a twelve-hour time.
+ISO_LIKE = re.compile(r"\d{4}-\d{2}-\d{2}|\d{2}:\d{2}:\d{2}|\d{1,2}:\d{2}\s?[ap]m", re.IGNORECASE)
+
+# A decimal fraction inside a text value. JSON's own floats are caught by their Python type; this
+# catches a figure that was rendered into prose before it was written, which is the form a density, a
+# rate or a temperature would arrive in.
+DECIMAL = re.compile(r"\d+\.\d+")
+
+# A file extension. The separator itself is checked directly rather than by pattern: no value in a
+# transcript has any business carrying one, so the check refuses `/` and `\` outright, which is
+# stricter than "no path" and is the check this transcript passes.
+EXTENSION = re.compile(r"\.(?:jsonl|json|txt|toml|md|rs|py|log|yml|yaml|exe|lock)\b")
 
 # The fields of an exchange record, in the order the layout puts them. `L15a`'s last clause — "the
 # observation block and the enumerated set appear after both" — is a statement about where they are,
@@ -570,6 +626,64 @@ def check(path: Path, out) -> list[tuple[str, bool, str]]:
         if not contained and not session
         else "; ".join((contained + session)[:4]),
     )
+
+    # ---- L17: the transcript's constraints ----------------------------------------------------
+    numeric: list[str] = []
+    temporal: list[str] = []
+    locational: list[str] = []
+    texts = 0
+    outside_ascii = 0
+
+    def scan(value, where: str) -> None:
+        nonlocal texts, outside_ascii
+        if isinstance(value, dict):
+            for key, inner in value.items():
+                if key.lower() in TIMESTAMP_KEYS:
+                    temporal.append(f"{where}: a field named {key!r}")
+                scan(inner, f"{where}.{key}")
+        elif isinstance(value, list):
+            for index, inner in enumerate(value):
+                scan(inner, f"{where}[{index}]")
+        elif isinstance(value, bool):
+            pass  # Before `int`, which `bool` is a subclass of.
+        elif isinstance(value, float):
+            numeric.append(f"{where}: the floating-point value {value!r}")
+        elif isinstance(value, int):
+            if value >= EPOCH_FLOOR:
+                temporal.append(f"{where}: {value}, which is in the range a clock reads")
+        elif isinstance(value, str):
+            texts += 1
+            outside_ascii += sum(1 for character in value if ord(character) > 0x7F)
+            for pattern, complaints, what in (
+                (DECIMAL, numeric, "a decimal fraction"),
+                (ISO_LIKE, temporal, "a value shaped like a clock reading"),
+                (EXTENSION, locational, "a file extension"),
+            ):
+                found = pattern.search(value)
+                if found:
+                    complaints.append(f"{where}: {what}, {found.group()!r}")
+            for separator in ("/", "\\"):
+                if separator in value:
+                    locational.append(f"{where}: the path separator {separator!r}")
+            if ".." in value:
+                locational.append(f"{where}: '..', which is a path's parent")
+
+    for index, record_ in enumerate(prefixes + exchanges, start=1):
+        scan(record_, f"record {index}")
+
+    complaints = numeric + temporal + locational
+    record(
+        "L17 the transcript's constraints",
+        not complaints,
+        f"no floating-point value, no timestamp and no path across "
+        f"{len(prefixes) + len(exchanges)} records and {texts} text values. The case's fourth "
+        f"clause is withdrawn: rule 11.4.1 replaced the closed alphabet with a round trip through "
+        f"`escape_transcript_text`, because blocks A to D are English prose — this transcript "
+        f"carries {outside_ascii} character(s) outside ASCII by design — and that round trip is "
+        "checked in-crate by `the_escaping_survives_the_framing_and_round_trips`, not here"
+        if not complaints
+        else "; ".join(complaints[:4]),
+    )
     return results
 
 
@@ -602,13 +716,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"FAIL: {failures} check(s) did not hold")
         return 1
     print(
-        "PASS: VER-MOK-018 cases L4, L5, L6, L12, L13, L14 and L15a hold over "
+        "PASS: VER-MOK-018 cases L4, L5, L6, L12, L13, L14, L15a and L17 hold over "
         f"{len(arguments.transcript)} retained transcript(s)"
     )
     print(
-        "NOT CHECKED HERE: whether the transcript is the run it claims to be, which is\n"
-        "  mokiterions-core/tests/replay.rs; and L5's literal wording, on which this program\n"
-        "  reports the figure and decides nothing."
+        "NOT CHECKED HERE: whether the transcript is the run it claims to be, and whether two\n"
+        "  transcripts of one recorded run compare equal, both of which are\n"
+        "  mokiterions-core/tests/replay.rs; L5's literal wording; and L17's closed-alphabet\n"
+        "  clause, which SPEC-MOK-007 rule 11.4.1 withdrew. On the last two this program reports\n"
+        "  the figure and decides nothing."
     )
     return 0
 

@@ -6,8 +6,8 @@ transcript it reads is one file that will not change on its own. So each case be
 committed transcript in the one way the case it belongs to exists to catch, and requires the
 program to refuse. A check with no negative case here is a check nobody has seen fail.
 
-`VER-MOK-018` cases **L4**, **L5**, **L6**, **L12**, **L13**, **L14** and **L15a** are the cases
-under test. Run with:
+`VER-MOK-018` cases **L4**, **L5**, **L6**, **L12**, **L13**, **L14**, **L15a** and **L17** are the
+cases under test. Run with:
 
     python3 scripts/test_check_transcript_reading.py
 
@@ -75,7 +75,7 @@ class TranscriptAsCommitted(unittest.TestCase):
     def test_the_committed_transcript_passes_every_case(self) -> None:
         outcome = run(TRANSCRIPT)
         self.assertEqual(outcome.status, 0, outcome.text)
-        for label in ("L4", "L5", "L6", "L12", "L13", "L14", "L15a"):
+        for label in ("L4", "L5", "L6", "L12", "L13", "L14", "L15a", "L17"):
             self.assertIn(f"PASS  {label} ", outcome.text)
         self.assertNotIn("FAIL", outcome.text)
 
@@ -404,6 +404,87 @@ class BrokenTranscripts(unittest.TestCase):
         self.assertEqual(outcome.status, 1, outcome.text)
         self.assertIn("FAIL  L15a", outcome.text)
         self.assertIn("fields out of order", outcome.text)
+
+    # ---- L17 ----------------------------------------------------------------------------------
+    def test_a_floating_point_value_fails_l17(self) -> None:
+        """A cost figure is the form a float would most plausibly arrive in.
+
+        Written into `usage`, which rule 11.3.1 leaves absent until a provider is called: the object
+        this case guards is the one `WO-MOK-026` will fill in.
+        """
+
+        def mutate(all_records):
+            self.first_exchange(all_records)["usage"] = {"cost_usd": 0.42}
+
+        outcome = self.edited(mutate)
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("FAIL  L17", outcome.text)
+        self.assertIn("the floating-point value", outcome.text)
+
+    def test_a_decimal_fraction_in_a_text_value_fails_l17(self) -> None:
+        """A float rendered into prose before it was written is not caught by its type."""
+
+        def mutate(all_records):
+            exchange = self.first_exchange(all_records)
+            exchange["response"] = "density 0.75"
+
+        outcome = self.edited(mutate)
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("FAIL  L17", outcome.text)
+        self.assertIn("a decimal fraction", outcome.text)
+
+    def test_a_field_that_names_a_clock_fails_l17(self) -> None:
+        def mutate(all_records):
+            self.first_exchange(all_records)["usage"] = {"started": "before the others"}
+
+        outcome = self.edited(mutate)
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("FAIL  L17", outcome.text)
+        self.assertIn("a field named 'started'", outcome.text)
+
+    def test_a_value_shaped_like_a_clock_reading_fails_l17(self) -> None:
+        """The field name is innocent here; the value is the timestamp."""
+
+        def mutate(all_records):
+            self.first_exchange(all_records)["response"] = "chosen at 12:30:05"
+
+        outcome = self.edited(mutate)
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("FAIL  L17", outcome.text)
+        self.assertIn("a value shaped like a clock reading", outcome.text)
+
+    def test_an_epoch_second_fails_l17(self) -> None:
+        """A clock that arrived as a number, which no field name would give away."""
+
+        def mutate(all_records):
+            self.first_exchange(all_records)["usage"] = {"prompt_tokens": 1_756_000_000}
+
+        outcome = self.edited(mutate)
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("FAIL  L17", outcome.text)
+        self.assertIn("in the range a clock reads", outcome.text)
+
+    def test_a_path_fails_l17(self) -> None:
+        def mutate(all_records):
+            self.first_exchange(all_records)["response"] = "read from docs/transcript.jsonl"
+
+        outcome = self.edited(mutate)
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("FAIL  L17", outcome.text)
+        self.assertIn("the path separator", outcome.text)
+        self.assertIn("a file extension", outcome.text)
+
+    def test_the_transcripts_own_em_dashes_do_not_fail_l17(self) -> None:
+        """The withdrawn clause, stated as a test: block A's prose is not a violation.
+
+        `SPEC-MOK-007` rule 11.4.1 replaced the closed alphabet with a round trip, and this is what
+        would notice if the clause were ever reinstated in this program by someone reading the case's
+        text alone. The count is asserted, so a prose change that dropped the em dashes shows up here
+        rather than silently making the case vacuous.
+        """
+        outcome = run(TRANSCRIPT)
+        self.assertEqual(outcome.status, 0, outcome.text)
+        self.assertIn("24 character(s) outside ASCII by design", outcome.text)
 
     # ---- the file itself ----------------------------------------------------------------------
     def test_a_carriage_return_is_refused(self) -> None:
