@@ -78,17 +78,32 @@ virtual workspace, so a bare cargo build builds both members.
     python3 scripts/check_workflow_credentials.py --root .
       -> exit 0
 
-The second gate's own closing lines are part of this reading and are reproduced because they
-state the boundary of what it establishes:
+The second gate's own closing lines are part of this reading and are reproduced verbatim, because
+they state the boundary of what it establishes. Its last scan line is carried with them, because
+the text below refers to it:
 
+  scan E  the model-backed source is exercised, in replay mode:
+          .github/workflows/provider-credentials.yml:143 replays mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
   CHECKED: VER-MOK-018 case L21b, that a workflow step exercises the model-backed source in
-    replay mode against a committed transcript. The step named is
-    .github/workflows/provider-credentials.yml:143, which replays
-    mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl; the transcript was
-    confirmed to be a file in this repository and was not read by the check.
+    replay mode against a committed transcript. The step(s) above are that case; each named
+    transcript was confirmed to be a file in this repository, and none of them was read here.
   NOT CHECKABLE HERE: whether a provider credential is present in the repository's Actions
-    secrets. REQ-MOK-073's Constraints records that as the condition this containment rests
-    on, and VER-MOK-018 carries it as owner attestation C6.
+    secrets. REQ-MOK-073's *Constraints* records that as the condition this containment rests on,
+    and VER-MOK-018 carries it as an owner attestation.
+
+The owner attestation the last line names without numbering is VER-MOK-018's C6.
+
+  A correction, disclosed rather than silently amended: the first version of this file
+  paraphrased those closing lines while presenting them as reproduced. Three differences, all
+  in the CHECKED paragraph and the attestation reference: it read "The step named is
+  <path>, which replays <transcript>; the transcript was confirmed to be a file in this
+  repository and was not read by the check" where the gate says "The step(s) above are that
+  case; each named transcript was confirmed to be a file in this repository, and none of them
+  was read here"; it dropped the emphasis marks around *Constraints*; and it read "carries it as
+  owner attestation C6" where the gate says "carries it as an owner attestation". No figure and
+  no verdict moved - the gate's exit status was 0 then and is 0 now, and the script last changed
+  at aa95b7c, before the reading. What was wrong was the claim of verbatim quotation, and that is a
+  defect in an evidence file whether or not it changes a conclusion.
 
 --- Harness ------------------------------------------------------------------------------
 
