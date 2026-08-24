@@ -19,6 +19,33 @@ below read on the same source at any later commit of this packet, and the two Py
 read on scripts/ and .github/, neither of which moves after it either. The harness gates do
 move with artifact prose, and their figures are stated with the commit they were read at.
 
+  An amendment, disclosed rather than silently made: the sentence above no longer stands as
+  written. Commit 84f0452, taken after these readings, changed two files under scripts/ -
+  check_transcript_reading.py and its test file - so the diff quoted above is empty only when
+  scripts is dropped from its pathspec, which is how it now reads for the packages, the two
+  manifests, the lockfile and the toolchain file:
+
+    git diff bce4229 HEAD -- mokiterions-core mokiterions-tui Cargo.toml Cargo.lock \
+        rust-toolchain.toml
+      -> empty
+
+    git diff --stat bce4229 HEAD -- scripts
+      ->  scripts/check_transcript_reading.py      | 15 ++++++++++++---
+          scripts/test_check_transcript_reading.py | 23 +++++++++++++++++++++++
+          2 files changed, 35 insertions(+), 3 deletions(-)
+
+    git diff --stat bce4229 HEAD -- .github
+      -> empty
+
+  What that commit does not touch is what the two Python gates read. Neither
+  check_workflow_credentials.py nor its test file names check_transcript_reading.py, and no
+  file under .github/ does either, which was measured by grep and not assumed. The changed
+  program is the independent judge behind candidate/transcript-reading.txt and is run by hand,
+  not by a gate. Both Python gates were nonetheless re-read at 84f0452 rather than argued to be
+  unaffected: 38 tests OK, and the credential gate exit 0 with the same output reproduced
+  below. The four Rust gates read on source that still has not moved since bce4229, so their
+  figures stand unchanged.
+
 --- Formatting and lint, in the forms preflight prescribes -------------------------------
 
     cargo fmt --all -- --check
