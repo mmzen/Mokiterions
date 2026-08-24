@@ -25,7 +25,8 @@ below rather than summarised.
     block A outside the record stream's closed alphabet, and two of the five do not hold. Block A
     contains no parenthesis at all, and its full stops are inside that alphabet rather than outside
     it. The rule's conclusion is unaffected and is measured below. Rule 11.4.1 is approved text, so
-    this is the repository owner's to settle.
+    this is the repository owner's to settle. The list has THREE sites, not one: the rule itself
+    and two restatements of it in the engine's source. All three are named below.
 
 --- Bytes are measured; tokens are estimated, and here the difference decides something ---------
 
@@ -186,6 +187,44 @@ dash"; that names the character rather than counting it, and the count is two.
   owner with the work order's other open questions. The correction is one clause: strike
   "parentheses" and either strike "full stops" or move it out of the list of characters the alphabet
   excludes.
+
+  THE SAME LIST APPEARS AT THREE SITES, AND ALL THREE CARRY THE SAME TWO ERRORS. The rule is not
+  the only place the sentence is written; the engine restates it twice, in the source, in the words
+  the rule uses. Each is quoted as it reads, with " / " where the source wraps to the next comment
+  line:
+
+    docs/engineering/simulation/specifications/SPEC-MOK-007.md:473
+      the approved rule. "blocks A to D are English prose: block A alone carries spaces, commas,
+      parentheses, full stops and an em dash,"
+
+    mokiterions-core/src/simulation.rs:1841
+      a plain comment above the escaping function, giving the reason the alphabet cannot hold:
+      "block A alone carries spaces, / commas, parentheses, full stops and an em dash, and all four
+      blocks are multi-line."
+
+    mokiterions-core/src/simulation.rs:11942
+      the doc comment on the test `every_block_survives_the_escaping_unchanged`: "block A carries /
+      spaces, commas, parentheses, full stops and an em dash, and all four blocks are multi-line, /
+      so the alphabet does not hold and cannot."
+
+  One census settles all three, because all three describe the same block: the counted list under
+  "rule 11.4.1's named characters in block A" above, measured by analysis/request-layout.py over
+  block A as the transcript holds it - 5,381 characters, 0 parentheses of either kind, 44 commas,
+  65 full stops, 2 em dashes, 1,282 spaces and 90 newlines. Block A is assembled from the literals
+  of `const SHARED_RULES`, so the two source comments describe the same characters the rule does and
+  are wrong in the same two places.
+
+  Neither source comment is repaired here, and that is a decision rather than an oversight. Two
+  reasons, both of which would be worse to ignore than the wrong comments are. First, the two
+  comments restate an approved rule and agree with it exactly; repairing them while rule 11.4.1
+  still says what it says would replace a visible spec-and-code agreement on a wrong sentence with
+  an invisible divergence between a specification and the code that cites it, which is harder to
+  find than what is here now. The owner's ruling should move all three sites in one commit, and it
+  is the owner's ruling to make. Second, editing simulation.rs would falsify a standing claim in
+  candidate/gates.txt: that bce4229 is the last commit to change a file under either package, which
+  is what lets the four Rust gate readings taken at 5ae4f46 stand for every later commit of this
+  packet. A comment-only edit does not change behaviour, but it does change a package file, and it
+  would cost a re-run of all four Rust gates to buy a comment the owner may word differently.
 
 Rule 11.4.1 is the rule this matters to. The record stream's closed alphabet cannot apply to a
 transcript, so the transcript takes SPEC-MOK-006 rule 3.4's other branch and arrives with an
