@@ -11,8 +11,9 @@ established is that no workflow *asks* for a provider credential, on a machine w
 none exists. A runtime check could only report on the runs that already happened, and by
 then the interesting case has already spent money.
 
-Four scans, each one clause of the requirement's *Required response* item 2 plus its
-live-mode prohibition:
+Five scans: one per clause of the requirement's *Required response* item 2, one for its
+live-mode prohibition, and one for item 3, which is the only one of them that requires a
+workflow to do something rather than to refrain from it.
 
   A. **Not as a secret.** Any `secrets.<name>` reference outside a small allowlist
      refuses. This is deliberately a *closed* list rather than a provider-name pattern:
@@ -29,15 +30,21 @@ live-mode prohibition:
      vault or a secret manager acquires a credential without naming it, which defeats
      scans A and B entirely. Both the action references and the command-line spellings
      are listed.
-  D. **No live-mode selection.** The options that select a live run arrive with
-     `WO-MOK-026` and their spellings are not fixed by any approved artifact yet, so the
-     list below is the vocabulary those options will plausibly use and is not a
-     specification of them. The load-bearing half of this scan is different and needs no
-     option name: a workflow may not select the model-backed source at all. `REQ-MOK-073`
-     permits automation to exercise it in replay mode against a committed transcript, and
-     no such transcript exists yet, so today the honest rule is that no workflow selects
-     it. `WO-MOK-025` item 12 commits the transcript and item 11's second half adds the
-     replay step; the constant below is the one edit that relaxation needs.
+  D. **No live-mode selection, and no selection this check cannot see the transcript of.**
+     The options that select a live run arrive with `WO-MOK-026` and their spellings are
+     not fixed by any approved artifact yet, so the list below is the vocabulary those
+     options will plausibly use and is not a specification of them. The load-bearing half
+     of this scan needs no option name: a workflow that selects the model-backed source
+     must, on the same line, name a transcript that is a file in this repository. That is
+     `REQ-MOK-073` *Required response* item 3 read as a property of a definition — a
+     selection whose transcript this check cannot see is a selection that may reach a
+     provider, and so is a selection whose named transcript is not committed.
+  E. **The source is still exercised.** Clauses A to D are all satisfied by a repository
+     whose automation never runs the engine at all, which would make this check green and
+     `REQ-MOK-073` vacuous. So at least one definition must select the source in replay
+     mode against a committed transcript. This is `VER-MOK-018` case **L21b**, checked
+     rather than assumed, and it is the only clause here that requires a workflow to do
+     something rather than to refrain from it.
 
 What this program deliberately does NOT do:
 
@@ -45,10 +52,11 @@ What this program deliberately does NOT do:
     see them. `REQ-MOK-073`'s *Constraints* records their absence as the condition the
     whole containment rests on, and `VER-MOK-018` case **L21a** carries it as an owner
     attestation. A pass here means no workflow asks; it does not mean no secret exists.
-  * check `VER-MOK-018` case **L21b**, that a workflow step exercises the source in
-    replay mode. That case needs the committed transcript, and asserting it now would
-    make this check red for a reason unconnected to any credential. The gap is printed on
-    every successful run rather than left for a reader to discover.
+  * read the transcript, or replay it. Clause E establishes that a step selects the source
+    against a file that exists; whether that file is the recording it claims to be is
+    `mokiterions-core/tests/replay.rs`, which compares it byte for byte against the run
+    recorded in-process, and whether the replay reproduces that run is the same file's
+    binary comparison. This check would have to build the engine to establish either.
   * approve anything. It can refuse a merge and it approves nothing.
 
 It fails closed. A missing directory, a directory holding no definition, and a file it
@@ -178,10 +186,20 @@ MODEL_BACKED_SOURCE = "llm"
 SOURCE_SELECTION = re.compile(
     r"--policy[=\s]+" + MODEL_BACKED_SOURCE + r"\b|\bpolicy\s*:\s*['\"]?" + MODEL_BACKED_SOURCE + r"\b"
 )
-# Flipped by `WO-MOK-025` item 11's second half, in the same commit that commits the
-# transcript and adds the replay step. Until then `REQ-MOK-073`'s permission to exercise
-# the source in replay has nothing to exercise it against.
-REPLAY_TRANSCRIPT_COMMITTED = False
+# The transcript, as an option on the *same line* as the selection. One line, because this
+# check reads one line at a time and joins none: a workflow that spread the command across
+# a block scalar would state the selection on one line and its transcript on another, and
+# this would refuse it. That is a real constraint on how the replay step is written, and
+# the step in `provider-credentials.yml` says so in a comment beside itself.
+TRANSCRIPT_ARGUMENT = re.compile(r"--transcript-path[=\s]+([^\s'\"]+)")
+
+# Flipped from `False` by `WO-MOK-025` item 11's second half, in the commit that committed
+# `mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl` and added the replay step
+# to `provider-credentials.yml`. It is kept rather than deleted because it is the line that
+# records the relaxation and its direction: `False` means no workflow may select the source
+# at all, because there is nothing to replay; `True` means a workflow may select it only in
+# replay mode against a transcript this repository holds, and at least one workflow must.
+REPLAY_TRANSCRIPT_COMMITTED = True
 
 
 class Refusal(Exception):
@@ -197,6 +215,20 @@ class Finding:
     text: str
     clause: str
     reason: str
+
+
+@dataclass(frozen=True)
+class ReplayStep:
+    """One permitted selection of the model-backed source, and what it replays.
+
+    The counterpart of `Finding`: the same reading of the same line either refuses it or
+    records it as clause E's evidence. It is a separate type rather than a `Finding` with
+    an inverted meaning because it is reported on a pass, where a finding never is.
+    """
+
+    path: str
+    line_number: int
+    transcript: str
 
 
 def definition_files(root: Path) -> list[Path]:
@@ -370,30 +402,67 @@ def scan_live_mode(display: str, number: int, line: str) -> list[Finding]:
             )
         )
 
-    selection = SOURCE_SELECTION.search(line)
-    if selection is not None and not REPLAY_TRANSCRIPT_COMMITTED:
-        findings.append(
-            Finding(
-                display,
-                number,
-                line.strip(),
-                "D: no live-mode selection",
-                f"selects the {MODEL_BACKED_SOURCE!r} source. REQ-MOK-073 permits this "
-                "in replay mode against a transcript committed to the repository, and no "
-                "such transcript is committed yet, so there is no way for a workflow to "
-                "select this source without asking to reach a provider",
-            )
-        )
     return findings
+
+
+def scan_source_selection(
+    root: Path, display: str, number: int, line: str
+) -> tuple[list[Finding], ReplayStep | None]:
+    """Clause D's load-bearing half and clause E's evidence, which are one reading.
+
+    Unlike the four scans above this one needs the root, because the question it asks is
+    not about the line's vocabulary but about whether the file the line names is in the
+    repository. A selection is either refused or returned as a replay step; it is never
+    both and never neither.
+    """
+    if SOURCE_SELECTION.search(line) is None:
+        return [], None
+
+    def refused(reason: str) -> tuple[list[Finding], None]:
+        return [Finding(display, number, line.strip(), "D: no live-mode selection", reason)], None
+
+    if not REPLAY_TRANSCRIPT_COMMITTED:
+        return refused(
+            f"selects the {MODEL_BACKED_SOURCE!r} source. REQ-MOK-073 permits this in "
+            "replay mode against a transcript committed to the repository, and no such "
+            "transcript is committed yet, so there is no way for a workflow to select "
+            "this source without asking to reach a provider"
+        )
+
+    named = TRANSCRIPT_ARGUMENT.search(line)
+    if named is None:
+        return refused(
+            f"selects the {MODEL_BACKED_SOURCE!r} source and names no transcript on the "
+            "same line. REQ-MOK-073 item 3 permits automation to exercise this source only "
+            "in replay mode against a committed transcript, and a selection whose "
+            "transcript this check cannot see is a selection that may reach a provider"
+        )
+
+    transcript = named.group(1)
+    if not (root / transcript).is_file():
+        return refused(
+            f"replays {transcript}, which is not a file in this repository. A replay needs "
+            "the transcript to be committed — REQ-MOK-073 item 3 says so in those words — "
+            "and a step pointed at a path that is not there fails at the first opportunity "
+            "or, worse, is corrected by pointing it at a provider"
+        )
+
+    return [], ReplayStep(display, number, transcript)
 
 
 SCANS = (scan_secret_references, scan_names, scan_broker_steps, scan_live_mode)
 
 
-def check(root: Path) -> tuple[list[Path], int, list[Finding]]:
+def replay_step_missing(replay_steps: list[ReplayStep]) -> bool:
+    """Clause E as one predicate, so the verdict and the report cannot disagree."""
+    return REPLAY_TRANSCRIPT_COMMITTED and not replay_steps
+
+
+def check(root: Path) -> tuple[list[Path], int, list[Finding], list[ReplayStep]]:
     """Every definition, every scan. Returns what was read and what was found."""
     files = definition_files(root)
     findings: list[Finding] = []
+    replay_steps: list[ReplayStep] = []
     scanned_lines = 0
 
     for path in files:
@@ -404,11 +473,21 @@ def check(root: Path) -> tuple[list[Path], int, list[Finding]]:
             scanned_lines += 1
             for scan in SCANS:
                 findings.extend(scan(display, number, line))
+            refusals, replay_step = scan_source_selection(root, display, number, line)
+            findings.extend(refusals)
+            if replay_step is not None:
+                replay_steps.append(replay_step)
 
-    return files, scanned_lines, findings
+    return files, scanned_lines, findings, replay_steps
 
 
-def report(root: Path, files: list[Path], scanned_lines: int, findings: list[Finding]) -> None:
+def report(
+    root: Path,
+    files: list[Path],
+    scanned_lines: int,
+    findings: list[Finding],
+    replay_steps: list[ReplayStep],
+) -> None:
     for finding in findings:
         print(f"REFUSED: {finding.path}:{finding.line_number}", file=sys.stderr)
         print(f"  clause  {finding.clause}", file=sys.stderr)
@@ -416,29 +495,48 @@ def report(root: Path, files: list[Path], scanned_lines: int, findings: list[Fin
         print(f"  reason  {finding.reason}", file=sys.stderr)
         print(file=sys.stderr)
 
+    if replay_step_missing(replay_steps):
+        print("REFUSED: no definition exercises the model-backed source", file=sys.stderr)
+        print("  clause  E: the source is still exercised", file=sys.stderr)
+        print(
+            "  reason  REQ-MOK-073 *Required response* item 3 requires a workflow step "
+            "that exercises this\n          source in replay mode against a committed "
+            "transcript, and VER-MOK-018 case L21b is\n          that requirement checked "
+            "rather than assumed. Clauses A to D are all satisfied by a\n          "
+            "repository whose automation never runs the engine, so a pass on them alone "
+            "would say\n          nothing about a containment that only matters while the "
+            "source is in use.",
+            file=sys.stderr,
+        )
+        print(file=sys.stderr)
+
     print(f"Definitions under {DEFINITION_ROOT.as_posix()}, at {root}:")
     for path in files:
         print(f"  {path.relative_to(root).as_posix()}")
     print(f"  {len(files)} file(s), {scanned_lines} non-comment line(s) scanned")
 
-    if findings:
-        print(
-            f"REFUSED: {len(findings)} credential or live-mode reference(s) in "
-            f"{len({finding.path for finding in findings})} file(s)",
-            file=sys.stderr,
-        )
+    if findings or replay_step_missing(replay_steps):
+        if findings:
+            print(
+                f"REFUSED: {len(findings)} credential or live-mode reference(s) in "
+                f"{len({finding.path for finding in findings})} file(s)",
+                file=sys.stderr,
+            )
         return
 
     print("PASS: no workflow references a model-provider credential and none selects live mode")
     print("  scan A  no secret outside " + ", ".join(sorted(PERMITTED_SECRETS)))
     print("  scan B  no provider name and no credential-shaped environment name")
     print("  scan C  no step that brokers a secret from outside the repository")
-    print("  scan D  no live-mode option and no selection of the model-backed source")
+    print("  scan D  no live-mode option, and every selection replays a committed transcript")
+    print("  scan E  the model-backed source is exercised, in replay mode:")
+    for step in replay_steps:
+        print(f"          {step.path}:{step.line_number} replays {step.transcript}")
     print(
-        "NOT YET CHECKED: VER-MOK-018 case L21b, that a workflow step exercises the "
-        "model-backed\n  source in replay mode against a committed transcript. That "
-        "transcript is WO-MOK-025 item 12;\n  the step and this check's third half arrive "
-        "with it. A pass above is a pass on L21a alone."
+        "CHECKED: VER-MOK-018 case L21b, that a workflow step exercises the model-backed "
+        "source in\n  replay mode against a committed transcript. The step(s) above are "
+        "that case; each named\n  transcript was confirmed to be a file in this "
+        "repository, and none of them was read here."
     )
     print(
         "NOT CHECKABLE HERE: whether a provider credential is present in the repository's "
@@ -454,13 +552,13 @@ def main(argv: list[str] | None = None) -> int:
 
     root = Path(arguments.root).resolve()
     try:
-        files, scanned_lines, findings = check(root)
+        files, scanned_lines, findings, replay_steps = check(root)
     except Refusal as refusal:
         print(f"REFUSED: {refusal}", file=sys.stderr)
         return 1
 
-    report(root, files, scanned_lines, findings)
-    return 1 if findings else 0
+    report(root, files, scanned_lines, findings, replay_steps)
+    return 1 if findings or replay_step_missing(replay_steps) else 0
 
 
 if __name__ == "__main__":

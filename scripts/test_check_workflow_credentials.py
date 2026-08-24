@@ -3,13 +3,19 @@
 
 Repository-owned, absent from `.engineering-harness.lock`.
 
-`VER-MOK-018` case **L21a** is the case under test. The requirement it verifies,
-`REQ-MOK-073`, is unusual in that its subject is an *absence*, so a check for it can pass
-by being broken: a scan whose patterns never match reports the same thing as a repository
-that holds no credential. Most of the cases below therefore assert a refusal on a fixture
-that plants one, and the last group asserts the opposite — that the ordinary spellings a
-real workflow uses are not findings, because a check that cried wolf on
-`persist-credentials: false` would be turned off within a week.
+`VER-MOK-018` cases **L21a** and **L21b** are the cases under test. The requirement they
+verify, `REQ-MOK-073`, is unusual in that most of its subject is an *absence*, so a check
+for it can pass by being broken: a scan whose patterns never match reports the same thing
+as a repository that holds no credential. Most of the cases below therefore assert a
+refusal on a fixture that plants one, and one group asserts the opposite — that the
+ordinary spellings a real workflow uses are not findings, because a check that cried wolf
+on `persist-credentials: false` would be turned off within a week.
+
+The requirement's item 3 is the other way round: it requires a definition to *exist*, so
+its cases are refusals on a fixture that removes one. Every temporary tree therefore
+arrives with a replay step and the transcript it names already planted — see `Fixture` —
+because otherwise every case asserting a pass would fail on the missing step rather than
+on its own subject.
 
 One case scans the repository's own definitions. That makes this suite fail on a commit
 that plants a credential in a real workflow, in a developer's own `python -m unittest`
@@ -42,6 +48,23 @@ jobs:
       - uses: actions/checkout@v4
 """
 
+# A definition that satisfies clause E, in the shape the real one takes: the selection and
+# the transcript on one line, because the check reads one line at a time.
+REPLAY = """\
+name: Fixture replay
+on:
+  pull_request:
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./Mokiterions --policy llm --transcript-path {transcript} --seed 0 --ticks 20
+"""
+
+# Nested rather than at the root, so that a check which forgot to join the named path to the
+# root it was given would not find it by accident.
+FIXTURE_TRANSCRIPT = "mokiterions-core/tests/transcript-fixture.jsonl"
+
 
 class Outcome:
     """One run of the check, with its streams and its status."""
@@ -68,12 +91,29 @@ def run(root: Path) -> Outcome:
 
 
 class Fixture:
-    """A tree with a `.github/workflows` directory and whatever a case puts in it."""
+    """A tree with a `.github/workflows` directory and whatever a case puts in it.
+
+    Plus a replay step and its transcript, planted at construction. Clause E requires one
+    of every tree, so without it every case below that asserts a pass would be asserting
+    the wrong refusal; the cases whose subject *is* the missing step take it away again.
+    """
 
     def __init__(self, root: Path) -> None:
         self.root = root
         self.workflows = root / ".github" / "workflows"
         self.workflows.mkdir(parents=True)
+        self.replay = self.replay_step()
+
+    def replay_step(self, transcript: str = FIXTURE_TRANSCRIPT, name: str = "replay.yml") -> Path:
+        """A definition that exercises the source in replay mode, and the file it names."""
+        committed = self.root / transcript
+        committed.parent.mkdir(parents=True, exist_ok=True)
+        committed.write_text('{"transcript":"prefix"}\n', encoding="utf-8")
+        return self.workflow(name, REPLAY.format(transcript=transcript))
+
+    def without_replay_step(self) -> None:
+        """Remove the planted definition. The transcript it named stays, unreferenced."""
+        self.replay.unlink()
 
     def workflow(self, name: str, body: str) -> Path:
         path = self.workflows / name
@@ -128,12 +168,26 @@ class TheRepositoryItself(Case):
         outcome = run(REPOSITORY)
         self.assertRegex(outcome.stdout, r"\d+ file\(s\), \d+ non-comment line\(s\) scanned")
 
-    def test_the_unchecked_case_is_printed_rather_than_implied(self) -> None:
-        """`VER-MOK-018` case L21b is not carried here, and a pass says so."""
+    def test_the_repositorys_own_replay_step_is_found_and_named(self) -> None:
+        """`VER-MOK-018` case L21b, on the tree the case is about.
+
+        Named rather than counted: a reader of a green log is told which definition
+        exercises the source and which file it replays, so a step that quietly moved to a
+        different transcript is visible in the log rather than only in a diff.
+        """
         outcome = run(REPOSITORY)
-        self.assertIn("NOT YET CHECKED", outcome.stdout)
-        self.assertIn("L21b", outcome.stdout)
+        self.assertPassed(outcome)
+        self.assertIn("CHECKED: VER-MOK-018 case L21b", outcome.stdout)
+        self.assertIn(".github/workflows/provider-credentials.yml", outcome.stdout)
+        self.assertIn(
+            "mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl", outcome.stdout
+        )
+
+    def test_the_case_that_is_not_checkable_here_is_printed_rather_than_implied(self) -> None:
+        """L21a is an owner attestation, and a pass must not read as covering it."""
+        outcome = run(REPOSITORY)
         self.assertIn("NOT CHECKABLE HERE", outcome.stdout)
+        self.assertIn("Actions", outcome.stdout)
 
 
 class ScanA_Secrets(Case):
@@ -262,9 +316,8 @@ class ScanD_LiveMode(Case):
         self.fixture.with_step_line("run: ./Mokiterions --liveness-probe")
         self.assertPassed(run(self.fixture.root))
 
-    def test_selecting_the_model_backed_source_refuses_while_no_transcript_is_committed(
-        self,
-    ) -> None:
+    def test_selecting_the_model_backed_source_with_no_transcript_refuses(self) -> None:
+        """Every spelling of the selection, none of them naming a transcript."""
         for line in (
             "run: ./Mokiterions --policy llm",
             "run: ./Mokiterions --policy=llm",
@@ -274,13 +327,85 @@ class ScanD_LiveMode(Case):
                 self.fixture.with_step_line(line)
                 outcome = run(self.fixture.root)
                 self.assertRefused(outcome)
-                self.assertIn("no such transcript is committed yet", outcome.stderr)
+                self.assertIn("names no transcript on the same line", outcome.stderr)
+
+    def test_a_selection_naming_a_transcript_that_is_not_committed_refuses(self) -> None:
+        self.fixture.with_step_line(
+            "run: ./Mokiterions --policy llm --transcript-path fixtures/absent.jsonl"
+        )
+        outcome = run(self.fixture.root)
+        self.assertRefused(outcome)
+        self.assertIn("fixtures/absent.jsonl", outcome.stderr)
+        self.assertIn("not a file in this repository", outcome.stderr)
+
+    def test_a_selection_replaying_a_committed_transcript_passes(self) -> None:
+        """The permitted case, which is the only thing `REQ-MOK-073` item 3 allows."""
+        self.fixture.without_replay_step()
+        self.fixture.replay_step(name="another.yml")
+        outcome = run(self.fixture.root)
+        self.assertPassed(outcome)
+        self.assertIn(FIXTURE_TRANSCRIPT, outcome.stdout)
+
+    def test_a_transcript_named_on_another_line_is_not_seen(self) -> None:
+        """The one-line constraint, asserted rather than left as a comment.
+
+        A `run: |` block would put the selection and its transcript on separate lines, and
+        this check joins none, so it cannot tell that pair from a selection with no
+        transcript at all. It refuses, which is the safe direction, and this case is what
+        keeps the refusal deliberate: a future rewrite that reads block scalars will make
+        this case fail and have to decide what the new behaviour is.
+        """
+        self.fixture.workflow(
+            "block.yml",
+            MINIMAL
+            + "      run: |\n"
+            + "        ./Mokiterions --policy llm \\\n"
+            + f"          --transcript-path {FIXTURE_TRANSCRIPT}\n",
+        )
+        outcome = run(self.fixture.root)
+        self.assertRefused(outcome)
+        self.assertIn("names no transcript on the same line", outcome.stderr)
 
     def test_the_four_existing_sources_are_not_findings(self) -> None:
         for source in ("baseline", "reference", "individual", "social"):
             with self.subTest(source=source):
                 self.fixture.with_step_line(f"run: ./Mokiterions --policy {source}")
                 self.assertPassed(run(self.fixture.root))
+
+
+class ScanE_TheSourceIsExercised(Case):
+    """`REQ-MOK-073` item 3 and `VER-MOK-018` case L21b: the one clause that requires a
+    definition to exist rather than to be absent."""
+
+    def test_a_tree_that_never_exercises_the_source_refuses(self) -> None:
+        self.fixture.without_replay_step()
+        self.fixture.minimal()
+        outcome = run(self.fixture.root)
+        self.assertRefused(outcome)
+        self.assertIn("no definition exercises the model-backed source", outcome.stderr)
+        self.assertIn("L21b", outcome.stderr)
+
+    def test_a_refused_selection_does_not_satisfy_this_clause(self) -> None:
+        """A selection this check refused is not evidence that the source is exercised.
+
+        Both refusals appear, which is the point: fixing the D refusal by deleting the step
+        would leave the E refusal, and fixing it by naming a committed transcript clears
+        both. Either way the tree cannot come to rest on a selection that may reach a
+        provider.
+        """
+        self.fixture.without_replay_step()
+        self.fixture.with_step_line("run: ./Mokiterions --policy llm")
+        outcome = run(self.fixture.root)
+        self.assertRefused(outcome)
+        self.assertIn("names no transcript on the same line", outcome.stderr)
+        self.assertIn("no definition exercises the model-backed source", outcome.stderr)
+
+    def test_a_pass_states_the_clause_it_established(self) -> None:
+        self.fixture.minimal()
+        outcome = run(self.fixture.root)
+        self.assertPassed(outcome)
+        self.assertIn("scan E", outcome.stdout)
+        self.assertIn(f".github/workflows/replay.yml:{len(REPLAY.splitlines())}", outcome.stdout)
 
 
 class WhatIsScanned(Case):
@@ -344,6 +469,9 @@ class FailsClosed(Case):
         self.assertIn("is not a directory", outcome.stderr)
 
     def test_a_directory_holding_no_definition_refuses(self) -> None:
+        # The planted replay step is a definition, so it goes: the subject here is the
+        # directory that holds none, and this refusal happens before any scan runs.
+        self.fixture.without_replay_step()
         (self.fixture.workflows / "notes.txt").write_text("nothing\n", encoding="utf-8")
         outcome = run(self.fixture.root)
         self.assertRefused(outcome)

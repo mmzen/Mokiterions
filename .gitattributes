@@ -11,3 +11,11 @@
 # `-text` disables conversion for these paths in both directions, so the retained files are written to
 # the working tree exactly as stored. This changes no recorded value and no committed blob.
 docs/engineering/simulation/evidence/** -text
+
+# The committed transcript is read as bytes for the same reason, added 2026-08-24 under
+# `WO-MOK-025`. `mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl` is a fixture whose
+# whole purpose is a byte comparison: `tests/replay.rs` requires it to equal the recording of the
+# same run, and the replay reads it one line at a time under `SPEC-MOK-007` rule 11.2's framing. A
+# CRLF checkout fails the comparison and leaves a carriage return at the end of every record, and
+# neither failure would be about anything a reader of the diff had changed.
+mokiterions-core/tests/*.jsonl -text
