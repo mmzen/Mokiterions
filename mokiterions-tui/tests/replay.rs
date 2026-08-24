@@ -15,12 +15,22 @@
 //! and a `Cell` from the standard library.
 
 use std::cell::RefCell;
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs;
 use std::io;
+use std::path::Path;
 use std::rc::Rc;
 
-use mokiterions::simulation::{Action, DecisionRequest, Proposer};
+use ratatui::Terminal;
+use ratatui::backend::TestBackend;
+use ratatui::buffer::Buffer;
+use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
+use ratatui::layout::Rect;
+
+use mokiterions::simulation::{Action, DecisionRequest, Direction, Proposer};
 use mokiterions_tui::options::{self, Options, Startup};
 use mokiterions_tui::state::{Observer, Progression};
+use mokiterions_tui::{layout, render};
 
 /// What a lent port did, readable after the port has been given away.
 ///
@@ -44,6 +54,13 @@ struct ScriptedPort {
     /// proposal's absence is rule 9.5's ordinary fallback and says nothing, so a replay port detects a
     /// mismatch while proposing and reports it when handed the record.
     failing_at: Option<usize>,
+    /// Whether the port proposes movement rather than `Wait`.
+    ///
+    /// The lending cases below want the least eventful run they can get, because what they count is
+    /// opportunities and a Mokiterion that dies stops producing them. Case L31 wants the opposite: it
+    /// compares what the panes did against `social`, and a run in which nothing moves fills no event
+    /// log and crosses no territory, so it would compare two empty panes and pass on nothing.
+    moving: bool,
 }
 
 impl ScriptedPort {
@@ -51,6 +68,7 @@ impl ScriptedPort {
         Self {
             ledger: Rc::clone(ledger),
             failing_at: None,
+            moving: false,
         }
     }
 
@@ -58,17 +76,40 @@ impl ScriptedPort {
         Self {
             ledger: Rc::clone(ledger),
             failing_at: Some(opportunity),
+            moving: false,
+        }
+    }
+
+    /// A port whose proposals move, so that the run it drives has something for the panes to show.
+    fn moving(ledger: &Rc<RefCell<Ledger>>) -> Self {
+        Self {
+            ledger: Rc::clone(ledger),
+            failing_at: None,
+            moving: true,
         }
     }
 }
 
 impl Proposer for ScriptedPort {
     fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
-        self.ledger
-            .borrow_mut()
+        let mut ledger = self.ledger.borrow_mut();
+        ledger
             .proposed
             .push((request.tick(), request.actor_id().to_string()));
-        Some(Action::Wait)
+        if !self.moving {
+            return Some(Action::Wait);
+        }
+        // The four cardinals in turn. A step off the grid is not a valid move, and rule 9.5's
+        // fallback covers it, so the port needs no knowledge of where the Mokiterion stands.
+        const CARDINALS: [Direction; 4] = [
+            Direction::North,
+            Direction::East,
+            Direction::South,
+            Direction::West,
+        ];
+        Some(Action::Move {
+            direction: CARDINALS[ledger.proposed.len() % 4],
+        })
     }
 
     fn record(&mut self, _record: &str) -> io::Result<()> {
@@ -223,4 +264,307 @@ fn a_source_that_decides_for_itself_needs_no_port() {
     assert_eq!(implicit.snapshot(), explicit.snapshot());
     assert_eq!(implicit.progression(), Progression::Running);
     assert!(implicit.is_finished());
+}
+
+/// What the six panes did, reduced to what two runs under two sources can be compared on.
+///
+/// `VER-MOK-018` case **L31** asks that the roster, map, event log, inspector, filter and export
+/// *"behave as they do under `social`"*, and two runs under two sources decide differently — different
+/// cells, a different event log, a different selection — so comparing what the panes *say* would fail
+/// on the runs rather than on the panes. What is comparable is what each pane *did*, and every field
+/// below is read from that pane's own region rather than off the screen, so a claim about the roster is
+/// a claim about the roster.
+///
+/// Each field holds under `social` today and each is a way this host could treat the fifth source
+/// specially, which is what the case exists to rule out.
+#[derive(Debug, PartialEq, Eq)]
+struct PaneReport {
+    /// The tick the run stopped at, which is the transcript's horizon here.
+    tick: u64,
+    /// Whether the roster accounts for every living Mokiterion: the ones it named plus the ones its
+    /// own header declares hidden, against the count the engine reports.
+    ///
+    /// A count of names would differ between two runs for a reason that is not the source — at
+    /// 120×40 the pane holds nine of twelve and says `hidden 3` — so what is compared is the
+    /// accounting rather than the names.
+    roster_accounts_for_every_living: bool,
+    /// Whether the map pane drew anything: its region's non-blank cells, banded rather than counted,
+    /// so that two runs whose Mokiterions stand in different cells still compare.
+    map_drew: bool,
+    /// Whether the log pane presented a record.
+    log_presented: bool,
+    /// Whether the selection reached the inspector: the observer reports one and the inspector's own
+    /// region names it.
+    inspector_names_the_selection: bool,
+    /// Whether the filter narrowed or held what the log presents, and the label it moved to.
+    filter_narrows: bool,
+    filter_label: String,
+    /// Whether the export key wrote a non-empty file where the operator asked.
+    exported: bool,
+}
+
+/// Rule 8's footer, split into the fields it presents.
+///
+/// Split rather than compared whole because two runs retain different numbers of events, so the
+/// `events` field differs for a reason that has nothing to do with the source. Splitting is what lets
+/// the fields that must agree be asserted equal and the two that must differ be named.
+fn footer_fields(footer: &str) -> BTreeMap<String, String> {
+    footer
+        .split("  ")
+        .filter(|field| !field.is_empty())
+        .map(|field| {
+            let (label, value) = field.split_once(' ').unwrap_or((field, ""));
+            (label.to_string(), value.to_string())
+        })
+        .collect()
+}
+
+/// Resolved inputs for a five-tick observed run under the named source, exporting where told.
+fn observing(policy: &str, export: &str) -> Options {
+    let mut args = vec!["--policy", policy, "--ticks", "5", "--seed", "42"];
+    if policy == "llm" {
+        // Required by the shared parser — rules 13.2 and 19.2 — and opened by nobody here, as in
+        // `replaying` above: this file's port is scripted.
+        args.extend(["--transcript-path", "transcript.jsonl"]);
+    }
+    args.extend(["--export", export]);
+    match options::parse(args).unwrap() {
+        Startup::Run(options) => options,
+        Startup::Help => panic!("expected a run"),
+    }
+}
+
+/// The viewport this case draws at: wide enough and tall enough that `layout::resolve` places all
+/// three optional panes on the screen rather than behind an overlay, so each can be read in its own
+/// region. The observer announces the inspector as overlay-only below 140 columns.
+const VIEWPORT: (u16, u16) = (160, 44);
+
+/// The first `Mnn` identifier a row names, which on a roster row is that row's own subject.
+fn first_identifier(row: &str) -> Option<String> {
+    let characters: Vec<char> = row.chars().collect();
+    characters
+        .windows(3)
+        .find(|window| window[0] == 'M' && window[1].is_ascii_digit() && window[2].is_ascii_digit())
+        .map(|window| window.iter().collect())
+}
+
+/// The Mokiterions the roster pane lists, read one entry row at a time.
+///
+/// Every identifier in the pane is not the same thing as every entry in it: under `social` a row's
+/// action names a *target* — `approach M03` — and counting those would report more entries than the
+/// pane has. So the subject is taken as the first identifier on each entry row, and the rows that
+/// continue an entry are skipped by their indentation: an entry row opens with the Mokiterion's name
+/// against the border, and a continuation row and the pane's own header both open with a space.
+fn roster_entries(roster: &str) -> BTreeSet<String> {
+    roster
+        .lines()
+        .filter_map(|row| {
+            let body = row.trim_start_matches(['│', '┌', '└']);
+            if body.starts_with(' ') {
+                return None;
+            }
+            first_identifier(body)
+        })
+        .collect()
+}
+
+/// A `label <number>` figure a pane's own header states, or `None` where the header omits it.
+fn figure(text: &str, label: &str) -> Option<u64> {
+    text.split_whitespace()
+        .skip_while(|word| *word != label)
+        .nth(1)
+        .and_then(|value| value.parse().ok())
+}
+
+/// One frame, drawn at [`VIEWPORT`].
+fn drawn(observer: &mut Observer) -> Buffer {
+    let (width, height) = VIEWPORT;
+    let mut terminal = Terminal::new(TestBackend::new(width, height)).expect("a test backend");
+    terminal
+        .draw(|target| render::draw(target, observer))
+        .expect("drawing into a buffer");
+    terminal.backend().buffer().clone()
+}
+
+/// One region's rows, joined. Reading a pane rather than the screen is what makes a claim about a
+/// pane a claim about that pane, and it is the idiom `VER-MOK-005`'s public tier already uses.
+fn region(buffer: &Buffer, area: Rect) -> String {
+    (area.y..area.y + area.height)
+        .map(|y| {
+            (area.x..area.x + area.width)
+                .map(|x| buffer.cell((x, y)).expect("inside the area").symbol())
+                .collect::<String>()
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
+}
+
+/// How many cells of a region are not blank.
+fn ink(text: &str) -> usize {
+    text.chars().filter(|glyph| !glyph.is_whitespace()).count()
+}
+
+/// Drives one observed run to its horizon under operator control, then reads each pane in turn.
+///
+/// The operator acts *between* ticks rather than after the run, because the case says *"under
+/// operator control"*: a host that only worked once the run was over would satisfy an assertion made
+/// at the end and would not satisfy the case. The frame is drawn every tick for the same reason.
+fn observe(policy: &str, port: Option<Box<dyn Proposer>>, export: &Path) -> (PaneReport, String) {
+    const KEYS: [KeyCode; 5] = [
+        KeyCode::Tab,
+        KeyCode::Char('z'),
+        KeyCode::Char('j'),
+        KeyCode::PageUp,
+        KeyCode::Char('f'),
+    ];
+
+    let destination = export.to_str().expect("a UTF-8 temporary path");
+    let mut observer = Observer::with_port(observing(policy, destination), port).unwrap();
+
+    // One operator act per tick, and the run is exactly as long as the sequence.
+    for key in KEYS {
+        observer.handle_key(press(key)).expect("no binding fails");
+        observer.advance().expect("the source answers");
+        let _ = drawn(&mut observer);
+    }
+    let tick = observer.snapshot().tick;
+    let living = observer.snapshot().agents.len();
+
+    // The selection, which is what the inspector presents: `Tab` moves it onto a Mokiterion.
+    observer.handle_key(press(KeyCode::Tab)).expect("selecting");
+    let selection = observer.selection().map(str::to_string);
+
+    // The filter, and what it does to what the log presents.
+    let before = observer.presented().len();
+    observer
+        .handle_key(press(KeyCode::Char('e')))
+        .expect("the filter key");
+    let after = observer.presented().len();
+    let filter_label = observer.filter().label();
+
+    // The export, written where the operator asked.
+    observer
+        .handle_key(press(KeyCode::Char('x')))
+        .expect("the export key");
+    let exported = fs::read(export).is_ok_and(|bytes| !bytes.is_empty());
+
+    let buffer = drawn(&mut observer);
+    let (width, height) = VIEWPORT;
+    let panes = layout::resolve(Rect::new(0, 0, width, height));
+    let roster = region(&buffer, panes.roster.expect("a roster pane at this width"));
+    let inspector = region(&buffer, panes.inspector.expect("an inspector pane"));
+    let log = region(&buffer, panes.log.expect("a log pane"));
+    let footer = region(&buffer, panes.footer).trim_end().to_string();
+
+    // The roster's accounting: the header states how many are living and how many it could not fit,
+    // and the two together have to cover every Mokiterion the engine reports.
+    let stated = figure(&roster, "living");
+    let hidden = figure(&roster, "hidden").unwrap_or(0);
+    let listed = u64::try_from(roster_entries(&roster).len()).expect("a small roster");
+    let counted = u64::try_from(living).expect("a small population");
+
+    let report = PaneReport {
+        tick,
+        roster_accounts_for_every_living: stated == Some(counted) && listed + hidden == counted,
+        map_drew: ink(&region(&buffer, panes.view)) > 20,
+        log_presented: log.contains("tick="),
+        inspector_names_the_selection: selection
+            .as_deref()
+            .is_some_and(|id| observer.selected_agent().is_some() && inspector.contains(id)),
+        filter_narrows: after <= before,
+        filter_label,
+        exported,
+    };
+    (report, footer)
+}
+
+/// A key press, in the shape the observer's own handler takes.
+fn press(code: KeyCode) -> KeyEvent {
+    KeyEvent {
+        code,
+        modifiers: KeyModifiers::NONE,
+        kind: KeyEventKind::Press,
+        state: KeyEventState::NONE,
+    }
+}
+
+/// `VER-MOK-018` case **L31**: the observer replays this source to the transcript's horizon under
+/// operator control, and its panes behave as they do under `social`.
+///
+/// The environment the case names first — *"no credential in the environment and no network
+/// reachable"* — is a property of this file rather than an assertion in it: nothing here reads an
+/// environment variable, opens a socket or spawns a process, and the port is the scripted stub the
+/// file header describes. `SPEC-MOK-007` rule 12.2 is what makes that sufficient rather than a gap:
+/// a replay reaches no provider *whether or not* a credential is present, in both hosts, so there is
+/// no state of the environment this case would come out differently in.
+///
+/// **The comparison is a differential against `social`** at the same seed for the same five ticks,
+/// because the case's own standard is *"as they do under `social`"*. An assertion written only under
+/// this source would be satisfied by a host that treated it specially in some way the assertion did
+/// not think to look at; a differential fails on any difference at all in the fields it reads.
+/// [`PaneReport`] is what it reads, and the footer is compared field by field, since rule 8's
+/// `events` count belongs to the run and not to the source.
+#[test]
+fn the_observer_replays_this_source_to_the_horizon_with_every_pane() {
+    let directory = std::env::temp_dir().join("mokiterions-l31-observer-replay");
+    let _ = fs::remove_dir_all(&directory);
+    fs::create_dir_all(&directory).expect("a writable temporary directory");
+
+    let ledger = Rc::new(RefCell::new(Ledger::default()));
+    let (ported, ported_footer) = observe(
+        "llm",
+        Some(Box::new(ScriptedPort::moving(&ledger))),
+        &directory.join("llm.txt"),
+    );
+    let (deciding, deciding_footer) = observe("social", None, &directory.join("social.txt"));
+
+    // The horizon, reached under the port, with every opportunity of it answered and recorded.
+    assert_eq!(ported.tick, 5, "the replay stopped short of the horizon");
+    assert_eq!(ledger.borrow().proposed.len(), 60);
+    assert_eq!(ledger.borrow().recorded, 60);
+
+    // Every pane, compared as a whole so that a single difference names itself in the failure.
+    assert_eq!(
+        ported, deciding,
+        "a pane behaves differently under the model-backed source"
+    );
+
+    // Rule 8's footer names the fifth source, in the field that names `social`'s, and agrees with it
+    // everywhere the run does not decide the value.
+    let ported_fields = footer_fields(&ported_footer);
+    let deciding_fields = footer_fields(&deciding_footer);
+    assert_eq!(ported_fields.get("source").map(String::as_str), Some("llm"));
+    assert_eq!(
+        deciding_fields.get("source").map(String::as_str),
+        Some("social")
+    );
+    assert_eq!(
+        ported_fields.keys().collect::<Vec<_>>(),
+        deciding_fields.keys().collect::<Vec<_>>(),
+        "the footer presents a different set of fields under this source"
+    );
+    for field in ["seed", "ticks", "density", "tick"] {
+        assert_eq!(
+            ported_fields.get(field),
+            deciding_fields.get(field),
+            "the footer's {field} differs from `social`'s"
+        );
+    }
+
+    // And none of it passed vacuously: every pane did something under both.
+    assert!(
+        ported.roster_accounts_for_every_living
+            && ported.map_drew
+            && ported.log_presented
+            && ported.inspector_names_the_selection
+            && ported.exported,
+        "{ported:?}"
+    );
+
+    let _ = fs::remove_dir_all(&directory);
+    println!(
+        "the observer reached tick {} under both sources over 60 answered opportunit(ies); \
+         panes {:?}; footer {:?}",
+        ported.tick, ported, ported_footer
+    );
 }
