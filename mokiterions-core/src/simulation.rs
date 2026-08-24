@@ -1837,8 +1837,10 @@ fn permitted_form(action: &Action) -> String {
 // be a second thing to verify for no property this needs.
 //
 // **Rule 11.4's closed alphabet does not hold here and cannot.** The record stream's alphabet is
-// `A-Z a-z 0-9 _ . - + : ; >` and blocks A to D are English prose: block A alone carries spaces,
-// commas, parentheses, full stops and an em dash, and all four blocks are multi-line. Rule 11.4
+// `A-Z a-z 0-9 _ . - + : ; >` and blocks A to D are English prose: block A alone carries 1,282
+// spaces, 44 commas, 9 less-than signs, 5 apostrophes and 2 em dashes, none of which is in that
+// alphabet, and all four blocks are multi-line. Note that `.` and `>` are in it and `<` is not,
+// which is why the list is measured rather than described. Rule 11.4
 // adopts `SPEC-MOK-006`'s constraints, and `SPEC-MOK-006` rule 3.4 names this exact branch — a
 // value outside the enumeration "must either be added to that enumeration or arrive together with
 // an escaping function and its own verification". This is that function, and
@@ -11939,9 +11941,11 @@ mod tests {
     ///
     /// This is the test the escaping function arrives with, which is `SPEC-MOK-006` rule 3.4's own
     /// branch for a value that cannot be brought onto the enumerated alphabet: block A carries
-    /// spaces, commas, parentheses, full stops and an em dash, and all four blocks are multi-line,
-    /// so the alphabet does not hold and cannot. What holds instead is stated here — the four
-    /// blocks pass through the escaping unchanged in meaning and unchanged in framing.
+    /// spaces, commas, less-than signs, apostrophes and em dashes, none of which is in that
+    /// alphabet, and all four blocks are multi-line, so the alphabet does not hold and cannot.
+    /// A full stop is *in* the alphabet and so is `>`, which is why this list names what was
+    /// measured rather than what prose usually contains. What holds instead is stated here — the
+    /// four blocks pass through the escaping unchanged in meaning and unchanged in framing.
     #[test]
     fn every_block_survives_the_escaping_unchanged() {
         let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();

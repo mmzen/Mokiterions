@@ -797,7 +797,11 @@ assurance owner's.
 
 ## 11. Every escalation raised, and how it was resolved
 
-**Seven were raised and resolved. Eleven are open, and every one of them is an owner's to settle.**
+**Eighteen were raised. Seven were resolved as they arose. The remaining eleven were put to the owner
+in one pass on 2026-08-24 — each with its measurement displayed — and all eleven were ruled in the turn
+the question was asked.** A ruling is not the same as the work it authorizes: each entry below states the
+ruling and what was written under it, and the acts that remain nobody's but an owner's are in the section
+after this one.
 
 ### Raised and resolved
 
@@ -838,33 +842,82 @@ assurance owner's.
   reaches the same limit. `ARCH-MOK-001` is at 1,975 of 2,000, with 25. **Both architecture rationales
   are effectively full**, which is a property of the field rather than of any one ADR.
 
-### Open
+### Raised and ruled on 2026-08-24
 
 - **E8 — stop condition 7, case L5.** The case's literal wording is wider than the check the program
   enforces: 117 of 221 requests against 104. Which reading `VER-MOK-018` intends is the owner's.
+  **Ruled:** the enforced reading is the intended one, and the case is amended to say so. The 13 requests
+  the wider reading adds are exactly those with nothing in perception to target, whose set equals the core
+  list by the absence of a target rather than by a failure to derive — so the literal wording fails a
+  conforming run. Written into `VER-MOK-018`'s **L5** with a 2026-08-24 amendment row; the check is not
+  edited and still prints both figures.
 - **E9 — stop condition 6, case L17.** `VER-MOK-018` still states the closed-alphabet clause that rule
   11.4.1 withdrew on 2026-08-24. The verification document needs the same amendment the specification
   had.
+  **Ruled:** amend it. **L17**'s fourth clause is withdrawn and the round trip through the escaping
+  function stands in its place; the three surviving clauses are untouched. Written into `VER-MOK-018` in
+  the same 2026-08-24 row as E8 and E10.
 - **E10 — case L30's ceiling.** `VER-MOK-018` line 150 and `WO-MOK-025` required evidence item 11 both
   say "a ceiling set to the cost of two exchanges"; the test uses eighteen, for the reason in decision
   18. Two approved artifacts and the evidence disagree on a figure.
-- **E11 — rule 11.4.1's character list.** Two of the five listed characters do not hold of block A. The
-  rule's conclusion is unaffected. **Three sites** need the same correction: the rule and two
-  restatements in the engine's source.
+  **Ruled:** the figure is withdrawn from both artifacts, not from the case. Each now requires a ceiling
+  reached in a later tick and not in the first, derived from the run's arity and stated with the run.
+  Written into `VER-MOK-018`'s **L30** and into this work order's evidence item 11, with a *Lifecycle*
+  note recording it as one finding against two artifacts rather than as two findings. The retained
+  evidence is not re-taken: it was already the amended requirement's evidence.
+- **E11 — rule 11.4.1's character list.** Two of the five listed characters do not hold of block A, and
+  the list is also **incomplete**: measured over block A's 5,381 characters, the outside-the-alphabet
+  census is space 1,282, newline 90, comma 44, `<` 9, apostrophe 5, em dash 2 — while parentheses number
+  **zero** and the full stop, of which there are 65, is *in* the alphabet, as is `>`. The rule's
+  conclusion is unaffected. **Three sites** need the same correction: the rule and two restatements in
+  the engine's source.
+  **Ruled:** correct all three. The list was wrong in two places *and* incomplete in two — it omitted the
+  9 less-than signs and the 5 apostrophes — so the corrected list is measured over block A rather than
+  described, and each site says that it is. Written into `SPEC-MOK-007` rule 11.4.1 with a 2026-08-24
+  amendment row, and into `mokiterions-core/src/simulation.rs` at both comment sites. **This is why the
+  candidate commit moves**, and why gates 1 to 4 are re-run below.
 - **E12 — the required list's enumerated matrix omits L20 and L32** while its prose brings each in by
   half.
+  **Ruled:** name both in the enumeration, each marked *(in part)*, and leave the paragraphs as the
+  statement of which part. The opening sentence of *Required verification* is corrected in the same pass:
+  it said "the connector half of **L32**" where three halves are out of scope. No obligation moves —
+  `WO-MOK-026` keeps every half it had. Written into `WO-MOK-025` with a *Lifecycle* note.
 - **E13 — four added public items are outside every list `SPEC-MOK-002` rule 5 carries:** `ReplayPort`,
   `ReplayPort::new`, `DecisionRequest::tick`, `DecisionRequest::actor_id`. Eight of the twelve are
   enumerated.
+  **Ruled:** enumerate all four. `ReplayPort` gains a growth row and an admissibility row stating that it
+  cannot be narrowed to `pub(crate)`, because `mokiterions-core/src/main.rs:85` and
+  `mokiterions-tui/src/main.rs:118` both construct it under `SPEC-MOK-007` rule 12.1.1 and `ARCH-MOK-002`.
+  The two accessors join the `DecisionRequest` row. The growth arithmetic becomes `1 + 1 + 1 + 1 + 1`, and
+  the five-items-versus-twelve-declarations reconciliation is now stated with its decomposition rather
+  than left to be re-derived. Written into `SPEC-MOK-002` with a 2026-08-24 amendment row.
 - **E14 — rule 5 property (b)'s `&'static str` carve-out is stale.** Check 4 reports a FINDING at this
   candidate on an unchanged check, and the finding is about the check rather than about the code.
+  **Ruled:** amend property (b) to carve out a referent the caller owns, alongside the existing `'static`
+  carve-out. **My own recommendation on this one was wrong in its mechanism and is corrected on the
+  record:** I proposed naming `EventType::as_str`, which the `'static` clause already covers; the six
+  references the check actually reports are `DecisionRequest`'s accessors, borrowed from a value the
+  caller was handed. The conclusion — amend property (b) — is unchanged. Written into `SPEC-MOK-002`
+  rule 6 in the same row as E13. No check is edited to pass and no capability is relaxed.
 - **E15 — `REQ-MOK-077` required response 3's message.** The observer's exit status and its timing are
   already right; the message is "unknown option" where the requirement asks for "this host replays only,
   and a live run is the engine binary's". Right by accident of the parser is not the obligation met.
+  **Ruled: deferred to `WO-MOK-026`, and recorded here as untriggered rather than met.** That work order's
+  in-scope item 6 already carries the obligation in the requirement's own words, and *Required
+  verification* above already assigns **L32**'s connector-path, live-mode and ceiling halves there. **The
+  obligation is untriggered at this candidate** because the shared parser accepts none of the three
+  names, so nothing is accepted and silently ignored today — which is the `--events-path` defect, GitHub
+  issue 40, that the deferred item exists to avoid reproducing. The alternative — giving the observer the
+  message now for three option names the repository does not define — was put to the owner and declined,
+  because it would mean naming options this work order's *Out of scope* excludes. **A reader must not read
+  the exit `2` in the capture above as this obligation being met.**
 - **E16 — two orphaned amendment record rows in `SPEC-MOK-001`,** at lines 47 and 81, which sit outside
   any table and render as literal pipe text. **Both pre-exist at the base commit** and neither is this
   work order's; found while writing the 2026-08-24 row, reported, and deliberately not repaired, because
   an approved artifact is not edited on an implementation agent's judgement.
+  **Ruled:** repair them, in a separate `docs(spec)` commit **outside this work order**, carrying no
+  work-order trailer and stating why — on the precedent that a change no work order authorizes says so
+  rather than borrowing an authorization. Nothing in this packet depends on it and no figure here moves.
 - **E17 — `check_transcript_reading.py` is not wired into anything.** Its sibling is:
   `.github/workflows/provider-credentials.yml` runs `check_workflow_credentials.py` at line 93 and its
   own 38-test suite at line 83, so the credential gate is enforced on every run rather than by hand. The
@@ -872,8 +925,17 @@ assurance owner's.
   Whether it should be wired in, and whether it belongs in `scripts/` at all rather than beside the
   instruments in the evidence packet, is not settled by any artifact. Both scripts are repository-owned
   and absent from `.engineering-harness.lock`.
+  **Ruled:** wire it in. `.github/workflows/provider-credentials.yml` gains a third job running the
+  program's own 36-test suite and then the program against the committed transcript — the same transcript
+  the second job replays, and the same suite-then-check order the first job uses, for the same reason.
+  Both steps are green locally. It stays in `scripts/`: its sibling is there, and a check that must be
+  able to refuse a change to `.github/` cannot live inside the evidence packet of one work order. **This
+  adds to in-scope item 11 rather than correcting it**, and the *Lifecycle* note says so.
 - **E18 — `REPOSITORY_CONTEXT.md`'s amendment,** which `ADR-MOK-007` requires and which is the
   repository owner's to write.
+  **Ruled: draft it as a diff for the owner to approve or replace.** Drafting is not approving, and the
+  draft is held outside the file until the owner acts on it. It stays in the list of acts that are not the
+  implementation agent's, below, unchanged.
 
 ### The acts that are not the implementation agent's
 

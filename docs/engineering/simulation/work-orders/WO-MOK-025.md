@@ -5,7 +5,7 @@ title = "Stage 5a: the decision port, the request, the transcript and the replay
 status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-23"
-updated = "2026-08-23"
+updated = "2026-08-24"
 
 [assurance]
 commit_bound_verification = "required"
@@ -86,6 +86,55 @@ uncheckable without one — the one ordering constraint *Constraints* says canno
 fixed with it, for the same reason: `docs/engineering/simulation/evidence/WO-MOK-025/`, on the convention every evidence
 packet in this repository follows, and it is fixed before the first capture because a bound evidence path can never be
 corrected.
+
+### Note dated 2026-08-24 — two corrections and one addition to in-scope item 11
+
+This work order carries no *Amendment record* table, because `WORK_ORDER.template.md` defines none; a work order records
+a later change in *Lifecycle*, on the `WO-MOK-014` precedent. This note is that record. **Items 1 and 2 change no scope,
+add no in-scope item, remove no out-of-scope item, lift no stop-and-escalate condition and authorize no act. Item 3 does
+add to in-scope item 11, and says so.** All three were decided by the repository owner on 2026-08-24 acting as
+accountable **engineering owner**, in answer to escalations this work order's implementation put to the owner; the
+implementation agent wrote the text and decided none of them.
+
+1. **`L30`'s ceiling figure is withdrawn from evidence item 11.** The item said the stubbed run trips "a ceiling set to
+   two exchanges". An exchange is issued per acting Mokiterion, not per tick, so at this run's twelve-opportunity tick a
+   two-exchange ceiling is reached inside tick one — and **a port rebuilt every tick reaches it there too**, which
+   destroys the discriminator the case exists to be. The item now requires a ceiling reached in a later tick and not in
+   the first, with the figure and the arity it came from both stated; the retained evidence uses **eighteen**, one and a
+   half ticks. `VER-MOK-018`'s **L30** carries the same amendment, approved the same day by the same person acting as
+   assurance owner. This is escalation **E10**, and it is one finding against two approved artifacts rather than two
+   findings. Nothing about what was checked changes: `candidate/per-tick-lending.txt` was captured before this note and
+   is not re-taken.
+2. **`L20` and `L32` are named in the *Matrix cases* enumeration.** They were absent from it while the two paragraphs
+   immediately after it brought each into scope by half, and while evidence item 12 named their out-of-scope halves —
+   so the list said one thing and the prose another, and the failure mode this work order warns about for `L32`
+   specifically is a missing test looking exactly like a passing one. Each is now listed as *(in part)*, with the
+   paragraphs left as the statement of which part. The opening sentence of *Required verification* is corrected in the
+   same pass: it named "the connector half of `L32`" where three halves — connector-path, live-mode and ceiling — are
+   out of scope, as the paragraph below it and evidence item 12 both already said. This is escalation **E12**. **No
+   obligation is added or removed by either correction**: the same halves were owed before this note and are owed after
+   it, and the halves that are `WO-MOK-026`'s remain that work order's.
+
+3. **In-scope item 11 gains a second automated caller: `scripts/check_transcript_reading.py`.** Item 11 named the
+   credential scan and the replay step. The transcript-reading program is in scope as a program — it is what evidence
+   item 5 retains the output of, and it carries `VER-MOK-018`'s **L4**, **L5**, **L6**, **L12**, **L13**, **L14**,
+   **L15a** and **L17** — but nothing in the repository invoked it, so those eight cases held at a captured moment and
+   at no moment after. **A check nothing runs is a check that passes for as long as nobody looks**, which is the same
+   argument this work order's own item 11 makes for the credential scan. It is now a third job in
+   `.github/workflows/provider-credentials.yml`, alongside its own scenario suite, in the same file as the replay of the
+   same transcript. **This is an addition to scope, not a correction**, and it is recorded as one: the owner approved it
+   as escalation **E17**. It adds no requirement, no case and no obligation — the eight cases were owed before it — and
+   it adds no provider call, no credential read, no network access and no process spawn, the four things *Out of scope*
+   forbids absolutely. The program reads one committed file with the standard library and the job runs no compiler. Its
+   sibling `scripts/check_workflow_credentials.py` was already wired at the time of the escalation, at the two steps of
+   the first job in that file; only this one was not.
+
+The two corrections and the addition were among eleven escalations put to the owner in one pass on 2026-08-24, each with
+its measurement displayed, and approved in the turn the question was asked. Neither correction was repaired when found: stop-and-escalate
+condition 6 forbids amending an approved artifact on an implementation agent's judgement, and the addition would have
+been a scope decision the agent has no authority to take. **This work order's status does not move here** —
+it remains `in_progress`, and the transition to `implemented` requires the completed change and the retained evidence,
+which is a separate act.
 
 ## Objective
 
@@ -273,11 +322,17 @@ Components rather than files, since the shape of some of them is what this stage
 ## Required verification
 
 `VER-MOK-018`, restricted to the cases that need no provider — which is every case except **L15b**, **L24**, **L25**,
-the live half of **L20**, the connector half of **L32**, and the two owner attestations **C6** and **L28**.
+the live half of **L20**, the connector-path, live-mode and ceiling halves of **L32**, and the two owner attestations
+**C6** and **L28**. *(Amended 2026-08-24: this sentence said "the connector half of **L32**", naming one of the three
+halves the paragraph below and evidence item 12 both enumerate.)*
 
 **Matrix cases**: **L1**, **L2**, **L3**, **L4**, **L5**, **L6**, **L7**, **L8**, **L9**, **L10**, **L11**, **L12**,
-**L13**, **L14**, **L15a**, **L16**, **L17**, **L18**, **L19**, **L21a**, **L21b**, **L22**, **L23**, **L26**, **L27**,
-**L29**, **L30**, **L31**, **L33**.
+**L13**, **L14**, **L15a**, **L16**, **L17**, **L18**, **L19**, **L20** *(in part)*, **L21a**, **L21b**, **L22**,
+**L23**, **L26**, **L27**, **L29**, **L30**, **L31**, **L32** *(in part)*, **L33**.
+
+**L20** and **L32** were absent from that enumeration until 2026-08-24, while the two paragraphs below brought each
+in by half. They are named here now, each marked *(in part)*, so that the list and the prose agree and a reader
+counting the list cannot conclude the case is out of scope entirely. The paragraphs are what say which half.
 
 **L29** and **L30** are checked here with the scripted stub standing where the canned connector will later stand. The
 stub is an in-process implementation of the port, so it exercises both entry points and the per-tick lending without a
@@ -346,7 +401,12 @@ provenance:
     source with no transcript — captured as exit status and standard-error bytes. The observer's captures state which
     panes were exercised, since **L31**'s pass condition is about panes rather than about bytes.
 11. **The per-tick lending evidence** for **L30**: a replay of at least three ticks showing successive transcript records
-    consumed, and a stubbed run showing accumulated cost rising across ticks and tripping a ceiling set to two exchanges.
+    consumed, and a stubbed run showing accumulated cost rising across ticks and tripping a ceiling **reached in a later
+    tick and not in the first**, with the figure used and the arity it was derived from both stated. *(Amended
+    2026-08-24: this item said "a ceiling set to two exchanges". An exchange is issued per acting Mokiterion, not
+    per tick, so at a twelve-opportunity tick that ceiling trips inside tick one — where a port rebuilt every tick
+    trips it too, which defeats the discriminator. The evidence uses eighteen. `VER-MOK-018`'s **L30** carries the
+    same amendment.)*
     Both halves of a port rebuilt each tick are recorded as the failure they would produce, so a later reader can tell the
     case was exercised rather than merely present.
 12. **A statement of what was not verified and why**, naming **L15b**, **L24**, **L25**, **L28**, the attestation **C6**,
