@@ -95,14 +95,25 @@ package, every one of these was taken after it, and `request-layout.txt`'s figur
 transcript rather than from a build at all. A capture cannot be corrected after the fact, so the binding is
 supplied here instead of edited into them.
 
-**One of those commits is earlier than `bce4229`, and that is measured rather than waved through.**
-`candidate/gates.txt` establishes that `bce4229` is the last commit to change a file under either package.
-`8162b18` — the three manifests and the `REQ-MOK-068` comparison — precedes it, and what intervened is three
-test files and nothing else: `git diff --stat 8162b18
-bce4229` over both packages reports `mokiterions-core/tests/no_outcome_threshold.rs`,
-`mokiterions-core/tests/replay.rs` and `mokiterions-tui/tests/replay.rs`, `3 files changed`. A test file
-cannot change what the eighty runs print, so the manifests taken there are manifests of the candidate's
-product code. `bce4229` itself is `test(tui)`, one file, `mokiterions-tui/tests/replay.rs`.
+**One of those commits is earlier than `bce4229`, and the captures taken there were re-run rather than
+argued for.** `candidate/gates.txt` establishes that `bce4229` is the last commit to change a file under
+either package. `8162b18` — the three manifests and the `REQ-MOK-068` comparison — precedes it. The
+argument that would close that gap is that only test files intervened, and it is true: `git diff --stat
+8162b18 bce4229` over both packages reports `mokiterions-core/tests/no_outcome_threshold.rs`,
+`mokiterions-core/tests/replay.rs` and `mokiterions-tui/tests/replay.rs`, `3 files changed`, and
+`bce4229` itself is `test(tui)`, one file. **But an empty diff over the product code is an argument and
+not a measurement of the captures, so the captures were measured.** `candidate/req-068-comparison.txt`
+records it: both capture modes were re-run at HEAD with the same `capture.sh` and both manifests
+regenerated with the same `manifest.sh`, and `diff` of each recapture manifest against the committed one
+below line 1 produces no output. **All eighty cells reproduce byte for byte.** Line 1 is excluded and only
+line 1, because it is the header naming the capture commit — which is the one thing that must differ.
+
+The recapture directory is not in this packet and is not meant to be: it is a regeneration of files that
+are already here, its manifests were compared and discarded, and retaining a second copy of eighty cells
+would double the packet to prove nothing further. What is retained is the comparison's result, in the file
+named above, and the two scripts that reproduce it. One consequence is recorded there rather than left
+implicit: the schema-digit check runs over the recapture's streams, because the original capture's streams
+were never retained and only their manifest was.
 
 **`bfdbf71` appears in `candidate/request-layout.txt` and is not that file's capture commit.** It is the
 commit the repository owner's six rule 11 rulings were taken over, cited where the file reports the finding
@@ -153,6 +164,10 @@ repository rather than a build, so a reader who distrusts them can re-derive the
   - **`analysis/observer-screen.py`** — the observer's panes read out of the drawn screen region by region.
   - **`analysis/lending-cursor.py`** — the committed transcript's per-tick record layout, measured from
     outside the crate, which is the outside-in half of `L30`.
+- **`completion-report.md`** — the work order's completion report, in the eleven-item order
+  `WO-MOK-025`'s *Completion report format* fixes. It cites the captures above rather than restating
+  their figures, and it is the account of a candidate written by the agent that wrote the code: it
+  verifies nothing, and it names the eleven open escalations and the five acts that belong to an owner.
 
 ## Retention: what is kept whole, what is kept as a digest, and why
 
