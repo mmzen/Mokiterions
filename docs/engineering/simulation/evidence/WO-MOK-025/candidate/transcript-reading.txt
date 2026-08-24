@@ -1,0 +1,51 @@
+# VER-MOK-018 cases L4, L5, L6, L12, L13, L14, L15a and L17: the reading over the transcript
+#
+# The verbatim output of scripts/check_transcript_reading.py, captured in the implementation
+# tree on feature/phase-5-definition. That program is an independent judge: its enumerator is
+# written from SPEC-MOK-007 rule 7.3 and SPEC-MOK-001 rule 21 alone and shares no code with
+# the engine, so an agreement between the two is two readings of a rule agreeing rather than
+# one reading checked against itself.
+#
+#     python scripts/check_transcript_reading.py mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+#       -> exit 0
+#     python scripts/test_check_transcript_reading.py
+#       -> Ran 36 tests in 1.772s OK
+#
+# candidate: 84f045249a07bcf2db1d3397840efe07b8141fca
+# read on:   2026-08-24
+#
+# Two of the eight checks are narrower than the case they carry, and both are escalated in
+# the completion report rather than reported clean:
+#
+#   L5   117 of 221 requests carry no perceived Mokiterion, so their block D is the core
+#        proposal list by coincidence and not by derivation. The program enforces the
+#        narrower reading and prints the literal figure; WO-MOK-025 stop condition 7.
+#   L17  SPEC-MOK-007 rule 11.4.1 as amended on 2026-08-24 withdrew the closed alphabet and
+#        replaced it with a round trip through escape_transcript_text. VER-MOK-018 still
+#        states the withdrawn clause; WO-MOK-025 stop condition 6.
+#
+# The transcript path below carries forward slashes on either platform. The program prints it
+# through `as_posix` for that reason, fixed in the commit named above, so that this capture
+# does not differ between two hosts in a line that says nothing about the run.
+#
+# The program prints its own NOT CHECKED HERE block, and it is part of this reading.
+#
+transcript: mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+records: 233 (12 prefix, 221 exchange)
+requests examined: 221
+
+  PASS  L15a the layout holds  shared block 5385 bytes, identical across all 12 prefix records; actor blocks 39 to 40 bytes (12 Mokiterions); every exchange names its own prefix and its digest
+  PASS  L4 the enumeration is complete  all 221 requests agree with the independent enumerator
+  PASS  L6 no unsatisfiable offer  no offer among 221 requests names a target whose precondition is unmet
+  PASS  L5 the enumeration is not the core list  104 of 221 requests enumerate a targeted action; of the 104 whose observation carries a perceived Mokiterion, 0 have a set equal to the core-proposal list. Under the case's literal wording the figure is 117 of 221, every one of them a request with nothing to target; see this program's LIMITS
+  PASS  L12 one Mokiterion per request  every line of all 221 observations is one of rule 6.1's forms, carrying the acting Mokiterion's own attributes or another's identifier, direction and distance
+  PASS  L13 no aggregate and no derived value  no aggregate vocabulary, no figure on a list heading and no response text in any of 221 requests; nothing from another exchange has a line to occupy, which is how the closed grammar above discharges the clause
+  PASS  L14 self-contained requests  12 Mokiterions acted more than once; each keeps its prefix and its digest, differs in the observation, and holds no part of its own other request; no record carries a conversation or session identifier
+  PASS  L17 the transcript's constraints  no floating-point value, no timestamp and no path across 233 records and 1828 text values. The case's fourth clause is withdrawn: rule 11.4.1 replaced the closed alphabet with a round trip through `escape_transcript_text`, because blocks A to D are English prose — this transcript carries 24 character(s) outside ASCII by design — and that round trip is checked in-crate by `the_escaping_survives_the_framing_and_round_trips`, not here
+
+PASS: VER-MOK-018 cases L4, L5, L6, L12, L13, L14, L15a and L17 hold over 1 retained transcript(s)
+NOT CHECKED HERE: whether the transcript is the run it claims to be, and whether two
+  transcripts of one recorded run compare equal, both of which are
+  mokiterions-core/tests/replay.rs; L5's literal wording; and L17's closed-alphabet
+  clause, which SPEC-MOK-007 rule 11.4.1 withdrew. On the last two this program reports
+  the figure and decides nothing.

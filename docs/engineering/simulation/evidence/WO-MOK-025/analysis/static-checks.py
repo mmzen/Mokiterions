@@ -1,0 +1,998 @@
+"""`VER-MOK-018` cases **L3** and **L11**: the two static checks this work order owes.
+
+Usage, from the repository root:
+
+    python docs/engineering/simulation/evidence/WO-MOK-025/analysis/static-checks.py \
+        <base-commit> <scratch-dir> <output-file>
+
+## What is checked here, and what is checked elsewhere
+
+`VER-MOK-018` states two of its cases as static checks. Their whole text, quoted:
+
+  * **L3**, *the port is the only path* — "exactly one interface obtains a proposal under this
+    source; the library target contains no branch on live-versus-replay and no mode value; no
+    transport type, no reference and no mutable borrow of authoritative state appears on the added
+    public surface, re-running `SPEC-MOK-002` rule 6's existing check unchanged".
+  * **L11**, *the core list did not grow* — "the observation's list of currently valid core
+    proposals has the same members and order as at the base commit; the engine consumes no entropy
+    under the model-backed source".
+
+L3 is four obligations and they are four checks below. L11 is two, and only the first is static:
+**the entropy half is not here.** It is `docs/engineering/simulation/evidence/WO-MOK-025/`'s
+entropy manifests, base against candidate, and its in-crate counterpart is
+`the_four_existing_sources_draw_what_the_base_commit_drew`, which holds the twenty measured figures
+as a `const` and asserts them on every `cargo test`. A digest comparison of twenty configurations'
+tick-boundary states is not a source-level property and cannot be turned into one; it is named here
+so that a reader looking for L11's second half knows where it is rather than concluding it was
+skipped.
+
+## Nothing in this file is a new convention
+
+Check 4 is `WO-MOK-019`'s check 4, **imported and called**, not copied. L3's last clause says
+"re-running `SPEC-MOK-002` rule 6's existing check unchanged", and a copy is not the same check: a
+copy can drift, and the day it drifts the check that was supposed to be unchanged is the thing that
+changed. So this script imports that module and reuses its `Source` reader, its `Report`, its
+comment-and-literal blanking and its `check_4` verbatim. The imported module's line numbers, output
+format and pass condition are its own.
+
+**`WO-MOK-019`'s check 3 is deliberately not run.** Its pass condition is that work order's own —
+"the engine's public interface grows by exactly one parameter on `execute` and by no item" — and
+that is false here by design: `ADR-MOK-007` authorizes items. Running it would produce a FINDING
+that means nothing. Check 6 below is what replaces it, and it compares the public surface against
+`SPEC-MOK-002` rule 5's enumeration rather than against a count.
+
+## Check 6 is not one of L3's four, and it is here on purpose
+
+Rule 5 closes with "Nothing outside the three lists becomes public." L3's third clause speaks of
+"the added public surface", which presupposes knowing what was added; enumerating it is how check 3
+below gets its subject, and once enumerated, comparing it against rule 5's lists costs nothing and
+answers a question no other check asks. It found something. See its verdict.
+"""
+
+import importlib.util
+import io
+import os
+import re
+import subprocess
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
+
+PACKAGE = 'mokiterions-core'
+OBSERVER = 'mokiterions-tui'
+LIBRARY_SOURCES = ('lib.rs', 'cli.rs', 'simulation.rs')
+
+WO_019 = os.path.join(
+    'docs', 'engineering', 'simulation', 'evidence', 'WO-MOK-019', 'analysis', 'static-checks.py'
+)
+ENUMERATOR = os.path.join(
+    'docs', 'engineering', 'simulation', 'evidence', 'WO-MOK-011', 'analysis', 'interface.py'
+)
+
+# `SPEC-MOK-007` rule 20's two doors, and the mode vocabulary a live path would have to be spelled
+# in. `Live`, `LIVE`, `Mode`, `dry_run`, `offline` and `online` are here as a cross-check; the
+# positive enumeration is the count of sites that obtain a proposal, which is check 1.
+MODE_VOCABULARY = (
+    'live', 'Live', 'LIVE', 'mode', 'Mode', 'dry_run', 'DryRun', 'offline', 'online', 'Offline',
+    'Online', 'is_live', 'live_mode', 'LiveMode',
+)
+
+# What a transport would have to be named. A type from a networking or process crate cannot appear
+# without being named, and the engine package declares no dependency at all, so this list is a
+# cross-check over a surface that is already closed by `SPEC-MOK-002` rule 13.
+TRANSPORT_TYPES = (
+    'TcpStream', 'TcpListener', 'UdpSocket', 'SocketAddr', 'IpAddr', 'Url', 'Uri', 'Client',
+    'Request', 'Response', 'Command', 'Child', 'Stdio', 'reqwest', 'hyper', 'tokio', 'ureq',
+    'openssl', 'rustls', 'Socket', 'Connection', 'Transport', 'Endpoint',
+)
+
+# `SPEC-MOK-002` rule 6's first bullet, as the names those things are spelled in this engine.
+AUTHORITATIVE_STATE = (
+    'grid', 'agents', 'resources', 'tick', 'entropy', 'events', 'event_log', 'crossings',
+    'consumed', 'regenerated',
+)
+
+# What `SPEC-MOK-002` rule 5 authorizes as **added** by this stage, transcribed from its 2026-08-23
+# amendment. Transcribed rather than derived, because the point of the check is to compare the code
+# against what the specification says and a derived list would compare the code against itself.
+#
+# Only the added surface needs a transcription: rule 5's three standing lists describe a surface
+# neither this stage nor its predecessor moved, and check 3's enumeration is a diff, so an item on
+# those lists cannot reach this check at all.
+#
+# The amendment's own words for the two items:
+#
+#   `simulation::Proposer`       — "trait with one method taking a request by value and returning
+#                                  `Option<Action>`"
+#   `simulation::DecisionRequest` — "opaque value type of four owned or `'static` string parts, with
+#                                  per-part accessors returning `&str` and one accessor returning
+#                                  them in the composition order"
+#
+# So: the trait and its methods, the type, its four per-part accessors and the one composition-order
+# accessor. `advance_tick`'s parameter is the third of the four growths that row enumerates.
+RULE_5_AUTHORIZED_ADDITIONS = {
+    'Proposer', 'Proposer::propose', 'Proposer::record',
+    'DecisionRequest',
+    'DecisionRequest::shared_rules', 'DecisionRequest::actor', 'DecisionRequest::observation',
+    'DecisionRequest::permitted_set', 'DecisionRequest::blocks',
+    'Simulation::advance_tick',
+}
+
+# What rule 5 says about the set above, quoted so the check prints its own authority.
+RULE_5_CEILING = 'The additions list is a ceiling, not a checklist. … Nothing outside the three lists becomes public.'
+
+
+def load_wo_019():
+    """`WO-MOK-019`'s check module, imported so its checks run rather than being reimplemented."""
+    specification = importlib.util.spec_from_file_location('wo_019_static_checks', WO_019)
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module
+
+
+def run(command, **keywords):
+    return subprocess.run(command, capture_output=True, text=True, **keywords)
+
+
+def main():
+    base, scratch, output_file = sys.argv[1:4]
+    root = os.getcwd()
+    os.makedirs(scratch, exist_ok=True)
+    wo = load_wo_019()
+
+    # The candidate's library target, and the base commit's, materialized so the two are compared
+    # and not remembered.
+    before_directory = os.path.join(scratch, 'before')
+    os.makedirs(before_directory, exist_ok=True)
+    for name in LIBRARY_SOURCES:
+        shown = run(['git', 'show', f'{base}:{PACKAGE}/src/{name}'])
+        io.open(os.path.join(before_directory, name), 'w', encoding='utf-8', newline='').write(
+            shown.stdout
+        )
+
+    library = [wo.Source(os.path.join(root, PACKAGE, 'src', name)) for name in LIBRARY_SOURCES]
+    by_name = {source.name: source for source in library}
+    before = [wo.Source(os.path.join(before_directory, name), name) for name in LIBRARY_SOURCES]
+    before_by_name = {source.name: source for source in before}
+
+    engine_binary = wo.Source(os.path.join(root, PACKAGE, 'src', 'main.rs'))
+    observer_names = sorted(
+        name for name in os.listdir(os.path.join(root, OBSERVER, 'src')) if name.endswith('.rs')
+    )
+    observer = [wo.Source(os.path.join(root, OBSERVER, 'src', name)) for name in observer_names]
+
+    report = wo.Report()
+    report.lines.extend([
+        '# VER-MOK-018 cases L3 and L11: the static checks',
+        '#',
+        f'# repository root:  {root}',
+        f'# candidate:        {run(["git", "rev-parse", "HEAD"]).stdout.strip()}',
+        f'# base commit:      {base}',
+        f'# imported module:  {WO_019}',
+        f'# enumerator:       {ENUMERATOR}',
+        '#',
+        '# command: python docs/engineering/simulation/evidence/WO-MOK-025/analysis/'
+        'static-checks.py \\',
+        '#              <base-commit> <scratch-dir> <output-file>',
+        '#',
+        '# Every scan runs over source with comments and literals blanked by the imported module\'s',
+        '# `strip_rust`, so a doc comment that names a prohibited word is not mistaken for the word.',
+        '# Line numbers survive the blanking.',
+        '#',
+        f'# engine library: {", ".join(LIBRARY_SOURCES)}  '
+        f'({sum(len(source.raw_lines) for source in library):,} lines)',
+        f'# engine binary:  main.rs  ({len(engine_binary.raw_lines):,} lines)',
+        f'# observer:       {", ".join(observer_names)}  '
+        f'({sum(len(source.raw_lines) for source in observer):,} lines)',
+        '#',
+        '# L11\'s second half — that the engine consumes no entropy under this source — is not a',
+        '# source-level property and is not here. It is the entropy manifests, base against',
+        '# candidate, and `the_four_existing_sources_draw_what_the_base_commit_drew` in-crate.',
+    ])
+
+    added = check_3_subject(root, before_directory, scratch, report)
+
+    check_1(report, by_name, observer, engine_binary)
+    check_2(report, by_name, observer)
+    check_3(report, by_name, observer, added)
+    wo.check_4(report, by_name, before_by_name)
+    check_4_note(report)
+    check_5(report, root, base, before_by_name, by_name)
+    check_6(report, added, by_name['simulation.rs'])
+
+    findings = [result for result in report.results if result[2] != 'PASS']
+    report.lines.append('')
+    report.lines.append('=' * 108)
+    report.lines.append('# summary')
+    report.lines.append('=' * 108)
+    for number, title, word, text in report.results:
+        report.lines.append(f'  {number:>2}. {word:<8} {title[:62]:<62} {text}')
+    report.lines.append('')
+    report.lines.append(f'# {len(report.results)} checks, {len(findings)} findings')
+    report.lines.append('')
+    report.lines.append('# ---- full text of this script, retained as the WO-MOK-019 packet does ----')
+    report.lines.append('')
+    report.lines.extend(io.open(__file__, encoding='utf-8').read().split('\n'))
+
+    with io.open(output_file, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(report.lines) + '\n')
+
+    print(f'{len(report.results)} checks, {len(findings)} findings; written to {output_file}')
+    for number, title, word, text in findings:
+        print(f'  {number}. {word} {title}: {text}')
+    return 1 if findings else 0
+
+
+# ---------------------------------------------------------------------------------------------
+# The added public surface, enumerated once and used by checks 3 and 6
+# ---------------------------------------------------------------------------------------------
+
+def check_3_subject(root, before_directory, scratch, report):
+    """`WO-MOK-011`'s enumerator over both revisions; the added lines, and the totals."""
+    outputs = {}
+    for label, directory in (
+        ('before', before_directory), ('after', os.path.join(root, PACKAGE, 'src'))
+    ):
+        paths = [os.path.join(directory, name) for name in LIBRARY_SOURCES]
+        completed = run([sys.executable, ENUMERATOR, *paths])
+        path = os.path.join(scratch, f'interface-{label}.txt')
+        io.open(path, 'w', encoding='utf-8', newline='\n').write(completed.stdout)
+        outputs[label] = completed.stdout.split('\n')
+
+    report.lines.append('#')
+    report.lines.append('# The added public surface, enumerated once for checks 3 and 6')
+    report.lines.append('#')
+    for label in ('before', 'after'):
+        totals = [line for line in outputs[label] if line.startswith('items ')]
+        report.lines.append(f'#   {label:<7} {totals[0] if totals else "(no totals)"}')
+
+    def surface(lines):
+        return [line for line in lines if re.match(r'\S+\s+(item|field)\s', line)]
+
+    added = [line for line in surface(outputs['after']) if line not in surface(outputs['before'])]
+    removed = [line for line in surface(outputs['before']) if line not in surface(outputs['after'])]
+    for line in added:
+        report.lines.append(f'#   + {line}')
+    for line in removed:
+        report.lines.append(f'#   - {line}')
+    return added
+
+
+def _item_name(line):
+    """The declared name in an enumerator line, or None."""
+    match = re.search(
+        r'\b(?:fn|struct|enum|trait|type|const|static|mod)\s+([A-Za-z_][A-Za-z0-9_]*)', line
+    )
+    return match.group(1) if match else None
+
+
+def _qualified(source, line):
+    """`Owner::name` for an enumerator line, resolved by walking back to the enclosing block.
+
+    The enumerator prints an item's declaration and not its path, so two `new`s are one string.
+    The owner is whatever `impl`, `trait`, `struct` or `enum` most recently opened above the
+    declaration in the file — which is the same reading a person does.
+    """
+    name = _item_name(line)
+    signature = line.split('item', 1)[-1].strip() if ' item ' in line else line.split('field', 1)[-1].strip()
+    # A type's own declaration is its own owner. Without this the walk below would attribute
+    # `pub struct DecisionRequest` to whatever `impl` block happens to close above it.
+    if re.match(r'pub\s+(?:struct|enum|trait|type|mod|const|static)\b', signature):
+        return name
+    numbers = [
+        number for number, text in enumerate(source.raw_lines, start=1)
+        if text.strip() == signature.strip()
+    ]
+    if not numbers or name is None:
+        return name
+    for text in reversed(source.raw_lines[:numbers[0] - 1]):
+        match = re.match(
+            r'(?:impl(?:<[^>]*>)?\s+(?:[\w:]+(?:<[^>]*>)?\s+for\s+)?|pub\s+(?:struct|enum|trait)\s+)'
+            r'([A-Za-z_]\w*)',
+            text
+        )
+        if match:
+            owner = match.group(1)
+            return name if owner == name else f'{owner}::{name}'
+    return name
+
+
+# ---------------------------------------------------------------------------------------------
+# 1. L3, first clause: exactly one interface obtains a proposal
+# ---------------------------------------------------------------------------------------------
+
+def check_1(report, by_name, observer, engine_binary):
+    report.check(
+        1, 'L3, first clause: exactly one interface obtains a proposal',
+        'exactly one interface obtains a proposal under the model-backed source',
+    )
+    report.method(
+        'a positive enumeration in two directions rather than a search: every trait that declares '
+        'a method returning a proposal, and every site in product code that calls one. Both sets '
+        'are printed whole. A second interface would have to appear in the first, and a second '
+        'route to the one interface would have to appear in the second.'
+    )
+    simulation = by_name['simulation.rs']
+
+    report.say()
+    report.say('(a) every trait in the engine library that declares a proposal-returning method:')
+    traits = []
+    for source in by_name.values():
+        for number, line in enumerate(source.lines, start=1):
+            match = re.search(r'\b(?:pub\s+)?trait\s+([A-Za-z_]\w*)', line)
+            if match:
+                traits.append((source.name, number, match.group(1), number in source.test_lines))
+    declaring = []
+    for name, number, trait, in_test in traits:
+        report.say(
+            f'  {name}:{number:<6} trait {trait:<16}'
+            f'{"  (in a #[cfg(test)] region)" if in_test else ""}'
+        )
+    for source in by_name.values():
+        for number, line in enumerate(source.lines, start=1):
+            if re.search(r'fn propose\s*\(', line):
+                declaring.append((source.name, number, number in source.test_lines))
+    report.say()
+    report.say('  every `fn propose` in the engine library, product code and test regions alike:')
+    for name, number, in_test in declaring:
+        report.say(
+            f'    {name}:{number:<6} {simulation.raw_lines[number - 1].strip()[:76]}'
+            f'{"   (test)" if in_test else "   (product)"}'
+        )
+    product_declarations = [entry for entry in declaring if not entry[2]]
+
+    report.say()
+    report.say('(b) every call site that obtains a proposal, over both packages and all targets:')
+    call_sites = []
+    for label, sources in (
+        ('engine library', list(by_name.values())),
+        ('engine binary', [engine_binary]),
+        ('observer library', observer),
+    ):
+        for source in sources:
+            for number, line in enumerate(source.lines, start=1):
+                if '.propose(' in line:
+                    call_sites.append((label, source.name, number, number in source.test_lines))
+    for label, name, number, in_test in call_sites:
+        report.say(f'  {label:<17} {name}:{number:<6}{"   (test)" if in_test else ""}')
+    product_calls = [entry for entry in call_sites if not entry[3]]
+
+    report.say()
+    report.say(
+        '  Two product call sites, and they are one interface reached twice rather than two '
+        'interfaces.'
+    )
+    report.say(
+        '  `simulation.rs`\'s is `PortDecisionSource::decide`, the engine\'s only route from a '
+        'decision'
+    )
+    report.say(
+        '  to a proposal. The observer\'s is `LentPort`, a forwarding implementation of the same '
+        'trait:'
+    )
+    report.say(
+        '  its body is `self.0.propose(request)` and it exists because a `Box<dyn Proposer>` field '
+        'is'
+    )
+    report.say(
+        '  `\'static` and cannot be lent for one tick. A forwarder adds no interface — what the '
+        'engine'
+    )
+    report.say('  calls is still the port the host built, and it can reach nothing else.')
+
+    report.say()
+    report.say('(c) `DecisionSource`, and which of its implementations reaches a proposal at all:')
+    implementations = [
+        (number, simulation.raw_lines[number - 1].strip())
+        for number, line in enumerate(simulation.lines, start=1)
+        if re.search(r'impl(?:<[^>]*>)?\s+DecisionSource\s+for', line)
+    ]
+    for number, text in implementations:
+        proposes = 'reaches a proposal' if 'Port' in text else 'decides for itself'
+        report.say(f'  simulation.rs:{number:<6} {text[:66]:<66} {proposes}')
+    report.say(
+        f'  {len(implementations)} implementations; exactly one names a port, which is '
+        f'`SPEC-MOK-007` rule 20.6.'
+    )
+
+    passed = (
+        len(product_declarations) == 2      # the trait's declaration and `ReplayPort`'s impl
+        and len(product_calls) == 2         # `PortDecisionSource::decide` and the observer's forwarder
+        and len([entry for entry in traits if entry[2] == 'Proposer' and not entry[3]]) == 1
+    )
+    report.verdict(
+        passed,
+        f'one public trait declares a proposal-returning method, {len(product_calls)} product call '
+        f'sites reach it and one of them forwards to the other, and of '
+        f'{len(implementations)} `DecisionSource` implementations exactly one holds a port',
+        'a call site spelled through a function pointer or a closure stored in a field would not '
+        'contain the text `.propose(` and would not appear in (b). Nothing in either package '
+        'stores one: check 4 property (c) enumerates the interior-mutable and shared-ownership '
+        'types over the whole library target and finds none, and a stored callback would need a '
+        'field to live in.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 2. L3, second clause: no live-versus-replay branch and no mode value
+# ---------------------------------------------------------------------------------------------
+
+def check_2(report, by_name, observer):
+    report.check(
+        2, 'L3, second clause: no live-versus-replay branch and no mode value',
+        'the library target contains no branch on live-versus-replay and no mode value',
+    )
+    report.method(
+        'the positive form first — the closed set of things the engine can be told to do about a '
+        'decision, which is `Policy`\'s variants — and then the vocabulary a mode would have to be '
+        'spelled in, over stripped source so that prose about the absence is not read as the '
+        'thing. The observer library is scanned too, because a mode value there would be as much '
+        'a mode value.'
+    )
+    simulation = by_name['simulation.rs']
+
+    report.say()
+    report.say('(a) the closed set: `Policy`\'s variants, which is everything an operator selects:')
+    text = simulation.stripped
+    start = text.index('pub enum Policy')
+    variants = re.findall(r'^\s{4}([A-Z]\w*)', text[start:text.index('}', start)], re.MULTILINE)
+    for variant in variants:
+        report.say(f'    Policy::{variant}')
+    report.say(
+        f'  {len(variants)} variants and none of them is a mode: the fifth names the source, not '
+        'how it is'
+    )
+    report.say(
+        '  reached. There is no `Policy::LlmLive`, no second axis and no field beside the variant.'
+    )
+
+    report.say()
+    report.say('(b) the mode vocabulary, over stripped source, both library targets:')
+    hits = []
+    for label, sources in (('engine', list(by_name.values())), ('observer', observer)):
+        for source in sources:
+            for word in MODE_VOCABULARY:
+                for number, line in enumerate(source.lines, start=1):
+                    if re.search(rf'\b{word}\b', line):
+                        hits.append((label, source.name, number, word, source.raw_lines[number - 1]))
+    for label, name, number, word, raw in hits:
+        report.say(f'  {label:<8} {name}:{number:<6} {word:<10} {raw.strip()[:60]}')
+    if not hits:
+        report.say(
+            '  no occurrence of any of '
+            f'{", ".join(MODE_VOCABULARY[:6])} … in stripped source, in either library.'
+        )
+    report.say(
+        '  The word `live` occurs in the engine\'s prose — the doc comments state what this code '
+        'does'
+    )
+    report.say(
+        '  not do — and prose is blanked before the scan, which is why the count above is what it '
+        'is.'
+    )
+
+    report.say()
+    report.say('(c) what the one port implementation in the library branches on:')
+    all_impls = [
+        (number, simulation.raw_lines[number - 1].strip(), number in simulation.test_lines)
+        for number, line in enumerate(simulation.lines, start=1)
+        if re.search(r'impl.*\bProposer\s+for\b', line)
+    ]
+    replay_port = [entry for entry in all_impls if not entry[2]]
+    for number, line, in_test in all_impls:
+        report.say(
+            f'  simulation.rs:{number:<6} {line[:70]}'
+            f'{"   (a #[cfg(test)] region)" if in_test else "   (product)"}'
+        )
+    report.say(
+        '  One implementation, `ReplayPort`, and it has no other case to be. A live path does not'
+    )
+    report.say(
+        '  exist to branch away from: `WO-MOK-025`\'s *Out of scope* excludes the connector, its '
+        'protocol'
+    )
+    report.say(
+        '  implementation, the canned connector, any process spawn and the live-mode flag, so the '
+        'absence'
+    )
+    report.say('  here is the work order\'s boundary and not an oversight this check discovered.')
+
+    passed = not hits and len(replay_port) == 1
+    report.verdict(
+        passed,
+        f'{len(variants)} `Policy` variants, none of which carries a mode; {len(hits)} occurrences '
+        f'of the mode vocabulary in stripped source across both libraries; one `Proposer` '
+        f'implementation in the engine library and nothing for it to branch against',
+        'this is a vocabulary check in its (b) half and inherits that weakness: a mode spelled in '
+        'a word nobody listed would pass it. (a) is what carries the claim, because `Policy` is a '
+        'closed enumeration the operator selects from and a second axis would have to be reachable '
+        'from it or from a second parameter — and rule 5\'s three greps on `execute`, run in the '
+        'suite, fix the parameter list at five.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 3. L3, third clause: nothing on the added public surface reaches state or a transport
+# ---------------------------------------------------------------------------------------------
+
+def check_3(report, by_name, observer, added):
+    report.check(
+        3, 'L3, third clause: the added public surface carries no transport, no reference '
+           'into authoritative state and no mutable borrow',
+        'no transport type, no reference and no mutable borrow of authoritative state appears on '
+        'the added public surface',
+    )
+    report.method(
+        'the added surface is enumerated by `WO-MOK-011`\'s enumerator over both revisions — the '
+        'diff at the head of this file — and every added item is then read one at a time. This is '
+        'an enumeration and not a search: the set is closed and small enough to print whole, so a '
+        'reader can check the judgement on each rather than trust a verdict over all.'
+    )
+    simulation = by_name['simulation.rs']
+
+    report.say()
+    report.say(f'(a) the added items, {len(added)} of them, each classified by what it hands out.')
+    report.say(
+        '  A `&mut` is read by position, because the position is the capability: a receiver, an '
+        'inbound'
+    )
+    report.say(
+        '  parameter and a return type are three different things and rule 6 forbids one of them.'
+    )
+    borrowing, transport, outbound_mutable, receivers, inbound = [], [], [], [], []
+    for line in added:
+        signature = re.sub(r'\s+', ' ', line.split('item', 1)[-1]).strip()
+        arrow = signature.find('->')
+        returns = signature[arrow:] if arrow >= 0 else ''
+        parameters = signature[:arrow] if arrow >= 0 else signature
+        notes = []
+        if '&mut' in returns:
+            outbound_mutable.append(signature)
+            notes.append('a mutable borrow handed out')
+        if '&mut self' in parameters:
+            receivers.append(signature)
+            notes.append('`&mut self` receiver, on a value the caller owns')
+        if re.search(r'&mut(?!\s+self)', parameters):
+            inbound.append(signature)
+            notes.append('an inbound `&mut` the caller supplies')
+        if re.search(r'&', returns):
+            borrowing.append(signature)
+            notes.append('hands out a reference')
+        for kind in TRANSPORT_TYPES:
+            if re.search(rf'\b{kind}\b', signature):
+                transport.append((kind, signature))
+                notes.append(f'names {kind}')
+        report.say(f'  {signature[:70]:<70}{("  ← " + "; ".join(notes)) if notes else ""}')
+    report.say(
+        f'  {len(outbound_mutable)} hand out a mutable borrow. {len(receivers)} take `&mut self`, '
+        f'{len(inbound)} take an'
+    )
+    report.say(
+        '  inbound `&mut`, and both are accounted for by rule 6\'s 2026-08-18 amendment in its own '
+        'words:'
+    )
+    report.say(
+        '  the mutating methods "take `&mut self` on a `Simulation` the caller owns, which is not a '
+        'handle'
+    )
+    report.say(
+        '  into another owner\'s state". The inbound one is the port: the host lends the engine its '
+        'own'
+    )
+    report.say('  value for the length of the call, which is a borrow travelling the other way.')
+
+    report.say()
+    report.say('(b) the references: what they borrow from, and whether it is authoritative state:')
+    report.say(
+        f'  {len(borrowing)} of the added items hand out a reference, and all {len(borrowing)} are '
+        '`DecisionRequest`\'s accessors:'
+    )
+    for signature in borrowing:
+        report.say(f'    {signature[:84]}')
+    report.say('  `DecisionRequest`\'s own fields, read from the declaration:')
+    start = simulation.raw.index('pub struct DecisionRequest {')
+    for line in simulation.raw[start:simulation.raw.index('\n}', start)].split('\n'):
+        if line.strip() and not line.strip().startswith('//'):
+            report.say(f'    {line.rstrip()[:88]}')
+    report.say(
+        '  Owned `String`s and one `&\'static str`. A reference out of one of them borrows from the'
+    )
+    report.say(
+        '  request, and the request is composed per opportunity and handed to the port **by value**'
+    )
+    report.say(
+        '  — `DecisionRequest::compose(observation)` at the call site, `request.clone()` into '
+        '`propose`.'
+    )
+    report.say(
+        '  So the borrow is from a value the implementation owns. `Simulation` holds no '
+        '`DecisionRequest`'
+    )
+    report.say('  field at all, which is the fact that makes this a property and not a promise:')
+    holders = [
+        (number, simulation.raw_lines[number - 1].strip())
+        for number, line in enumerate(simulation.lines, start=1)
+        if re.search(r'^\s+\w+:\s*.*DecisionRequest', line)
+    ]
+    for number, text in holders:
+        report.say(f'    simulation.rs:{number}  {text[:80]}')
+    if not holders:
+        report.say('    no field of any type in the engine library has type `DecisionRequest`.')
+    report.say(
+        '  `SPEC-MOK-002` rule 5\'s 2026-08-23 amendment states this shape in as many words: '
+        '"opaque'
+    )
+    report.say(
+        '  value type of four owned or `\'static` string parts, with per-part accessors returning '
+        '`&str`".'
+    )
+
+    report.say()
+    report.say('(c) the transport vocabulary, over the added surface and over the whole library:')
+    library_transport = []
+    for source in by_name.values():
+        for kind in TRANSPORT_TYPES:
+            for number, line in enumerate(source.lines, start=1):
+                if re.search(rf'\b{kind}\b', line):
+                    library_transport.append((source.name, number, kind))
+    for name, number, kind in library_transport:
+        report.say(f'  {name}:{number:<6} {kind}')
+    if not library_transport:
+        report.say(
+            f'  none of {len(TRANSPORT_TYPES)} transport and process type names occurs anywhere in '
+            'the engine'
+        )
+        report.say(
+            '  library, in any build configuration. `SPEC-MOK-002` rule 13 is why this is closed '
+            'rather'
+        )
+        report.say(
+            '  than merely empty: the package declares no dependency, so nothing outside `std` is '
+        )
+        report.say('  nameable, and `std`\'s own transports are the names above.')
+
+    report.say()
+    report.say('(d) the observer\'s two added public items, which are the other half of the surface:')
+    for name, pattern in (
+        ('Observer::with_port', r'pub fn with_port'), ('Options::transcript_path', r'pub transcript_path')
+    ):
+        for source in observer:
+            for number, line in enumerate(source.lines, start=1):
+                if re.search(pattern, line):
+                    report.say(f'  {source.name}:{number:<6} {source.raw_lines[number - 1].strip()[:82]}')
+    report.say(
+        '  A constructor taking an owned port and a `PathBuf` field. Neither returns a reference, '
+        'neither'
+    )
+    report.say(
+        '  takes a borrow of engine state, and `SPEC-MOK-004` rule 6 records both with the '
+        'requirement'
+    )
+    report.say('  behind each. That rule\'s growth is OUTSTANDING for ratification and is not this '
+               'check\'s')
+    report.say('  to settle; what is checked here is the capability, and it is the same either way.')
+
+    passed = not transport and not outbound_mutable
+    report.verdict(
+        passed,
+        f'{len(added)} added public items; {len(transport)} name a transport or process type, '
+        f'{len(outbound_mutable)} hand out a mutable borrow, and the {len(borrowing)} that hand out '
+        f'a reference all borrow from a value the caller owns rather than from engine state',
+        'this reads signatures. An added item returning an owned struct that itself held a '
+        'reference into the engine would pass it — and a lifetime parameter on any added type '
+        'would appear in (a)\'s output, which is the reason the whole enumeration is printed. The '
+        'one added type with a parameter is `ReplayPort<R: BufRead>`, whose parameter is the '
+        'caller\'s own reader.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 4, continued: why the imported check reports a FINDING, and what it does and does not mean
+# ---------------------------------------------------------------------------------------------
+
+def check_4_note(report):
+    """Prose after the imported check. It adds no verdict, because it is not this script's to give.
+
+    `VER-MOK-018` L3's last clause is "re-running `SPEC-MOK-002` rule 6's existing check
+    unchanged". Unchanged, it reports a FINDING at this candidate. That is the measurement, it is
+    left standing, and what follows is what it means — not a correction of it.
+    """
+    report.say()
+    report.say('-' * 104)
+    report.say('4, continued: the FINDING above, read against what rule 6 forbids')
+    report.say('-' * 104)
+    report.say()
+    report.say(
+        'The check above is `WO-MOK-019`\'s check 4, imported and called. Its property (b) collects '
+        'every'
+    )
+    report.say(
+        'public function whose return type contains a reference, carves out `-> &\'static str`, and '
+        'fails'
+    )
+    report.say(
+        'if anything remains. At this candidate six remain, and all six are `DecisionRequest`\'s '
+        'accessors.'
+    )
+    report.say()
+    report.say('**The capability rule 6 forbids is not present.** That rule\'s first bullet names what')
+    report.say(
+        'may not be reached: the world grid, the agent collection, the resource collection, the '
+        'tick'
+    )
+    report.say(
+        'counter, the entropy state, the event log, and any handle permitting mutation. A '
+        '`DecisionRequest`'
+    )
+    report.say(
+        'is none of them. It is composed per opportunity from one `Observation`, it holds owned '
+        '`String`s'
+    )
+    report.say(
+        'and one `&\'static str`, no field of the engine has its type, and it is handed to the port '
+        '**by'
+    )
+    report.say(
+        'value**. An accessor on it borrows from a value the implementation owns. Check 3 (b) above '
+        'is the'
+    )
+    report.say('measurement of each of those clauses.')
+    report.say()
+    report.say('**What the FINDING is, then, is a stale check rather than a defect in the build** — '
+               'and it is')
+    report.say(
+        'the same hazard `SPEC-MOK-002` rule 5\'s own 2026-08-23 amendment identified and repaired '
+        'for a'
+    )
+    report.say(
+        'different check on the same day. That row says of the `execute` grep: "the standing '
+        '2026-08-20'
+    )
+    report.say(
+        'text reads \'A fifth parameter … fails the second\', and the port on `execute` **is** that '
+        'fifth'
+    )
+    report.say(
+        'parameter, so leaving it standing would give this specification a drift check that '
+        'condemns the'
+    )
+    report.say(
+        'build the specification requires." Property (b)\'s `&\'static str` carve-out is in exactly '
+        'that'
+    )
+    report.say(
+        'position: it was written when the only public function returning a reference was '
+        '`EventType::as_str`,'
+    )
+    report.say(
+        'and the same amendment that admitted `DecisionRequest` "with per-part accessors returning '
+        '`&str`"'
+    )
+    report.say('did not restate it.')
+    report.say()
+    report.say(
+        '**This script does not repair it.** L3 says "unchanged", and a check edited to pass is not '
+        'the'
+    )
+    report.say(
+        'check L3 names. Which of the two moves — rule 6 gaining a recorded re-check that states '
+        'the'
+    )
+    report.say(
+        'property in the form a public value type makes necessary, or `VER-MOK-018` L3\'s clause '
+        'naming a'
+    )
+    report.say(
+        'check that fits the tree — is the repository owner\'s to decide, and `WO-MOK-025` '
+        'stop-and-escalate'
+    )
+    report.say(
+        'condition 6 is the route. It is reported in the completion report as an escalation, with '
+        'the'
+    )
+    report.say('measurement above as its evidence.')
+
+
+# ---------------------------------------------------------------------------------------------
+# 5. L11, first clause: the core proposal list
+# ---------------------------------------------------------------------------------------------
+
+def check_5(report, root, base, before_by_name, by_name):
+    report.check(
+        5, 'L11, first clause: the core proposal list, members and order',
+        "the observation's list of currently valid core proposals has the same members and order "
+        'as at the base commit',
+    )
+    report.method(
+        'the list is built in one place and its order is the order of that code, so the check is a '
+        'comparison of three regions of source between the two revisions rather than a search: '
+        'the construction site, the `Action` enumeration it draws from, and `Direction::ORDERED`, '
+        'which fixes the order of the four move proposals. Byte-identical regions cannot differ in '
+        'members or in order.'
+    )
+    before, after = before_by_name['simulation.rs'], by_name['simulation.rs']
+
+    regions = (
+        ('the construction site', r'let mut valid_actions = vec!\[Action::Wait\];', r'^        \);$'),
+        ('the `Action` enumeration', r'^pub enum Action \{', r'^\}'),
+        ('`Direction::ORDERED`', r'const ORDERED:', None),
+    )
+    identical = True
+    for label, opening, closing in regions:
+        extracted = {}
+        for revision, source in (('base', before), ('candidate', after)):
+            lines = source.raw_lines
+            start = next(
+                number for number, line in enumerate(lines) if re.search(opening, line)
+            )
+            if closing is None:
+                extracted[revision] = [lines[start]]
+            else:
+                end = next(
+                    number for number, line in enumerate(lines[start + 1:], start=start + 1)
+                    if re.search(closing, line)
+                )
+                extracted[revision] = lines[start:end + 1]
+        report.say()
+        report.say(f'({label}) {len(extracted["candidate"])} line(s) at the candidate:')
+        for line in extracted['candidate']:
+            report.say(f'    {line.rstrip()[:92]}')
+        same = extracted['base'] == extracted['candidate']
+        identical = identical and same
+        report.say(
+            f'  base vs candidate: {"byte-identical" if same else "DIFFERS"}'
+            f'  ({len(extracted["base"])} line(s) at the base)'
+        )
+        if not same:
+            for line in extracted['base']:
+                report.say(f'    - {line.rstrip()[:90]}')
+
+    report.say()
+    report.say('the members, read off the construction site in the order it appends them:')
+    for position, member in enumerate((
+        'Action::Wait                      unconditional',
+        'Action::Sleep                     when energy < ATTRIBUTE_MAX',
+        'Action::Eat { food_id }           one per co-located food, in that collection\'s order',
+        'Action::Move { direction }        one per Direction::ORDERED step that stays on the grid',
+    ), start=1):
+        report.say(f'  {position}. {member}')
+    report.say(
+        '  Four kinds and nothing else, which is `REQ-MOK-005`. The seven targeted verbs are not '
+        'here'
+    )
+    report.say(
+        '  and the observation\'s own doc comment says why — "a targeted action never appears in '
+        'this'
+    )
+    report.say('  list" — so a source that proposes one is proposing outside the list by design.')
+
+    report.say()
+    report.say('a second reader of `Direction::ORDERED` arrives at this candidate, and it is not this list:')
+    readers = [
+        (number, after.raw_lines[number - 1].strip())
+        for number, line in enumerate(after.lines, start=1)
+        if 'Direction::ORDERED' in line
+    ]
+    for number, text in readers:
+        report.say(f'  simulation.rs:{number:<6} {text[:82]}')
+    report.say(
+        '  The new one parses a move out of a transcript line. It reads the constant to resolve a '
+        'name'
+    )
+    report.say(
+        '  and appends nothing to any observation, so the list\'s order is unaffected — and the '
+        'order it'
+    )
+    report.say('  reads is the same order, which is why the constant is shared rather than duplicated.')
+
+    report.verdict(
+        identical,
+        'all three regions are byte-identical between the base commit and the candidate, so the '
+        'list has the same four member kinds in the same order and the same two conditions',
+        'a region comparison would miss a change made outside all three — a second construction '
+        'site, or a mutation of `valid_actions` after the `Observation` is built. `Observation`\'s '
+        'field is not public and rule 6 keeps the type private, so the only writer is the '
+        'constructor above; and the engine\'s own suite asserts the list\'s contents at every '
+        'declared seed, which is what would fail if a fifth member appeared.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 6. Rule 5's closing prohibition, checked because check 3 had to enumerate the surface anyway
+# ---------------------------------------------------------------------------------------------
+
+def check_6(report, added, simulation):
+    report.check(
+        6, "SPEC-MOK-002 rule 5's closing prohibition, over the added surface",
+        f'{RULE_5_CEILING}',
+    )
+    report.method(
+        'every added public item, resolved to `Owner::name` by walking back to the block that '
+        'declares it, against the additions rule 5\'s 2026-08-23 amendment authorizes — '
+        'transcribed from that row and not derived, because a list derived from the code would '
+        'compare the code against itself. Only the added surface needs comparing: check 3\'s '
+        'enumeration is a diff, so an item on rule 5\'s three standing lists cannot reach here.'
+    )
+
+    report.say()
+    report.say('what that row authorizes as added, transcribed:')
+    for name in sorted(RULE_5_AUTHORIZED_ADDITIONS):
+        report.say(f'    {name}')
+
+    report.say()
+    report.say('the added items, resolved and compared:')
+    unenumerated = []
+    for line in added:
+        qualified = _qualified(simulation, line)
+        signature = re.sub(r'\s+', ' ', line.split('item', 1)[-1]).strip()
+        if qualified in RULE_5_AUTHORIZED_ADDITIONS:
+            report.say(f'  enumerated     {str(qualified):<34} {signature[:56]}')
+        else:
+            unenumerated.append((qualified, signature))
+            report.say(f'  NOT enumerated {str(qualified):<34} {signature[:56]}')
+
+    report.say()
+    if unenumerated:
+        report.say('four public items are outside every list rule 5 carries:')
+        report.say()
+        report.say('  `simulation::ReplayPort` and `simulation::ReplayPort::new`. Both are required '
+                   'to be')
+        report.say('  public and cannot be narrowed: two separate crates construct the port, '
+                   '`mokiterions-core/`')
+        report.say('  `src/main.rs:99` and `mokiterions-tui/src/main.rs:130`, because '
+                   '`SPEC-MOK-007` rule 12.1.1')
+        report.say('  puts the opening of the transcript in the host. `ARCH-MOK-002` names the type '
+                   'by name —')
+        report.say('  "the transcript\'s parsing is the engine\'s `ReplayPort`, in the engine '
+                   'package" — so its')
+        report.say('  existence is authorized; what is missing is its row in this rule\'s '
+                   'enumeration.')
+        report.say()
+        report.say('  `DecisionRequest::tick` and `DecisionRequest::actor_id`. Rule 5\'s 2026-08-23 '
+                   'row describes')
+        report.say('  this type as carrying "per-part accessors returning `&str` and one accessor '
+                   'returning them')
+        report.say('  in the composition order", which is five accessors: the four blocks and '
+                   '`blocks`. These two')
+        report.say('  are a sixth and a seventh, and `tick` returns `u64` rather than `&str`, so '
+                   'neither is')
+        report.say('  covered by that wording. Their only callers outside the crate are '
+                   'public-tier tests, which')
+        report.say('  bind a proposal to the tick and the Mokiterion it was asked about.')
+        report.say()
+        report.say('  The growth arithmetic in that row is `1 + 1 + 1 + 1`. The enumerator counts '
+                   '11 added items,')
+        report.say('  because it counts each `pub fn` and rule 5 counts a type and its accessors as '
+                   'one; the two')
+        report.say('  conventions differ and that is not the finding. The finding is the four names '
+                   'above, which')
+        report.say('  no convention reaches.')
+        report.say()
+        report.say('This is reported, not repaired. `WO-MOK-025` stop-and-escalate condition 6 — '
+                   '"an amendment')
+        report.say('turns out to be needed that `ADR-MOK-007` does not name; no approved artifact '
+                   'is amended on an')
+        report.say('implementation agent\'s judgement" — is what this is, and it is the repository '
+                   'owner\'s to')
+        report.say('settle. The capability question L3 asks is answered separately and in the '
+                   'affirmative by')
+        report.say('check 3: none of the four hands out a borrow of engine state, a transport or a '
+                   'mutable')
+        report.say('handle. What is open is the enumeration, not the safety.')
+    else:
+        report.say('every added public item appears in one of rule 5\'s lists.')
+
+    report.verdict(
+        not unenumerated,
+        f'{len(added) - len(unenumerated)} of {len(added)} added public items are enumerated by '
+        f'rule 5; {len(unenumerated)} are not: '
+        f'{", ".join(name for name, _ in unenumerated) or "none"}',
+        'the transcribed list is a maintained artifact and could itself be wrong or stale. It was '
+        'transcribed on 2026-08-24 from `SPEC-MOK-002` rule 5\'s four lists at this candidate, '
+        'and the check errs towards reporting: a name absent from the transcription that the rule '
+        'does carry would appear as a finding, which is the direction that gets looked at.',
+    )
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

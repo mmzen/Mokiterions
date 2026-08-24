@@ -5,12 +5,13 @@
 //! single-tick advance and nothing else (`SPEC-MOK-003` rule 12.1).
 
 use std::collections::{BTreeMap, VecDeque};
+use std::io;
 
 #[cfg(test)]
 use mokiterions::simulation::DecisionSnapshot;
 use mokiterions::simulation::{
-    Action, AgentSnapshot, Config, DecisionOutcome, Event, EventDetail, EventType, Simulation,
-    TerminationReason, WorldSnapshot,
+    Action, AgentSnapshot, Config, DecisionOutcome, DecisionRequest, Event, EventDetail, EventType,
+    Proposer, Simulation, TerminationReason, WorldSnapshot,
 };
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 
@@ -298,8 +299,52 @@ pub struct KeyResponse {
     pub force_draw: bool,
 }
 
+/// An owned port, held as one concrete type so that lending it borrows it for as long as the tick
+/// and no longer.
+///
+/// The engine lends a port as `Option<&mut dyn Proposer>`, whose elided lifetimes make the trait
+/// object live exactly as long as the borrow. A field of type `Box<dyn Proposer>` cannot produce
+/// that: its trait object is `dyn Proposer + 'static`, `&mut T` is invariant in `T`, and the borrow
+/// would therefore have to be `'static` too — which is to say the observer would have to lend the
+/// port permanently on the first tick and could never touch it again. Wrapping the box in a struct
+/// makes the field a sized type again, and a sized type coerces to a trait object of whatever
+/// lifetime the call site needs.
+///
+/// The two methods are `Proposer`'s two and this type adds nothing to either: it forwards, so what
+/// the engine calls is the port the host built. Its own `record` therefore carries the replay port's
+/// mismatch and exhaustion reports — `SPEC-MOK-007` rules 12.3 and 12.4 — unaltered, and a run this
+/// host cannot replay stops with the engine's own words.
+struct LentPort(Box<dyn Proposer>);
+
+impl Proposer for LentPort {
+    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+        self.0.propose(request)
+    }
+
+    fn record(&mut self, record: &str) -> io::Result<()> {
+        self.0.record(record)
+    }
+}
+
 pub struct Observer {
     simulation: Simulation,
+    /// The decision port this host lends the engine one tick at a time, when the run has one.
+    ///
+    /// Held for the whole run, and `SPEC-MOK-007` rule 20.4.1 is why it may not be rebuilt per
+    /// tick: the port carries the transcript cursor, so a fresh one each tick would read the first
+    /// record again every time and rule 12.1's ordering — record *n* belongs to tick *n* — would be
+    /// false from the second tick onward.
+    ///
+    /// Held behind the trait rather than as the concrete reader-backed type, so this struct takes no
+    /// type parameter. A parameter here would reach every pane, every helper and every one of this
+    /// package's test files to describe something none of them touch. [`LentPort`] is why the box is
+    /// wrapped rather than held directly.
+    ///
+    /// `None` for the four sources that need no port, and rule 20.9 is explicit that `None` is what
+    /// they take. `None` under `llm` cannot arrive from a command line — the shared parser refuses
+    /// that pair — and if it ever did, the engine's own rule 20.8 refusal fires on the first tick
+    /// with the engine's words rather than a second copy of them here.
+    port: Option<LentPort>,
     config: Config,
     snapshot: WorldSnapshot,
     progression: Progression,
@@ -340,12 +385,28 @@ pub struct Observer {
 }
 
 impl Observer {
+    /// An observer for a run that needs no decision port: the four sources of `SPEC-MOK-007` rule
+    /// 20.9.
+    ///
+    /// Kept as the one-argument constructor it has always been, so the several dozen call sites that
+    /// build an observer for a deterministic source are unchanged and cannot be misread as having
+    /// dropped a port they never had.
     pub fn new(options: Options) -> Result<Self, String> {
+        Self::with_port(options, None)
+    }
+
+    /// An observer for a run whose decisions come from a port the host built and owns.
+    ///
+    /// The port arrives already built because rule 12.1.1 puts the opening in the host and
+    /// `SPEC-MOK-006` rule 1.2 keeps path resolution out of the engine: this package's binary target
+    /// opens the transcript and hands over an open reader, and nothing here learns the path.
+    pub fn with_port(options: Options, port: Option<Box<dyn Proposer>>) -> Result<Self, String> {
         let simulation = Simulation::new(options.config)?;
         let mut observer = Self {
             snapshot: simulation.snapshot(),
             config: simulation.configuration(),
             simulation,
+            port: port.map(LentPort),
             progression: if options.start_paused {
                 Progression::Held
             } else {
@@ -382,7 +443,23 @@ impl Observer {
         if self.simulation.is_finished() {
             return Ok(());
         }
-        let outcome = self.simulation.advance_tick()?;
+        // The port is lent, not given: rule 20.4 has the host own it for the whole run and hand it
+        // over one tick at a time, which is what makes rule 20.4.1's "never rebuilt per tick" a
+        // property of the type rather than of this function's discipline.
+        //
+        // What is lent is always a replay port, and rule 20.3 is why: this host replays and does
+        // nothing else. Rule 20.2's reason for that is measured rather than stylistic — a frame is
+        // budgeted at 33 ms and an exchange with a provider is estimated at 0.4 to 0.8 s, so a live
+        // exchange here would stall the interface for the length of twenty frames per decision.
+        //
+        // Destructured for the reason `accumulate_decisions` is: `advance_tick` takes `&mut self` on
+        // the simulation and the port is a second `&mut` out of the same struct, so the two fields
+        // are split apart before either is borrowed.
+        let Self {
+            simulation, port, ..
+        } = self;
+        let outcome =
+            simulation.advance_tick(port.as_mut().map(|port| port as &mut dyn Proposer))?;
         self.ingest(outcome.events);
         self.snapshot = self.simulation.snapshot();
         // After the refresh, and only here: the snapshot the engine produces once a tick has been
@@ -1263,7 +1340,7 @@ mod tests {
 
         while !observer.is_finished() {
             observer.advance().unwrap();
-            let outcome = engine.advance_tick().expect("the same tick");
+            let outcome = engine.advance_tick(None).expect("the same tick");
             for event in &outcome.events {
                 let Some(entry) = counted.get_mut(&event.subject) else {
                     continue;

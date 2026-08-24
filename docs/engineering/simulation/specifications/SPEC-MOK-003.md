@@ -5,7 +5,7 @@ title = "Terminal observer presentation and read-only observation contract"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-22"
+updated = "2026-08-24"
 
 [relations]
 specifies = [
@@ -84,6 +84,7 @@ This specification adds no simulation behavior and no simulation state.
 | 2026-08-22 | **Rule 8 gains five clauses and its preamble a sentence, so the footer sheds fields in a fixed order and never clips one**, under `WO-MOK-008`. The preamble now states that where the row's width will not hold every field, fields are shed in the order of clause 4, and that a field is present with its whole value or it is absent — no abbreviation, rounding, re-basing or cutting. **Clause 4** fixes the order of loss as a six-row table: the candidate commit first, then the retained-event count with its marker, the current tick, the active decision source, the resource density, the configured tick limit; the entropy seed is never shed, nothing is shed while the row fits, and nothing is shed out of order. **Clause 5** makes the truncation marker part of the event-count field, so the two are shed together and no row states a retained count a reader could take for the whole run. **Clause 6** states what the floor guarantees — the seed, and nothing beyond it — with the arithmetic behind it: `SPEC-MOK-001`'s start-up contract accepts a seed and a tick limit anywhere in `u64`, and 20 digits beside 20 digits is 43 of the floor's 34 columns with the other four fields already shed. **Clause 7** forbids the clip in `REQ-MOK-024`'s own terms, naming a tick limit of `18446744073709551615` presented as `18446744073` as a defect at every width rather than a narrow-viewport degradation. **Clause 8** grants labelling to the implementation and withholds the radix, which forecloses presenting a `u64` in hexadecimal to make it fit. **Clause 2 gains two sentences**: supplied means non-empty, so a compile-time variable set to the empty string is not a supplied commit and the field is absent. No field's value, source or meaning changes. No other rule, figure, threshold, glyph, key binding, export, authority mapping or snapshot contract changes: the floor stays `34 × 22`, rule 5's pane table is untouched, and the footer pane remains `1` row and never excluded. **The 2026-08-21 rule 10 row above, whose two-line pairing is OUTSTANDING, is not touched.** | Approved 2026-08-22 by the repository owner as technical owner, who chose the remedy and fixed the order of loss in one act, having been shown the measured cost of all four candidates first. Three were rejected. Raising the floor width to 50, 64 or 84 columns — the widths that carry all six fields for a `u64::MAX` seed at default ticks, at 1e9 ticks, and at the arithmetic worst case — is what `WO-MOK-008` names as an escalation trigger, and it moves rule 5's floor, `REQ-MOK-024` and two `VER-MOK-005` viewport rows. A second footer row takes the canvas interior at `34 × 22` to 15, below rule 5's declared minimum fidelity of 32 × 16, so it would have forced the floor's height to 23 as a rule 5 decision rather than a rule 8 one. Re-basing the unbounded numerics reaches 72 columns in hexadecimal and 63 in base 36 against a floor of 34, so it defers the shedding instead of removing it, while changing what clause 1 calls the value as supplied. The order inside clause 4 was fixed by the owner on ground the agent measured: the retained-event count is rule 8's own addition and is claimed by no requirement, so it sheds before the five fields `REQ-MOK-027` names; and the resource density outranks the active decision source — the 7-column field kept over the 2-column one — because `REQ-MOK-027`'s own rationale makes density the field without which an observation supports no comparison, per-seed survivor counts being non-monotonic in it. **One provision is OUTSTANDING for the technical owner's ratification: clause 4's first row, which places the candidate commit ahead of everything.** The owner decided the order over the preamble's six fields and was not shown the commit's position, which that question does not contain. The agent placed it first because clause 2 already makes it the one contingent field, and because doing so is what discharges `WO-MOK-008`'s stated obstacle — today a stamp costs the row two rule 8 fields at the floor. The alternative not taken, the commit shed last as the field identifying which binary drew the frame, is recorded in `evidence/WO-MOK-008/footer-shedding.md` and is reversible by moving one table row. **A residual against `REQ-MOK-027` is disclosed and not closed.** That requirement states provenance is never the information sacrificed to degradation, and clause 6 concedes that at the floor with a 20-digit seed beside a 20-digit tick limit only the seed survives. Rule 8 cannot close it, because the width is not this specification's to grant; whether the requirement is amended, the accepted input range narrowed, or the residual accepted is the product owner's act, and `VER-MOK-005` records it as unresolved. |
 | 2026-08-22 | **No rule of this specification changed and no figure moved. This row records the reconciliation of the four amendments dated 2026-08-22 above, which were written against different trees and met in this merge, and all four are retained verbatim.** Three reached this file on `master` — the *Start-up inputs* forwarding paragraph, the `REQ-MOK-061` and `REQ-MOK-062` relation, and `WO-MOK-020`'s nine provisions — and the fourth is `WO-MOK-008`'s rule 8 amendment, which reached it by the merge of that work order's own branch. **They meet at no provision.** Measured in this checkout on 2026-08-22: rule 8's text on `master` is byte-identical to the text at `f7b1c45`, the base both sides diverged from, at 736 characters unchanged, so `WO-MOK-008` is the only side that amended rule 8 and none of the three `master` rows touches it; conversely the `WO-MOK-008` row amends no provision those three reach — rules 4, 9, 10, 11, 12 and 21, the *State model* table and *Performance and capacity* are untouched by it. **The `WO-MOK-020` row above anticipated this meeting and recorded the same measurement from the other side**, stating that its implementation agent trial-merged that branch on 2026-08-22 and measured the only conflict in this file to be two rows meeting in this table, resolved by keeping both with no provision of either read or touched. That is the resolution taken here, extended to four rows: `master`'s three first in the order they arrived, then `WO-MOK-008`'s. **The ordering records merge order and not precedence**, and no owner act is edited, summarised, folded into another or re-dated. The frontmatter's `updated` needed no reconciliation at all: both sides set it to 2026-08-22 independently and identically, and git resolved it without a conflict. **Measured on the merged tree**: `validate` PASS at 156 artifacts, 0 errors and 0 warnings; `inspect` at 550 relations and 44 findings of 0 error, 21 warning and 23 info, with decision-required, definitions-pending, active-work and assurance-pending all empty; `preflight --work-order WO-MOK-008 --phase review` PASS at `WO-MOK-008 (implemented)`; and the workspace at 343 tests passed and 0 failed with `cargo fmt --all --check` and `cargo clippy --workspace --all-targets -- -D warnings` clean, the footer's own row `the_footer_never_clips_a_value_at_any_declared_viewport` among them. Two records that bind this work are not edited and neither is any file under `evidence/`: `VREC-MOK-005`, which binds this specification, and `VREC-MOK-021`, which binds the `WO-MOK-008` candidate at `3da6acc`. | Recorded by the implementation agent as a statement of fact about four amendments it holds authority over none of, on the precedent of the 2026-08-20 reconciliation row above and the two 2026-08-19 rows that row cites. **Nothing is ratified here and no provision changes.** The three `master` amendments were approved by the repository owner on 2026-08-22 as their own status cells record, and this row neither re-states nor re-dates those acts. **The one provision this file leaves OUTSTANDING is unaffected and stays outstanding**: clause 4's first row of the `WO-MOK-008` amendment — the candidate commit shed ahead of every field `REQ-MOK-027` names — which is the accountable technical owner's to ratify and is named again in `VER-MOK-005`. This row does not ratify it and does not touch its status cell. The merge recorded here is a merge and not a rebase, so the commit `VREC-MOK-021` binds stays an ancestor and that record's provenance is untouched, which is why it was taken this way. |
 | 2026-08-22 | **No rule of this specification changed and no figure moved. This row records two owner acts taken on 2026-08-22 after `WO-MOK-008` merged to `master`, and it does not touch the rule 8 amendment row above, which stands as written.** The first act is the **ratification of clause 4's first row** — the candidate commit shed ahead of every field `REQ-MOK-027` names — which that row named OUTSTANDING for the technical owner, because the order of loss was decided over rule 8's six preamble fields and the commit's position is not a part of that question. It is ratified **as written**, so clause 4 is unchanged, and the implementation already conforms to it: no provision of rule 8, no case in `VER-MOK-005` and no line of `mokiterions-tui` moves under this act. The alternative not taken — the commit shed last, as the field identifying which binary drew the frame, recorded in `evidence/WO-MOK-008/footer-shedding.md` and reversible by moving one table row — is **declined** rather than left open. The second act is the **product owner's explicit acceptance of the disclosed `REQ-MOK-027` residual**, which the same row disclosed and did not close: clause 6 concedes that at `34 × 22` a twenty-digit entropy seed beside a twenty-digit tick limit is 43 characters of 34, so the floor guarantees the entropy seed alone. It is **accepted knowingly** rather than resolved. `REQ-MOK-027` keeps its statement and is not amended, the accepted seed range is not narrowed, and **rule 5's floor is not raised** — the course the rule 8 row names as `WO-MOK-008`'s escalation trigger, which would have moved rule 5's floor, `REQ-MOK-024` and two `VER-MOK-005` viewport rows. The acceptance is recorded normatively in `REQ-MOK-027`'s *Open decisions*, on the precedent of `REQ-MOK-014`'s deferred matter, and in `VER-MOK-005`'s *Residual uncertainty*, which is where that residual was recorded as the product owner's to resolve. **What the acceptance does not do.** It does not make `REQ-MOK-027` satisfied at the floor: it concedes that at that viewport it is not, and no PASS from `VER-MOK-005` may be read as saying otherwise. And it is **void if the floor, the accepted seed range or rule 8's field set changes**, because any of the three puts the arithmetic back. | **Approved 2026-08-22 by the repository owner in two acts, put separately because they belong to two roles.** Clause 4's first row was ratified by the owner acting as **accountable technical owner**, the role the rule 8 row names, having been shown that the position is what discharges `WO-MOK-008`'s stated obstacle — a stamp otherwise costs the row two rule 8 fields at the floor — and that the alternative is one table row away. The `REQ-MOK-027` residual was accepted by the owner acting as **product owner**, the role both this specification and `VER-MOK-005` name, with the three courses those artifacts enumerate put alongside acceptance and the floor's measured cost stated for each. Both acts were taken after `WO-MOK-008` merged at `2ecb78a`, so **neither is covered by `VREC-MOK-021`**, which is `verified` and bound to `3da6acc`: that record cannot be re-pointed and no record binds these commits. The implementation agent wrote this text, measured that no provision, figure, case or line of `mokiterions-tui` changes under either act, and decided neither. **The rule 8 amendment row above is not touched**, on the precedent of the 2026-08-20 row that records `WO-MOK-012`'s ratification of the 2026-08-18 *Data and interface contracts* row without editing it: a row records the state at its own act, and a later ratification is a later row. |
+| 2026-08-24 | **The observer becomes a host of the fifth decision source. Three provisions under `ADR-MOK-007`'s authorization, and four locations under a separate owner act taken the same day; no new rule and no new exit code.** Rule 11's `decision_source_selected` row gains **`REQ-MOK-063` when the source is `llm`**, with the paragraph that records why it is that identifier and not `REQ-MOK-067`'s replay determinism — clause 1 asks what authorizes the behaviour the record reports, and the observer's replay-only reach is its own restriction rather than the record's authority. **No event type is added**, so the table stays at fifteen rows and clause 2's exhaustiveness is unmoved; the row's one-line-per-source height and its derivation from the mapping are recorded as consequences rather than provisions, because this rule fixes identifiers and no layout. Measured at the candidate: the four-source row was **117** columns and fitted a 132-column terminal, a fifth appended would have been **135**, and the overlay truncates rather than wraps. ***Start-up inputs* gains `--transcript-path`'s disposition**, in the 2026-08-22 paragraph that enumerates what the forwarding accepts: the count of forwarded engine options outside the input table is edited **two to three**, and the option is **acted on** — re-read positionally under `SPEC-MOK-007` rule 18.4, opened at start-up under rule 12.1.1, and lent to the library as an already-open reader owned for the run under rule 20.4. A well-formed path the platform refuses stays a **runtime failure with exit `1`** rather than becoming an invalid value, adopting `SPEC-MOK-001`'s `--events-path` distinction, and the exit `2` sentence is unmoved. **And the byte-identity obligation moves from four entries to five**, `--transcript-path` joining `--seed`, `--ticks`, `--policy` and `--density`, with `--policy`'s fifth value arriving inside an entry the observer already carried verbatim. **What this row does not write.** `ADR-MOK-007` gives dispositions for four new engine options; **only the transcript path exists in the shared parser at this candidate**, so the connector path, the live-mode selection and the spend ceiling take no provision — the forwarding refuses each as an unknown option with exit `2`, by the parser's general arm, and writing the recognized-and-refused disposition now would describe code that does not exist. That is `WO-MOK-026`'s, in that paragraph, on the partial-landing form `SPEC-MOK-002` rule 13's row establishes. **Six considered non-amendments, each named rather than left silent, and each recorded by `ADR-MOK-007` as considered rather than omitted.** *Actors and external systems*' closing sentence does not move: "No network, credential, model provider, database, or asynchronous runtime is involved in either component" **continues to hold**, because this host reads a file the repository commits and a transcript is provider-derived data at rest rather than a provider involved at run time — the same distinction that lets committed evidence be replayed in continuous integration for free. If this host ever ran live the sentence would fall, which is a second reason `SPEC-MOK-007` rule 20.1's split is written into a specification rather than left as a habit. Rules 6.1 and 6.2 do not move: the frame and input budgets are the stated reason this host cannot run live, and they are not relaxed, scoped or excepted. The *Declared dependency set* does not move: its one entry stays `ratatui 0.30.2` and its transitive-reach sentence stays true, no crate being added to either package. The `--events-path` bullet and GitHub issue 40 are untouched, named because the temptation is to fix that defect in passing and closing it is a governed change of its own. The frontmatter's `specifies` gains nothing: rule 11 already names `REQ-MOK-008`, `REQ-MOK-015` and `REQ-MOK-033` while declaring none of them, so an identifier in the mapping is not a relation trigger, and `REQ-MOK-063` arrives on those same terms. And `--export`'s "never opened at start-up, never interpreted as code, and never used to read" is unamended, its words being `--export`'s alone. **Two filesystem provisions had become false and are amended under a separate act, and a third location is enumerated with them.** *Actors and external systems*' Filesystem bullet closed "**Never read from.**", and *Security and privacy properties* stated "**The filesystem is written once per requested export and never read.**" The observer now opens a file for reading at start-up, so both were false at this candidate. **`ADR-MOK-007` names neither**: it amends the engine's twin claims in `SPEC-MOK-001` and calls that "the row a reader should check first", and it records this specification's *Actors* section as needing no amendment on a reasoning addressed to its closing sentence about networks, credentials, providers, databases and asynchronous runtimes — which does continue to hold and is unamended — and not to the filesystem bullet above it. Both are now amended: the Filesystem bullet admits a start-up read of a named transcript, opened by the **binary target alone**, never created, written or removed, with no other filesystem location a source of observer input; and the security bullet keeps the property it exists to carry, the transcript being provider-derived data at rest interpreted only as a path, so the engine cannot be reached through the value and rule 12.2's "no provider call, no socket, no connector, no credential" is untouched. **The engine's own sentence is not copied**, because it is not true here: `SPEC-MOK-001` says its library target "performs no filesystem operation", and the observer's library does — `mokiterions-tui/src/export.rs` creates the export file and removes a partial one. The transferable property is the narrower measured one, that the observer's library never opens a path it was told about. A **second security bullet is added** for the transcript path rather than folding it into `--export`'s, which is unamended: the two paths differ in exactly the respect that bullet is about. And the exit-code enumeration is completed in two places — *Outputs* names a transcript that cannot be read inside the exit `1` it already admitted, adding no code, and *Error and recovery behavior* gains the row an implementation goes to that table to find. This is **the first exit `1` that occurs before the terminal is entered**, which is why the pairing of runtime with terminal failure needed the case named. | **Written 2026-08-24 by the implementation agent under `ADR-MOK-007`'s authorization**, whose *Status* provides that every provision under *Required amendments* "remains unwritten in its target artifact and is `WO-MOK-025`'s, `WO-MOK-026`'s or `WO-MOK-027`'s to write under this authorization". The authorizing act is the repository owner's **"i approve the artifact pack"** of 2026-08-23, taken as **accountable technical owner**, which is the role this specification's `owners` names and the role `ADR-MOK-007`'s `SPEC-MOK-003` section assigns. It was approved through that ADR and not separately, which is what that *Status* requires each amended artifact to record. The agent measured the 117 and 135 column figures, the fifteen-row count, the forwarded-option count and the shared-entry set at the candidate commit, wrote this text, and decided none of the substance: the identifier, the dispositions and the byte-identity extension are all `ADR-MOK-007`'s. **The two filesystem provisions and the exit-code enumeration are covered by a second and separate act, taken the same day.** They are not covered by the pack approval and were not treated as covered: `ADR-MOK-007` names no amendment for any of the three, which is `WO-MOK-025` **stop-and-escalate condition 6** — "an amendment turns out to be needed that `ADR-MOK-007` does not name; no approved artifact is amended on an implementation agent's judgement". The agent measured the falsity, reported it rather than amending it, and put the disposition to the owner with three courses measured and the exact replacement text of each shown: amend all three, amend only the two false provisions and leave the exit `1` case covered-but-unnamed, or defer all three to `WO-MOK-026` and leave two false statements standing in an approved specification for its length. **The owner chose to amend all three, on 2026-08-24, acting as accountable technical owner**, and the two declined courses are recorded here rather than left open. The agent then found and reported one defect in the text it had put up for that decision — the engine's "the library target performs no filesystem operation" sentence is false of the observer's library, which exports — and narrowed the claim to the measured one before writing it; the substance the owner approved is unchanged. `VREC-MOK-005`, which binds this specification, is not edited, and no file under `evidence/` is edited. |
 
 ## Actors and external systems
 
@@ -105,7 +106,15 @@ This specification adds no simulation behavior and no simulation state.
   `x86_64-unknown-linux-gnu` and 62 on `aarch64-apple-darwin`, the other two targets `SPEC-MOK-005` rule 10 builds.
   The declared set is target-independent; its resolved consequence is not.
 - **Filesystem.** Written to exactly once per operator-requested export, at an operator-supplied or default path.
-  Never read from.
+  **Amended 2026-08-24: read from once per run, at start-up only, when a transcript is named.** This bullet closed
+  "Never read from." and that stops being true. The observer opens the `--transcript-path` file for reading before the
+  terminal is entered and lends the engine's library an already-open reader rather than a path, under `SPEC-MOK-007`
+  rules 12.1.1 and 20.4. The file is never created, never written and never removed, it is opened once and not
+  re-opened for the run, and no other filesystem location is a source of observer input. **The opening is the binary
+  target's alone**: `mokiterions-tui/src/main.rs` resolves and opens it, and the observer's library never opens a path
+  it was told about — which is what keeps `SPEC-MOK-007` rule 19.7's "no error message contains a path the engine
+  resolved" true of every message the engine can produce under this host. The library's own filesystem use is unchanged and is the
+  export of the bullet's first sentence.
 
 No network, credential, model provider, database, or asynchronous runtime is involved in either component.
 
@@ -131,7 +140,7 @@ and never used to read.
 
 **What the forwarding also accepts, stated 2026-08-22.** The identity claimed above holds by construction rather
 than by duplication: the observer recognizes the three inputs in the table, and hands **every other argument** to
-the engine's own parser. So the observer also accepts the two engine options that are not in the list above, and
+the engine's own parser. So the observer also accepts the three engine options that are not in the list above, and
 two consequences follow that were true and unstated.
 
 - `--trace-actions` is accepted and has nothing to switch on. Rule 9 requires tracing to be on here, so the
@@ -144,11 +153,55 @@ two consequences follow that were true and unstated.
   not. Closing it is a governed change of its own and will retire this bullet; `--export` and the engine binary are
   the two ways to retain anything in the meantime.
 
+**Amended 2026-08-24: the forwarding carries a third engine option, and the observer acts on it.** The count in the
+paragraph above read **two** when it was written on 2026-08-22 and reads three as of this amendment. The arrival is
+`--transcript-path`, and its disposition is not either of the two above. It is recorded **here rather than in this
+section's opening enumeration** of `--seed`, `--ticks`, `--density`, `--policy` and `--help`, which is where
+`ADR-MOK-007` places the four new engine options: that enumeration is the set the observer's identity claim is made
+about, and this paragraph is the one that says what the forwarding does with everything else. `SPEC-MOK-001`'s
+*Inputs* section remains where the option's own semantics are fixed, and nothing here restates them.
+
+- `--transcript-path` is accepted, validated by the engine's parser, and **acted on** — the first engine option of
+  which that is true. The observer re-reads the raw argument positionally from the list the parser accepted, because
+  the parser validates the value and keeps nothing, which is `SPEC-MOK-007` rule 18.4. It then **opens the file at
+  start-up** and hands the engine's library an already-open reader, never a path: rule 12.1.1 puts the opening in the
+  host, and rule 20.4 has the host own the resulting decision port for the whole run. This is the one respect in
+  which the observer is a host of `--policy llm` rather than a forwarder of it, and it is the only respect: the
+  observer spawns no connector, makes no provider call and has no live mode, under rule 20.1's split and for the
+  reason rules 6.1 and 6.2 give.
+- **The value is a path and is opened; the neighbouring `--export` sentence is unaffected.** `--export` remains
+  validated as a string only, never opened at start-up, never interpreted as code and never used to read. Those
+  words are `--export`'s and claim nothing about any other input. What is now true of the observer, and was not
+  before, is that one operator-supplied value is interpreted as a filesystem path and opened for reading before the
+  terminal is entered. It is interpreted only as a path, never as code, never as a format string, never as an option
+  and never as engine input, so the engine still cannot be reached through the value.
+- **A well-formed path the platform refuses is a runtime failure and not an invalid value.** The exit `2` sentence
+  above is unmoved: whether a file can be opened is not a property of the argument, so a transcript that cannot be
+  read is reported as a runtime failure with exit `1`, which is the distinction `SPEC-MOK-001` fixed for
+  `--events-path` and is adopted here rather than re-derived. Two combinations *are* invalid values and are refused
+  by the shared parser with exit `2`: `--policy llm` with no transcript, and a transcript under any other policy.
+
+**What this amendment does not write.** `ADR-MOK-007` gives dispositions for four new engine options — the connector
+path, the live-mode selection, the transcript path and the spend ceiling. Only the transcript path exists in the
+shared parser at this change, so only its disposition is written here. The other three are not accepted by that
+parser at all, which means the forwarding refuses each of them as an **unknown option** with a diagnostic and exit
+`2`, by the parser's general arm rather than by any provision naming the option. Writing the disposition
+`ADR-MOK-007` states for them — recognized and refused because this host never runs live — would describe code that
+does not exist, and would put a false statement in an approved specification. It is `WO-MOK-026`'s to write, in this
+paragraph, when the engine gains the options. The `--events-path` bullet and GitHub issue 40 are untouched: this
+change neither closes nor worsens that defect.
+
 The observer prints its own usage text, since its binary name, its synopsis and its own three inputs differ. The
-four entries describing `--seed`, `--ticks`, `--policy` and `--density` are the engine's own, **byte for byte**, and
-`mokiterions-tui/tests/options.rs` holds each of them equal to `mokiterions::cli::USAGE`. That is what keeps the
-identity above from decaying into two descriptions of one input: the observer may not restate a shared input's
-meaning in words of its own, and `SPEC-MOK-001`'s *Help output* section governs what those words say.
+five entries describing `--seed`, `--ticks`, `--policy`, `--density` and `--transcript-path` are the engine's own,
+**byte for byte**, and `mokiterions-tui/tests/options.rs` holds each of them equal to `mokiterions::cli::USAGE`.
+That is what keeps the identity above from decaying into two descriptions of one input: the observer may not restate
+a shared input's meaning in words of its own, and `SPEC-MOK-001`'s *Help output* section governs what those words
+say. **Amended 2026-08-24, from four entries to five.** `--transcript-path` joins the set on the same terms, and so
+does `--policy`'s fifth value inside the entry the observer already carried verbatim — a shared input whose meaning
+grows is still a shared input, and the byte-identity test is what makes that automatic rather than remembered. What
+the observer states **in its own words** is only what is its own: that this host replays and does not run live, and
+what its exit statuses mean. A host-capability statement is not a shared input's meaning, which is what keeps the
+division above intact rather than excepted.
 
 ### Runtime inputs
 
@@ -163,8 +216,13 @@ variable, and no standard-input protocol.
 - Diagnostics to standard error, before the terminal is entered or after it is restored, never interleaved with
   frames.
 - Exit codes: `0` on normal exit; `2` for invalid configuration or a viewport below the floor at start-up; `1` for an
-  unrecoverable runtime or terminal failure. This matches `SPEC-MOK-001` so the two binaries cannot be confused by
-  their status.
+  unrecoverable runtime or terminal failure, which includes a named transcript that cannot be read. This matches
+  `SPEC-MOK-001` so the two binaries cannot be confused by their status. **Amended 2026-08-24**, and the amendment
+  names a case rather than adding a code: the sentence already admitted `1` for an unrecoverable runtime failure and a
+  transcript that cannot be opened is one, since whether a file can be opened is not a property of the argument. It is
+  named because it is the first exit `1` that occurs **before the terminal is entered**, which the sentence's pairing of
+  runtime with terminal failure would otherwise read as excluding, and because the *Error and recovery behavior* table
+  is where an implementation goes to find it.
 
 The observer does not write the `REQ-MOK-010` text stream to standard output. That stream remains the engine
 binary's output and is unchanged.
@@ -956,7 +1014,7 @@ authorizes the behavior the event reports. The `t` control presents it for the h
 | `world_initialized` | `REQ-MOK-001` |
 | `food_initialized` | `REQ-MOK-001` |
 | `agent_initialized` | `REQ-MOK-002` |
-| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference`, `REQ-MOK-033` when `individual`, `REQ-MOK-057` when `social` |
+| `decision_source_selected` | `REQ-MOK-008` when the source is `baseline`, `REQ-MOK-015` when `reference`, `REQ-MOK-033` when `individual`, `REQ-MOK-057` when `social`, `REQ-MOK-063` when `llm` |
 | `survival_changed` | `REQ-MOK-003` |
 | `agent_died` | `REQ-MOK-003` |
 | `food_consumed` | `REQ-MOK-006` |
@@ -971,6 +1029,25 @@ authorizes the behavior the event reports. The `t` control presents it for the h
 
 The inspector's proposal-and-outcome presentation maps to `REQ-MOK-004`, and perceived-entity information maps to
 `REQ-MOK-013`.
+
+**Amended 2026-08-24: the source-dependent row gains `REQ-MOK-063` when the source is `llm`, and no other row moves.**
+The identifier is the one for the source itself and not `REQ-MOK-067`'s replay determinism, because clause 1's question
+is what authorizes the behaviour the record reports: the record reports that a source was selected, and the observer
+reaches this source in replay only, so naming the replay requirement here would name the observer's own restriction
+rather than the record's authority. **No event type is added**, so the table stays at fifteen rows and clause 2's
+exhaustiveness is unmoved — a new decision source is a new value inside one row, which is what the 2026-08-19 amendment
+record already gives as this row's reason for not being optional: "that mapping is exhaustive by construction — the
+observer resolves it in a `match` over the policy — so a third source without a row is a gap the compiler reaches
+before an operator does."
+
+Two things about the row are recorded here as consequences rather than as provisions, because clause 1 fixes identifiers
+and this rule fixes no layout. The row's identifier is now carried **one line per source** in the authority overlay,
+aligned under the first line rather than repeating the event type: at the four-source width the row was 117 columns and
+fitted a 132-column terminal, appending a fifth would have made it 135, and the overlay draws a paragraph that truncates
+rather than wraps — so the fifth identifier would have been drawn nowhere while every assertion about the other four
+still held. The row *count* is unchanged; only its height is. And the row is **derived from the mapping** the observer
+resolves rather than written out a second time, which is what `SPEC-MOK-007` rule 18.5 asks for beyond the entry itself:
+a hand-written copy of an exhaustive mapping is exhaustive only for as long as someone remembers it exists.
 
 **Amended 2026-08-22: the inspector's cumulative activity totals map to `REQ-MOK-061` and its population totals to
 `REQ-MOK-062`.** This sits beside the sentence above and takes the same form, because it answers the same question
@@ -1012,6 +1089,7 @@ invoke one resolution.
 |---|---|
 | Invalid start-up input | diagnostic on standard error before entering the terminal; exit `2` |
 | Viewport below the floor at start-up | required and actual dimensions on standard error; exit `2` |
+| Named transcript cannot be read | diagnostic on standard error before entering the terminal, naming the path this target resolved and the platform's reason; exit `1`; no frame drawn |
 | Viewport below the floor mid-run | drawing suspended, run continues, resumes when large enough |
 | Draw failure | reported in the header; the run continues; not a simulation result |
 | Input read failure | reported in the header; progression continues under rule 1 |
@@ -1266,8 +1344,19 @@ packages equally. There is no crate-count ceiling and no numeric threshold for e
   **Judged 2026-08-20**, by the technical owner, and accepted: the prohibition of `ADR-MOK-006` decision 4 is on
   admitting such a crate, this one arrives transitively inside a graph `ADR-MOK-003` accepted, and no behavior uses it.
   The acceptance covers a compiled and uncalled capability and is void the moment a behavior calls it.
-- The filesystem is written once per requested export and never read.
+- The filesystem is written once per requested export, and read once per run at start-up when a transcript is named.
+  **Amended 2026-08-24.** The sentence read "and never read", and the transcript makes it false. What the sentence
+  exists to carry is kept: the transcript is provider-derived data at rest rather than a provider involved at run time,
+  it is opened for reading by the **binary target alone** and never by the observer's library, it is interpreted only
+  as a path — never as code, never as a format string, never as an option and never as engine input — and it is
+  neither created, written nor removed. So the engine cannot be reached through the value, and the observer still
+  makes no provider call, opens no socket, spawns no connector and reads no credential, which is `SPEC-MOK-007` rule
+  12.2 and holds whether or not a credential is present in the environment.
 - An operator-supplied export path is data. It is never interpreted as code and never used to read.
+- An operator-supplied transcript path is data. It is used to read, once, and is never interpreted as code. **Added
+  2026-08-24** beside the sentence above rather than folded into it, because the two paths differ in exactly the
+  respect that sentence is about: `--export`'s is never used to read and this one is, so one sentence covering both
+  would have to drop the property the export bullet carries.
 - No credential, secret, environment variable, absolute path or wall-clock value appears in a frame or an export.
 - The observer receives no mutable handle to world, agent, resource or event-log state, and offers the operator no
   control that mutates the world.

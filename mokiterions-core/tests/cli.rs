@@ -145,10 +145,29 @@ fn the_unknown_policy_diagnostic_names_every_accepted_value() {
         .expect_err("an unknown policy is a configuration error")
         .to_string();
 
-    for name in ["baseline", "reference", "individual", "social"] {
+    for name in ["baseline", "reference", "individual", "social", "llm"] {
         assert!(message.contains(name), "{message} omits {name}");
-        assert!(parse(["--policy", name]).is_ok(), "{name} is not accepted");
+        assert!(parse(selecting(name)).is_ok(), "{name} is not accepted");
     }
+}
+
+/// The arguments that select a source, together with whatever else that source requires.
+///
+/// Added 2026-08-24 under `WO-MOK-025`. `--policy llm` alone stopped parsing when
+/// `--transcript-path` arrived: `SPEC-MOK-007` rule 13.2 makes a replay with no transcript a usage
+/// error, and rule 19.2 names it as one. The assertions that use this are about whether a value is
+/// *accepted as a source*, so they supply what the source needs and leave the combination rules to
+/// the tests written for them. The other four sources need nothing beyond themselves.
+///
+/// The path is never opened by anything this file calls — `SPEC-MOK-006` rule 1.2 keeps every path
+/// out of the library target — so it names no file that has to exist.
+fn selecting(policy: &str) -> Vec<String> {
+    let mut args = vec!["--policy".to_string(), policy.to_string()];
+    if policy == "llm" {
+        args.push("--transcript-path".to_string());
+        args.push("transcript.jsonl".to_string());
+    }
+    args
 }
 
 fn config_with(policy: Policy) -> Config {
@@ -413,17 +432,41 @@ fn the_entries_state_the_constraints_that_decide_validity() {
 
     // The value set is stated in the placeholder, so the whole entry is read here. Every value
     // the parser accepts is named and every value it names is accepted, so the help can neither
-    // hide the third source nor advertise a fourth.
+    // hide a source nor advertise one that does not exist.
     let policy = entry("--policy");
     assert!(policy.contains("baseline"), "{policy}");
     assert!(policy.contains("reference"), "{policy}");
     assert!(policy.contains("individual"), "{policy}");
     assert!(policy.contains("social"), "{policy}");
+    assert!(policy.contains("llm"), "{policy}");
     assert!(parse(["--policy", "baseline"]).is_ok());
     assert!(parse(["--policy", "reference"]).is_ok());
     assert!(parse(["--policy", "individual"]).is_ok());
     assert!(parse(["--policy", "social"]).is_ok());
+    assert!(parse(selecting("llm")).is_ok());
     assert!(parse(["--policy", "random"]).is_err());
+
+    // `SPEC-MOK-007` rule 18.2's three claims about the fifth value, each asserted against the
+    // entry rather than trusted: it reaches a model through a connector program the operator
+    // supplies, it is not deterministic in itself, and it replays deterministically from a
+    // transcript. The wording is free to change; what it has to keep saying is not.
+    let policy = policy.to_lowercase();
+    assert!(policy.contains("connector"), "{policy}");
+    assert!(policy.contains("transcript"), "{policy}");
+    assert!(policy.contains("replays"), "{policy}");
+    assert!(policy.contains("not fixed by the seed"), "{policy}");
+
+    // Rule 18.3: the sentence that said this of all four became false of five, and the entry now
+    // says of which values determinism holds. An entry that still claimed it of every value would
+    // pass every assertion above.
+    assert!(
+        !policy.contains("all five are"),
+        "the entry claims determinism of the fifth value: {policy}"
+    );
+    assert!(
+        policy.contains("all four are"),
+        "the entry no longer states which values are deterministic: {policy}"
+    );
 
     let density = description("--density").to_lowercase();
     assert!(density.contains("two"), "{density}");
@@ -565,6 +608,255 @@ fn the_binary_and_the_parser_spell_the_sink_option_the_same_way() {
     );
 
     // Spelled once in the host, through that constant, so this test has one thing to hold.
+    let uses = host
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.starts_with("//") && line.contains(&format!("\"{spelling}\"")))
+        .count();
+    assert_eq!(
+        uses, 1,
+        "the host must spell {spelling} only in its constant"
+    );
+}
+
+/// `SPEC-MOK-007` rule 18.4: the transcript option is validated exactly as the sink option is, and
+/// its value is retained no more than the sink's is.
+///
+/// The rule names `--events-path` as the precedent this option follows, so the assertions here are
+/// that test's assertions over this option: the configuration produced is the one the same
+/// invocation with a different value produces, whatever value it carried; a missing value, a value
+/// that is really the next option, the empty string and the single `-` are refused; and every other
+/// property of the value belongs to the platform, so a path that cannot be opened parses here and
+/// fails at runtime.
+///
+/// Every invocation below selects `llm`, because rule 18.4.3 refuses the option under any other
+/// source. That is asserted separately, immediately after this.
+#[test]
+fn the_transcript_option_is_validated_and_its_value_is_not_retained() {
+    let selected = run_config(selecting("llm"));
+    assert_eq!(
+        run_config(["--policy", "llm", "--transcript-path", "elsewhere.jsonl"]),
+        selected
+    );
+    assert_eq!(
+        run_config([
+            "--policy",
+            "llm",
+            "--transcript-path",
+            "elsewhere.jsonl",
+            "--seed",
+            "9",
+        ]),
+        run_config([
+            "--policy",
+            "llm",
+            "--transcript-path",
+            "a.jsonl",
+            "--seed",
+            "9",
+        ])
+    );
+    // The one field a transcript could plausibly have moved is the source itself, and it is the
+    // source the operator named rather than one the transcript implied.
+    assert_eq!(selected.policy, Policy::Llm);
+
+    assert!(parse(["--policy", "llm", "--transcript-path"]).is_err());
+    assert!(parse(["--policy", "llm", "--transcript-path", "--seed"]).is_err());
+    assert!(parse(["--policy", "llm", "--transcript-path", ""]).is_err());
+    assert!(parse(["--policy", "llm", "--transcript-path", "-"]).is_err());
+    assert!(
+        parse([
+            "--policy",
+            "llm",
+            "--transcript-path",
+            "a.jsonl",
+            "--transcript-path",
+            "b.jsonl",
+        ])
+        .is_err()
+    );
+
+    // Not this parser's business, and accepted for that reason.
+    assert!(
+        parse([
+            "--policy",
+            "llm",
+            "--transcript-path",
+            "no/such/directory/t.jsonl",
+        ])
+        .is_ok()
+    );
+    assert!(
+        parse([
+            "--policy",
+            "llm",
+            "--transcript-path",
+            "-leading-dash.jsonl",
+        ])
+        .is_ok()
+    );
+
+    // Order is the parser's own promise and this option keeps it, combination check included.
+    assert_eq!(
+        run_config(["--transcript-path", "a.jsonl", "--policy", "llm"]),
+        selected
+    );
+}
+
+/// Rule 18.4.3: a transcript under a source that obtains its own decisions is refused, not accepted
+/// and ignored.
+///
+/// The default source is enough to trigger it. An operator who names a transcript and no source has
+/// asked for a `reference` run with a transcript, which is the misunderstanding the rule exists to
+/// report rather than to absorb, and it is the case a check written against an explicit `--policy`
+/// would miss.
+#[test]
+fn the_transcript_option_is_refused_under_every_source_that_decides_for_itself() {
+    for policy in ["baseline", "reference", "individual", "social"] {
+        let refusal = parse(["--policy", policy, "--transcript-path", "t.jsonl"])
+            .expect_err("a transcript under a self-deciding source is a usage error");
+        assert!(refusal.contains("--transcript-path"), "{refusal}");
+        assert!(refusal.contains(policy), "{refusal} does not name {policy}");
+    }
+
+    let refusal = parse(["--transcript-path", "t.jsonl"])
+        .expect_err("a transcript with no source is a transcript for the default source");
+    assert!(refusal.contains("reference"), "{refusal}");
+}
+
+/// Rules 13.2, 19.2 and 20.3: the replay source with no transcript is refused, and the refusal names
+/// what is missing.
+///
+/// It is made by the parser both hosts share, which is what makes rule 20.3's start-up refusal in the
+/// observer a property of the parse rather than a second implementation of the same rule. The refusal
+/// is a usage error and not a fallback: rule 13.1 makes replay the default and rule 20.3 forbids
+/// reaching for another source, so there is nothing for the run to do instead.
+#[test]
+fn the_replay_source_with_no_transcript_is_refused_and_the_refusal_names_the_option() {
+    let refusal =
+        parse(["--policy", "llm"]).expect_err("a replay with no transcript is a usage error");
+    assert!(refusal.contains("--transcript-path"), "{refusal}");
+    assert!(refusal.contains("llm"), "{refusal}");
+
+    // Not a fallback to any other source, asserted as the absence of every other source's name.
+    for other in ["baseline", "reference", "individual", "social"] {
+        assert!(
+            !refusal.contains(other),
+            "{refusal} offers {other} as a substitute"
+        );
+    }
+}
+
+/// Neither combination refusal can make the usage text unobtainable.
+///
+/// Both are decided after `--help`, which is the opposite of every rejection inside the parse loop:
+/// those reject a *value* and beat `--help`, and these two are about a combination. An operator who
+/// asks what the combinations are must be answered with the text rather than with a complaint about
+/// the one they typed — and that text is the only place the combination rules are written down.
+#[test]
+fn help_survives_both_combination_refusals() {
+    assert_eq!(parse(["--help", "--policy", "llm"]).unwrap(), Command::Help);
+    assert_eq!(parse(["--policy", "llm", "--help"]).unwrap(), Command::Help);
+    assert_eq!(
+        parse(["--help", "--transcript-path", "t.jsonl"]).unwrap(),
+        Command::Help
+    );
+    assert_eq!(
+        parse([
+            "--transcript-path",
+            "t.jsonl",
+            "--policy",
+            "social",
+            "--help"
+        ])
+        .unwrap(),
+        Command::Help
+    );
+
+    // A rejected *value* still beats `--help`, unchanged by the two checks added beside it.
+    assert!(parse(["--help", "--transcript-path", ""]).is_err());
+    assert!(parse(["--help", "--policy", "oracle"]).is_err());
+}
+
+/// The transcript option's entry states what it replays, when it is required and when it is refused,
+/// and states no default.
+///
+/// A default value here would be a path printed in the help, and the option has no default: it is
+/// required under one source and refused under the other four, which is what the entry has to say.
+#[test]
+fn the_transcript_option_states_when_it_is_required_and_when_it_is_refused() {
+    let entry = entry("--transcript-path");
+    let effect = description("--transcript-path").to_lowercase();
+
+    assert!(effect.contains("transcript"), "{effect}");
+    assert!(effect.contains("required with --policy llm"), "{effect}");
+    assert!(effect.contains("refused with any other policy"), "{effect}");
+    // Rule 12.6's byte-identity and rule 12.3's refusal, which together are what decides whether an
+    // operator can trust a replayed run at all.
+    assert!(effect.contains("exactly"), "{effect}");
+    assert!(effect.contains("error rather than guessing"), "{effect}");
+
+    assert!(!entry.contains("Default:"), "{entry}");
+    assert_eq!(documented_default("--transcript-path"), None, "{entry}");
+}
+
+/// The exit-status sentence states the two outcomes this option added.
+///
+/// A combination the parser refuses exits `2`, like every other usage error, and a transcript that
+/// cannot be read exits `1`, like every other runtime failure — and neither had a clause before this
+/// option existed. The text is the operator's only statement of what a code means.
+#[test]
+fn the_exit_status_states_the_refused_combination_and_the_unreadable_transcript() {
+    // Wrapping removed first: these sentences are wrapped at 79 columns, and an assertion written
+    // against the text as printed would also be an assertion about where a sentence broke.
+    let status = USAGE
+        .split_once("Exit status: ")
+        .expect("the help states the exit statuses")
+        .1
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase();
+
+    assert!(status.contains("do not go together"), "{status}");
+    assert!(status.contains("transcript could not be read"), "{status}");
+
+    // The first claim is the parser's, and the parser is what refuses both combinations.
+    assert!(parse(["--policy", "llm"]).is_err());
+    assert!(parse(["--transcript-path", "t.jsonl"]).is_err());
+}
+
+/// The parser and the binary target spell the transcript option identically.
+///
+/// A named sibling of the sink option's test, against the same failure and for the same reason: the
+/// spelling exists twice because the parser validates the option and keeps nothing while the binary
+/// reads the value it will open. A rename in one place would leave a program that accepts a
+/// transcript and then replays nothing — and unlike the sink, whose absence is silence, this one
+/// reaches rule 20.8's refusal on the first tick, so the operator would be told the host built no
+/// port for an option they did supply.
+#[test]
+fn the_binary_and_the_parser_spell_the_transcript_option_the_same_way() {
+    let host = include_str!("../src/main.rs");
+    let declaration = host
+        .lines()
+        .map(str::trim)
+        .find(|line| line.starts_with("const TRANSCRIPT_PATH_OPTION"))
+        .expect("the binary target declares the option whose value it reads");
+    let spelling = declaration
+        .split('"')
+        .nth(1)
+        .expect("the declaration states a string literal")
+        .to_string();
+
+    assert!(
+        options_the_parser_accepts().contains(&spelling),
+        "the binary reads {spelling}, which the parser does not accept"
+    );
+    assert!(
+        documented_options().contains(&spelling),
+        "the binary reads {spelling}, which the help does not describe"
+    );
+
     let uses = host
         .lines()
         .map(str::trim)

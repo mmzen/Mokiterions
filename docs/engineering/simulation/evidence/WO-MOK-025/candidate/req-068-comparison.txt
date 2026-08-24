@@ -1,0 +1,131 @@
+REQ-MOK-068 measured: the four existing decision sources at the candidate
+=========================================================================
+
+REQ-MOK-068 requires that adding the llm source perturbs none of the four existing sources.
+VER-MOK-018 case L9 is the check, and it has two halves: equal output, which a stream
+comparison shows, and equal entropy consumption, which output cannot show, because a source
+that drew a number and discarded it would leave the same text behind and a different world
+one tick later.
+
+This file is the comparison. base/ holds the figures it is made against, taken before any
+change of this work order; the manifests beside this file hold the candidate's.
+
+    RESULT: no difference in any comparison. 40 text cells, 40 record cells and 20 entropy
+    configurations, and the only difference anywhere is one digit in a record-stream header,
+    which is this work order's own schema increment and is measured rather than assumed.
+
+--- The commits, and why the capture commit is not the candidate commit --------------------
+
+  base commit       cc5418553cb433715b7d6b15dea3886bff30ffaa
+  capture commit    8162b188e21c8b12a21b86a4ac85a2d0e3eea71a
+  candidate         5ae4f46, at the time of writing; the verification record binds the
+                    commit it binds and this file does not anticipate it
+
+The candidate capture was taken at 8162b18, which is not the last commit of the work order.
+Every commit after it adds tests, evidence files or artifact prose. That is measured:
+
+    git diff 8162b18 HEAD -- mokiterions-core/src mokiterions-tui/src Cargo.toml \
+        Cargo.lock rust-toolchain.toml
+      -> empty
+
+An empty diff is an argument and not a measurement of the captures, so the captures were
+re-taken rather than argued for. Both modes were re-run at HEAD with the same capture.sh, and
+both manifests were regenerated with the same manifest.sh:
+
+    diff <(tail -n +2 recapture/sink-manifest.txt)   <(tail -n +2 candidate/sink-manifest.txt)
+      -> no output
+    diff <(tail -n +2 recapture/nosink-manifest.txt) <(tail -n +2 candidate/nosink-manifest.txt)
+      -> no output
+
+All eighty cells reproduce byte for byte at HEAD. Line 1 is excluded from both comparisons
+and only line 1, because it is the header naming the commit the capture was taken at, which
+is the one thing that is meant to differ between a capture and a recapture of it. So the
+committed manifests describe the candidate as well as the commit they name, and the schema
+digit check below was run over the recapture, whose streams exist, rather than over the
+original capture, whose streams were not retained.
+
+--- Comparison 1: the text streams, no record sink ----------------------------------------
+
+    diff <(tail -n +2 base/nosink-manifest.txt) <(tail -n +2 candidate/nosink-manifest.txt)
+      -> no output
+
+40 of 40 cells identical, and the manifest line carries five figures per cell, so this is
+five comparisons each: the sha256 of standard output, its byte count, its line count, the
+sha256 of standard error, and the exit code. The exit code matters on its own, because a
+change that made a run fail earlier could leave a shorter output that a digest comparison
+would report as a difference without saying it was a different kind of difference.
+
+All 40 exit 0. All 40 write nothing to standard error, digest
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, the sha256 of no bytes.
+The 40 streams total 64,928,409 bytes.
+
+--- Comparison 2: the entropy states, every tick boundary ---------------------------------
+
+    diff <(tail -n +2 base/entropy-manifest.txt) <(tail -n +2 candidate/entropy-manifest.txt)
+      -> no output
+
+20 of 20 configurations identical in all three figures: the boundary count, the sha256 of
+that configuration's own boundary lines, and the final state. 15,722 boundaries in total.
+
+SplitMix64 advances by a fixed odd constant per draw, so its state is a draw counter: equal
+states after equal tick counts is equal draw counts. This is the half of L9 that output
+cannot show, and it is stated separately from the output comparison for that reason.
+
+The baseline boundary counts are 121, 121, 136, 144 and 170 across the five seeds, against
+1002 for the other three sources. That is not a defect and not a difference: baseline stops
+when its population dies out, and it stops at the same boundary at the candidate as at the
+base.
+
+--- Comparison 3: the text streams again, with a record sink configured -------------------
+
+    ratification/sink-manifest.txt against candidate/sink-manifest.txt, columns 1 to 6
+      -> no output
+
+40 of 40 identical. The comparison is against ratification/ rather than base/ for the reason
+that directory's README gives: the owner's ratification of SPEC-MOK-006's 2026-08-21 row
+moved schema from 1 to 2 and with it all forty record digests of the base capture, so
+ratification/sink-manifest.txt is the schema-2 baseline. The text columns of base/ and
+ratification/ are the same text columns; the record columns are what the ratification moved.
+
+This also re-measures REQ-MOK-046, which SPEC-MOK-006 rule 1.1 states as a run with a sink
+being indistinguishable from a run in a build without the capability: the standard output
+digest is equal to the no-sink digest of the same cell in 40 of 40 cells. The candidate
+re-establishes it rather than inheriting it.
+
+--- Comparison 4: the record streams, and the one difference in this whole file ------------
+
+All 40 record digests differ from the schema-2 baseline. All 40 byte counts are equal to it
+and all 40 line counts are equal to it. That pattern is consistent with a single fixed-width
+character changing in each stream, and consistent is not established, so it was established.
+
+candidate/verify-schema-digit.sh rewrites each candidate stream's first-line "schema":3 to a
+named digit, digests the result, and compares it to the digest the named manifest recorded
+for that cell. candidate/schema-digit.txt is both runs whole:
+
+    against ratification/sink-manifest.txt, digit 2  ->  40 cells, 0 failures, exit 0
+    against base/sink-manifest.txt,         digit 1  ->  40 cells, 0 failures, exit 0
+
+So every candidate record stream is byte-identical to the same cell's stream at the base
+commit apart from that one digit, and byte-identical to the post-ratification stream apart
+from that one digit. The increment from 2 to 3 is this work order's own, obliged because the
+record stream gains a domain value, and stop-and-escalate condition 5 required the row it
+depended on to be ratified before any schema value was written; it was, on 2026-08-23, and
+ratification/ holds that act.
+
+Both runs are over the recapture rather than the original capture, because the original
+streams were not retained and the recapture is proven identical to them cell by cell above.
+
+--- What this does not establish ----------------------------------------------------------
+
+That the llm source works. Nothing in this comparison runs it: the whole content of this file
+is that four other sources did not move. No run behind any figure here called a provider,
+read a credential or opened a socket, at either commit.
+
+That no source can ever be perturbed. It establishes it for five seeds at one density and one
+horizon, which is the matrix REQ-MOK-068 and L9 fix, plus a horizon this work order chose
+under its Authorized decision envelope and stated in capture.sh.
+
+That the manifests are the streams. They are digests. A reviewer who wants a cell must re-run
+capture.sh, which took 2.4 seconds for all forty cells of the sink mode on the machine that
+wrote this, against a release build; the manifests are what detects a reproduction that
+failed, and they detected nothing here.

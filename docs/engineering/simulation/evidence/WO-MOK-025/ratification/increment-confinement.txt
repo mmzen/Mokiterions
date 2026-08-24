@@ -1,0 +1,50 @@
+# schema increment: confined to one integer in the header record
+# base commit cc5418553cb433715b7d6b15dea3886bff30ffaa, base schema 1, this tree schema 2
+# cell  text-stream  record-stream  reverted-vs-base
+
+seed0-baseline-traceoff    unchanged   moved          identical
+seed0-baseline-traceon     unchanged   moved          identical
+seed0-reference-traceoff   unchanged   moved          identical
+seed0-reference-traceon    unchanged   moved          identical
+seed0-individual-traceoff  unchanged   moved          identical
+seed0-individual-traceon   unchanged   moved          identical
+seed0-social-traceoff      unchanged   moved          identical
+seed0-social-traceon       unchanged   moved          identical
+seed1-baseline-traceoff    unchanged   moved          identical
+seed1-baseline-traceon     unchanged   moved          identical
+seed1-reference-traceoff   unchanged   moved          identical
+seed1-reference-traceon    unchanged   moved          identical
+seed1-individual-traceoff  unchanged   moved          identical
+seed1-individual-traceon   unchanged   moved          identical
+seed1-social-traceoff      unchanged   moved          identical
+seed1-social-traceon       unchanged   moved          identical
+seed42-baseline-traceoff   unchanged   moved          identical
+seed42-baseline-traceon    unchanged   moved          identical
+seed42-reference-traceoff  unchanged   moved          identical
+seed42-reference-traceon   unchanged   moved          identical
+seed42-individual-traceoff unchanged   moved          identical
+seed42-individual-traceon  unchanged   moved          identical
+seed42-social-traceoff     unchanged   moved          identical
+seed42-social-traceon      unchanged   moved          identical
+seed123-baseline-traceoff  unchanged   moved          identical
+seed123-baseline-traceon   unchanged   moved          identical
+seed123-reference-traceoff unchanged   moved          identical
+seed123-reference-traceon  unchanged   moved          identical
+seed123-individual-traceoff unchanged   moved          identical
+seed123-individual-traceon unchanged   moved          identical
+seed123-social-traceoff    unchanged   moved          identical
+seed123-social-traceon     unchanged   moved          identical
+seed777-baseline-traceoff  unchanged   moved          identical
+seed777-baseline-traceon   unchanged   moved          identical
+seed777-reference-traceoff unchanged   moved          identical
+seed777-reference-traceon  unchanged   moved          identical
+seed777-individual-traceoff unchanged   moved          identical
+seed777-individual-traceon unchanged   moved          identical
+seed777-social-traceoff    unchanged   moved          identical
+seed777-social-traceon     unchanged   moved          identical
+
+cells: 40   failures: 0
+
+Expected reading: every cell unchanged / moved / identical. "unchanged" says the increment
+did not reach the text stream, "moved" says it reached the record stream, and "identical"
+says it reached nothing in the record stream except the one integer on the header line.

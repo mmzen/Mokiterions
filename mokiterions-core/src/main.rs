@@ -6,14 +6,23 @@
 //! open sink to [`execute`], and afterwards decides whether the file it created may survive.
 //! The engine never learns the path, which is what keeps rule 5.5 — no record carries the
 //! sink's own destination — a property of the design rather than of a writer's discipline.
+//!
+//! Under `WO-MOK-025` it owns a second file for the same reason. `SPEC-MOK-007` rule 20.1 makes
+//! this target the recording host and rule 12.1.1 says the host "opens the transcript and lends
+//! the engine an already-open reader", so the port is built here, from a file this target opened,
+//! and it lives for the whole run — rule 20.4.1, and the cursor rule 12.1's ordering depends on
+//! is the reason it may not be rebuilt per tick. Nothing here spawns a process, reaches a socket
+//! or reads a credential: this stage's transcript is read and never written, because writing one
+//! needs a live run and `WO-MOK-026` has that.
 
 use std::env;
 use std::fs;
-use std::io::{self, BufWriter, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::process::ExitCode;
 
 use mokiterions::cli::{self, Command};
 use mokiterions::execute;
+use mokiterions::simulation::{Proposer, ReplayPort};
 
 /// The option whose value names the record stream's destination.
 ///
@@ -21,6 +30,13 @@ use mokiterions::execute;
 /// keeps nothing while this target reads the value it will open. `tests/cli.rs` holds the two
 /// spellings equal, so neither can move alone.
 const EVENTS_PATH_OPTION: &str = "--events-path";
+
+/// The option whose value names the transcript this run replays.
+///
+/// Spelled here for the reason above, and held equal to the parser's spelling by the same test.
+/// The difference from the sink is the direction: this file is opened for reading and is never
+/// created, replaced or removed, so none of the sink's survival reasoning below applies to it.
+const TRANSCRIPT_PATH_OPTION: &str = "--transcript-path";
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = env::args().skip(1).collect();
@@ -48,13 +64,60 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     // would touch a path for a process that runs nothing. `--help` and an invalid
     // configuration therefore open no file, which is rule 13.1's "runs nothing" taken to
     // include the filesystem.
-    let destination = match cli::parse(arguments.iter().cloned()) {
-        Ok(Command::Run(_)) => events_path(arguments),
-        Ok(Command::Help) | Err(_) => None,
+    let (destination, transcript) = match cli::parse(arguments.iter().cloned()) {
+        Ok(Command::Run(_)) => (
+            argument_after(arguments, EVENTS_PATH_OPTION),
+            argument_after(arguments, TRANSCRIPT_PATH_OPTION),
+        ),
+        Ok(Command::Help) | Err(_) => (None, None),
+    };
+
+    // The transcript is opened first, and it is only ever read. Two reasons, and the second is
+    // the one that fixes the order: opening it creates nothing, so a failure here leaves the
+    // filesystem exactly as it was; and a run whose decisions cannot be obtained must not first
+    // have created a record file for the removal logic below to take away again. A missing
+    // transcript is then a failure that touched nothing.
+    let mut port = match transcript.as_deref() {
+        None => None,
+        Some(path) => match fs::File::open(path) {
+            // Buffered because `ReplayPort` reads a line at a time and an unbuffered `File`
+            // would reach the platform once per byte for every record in the transcript.
+            Ok(file) => {
+                let mut reader = BufReader::new(file);
+                // The first read is forced here, because opening is not where every platform
+                // refuses. A directory opens successfully on Linux and fails only when it is
+                // read, which without this would be after the run had begun and printed its
+                // first tick — the partial run the paragraph above says cannot happen, and the
+                // one CI's Linux lane found. `fill_buf` peeks without consuming, so the port
+                // below reads exactly the bytes it would have read anyway, and an empty
+                // transcript is not an error here: it replays as one that ran out at the first
+                // opportunity, which is a different case with its own treatment.
+                if let Err(error) = reader.fill_buf() {
+                    let _ = writeln!(stderr, "runtime error: transcript {path}: {error}");
+                    return 1;
+                }
+                Some(ReplayPort::new(reader))
+            }
+            Err(error) => {
+                // Rule 13.2's treatment, applied to a read: a well-formed path the platform
+                // refuses is a runtime failure and not invalid configuration, so it exits `1` and
+                // the usage text is not written after it. Rule 19.7 forbids an error message
+                // carrying a path the *engine* resolved; this one is the operator's own argument,
+                // resolved by this target, and naming it is the whole use of the message.
+                let _ = writeln!(stderr, "runtime error: transcript {path}: {error}");
+                return 1;
+            }
+        },
     };
 
     let Some(destination) = destination else {
-        let mut code = execute(arguments.iter().cloned(), stdout, stderr, None);
+        let mut code = execute(
+            arguments.iter().cloned(),
+            stdout,
+            stderr,
+            None,
+            port.as_mut().map(|port| port as &mut dyn Proposer),
+        );
         if stdout.flush().is_err() {
             code = 1;
         }
@@ -91,7 +154,13 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     };
 
     let mut sink = BufWriter::new(file);
-    let mut code = execute(arguments.iter().cloned(), stdout, stderr, Some(&mut sink));
+    let mut code = execute(
+        arguments.iter().cloned(),
+        stdout,
+        stderr,
+        Some(&mut sink),
+        port.as_mut().map(|port| port as &mut dyn Proposer),
+    );
 
     // One flush, and then the buffer and the file are taken apart by hand. `BufWriter`'s `Drop`
     // flushes and discards the result, and after a failed flush that is precisely the retry
@@ -139,16 +208,18 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     code
 }
 
-/// The value of [`EVENTS_PATH_OPTION`], from an argument list that has already parsed.
+/// The value following the named option, from an argument list that has already parsed.
 ///
 /// A positional scan is exact here, and exact only here: `cli::parse` consumes every value
 /// option as a pair and rejects any value that begins with `--`, so in a list that parsed
 /// successfully the token can appear only at an option position and never as some other
 /// option's value. This function is not called on a list that failed to parse, which is why
 /// the caller checks the verdict first.
-fn events_path(arguments: &[String]) -> Option<String> {
-    let position = arguments
-        .iter()
-        .position(|argument| argument == EVENTS_PATH_OPTION)?;
+///
+/// One function for both of this target's options rather than one each: the two differ only in
+/// which spelling they look for, and a second copy of this reasoning is a second place for it to
+/// be got wrong.
+fn argument_after(arguments: &[String], option: &str) -> Option<String> {
+    let position = arguments.iter().position(|argument| argument == option)?;
     arguments.get(position + 1).cloned()
 }

@@ -1,0 +1,392 @@
+Gate readings at the candidate
+==============================
+
+Taken 2026-08-24 in the implementation tree on feature/phase-5-definition, at commit
+5ae4f46, with every behavioural change of this work order made and the base-capture
+instrument still present. base/gates.txt is the same six gates read before the change; this
+is the pair to it.
+
+The commit these readings were taken at is not the last commit of this packet. Every commit
+after it carries evidence files and artifact prose only, which is measured rather than
+asserted:
+
+    git diff bce4229 HEAD -- mokiterions-core mokiterions-tui Cargo.toml Cargo.lock \
+        rust-toolchain.toml scripts
+      -> empty
+
+bce4229 is the last commit that changed a file under either package. So the four Rust gates
+below read on the same source at any later commit of this packet, and the two Python gates
+read on scripts/ and .github/, neither of which moves after it either. The harness gates do
+move with artifact prose, and their figures are stated with the commit they were read at.
+
+  An amendment, disclosed rather than silently made: the sentence above no longer stands as
+  written. Commit 84f0452, taken after these readings, changed two files under scripts/ -
+  check_transcript_reading.py and its test file - so the diff quoted above is empty only when
+  scripts is dropped from its pathspec, which is how it now reads for the packages, the two
+  manifests, the lockfile and the toolchain file:
+
+    git diff bce4229 HEAD -- mokiterions-core mokiterions-tui Cargo.toml Cargo.lock \
+        rust-toolchain.toml
+      -> empty
+
+    git diff --stat bce4229 HEAD -- scripts
+      ->  scripts/check_transcript_reading.py      | 15 ++++++++++++---
+          scripts/test_check_transcript_reading.py | 23 +++++++++++++++++++++++
+          2 files changed, 35 insertions(+), 3 deletions(-)
+
+    git diff --stat bce4229 HEAD -- .github
+      -> empty
+
+  A second amendment, disclosed for the same reason and superseding the first. Commit 77f2974
+  changed a file under a package, so bce4229 is no longer the last commit that did and the
+  sentence above no longer holds in any pathspec. Commit 77f2974 writes the eleven owner
+  rulings of 2026-08-24 into their artifacts, and two of those rulings land in source:
+  escalation E11 corrects SPEC-MOK-007 rule 11.4.1's character list at the rule and at both
+  restatements of it in mokiterions-core/src/simulation.rs.
+
+    git diff --stat bce4229 77f2974 -- mokiterions-core mokiterions-tui Cargo.toml \
+        Cargo.lock rust-toolchain.toml
+      ->  mokiterions-core/src/simulation.rs | 14 +++++++++-----
+          1 file changed, 9 insertions(+), 5 deletions(-)
+
+  Every one of those 14 lines is a comment line, measured rather than asserted: the added and
+  removed lines of that diff, with leading whitespace stripped, all begin with // or ///, and
+  none carries a fenced code block, so no doctest is created or removed either. That is a
+  measurement of the diff and it is still an argument about the binary, so it was not relied
+  on. All four Rust gates were re-read at 77f2974 and are reproduced below unchanged, and the
+  whole REQ-MOK-068 matrix was recaptured at that commit with capture.sh in both modes and
+  compared through manifest.sh against candidate/nosink-manifest.txt and
+  candidate/sink-manifest.txt:
+
+    diff <(tail -n +2 <recapture>/nosink-manifest.txt) \
+         <(tail -n +2 candidate/nosink-manifest.txt)
+      -> no output
+
+    diff <(tail -n +2 <recapture>/sink-manifest.txt) \
+         <(tail -n +2 candidate/sink-manifest.txt)
+      -> no output
+
+  All eighty cells reproduce byte for byte -- standard output, standard error, exit code and
+  record stream -- at 77f2974. Line 1 is excluded from each comparison and only line 1,
+  because it names the commit the capture was taken at, which is the one thing that differs by
+  construction. The recapture itself is not retained, for the reason README.md gives: the
+  streams were never retained at any commit and only their manifests were, so a retained
+  recapture would be the only raw stream set in the packet and would read as the authoritative
+  one.
+
+    git diff --stat bce4229 77f2974 -- .github
+      ->  .github/workflows/provider-credentials.yml | 54 ++++++++++++++++++++
+          1 file changed, 54 insertions(+)
+
+  That is escalation E17: check_transcript_reading.py gains its first automated caller, a third
+  job in that file. Both Python gates were re-read at 77f2974 for it -- 38 tests OK and the
+  credential scan exit 0, with the scan now reporting the replay step at line 150 rather than
+  143, the shift the added head comment causes -- and the two steps of the new job were run
+  locally as well: the transcript reader's own suite reports 36 tests OK, and the reader
+  reports PASS over the committed transcript for L4, L5, L6, L12, L13, L14, L15a and L17.
+  Those two are not gates and are not counted as gates; they are recorded here because this
+  file is where a reader looks for what was run.
+
+  The harness pair was re-read at 77f2974 as well, since artifact prose moved: validate PASS,
+  179 artifacts, 0 errors, 0 warnings; preflight PASS for WO-MOK-025 at phase review, with
+  commit-bound verification required and decided by the engineering owner. Both from the
+  pinned 0.4.0 interpreter outside the checkout.
+
+  Four other files in this directory restate the superseded sentence in their own headers and
+  are left exactly as captured, because a capture is not edited after the fact:
+  per-tick-lending.txt line 18, replay-identity.txt line 10, request-layout.txt line 224 --
+  which cites this file rather than asserting it -- and verification-cases.txt lines 17 and
+  35. Each was true when it was written. This paragraph is the correction for all four, and
+  README.md carries it too so that a reader who opens one of them first is not left to find it
+  here.
+
+  What that commit does not touch is what the two Python gates read. Neither
+  check_workflow_credentials.py nor its test file names check_transcript_reading.py, and no
+  file under .github/ does either, which was measured by grep and not assumed. The changed
+  program is the independent judge behind candidate/transcript-reading.txt and is run by hand,
+  not by a gate. Both Python gates were nonetheless re-read at 84f0452 rather than argued to be
+  unaffected: 38 tests OK, and the credential gate exit 0 with the same output reproduced
+  below. The four Rust gates read on source that still has not moved since bce4229, so their
+  figures stand unchanged.
+
+  A THIRD AMENDMENT, and it is not a bookkeeping one. Every reading in this file above was
+  taken on Windows and none of them says so. Two of them were true of Windows only.
+
+  Commit dbc9e6d fixes a defect that CI's Linux lane found and that no local gate could:
+  fs::File::open on a directory succeeds on Linux and refuses only at the first read. Both
+  hosts opened the transcript and handed the reader straight to ReplayPort, so on Linux a
+  directory named as a transcript began the run. The engine binary printed the whole of tick 0
+  to standard output before failing; the observer entered the terminal and stayed there. On
+  Windows the open itself fails, so neither happened and every gate was green.
+
+  What that means for this file: the four Rust gates below were a platform-limited reading, and
+  the one test that should have caught the defect was written in a way that could not. Its
+  directory case asserted assert_ne!(code, Some(0)) rather than the exit code, and it asserted
+  an empty standard output at a point where the partial run had already been written -- so the
+  assertion that failed on Linux was the one about output, and the exit-code assertion that
+  would have named the defect was never strict enough to fire. That test now asserts the
+  missing file's case exactly: exit 1, empty standard output, the host's message naming the
+  path, and no usage text.
+
+  The gates are therefore re-read on BOTH platforms at dbc9e6d, and the figures are stated per
+  platform rather than merged:
+
+    Windows 11, x86_64-pc-windows-msvc, in this tree
+      cargo fmt --check                                              -> exit 0, no output
+      cargo clippy --workspace --all-targets --all-features --locked -D warnings
+                                                                     -> exit 0, no warnings
+      cargo test --workspace --locked --no-fail-fast
+                                     -> 422 passed, 0 failed, 3 ignored, 25 result lines
+      cargo build --workspace --locked                               -> exit 0
+
+    Ubuntu 24.04 under WSL 2, x86_64-unknown-linux-gnu, in a separate clone of this branch
+      cargo fmt --check                                              -> exit 0, no output
+      cargo clippy --workspace --all-targets --all-features --locked -D warnings
+                                                                     -> exit 0, no warnings
+      cargo test --workspace --locked --no-fail-fast
+                                     -> 422 passed, 0 failed, 3 ignored, 25 result lines
+      cargo build --release --locked                                 -> exit 0
+
+  --no-fail-fast is new to this reading and it is the reason the picture is trustworthy: the
+  suite aborts after the first failing binary without it, so the run that found the defect
+  could not have said whether it was the only one. It was: 422 of 422 on both platforms, with
+  the same three ignored instruments and the same 25 result lines, so the two platforms differ
+  in nothing the suite can see.
+
+  The refusal itself, measured on both platforms rather than inferred from the test:
+
+    a directory named as the transcript, engine binary
+      Windows   exit 1, 0 bytes of standard output
+                runtime error: transcript <dir>: Access is denied. (os error 5)
+      Linux     exit 1, 0 bytes of standard output
+                runtime error: transcript <dir>: Is a directory (os error 21)
+
+    an empty file named as the transcript -- the case that must NOT be refused here
+      Windows   exit 1 after 12,859 bytes of standard output
+      Linux     exit 1 after 12,859 bytes of standard output
+                runtime error: transcript: the transcript ended after 0 exchange(s) and cannot
+                satisfy tick 1 actor M01. A replay does not shorten the run and does not fall
+                back
+
+  The second pair is why the fix reads the first byte with fill_buf rather than by reading a
+  line: fill_buf peeks without consuming, so an empty file is Ok(&[]) and still replays as a
+  transcript that ran out at the first opportunity -- the engine's own rule 12.4 refusal, not
+  the host's -- and the port below reads exactly the bytes it would have read anyway. Both
+  platforms produce the same 12,859 bytes and the same message, which is the check that the
+  peek consumed nothing.
+
+  The observer's half was measured the same way, and its defect was the worse of the two. On a
+  Linux pseudo-terminal sized 120x40, given a directory as its transcript:
+
+    without the fix   still running when killed after 20 seconds -- exit 124 is the killer's --
+                      and 0 bytes to standard error. An operator watching an observer over a
+                      transcript that cannot be read, with nothing to end it but a key press.
+    with the fix      exit 1, 0 bytes of standard output, and
+                      runtime error: transcript <dir>: Is a directory (os error 21)
+
+  Both readings are of the same tree with only the two hosts' opening arms differing, taken in
+  the same session. That case is replay-identity.txt's O6, which was measured on Windows and
+  passed there. It is the second reading in this packet that was true of Windows only, and it
+  had no automated test of any kind, which is the gap that file already records.
+
+  Everything else was re-measured at dbc9e6d rather than argued to be unaffected, because the
+  binary genuinely changed this time:
+
+    the whole REQ-MOK-068 matrix, both modes, 80 cells
+      diff <(tail -n +2 <recap>/nosink-manifest.txt) <(tail -n +2 candidate/nosink-manifest.txt)
+        -> no output
+      diff <(tail -n +2 <recap>/sink-manifest.txt)   <(tail -n +2 candidate/sink-manifest.txt)
+        -> no output
+    the twenty entropy configurations
+      diff <(tail -n +2 <recap>/entropy-manifest.txt) <(tail -n +2 candidate/entropy-manifest.txt)
+        -> no output
+    the eight replay-identity cells from the release binary: all eight digests, byte counts and
+      exit codes equal to candidate/replay-identity.txt's, all six text cells 0 bytes of
+      standard error
+    the eight boundary and refusal cases R1, R2, R3b, R4, R6, R7, R8 and the four observer
+      cases O1, O2, O4, O6: every exit code, every standard-output byte count and every first
+      line of standard error as recorded, and O4's whole standard error still byte-identical to
+      R3b's at 104 bytes
+    scripts/check_workflow_credentials.py -> exit 0; its own suite -> 38 tests OK;
+      scripts/check_transcript_reading.py's suite -> 36 tests OK; the reader over the committed
+      transcript -> PASS for L4, L5, L6, L12, L13, L14, L15a and L17
+
+  Two capture files in this directory are REPLACED rather than annotated, because their content
+  moved: candidate/static-checks.txt and candidate/architecture-checks.txt. Both scan source and
+  print line numbers, and 226 lines of engine binary where there were 211 shifts them. Each was
+  re-run at dbc9e6d and the result compared line for line with what it replaced:
+
+    static-checks.txt        1,414 lines, 30 differ: the candidate hash, and 29 changes that are
+                             digit-only once every number is masked
+    architecture-checks.txt  1,267 lines, 30 differ: the same shape
+
+  No finding, no verdict and no sentence of either file changed -- only the commit each names
+  and the numbers inside them. The replacement is stated here and in README.md rather than left
+  to a reader comparing digests, and analysis/static-checks.py was edited in the same commit for
+  the same reason: its prose cited the two port-construction sites as src/main.rs:85 and
+  mokiterions-tui/src/main.rs:118, which are now :99 and :130. The instrument embeds its own
+  source in its own output, so the two move together by construction.
+
+  The harness pair was re-read over the tree carrying these edits, from the pinned 0.4.0 evaluator
+  outside the checkout, immediately before the commit that contains them -- so the figures are of
+  this file as amended rather than of the tree before it:
+
+    validate                                        PASS, 179 artifacts, 0 errors, 0 warnings
+                                                    structure E0/W0 governance E0/W0
+                                                    policy E0/W0 maintenance E0/W0
+    preflight --work-order WO-MOK-025 --phase review PASS, commit-bound verification required
+
+--- Formatting and lint, in the forms preflight prescribes -------------------------------
+
+    cargo fmt --all -- --check
+      -> exit 0, no output
+
+    cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      -> exit 0, no warnings
+
+--locked is passed for the reason base/gates.txt gives: the release workflow passes it, so a
+lint run without it can resolve around Cargo.lock and pass locally against dependencies the
+release would refuse. It is a check on the declaration, not on today's outcome.
+
+--- Tests --------------------------------------------------------------------------------
+
+    cargo test --workspace --locked
+      -> exit 0; 422 passed, 0 failed, 3 ignored, across 23 test binaries
+
+The suite declared 344 passing tests across 22 binaries at the base commit and declares 425
+here, of which 422 execute. The figures agree target by target with SPEC-MOK-004's census as
+re-measured on 2026-08-24:
+
+  engine package    12 binaries   143 internal (2 ignored)   84 public (1 ignored)   = 227
+  observer package  11 binaries    67 internal               131 public              = 198
+  workspace         23 binaries                                                       425
+
+Two further "test result" lines appear in the output and are not test binaries: cargo runs
+doc-tests for each package, and both report 0 tests. 25 result lines, 23 binaries.
+
+The three ignored tests are named in the output and each is an instrument, which is what
+SPEC-MOK-004 rule 11 as amended on 2026-08-24 admits:
+
+  simulation::tests::print_base_commit_entropy_literals
+      prints the constant the assertion test holds, so that constant is re-derivable
+
+  simulation::tests::the_four_existing_sources_entropy_state_at_every_tick_boundary
+      prints roughly 20,000 lines for an external capture
+
+  regenerate_the_committed_transcript
+      regenerates the committed transcript rather than asserting over it
+
+All three are in the engine package. No observer test is ignored, which is the measurement
+ARCH-MOK-002's amended ignore-attribute conformance check asks for.
+
+--- Build --------------------------------------------------------------------------------
+
+    cargo build -p Mokiterions --locked
+      -> exit 0
+
+The -p form is used because the question is about the engine package. The root manifest is a
+virtual workspace, so a bare cargo build builds both members.
+
+--- The credential gates -----------------------------------------------------------------
+
+    python3 scripts/test_check_workflow_credentials.py
+      -> 38 tests, OK
+
+    python3 scripts/check_workflow_credentials.py --root .
+      -> exit 0
+
+The second gate's own closing lines are part of this reading and are reproduced verbatim, because
+they state the boundary of what it establishes. Its last scan line is carried with them, because
+the text below refers to it:
+
+  scan E  the model-backed source is exercised, in replay mode:
+          .github/workflows/provider-credentials.yml:143 replays mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+  CHECKED: VER-MOK-018 case L21b, that a workflow step exercises the model-backed source in
+    replay mode against a committed transcript. The step(s) above are that case; each named
+    transcript was confirmed to be a file in this repository, and none of them was read here.
+  NOT CHECKABLE HERE: whether a provider credential is present in the repository's Actions
+    secrets. REQ-MOK-073's *Constraints* records that as the condition this containment rests on,
+    and VER-MOK-018 carries it as an owner attestation.
+
+The owner attestation the last line names without numbering is VER-MOK-018's C6.
+
+  A correction, disclosed rather than silently amended: the first version of this file
+  paraphrased those closing lines while presenting them as reproduced. Three differences, all
+  in the CHECKED paragraph and the attestation reference: it read "The step named is
+  <path>, which replays <transcript>; the transcript was confirmed to be a file in this
+  repository and was not read by the check" where the gate says "The step(s) above are that
+  case; each named transcript was confirmed to be a file in this repository, and none of them
+  was read here"; it dropped the emphasis marks around *Constraints*; and it read "carries it as
+  owner attestation C6" where the gate says "carries it as an owner attestation". No figure and
+  no verdict moved - the gate's exit status was 0 then and is 0 now, and the script last changed
+  at aa95b7c, before the reading. What was wrong was the claim of verbatim quotation, and that is a
+  defect in an evidence file whether or not it changes a conclusion.
+
+--- Harness ------------------------------------------------------------------------------
+
+    python -m se_harness validate
+      Engineering artifact validation: PASS
+      Artifacts: 179 | Errors: 0 | Warnings: 0
+      Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+      exit 0
+
+    python -m se_harness preflight --work-order WO-MOK-025 --phase review
+      Harness preflight: PASS
+      Phase: review
+      Work order: WO-MOK-025 (in_progress)
+      Commit-bound verification: required, decided by the engineering owner
+      exit 0
+
+Both read at 5ae4f46 and both from the pinned 0.4.0 virtual environment outside the
+checkout. The machine-wide 0.4.1 install reports FAIL on template skew alone and is not the
+governing tool for this repository.
+
+The artifact count is 179 at the base commit and 179 here. This work order amends approved
+artifacts and adds none, so an unchanged count is the expected reading rather than a
+coincidence.
+
+--- One gate failed for twelve commits, and is disclosed rather than reported clean --------
+
+validate did not pass when it was first re-taken here. It reported
+
+    [E014] [governance] docs/engineering/simulation/architecture/ARCH-MOK-002.md:
+           decision_assessment rationale exceeds 2000 characters
+
+and it had been reporting it since 0aa0527, twelve commits earlier, because the readings in
+base/gates.txt were taken before that commit and were not re-taken until this file was
+written. The field stood at 1,964 of the 2,000 characters
+scripts/validate_engineering_artifacts.py permits, so its headroom was 36 characters, and
+0aa0527 wrote a 1,259-character amendment clause into it. It is repaired in 5ae4f46 by
+re-expressing the field as a summary, with a second 2026-08-24 amendment row recording the
+repair, the reason and the fact that 34 characters of remaining headroom is not a clause
+either. ARCH-MOK-001's rationale stands at 1,975 of 2,000.
+
+The PASS above is therefore a reading at 5ae4f46 and not a claim about the twelve commits
+before it. That the failure existed is a finding of this file, and it is the argument for
+re-taking gate readings at the candidate rather than carrying a base reading forward.
+
+--- What these readings do not establish -------------------------------------------------
+
+Nothing here reads on VER-MOK-018's acceptance cases. The suite passing means the assertions
+in it hold; which cases those assertions are, and which cases have no assertion, is the
+completion report's item 7 and this packet's other files.
+
+Preflight reporting PASS does not authorize anything, and its own closing line states the
+boundary: "Preflight is derived, read-only evidence. It does not approve artifacts,
+authorize a diff, verify work, release software, commit, push, tag, publish, or deploy." In
+particular it reports the work order as in_progress, which is what it is: the transition to
+implemented is the engineering owner's act and has not been taken.
+
+No gate here reads on REQ-MOK-068. That is what the manifests beside this file are for.
+
+--- Toolchain ----------------------------------------------------------------------------
+
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+cargo 1.97.1 (c980f4866 2026-06-30)
+clippy 0.1.97 (8bab26f4f6 2026-07-14)
+rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)
+Python 3.14.6
+se-harness 0.4.0
+
+Identical to base/gates.txt's toolchain block, so no gate reading here differs from the base
+by a tool version.

@@ -23,8 +23,8 @@ use mokiterions::simulation::Config;
 /// constant gives: a single escaped literal of this length cannot be read or reviewed.
 pub const USAGE: &str = concat!(
     "Usage: mokiterions-tui [--seed <number>] [--ticks <number>]\n",
-    "                       [--policy <baseline|reference|individual|social>]\n",
-    "                       [--density <percent>]\n",
+    "                       [--policy <baseline|reference|individual|social|llm>]\n",
+    "                       [--density <percent>] [--transcript-path <path>]\n",
     "                       [--speed <1|2|4|8|16|32|64>] [--start-paused]\n",
     "                       [--export <path>]\n",
     "       mokiterions-tui --help\n",
@@ -35,7 +35,7 @@ pub const USAGE: &str = concat!(
     "decide is when the next turn is taken. It needs a terminal of at least 34\n",
     "columns by 22 rows.\n",
     "\n",
-    "The run is set up exactly as it is for the Mokiterions binary. These four\n",
+    "The run is set up exactly as it is for the Mokiterions binary. These five\n",
     "options are that binary's own, parsed and validated by the same code:\n",
     "\n",
     "  --seed <number>\n",
@@ -47,10 +47,10 @@ pub const USAGE: &str = concat!(
     "      decision. Must be greater than zero. A run stops earlier only when no\n",
     "      Mokiterion is left alive. Default: 100.\n",
     "\n",
-    "  --policy <baseline|reference|individual|social>\n",
-    "      Which fixed set of rules each Mokiterion uses to choose its next action.\n",
-    "      None of the four learns anything or calls a model; all four are\n",
-    "      deterministic. Default: reference.\n",
+    "  --policy <baseline|reference|individual|social|llm>\n",
+    "      How each Mokiterion chooses its next action. The first four are fixed sets\n",
+    "      of rules: none of them learns anything or calls a model, and all four are\n",
+    "      deterministic. The fifth asks a model and is neither. Default: reference.\n",
     "      baseline    Chooses at random among the actions that are legal for it\n",
     "                  this turn. The control case, for comparison.\n",
     "      reference   Walks toward the nearest food it can see and eats it, but\n",
@@ -61,6 +61,13 @@ pub const USAGE: &str = concat!(
     "      social      Like individual while it sees nobody else. When it does see\n",
     "                  another Mokiterion it may strike back, attack, threaten,\n",
     "                  close in, or keep away, depending on how afraid it is.\n",
+    "      llm         Asks a language model, one question per Mokiterion per turn,\n",
+    "                  each in its own context with no memory of any other. The\n",
+    "                  model is reached through a separate connector program you\n",
+    "                  supply, never by this program itself, so what it answers is\n",
+    "                  not fixed by the seed and two runs may differ. A recorded\n",
+    "                  run replays exactly from its transcript. Given no connector,\n",
+    "                  the run is refused rather than run some other way.\n",
     "\n",
     "  --density <percent>\n",
     "      How much food the world holds, as a percentage of one territory's 8192\n",
@@ -69,6 +76,14 @@ pub const USAGE: &str = concat!(
     "      a territory can ever hold, and the level regrowth aims for. It must leave\n",
     "      at least one resource per territory and must not exceed 100. Runs are\n",
     "      comparable only with runs at the same density.\n",
+    "\n",
+    "  --transcript-path <path>\n",
+    "      Read this run's decisions from a transcript of an earlier run, rather\n",
+    "      than asking a model for them again. Required with --policy llm, and\n",
+    "      refused with any other policy, which needs no transcript and would\n",
+    "      ignore one. The replayed run reproduces the recorded one exactly, and\n",
+    "      stops with an error rather than guessing if the transcript does not\n",
+    "      match the run being replayed.\n",
     "\n",
     "These belong to the observer:\n",
     "\n",
@@ -100,13 +115,27 @@ pub const USAGE: &str = concat!(
     "stream. Use the Mokiterions binary for a record stream, or the export key for\n",
     "the log.\n",
     "\n",
+    "This program only replays --policy llm. It reads every decision from the\n",
+    "transcript you name and never asks a model for one, because a single question\n",
+    "to a model takes longer than the whole turn this display is drawn in: the\n",
+    "picture would stop moving and the keys would stop answering. --transcript-path\n",
+    "is therefore this program's only share of that policy, and it is required.\n",
+    "\n",
     "Press ? inside the observer for the key bindings.\n",
     "\n",
     "Exit status: 0 when the observer closed normally or this text was printed,\n",
     "2 when an option was unknown, repeated, missing its value, or outside what it\n",
-    "accepts, or the terminal is smaller than the floor above, and 1 when output\n",
-    "could not be written.\n",
+    "accepts, or the options given do not go together, or the terminal is smaller\n",
+    "than the floor above, and 1 when output could not be written or a transcript\n",
+    "could not be read.\n",
 );
+
+/// The one engine option this program acts on, rather than passes through and ignores.
+///
+/// Spelled here because the engine's parser validates it and keeps nothing, so each host that acts
+/// on it re-reads the raw argument — `SPEC-MOK-007` rule 18.4. The engine's own binary target holds
+/// the same constant for the same reason; `tests/options.rs` holds all three spellings equal.
+const TRANSCRIPT_PATH_OPTION: &str = "--transcript-path";
 
 /// The speed steps `SPEC-MOK-003` fixes, ascending. `+` and `-` step through this list.
 pub const SPEED_STEPS: [u32; 7] = [1, 2, 4, 8, 16, 32, 64];
@@ -122,6 +151,19 @@ pub struct Options {
     pub speed: u32,
     pub start_paused: bool,
     pub export_path: Option<String>,
+    /// The transcript this run replays, when one was named.
+    ///
+    /// Not one of the observer's own three inputs: `SPEC-MOK-007` rule 18.4 has the engine's
+    /// shared parser recognise and validate it, and each host "re-reads the raw argument it is the
+    /// one to act on". This is that re-read. It is a path and it is data — never opened here, and
+    /// opened by the binary target, which is where `SPEC-MOK-004` rules 4 and 5 put a start-up
+    /// refusal that has to reach the operator's own screen.
+    ///
+    /// `Some` exactly when the policy is `llm`, which is not this field's own invariant but the
+    /// parser's: rule 18.4.3 refuses a transcript under any other source and rules 13.2 and 20.3
+    /// refuse `llm` without one. Nothing here re-checks it — a second copy of a rule is a second
+    /// thing to keep in step.
+    pub transcript_path: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -192,6 +234,13 @@ where
         }
     }
 
+    // The engine's verdict first, then the re-read. A positional scan is exact only on a list the
+    // engine's parser accepted — it consumes every value option as a pair and rejects a value
+    // beginning with `--`, so the token can appear only at an option position — and `engine_args`
+    // is precisely that list, with the observer's own three inputs already taken out of it. The
+    // engine's binary target reads its two paths the same way and for the same reason.
+    let transcript_path = argument_after(&engine_args, TRANSCRIPT_PATH_OPTION);
+
     match cli::parse(engine_args)? {
         Command::Help => Ok(Startup::Help),
         Command::Run(config) => Ok(Startup::Run(Options {
@@ -207,8 +256,18 @@ where
             speed: speed.unwrap_or(DEFAULT_SPEED),
             start_paused,
             export_path,
+            transcript_path,
         })),
     }
+}
+
+/// The value following the named option, from a list the engine's parser accepted.
+///
+/// The engine's binary target holds the same function for the same reason, and
+/// `tests/options.rs` holds this spelling equal to the one that parser accepts.
+fn argument_after(arguments: &[String], option: &str) -> Option<String> {
+    let position = arguments.iter().position(|argument| argument == option)?;
+    arguments.get(position + 1).cloned()
 }
 
 /// The engine's own missing-value rule: a value must be present and must not itself look

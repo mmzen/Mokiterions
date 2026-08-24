@@ -1,0 +1,631 @@
+Every required verification case, its result and its evidence
+============================================================
+
+WO-MOK-025's completion report item 7 is what this file serves: "Each verification case in the
+required list, with its result and the path to its evidence." The governing sentence of that
+section is the one that shapes this file more than any other: "A case that cannot be run is
+escalated, not omitted." Six rows below are therefore not green, one more passes and is escalated
+anyway, one passes against a figure the artifacts state differently (L30), and one does not apply
+at this stage. Each says why in the row rather than in a footnote a reader can miss.
+
+Taken 2026-08-24 in the implementation tree on feature/phase-5-definition at commit bdaad99.
+
+AMENDED at commit d002f04's successor, same day, in one place: L30's row said the ceiling is "set
+to two exchanges", which is the case's figure and not the test's. The test uses eighteen and says
+why. The correction is in the row, and candidate/per-tick-lending.txt is the capture that carries
+the whole measurement. Nothing else in this file was re-measured, and no package file changed
+between the two readings - bce4229 remains the last commit that did.
+
+AMENDED A SECOND TIME 2026-08-24 at commit dbc9e6d. Two things in the paragraph above are now
+false: bce4229 is not the last commit that changed a package file -- 77f2974 and then dbc9e6d did --
+and the suite reading below was taken on Windows and does not say so.
+
+  The suite total is re-measured on both platforms at dbc9e6d, with --no-fail-fast added so that
+  one failing binary cannot hide the rest:
+
+    cargo test --workspace --locked --no-fail-fast
+      Windows 11, x86_64-pc-windows-msvc          -> 422 passed, 0 failed, 3 ignored, exit 0
+      Ubuntu 24.04 (WSL 2), x86_64-unknown-linux  -> 422 passed, 0 failed, 3 ignored, exit 0
+
+  Same total, same three ignored instruments, same 23 binaries and 2 doc-test targets. The rows
+  below rest on that reading and every one of them stands.
+
+  The rows whose evidence is a capture rather than a test were re-measured too, because dbc9e6d
+  changed both hosts' transcript-opening arm and the binary genuinely moved: L7's and L8's
+  candidate/replay-identity.txt cells and cases all reproduce figure for figure, L9's and L10's
+  eighty manifest cells and twenty entropy configurations reproduce byte for byte, and the two
+  files that print source line numbers -- candidate/static-checks.txt and
+  candidate/architecture-checks.txt, which L3, L11 and the S and C rows cite -- were re-run and
+  replaced, with no finding, verdict or sentence changed and only the commit named and the numbers
+  inside them differing. candidate/gates.txt's third amendment is that session in full.
+
+  ESCALATION E19 IS RAISED HERE AND IS NOT MINE TO SETTLE, and this file is where it belongs
+  because it is a statement about the required list rather than about a row in it. The defect
+  dbc9e6d fixes -- a transcript the platform refuses being read as one that can be read, on Linux,
+  on both hosts -- falls in a gap in VER-MOK-018: no case in the required list covers a transcript
+  the platform refuses. L32 covers the parser's exit 2, L8 covers a mismatch detected while
+  replaying, and rule 13.2's host behaviour on a read that fails has no case of its own on either
+  host. So this defect could not have been caught by running the required list; what caught it was
+  CI on a platform no local gate ran, and what should have caught it was an implementation test
+  whose assertion was too weak to fire. No row below is changed, because there is no row to
+  change. The completion report carries E19 with what it would take to close it.
+
+AMENDED A THIRD TIME 2026-08-24, at the owner's rulings later that day. Rows are never rewritten in
+this file, so the rows below stand as taken and what changed is recorded here.
+
+  E19 IS SETTLED, AND NOT THE WAY THE PARAGRAPH ABOVE LEFT OPEN. The owner ruled over commit
+  4cfb297 that VER-MOK-018 gain the case rather than that the gap be recorded and deferred to
+  WO-MOK-026; the deferral was put beside it and declined. The case is L34, under REQ-MOK-077: a
+  transcript path naming something the platform will not read exits 1, writes nothing to standard
+  output, names the path on standard error behind the host's own prefix, and starts no tick -- in
+  both hosts, and exercised on more than one platform as a pass condition rather than as a
+  precaution. Commit bf027c8 writes it into VER-MOK-018's matrix and its amendment record, and
+  names it in WO-MOK-025's Matrix cases enumeration in the same commit, so the list and the matrix
+  agree.
+
+  L34  a transcript the platform refuses                                                PASS
+       Its evidence existed already, measured on both platforms at dbc9e6d. Nothing was read for
+       it after the ruling, which is what keeps the case from asserting coverage ahead of its
+       evidence:
+       mokiterions-core/tests/replay.rs   the directory case, whose assertion is now the missing
+         file's case exactly - exit 1, empty standard output, the host's message naming the path -
+         where before it asserted only that the exit code was not 0. That weakness is why the
+         defect reached CI rather than a gate.
+       candidate/replay-identity.txt   case R3c, which pins the engine host's directory refusal on
+         Windows and on Linux, and row O6, which records that the observer's refusal was true of
+         Windows only before the fix.
+       candidate/gates.txt   the third amendment: the suite green on both platforms at dbc9e6d.
+
+  SO THE ACCOUNT IS 68 ROWS AND 60 PASS, NOT 67 AND 59. The RESULT block below was written before
+  this ruling and is left as written, because it is the account at the reading it names.
+
+  M1 AND M2 ARE RECORDED, AND C6 IS ATTESTED. All three were owner acts, made 2026-08-24 over
+  commit 4cfb297, and all three are now files in this packet rather than rows waiting on someone:
+
+       M1  the shared rules block carries no strategy   RECORDED - met     manual-assessment.md
+       M2  the block agrees with SPEC-MOK-001           RECORDED - met     manual-assessment.md
+       C6  no credential in the automation secrets      ATTESTED           credential-attestation.md
+
+  L27 is M1 seen from the required list, so it is recorded with it. The rows below still read NOT
+  MINE TO MAKE, and that stays correct as a statement about the agent that wrote them: it did not
+  make them, and DECISION_RIGHTS.md is why. WO-MOK-025 required evidence item 7 is what
+  manual-assessment.md satisfies, block quoted in full.
+
+  E20 IS SETTLED TOO, AND IT CORRECTS ONE SENTENCE OF THIS FILE'S OWN ACCOUNT. The entry under What
+  was not verified reads "C6 ... No check can see this", quoting VER-MOK-018 as it then stood. That
+  clause is now withdrawn. Secret NAMES are enumerable through the hosting platform's API at every
+  scope a workflow can read a secret from, measured 0 at repository Actions secrets, Dependabot
+  secrets, Actions variables and each of the two environments, with no organization scope because
+  the account is a personal one. A VALUE is what no check can see, and no measurement covers a
+  moment other than the one it was taken at, so the measurement corroborates the attestation and
+  does not make it. C6 stays in that list because it is still not a check that was run.
+  credential-attestation.md carries the measurement and states all three of its limits.
+
+    RESULT: 67 rows, one per case and per required half-case. 59 pass, one of those against a
+    figure this work order and VER-MOK-018 both state differently (L30's ceiling: eighteen
+    exchanges rather than two, deliberately, and the row says why). One passes and is
+    escalated anyway (L5, whose literal wording is wider than the check). Three pass in part and
+    are escalated for the part that does not run (L16's retried exchange, L17's withdrawn clause,
+    C1's synthetic-credential test). Three are owner acts and are not mine to make (L27 and M1,
+    which are one assessment seen from two sections, and M2). One does not apply at this stage
+    (S2: no connector exists). No required case is omitted, and none is reported green on
+    evidence that does not reach it.
+
+--- The suite reading these rows rest on ------------------------------------------------------
+
+    cargo test --workspace
+      -> 422 passed; 0 failed; 3 ignored, across 23 test binaries and 2 doc-test targets
+      -> exit 0
+
+bce4229 is the last commit that changed a file under either package, and candidate/gates.txt
+carries that measurement, so this reading is of the same source as every other reading in this
+packet. It was taken again here rather than quoted, because a suite total is the cheapest thing
+in this packet to re-measure and the most expensive thing to be wrong about.
+
+THE THREE IGNORED TESTS ARE NAMED, because a case whose evidence is an ignored test is a false
+green and looks exactly like a real one:
+
+    mokiterions-core/src/simulation.rs:9608   the_four_existing_sources_entropy_state_at_every_tick_boundary
+      an instrument, run by name; its ~20,000 lines are candidate/entropy-manifest.txt
+    mokiterions-core/src/simulation.rs:9723   print_base_commit_entropy_literals
+      an instrument, run by name; it prints the base-commit constant in source form
+    mokiterions-core/tests/replay.rs:1260     regenerate_the_committed_transcript
+      writes into the working tree; run deliberately when the recorded run changes
+
+Only the first is cited below, for L9's entropy half, and the row states that it does not run in
+the default suite.
+
+--- A label collision a reader would otherwise walk into ---------------------------------------
+
+candidate/replay-identity.txt numbers its own rows R1 to R7. Those are that file's local labels
+for seven mismatched configurations - R4 there is "--seed 1 against a transcript recorded at
+seed 0" - and they are NOT VER-MOK-018's resilience checks R1 to R5. Where a row below cites
+that file it says which of the two it means. VER-MOK-018's R3, R4 and R5 are the last three rows
+of this file and cite tests, not that file's rows.
+
+--- Matrix cases -------------------------------------------------------------------------------
+
+L1   one path, no privilege                                                             PASS
+     mokiterions-core/tests/replay.rs:929   no_record_form_is_unique_to_the_port_at_any_declared_seed
+       the differential half: no record form is unique to the port at any declared seed
+     mokiterions-core/src/simulation.rs:6766   the_reference_source_cannot_mutate_authoritative_state
+       the no-privilege half, which the port shares because it shares the trait's shape
+     candidate/public-surface.txt   no reference and no mutable borrow on the added surface
+
+L2   the source is named                                                                PASS
+     mokiterions-core/tests/replay.rs:1013   the_record_stream_names_the_source_once_before_any_tick_at_every_declared_seed
+
+L3   the port is the only path                                                          PASS
+     candidate/static-checks.txt   the first clause and the branch clause, measured
+     candidate/public-surface.txt   SPEC-MOK-002 rule 6's existing check, re-run unchanged
+
+L4   the enumeration is complete                                                        PASS
+     candidate/transcript-reading.txt   221 requests, each against an independently written
+       enumerator that shares no code with the engine
+     mokiterions-core/src/simulation.rs:11438   block_d_offers_exactly_what_the_engine_would_accept_from_the_observation
+
+L5   the enumeration is not the core list                          PASS, AND ESCALATED
+     candidate/transcript-reading.txt
+       Passes under the reading the program enforces: 104 of 221 requests enumerate a targeted
+       action, and of those, none has a set equal to the core-proposal list. Under the case's
+       LITERAL wording the figure is 117 of 221 - requests with nothing to target, whose block D
+       is the core-proposal list by coincidence rather than by derivation. The program prints the
+       literal figure and decides nothing. WO-MOK-025 stop condition 7; put to the owner.
+
+L6   no unsatisfiable offer                                                             PASS
+     candidate/transcript-reading.txt   no offer among 221 requests names a target whose
+       precondition is unmet
+     mokiterions-core/src/simulation.rs:11368   block_d_enumerates_a_targeted_verb_only_where_its_preconditions_are_met
+
+L7   replay identity                                                                    PASS
+     mokiterions-core/tests/replay.rs:632   a_recording_and_its_replay_agree_at_every_declared_seed_with_tracing_on_and_off
+     candidate/replay-identity.txt   the same identity measured outside the suite, over release
+       builds of both binary targets, with cmp on standard output and on the record stream
+
+L8   mismatch is detected                                                               PASS
+     mokiterions-core/tests/replay.rs:731   a_replay_at_another_density_fails_and_names_the_mismatch
+     mokiterions-core/src/simulation.rs:12408   a_replay_refuses_a_record_that_is_not_the_opportunity_reached
+     mokiterions-core/src/simulation.rs:12545   a_transcript_that_ends_early_fails_and_names_the_opportunity
+     mokiterions-core/src/simulation.rs:12597   a_surplus_tail_is_unread_and_the_run_is_unaffected
+       the clause that is not a failure: a transcript longer than the run needs
+     mokiterions-core/src/simulation.rs:12655   a_replay_failure_is_latched_and_produces_no_further_ticks
+     candidate/replay-identity.txt   its local rows R1 to R7, seven mismatched configurations
+
+L9   four sources byte-identical                                                        PASS
+     candidate/req-068-comparison.txt   standard output, record stream and exit code against the
+       base-commit captures, twenty configurations
+     candidate/nosink-manifest.txt, candidate/sink-manifest.txt   the forty cells behind it
+     candidate/entropy-manifest.txt   the per-tick draw-count half, for the whole run
+       Produced by mokiterions-core/src/simulation.rs:9608, which is #[ignore]d and DOES NOT RUN
+       in the default suite; it is an instrument run by name and its output is that file.
+     mokiterions-core/src/simulation.rs:9681   the_four_existing_sources_draw_what_the_base_commit_drew
+       the in-suite guard against the same drift, which does run
+
+L10  observed equals unobserved                                                         PASS
+     mokiterions-core/src/simulation.rs:10111   a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one
+     mokiterions-tui/tests/verification.rs:326   observed_and_unobserved_runs_are_identical_on_every_declared_seed
+     candidate/nosink-manifest.txt vs candidate/sink-manifest.txt   the same equality, outside
+       the suite, cell by cell
+
+L11  the core list did not grow                                                         PASS
+     candidate/static-checks.txt   the list's members and order against the base commit
+     mokiterions-core/src/simulation.rs:11498   the_port_source_draws_no_entropy   the second clause
+
+L12  one Mokiterion per request                                                         PASS
+     candidate/transcript-reading.txt   every line of all 221 observations against rule 6.1's forms
+     mokiterions-core/src/simulation.rs:12715   a_record_carries_the_variable_part_and_the_head_carries_the_rest
+
+L13  no aggregate and no derived value                                                  PASS
+     candidate/transcript-reading.txt   no aggregate vocabulary, no figure on a list heading and
+       no response text in any of 221 requests
+     mokiterions-core/tests/replay.rs:511   the_committed_transcript_covers_what_the_reading_cases_rest_on
+       the coverage this case needs: a run in which every Mokiterion has acted
+
+L14  self-contained requests                                                            PASS
+     candidate/transcript-reading.txt   12 Mokiterions acted more than once; no record carries a
+       conversation or session identifier
+
+L15a the layout holds                                                                   PASS
+     candidate/transcript-reading.txt   shared block 5,385 bytes, byte-identical across all 12
+       prefix records; actor blocks 39 to 40 bytes
+     candidate/request-layout.txt   the same layout measured against SPEC-MOK-007 rules 3.5,
+       11.7 and 11.7.1, with the cacheable share reconciled in bytes
+     mokiterions-core/src/simulation.rs:11180   block_a_is_one_string_for_the_run_and_block_b_is_one_per_mokiterion
+     mokiterions-core/src/simulation.rs:11146   the_request_carries_four_blocks_in_the_cacheable_order
+
+L16  every exchange retained                                    PASS IN PART, ESCALATED
+     mokiterions-core/src/simulation.rs:12142   one_exchange_is_one_record_naming_its_opportunity
+     mokiterions-core/src/simulation.rs:12200   a_record_states_no_response_no_usage_and_no_credential
+       the absent-not-zero clause: a count the provider did not report appears as absent
+       NOT EXERCISED: "a retried exchange appears as two records". A retry needs transport retry,
+       which this stage does not build - VER-MOK-018's R1 and R2 are WO-MOK-026's for the same
+       reason. The clause is disclosed here and carried forward there rather than reported green
+       on a run that never retried anything.
+
+L17  the transcript's constraints                                PASS IN PART, ESCALATED
+     candidate/transcript-reading.txt   no floating-point value, no timestamp and no path across
+       233 records and 1,828 text values
+     mokiterions-core/tests/replay.rs:484   the_committed_transcript_is_the_run_it_says_it_is
+       the compare-equal clause
+       WITHDRAWN CLAUSE: "no value outside the closed alphabet". SPEC-MOK-007 rule 11.4.1 as
+       amended on 2026-08-24 replaced the closed alphabet with a round trip through
+       escape_transcript_text, because blocks A to D are English prose. VER-MOK-018 still states
+       the withdrawn clause. WO-MOK-025 stop condition 6; put to the owner. What holds instead is
+       checked: mokiterions-core/src/simulation.rs:11946 every_block_survives_the_escaping_unchanged
+       and :11906 the_escaping_survives_the_framing_and_round_trips.
+
+L18  the ceiling bounds                                                                 PASS
+     mokiterions-core/src/simulation.rs:13195   a_ceiling_stop_says_so_and_carries_no_decimal_separator
+     mokiterions-core/src/simulation.rs:13042   the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two
+       Against the scripted stub with declared prices and synthetic usage, not a connector. That
+       difference is what separates this stage's green from WO-MOK-026's.
+
+L19  the check precedes the spend                                                       PASS
+     mokiterions-core/src/simulation.rs:13042   the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two
+       a ceiling equal to two exchanges yields exactly two
+     mokiterions-core/src/simulation.rs:12951   cost_is_integer_arithmetic_over_the_declared_prices
+
+L20  both conditions required, the half needing no live-mode flag                       PASS
+     candidate/architecture-checks.txt   checks 3 and 5: ZERO env::var, var_os and vars sites
+       anywhere in either package at any tier, zero socket types and zero process-spawning sites
+       Established by an absence of any environment read at all rather than by a run with a value
+       set. That is stronger than the case's condition and is the same fact SPEC-MOK-007 rule 12.2
+       states as holding "whether or not a credential is present in the environment": no code path
+       reads one, so no environment can change what a replay does. A test that sets a synthetic
+       value would assert the same absence from the outside; it was not written, and C1's second
+       half below is escalated for exactly that reason.
+       The live half - a live-mode selection with no credential - needs the flag and is WO-MOK-026's.
+
+L21a automation holds no credential                                                     PASS
+     candidate/gates.txt   the output of scripts/check_workflow_credentials.py --root . at the
+       candidate, exit 0, which is required evidence item 9
+     scripts/test_check_workflow_credentials.py   38 tests, including the failing-pull-request
+       half: the check goes red on a workflow that introduces such a reference
+
+L21b automation still exercises the source                                              PASS
+     candidate/gates.txt   the same gate's CHECKED paragraph, which is L21b by name: a workflow
+       step runs this source in replay mode against a transcript confirmed to be a file in this
+       repository, and the step's presence is checked rather than assumed
+
+L22  the fallback is counted                                                            PASS
+     mokiterions-core/src/simulation.rs:12795   the_fallback_is_wait_counted_and_marks_the_run
+     mokiterions-core/src/simulation.rs:11531   no_proposal_obtained_is_wait_and_nothing_else
+     mokiterions-core/src/simulation.rs:12255   a_proposed_wait_and_a_fallback_wait_are_distinguishable
+
+L23  a rejection is not a fallback                                                      PASS
+     mokiterions-core/src/simulation.rs:12897   a_rejected_proposal_is_not_a_fallback_and_the_count_matches_the_transcript
+       and the clean-run clause: the count is reported as 0 rather than omitted
+
+L26  no outcome threshold exists                                                        PASS
+     mokiterions-core/tests/no_outcome_threshold.rs:173   no_outcome_threshold_exists_for_the_model_backed_source
+       A new public-tier test target added by this work order, so that the absence is checked by
+       something that fails when an assertion is added. See VER-MOK-018's opening section for why
+       an absence is checked at all.
+
+L27  the prompt carries no strategy                             NOT MINE TO MAKE, ESCALATED
+     This is manual assessment M1 and it is the assurance owner's. Required evidence item 7 asks
+     for an assessment record naming the assurance owner and the date, with the shared rules block
+     quoted in full. An implementation agent cannot make that assessment or sign that record;
+     DECISION_RIGHTS.md is explicit that it may not self-approve an assessment unless separately
+     named as the accountable owner, and it is not.
+     What is prepared for it, and is not a substitute for it:
+     mokiterions-core/src/simulation.rs:11210   block_a_gives_no_strategy_and_names_nothing_that_varies
+       the mechanical half - the block names nothing that varies with the run
+     candidate/architecture-checks.txt   check 9 (S7): the block exists in exactly one place, so
+       the assessment has one object and cannot drift between two copies
+     candidate/request-layout.txt   the block measured: 5,381 characters, one distinct value
+
+L29  both of rule 20.5's doors carry the port                                           PASS
+     mokiterions-core/tests/replay.rs:1134   both_of_rule_twenty_fives_doors_carry_the_port
+       Both doors in one test, with the scripted stub standing where the canned connector will
+       stand in WO-MOK-026. The stub is an in-process implementation of the port, so both entry
+       points are exercised without a process.
+
+L30  the port is lent, not rebuilt                                                      PASS
+     candidate/per-tick-lending.txt   the whole case, both halves, with each half's rebuilt-port
+       counterfactual stated as the failure it would produce, which is what item 11 asks for
+     mokiterions-core/tests/replay.rs:1134   both_of_rule_twenty_fives_doors_carry_the_port
+       the cursor half as the case words it: twenty ticks through the single-tick entry point with
+       the public ReplayPort over the committed transcript, consuming all 221 exchange records at
+       the same ticks and for the same actors as the recording that produced them
+     mokiterions-core/src/simulation.rs:12371   a_replay_reads_nothing_until_the_run_needs_a_record
+       that there is one cursor at all: nothing read at construction, read only when the run needs
+       a record
+     mokiterions-core/src/simulation.rs:12408   a_replay_refuses_a_record_that_is_not_the_opportunity_reached
+       the failure a restarted cursor would produce, already verified: its "another tick" case is
+       exactly the record tick 2 would be offered, and the message is "record is for tick 2"
+     mokiterions-core/src/simulation.rs:13077   a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling
+       the ceiling half: accumulated cost rises across ticks - 12, 24, 36 exchange-units - and
+       reaches the ceiling in the second tick, which a port rebuilt each tick would never do
+       THE FIGURE IS NOT THE CASE'S. L30 and this work order's item 11 both name a ceiling set to
+       two exchanges. A tick here holds twelve opportunities, so a two-exchange ceiling is reached
+       inside the first tick and a rebuilt port would reach it too - the case's own discriminator
+       ("the accumulated cost stays at zero, so the ceiling never triggers") would be lost. The
+       test uses eighteen, one and a half ticks, and its doc comment states this reason. The
+       case's substance is checked and its illustrative figure is not; the deviation is put to the
+       owner rather than resolved here.
+     mokiterions-core/src/simulation.rs:11625   a_port_lent_for_the_run_accumulates_across_ticks
+       the same accumulation over ten ticks and 120 requests, with no cost in it, so the lending
+       is not being read off the arithmetic
+     mokiterions-tui/tests/replay.rs:159   one_port_serves_the_whole_run_and_is_never_rebuilt
+       the same case in the observer, which is the host most likely to rebuild it
+
+L31  the observer replays                                                               PASS
+     mokiterions-tui/tests/replay.rs:508   the_observer_replays_this_source_to_the_horizon_with_every_pane
+     candidate/observer-screen.txt   the panes reconstructed from the screen rather than asserted
+       from state, which is what L31's pass condition is about: panes rather than bytes
+     candidate/replay-identity.txt   the observer's figures against the engine binary's own
+       summary line, eight comparisons over twelve figures
+
+L32  the observer refuses a live run, the half whose options exist                      PASS
+     mokiterions-tui/tests/options.rs:282   the_replay_source_with_no_transcript_is_refused_at_start_up
+       exit 2, before the terminal is entered, naming the missing transcript
+     candidate/replay-identity.txt   the same refusal measured as exit status and standard-error
+       bytes outside the suite
+       The connector-path, live-mode and ceiling halves need options this stage does not add and
+       are WO-MOK-026's. They are carried forward there explicitly because the failure mode is an
+       option silently accepted, and a missing test for that looks exactly like a passing one.
+
+L33  no port is an invalid configuration                                                PASS
+     mokiterions-core/src/simulation.rs:11556   this_source_with_no_port_refuses_and_runs_nothing
+     mokiterions-tui/tests/replay.rs:230   the_replay_source_with_no_port_is_refused_on_the_first_tick
+       both hosts, refusing rather than substituting a source and never applying the fallback
+     mokiterions-core/src/simulation.rs:11588   a_port_under_another_source_is_ignored_and_is_not_an_error
+       the converse, so that the refusal is about this source and not about the port's presence
+
+  A DISCREPANCY IN THE REQUIRED LIST ITSELF, reported rather than resolved. WO-MOK-025's
+  enumerated matrix list does not contain L20 or L32, but the prose immediately below it brings
+  each in by half - "L20 is in scope only in the half that needs no live-mode flag", "L32 is in
+  scope only in the half whose options exist" - and the exclusion list names only the live half of
+  L20 and the connector half of L32. The two readings disagree about whether those two halves are
+  required. Both are treated as required here, because that is the reading under which nothing is
+  omitted, and the enumerated list is the one that looks wrong. It is put to the owner with the
+  other open questions.
+
+--- Acceptance scenarios -----------------------------------------------------------------------
+
+A1   a run nobody paid for                                                              PASS
+     mokiterions-core/tests/replay.rs:577   the_binary_replays_the_committed_transcript_into_the_recorded_runs_bytes
+     candidate/replay-identity.txt   the same run outside the suite, exit 0, bytes identical
+
+A2   the same decision from two directions                                              PASS
+     mokiterions-core/tests/replay.rs:929   no_record_form_is_unique_to_the_port_at_any_declared_seed
+       the records differ only in the source name, at every declared seed
+
+A3   a transcript from the wrong run                                                    PASS
+     mokiterions-core/src/simulation.rs:12499   a_replay_refuses_a_transcript_recorded_against_another_prefix
+     candidate/replay-identity.txt   its LOCAL row R4 - "--seed 1 against a transcript recorded at
+       seed 0", exit 1 - which is not VER-MOK-018's R4
+
+A5   the model declines                                                                 PASS
+     mokiterions-core/src/simulation.rs:12795   the_fallback_is_wait_counted_and_marks_the_run
+       the Mokiterion waits, the cause is recorded, the count is one, the run is marked unfit and
+       continues to its tick limit
+
+A6   a workflow tries to spend                                                          PASS
+     scripts/test_check_workflow_credentials.py   the red-build half, 38 tests
+     candidate/gates.txt   the green reading at the candidate
+
+A7   the observer watches, the replay half                                              PASS
+     mokiterions-tui/tests/replay.rs:508   the_observer_replays_this_source_to_the_horizon_with_every_pane
+     candidate/observer-screen.txt   every pane it already has, tick by tick
+       The refusal half needs a connector-path option and is WO-MOK-026's, together with A4,
+       which needs a declared ceiling and so needs the option that declares one.
+
+--- Properties and invariants ------------------------------------------------------------------
+
+P1   the shared prefix is a prefix                                                      PASS
+     candidate/transcript-reading.txt   over the whole transcript rather than sampled pairs: the
+       shared block byte-identical across all 12 prefix records, actor blocks per Mokiterion
+     mokiterions-core/src/simulation.rs:11180   block_a_is_one_string_for_the_run_and_block_b_is_one_per_mokiterion
+
+P2   the enumeration is a subset of the admissible and a superset of the knowably-legal  PASS
+     candidate/transcript-reading.txt   L4's and L6's halves, over all 221 requests
+     mokiterions-core/src/simulation.rs:11438   block_d_offers_exactly_what_the_engine_would_accept_from_the_observation
+     mokiterions-core/src/simulation.rs:12897   a_rejected_proposal_is_not_a_fallback_and_the_count_matches_the_transcript
+       the non-empty-gap clause: the distinction between admissible and knowably-legal is
+       exercised at least once rather than assumed
+
+P3   one request, one Mokiterion                                                        PASS
+     candidate/transcript-reading.txt   every request of the retained transcript, L12's check
+
+P4   replay is idempotent                                                               PASS
+     mokiterions-core/src/simulation.rs:12317   a_replay_reproduces_the_recorded_runs_bytes
+     candidate/replay-identity.txt   every replay byte-identical run to run and with and without
+       a record sink
+
+P5   the fallback count and the transcript agree                                        PASS
+     mokiterions-core/src/simulation.rs:12897   a_rejected_proposal_is_not_a_fallback_and_the_count_matches_the_transcript
+     mokiterions-core/src/simulation.rs:12998   the_cache_ratio_is_the_reported_figures_or_nothing
+       the wider clause: recomputability of every run-record figure, not only the fallback count
+
+P6   accounting is integer                                                              PASS
+     mokiterions-core/src/simulation.rs:12951   cost_is_integer_arithmetic_over_the_declared_prices
+     mokiterions-core/src/simulation.rs:13195   a_ceiling_stop_says_so_and_carries_no_decimal_separator
+     candidate/transcript-reading.txt   no floating-point value in 233 records and 1,828 values
+     mokiterions-tui/tests/verification.rs:1812   no_total_is_a_float_and_no_presented_figure_is_a_ratio
+
+P7   the entropy stream is untouched                                                    PASS
+     mokiterions-core/src/simulation.rs:11498   the_port_source_draws_no_entropy
+     mokiterions-core/src/simulation.rs:10064   the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink
+     candidate/entropy-manifest.txt   per-tick draw counts, whole run, twenty configurations
+
+--- Static and architecture checks -------------------------------------------------------------
+
+S1   dependency graphs equal the declared sets, unchanged from the base                 PASS
+     candidate/declared-dependencies.txt   scripts/check_declared_dependencies.py, the
+       repository's own resolved-graph comparison, checks 8.4a to 8.4d, plus ARCH-MOK-001's
+       by-name scan for a network, async-runtime, database, model-provider or user-interface crate
+     candidate/architecture-checks.txt   check 1: the half the gate cannot see - that no manifest
+       and no lockfile entry moved from cc54185
+
+S2   not applicable at this stage                                                        N/A
+     No connector exists, canned or otherwise, so there is no dependency surface to check.
+     WO-MOK-025's required list states this exclusion, and it is not the same thing as the
+     finding VER-MOK-018's S2 records about an operator's connector, which no check here can see.
+
+S2a  no third member, no connector source, no compiled-in default path                  PASS
+     candidate/architecture-checks.txt   check 2
+
+S3   the library performs no filesystem, socket, process or environment operation        PASS
+     candidate/architecture-checks.txt   checks 3 and 4, over four tiers separately: engine
+       library, engine binary, observer library, observer binary. Zero filesystem-opening sites
+       in the engine library; both of this source's streams arrive as already-open handles.
+
+S3a  the spawn and the pass-through are in the engine's binary and nowhere else          PASS
+     candidate/architecture-checks.txt   check 4, negative half: zero process-spawning sites at
+       any tier of either package, which at this stage is the whole of the case. Two dismissals
+       are printed as rules rather than applied silently - cli::Command, this crate's own
+       two-variant enum, and std::process::ExitCode, which starts nothing.
+
+S4   the added public surface is one interface and one request type                      PASS
+     candidate/public-surface.txt   the diff, with no transport type and no dependency-owned type
+
+S4a  rule 5's drift checks, in their restated form                                       PASS
+     candidate/public-surface.txt   the three greps in their restated form, each returning
+       exactly one line, with the failure conditions stated against five parameters rather than
+       four, and the amended text of SPEC-MOK-002 rule 5 itself
+       This is the check on this stage's own change: the port is the fifth parameter that rule 5's
+       standing text says fails the second check.
+
+S5   the fifth policy value is present and the withdrawn sentence is gone                PASS
+     candidate/architecture-checks.txt   check 6: the usage text in both hosts, and the absence
+       of "None of the four learns anything" from either
+     mokiterions-tui/tests/options.rs:69   the_usage_text_advertises_every_policy_the_engine_accepts
+
+S5a  the observer's shared descriptions are the engine's own words                       PASS
+     mokiterions-tui/tests/options.rs:196   the_shared_entries_are_the_engines_own_words
+     mokiterions-tui/tests/options.rs:320   the_usage_text_states_that_this_host_only_replays
+       the observer's own fact, stated in the observer's own words, which is the one thing that
+       is not a shared input's meaning
+
+S6   the observer's authority mapping carries the fifth source                           PASS
+     mokiterions-tui/tests/authority.rs:52   the_mapping_is_the_specified_one
+     mokiterions-tui/tests/authority.rs:113   the_source_row_names_every_source_and_agrees_with_the_mapping
+     mokiterions-tui/tests/authority.rs:83   the_decision_source_maps_by_the_source_the_record_names
+
+S6a  the configuration gains no field for either new path                                PASS
+     mokiterions-core/tests/cli.rs:635   the_transcript_option_is_validated_and_its_value_is_not_retained
+     mokiterions-tui/tests/options.rs   the observer half, on the --events-path precedent
+
+S6b  no live-versus-replay branch in the library, no live path in the observer            PASS
+     candidate/architecture-checks.txt   check 7, as an absence: no ceiling parsing that reaches
+       a run, no connector spawn, no credential read
+
+S7   the shared rules block exists in exactly one place                                  PASS
+     candidate/architecture-checks.txt   check 9, which is what keeps M1's assessment to one
+       object and makes a drift between two copies impossible
+
+--- Security and privacy checks ----------------------------------------------------------------
+
+C1   no credential in any produced byte                          PASS IN PART, ESCALATED
+     candidate/architecture-checks.txt   check 8, the pattern half over retained evidence
+     mokiterions-core/tests/replay.rs:1206   the_committed_transcript_carries_no_credential_and_no_conversion
+     mokiterions-core/src/simulation.rs:12200   a_record_states_no_response_no_usage_and_no_credential
+     mokiterions-tui/tests/verification.rs:801   no_frame_carries_an_environment_value
+       the observer's
+       rendered frames scanned at every declared viewport
+       CANNOT BE RUN: "a test that sets a synthetic credential value and asserts it appears in no
+       produced byte". No code path reads a credential, so there is no value to set and no byte
+       for it to appear in. SPEC-MOK-007 rules 10.5 and 13.4 place the credential in the
+       connector, which WO-MOK-025 excludes. Reported as a FINDING by the instrument itself, so
+       that the row appears in its own summary table and cannot be lost. It becomes runnable in
+       WO-MOK-026, where the connector lands.
+
+C2   no workflow references a credential and none selects live mode                      PASS
+     Case L21a above; candidate/gates.txt
+
+C3   the credential is read from the environment and nowhere else, negative half         PASS
+     candidate/architecture-checks.txt   checks 3 and 8: no file, keychain or configuration
+       directory is opened in search of a credential, because the library opens no file at all and
+       the seven filesystem-opening sites in the packages each take a variable and never a literal
+       The positive half - that it IS read from the environment - has no subject: zero environment
+       reads exist. It is WO-MOK-026's, and it is a half of a case rather than a case, so it is
+       not counted among the excluded cases below.
+
+C4   no request carries data about any other Mokiterion                                  PASS
+     Cases L12 and L13 above; candidate/transcript-reading.txt
+       Checked as a privacy property of the population as well as an experimental one, which is
+       what the transcript reading measures over all 221 observations.
+
+C5   what leaves the repository is the request text only, negative half                  PASS
+     candidate/architecture-checks.txt   check 5: zero socket types and zero outbound identifiers
+       at any tier of either package, so nothing leaves the repository at all
+       The positive half needs a live run and is WO-MOK-026's.
+
+--- Performance and resilience checks ----------------------------------------------------------
+
+R3   a failure to write the transcript ends the run with an error status                 PASS
+     mokiterions-core/src/simulation.rs:12279   a_transcript_that_cannot_be_written_ends_the_run
+     mokiterions-core/src/simulation.rs:10682   a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written
+     mokiterions-core/src/simulation.rs:10703   a_record_sink_that_fails_mid_run_leaves_no_run_record
+
+R4   a 1,000-tick replay completes without loading the whole transcript                  PASS
+     mokiterions-core/src/simulation.rs:12371   a_replay_reads_nothing_until_the_run_needs_a_record
+       the streaming clause, which is the one that matters: a record is read when the run needs it
+     mokiterions-core/src/simulation.rs:12597   a_surplus_tail_is_unread_and_the_run_is_unaffected
+       the tail of a longer transcript is never read
+
+R5   no latency, throughput or wall-clock figure is a pass condition anywhere            PASS
+     Measured over VER-MOK-018 itself, since the subject of this check is the contract rather
+     than the code: the only occurrences of "latency", "throughput", "wall-clock" and "hours" in
+     the document are in R5's own statement at lines 293 to 294. Every other occurrence of
+     "second" is ordinal. No pass condition in the document carries a timing figure.
+     mokiterions-core/tests/records.rs:436   every_key_in_the_stream_is_a_key_the_specification_names
+       the same prohibition over records, which forbids "duration", "elapsed", "seconds",
+       "millis", "timestamp", "clock" and "wall" by name
+     No automated instrument owns this check, and that is stated rather than left implicit.
+
+--- Manual assessments -------------------------------------------------------------------------
+
+M1   the shared rules block carries no strategy                 NOT MINE TO MAKE, ESCALATED
+     Case L27 above. The assurance owner's assessment. What is prepared for it is listed there.
+
+M2   the shared rules block agrees with SPEC-MOK-001            NOT MINE TO MAKE, ESCALATED
+     Also the assurance owner's, and required evidence item 7 asks for its record too. Check S7
+     is what keeps it to one object, and candidate/request-layout.txt quotes the block's measured
+     shape. Nothing in this packet detects drift between the block and SPEC-MOK-001's rules
+     automatically; VER-MOK-018 says so, and the assessment is the mechanism.
+     M3 belongs to the measurement and is WO-MOK-027's.
+
+--- What was not verified, and why -------------------------------------------------------------
+
+WO-MOK-025 required evidence item 12 asks for this statement, and it is the same list the required
+verification section excludes:
+
+    L15b   the cached-prompt-token ratio over an authorised live run of at least 200 exchanges.
+           Needs a provider call and an owner authorisation. Owner-gated.
+    L24    the published comparison of survivors, deaths and combat deaths. Needs live runs at the
+           declared seeds and horizon. Owner-gated, and its honesty assessment M3 is WO-MOK-027's.
+    L25    that only fit runs are published. Needs the runs L24 needs. Owner-gated.
+    L28    the retained authorization record for a live run. There is no live run to authorise, and
+           whether an authorisation is genuine is an owner attestation and not a check.
+    C6     the attestation that the credential is not configured in the repository's automation
+           secrets. No check can see this. scripts/check_workflow_credentials.py says so in its own
+           output - "NOT CHECKABLE HERE" - and VER-MOK-018 calls it the single fact the whole cost
+           containment rests on. It is the repository owner's statement to make.
+    L20    the live half: a live-mode selection with no credential present. Needs the live-mode
+           flag, which this stage does not add.
+    L32    the connector-path, live-mode and ceiling halves. Need options this stage does not add.
+    R1, R2 transport retry, and with them L16's retried-exchange clause. This stage builds no
+           transport, so there is nothing to retry.
+    A4     the money runs out. Needs a declared ceiling, which needs the option that declares one.
+    A7     the refusal half. Needs the connector-path option.
+
+Every one of those is a provider call, an option this stage does not add, or an owner attestation.
+None of them is a check that could have been run here and was not.
+
+--- What this file does not establish ----------------------------------------------------------
+
+It does not verify. It is a candidate's own account of its evidence, prepared under WO-MOK-025
+item 7 by the agent that wrote the code, and the verification decision belongs to the assurance
+owner. Three of the sixty-seven rows are that owner's assessments, two of them one assessment
+seen from two sections, and all three are marked as not mine to make. C6 is not a row here at all:
+it is the repository owner's attestation, and it is listed among what was not verified. A green row
+means the named test or the named capture holds, not that the case has been accepted.
+
+It also does not establish that the required list is right. One discrepancy inside it is reported
+above - the enumerated matrix list omits L20 and L32 while the prose brings each in by half - and
+two cases are narrower or wider than the evidence that exists for them, L5 and L17. Those are
+WO-MOK-025 stop conditions 7 and 6, and they are the owner's to settle before this packet's
+verification record can bind anything.

@@ -1,0 +1,519 @@
+The request layout as built
+==========================
+
+WO-MOK-025's completion report item 6 asks for the shared block's token count, the actor block's, a
+representative observation block's and enumerated set's, the resulting cacheable share as an
+estimate, and which enumeration rendering was chosen with its measured cost, and it asks for the
+plain statement that no cache ratio was measured. This file is that item.
+
+Every figure comes from the transcript this repository commits, because SPEC-MOK-007 rule 11.3
+carries the request as sent: blocks A and B in a prefix record, blocks C and D in each exchange
+record. So a reader who distrusts this file can re-derive it from a file in the repository with no
+build and no run. analysis/request-layout.py is the instrument, and its whole output is reproduced
+below rather than summarised.
+
+    RESULT: averaged over the transcript's 221 requests, the cacheable prefix is 87.16 percent of a
+    request in bytes, ranging from 83.24 to 91.35. Every token figure in this file is an ESTIMATE
+    derived from those bytes, because there is no tokenizer here and SPEC-MOK-006 rule 12.4 forbids
+    adding one. NO CACHE RATIO WAS MEASURED, because no provider was called.
+
+    RESULT: block D was built as one flat list of verb-target pairs, which is the first of the two
+    shapes SPEC-MOK-007 leaves to measurement. The nested alternative was measured on the same 221
+    sets and would save 5,469 bytes: 22.0 percent of block D and 0.40 percent of a mean request.
+
+    FINDING, reported and not repaired: SPEC-MOK-007 rule 11.4.1 lists five characters that put
+    block A outside the record stream's closed alphabet, and two of the five do not hold. Block A
+    contains no parenthesis at all, and its full stops are inside that alphabet rather than outside
+    it. The rule's conclusion is unaffected and is measured below. Rule 11.4.1 is approved text, so
+    this is the repository owner's to settle. The list has THREE sites, not one: the rule itself
+    and two restatements of it in the engine's source. All three are named below.
+
+--- Bytes are measured; tokens are estimated, and here the difference decides something ---------
+
+SPEC-MOK-007 rule 3.5 states the cacheable share as an estimate in tokens and says so twice in one
+sentence: "The cacheable prefix is **estimated** at 1,230 tokens of an **estimated** 1,430, which is
+86 percent, against REQ-MOK-070's floor of 85." This file cannot improve on that in kind. It can
+measure the bytes underneath it, and it does.
+
+The reason a token measurement is unavailable is not effort. A provider's tokenizer is the
+provider's, no crate may be added to either package (SPEC-MOK-006 rule 12.4, and this work order's
+*Out of scope* repeats it as "**Any crate added to either package**"), and a hand-written tokenizer
+would be a new correctness obligation whose output rule 14.4 refuses to accept anyway. The
+specification's own counterexample says why in one line: a locally estimated ratio "can be 0.86 while
+the provider charged for every token".
+
+--- analysis/request-layout.py, whole -----------------------------------------------------------
+
+    transcript mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+      305568 bytes, 233 record(s): 12 prefix, 221 exchange
+
+    --- the four blocks, as the transcript carries them
+      A shared rules         n= 12  distinct=  1  bytes 5385..5385  mean 5385.0  total 64620
+      B actor                n= 12  distinct= 12  bytes 39..40  mean 39.6  total 475
+      C observation          n=221  distinct=221  bytes 433..933  mean 689.9  total 152474
+      D permitted set        n=221  distinct= 33  bytes 78..237  mean 112.7  total 24911
+      A characters 5381, bytes 5385; A+B bytes per Mokiterion [5424, 5425]
+
+    --- the request, per exchange
+      bytes           min 5939  max 6516  mean 6227.2
+      prefix share    min 83.24%  max 91.35%  mean 87.16%   (A+B over A+B+C+D, in bytes)
+
+    --- five named exchanges
+      median C       tick  8 actor M08  A 5385  B 40  C 695  D 86  request 6206  prefix share 87.42%
+      smallest C     tick 15 actor M11  A 5385  B 40  C 433  D 86  request 5944  prefix share 91.27%
+      largest C      tick  3 actor M01  A 5385  B 39  C 933  D 113  request 6470  prefix share 83.83%
+      smallest D     tick  1 actor M03  A 5385  B 39  C 697  D 78  request 6199  prefix share 87.50%
+      largest D      tick 13 actor M04  A 5385  B 39  C 853  D 237  request 6514  prefix share 83.27%
+
+    --- block D: the flat rendering built, against the nested alternative
+      flat    total 24911  mean 112.7  min 78  max 237
+      nested  total 19442  mean 88.0  min 58  max 186
+      nested saves 5469 bytes = 22.0% of block D = 0.40% of a mean request
+
+    --- block D: what was enumerated
+      actions per set  min 5  max 17  mean 7.95  total 1756
+      sizes            {5: 5, 6: 111, 7: 6, 8: 42, 9: 1, 10: 18, 11: 2, 12: 20, 13: 4, 14: 4, 15: 4, 17: 4}
+        move       884
+        wait       221
+        sleep      209
+        approach   175
+        avoid      175
+        attack     19
+        threaten   19
+        fight      16
+        retreat    16
+        surrender  16
+        eat        6
+
+    --- block D against the observation beside it
+      sleep absent in 12 of 221; their energy values ['100']
+      sleep present where energy is 56..99
+      eat enumerated in 6 of 221:
+        tick  4 M12  cell ['F0122']  ->  ['eat F0122']
+        tick  5 M12  cell ['F0122']  ->  ['eat F0122']
+        tick  6 M12  cell ['F0122']  ->  ['eat F0122']
+        tick  7 M12  cell ['F0122']  ->  ['eat F0122']
+        tick  8 M12  cell ['F0122']  ->  ['eat F0122']
+        tick  9 M12  cell ['F0122']  ->  ['eat F0122']
+      co-located food with no eat enumerated: 0
+      move actions per set: {4: 221}
+      perceived Mokiterions summed over every observation: 175   (against approach 175 and avoid 175)
+      observed position components: 8..101 and 17..125  (neither reaches 0, so no boundary case is in this transcript)
+
+    --- the escaping that carries the blocks, checked against a second reading of the rule
+      block values re-escaped and compared: 466, mismatches 0
+        escaped newline          8103
+        escaped quotation mark   0
+        escaped backslash        0
+        escaped carriage return  0
+        escaped tab              0
+        escaped control          0
+      non-ASCII census, because the escaping leaves such characters alone:
+        block A over  12 value(s): 24
+        block B over  12 value(s): 0
+        block C over 221 value(s): 0
+        block D over 221 value(s): 0
+      where block A's are, by character offset:
+        character offset 2066  U+2014  EM DASH
+        character offset 2119  U+2014  EM DASH
+      U+2014 occurrences in the whole transcript: 24
+      rule 11.4.1's named characters in block A, counted:
+        space                 1282   in the closed alphabet: no
+        comma                   44   in the closed alphabet: no
+        opening parenthesis      0   in the closed alphabet: no
+        closing parenthesis      0   in the closed alphabet: no
+        full stop               65   in the closed alphabet: yes
+        em dash                  2   in the closed alphabet: no
+        newline                 90   in the closed alphabet: no
+
+    --- reconciliation with SPEC-MOK-007 rules 11.7 and 11.7.1
+      prefix records    67435 + 12 newline(s) = 67447
+      exchange records  237900 + 221 newline(s) = 238121
+      total             305335 + 233 newline(s) = 305568
+      mean exchange record 1077.5
+      a record carrying A and B inline would mean 6502.1
+
+--- Block A: one string for the run, which is the whole basis of the cache order ----------------
+
+5,385 bytes, 5,381 characters, and exactly ONE distinct value across all twelve prefix records.
+That is rule 3.3 measured rather than restated, and rule 3.3 is not a preference: any variation
+inside block A — "a name, a tick, a count, a whitespace difference" — destroys the shared prefix for
+every request of the run, so the 87 percent above would collapse toward zero.
+
+The one distinct value is a structural property here and not a lucky reading. Block A is a single
+`const SHARED_RULES: &str = concat!(...)` at mokiterions-core/src/simulation.rs:1306, and the
+comment at line 1419 records that the request type holds that constant rather than a composed
+string, "so rule 3.3's byte-identity across a run is a property of the type". Two tests hold it:
+
+  the_request_carries_four_blocks_in_the_cacheable_order
+      rules 3.1 and 3.6. It asserts on blocks() rather than on a concatenation, and its own comment
+      says why - a rotation of the four would keep a concatenation test passing.
+
+  block_a_is_one_string_for_the_run_and_block_b_is_one_per_mokiterion
+      rules 3.3 and 5.3, over a 20-tick run at seed 42, with an assertion that the run produced more
+      than 100 requests so that the measurement is not vacuous.
+
+--- Block A's one non-ASCII character, and the escaping that carries it verbatim ----------------
+
+Block A's only non-ASCII character is U+2014 EM DASH, at character offsets 2,066 and 2,119. It is the
+only non-ASCII character in any block: the census counts 24 in block A's twelve values, which is that
+pair twelve times over, and zero in block B's twelve, block C's 221 and block D's 221. The two are a
+matched pair around one parenthetical:
+
+    Two Mokiterions at a distance
+    of 1 or less — the same cell, or one of the eight cells around it — are in contact.
+
+24 occurrences in the whole transcript, which is two per prefix record for twelve records and none
+anywhere else. Rule 11.4.1 says block A "carries spaces, commas, parentheses, full stops and an em
+dash"; that names the character rather than counting it, and the count is two.
+
+  THE OTHER FOUR IN THAT LIST WERE COUNTED TOO, AND TWO OF THEM DO NOT HOLD. Block A carries 1,282
+  spaces, 44 commas, 65 full stops, 2 em dashes, 90 newlines and NO PARENTHESIS OF EITHER KIND. So
+  one of the five characters the rule names is absent from the block it describes. And a second does
+  not do the work the list is there to do: the closed alphabet rule 11.4.1 quotes is
+  `A-Z a-z 0-9 _ . - + : ; >`, which contains the full stop, so a full stop is not a character that
+  puts block A outside it.
+
+  The rule's conclusion is unaffected, and that is measured rather than assumed: spaces, commas, the
+  em dash and the newlines are each outside that alphabet and each present, so block A is outside it
+  many times over and rule 11.4.1's branch into an escaping function is the right branch. What is
+  wrong is two items in a five-item list of evidence for a conclusion that three of the items already
+  carry.
+
+  It is not repaired here. Rule 11.4.1 is approved text — SPEC-MOK-007's amendment record carries it
+  under the 2026-08-24 row, approved that day by the repository owner acting as accountable technical
+  owner on six rulings taken over commit bfdbf71 — and an implementation agent may not amend an
+  approved artifact. WO-MOK-025 stop-and-escalate condition 6 is what this is, and it is put to the
+  owner with the work order's other open questions. The correction is one clause: strike
+  "parentheses" and either strike "full stops" or move it out of the list of characters the alphabet
+  excludes.
+
+  THE SAME LIST APPEARS AT THREE SITES, AND ALL THREE CARRY THE SAME TWO ERRORS. The rule is not
+  the only place the sentence is written; the engine restates it twice, in the source, in the words
+  the rule uses. Each is quoted as it reads, with " / " where the source wraps to the next comment
+  line:
+
+    docs/engineering/simulation/specifications/SPEC-MOK-007.md:473
+      the approved rule. "blocks A to D are English prose: block A alone carries spaces, commas,
+      parentheses, full stops and an em dash,"
+
+    mokiterions-core/src/simulation.rs:1841
+      a plain comment above the escaping function, giving the reason the alphabet cannot hold:
+      "block A alone carries spaces, / commas, parentheses, full stops and an em dash, and all four
+      blocks are multi-line."
+
+    mokiterions-core/src/simulation.rs:11942
+      the doc comment on the test `every_block_survives_the_escaping_unchanged`: "block A carries /
+      spaces, commas, parentheses, full stops and an em dash, and all four blocks are multi-line, /
+      so the alphabet does not hold and cannot."
+
+  One census settles all three, because all three describe the same block: the counted list under
+  "rule 11.4.1's named characters in block A" above, measured by analysis/request-layout.py over
+  block A as the transcript holds it - 5,381 characters, 0 parentheses of either kind, 44 commas,
+  65 full stops, 2 em dashes, 1,282 spaces and 90 newlines. Block A is assembled from the literals
+  of `const SHARED_RULES`, so the two source comments describe the same characters the rule does and
+  are wrong in the same two places.
+
+  Neither source comment is repaired here, and that is a decision rather than an oversight. Two
+  reasons, both of which would be worse to ignore than the wrong comments are. First, the two
+  comments restate an approved rule and agree with it exactly; repairing them while rule 11.4.1
+  still says what it says would replace a visible spec-and-code agreement on a wrong sentence with
+  an invisible divergence between a specification and the code that cites it, which is harder to
+  find than what is here now. The owner's ruling should move all three sites in one commit, and it
+  is the owner's ruling to make. Second, editing simulation.rs would falsify a standing claim in
+  candidate/gates.txt: that bce4229 is the last commit to change a file under either package, which
+  is what lets the four Rust gate readings taken at 5ae4f46 stand for every later commit of this
+  packet. A comment-only edit does not change behaviour, but it does change a package file, and it
+  would cost a re-run of all four Rust gates to buy a comment the owner may word differently.
+
+Rule 11.4.1 is the rule this matters to. The record stream's closed alphabet cannot apply to a
+transcript, so the transcript takes SPEC-MOK-006 rule 3.4's other branch and arrives with an
+escaping function, escape_transcript_text, whose obligation "is a round trip rather than an
+alphabet". That was checked here rather than assumed: all 466 block values in the transcript —
+twelve prefix records carrying two blocks each, 221 exchange records carrying two each — were
+re-escaped by an independent implementation of the same three-plus-three rule and compared against
+the bytes the transcript holds. 466 checked, 0 mismatches. The em dash is escaped by neither
+implementation, which is why the block survives byte-identically.
+
+The escape counts are the other half of that check, and they confirm the source's own claim. The
+function's doc comment says the carriage return, the tab and the remaining control characters "are
+not in any block today and the test beside this says so; they are handled anyway". Measured over the
+transcript: 8,103 escaped newlines, and zero escaped quotation marks, backslashes, carriage returns,
+tabs and control characters. So five of the six escapes the function implements are unexercised by
+this transcript, and that is a fact about the data rather than about the function.
+
+--- Block B: 39 or 40 bytes, one per Mokiterion --------------------------------------------------
+
+Twelve distinct values across twelve prefix records, 39 to 40 bytes, mean 39.6, total 475. The whole
+of one is:
+
+    YOU
+    identifier: M01
+    waste_tolerance: 6
+
+The one-byte spread is the tolerance's digit count and nothing else: five Mokiterions have a
+one-digit waste_tolerance and are 39 bytes, seven have a two-digit one and are 40, and the identifier
+is three characters in all twelve. Twelve distinct values across
+twelve Mokiterions is rule 5.3 measured: a block B that carried a tick or a varying attribute would
+produce 221 distinct values instead of 12, and the test named above asserts exactly that count for
+that reason. Rule 3.4 is why waste_tolerance is here and health, satiety, energy and fear are not —
+a trait constant is cacheable and an attribute is not.
+
+--- Block C: the variable half that costs what it costs -----------------------------------------
+
+433 to 933 bytes, mean 689.9, and 221 distinct values across 221 exchanges. Every request has its
+own block C, which is what rule 3.2 arranges for by putting it third, "where varying costs nothing".
+
+The representative one is the median by size, tick 8, M08, 695 bytes:
+
+    WHAT YOU SEE
+    tick: 8
+    position: 43:118 in territory B
+    health: 100
+    satiety: 93
+    energy: 93
+    fear: 0
+    attacks suffered since your previous action:
+      none
+    resources in your cell:
+      none
+    resources perceived:
+      F0103 class high direction south_west distance 7
+      F0115 class high direction north_east distance 7
+      F0117 class medium direction south_west distance 8
+      F0101 class low direction north_east distance 10
+      F0084 class medium direction north_west distance 11
+      F0120 class medium direction south_west distance 11
+      F0079 class high direction north_east distance 13
+      F0112 class high direction north distance 14
+      F0094 class high direction north_west distance 15
+    mokiterions perceived:
+      none
+
+Rule 6.1's order, and the three empty lists state their emptiness as the word "none" rather than by
+omission, which is rules 6.3 and 6.5. There is no count, no mean and no ranking anywhere in it,
+which is rule 6.6. Nothing about a perceived Mokiterion appears but its identifier, direction and
+distance, which is rule 6.2 — and in this particular block nothing at all, because M08 perceived
+none. block_c_states_the_observation_in_order_and_states_its_empty_lists is where those are asserted
+rather than read off one sample.
+
+The size range is driven by the two lists. The largest block C in the transcript is 933 bytes at
+tick 3 for M01; the smallest is 433 at tick 15 for M11.
+
+--- Block D: which enumeration rendering was chosen, and what the other one would have cost -----
+
+SPEC-MOK-007's *Explicitly unspecified decisions* leaves this open and states the trade-off:
+
+    **The action grammar's shape.** Whether block D enumerates verb-target pairs as one flat list
+    or as a verb list with per-verb target lists is unspecified, and the trade-off is left to
+    measurement: a flatter list is longer and costs more variable tokens, a nested one is shorter
+    and may be harder to answer well. Rule 7.1's completeness holds either way.
+
+The flat list was built. One action per line, two spaces of indentation, under a header line, and
+the largest of the 221 sets is 237 bytes at tick 13 for M04:
+
+    ACTIONS YOU MAY TAKE
+      wait
+      sleep
+      move north
+      move east
+      move south
+      move west
+      attack M01
+      threaten M01
+      fight M01
+      retreat M01
+      surrender M01
+      approach M01
+      approach M05
+      approach M02
+      avoid M01
+      avoid M05
+      avoid M02
+
+The measured cost of that choice is the second half of item 6, and it was measured rather than
+argued. The instrument re-renders each of the 221 measured sets as the other shape — a verb, a
+colon, and that verb's targets space-joined — and sizes both. The same set nested is 186 bytes:
+
+    ACTIONS YOU MAY TAKE
+      wait
+      sleep
+      move: north east south west
+      attack: M01
+      threaten: M01
+      fight: M01
+      retreat: M01
+      surrender: M01
+      approach: M01 M05 M02
+      avoid: M01 M05 M02
+
+Over all 221 sets: flat 24,911 bytes, nested 19,442, a saving of 5,469. That is 22.0 percent of
+block D and 0.40 percent of a mean request. So the flatter list does cost more variable bytes,
+exactly as the specification predicted, and the amount is four tenths of one percent of what is sent.
+
+Two things follow, and only two. The cost side of the trade-off is settled: it is too small to buy
+anything with. The other side is not settled by this file at all — whether a nested list is "harder
+to answer well" is a question about a model's answers, and no model answered anything here. The
+re-rendering above is a cost model and was never sent anywhere.
+
+--- Block D's completeness and order, measured against the observation beside it -----------------
+
+33 distinct values across 221 exchanges, 5 to 17 actions each, 1,756 actions in total. The low
+distinct count is not repetition of a request: block D depends only on what may be proposed, and 111
+of the 221 sets are the same six actions.
+
+The per-verb counts read straight onto rule 7's sub-rules:
+
+  wait       221 of 221     in every set without exception.
+  sleep      209 of 221     absent in exactly 12, and in all 12 the observation's energy is 100;
+                            present wherever energy is 56 to 99. Rule 7.4 dropping a verb whose
+                            precondition is not met, measured on the one attribute that decides it.
+  move       884 = 4 x 221  four in every set. See the limit below.
+  eat        6              six records, all M12 at ticks 4 through 9, each against the single
+                            co-located identifier F0122 and against no other. And the converse: 0
+                            records carry co-located food without enumerating eat against it. Rule
+                            7.3's "eat against each co-located food identifier", both directions.
+  attack     19             the five contact verbs do not share one precondition: attack and
+  threaten   19             threaten are enumerated 19 times each and fight, retreat and surrender
+  fight      16             16 times each. SPEC-MOK-001 rule 21 fixes each verb's own precondition
+  retreat    16             and rule 7.4 drops the ones a target fails; the three-case difference is
+  surrender  16             that happening.
+  approach   175            equal to each other and equal to the number of perceived Mokiterions
+  avoid      175            summed over all 221 observations, which is also 175. So each is
+                            enumerated against every perceived Mokiterion and against no other,
+                            rather than against only a contacted one.
+
+Rule 7.7 fixes block D's order as derived from the observation's. On the same record, tick 13 for
+M04, the observation's perceived list is M01 north 1, M05 north_west 8, M02 south_west 16, and block
+D's approach targets are M01, M05, M02 and its avoid targets are M01, M05, M02 — that order, not
+sorted. The five contact verbs are enumerated against M01 alone, which is the one at distance 1. The
+record's action was fight M01.
+
+  A LIMIT, stated because it is a gap and not a result: all 221 sets enumerate four move actions, so
+  a reduced direction set is never exercised in this transcript. Neither observed position component
+  ever reaches 0 (they range 8 to 101 and 17 to 125), so no Mokiterion in this run was anywhere a
+  direction could be dropped. Rule 7.3's "each valid cardinal direction" is therefore held by
+  block_d_offers_exactly_what_the_engine_would_accept_from_the_observation and by
+  block_d_enumerates_a_targeted_verb_only_where_its_preconditions_are_met, and by nothing in this
+  file.
+
+--- The token counts, as estimates, and the cacheable share ---------------------------------------
+
+Item 6 asks for token counts. These are estimates, and the arithmetic is shown so that a reader can
+substitute a different characters-per-token figure rather than take one on trust. Characters rather
+than bytes, and the two differ by four in the whole request: block A's two em dashes cost three bytes
+each where a character count counts one, and nothing else in any block is outside ASCII.
+
+  block A  5,381 characters, in all twelve      block C  689.9 characters, mean of 221
+  block B  39.6 characters, mean of twelve      block D  112.7 characters, mean of 221
+                                                total    6,223.2 characters, mean request
+
+At a uniform ratio the share does not move at all, because a uniform divisor cancels:
+
+  3.5 characters/token   A 1,537   B 11   C 197   D 32   total 1,778   prefix share 87.1%
+  4.0 characters/token   A 1,345   B 10   C 172   D 28   total 1,556   prefix share 87.1%
+  4.5 characters/token   A 1,196   B  9   C 153   D 25   total 1,383   prefix share 87.1%
+
+Against rule 3.1's diagram, which states about 1,200 tokens for A, about 30 for B and about 200 for
+C: A lands on the diagram at 4.5 characters per token and C lands on it at 3.5, and B does not land
+at all — the actor block estimates 9 to 11 tokens rather than 30, because it is three short lines and
+40 characters. B is too small for that to move anything. Rule 3.5's 1,230 tokens for A and B together
+is 2 percent above what A and B estimate at 4.5 characters per token, which is 1,205.
+
+  THE ESTIMATE'S UNCERTAINTY IS LARGER THAN ITS MARGIN OVER THE FLOOR, AND THAT IS THE POINT.
+  A uniform ratio is the wrong model here: block A is English prose and blocks C and D are
+  identifiers, underscored words and integers, which tokenize more densely. Under a split ratio the
+  share falls, because the denser blocks are the variable ones:
+
+    A and B at 4.0, C and D at 3.5    prefix 1,355   variable 229   total 1,584   share 85.5%
+    A and B at 4.0, C and D at 3.0    prefix 1,355   variable 268   total 1,623   share 83.5%
+    A and B at 4.5, C and D at 3.0    prefix 1,205   variable 268   total 1,472   share 81.8%
+
+  Two of those three are below REQ-MOK-070's 85 percent and one is above it. So this estimate cannot
+  decide whether that floor is met, and no estimate made in this repository can. That is not a defect
+  in the estimate; it is rule 14.4's reason, restated as a measurement.
+
+--- No cache ratio was measured, because no provider was called -----------------------------------
+
+Stated plainly, as item 6 requires: no cache ratio was measured. Nothing behind any figure in this
+file called a provider, opened a socket, spawned a connector or read a credential. The 87.16 percent
+above is a byte share of a composed request, and it is not a cache ratio and must not be quoted as
+one.
+
+The distinction is the specification's, not this file's caution. Rule 14.4: the ratio is "cached
+prompt tokens divided by total prompt tokens, over the whole run, from the reported figures and
+never from a local token estimate. A local estimate would let an implementation pass while paying
+full price." Rule 14.8: "A replay spends nothing, computes no ratio and has no ceiling." And
+REQ-MOK-070's own trigger is "WHEN a live model-backed run completes" — no live run has completed,
+and none can be started under this work order, whose *Out of scope* includes the live-mode flag as a
+user-facing option. The requirement is untriggered rather than unmet.
+
+What does exist is the arithmetic that will consume a provider's figures, exercised against figures
+the tests declare. the_cache_ratio_is_the_reported_figures_or_nothing holds three things: that 16,200
+cached of 18,000 prompt tokens is 9,000 basis points; that one exchange reporting a prompt count with
+no cached figure makes the run's ratio uncomputable for the remainder of the run, rather than
+computable over the complete exchanges; and that a fallback, which reports neither figure, is not
+that case. Every number in it is declared by the test, and the test's own comment says so.
+
+--- Reconciliation with rule 11.7's stated figures -----------------------------------------------
+
+Rule 11.7 states the transcript's size and requires that "the figures are measured rather than
+estimated". They reconcile exactly:
+
+  rule 11.7 says             measured here
+  305,568 bytes total        305,335 record bytes + 233 newlines = 305,568
+  twelve prefix records      67,435 + 12 newlines = 67,447, against the rule's 67,447
+    totalling 67,447
+  block A 5,385 bytes each   5,385, in all twelve
+  221 exchange records       237,900 + 221 newlines = 238,121, against the rule's 238,121
+    totalling 238,121
+  mean exchange of 1,078     1,077.5, which is the rule's figure rounded
+
+Rule 11.7.1's two figures reconcile too. It says a record carrying blocks A and B inline "would
+average **6,502** bytes rather than 1,078, those two blocks being 5,424 or 5,425 bytes at every
+exchange of a given Mokiterion": measured, A+B is 5,424 or 5,425 across the twelve Mokiterions, and
+1,077.5 + 5,424.6 is 6,502.1.
+
+The suite measures the same property at a different seed. Engine test
+a_record_carries_the_variable_part_and_the_head_carries_the_rest asserts SHARED_RULES.len() is 5,385
+and asserts the property rather than the figure — that an exchange record is under a quarter of block
+A — and prints its own run for the record:
+
+    shared_rules_bytes=5385 head_bytes=67450 exchanges=240 transcript_bytes=306552 \
+        mean_record_bytes=996
+
+One line in the output; wrapped here to fit, and the backslash is this file's and not the test's.
+That is seed 42 at 20 ticks against this file's seed 0 at 20 ticks: 240 exchanges rather than 221,
+and a mean record of 996 rather than 1,077. Block A is 5,385 in both, because it is the same
+constant.
+
+--- What this file does not establish ------------------------------------------------------------
+
+That the cacheable share is 86 or 87 percent in tokens. It is a mean 87.16 percent in bytes over 221
+requests, and the token figures here are estimates whose spread crosses the floor they would be
+compared against.
+
+That the flat enumeration is the better of the two shapes. It measures the cost side and finds it
+worth 0.40 percent of a request. The answer side needs a model.
+
+That block D's direction filtering is correct. No position in this transcript is anywhere a
+direction could be dropped, and the four-move enumeration in all 221 sets is a consequence of that
+rather than a check of it. The suite's two block D tests are where that is held.
+
+That block A's wording is right. Its constancy, its prohibitions and its required strings are held
+by block_a_gives_no_strategy_and_names_nothing_that_varies; the prose itself is unspecified by rule 4
+and is the implementation's.
+
+Anything about another seed, density or horizon. Every figure here is the committed transcript's, a
+20-tick run at seed 0 and density 0.75 in which all twelve Mokiterions act.
+
+--- How to reproduce ------------------------------------------------------------------------------
+
+    python docs/engineering/simulation/evidence/WO-MOK-025/analysis/request-layout.py \
+        mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+
+88 lines, no build required, and the transcript it reads is
+c249be329c1e1e70664d4e934beeaa68fde9a0a999f34b49991a59d602379f60. The suite figure above is
+
+    cargo test -p Mokiterions --lib \
+        a_record_carries_the_variable_part_and_the_head_carries_the_rest -- --nocapture

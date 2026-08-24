@@ -1,0 +1,494 @@
+The replay, and the two hosts
+=============================
+
+WO-MOK-025's completion report items 4 and 5 are what this file serves, and it serves both because
+they are one measurement session: the same transcript is put through the engine's binary and through
+the observer, and the refusals are the same refusals in both hosts because both hosts share one
+parser.
+
+Taken 2026-08-24 in the implementation tree on feature/phase-5-definition at commit 1854f7b, against
+release builds of both binary targets. bce4229 is the last commit that changed a file under either
+package, so these readings are of the same source at any later commit of this packet -
+candidate/gates.txt states that measurement.
+
+AMENDED 2026-08-24 at commit dbc9e6d, in the one way that matters for this file: the sentence above
+is no longer true, and the commit that broke it changed the exact code path this file measures. Both
+hosts' transcript-opening arm now forces the first read before lending the reader, because
+fs::File::open on a directory succeeds on Linux and refuses only when it is read. CI's Linux lane
+found it; every reading in this file was taken on Windows, where the open itself fails.
+
+Two consequences, and the second is a correction to a row below rather than an addition:
+
+  Every measurement in this file was re-taken at dbc9e6d against fresh release builds, and every
+  one reproduces. The six text cells and two record streams: all eight sha256 digests, all eight
+  byte counts, all six exit codes 0 and all six standard errors 0 bytes, equal to the tables below
+  figure for figure. The eight boundary and refusal cases R1, R2, R3b, R4, R6, R7 and R8: every
+  exit code and every standard-output byte count as recorded -- 0, 0, 0, 12,852, 53,281, 78,069
+  and 48,050 -- and every first line of standard error as quoted. The four observer cases O1, O2,
+  O4 and O6: the same, with O4's whole standard error still byte-identical to R3b's at 104 bytes,
+  diff empty. So the peek consumed nothing: a fill_buf that had swallowed a byte would have moved
+  every digest in the first table.
+
+  R3 was not re-run in its original form. Its message quotes the path MSYS handed the process, and
+  the re-run was made with that conversion disabled, so the argv differed and the message differed
+  with it -- /c/Users/... and os error 3 rather than C:/Users/... and os error 2. What R3 is here
+  to establish still reproduced: exit 1, 0 bytes of standard output, and a message echoing argv
+  unchanged. R3b is the case that pins that without MSYS in the way, and R3b reproduced character
+  for character.
+
+  O6 -- the observer given a directory -- WAS TRUE OF WINDOWS ONLY as measured. It is recorded
+  above as exit 1 with Access is denied. (os error 5), which is what Windows does. On Linux, before
+  dbc9e6d, the same invocation entered the terminal instead and was still running when it was
+  killed twenty seconds later, with nothing on standard error: an observer drawing a run whose
+  decisions cannot be obtained, and nothing to end it but a key press. Measured on a Linux
+  pseudo-terminal sized 120x40, twice, with only the two hosts' opening arms differing:
+
+    without the fix   exit 124 (the killer's), 0 bytes of standard output, 0 bytes of standard error
+    with the fix      exit 1, 0 bytes of standard output, and
+                      runtime error: transcript <dir>: Is a directory (os error 21)
+
+  A new case belongs beside R3b and is measured on both platforms, because the engine binary's set
+  above had no directory case at all -- which is how the defect reached CI:
+
+    R3c  --transcript-path naming a directory                                        exit 1
+           Windows   runtime error: transcript <dir>: Access is denied. (os error 5)
+           Linux     runtime error: transcript <dir>: Is a directory (os error 21)
+           Standard output: 0 bytes on both. The message is the platform's own; what is equal
+           across the two is the exit code, the empty standard output and the host's prefix.
+           The suite's a_transcript_that_cannot_be_read_exits_one_and_names_it now asserts
+           exactly this, where it previously asserted only that the code was not 0.
+
+  The rule 19.7 section below cites mokiterions-core/src/main.rs:85 and
+  mokiterions-tui/src/main.rs:118 as where the resolution happens. Those line numbers moved with
+  the fix and the sentence did not: the open is now at src/main.rs:82 and mokiterions-tui:115, the
+  forced first read is at :95 and :126, and the port is constructed at :99 and :130. What crosses
+  into the library is still an already-open reader and still never a path.
+
+Nothing else in this file was re-measured or edited, and no figure in it changed. A capture is not
+rewritten after the fact; this block is the correction, and candidate/gates.txt's third amendment
+carries the same measurement session in full, including the gates on both platforms.
+
+    RESULT, item 4: every replay of the committed transcript is byte-identical run to run and with
+    and without a record sink; each of the seven mismatched configurations fails and names the
+    mismatch, none leaves a partial record stream, and the one case that is not a mismatch - a run
+    shorter than the transcript - completes with an empty standard error.
+
+    RESULT, item 5: the observer replays the same transcript to tick 20, and its panes agree with the
+    engine binary's own summary line in eight comparisons covering twelve figures, plus four
+    positions and three actions. Three of REQ-MOK-077's obligations cannot be exercised at all,
+    because the options that trigger them do not exist yet; they are named below rather than reported
+    as passing.
+
+--- The transcript ------------------------------------------------------------------------
+
+    mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+      305,568 bytes   233 lines
+      sha256 c249be329c1e1e70664d4e934beeaa68fde9a0a999f34b49991a59d602379f60
+      12 prefix record(s) + 221 exchange record(s) = 233
+
+Two record kinds and no third, which is SPEC-MOK-007 rule 11.2 as amended on 2026-08-24. There is
+no head record, so the transcript declares no seed, no tick limit and no density. That is the
+specification's own shape rather than an omission, and rule 12.3 is where the consequence is stated:
+a transcript from a different seed, density or horizon is detected by the tick-and-actor check while
+replaying, not by a declaration read up front. Cases R4, R6 and R7 below are those three, measured.
+R7's horizon case surfaces through rule 12.4's transcript-exhausted path rather than through 12.3's
+check, which is the same detection reached by the nearer rule.
+
+The configuration is the one the repository's own workflow replays at
+.github/workflows/provider-credentials.yml:143:
+
+    --policy llm --transcript-path mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl \
+        --seed 0 --ticks 20 --trace-actions
+
+Everything below uses that configuration except where a case changes exactly one of its parts, and
+each case names which part it changed.
+
+=== ITEM 4: THE REPLAY IS IDENTICAL =======================================================
+
+--- Six text streams, two digests, one per tracing selection -------------------------------
+
+Each cell is the engine's binary target run against the committed transcript. `sink` means
+--events-path was also given; the third pair is the identity REQ-MOK-046 states and SPEC-MOK-006
+rule 1.1 words as a run with a sink being indistinguishable from a run in a build without the
+capability.
+
+  cell                 stdout sha256                                                       bytes
+  traceon repeat 1     e35cc3a107a2abaa1885a1c2e423fc98e842438b2800f66deb2066d83c035772    78,315
+  traceon repeat 2     e35cc3a107a2abaa1885a1c2e423fc98e842438b2800f66deb2066d83c035772    78,315
+  traceon with sink    e35cc3a107a2abaa1885a1c2e423fc98e842438b2800f66deb2066d83c035772    78,315
+  traceoff repeat 1    a9c1da0d05378c83964dd7cdc09776a627c94c934a98ce8b88b07380319932b5    39,543
+  traceoff repeat 2    a9c1da0d05378c83964dd7cdc09776a627c94c934a98ce8b88b07380319932b5    39,543
+  traceoff with sink   a9c1da0d05378c83964dd7cdc09776a627c94c934a98ce8b88b07380319932b5    39,543
+
+Two digests where there are six cells, and each set of three that collapses into one is the set that
+must: a repeat, and a run whose only difference is that a record stream was also written. All six
+exit 0 and all six write zero bytes to standard error.
+
+Standard error is measured rather than compared, because rule 12.6 declines to claim byte-identity
+for it. Zero bytes is a stronger reading than an equal digest would be and it is what was measured.
+
+--- Two record streams, and the one thing that is not identical -----------------------------
+
+  traceon  sink   467e02feddd3468574e7df77d2881ac0f21b54fea10265e54dfa0d8ef2874557   139,638
+  traceoff sink   15c22de2e82e53cf271e789877d88dd7cafbe35dfaf76118a6b76326e67e06ad    77,820
+
+These two differ from each other, and no identity is claimed between them. Rule 12.6 fixes what
+byte-identity is claimed of - "the matched configuration, which includes the tracing selection" -
+and a tracing selection is exactly what differs here: action_trace records are present in one stream
+and absent from the other. Comparing them would be comparing two configurations.
+
+What must be identical is each stream against the recording it replays, and that is asserted in the
+suite rather than here, over ten cells rather than these two:
+mokiterions-core/tests/replay.rs::a_recording_and_its_replay_agree_at_every_declared_seed_with_tracing_on_and_off.
+Its own printed figures, from cargo test -- --nocapture at this commit:
+
+    seed0-traceoff 39543 text byte(s) 77820 record byte(s) 221 opportunit(ies)
+    seed0-traceon 78315 text byte(s) 139638 record byte(s) 221 opportunit(ies)
+    seed1-traceoff 38839 text byte(s) 76601 record byte(s) 216 opportunit(ies)
+    seed1-traceon 76414 text byte(s) 137077 record byte(s) 216 opportunit(ies)
+    seed42-traceoff 38999 text byte(s) 76015 record byte(s) 193 opportunit(ies)
+    seed42-traceon 73134 text byte(s) 130251 record byte(s) 193 opportunit(ies)
+    seed123-traceoff 37253 text byte(s) 72747 record byte(s) 175 opportunit(ies)
+    seed123-traceon 68440 text byte(s) 122180 record byte(s) 175 opportunit(ies)
+    seed777-traceoff 39831 text byte(s) 78449 record byte(s) 225 opportunit(ies)
+    seed777-traceon 79148 text byte(s) 141394 record byte(s) 225 opportunit(ies)
+
+The first two lines are the two cells this file measured from the shipped binary, and all four
+figures agree: 39,543 and 77,820 for traceoff, 78,315 and 139,638 for traceon. That agreement is
+worth stating on its own. The suite drives the library in-process and this file drives the installed
+binary target through a shell, and a binary that wired the port differently from the way the test
+harness does would pass the suite and produce different bytes here. It produces the same bytes.
+
+--- Eight boundary and refusal cases -------------------------------------------------------
+
+Each case changes one part of the configuration above. The message quoted is standard error's first
+line, whole and verbatim; the usage block that follows a configuration error is not reproduced.
+
+R1  --policy llm, no --transcript-path                                            exit 2
+      configuration error: --policy llm needs --transcript-path <path>: the transcript supplies
+      this run's decisions, and a run under this policy is never given a different source
+      Standard output: 0 bytes. Refused by the parser, before any run begins.
+
+R2  --transcript-path with --policy social                                        exit 2
+      configuration error: --transcript-path is only used by --policy llm; --policy social was
+      selected, which obtains its own decisions
+      Standard output: 0 bytes.
+
+R3  --transcript-path naming a file that does not exist, absolute                 exit 1
+      runtime error: transcript C:/Users/mathi/wo25-recap/replay/nope.jsonl: The system cannot
+      find the file specified. (os error 2)
+
+R3b same, with a relative path                                                    exit 1
+      runtime error: transcript does/not/exist.jsonl: The system cannot find the path
+      specified. (os error 3)
+      Measured twice on purpose. See the rule 19.7 section below.
+
+R4  --seed 1 against a transcript recorded at seed 0                              exit 1
+      runtime error: transcript: tick 1 actor M01: record was recorded against prefix
+      fnv1a64:5240cca619791982, this run sends fnv1a64:1a15023d34be75a8. The shared rules or the
+      actor block changed since the recording, so the transcript answers prompts this run does
+      not ask
+      Standard output: 12,852 bytes, ending
+        tick=0 subject=world event=decision_source_selected result=source:llm
+      So the run set the world up, announced the source, and failed on the first opportunity of
+      tick 1. Rule 11.3.2's prefix digest is the check that fired.
+
+R5  R4 again, with --events-path also given                                       exit 1
+      Identical message. No record file was created at all - not an empty one, not a partial one.
+      The same directory had accepted a 139,638-byte record stream minutes earlier, so this is
+      the engine's behaviour and not an unwritable path. The property is asserted in the suite as
+      a_transcript_that_cannot_be_read_creates_no_record_file for the read-failure case; this is
+      the mismatch case, measured.
+
+R6  --density 1.5 against a transcript recorded at 0.75                           exit 1
+      runtime error: transcript: tick 9 actor M09: record is for actor M10
+      Standard output: 53,281 bytes.
+      Caught by rule 12.3's tick-and-actor check at tick 9, not by rule 11.3.2's prefix digest at
+      tick 1. That is the specified mechanism and not a late detection to be worried about: the
+      transcript declares no density, blocks A and B do not vary with one, and rule 12.3 names
+      "a different seed, density or horizon" as exactly what this check is for. Nine ticks of a
+      wrong run were printed before it fired, and rule 12.3's own standard is met - the replay
+      fails, names the mismatch, and produces no further ticks - because what it forbids is "a
+      plausible wrong run", not a partial one.
+
+R7  --ticks 25 against a 20-tick transcript                                       exit 1
+      runtime error: transcript: the transcript ended after 221 exchange(s) and cannot satisfy
+      tick 21 actor M02. A replay does not shorten the run and does not fall back
+      Standard output: 78,069 bytes. Rule 12.4, whose three prohibitions the message states.
+
+R8  --ticks 10 against a 20-tick transcript                                       exit 0
+      Standard error: 0 bytes. Standard output: 48,050 bytes, ending
+        summary reason=tick_limit ticks=10 survivors=11 deaths=1 territory_a=7 territory_b=4
+        food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=20 food_b_medium=20
+        food_b_high=21
+      Rule 12.5: the surplus is unread and the run is unaffected. This is the one case in the
+      eight that is not a refusal, and it is here because a build that treated a surplus as an
+      error would satisfy every other case in this list.
+
+--- Rule 19.7, checked rather than assumed -------------------------------------------------
+
+Rule 19.7 reads: "No error message contains a credential, and no error message contains a path the
+engine resolved, because the engine resolves none."
+
+R3 and R3b are the two cases that put a path in a message, and the clause that matters is the
+subordinate one. Both messages echo the argument the process received in argv, unchanged.
+
+R3 was run from Git Bash with `/c/Users/mathi/...` and the message reads `C:/Users/mathi/...`, so
+something converted it. That something is MSYS, before the process started: the conversion is in
+argv, and the binary echoed argv. R3b was measured for exactly that reason, with a relative path that
+MSYS does not touch, and its message is `does/not/exist.jsonl` character for character. So the
+conversion is ruled out as an explanation of either message, and neither is a path the engine
+resolved - the resolution happens in the
+host - mokiterions-core/src/main.rs:85 and mokiterions-tui/src/main.rs:118 - and what crosses into
+the library is an already-open reader. SPEC-MOK-007 rule 12.1.1 is what places it there, and the
+comment above the observer's own call site states the connection to 19.7 in the source.
+
+R4's message names a tick, an actor and two digests and no path at all. R6's and R7's name a tick and
+an actor. No message in the eight cases contains a credential, and there is no credential to contain:
+see the closing section.
+
+=== ITEM 5: THE TWO HOSTS =================================================================
+
+--- The observer replays the same transcript, to the same horizon ---------------------------
+
+The observer was run against the committed transcript at the workflow's configuration, with standard
+output redirected to a file, and the drawing stream reconstructed into the frame the operator would
+have seen. candidate/observer-screen.txt is that frame whole; analysis/observer-screen.py is the
+instrument and states its own limits. Three of its rows:
+
+    RUNNING  ? keys  finished tick_limit  x8  overview  filter none   overlays: log L at height 38  inspector i at width 140
+    ┌ roster  living 9  deaths 3  hidden 1 ───────┐┌ view  overview  x0-127 y0-95  region ─┐
+    seed 0  ticks 20  density 0.75%  source llm  tick 20  events 607
+
+The middle row is the two panes' own borders side by side, with the view pane's border shortened here
+to fit this file's width; the file itself carries it whole. The first and last rows are whole.
+
+Against the engine binary's own last line for the same transcript:
+
+    summary reason=tick_limit ticks=20 survivors=9 deaths=3 territory_a=5 territory_b=4
+    food_a_low=21 food_a_medium=20 food_a_high=20 food_b_low=20 food_b_medium=20 food_b_high=21
+
+Eight figures, compared one at a time:
+
+  engine                            observer                                            agree
+  reason=tick_limit                 header: finished tick_limit                          yes
+  ticks=20                          footer: tick 20                                      yes
+  survivors=9                       roster: living 9                                     yes
+  deaths=3                          roster: deaths 3                                     yes
+  territory_a=5                     roster: 5 entries marked A                           yes
+  territory_b=4                     roster: 3 marked B, plus the hidden one, which        yes
+                                      the engine has in B
+  food_a_low=21 medium=20 high=20   A row: low 21  medium 20  high 20                    yes
+  food_b_low=20 medium=20 high=21   B row: low 20  medium 20  high 21                    yes
+
+And four positions and three actions, read off the roster against the engine's tick-20 traces:
+
+  M07  engine position:19:94   roster  Hozz  M07  B  19:94    move:north / proposal:move:north
+  M08  engine position:43:105  roster  Nurb  M08  B  43:105   move:north / proposal:move:north
+  M10  engine position:41:48   roster  Gorm  M10  A  41:48    move:north / proposal:move:north
+  M11  engine position:8:68    roster  Xob   M11  B  8:68     move:north / proposal:move:north
+
+M12 is the roster's `hidden 1`: the engine has it alive in territory B at 100:107 with health 14,
+and the pane's own header accounts for it rather than dropping it. The roster's satiety and energy
+bars agree with the engine's survival_changed lines too - M07 at s 80 and e 80 against
+satiety:81->80, energy:81->80.
+
+That is the item 5 claim: the same transcript, both hosts, agreeing figure by figure.
+
+  The observer's own run of it is disclosed rather than presented as clean. The observer has no
+  non-interactive exit - nothing ends the program but a key press, and on Windows crossterm reads
+  the console input buffer rather than the standard input handle, so keys cannot be piped in. It
+  was measured: keys written to the process's standard input were not read, and the run continued
+  until it was killed. The capture is therefore taken by letting the run reach the horizon and then
+  killing it, so the process exit status is 124 (the killer's) and not 0. What establishes that the
+  run finished is the frame, which says `finished tick_limit` and `tick 20`.
+
+The capture is reproducible in spite of that. Three separate runs produced byte-identical standard
+output, 27,948 bytes each, and identical reconstructions:
+
+    sha256 4a5e19c6005663c4165e40345e2e86a687eaa81db19203de9501fdc21d2cb71d, all three
+
+The stream converges because the observer stops redrawing once the run is finished, so the last frame
+is the same frame however long the process is left alive past the horizon.
+
+--- Which panes the observer's run exercised ------------------------------------------------
+
+Two answers, because the capture above and the suite reach different panes.
+
+In the capture, at the viewport the process was given: the header, the two territory summary rows,
+the roster pane, the view pane and the footer were all drawn and all carry content -
+candidate/observer-screen.txt is 30 rows of it. The log and the inspector were not drawn, and the
+header says why in its own words: `overlays: log L at height 38  inspector i at width 140`. At this
+size the observer announces both as overlay-only, which is SPEC-MOK-003's existing behaviour and not
+something this source changed.
+
+The suite reaches all six, at a viewport where layout::resolve places every optional pane on the
+screen. mokiterions-tui/tests/replay.rs::the_observer_replays_this_source_to_the_horizon_with_every_pane
+is VER-MOK-018 case L31, and it is a differential against `social` at the same seed for the same five
+ticks rather than an assertion under this source alone. Its own printed line, from
+cargo test -- --nocapture at this commit:
+
+    the observer reached tick 5 under both sources over 60 answered opportunit(ies); panes
+    PaneReport { tick: 5, roster_accounts_for_every_living: true, map_drew: true,
+    log_presented: true, inspector_names_the_selection: true, filter_narrows: true,
+    filter_label: "event=world_initialized", exported: true } ; footer "seed 42  ticks 5
+    density 0.75%  source llm  tick 5  events 258"
+
+Six panes, each read from its own region of the drawn buffer rather than off the screen, each
+non-vacuous, and each equal to what it is under `social`. The export is the sixth: the export key
+wrote a non-empty file where the operator asked.
+
+  What L31 does not do is open a transcript. Its port is a scripted stub, and the test file's own
+  header says so and says why - Proposer is the engine's one interface for a decision from outside
+  itself, this host cannot tell a stub from a reader-backed port, and what a real port does with a
+  transcript is asserted in the engine's tier where a transcript can be produced. So the observer's
+  path through the real ReplayPort over a real file is exercised by this file's captures and by no
+  automated test. That is stated again in the closing section, because it is the one coverage gap
+  this measurement session found.
+
+--- The observer's refusals are the engine's refusals ---------------------------------------
+
+  O1  --policy llm, no --transcript-path                                           exit 2
+        First line of standard error byte-identical to R1's.
+  O2  --transcript-path with --policy social                                       exit 2
+        First line of standard error byte-identical to R2's.
+  O4  --transcript-path naming a file that does not exist, relative                exit 1
+        Whole standard error byte-identical to R3b's, 104 bytes, diff empty.
+  O6  --transcript-path naming a directory                                         exit 1
+        runtime error: transcript mokiterions-core/tests: Access is denied. (os error 5)
+        A case with no engine-binary counterpart in this set, measured because a directory is the
+        argument an operator supplies by tab-completion.
+
+O1 and O2 differ from R1 and R2 after line one only, and only in the usage block: two programs with
+different names and different option sets print different usage. Line one is identical because the
+refusal is made once, in the parser both hosts share - mokiterions-core/src/cli.rs - which is what
+makes rule 20.3's refusal hold for the observer by construction rather than by a second
+implementation of it. The comment at cli.rs:307 says exactly that: "Made here, by the parser both
+hosts share, so rule 20.3's refusal holds for the observer by construction rather than by a second
+implementation of it."
+
+Also measured, because the help text claims it: the observer accepts --events-path and ignores it. A
+run given --events-path and a writable destination created no file there. The observer writes no
+record stream, and the export key is its own route to a file.
+
+--- REQ-MOK-077's refusals that could not be exercised --------------------------------------
+
+Three of REQ-MOK-077's obligations have no exercise at this commit, and the reason is the same for
+all three: the option that triggers them does not exist in either host.
+
+  Required response 3 - "In the terminal observer, asked for a live run - by a connector path, a
+  live-mode selection or a spend ceiling - refuse before the terminal is entered, exit with the
+  invalid-configuration status, and state on standard error that this host replays only."
+
+  Failure and boundary behavior, second bullet - "The observer is given a connector path. It
+  refuses with a diagnostic. It does not accept the option and act on nothing."
+
+  Acceptance example, failure behavior - the observer given the transcript and a connector path
+  exits 2 before entering the terminal and "writes to standard error that this host replays only
+  and that a live run is the engine binary's".
+
+What the two hosts accept today, from their own usage lines:
+
+  Mokiterions        --seed --ticks --policy --density --trace-actions --events-path
+                     --transcript-path --help
+  mokiterions-tui    --seed --ticks --policy --density --transcript-path --speed --start-paused
+                     --export --help
+
+No connector path, no live-mode selection and no spend ceiling in either. Measured rather than read
+off the usage text: `connector-path`, `--live`, `spend-ceiling` and `max-spend` each appear zero
+times in either package's src/. The two occurrences of `live-mode` are both inside one comment block,
+at mokiterions-core/src/cli.rs:301 and 304, which states the position in the source itself - "Under
+this work order there is no live-mode selection at all, so the condition is unconditional;
+`WO-MOK-026` adds the selection and this check gains its second term rather than moving."
+
+This is WO-MOK-025's own scope and not a shortfall. Its Out of scope section names "The live-mode
+flag and the spend-ceiling option as user-facing options" and "The connector, its protocol
+implementation and the canned connector".
+
+  What can be said about the three, measured: the observer given any of the three option names today
+  exits 2 and refuses before the terminal is entered.
+
+    mokiterions-tui ... --connector-path /bin/true   ->  exit 2
+      configuration error: unknown option: --connector-path
+    mokiterions-tui ... --live /bin/true             ->  exit 2
+      configuration error: unknown option: --live
+    mokiterions-tui ... --spend-ceiling /bin/true    ->  exit 2
+      configuration error: unknown option: --spend-ceiling
+
+  So the status and the timing REQ-MOK-077 requires are already what happens, and the message is
+  not: "unknown option" is not "this host replays only, and a live run is the engine binary's".
+  A reviewer should read these three as the status being right by accident of the parser rather
+  than as the obligation being met. The engine's binary answers --connector-path with the same
+  unknown-option refusal, which is the same fact about the same parser.
+
+The rest of REQ-MOK-077 is exercised. Required response 2 is L31 and the capture above. Required
+response 4 is R1 and O1. Failure and boundary behavior's first bullet - the observer given the source
+and no transcript, refusing at start-up and naming the missing transcript, without substituting
+another source - is O1. Its third bullet, a host that offers the source and does not wire the port
+into the entry point it uses, is
+mokiterions-tui/tests/replay.rs::the_replay_source_with_no_port_is_refused_on_the_first_tick, which
+asserts the refusal names `policy llm` and `decision port`, that the run advanced no tick, and that
+it reached no other source. Required response 1's replay half is item 4 above; its live half is
+WO-MOK-026's.
+
+--- No provider was called, and there is nothing to call it with -----------------------------
+
+SPEC-MOK-007 rule 12.2: "A replay makes no provider call, opens no socket, spawns no connector and
+reads no credential. This holds whether or not a credential is present in the environment, and it
+holds in both hosts."
+
+This is not a network measurement and is not offered as one. What was measured is the surface that
+would be needed to make a call, over both packages' src/ at the candidate:
+
+    process::Command   0        TcpStream     0        std::net    0
+    Command::new       0        TcpListener   0        reqwest     0
+    env::var           0
+
+The engine package's [dependencies] table is empty. The observer's holds two entries, the engine by
+path and ratatui. Neither package can open a socket or spawn a process without one of the names above
+or a crate that has one, and it has neither.
+
+The suite's own case is a_refused_replay_names_no_provider_and_no_credential, and
+the_committed_transcript_carries_no_credential_and_no_conversion reads the committed file for the
+same thing. Both pass at this commit; candidate/gates.txt is the whole suite reading.
+
+--- What this file does not establish -------------------------------------------------------
+
+That the observer's transcript-reading path is covered by an automated test. It is not. The
+observer's public tier uses a scripted port by design and states why; the engine's tier reads the
+transcript. The wiring between them - mokiterions-tui/src/main.rs opening the file and handing over a
+ReplayPort - is exercised by this file's captures, and a capture that has to be killed is weaker
+evidence than a test. It is named here so that a reviewer weighing L31 knows what L31 covers.
+
+That the reconstruction is a terminal emulator. It honours cursor positioning, carriage return and
+newline and discards every other escape sequence. analysis/observer-screen.py states the assumption
+and the failure mode, and the eight-figure agreement with the engine's summary line is the
+independent reading that makes the reconstruction trustworthy rather than assumed.
+
+That the observer replays every seed. It replays one, at one horizon, from the one transcript this
+repository commits. The engine's five declared seeds in both tracing selections are the suite's ten
+cells, quoted above.
+
+That a live run works, in either host. Nothing in this file runs one, and nothing in this repository
+can: there is no connector.
+
+--- How to reproduce -------------------------------------------------------------------------
+
+    cargo build --release --locked
+
+    # item 4, one cell
+    ./target/release/Mokiterions --policy llm \
+        --transcript-path mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl \
+        --seed 0 --ticks 20 --trace-actions > out.txt
+
+    # item 5, the observer's frame. The process does not exit on its own; kill it once the run has
+    # reached the horizon, which at --speed 8 takes about three seconds.
+    timeout 10 ./target/release/mokiterions-tui --policy llm \
+        --transcript-path mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl \
+        --seed 0 --ticks 20 --speed 8 > raw.txt 2> raw.err < /dev/null
+    python docs/engineering/simulation/evidence/WO-MOK-025/analysis/observer-screen.py \
+        raw.txt screen.txt
+
+    # the suite's own figures
+    cargo test --release --locked -p Mokiterions --test replay -- --nocapture
+    cargo test --release --locked -p mokiterions-tui --test replay -- --nocapture

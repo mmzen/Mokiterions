@@ -1,0 +1,99 @@
+# The candidate record streams against the two earlier captures, one digit at a time
+#
+# Produced by candidate/verify-schema-digit.sh at commit 5ae4f46d4ee12dbb2e85c4cca532a8e5aa5d9ae6, over a sink-mode
+# recapture taken at that commit. Read that script header for what the check does and what a
+# match means. Both runs exited 0.
+#
+# Each line rewrites the candidate stream first line from "schema":3 to the digit named, digests
+# the result, and compares it against the digest the named manifest recorded for that cell. The
+# digest printed is the recorded one.
+
+=== against ratification/sink-manifest.txt, the schema-2 baseline (digit 2) ===
+
+seed0-baseline-traceoff        identical apart from the schema digit  3c3b501bbe5513bef463d6618f48ec9c0dd46e56c6c4d87f9c8f1c7914a9b21f
+seed0-baseline-traceon         identical apart from the schema digit  04a273de54188d3c39854d8641939fe7f13b35bf57628fd4038c72f412b49c01
+seed0-individual-traceoff      identical apart from the schema digit  d3ec3b372f59a472d61c79aae5491ff982e91aeb6b8a0cea56cda79305b867be
+seed0-individual-traceon       identical apart from the schema digit  641b80bab6a217a82b057ad261d576d05270f74ec81a67027f9218ec8d99ecf9
+seed0-reference-traceoff       identical apart from the schema digit  cb03942528df1b9bfd80bc43972d7f47c48d39411740e94f5c929b6f25b7dabe
+seed0-reference-traceon        identical apart from the schema digit  a2ad9fd33e1d1c0c4102cd76a71908066c7a1d8a370f815c0dc058239501ecd4
+seed0-social-traceoff          identical apart from the schema digit  08e184f8662c4349153b09cd7570c0cd7964ea768929adc11a6935244717a96d
+seed0-social-traceon           identical apart from the schema digit  f278c42d1ef612545e314f8857ce9c6a4db27892e8598435fa3c48bc18ba6821
+seed1-baseline-traceoff        identical apart from the schema digit  359fc8d3c5f5e68aaadc57bd26a0ea256754d969fbae05b1fd0a86ad4c5bd8fe
+seed1-baseline-traceon         identical apart from the schema digit  1ddb1923dbdc6879ce5ef31824e0cc74431e99ad1a9ea014683273d2a73f400b
+seed1-individual-traceoff      identical apart from the schema digit  5b85213ec53c3532719203b66c745f1a2be43d8bd32e31140d1d179e15a56049
+seed1-individual-traceon       identical apart from the schema digit  f94b485610e6751947fb126e265932add55c126a221f7d31a844e0fbe666bc1f
+seed1-reference-traceoff       identical apart from the schema digit  bdc2682cc09d9d60708475b4efa87479eed5aae12e30af5d2d65c636e153bad4
+seed1-reference-traceon        identical apart from the schema digit  1b0e13ed2cc4393b44f10d247d611d197f2eb08f6ea321a5b8ce5ddf724884f6
+seed1-social-traceoff          identical apart from the schema digit  eff377180f5ee9df47e268f896106f365f99edec9fd9933ab987b2fd78c09ba2
+seed1-social-traceon           identical apart from the schema digit  8c8501e905bd60b42d4e009c421be82a0827744b13155e2817c18e2cb25839e0
+seed123-baseline-traceoff      identical apart from the schema digit  cc884522e9505bb27cf9eae733b95ead03a0abc6ffb153790b18c3c88e4f2627
+seed123-baseline-traceon       identical apart from the schema digit  cd110811e969b6f38ce7718a8dd2487b9816e8e5c4aec102b06bad21e81139c7
+seed123-individual-traceoff    identical apart from the schema digit  f3a1ae6ba0c44b417abb2b1428cfeb5d72037fb3af4211b0ecd022862d2cfd37
+seed123-individual-traceon     identical apart from the schema digit  2e6d57fcbc59352f6ab62be523de23588e7e19ba1022251319d7e1cdd741179f
+seed123-reference-traceoff     identical apart from the schema digit  85776ba28a1bf5bc1d9fa6b90f64b7aaed5b52196a7b605f4307db702caf727c
+seed123-reference-traceon      identical apart from the schema digit  938cc5146da1076a4e553875f7650191a55ac0d878ca42f4d77c3880c6bb641b
+seed123-social-traceoff        identical apart from the schema digit  242b40bb8b4ff11df16ed5a1f1ed382c1f1bee26fc5e1393496f20b4bbb39df8
+seed123-social-traceon         identical apart from the schema digit  c2213d4eac0bd9bbc7c9bdcda8a539546d9edf6ed003187e31e4ecd6909bfa5a
+seed42-baseline-traceoff       identical apart from the schema digit  e474a875bd2d19deee08a0680bac3a048c4346c0dbded4e009003dbf17ecdecc
+seed42-baseline-traceon        identical apart from the schema digit  6a1c2415504204d32eee468f7b23bc7f1e90b7e119557d40da557d0c8111cb7d
+seed42-individual-traceoff     identical apart from the schema digit  272ab7b8bc4da84f0af13ba301e475e3f241cd240e12f63f4368ae034a929ab1
+seed42-individual-traceon      identical apart from the schema digit  21f8f7045ea7ae75e6416c584bada91b60a0bf568e5110913696c815cea2411d
+seed42-reference-traceoff      identical apart from the schema digit  c2f95f04810fe92296a8ef126b4d6bda787d5971558b8d0236909ce43b0be4cc
+seed42-reference-traceon       identical apart from the schema digit  c3ef8045d0e5aa7f406323ec9bf93f84c02a21fc5cc9a731472918a348c1d371
+seed42-social-traceoff         identical apart from the schema digit  627b3cd0113ea497d9ce73806dcaec7696061e849e6ba78c53005a31309d9a8a
+seed42-social-traceon          identical apart from the schema digit  def6248775237e48ff1df953ac59d2f4428deaef85016a7f0664393d563de0c2
+seed777-baseline-traceoff      identical apart from the schema digit  daee3410a098c01cdf98b2bb59871afaf5a7b6cf5a48bac599ec6cd837e2d52f
+seed777-baseline-traceon       identical apart from the schema digit  26f5cd0cd71e57c7cea4098e852c35887a6b9522d14c4bebe17e4a34f85869e0
+seed777-individual-traceoff    identical apart from the schema digit  39fa8b04ba8f75aacbd70a439d449d4777503ba76e55544f106869502b71cd8e
+seed777-individual-traceon     identical apart from the schema digit  64492bb80ad2d85c2e6e4b5e9c55041b25a628921ea035682510917005504c4b
+seed777-reference-traceoff     identical apart from the schema digit  e9875aea2cf7562a29684101cffcaefcc99338c3b550f2c69f74dcc2950479e5
+seed777-reference-traceon      identical apart from the schema digit  f09b32091f7a9f5a592da40cbe05f1c9c9e1b8506bd49b4cc405af6f357c1b2a
+seed777-social-traceoff        identical apart from the schema digit  b4326a8c6c6524b93439d230ee06b3b4ddf5f65c3fd74570ec5660355f44c9db
+seed777-social-traceon         identical apart from the schema digit  091e83476420a39e6f1fdf0513aa19b69aa4a81b3c2c11cbec27b39082c4cbb1
+
+40 cells compared against schema 2, 0 failures
+
+=== against base/sink-manifest.txt, the base-commit capture (digit 1) ===
+
+seed0-baseline-traceoff        identical apart from the schema digit  41dc932742ca559f41aec93994394d63bbfc2fd20820ae475df3c08b9977e042
+seed0-baseline-traceon         identical apart from the schema digit  003edaaa0dbe2c192d3998c924d345d688f209ac74b76d63cc1b640b60e168cf
+seed0-individual-traceoff      identical apart from the schema digit  98967eff0c5c341b886247f19e782fa92bf363a5d5f1cd3bdcbf7fcc8178227f
+seed0-individual-traceon       identical apart from the schema digit  9d80550696960451a707fb5136f05659a05b409b184ee81b4714ad8803137d64
+seed0-reference-traceoff       identical apart from the schema digit  57e53d9a1c7c3ab862c887ed9e08c8d8ee02d195bf311e72dbcc42adf50cb045
+seed0-reference-traceon        identical apart from the schema digit  35e8895eaabfc042718d5410b4f4edab04af87638b47f5f489dce92b984fcd0d
+seed0-social-traceoff          identical apart from the schema digit  d8413882eb85fd502597ac18a38d53ac549a3deb0539221fea764f659dbe9511
+seed0-social-traceon           identical apart from the schema digit  dffb8c699743ee7380a8d5bb4fb5c6bae46379313d25755d058f2c26ba5e7556
+seed1-baseline-traceoff        identical apart from the schema digit  800a982470f7be56eca7098088a84d3b0c7e33f9cfa23bfb2b6a57e320dd632c
+seed1-baseline-traceon         identical apart from the schema digit  292f76d9bfd79edd2458c751c52e8d31fc313ad6acfd88e1aba607b42f2f0b65
+seed1-individual-traceoff      identical apart from the schema digit  7606858e45c84bda788edc301524f80d2287d52aede4332e71fc8fc8bf47a5f2
+seed1-individual-traceon       identical apart from the schema digit  ab2b1ff7d6f3bf6328717e59d523df87433439ef496074e5739a38cddaa92e17
+seed1-reference-traceoff       identical apart from the schema digit  4cfa67b407ba44465345f89c504df18562658a7e0dbdf802f480a31fa16d9f64
+seed1-reference-traceon        identical apart from the schema digit  60b816c4e9773f214085076a23213a1f9fcbc283fb8bf2fa0cdb834850dd7cf9
+seed1-social-traceoff          identical apart from the schema digit  7bed4a75f5a90289170bd98072ae37b7f9893d52d27b65f919bc004b60bd7976
+seed1-social-traceon           identical apart from the schema digit  957252b55e8d5753bc85f39ab2f9153181dc52cc7353613dbc8feb32c03bbd51
+seed123-baseline-traceoff      identical apart from the schema digit  d26c2fa0f6527cac41cebc25f0149fb4f37ea876c3cdb129fe862ab120c55069
+seed123-baseline-traceon       identical apart from the schema digit  e486f8145308ee192d7808a2da2cfb1c1521cc92c959fc8152530f0d4efdd430
+seed123-individual-traceoff    identical apart from the schema digit  7760b7dd043c7e522a725248044a60907adb31e955d0eea82f37352fdb9ee621
+seed123-individual-traceon     identical apart from the schema digit  89eb253009ffa48f9ad33b2daa6198ac243e9b0b4a0d3afe62db3fc50b7f94fa
+seed123-reference-traceoff     identical apart from the schema digit  93d46f6bacf24e0e2121f98d6d43ab5c4e1900121b27cc8ad029c2ea1da4e8e1
+seed123-reference-traceon      identical apart from the schema digit  a411746bdd55f51f82b6eced61f53fad8028d109f7518baad260e2e1a5f0c501
+seed123-social-traceoff        identical apart from the schema digit  9895d673d11fc6751ae6c48a886823f9a6f95edea805efce58cc08680c202e1b
+seed123-social-traceon         identical apart from the schema digit  5835cf7b75f58cda7282d2d804a60e9144805a033c2725f1f116eee380e0d86d
+seed42-baseline-traceoff       identical apart from the schema digit  a60e5024ba096a87ac950bebeb9c55d8f51b80d9314ac6ade7ece6c29f19c1f6
+seed42-baseline-traceon        identical apart from the schema digit  9f820035018fe277c8f204cc9aae6b1ec18c444766725dcb14d8ff28c0773ebb
+seed42-individual-traceoff     identical apart from the schema digit  4113f0b57bdee5b10d6bfd14a0b7b8936ec0b468a7d900613ae389414237e4e5
+seed42-individual-traceon      identical apart from the schema digit  dd717a4e948d3b8604f5e1a2de9fc15dc990d09da0cb603257241594516be270
+seed42-reference-traceoff      identical apart from the schema digit  467c42b46664a907d0729d3b9e6a2038c34aef03d8d9e8d96798b1451dc2dea6
+seed42-reference-traceon       identical apart from the schema digit  2796446a63b025b642b16031195d75d39492a6e18712d74da7a33e3500e262f4
+seed42-social-traceoff         identical apart from the schema digit  9ac583b883fa8b2f37e33c4087694b1a21d338b466d06f6c35c4667c22abf8cd
+seed42-social-traceon          identical apart from the schema digit  72c1f4ca2fff86c3b66ee4bcbf8fbf4f2c342c7aeb4852a45c33da4a77128075
+seed777-baseline-traceoff      identical apart from the schema digit  2c7248c8470fdf38f95c256f18c8dd279667e5c3ea3b13a2462621e1ca2d6c66
+seed777-baseline-traceon       identical apart from the schema digit  056faec24ec4ef3ecafcf64b662915030212a67c447f4303df1edcf644cf78b1
+seed777-individual-traceoff    identical apart from the schema digit  cdb9d535726fa8e8aaac3d3d5037a9889d4f692959ed5ec492f1a10411e5a4d4
+seed777-individual-traceon     identical apart from the schema digit  d396b436cd6b85b816ba7505bcae81f842d6fa9c933d6fadd80c3117319a1f4b
+seed777-reference-traceoff     identical apart from the schema digit  344f85750e9a493fcd15875e195bbaad909b21c635c5a0be1a13f5f094c9d3fb
+seed777-reference-traceon      identical apart from the schema digit  362d66766f339643de5083735f2fa09cb7266bb5a7c7ee555a93dba33c28c06e
+seed777-social-traceoff        identical apart from the schema digit  9a04d177ecbacd9b009bc50a867654a7cbcee86c68c29f25b3be5d0f334b98dc
+seed777-social-traceon         identical apart from the schema digit  54ff5d8843283003ed768e164189f0eff359ef36a9efe032affa134a94691872
+
+40 cells compared against schema 1, 0 failures

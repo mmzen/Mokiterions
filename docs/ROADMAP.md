@@ -141,6 +141,18 @@ the record stream — no batch runner, no distribution across seeds, no outcome 
 combat behavior and structured observability each appeared on this list until 2026-08-20 and are struck from it: the
 first three arrived under `WO-MOK-016` and the fourth under `WO-MOK-019`.
 
+**The list above is stated of `master`. `WO-MOK-025` — Phase 5's first stage — is in flight on a branch, and this
+paragraph states what that branch adds.** Implemented and tested at this candidate: one decision port at the existing
+trust boundary, taking a request by value and returning a proposal or nothing; a fifth `--policy` value, `llm`, with a
+required `--transcript-path`; the request layout of `SPEC-MOK-007` rule 2, ordered so that the provider's cache matches
+the longest identical leading span; a transcript committed to the repository —
+`mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl`, 233 records and 305,568 bytes — and both hosts
+replaying decisions from it. **No provider call, no credential read, no socket and no process spawn exists in either
+package**, and no crate is added to either. The component that would make a call is a connector outside both packages
+and is `WO-MOK-026`'s. So "LLM-backed decisions" stays on the list above until that stage lands and this chain is
+verified, merged and released: at this candidate a decision the model actually made cannot be obtained anywhere in
+this tree, only replayed from a record of one.
+
 Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
 restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
 about tick 1,000 rather than a steady state.
@@ -192,6 +204,16 @@ navigate. Perception is a prerequisite for every behavioral phase.
 `REQ-MOK-009` requires reproducible entropy, and `INT-MOK-001` sets a success measure of 100% identical
 results for repeated runs at an identical seed. A live provider cannot satisfy this. The collision requires an
 explicit governance decision, addressed in Phase 5.
+
+**Decided 2026-08-23, and the paragraph above is left standing rather than removed.** `ADR-MOK-007` decision 2
+resolves the collision by making the retained transcript a **second determinand** of a run: a live run records every
+exchange, a replay obtains every decision from that record and makes no provider call, and determinism is claimed for
+the pair *(seed, transcript)* rather than for the seed alone. **`REQ-MOK-009` does not move** — the entropy stream is
+untouched and this source draws from it not at all. `INT-MOK-001`'s success measure did move, on 2026-08-24, and so
+did the desired outcome that states the same property in the same words; the measure now reads *"identical
+configuration, seed and — for a decision source outside the engine — retained transcript"*. The statement of the
+collision is kept because it is still a true account of why the decision was needed, and a reader arriving at Phase 5
+through it should meet the resolution there rather than find no collision recorded at all.
 
 ## Dependency graph
 
@@ -1045,31 +1067,132 @@ for free and its metrics arrive as `schema: 2`.
 
 ## Phase 5 — LLM decision source
 
-**Goal.** Replace the baseline with a model-backed decision source at the **existing** trust boundary.
+**This phase is no longer a proposal.** Its governing chain was approved on 2026-08-23 and the first of its three
+stages is implemented on a branch. What follows is what was decided; the proposal it replaces is retained in the
+blockquote at the end of this section, as this document's convention requires. The paragraphs below are not a
+restatement of it — its goal states the wrong verb, its central decision has been taken, and every artifact its
+governance paragraph asks for now exists.
+
+**Goal.** **Add** a fifth decision source at the **existing** trust boundary, and publish what happens under it
+without deciding in advance what should. It replaces nothing: `Policy` carries five values at this candidate and all
+four earlier ones are unmoved, which `REQ-MOK-068` states normatively and `INT-MOK-011` carries as a success measure
+with a target of **zero** changed output bytes.
 
 **Why last.** Every input the model consumes is produced by Phases 1–4. This ordering also matches
 `INT-MOK-001`'s own recorded assumption that an engine-first foundation should be verified before adding an
 external decision source, and it defers the only expensive, nondeterministic, credential-bearing work until
 all cheap deterministic verification is complete.
 
-**The central decision: determinism strategy.**
+**The governed chain.** `INT-MOK-011` — *"Let a language model decide, and record what happens without deciding in
+advance what should"* — under `CAP-MOK-011`, with **fifteen requirements, `REQ-MOK-063` through `REQ-MOK-077`**, a new
+specification `SPEC-MOK-007`, a new **`ADR-MOK-007` deciding both `ARCH-MOK-001` and `ARCH-MOK-002`**, and a new
+verification contract `VER-MOK-018`. All of it was approved on 2026-08-23 by the repository owner, who holds the
+product, technical and engineering owner roles, in one act — *"i approve the artifact pack"* — recorded verbatim in
+`ADR-MOK-007`'s *Status* section and cited by every amendment row that act authorized. Six further decisions were
+taken separately on the same date and are listed individually in that ADR's *Decision record*, because nothing here is
+approved by implication.
 
-| Option | Assessment |
-|---|---|
-| **Record / replay** (recommended) | Live runs record every prompt→response pair to a transcript; replay mode reads the transcript and is fully deterministic. Preserves reproducible verification without constraining live behavior. |
-| Response cache keyed on observation hash | Makes repeats deterministic but collapses exactly the individuality Phase 2 establishes. |
-| Temperature 0 | Not a bitwise determinism guarantee from any provider. Should not be treated as one. |
+**Three stages, separately approved. The phase is not one work order.**
 
-Record/replay aligns unusually well with the project's engineering objective: **the transcript becomes
-commit-bound verification evidence**, making it provable which model outputs produced a verified run.
+| Stage | Work order | What it holds | State |
+|---|---|---|---|
+| 5a | `WO-MOK-025` | The decision port, the request, the retained transcript and the replay. No provider, no credential, no network, no process spawn and no cost | `in_progress`, on a branch |
+| 5b | `WO-MOK-026` | The connector, the live path, the two gates a live call needs, the usage accounting and the spend ceiling | `approved`, unstarted |
+| 5c | `WO-MOK-027` | The authorized measurement: the model-backed source published beside `reference` and `social` at the same seeds and horizon | `approved`, unstarted |
 
-**Governance.** `ADR-MOK-001` does **not** require superseding. `ARCH-MOK-001`'s own rationale already defers
-"an external model provider to an adapter at the same boundary." What is needed is a **new** ADR covering the
-provider adapter and the determinism strategy, plus an explicit decision on `REQ-MOK-009` and on
-`INT-MOK-001`'s 100% reproducibility success measure.
+**The determinism decision is taken, and it is record/replay.** `ADR-MOK-007` decision 2: a live run records every
+exchange and a replay obtains every decision from that record, so **determinism is claimed for the pair *(seed,
+transcript)*** rather than for the seed alone. There is no mode branch in the engine — the difference between recording
+and replaying is which stream the host connected — so byte-identity is structural rather than two implementations kept
+in agreement. Three alternatives were considered and rejected with reasons in that ADR's *Determinism* options: asking
+the provider for determinism, exempting this source from the measure, and canonicalising responses down to the chosen
+action. **`REQ-MOK-009` is not amended**, because the entropy stream is untouched. `INT-MOK-001`'s success measure
+**is**, on 2026-08-24, and so is the desired outcome that states the same property in the same words — that one by a
+second owner act, because the ADR names only the measure.
 
-**Constraints.** Confirm the exact OpenAI model identifier before integration. Credentials remain outside the
-repository per `REPOSITORY_CONTEXT.md`. The decision source must remain unable to mutate authoritative state.
+**The transcript is committed verification evidence, which is what the earlier form hoped for.**
+`mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl`: twelve prefix records and 221 exchanges, 233 records
+and 305,568 bytes at this candidate, replayed offline by `.github/workflows/provider-credentials.yml` on every pull
+request and every push to `master`. `SPEC-MOK-007` rule 11 fixes its format, and rule 11.6 states what it does not
+contain — no credential, no authorization header and no provider account identifier.
+
+**Where the provider lives is the decision the proposal did not anticipate.** Not a crate, not a package, and not
+this repository's: `ADR-MOK-007` decision 3 reaches it through a **connector the operator names by path**, a separate
+executable a host spawns and exchanges one JSON object per line with over that child's standard streams. Of three
+candidate bindings it is the only one that amends **no approved artifact** — an HTTPS client inside the workspace would
+have amended six — and the only one where the stub used for offline verification is the same kind of thing as the real
+connector rather than a special build. Its cost is recorded rather than buried: the connector's dependency surface is
+unconstrainable, its whole output is untrusted input, and the spend ceiling protects against an honest connector
+overspending rather than against a dishonest one lying. `SPEC-MOK-007` rules 10.6, 10.7 and 10.8 state those three
+limits explicitly.
+
+**The dependency gate `WO-MOK-014` left standing does constrain this phase, and this is how it resolves.**
+`scripts/check_declared_dependencies.py` measures every proposed change against each package's declared set, and
+`REQ-MOK-050` prohibits any crate providing network access, credential handling or an asynchronous runtime **in either
+package**. A provider client inside the workspace would therefore need a declaration moved through the technical owner
+first — and it would need it in both packages rather than one, because Cargo declares dependencies per package rather
+than per target and the recording host is `mokiterions-core`'s own binary target. Decision 3 avoids that rather than
+arguing through it: spawning a child and reading its lines is standard-library work in both packages, so **neither
+declared set moves, no crate is added, and no dependency artifact is amended**. `ADR-MOK-007` records the six
+amendment rows that removed rather than dropping them.
+
+**Constraints, as decided.** The model identifier is **`gpt-5.6-luna`, declared by the connector** rather than by
+either host — which is what makes the binding swappable without a code change, and why the source is named `llm` for
+how the decision arrives rather than for who answers. Credentials remain outside the repository per
+`REPOSITORY_CONTEXT.md`, and the connector is the only component that holds one: neither host reads it and no option
+carries it. A live run requires **both** an explicit live selection and a credential in the process environment,
+neither acquired by default, plus a declared spend ceiling enforced before each call and an explicit owner
+authorization retained for that run. No workflow in this repository references a model-provider credential, which
+`scripts/check_workflow_credentials.py` checks on every pull request; that the credential is absent from the
+repository's Actions secrets is the condition the containment rests on and no check can see it, so `VER-MOK-018`
+carries it as an owner attestation. The decision source remains unable to mutate authoritative state: the request
+crosses the port as values only, yielding no reference into authoritative state, and the proposal passes the same
+validation every other source's does.
+
+**Two hosts, not equally capable.** The engine's binary target records and replays; the terminal observer replays
+only. The reason is arithmetic rather than preference — the observer owes a frame every 33 milliseconds and an input
+poll every 16, which `SPEC-MOK-003` rules 6.1 and 6.2 fix, against an **estimated** 4 to 9 seconds for one live tick.
+The gap is two orders of magnitude, and the only remedies are concurrency or an asynchronous runtime, forbidden by
+`SPEC-MOK-007` rule 16 and `REQ-MOK-050` respectively.
+
+**This source is held to no viability floor, and that absence is a decision rather than an omission.**
+`ADR-MOK-007` decision 7, on the owner's words *"the whole point of this is to empirically see what is going to
+happen, the constraints need to be relaxed for the LLM policy"*. Four sources in a row received a floor, so silence
+would have read as an oversight. It reaches the design directly: the prompt's shared rules block contains no strategy,
+no goal, no preference and no advice, because a block that told the model to survive would measure the instruction.
+Phase 6 consumes the comparison this produces and does not require it to come out any particular way.
+
+**Nothing in this section is a delivered capability.** `WO-MOK-025` is `in_progress`, is not on `master`, and no
+verification record binds any commit of it; the chain is not released. The `REPOSITORY_CONTEXT.md` amendment
+`ADR-MOK-007` asks for is the repository owner's act and has not been made. *Current state* above states what the
+branch adds and what it does not.
+
+> **Earlier form, retained as this document's convention requires.** Until 2026-08-24 this section was a proposal. Its
+> goal read "**Replace the baseline** with a model-backed decision source at the **existing** trust boundary". Under
+> the heading "**The central decision: determinism strategy**" it put three options: "**Record / replay**
+> (recommended) — Live runs record every prompt→response pair to a transcript; replay mode reads the transcript and is
+> fully deterministic. Preserves reproducible verification without constraining live behavior."; "Response cache keyed
+> on observation hash — Makes repeats deterministic but collapses exactly the individuality Phase 2 establishes."; and
+> "Temperature 0 — Not a bitwise determinism guarantee from any provider. Should not be treated as one." It then said
+> "Record/replay aligns unusually well with the project's engineering objective: **the transcript becomes commit-bound
+> verification evidence**, making it provable which model outputs produced a verified run." Its governance paragraph
+> read "`ADR-MOK-001` does **not** require superseding. `ARCH-MOK-001`'s own rationale already defers 'an external
+> model provider to an adapter at the same boundary.' What is needed is a **new** ADR covering the provider adapter and
+> the determinism strategy, plus an explicit decision on `REQ-MOK-009` and on `INT-MOK-001`'s 100% reproducibility
+> success measure." Its constraints paragraph read "Confirm the exact OpenAI model identifier before integration.
+> Credentials remain outside the repository per `REPOSITORY_CONTEXT.md`. The decision source must remain unable to
+> mutate authoritative state."
+>
+> **What moved, and why.** The goal's verb, because the fifth source is added beside four that do not change and
+> "replace" would license exactly the byte-identity loss `REQ-MOK-068` prohibits. The determinism table, because it
+> recommended and the ADR decided — the recommendation was adopted unchanged, and the two rejected options are
+> retained here rather than restated above, since `ADR-MOK-007`'s own options section records them with fuller reasons
+> and two documents stating one rejection differently is worse than one stating it. The governance paragraph, because
+> every artifact it asks for exists and both decisions it names are taken — one by amending the measure, one by
+> **not** amending `REQ-MOK-009`. The constraints paragraph, because the model identifier is confirmed and because the
+> credential's holder is now a named component rather than a policy. **One claim of the four survives intact**:
+> `ADR-MOK-001` is still not superseded, and `ADR-MOK-007` decision 1 adopts its boundary rather than reinterpreting
+> it.
 
 ---
 
@@ -1160,7 +1283,15 @@ intent. That is also the reason it is invisible: a reader walking intents down t
 is 1,225 lines and runs in two places — `.github/workflows/dependency-declarations.yml`, whose entire trigger list
 is `pull_request`, and `.github/workflows/release.yml`. So every proposed change to this repository is now measured
 against the declared sets, and **Phase 5 in particular cannot add a provider client without moving a declaration
-through the technical owner first.** Phase 5's section does not yet say so; that gap is noted and not closed here.
+through the technical owner first.** **That gap is closed as of 2026-08-24**, and the sentence stays true of the case
+it was written about rather than being weakened. Phase 5's section now states the constraint and how it resolves:
+`ADR-MOK-007` decision 3 moves no declaration at all, because it puts the provider in a connector outside both
+packages, reached by spawning an executable the operator names and exchanging JSON lines with it — standard-library
+work, so neither declared set moves. A provider *client*, inside the workspace, would still need the declaration
+first, and it would need it in **both** packages rather than one: Cargo declares dependencies per package rather than
+per target and the recording host is `mokiterions-core`'s own binary target, so a crate that binary reaches enters the
+engine package's resolved graph and from there the observer's. That widening is the ADR's own correction of a material
+understatement in its first draft, not an inference drawn here.
 
 Its governance reach was wide: **sixteen amendments, twelve of them in governed artifacts** — `ARCH-MOK-001`,
 `ARCH-MOK-002`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004` and `SPEC-MOK-005`, each with its own approval row
@@ -1327,11 +1458,11 @@ means to the same risk reduction.
 | 3 | `REQ-MOK-005` amended in place rather than superseded; new intent, capability and ten requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `REQ-MOK-034` amended because a fourth source must not be read as extending the floor it freezes; `ARCH-MOK-001` confirmed unchanged. Broader than this row anticipated in the same way Phase 2 was: the carried floors had to be re-measured, `REQ-MOK-057`'s branch order and engagement threshold had to be amended after the first measurement, and `REQ-MOK-060`'s numeric ceiling took the second amendment it was deferred to — made under `WO-MOK-017` on 2026-08-21, after the requirement was descoped out of `WO-MOK-016` |
 | 4a | New intent, capability and five requirements added; new specification `SPEC-MOK-006` and new `ADR-MOK-005`; `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amended in place; `REQ-MOK-010` preserved and extended additively — not one byte of the text stream changed; no existing requirement changed. Broader than this row anticipated by one artifact: **`SPEC-MOK-004` rule 11 was amended too**, beyond `ADR-MOK-005`'s approved list, because rule 11 obliges a work order that changes the test census to correct the recorded figures — 212 → 246 in the workspace, 85 → 119 in the engine. That row was approved separately by the technical owner on 2026-08-20 |
 | 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
-| 5 | `REQ-MOK-009` and `INT-MOK-001` reproducibility measure decided; new ADR for provider adapter |
+| 5 | **Decided and approved 2026-08-23, and far wider than this row anticipated.** New `INT-MOK-011`, new `CAP-MOK-011`, fifteen new requirements `REQ-MOK-063` – `REQ-MOK-077`, new specification `SPEC-MOK-007`, new `VER-MOK-018`, and new **`ADR-MOK-007` deciding both `ARCH-MOK-001` and `ARCH-MOK-002`** — the third ADR here to decide both, after `ADR-MOK-003` and `ADR-MOK-006`, measured from the `decides` relation of all seven rather than from the row above. `REQ-MOK-009` **decided by not being amended**: the entropy stream is untouched because this source draws from it not at all. `INT-MOK-001`'s reproducibility measure amended 2026-08-24, and its matching **desired outcome** amended by a second owner act on the same date, because the intent states the property twice while the ADR names only the measure. **Eight approved artifacts amended, each with its own row**: `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-006`, `ARCH-MOK-001`, `ARCH-MOK-002` and `INT-MOK-001` — plus `engineering/REPOSITORY_CONTEXT.md`, which is repository-owned rather than governed and is the one amendment still owed. `SPEC-MOK-006` takes `schema: 3`. **No dependency artifact is amended and no crate is added to either package**, which is decision 3's whole point; the ADR records the six amendment rows that removed. Three work orders rather than one — `WO-MOK-025`, `WO-MOK-026`, `WO-MOK-027` — and only 5a is implemented, on a branch, **not verified and not released** |
 | 6 | New verification contract; no existing artifact changed |
 | *No phase* — repository contract (`WO-MOK-003`, `WO-MOK-004`, `WO-MOK-006`, `WO-MOK-009`) | Delivered inside the v0.1.0 window against `CAP-MOK-001`, `CAP-MOK-003`, `CAP-MOK-005` and `CAP-MOK-007`, none of which any phase row above claims. Target split, per-package directories and contracts, help-output completeness, and the release authorization gate. All four released under `RLS-MOK-001`. See *Governed chains delivered outside the phase sequence* |
 | *No phase* — inspector activity profile (`WO-MOK-020`) | New `REQ-MOK-061` and `REQ-MOK-062` under Phase 1.5's `CAP-MOK-004` rather than a new intent, which is why this chain has no phase. `SPEC-MOK-003` and `SPEC-MOK-004` amended in place, one row each, both ratified by the technical owner on 2026-08-22: nine provisions of `SPEC-MOK-003` — seven additions and **two corrections of statements that were untrue when they were approved**, the *State model* table's silence about retention the observer already performed and rule 4's claim that it holds no name table — and `SPEC-MOK-004`'s recorded interface extent and test-tier figures. Those figures were ratified as measured at the candidate with a reconciliation owed at the next merge of `master`, and that reconciliation is written — though pull request #44 has since overtaken them again, which is measured in the owed note above rather than corrected here. **No engine change, and that is the boundary the chain rests on**: no new intent, capability, architecture or ADR; `ARCH-MOK-002` relied upon and not moved, on the triggers its own amendment record declares; the alternative of per-Mokiterion counters published on `AgentSnapshot` rejected in `REQ-MOK-061`'s rationale. `REQ-MOK-059`'s prohibition moves from being met by absence to being met by a measured boundary |
-| *No phase* — dependency declaration (`WO-MOK-014`) | New `ADR-MOK-006` **deciding both `ARCH-MOK-001` and `ARCH-MOK-002`**, which is the widest architecture delta any chain in this repository has taken: the engine's empty-dependency rule stops being absolute and becomes a declared-set comparison. New `REQ-MOK-050` under Phase 1.5's `CAP-MOK-004` rather than a new intent — which is why this chain has no phase and why it was invisible to this document until 2026-08-22. Sixteen amendments, twelve in governed artifacts: `ARCH-MOK-001`, `ARCH-MOK-002`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-005`. Two CI gates added, one on every pull request. **Constrains Phase 5**, whose row above does not yet say so |
+| *No phase* — dependency declaration (`WO-MOK-014`) | New `ADR-MOK-006` **deciding both `ARCH-MOK-001` and `ARCH-MOK-002`**, which is the widest architecture delta any chain in this repository has taken: the engine's empty-dependency rule stops being absolute and becomes a declared-set comparison. New `REQ-MOK-050` under Phase 1.5's `CAP-MOK-004` rather than a new intent — which is why this chain has no phase and why it was invisible to this document until 2026-08-22. Sixteen amendments, twelve in governed artifacts: `ARCH-MOK-001`, `ARCH-MOK-002`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-005`. Two CI gates added, one on every pull request. **Constrains Phase 5**, whose row above says so as of 2026-08-24 — and the constraint turned out to bind by being designed around rather than by being exercised: `ADR-MOK-007` decision 3 keeps the provider outside both packages, so neither declared set moves |
 
 ## Open decisions requiring owner input
 
@@ -1344,7 +1475,12 @@ Two decisions are cheaper to settle now than at the phase in which they bind:
    format, so deciding it before Phase 4 avoids rework. *Still open after Phase 4a, and no longer urgent for this
    reason:* 4a's stream is a complete, ordered, byte-reproducible record of everything the engine did, so it can
    already be replayed against. Whether Phase 5 replays *this* stream or records provider exchanges separately is a
-   Phase 5 decision that 4a does not foreclose either way.
+   Phase 5 decision that 4a does not foreclose either way. *Decided 2026-08-23:* record/replay, as recommended, and
+   **provider exchanges are recorded separately** — a transcript of their own, whose format is `SPEC-MOK-007` rule 11,
+   read by a replay instead of 4a's record stream. The two streams coexist and neither is derived from the other;
+   `SPEC-MOK-006` rule 3.2 admits `llm` as the record stream's fifth decision source and takes `schema: 3` for it.
+   `ADR-MOK-007` decision 2 is the act, and it makes the transcript a second determinand of a run rather than only
+   evidence about one.
 
 A third was settled during Phase 2 rather than before it, and is recorded here because the phase order did not
 anticipate it:
