@@ -17,7 +17,7 @@
 
 use std::env;
 use std::fs;
-use std::io::{self, BufReader, BufWriter, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::process::ExitCode;
 
 use mokiterions::cli::{self, Command};
@@ -82,7 +82,22 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
         Some(path) => match fs::File::open(path) {
             // Buffered because `ReplayPort` reads a line at a time and an unbuffered `File`
             // would reach the platform once per byte for every record in the transcript.
-            Ok(file) => Some(ReplayPort::new(BufReader::new(file))),
+            Ok(file) => {
+                let mut reader = BufReader::new(file);
+                // The first read is forced here, because opening is not where every platform
+                // refuses. A directory opens successfully on Linux and fails only when it is
+                // read, which without this would be after the run had begun and printed its
+                // first tick — the partial run the paragraph above says cannot happen, and the
+                // one CI's Linux lane found. `fill_buf` peeks without consuming, so the port
+                // below reads exactly the bytes it would have read anyway, and an empty
+                // transcript is not an error here: it replays as one that ran out at the first
+                // opportunity, which is a different case with its own treatment.
+                if let Err(error) = reader.fill_buf() {
+                    let _ = writeln!(stderr, "runtime error: transcript {path}: {error}");
+                    return 1;
+                }
+                Some(ReplayPort::new(reader))
+            }
             Err(error) => {
                 // Rule 13.2's treatment, applied to a read: a well-formed path the platform
                 // refuses is a runtime failure and not invalid configuration, so it exits `1` and

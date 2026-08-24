@@ -23,7 +23,7 @@
 
 use std::env;
 use std::fs;
-use std::io::{self, BufReader, Write};
+use std::io::{self, BufRead, BufReader, Write};
 use std::process::ExitCode;
 use std::time::{Duration, Instant};
 
@@ -115,7 +115,20 @@ where
             (Policy::Llm, Some(path)) => match fs::File::open(path) {
                 // Buffered because `ReplayPort` reads a line at a time; an unbuffered `File` would
                 // reach the platform once per byte for every record in the transcript.
-                Ok(file) => Some(Box::new(ReplayPort::new(BufReader::new(file)))),
+                Ok(file) => {
+                    let mut reader = BufReader::new(file);
+                    // The first read is forced before the terminal is entered, for the reason the
+                    // engine host gives at the same call: a directory opens successfully on Linux
+                    // and refuses only when read, so without this the observer would enter the
+                    // terminal and begin observing a run it cannot obtain decisions for. The two
+                    // hosts refuse in the same place on both platforms, which is what rule 12.2's
+                    // "it holds in both hosts" requires. `fill_buf` peeks without consuming.
+                    if let Err(error) = reader.fill_buf() {
+                        let _ = writeln!(stderr, "runtime error: transcript {path}: {error}");
+                        return Launch::Exit(1);
+                    }
+                    Some(Box::new(ReplayPort::new(reader)) as Box<dyn Proposer>)
+                }
                 Err(error) => {
                     let _ = writeln!(stderr, "runtime error: transcript {path}: {error}");
                     return Launch::Exit(1);

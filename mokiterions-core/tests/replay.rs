@@ -115,16 +115,31 @@ fn a_transcript_that_cannot_be_read_exits_one_and_names_it() {
 
     // A directory is not a transcript either, and it fails the same way rather than being read as an
     // empty one — which would replay as a transcript that ran out at the first opportunity.
+    //
+    // The assertions here are the missing file's, exactly, and that is the point: `fs::File::open` on
+    // a directory *succeeds* on Linux and refuses only at the first read, so before the host forced
+    // that read this case exited non-zero on both platforms while printing a whole tick's events on
+    // one of them. `assert_ne!(code, Some(0))` was what let that pass, so the code is pinned to `1`
+    // and the message is checked, the same way the missing file's is.
+    let directory = directory.to_str().unwrap();
     let output = invoke(&[
         "--policy",
         "llm",
         "--transcript-path",
-        directory.to_str().unwrap(),
+        directory,
         "--ticks",
         "3",
     ]);
-    assert_ne!(output.status.code(), Some(0));
+
+    assert_eq!(output.status.code(), Some(1));
     assert!(output.stdout.is_empty());
+    let refusal = String::from_utf8(output.stderr).unwrap();
+    assert!(
+        refusal.starts_with("runtime error: transcript "),
+        "{refusal}"
+    );
+    assert!(refusal.contains(directory), "{refusal}");
+    assert!(!refusal.contains("Usage:"), "{refusal}");
 }
 
 /// The transcript is opened before the record sink, so a run that cannot obtain its decisions leaves
