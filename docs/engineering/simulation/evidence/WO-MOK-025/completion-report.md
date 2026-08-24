@@ -865,11 +865,13 @@ assurance owner's.
   any table and render as literal pipe text. **Both pre-exist at the base commit** and neither is this
   work order's; found while writing the 2026-08-24 row, reported, and deliberately not repaired, because
   an approved artifact is not edited on an implementation agent's judgement.
-- **E17 — where the new checks belong.** `check_transcript_reading.py` and
-  `check_workflow_credentials.py` are repository-owned scripts absent from
-  `.engineering-harness.lock`. The credential check is a required gate of this work order; whether either
-  should be wired into a workflow, and whether the transcript check belongs in `scripts/` at all, is not
-  settled by any artifact.
+- **E17 — `check_transcript_reading.py` is not wired into anything.** Its sibling is:
+  `.github/workflows/provider-credentials.yml` runs `check_workflow_credentials.py` at line 93 and its
+  own 38-test suite at line 83, so the credential gate is enforced on every run rather than by hand. The
+  transcript check has no such caller — it is run by hand, and a check nobody runs is a check that rots.
+  Whether it should be wired in, and whether it belongs in `scripts/` at all rather than beside the
+  instruments in the evidence packet, is not settled by any artifact. Both scripts are repository-owned
+  and absent from `.engineering-harness.lock`.
 - **E18 — `REPOSITORY_CONTEXT.md`'s amendment,** which `ADR-MOK-007` requires and which is the
   repository owner's to write.
 
