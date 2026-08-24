@@ -1,0 +1,160 @@
+Gate readings at the candidate
+==============================
+
+Taken 2026-08-24 in the implementation tree on feature/phase-5-definition, at commit
+5ae4f46, with every behavioural change of this work order made and the base-capture
+instrument still present. base/gates.txt is the same six gates read before the change; this
+is the pair to it.
+
+The commit these readings were taken at is not the last commit of this packet. Every commit
+after it carries evidence files and artifact prose only, which is measured rather than
+asserted:
+
+    git diff bce4229 HEAD -- mokiterions-core mokiterions-tui Cargo.toml Cargo.lock \
+        rust-toolchain.toml scripts
+      -> empty
+
+bce4229 is the last commit that changed a file under either package. So the four Rust gates
+below read on the same source at any later commit of this packet, and the two Python gates
+read on scripts/ and .github/, neither of which moves after it either. The harness gates do
+move with artifact prose, and their figures are stated with the commit they were read at.
+
+--- Formatting and lint, in the forms preflight prescribes -------------------------------
+
+    cargo fmt --all -- --check
+      -> exit 0, no output
+
+    cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      -> exit 0, no warnings
+
+--locked is passed for the reason base/gates.txt gives: the release workflow passes it, so a
+lint run without it can resolve around Cargo.lock and pass locally against dependencies the
+release would refuse. It is a check on the declaration, not on today's outcome.
+
+--- Tests --------------------------------------------------------------------------------
+
+    cargo test --workspace --locked
+      -> exit 0; 422 passed, 0 failed, 3 ignored, across 23 test binaries
+
+The suite declared 344 passing tests across 22 binaries at the base commit and declares 425
+here, of which 422 execute. The figures agree target by target with SPEC-MOK-004's census as
+re-measured on 2026-08-24:
+
+  engine package    12 binaries   143 internal (2 ignored)   84 public (1 ignored)   = 227
+  observer package  11 binaries    67 internal               131 public              = 198
+  workspace         23 binaries                                                       425
+
+Two further "test result" lines appear in the output and are not test binaries: cargo runs
+doc-tests for each package, and both report 0 tests. 25 result lines, 23 binaries.
+
+The three ignored tests are named in the output and each is an instrument, which is what
+SPEC-MOK-004 rule 11 as amended on 2026-08-24 admits:
+
+  simulation::tests::print_base_commit_entropy_literals
+      prints the constant the assertion test holds, so that constant is re-derivable
+
+  simulation::tests::the_four_existing_sources_entropy_state_at_every_tick_boundary
+      prints roughly 20,000 lines for an external capture
+
+  regenerate_the_committed_transcript
+      regenerates the committed transcript rather than asserting over it
+
+All three are in the engine package. No observer test is ignored, which is the measurement
+ARCH-MOK-002's amended ignore-attribute conformance check asks for.
+
+--- Build --------------------------------------------------------------------------------
+
+    cargo build -p Mokiterions --locked
+      -> exit 0
+
+The -p form is used because the question is about the engine package. The root manifest is a
+virtual workspace, so a bare cargo build builds both members.
+
+--- The credential gates -----------------------------------------------------------------
+
+    python3 scripts/test_check_workflow_credentials.py
+      -> 38 tests, OK
+
+    python3 scripts/check_workflow_credentials.py --root .
+      -> exit 0
+
+The second gate's own closing lines are part of this reading and are reproduced because they
+state the boundary of what it establishes:
+
+  CHECKED: VER-MOK-018 case L21b, that a workflow step exercises the model-backed source in
+    replay mode against a committed transcript. The step named is
+    .github/workflows/provider-credentials.yml:143, which replays
+    mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl; the transcript was
+    confirmed to be a file in this repository and was not read by the check.
+  NOT CHECKABLE HERE: whether a provider credential is present in the repository's Actions
+    secrets. REQ-MOK-073's Constraints records that as the condition this containment rests
+    on, and VER-MOK-018 carries it as owner attestation C6.
+
+--- Harness ------------------------------------------------------------------------------
+
+    python -m se_harness validate
+      Engineering artifact validation: PASS
+      Artifacts: 179 | Errors: 0 | Warnings: 0
+      Planes: structure E0/W0 | governance E0/W0 | policy E0/W0 | maintenance E0/W0
+      exit 0
+
+    python -m se_harness preflight --work-order WO-MOK-025 --phase review
+      Harness preflight: PASS
+      Phase: review
+      Work order: WO-MOK-025 (in_progress)
+      Commit-bound verification: required, decided by the engineering owner
+      exit 0
+
+Both read at 5ae4f46 and both from the pinned 0.4.0 virtual environment outside the
+checkout. The machine-wide 0.4.1 install reports FAIL on template skew alone and is not the
+governing tool for this repository.
+
+The artifact count is 179 at the base commit and 179 here. This work order amends approved
+artifacts and adds none, so an unchanged count is the expected reading rather than a
+coincidence.
+
+--- One gate failed for twelve commits, and is disclosed rather than reported clean --------
+
+validate did not pass when it was first re-taken here. It reported
+
+    [E014] [governance] docs/engineering/simulation/architecture/ARCH-MOK-002.md:
+           decision_assessment rationale exceeds 2000 characters
+
+and it had been reporting it since 0aa0527, twelve commits earlier, because the readings in
+base/gates.txt were taken before that commit and were not re-taken until this file was
+written. The field stood at 1,964 of the 2,000 characters
+scripts/validate_engineering_artifacts.py permits, so its headroom was 36 characters, and
+0aa0527 wrote a 1,259-character amendment clause into it. It is repaired in 5ae4f46 by
+re-expressing the field as a summary, with a second 2026-08-24 amendment row recording the
+repair, the reason and the fact that 34 characters of remaining headroom is not a clause
+either. ARCH-MOK-001's rationale stands at 1,975 of 2,000.
+
+The PASS above is therefore a reading at 5ae4f46 and not a claim about the twelve commits
+before it. That the failure existed is a finding of this file, and it is the argument for
+re-taking gate readings at the candidate rather than carrying a base reading forward.
+
+--- What these readings do not establish -------------------------------------------------
+
+Nothing here reads on VER-MOK-018's acceptance cases. The suite passing means the assertions
+in it hold; which cases those assertions are, and which cases have no assertion, is the
+completion report's item 7 and this packet's other files.
+
+Preflight reporting PASS does not authorize anything, and its own closing line states the
+boundary: "Preflight is derived, read-only evidence. It does not approve artifacts,
+authorize a diff, verify work, release software, commit, push, tag, publish, or deploy." In
+particular it reports the work order as in_progress, which is what it is: the transition to
+implemented is the engineering owner's act and has not been taken.
+
+No gate here reads on REQ-MOK-068. That is what the manifests beside this file are for.
+
+--- Toolchain ----------------------------------------------------------------------------
+
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+cargo 1.97.1 (c980f4866 2026-06-30)
+clippy 0.1.97 (8bab26f4f6 2026-07-14)
+rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)
+Python 3.14.6
+se-harness 0.4.0
+
+Identical to base/gates.txt's toolchain block, so no gate reading here differs from the base
+by a tool version.
