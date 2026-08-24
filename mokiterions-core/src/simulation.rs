@@ -1812,10 +1812,16 @@ fn permitted_form(action: &Action) -> String {
 // run's 240 exchanges would be 1.6 MB instead of the measured 306,552, and a 1,000-tick run's
 // estimated 10,954 exchanges would be an estimated 72 MB.
 //
-// Rule 11.7's own estimates are 4.7 MB for 1,000 ticks and 100 to 260 KB for 20 to 50 ticks. **The
-// split does not reach either**: 20 ticks measures 299 KB and 1,000 ticks extrapolates to an
-// estimated 11 MB, because blocks C and D are larger than the estimate assumed. That is a figure
-// rule 11.7's amendment carries, not a reason to abbreviate a transcript — rule 11.7's first
+// **Rule 11.7 no longer estimates.** Its band — "an estimated 4.7 MB for a 1,000-tick run, an
+// estimated 100 to 260 KB for a 20-to-50-tick run" — was withdrawn on 2026-08-24 for measured
+// figures, and rule 11.7.1 records the withdrawn wording rather than deleting it, because the
+// measurement exceeded both ends of it. The rule's own figures are the committed transcript's, at
+// seed 0: 305,568 bytes and a mean exchange record of 1,078. The figures above are this module's,
+// at seed 42; the two runs differ and both are measured, so neither supersedes the other.
+//
+// **The split does not reach the withdrawn band either**: 20 ticks measures 299 KB here and 1,000
+// ticks extrapolates to an estimated 11 MB, because blocks C and D are larger than the estimate
+// assumed. That is a size to record, not a reason to abbreviate a transcript — rule 11.7's first
 // sentence forbids exactly that, and the split is the whole of what can be saved without dropping
 // a byte anyone recorded.
 //
@@ -12694,12 +12700,14 @@ mod tests {
 
     /// Rule 11.7's size, measured rather than restated from the estimate.
     ///
-    /// Rule 11.7 carries an estimated 4.7 MB for a 1,000-tick run, which over rule 19.5's estimated
-    /// 10,954 exchanges implies about 429 bytes per record, while rule 11.3 asks for "the request as
-    /// sent, in full" — and block A alone is 5,385 bytes. The two cannot both hold. The split closes
-    /// most of the gap and does not close all of it: the figures printed below are what rule 11.7's
-    /// amendment is measured from, and they are above its band. **This is retained evidence**, which
-    /// is why it prints rather than only asserts.
+    /// Rule 11.7 **carried** an estimated 4.7 MB for a 1,000-tick run until 2026-08-24, which over
+    /// rule 19.5's estimated 10,954 exchanges implied about 429 bytes per record, while rule 11.3
+    /// asks for "the request as sent, in full" — and block A alone is 5,385 bytes. The two could not
+    /// both hold, and this test is where that was found. The split closes most of the gap and does
+    /// not close all of it: the figures printed below are above the withdrawn band, and rule 11.7.1
+    /// records that band rather than deleting it. The rule's own stated figures are now the committed
+    /// transcript's, at seed 0; these are this run's, at seed 42. **This is retained evidence**,
+    /// which is why it prints rather than only asserts.
     ///
     /// The assertion is the property, not the figure: an exchange record is a fraction of the prefix
     /// it was sent against, so a transcript grows with a run's exchanges and not with block A.

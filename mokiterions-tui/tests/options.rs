@@ -188,7 +188,7 @@ fn entry(usage: &str, option: &str) -> String {
 /// identical validation, identical defaults and identical rejection behavior" and leaves their
 /// meaning to `SPEC-MOK-001`, which the observer therefore may not restate differently. The
 /// observer prints its own text because its synopsis and its own three inputs differ, so the
-/// four shared entries exist twice; a copy is only safe while it stays a copy. This reads each
+/// five shared entries exist twice; a copy is only safe while it stays a copy. This reads each
 /// entry out of the observer's text and requires the engine's text to contain it byte for byte,
 /// so an edit to one description alone fails here and names the option. Neither text is
 /// compared to a literal declared in this file, which would move the drift one level up.
