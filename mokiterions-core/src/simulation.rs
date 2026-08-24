@@ -2448,11 +2448,24 @@ impl DecisionSource for PortDecisionSource<'_> {
     ///
     /// `wait` and not a substitute from another source, per rule 9.7, and not an abort, per rule
     /// 9.8 — a run whose transport hiccupped once has real ticks and a replayable transcript.
-    /// The *accounting* rule 9.5 also requires, and the run-record field rule 15.4 marks the run
-    /// with, arrive with the run record; there is nothing yet that reads a count, and a counter
-    /// nothing reads would be a figure no one had checked.
     ///
-    /// A proposal the engine then rejects is not this case and is not a fallback, rule 9.6.
+    /// **The occurrence is recorded here and counted elsewhere.** This authors the record and its
+    /// `fallback` flag; rule 9.5's count and rule 15.4's mark live in
+    /// [`accounting::RunAccount`], which rule 20.4.1 puts in the port's hands. Two parties, and
+    /// deliberately: case **P5** requires the run record's count to equal the number of records
+    /// marked as fallbacks, and a count this method incremented in the same statement that wrote the
+    /// flag would satisfy P5 by construction, leaving the property nothing to catch.
+    ///
+    /// What the *engine* cannot record is the **cause**. Rule 1.1 gives the port one way to say that
+    /// it obtained nothing, and `None` carries no diagnosis, so an exchange that yielded no response
+    /// and a response whose action the enumeration does not admit arrive here identically — case
+    /// **L22** distinguishes them and both distinctions are made on the port's side of rule 1.1. The
+    /// cause reaches the transcript with the response itself, in the field this record writes as
+    /// `null` until `WO-MOK-026`'s connector supplies one.
+    ///
+    /// A proposal the engine then rejects is not this case and is not a fallback, rule 9.6. The port
+    /// is never told that a rejection happened, which is that rule as a call graph: there is no
+    /// route by which the rejection could reach the count.
     ///
     /// One exchange, one record, in that order and unconditionally: rule 11.2's "one line per
     /// exchange" includes the exchange that yielded nothing, which the specification's own second
@@ -2478,6 +2491,423 @@ impl DecisionSource for PortDecisionSource<'_> {
 
     fn failure(&mut self) -> Option<io::Error> {
         self.failure.take()
+    }
+}
+
+/// `SPEC-MOK-007` rules 14 and 15: what a live run accumulates, and the run record it reports.
+///
+/// **One module with one `#[allow(dead_code)]` on it, because nothing in this crate calls any of it
+/// yet.** `WO-MOK-025`'s item 7 builds the arithmetic and exercises it against declared prices and
+/// synthetic usage; there is no live run to feed it a provider's usage, because the connector, live
+/// mode and the ceiling option are `WO-MOK-026`'s and this stage is expressly out of scope for all
+/// three. The alternative was to have the recording path emit a run record now, and rule 15.6
+/// forbids it: a replay reports no run record, [`PortDecisionSource`] cannot tell a replaying port
+/// from a live one — rule 1.1 leaves `propose` returning the same `Option<Action>` either way — and
+/// a record written by a party that had to guess would be an account of spending that never
+/// happened. `mokiterions-tui`'s `is_empty` and `camera` carry the same attribute for the same
+/// reason: an item the tests read and the product does not yet.
+///
+/// A module rather than an attribute per item, so the exemption is stated once and in one place —
+/// and because **case P6's second half is a claim about this region**: no floating-point type
+/// appears in the accounting code. Every figure below is a `u64`, every operation on one is integer,
+/// and a reader can check that by reading one module instead of trusting a grep.
+///
+/// Nothing here is public. `WO-MOK-025`'s constraint is that the public surface grows by exactly one
+/// interface and one request type, and the host that needs these types is the host that gains live
+/// mode. Every operation takes `self` by value and returns a new account rather than mutating one,
+/// which is also why `SPEC-MOK-002` rule 5's public-surface check cannot be disturbed by any of it:
+/// there is no `&mut self` receiver here to match, in this stage or in the stage that publishes it.
+#[allow(dead_code)]
+mod accounting {
+    use std::fmt;
+
+    use super::{Config, LLM_SOURCE_NAME, TerminationReason, escape_transcript_text};
+
+    /// Basis points — hundredths of a percent — in one whole. Rule 14.4's ratio is reported in
+    /// them, and rule 14.5's floor of 0.85 is `8_500` of them: the coarsest unit that states that
+    /// floor exactly, with no decimal separator anywhere in the figure or in its computation.
+    const BASIS_POINTS: u64 = 10_000;
+
+    /// The unit prices declared for a live run, in **nanodollars per token** — a nanodollar being
+    /// 10^-9 of the currency the provider prices in.
+    ///
+    /// Rule 14.2 requires integer arithmetic in a stated minor unit, and this is the unit stated. It
+    /// is chosen for exactness rather than for familiarity. A provider publishes a price per million
+    /// tokens, so `$1.25 per 1M` is `1_250` nanodollars per token and `$0.125 per 1M` is `125`, both
+    /// without a remainder. Cents per token would round every published price to zero. A price held
+    /// per million tokens would push a division into every exchange's cost, where the truncation
+    /// would accumulate once per exchange and rule 14.6's ceiling would then bound the run at a
+    /// figure depending on how many exchanges it happened to make.
+    ///
+    /// Rule 14.3: these are **inputs of the run**. No constant here holds a provider's number,
+    /// because the provider's prices are the provider's to change and a price compiled into the
+    /// engine would be a figure a release declared rather than a run.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+    pub(super) struct UnitPrices {
+        /// Per prompt token the provider did **not** serve from its cache.
+        ///
+        /// The uncached share and not the whole prompt count, which is a distinction rule 14.1's
+        /// four totals do not draw and a cost computed from them must: a prompt token served from
+        /// the cache is billed once, at the cached price, and an implementation billing the prompt
+        /// total *and* the cached total would charge the cache twice while still passing rule 14.4's
+        /// ratio.
+        pub(super) uncached_prompt: u64,
+        pub(super) cached_prompt: u64,
+        pub(super) output: u64,
+        pub(super) reasoning: u64,
+    }
+
+    /// One exchange's usage, as the provider reported it.
+    ///
+    /// Every count is optional because rule 11.5 makes a count the provider did not report
+    /// **absent, not zero**, while rule 15.3 makes a reported zero a positive statement. The two
+    /// stay distinguishable only if the absence has a representation, and `Option<u64>` is it.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+    pub(super) struct ExchangeUsage {
+        prompt: Option<u64>,
+        cached_prompt: Option<u64>,
+        output: Option<u64>,
+        reasoning: Option<u64>,
+    }
+
+    impl ExchangeUsage {
+        /// What a connector produces when the provider reported all four counts.
+        pub(super) fn reported(
+            prompt: u64,
+            cached_prompt: u64,
+            output: u64,
+            reasoning: u64,
+        ) -> Self {
+            Self {
+                prompt: Some(prompt),
+                cached_prompt: Some(cached_prompt),
+                output: Some(output),
+                reasoning: Some(reasoning),
+            }
+        }
+
+        /// What rule 9.4's exchange produces: the transport failed after the run's retries, the
+        /// provider returned an error, or the provider returned nothing — so there is no usage to
+        /// report. It is [`Default`] deliberately. An exchange nobody reported anything about is
+        /// four absences and not four zeros.
+        pub(super) fn unreported() -> Self {
+            Self::default()
+        }
+
+        /// A response that arrived with its cached-prompt figure omitted. Rule 14.5's third sentence
+        /// is about exactly this exchange and not about rule 9.4's: the exchange succeeded and was
+        /// billed, and what is missing is one figure rather than the response.
+        ///
+        /// The reasoning count is a reported `0` rather than an absence, because rule 8.5 fixes the
+        /// reasoning level at `none` and rule 15.3 wants that stated positively.
+        pub(super) fn without_cached_figure(prompt: u64, output: u64) -> Self {
+            Self {
+                prompt: Some(prompt),
+                cached_prompt: None,
+                output: Some(output),
+                reasoning: Some(0),
+            }
+        }
+    }
+
+    /// The three accumulators of `SPEC-MOK-007`'s *State model*, and the exchange count rule 14.5
+    /// needs in order to interpret one of them, as a single value.
+    ///
+    /// **The port holds it.** Rule 20.4.1 is explicit — a port rebuilt for each call "resets the
+    /// transcript cursor, the accumulated cost and the fallback count" — and case **L30** is the
+    /// test written for that sentence, which only discriminates if the cost lives here rather than
+    /// on [`Simulation`](super::Simulation), whose instance outlives every tick either way. Rule
+    /// 15.6 says the same thing from the other side: the engine cannot know whether a run is live,
+    /// so it cannot decide whether a run record is owed, and the party that does know is the host
+    /// that built the connector-backed port and reaches this through the port it owns.
+    ///
+    /// Rule 9.5's count is here for the same reason and one more. Case **P5** compares it against
+    /// the transcript records the *engine* authored; two figures derived independently make that a
+    /// check, where a count incremented by the same statement that wrote the flag would make it a
+    /// restatement that cannot fail.
+    ///
+    /// **A value, not a mutable accumulator.** Every operation consumes `self` and returns the
+    /// account that follows it. Rule 14.6 puts the ceiling check *before* the spend, so the shape a
+    /// caller needs is "has the account already reached its ceiling, and what would it be after
+    /// this exchange" — two questions about two values rather than one about a thing being mutated
+    /// underneath them.
+    ///
+    /// Nothing here is read by any rule that composes a request or interprets a response, which is
+    /// the *State model*'s own sentence and the whole reason none of it can influence a decision.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+    pub(super) struct RunAccount {
+        prices: UnitPrices,
+        /// Rule 14.6's declared ceiling, absent where none was declared. A replay declares none,
+        /// rule 14.8.
+        ceiling: Option<u64>,
+        /// Every exchange issued, including one that yielded nothing: rule 11.2's "a retry is its
+        /// own record, because it was its own billed exchange" is the same accounting from the
+        /// transcript's side. Rule 14.5's threshold of 200 counts these.
+        exchanges: u64,
+        prompt_tokens: u64,
+        cached_prompt_tokens: u64,
+        output_tokens: u64,
+        reasoning_tokens: u64,
+        /// Set once an exchange reported a prompt count and no cached-prompt count, and never
+        /// cleared. Rule 14.5: the ratio then cannot be computed, and that is a failure to evaluate
+        /// rather than a pass — so one such exchange has to survive to the end of the run.
+        cache_unreported: bool,
+        cost: u64,
+        fallbacks: u64,
+    }
+
+    impl RunAccount {
+        /// A run's opening account: the prices it declared, the ceiling it declared, and nothing
+        /// spent.
+        pub(super) fn declared(prices: UnitPrices, ceiling: Option<u64>) -> Self {
+            Self {
+                prices,
+                ceiling,
+                ..Self::default()
+            }
+        }
+
+        /// One exchange's cost, rule 14.2, from the reported counts and the declared prices.
+        ///
+        /// An unreported count contributes nothing, which is the only arithmetic rule 11.5 admits:
+        /// a figure nobody reported cannot be billed, and substituting an estimate is what the
+        /// specification's cache-ratio counterexample refuses on the other side of the same
+        /// boundary. Rule 10.8 records the standing limit — a connector that under-reports usage
+        /// spends past the ceiling and the run cannot tell — and this is where that limit lives.
+        ///
+        /// Every operation saturates, and `min` clamps a cached count above the prompt count.
+        /// Rule 10.7 makes the provider's figures untrusted input, and a cached count larger than
+        /// the prompt count is arithmetic nonsense that would otherwise underflow the uncached
+        /// share into a bill of roughly eighteen quintillion tokens.
+        pub(super) fn cost_of(&self, usage: &ExchangeUsage) -> u64 {
+            let prompt = usage.prompt.unwrap_or(0);
+            let cached = usage.cached_prompt.unwrap_or(0).min(prompt);
+            let uncached = prompt - cached;
+            uncached
+                .saturating_mul(self.prices.uncached_prompt)
+                .saturating_add(cached.saturating_mul(self.prices.cached_prompt))
+                .saturating_add(usage.output.unwrap_or(0).saturating_mul(self.prices.output))
+                .saturating_add(
+                    usage
+                        .reasoning
+                        .unwrap_or(0)
+                        .saturating_mul(self.prices.reasoning),
+                )
+        }
+
+        /// Rule 14.1: the account after one exchange, with the four totals and the accumulated cost
+        /// advanced by what that exchange reported.
+        pub(super) fn after_exchange(self, usage: &ExchangeUsage) -> Self {
+            let cost = self.cost_of(usage);
+            Self {
+                exchanges: self.exchanges.saturating_add(1),
+                prompt_tokens: self.prompt_tokens.saturating_add(usage.prompt.unwrap_or(0)),
+                cached_prompt_tokens: self
+                    .cached_prompt_tokens
+                    .saturating_add(usage.cached_prompt.unwrap_or(0)),
+                output_tokens: self.output_tokens.saturating_add(usage.output.unwrap_or(0)),
+                reasoning_tokens: self
+                    .reasoning_tokens
+                    .saturating_add(usage.reasoning.unwrap_or(0)),
+                cache_unreported: self.cache_unreported
+                    || (usage.prompt.is_some() && usage.cached_prompt.is_none()),
+                cost: self.cost.saturating_add(cost),
+                ..self
+            }
+        }
+
+        /// Rule 9.5's occurrence, counted: an exchange that yielded no proposal.
+        ///
+        /// It is still an exchange, so the exchange count moves and the usage it reported — none, by
+        /// definition — is added like any other. What it is *not* is rule 9.6's rejected proposal:
+        /// a source that answered and a world that refused the answer leave this count alone, and
+        /// the port never learns that the refusal happened.
+        pub(super) fn after_fallback(self) -> Self {
+            let counted = Self {
+                fallbacks: self.fallbacks.saturating_add(1),
+                ..self
+            };
+            counted.after_exchange(&ExchangeUsage::unreported())
+        }
+
+        /// Rule 14.6: whether the accumulated cost has reached the declared ceiling. Reached, not
+        /// exceeded — the check is made before the exchange is issued, so a ceiling equal to the
+        /// cost of two exchanges admits exactly two.
+        ///
+        /// A run with no declared ceiling never stops here, which is rule 14.8's replay and rule
+        /// 13.5's obligation seen from the account: whether a live run may run without a ceiling is
+        /// a question for the mode that declares one, not for the arithmetic.
+        pub(super) fn ceiling_reached(&self) -> bool {
+            matches!(self.ceiling, Some(ceiling) if self.cost >= ceiling)
+        }
+
+        /// Rule 14.4's cache ratio in basis points, or `None` where rule 14.5 says it cannot be
+        /// computed: an exchange reported a prompt count with no cached-prompt figure, or no prompt
+        /// token was reported at all and the denominator is zero.
+        ///
+        /// `None` rather than a number, because rule 14.5 calls an uncomputable ratio "a failure to
+        /// evaluate rather than a pass". A `0` would read as a run that cached nothing and a
+        /// `10_000` as one that cached everything, and both are answers where the specification
+        /// requires the absence of one.
+        ///
+        /// **From the reported figures only.** The specification's counterexample here is an
+        /// implementation that computes this from its own block lengths, passes rule 14.5 and pays
+        /// full price. This crate has no token estimator, and the two inputs below are both
+        /// provider-reported totals.
+        pub(super) fn cache_ratio_basis_points(&self) -> Option<u64> {
+            if self.cache_unreported || self.prompt_tokens == 0 {
+                return None;
+            }
+            Some(
+                self.cached_prompt_tokens
+                    .min(self.prompt_tokens)
+                    .saturating_mul(BASIS_POINTS)
+                    / self.prompt_tokens,
+            )
+        }
+
+        pub(super) fn cost(&self) -> u64 {
+            self.cost
+        }
+
+        pub(super) fn fallbacks(&self) -> u64 {
+            self.fallbacks
+        }
+
+        pub(super) fn exchanges(&self) -> u64 {
+            self.exchanges
+        }
+    }
+
+    /// How a live run ended, as rule 15.2's last field states it.
+    ///
+    /// A type of its own rather than a third [`TerminationReason`] variant, for three reasons that
+    /// point the same way. That enum is public and both hosts match it, and `WO-MOK-025` moves
+    /// nothing else on the public surface. It is written into `SPEC-MOK-006`'s run record as
+    /// `result.reason`, so a new value there is a domain change and a `schema` increment, which this
+    /// stage is out of scope for. And a ceiling stop is not a simulation outcome at all: no rule of
+    /// `SPEC-MOK-001` produced it, and the world it stopped is neither extinct nor finished.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub(super) enum RunEnd {
+        /// The two endings every run has had since `SPEC-MOK-001`, carried as they are reported
+        /// everywhere else so that one spelling of `tick_limit` serves every stream.
+        Completed(TerminationReason),
+        /// Rule 14.7's orderly stop, which rule 15.5 requires the record to say in so many words,
+        /// and rule 19.3 gives an exit status distinct from a clean completion and from an error.
+        Ceiling,
+    }
+
+    impl fmt::Display for RunEnd {
+        fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                Self::Completed(reason) => write!(formatter, "{reason}"),
+                Self::Ceiling => formatter.write_str("ceiling"),
+            }
+        }
+    }
+
+    /// Rule 15's run record: every accounting figure this specification produces, in one place.
+    ///
+    /// It borrows the run's configuration and its account rather than copying figures out of them,
+    /// so that the record cannot state a figure the account does not hold. **Where it is written is
+    /// the host's**, exactly as rule 11.1 leaves the transcript's destination to the host: the
+    /// *Outputs* section lists this as a fourth output and no rule fixes a destination for it, and
+    /// the two streams that do have destinations are both closed to it — rule 12.6 requires a
+    /// replay to reproduce the recorded run's standard output and record-stream bytes, and rule 15.6
+    /// requires a replay to report no run record, so a run record in either stream would make those
+    /// two rules contradict each other. [`Self::render`] therefore returns one unframed line, on
+    /// [`exchange_record`](super::exchange_record)'s precedent.
+    pub(super) struct RunRecord<'a> {
+        config: &'a Config,
+        /// Rule 15.2's model identifier and reasoning level. Inputs of the run under the *Inputs*
+        /// section's "in live mode only", on rule 14.3's principle: a model named by a constant here
+        /// would be a model this engine chose.
+        model: &'a str,
+        reasoning: &'a str,
+        account: &'a RunAccount,
+        /// Rule 15.2's tick reached, which rule 15.5 requires again for a ceiling stop, "so that a
+        /// figure is never quoted at a horizon the run did not reach".
+        tick_reached: u64,
+        ended: RunEnd,
+    }
+
+    impl<'a> RunRecord<'a> {
+        pub(super) fn new(
+            config: &'a Config,
+            model: &'a str,
+            reasoning: &'a str,
+            account: &'a RunAccount,
+            tick_reached: u64,
+            ended: RunEnd,
+        ) -> Self {
+            Self {
+                config,
+                model,
+                reasoning,
+                account,
+                tick_reached,
+                ended,
+            }
+        }
+
+        /// The record as one line.
+        ///
+        /// Every field rule 15.2 enumerates is present unconditionally, and every figure is an
+        /// integer or `null`: rule 15.3's positive zero means a clean run states `"fallbacks":0` and
+        /// `"reasoning":0` rather than leaving a reader to infer them from a silence, and rule 11.5's
+        /// absence is `null` rather than `0` for the two figures that can be missing. The exchange
+        /// count is here on rule 15.1's authority — it is an accounting figure this specification
+        /// produces, at rule 14.5's threshold of 200 — rather than on rule 15.2's enumeration.
+        ///
+        /// The seed, tick limit, density and tracing selection are spelled as
+        /// [`write_header_record`](super::write_header_record) spells them, including the density as
+        /// a quoted two-decimal string. That is the one decimal separator in the line and it is an
+        /// echoed input rather than an accounting figure: `SPEC-MOK-006` rule 4.1 prohibits a
+        /// floating-point *value*, which a string is not, and a second spelling of a density across
+        /// two streams would be worse than the quoting.
+        pub(super) fn render(&self) -> String {
+            format!(
+                "{{\"run_record\":\"{LLM_SOURCE_NAME}\",\"seed\":{},\"ticks\":{},\"density\":\"{}\",\
+                 \"trace_actions\":{},\"model\":\"{}\",\"reasoning\":\"{}\",\"exchanges\":{},\
+                 \"tokens\":{{\"prompt\":{},\"cached_prompt\":{},\"output\":{},\"reasoning\":{}}},\
+                 \"cache_ratio_basis_points\":{},\"cost_nanodollars\":{},\
+                 \"ceiling_nanodollars\":{},\"fallbacks\":{},\"unfit_to_publish\":{},\
+                 \"tick_reached\":{},\"ended\":\"{}\"}}",
+                self.config.seed,
+                self.config.tick_limit,
+                self.config.density,
+                self.config.trace_actions,
+                escape_transcript_text(self.model),
+                escape_transcript_text(self.reasoning),
+                self.account.exchanges,
+                self.account.prompt_tokens,
+                self.account.cached_prompt_tokens,
+                self.account.output_tokens,
+                self.account.reasoning_tokens,
+                optional_figure(self.account.cache_ratio_basis_points()),
+                self.account.cost,
+                optional_figure(self.account.ceiling),
+                self.account.fallbacks,
+                // Rule 15.4's mark, and a property of the record rather than of a summary written
+                // afterwards. It is derived here from the count rather than set by a caller,
+                // because a mark a caller could forget is a mark that a run under pressure would
+                // not carry.
+                self.account.fallbacks > 0,
+                self.tick_reached,
+                self.ended,
+            )
+        }
+    }
+
+    /// A figure that may be absent: the integer, or `null`.
+    ///
+    /// `SPEC-MOK-006` rule 4.4's distinction and rule 11.5's — a figure nobody reported is not a
+    /// figure that was zero — and the same choice `died_at` makes in the other run record.
+    fn optional_figure(figure: Option<u64>) -> String {
+        match figure {
+            Some(figure) => figure.to_string(),
+            None => String::from("null"),
+        }
     }
 }
 
@@ -5171,6 +5601,7 @@ fn write_attribute(
 mod tests {
     use std::collections::HashSet;
 
+    use super::accounting::{ExchangeUsage, RunAccount, RunEnd, RunRecord, UnitPrices};
     use super::*;
 
     /// The historical helper. It selects the baseline source so that the foundation
@@ -10517,9 +10948,20 @@ mod tests {
     /// provider, without a credential and without a transport, because rule 1.1 leaves the
     /// engine unable to tell the difference. `answers` is consumed front to back and an
     /// exhausted script answers `None`, which is rule 9's no-proposal case.
+    ///
+    /// It also **holds the accounting**, because rule 20.4.1 puts it in the port and because
+    /// `VER-MOK-018`'s cases L18, L19 and L30 all specify "a stubbed port with declared unit prices
+    /// and synthetic usage" — which is this, with the prices and the usage declared by the test
+    /// rather than by a provider. A live connector will do exactly what `propose` does below with
+    /// the figures a response reported.
     #[derive(Default)]
     struct ScriptedPort {
         answers: Vec<Option<Action>>,
+        /// The answer an exhausted script falls back to, so that a test can have a run in which
+        /// *every* exchange yielded a proposal. Without it a script shorter than the run's
+        /// opportunity count turns into a run of fallbacks partway through, and rule 9.6's
+        /// distinction cannot be measured against a clean run.
+        standing: Option<Action>,
         seen: Vec<DecisionRequest>,
         /// Every record the engine authored, in the order it authored them. This is the transcript
         /// a recording host would have written, held in memory: rule 11.1 puts the destination in
@@ -10529,6 +10971,12 @@ mod tests {
         /// The record number, counting from one, at which `record` reports a write failure. Rule
         /// 19.6's path: a run whose exchanges were spent and not recorded ends with an error.
         fail_at: Option<usize>,
+        /// Rules 14.1 and 9.5's accumulators. A default account declares no prices and no ceiling,
+        /// so every port built before this existed bills zero and behaves exactly as it did.
+        account: RunAccount,
+        /// The usage this port reports for an exchange that yielded a proposal. Synthetic by
+        /// construction: no provider reported it and nothing here estimates it.
+        usage: ExchangeUsage,
     }
 
     impl ScriptedPort {
@@ -10541,6 +10989,24 @@ mod tests {
             Self {
                 answers,
                 ..Self::default()
+            }
+        }
+
+        /// A port that answers the same action at every opportunity and never runs out.
+        fn always(action: Action) -> Self {
+            Self {
+                standing: Some(action),
+                ..Self::default()
+            }
+        }
+
+        /// Declares the run's prices, its ceiling and the usage each answered exchange reports —
+        /// rule 14.3's inputs, arriving as inputs.
+        fn billing(self, prices: UnitPrices, ceiling: Option<u64>, usage: ExchangeUsage) -> Self {
+            Self {
+                account: RunAccount::declared(prices, ceiling),
+                usage,
+                ..self
             }
         }
 
@@ -10578,12 +11044,19 @@ mod tests {
 
     impl Proposer for ScriptedPort {
         fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
-            let answer = if self.seen.len() < self.answers.len() {
-                self.answers[self.seen.len()].clone()
-            } else {
-                None
+            let answer = match self.answers.get(self.seen.len()) {
+                Some(answer) => answer.clone(),
+                None => self.standing.clone(),
             };
             self.seen.push(request);
+            // Rule 14.1 and rule 9.5's count, in the party rule 20.4.1 puts them in and at the
+            // moment the exchange happened. An answered exchange bills the declared usage; an
+            // unanswered one reports none and moves the fallback count. A rejection the engine
+            // decides later cannot reach here, which is rule 9.6.
+            self.account = match &answer {
+                Some(_) => self.account.after_exchange(&self.usage),
+                None => self.account.after_fallback(),
+            };
             answer
         }
 
@@ -12255,6 +12728,504 @@ mod tests {
             SHARED_RULES.len(),
             exchanges.len(),
             transcript.len()
+        );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007` rules 9.5, 9.6, 14 and 15: the fallback's accounting, the cost arithmetic
+    // and the run record.
+    //
+    // Every price and every usage figure below is **declared by the test**. Nothing here reaches a
+    // provider, and no figure is a measurement of one: rule 14.3 makes prices inputs of a run, and
+    // `WO-MOK-025` item 7 says in so many words that no real usage exists yet. What is being checked
+    // is the arithmetic and the record, against figures whose expected results can be computed
+    // longhand in the assertion.
+    // -----------------------------------------------------------------------------------
+
+    /// Prices in the shape a provider publishes them, converted once: `$1.25`, `$0.125` and `$10.00`
+    /// per million tokens are `1_250`, `125` and `10_000` nanodollars per token. The reasoning price
+    /// matches the output price, which is how a provider that bills reasoning tokens bills them.
+    ///
+    /// Round numbers, and deliberately: a case about integer arithmetic should fail on the
+    /// arithmetic rather than on a reader's inability to check the expected figure.
+    fn declared_prices() -> UnitPrices {
+        UnitPrices {
+            uncached_prompt: 1_250,
+            cached_prompt: 125,
+            output: 10_000,
+            reasoning: 10_000,
+        }
+    }
+
+    /// One exchange's synthetic usage: a 6,000-token prompt of which 5,400 were served from the
+    /// cache, a 40-token response and no reasoning tokens, which is rule 8.5's level stated as a
+    /// reported zero rather than as an absence.
+    ///
+    /// The cache share is nine tenths, so [`RunAccount::cache_ratio_basis_points`] has a figure
+    /// above rule 14.5's floor to report and the assertion is a comparison rather than a tautology.
+    fn synthetic_usage() -> ExchangeUsage {
+        ExchangeUsage::reported(6_000, 5_400, 40, 0)
+    }
+
+    /// [`synthetic_usage`] at [`declared_prices`], computed longhand: 600 uncached prompt tokens,
+    /// 5,400 cached ones and 40 output tokens.
+    const SYNTHETIC_COST: u64 = 600 * 1_250 + 5_400 * 125 + 40 * 10_000;
+
+    /// Rules 9.5 and 9.8: the fallback is `wait`, it is counted, the run continues, and the record
+    /// marks it.
+    ///
+    /// The twin run is the point. A port that never answers and a port that answers `wait` at every
+    /// opportunity produce the *same* run — the same text bytes, and transcripts differing in one
+    /// field — so the only thing distinguishing a contaminated run from a clean one is the flag, the
+    /// count and the mark. That is rules 9.5, 9.6 and 15.4 as one comparison, and it is why rule
+    /// 12.7 replays from the flag instead of from the verb.
+    ///
+    /// The cost is the other half. An exchange that yielded nothing reported no usage, so it moves
+    /// the exchange count and bills nothing, while the twin run bills every exchange: rule 11.5's
+    /// absence is not a zero, and rule 14.1 adds what was reported rather than what was expected.
+    #[test]
+    fn the_fallback_is_wait_counted_and_marks_the_run() {
+        let config = llm_config(42, 6, true);
+        let mut silent = ScriptedPort::silent().billing(declared_prices(), None, synthetic_usage());
+        let mut text = Vec::new();
+        let summary = Simulation::new(config)
+            .unwrap()
+            .run_recording(&mut text, None, Some(&mut silent))
+            .expect("rule 9.8: a run that fell back is not aborted");
+
+        // Rule 9.8: the run's ticks are real and it reached its horizon.
+        assert_eq!(summary.reason(), TerminationReason::TickLimit);
+        assert_eq!(summary.ticks(), 6);
+
+        let exchanges = silent.exchanges().len() as u64;
+        assert!(
+            exchanges >= 60,
+            "{exchanges} exchanges is too few to measure"
+        );
+        for record in silent.exchanges() {
+            assert_eq!(transcript_flag(record, "fallback"), Some(true), "{record}");
+            assert!(record.contains("\"verb\":\"wait\""), "{record}");
+        }
+        assert_eq!(silent.account.fallbacks(), exchanges);
+        assert_eq!(silent.account.exchanges(), exchanges);
+        // Rule 11.5 and rule 14.1: nothing was reported, so nothing is billed, at prices that would
+        // have billed every one of these exchanges had a proposal come back.
+        assert_eq!(silent.account.cost(), 0);
+        assert_eq!(silent.account.cache_ratio_basis_points(), None);
+
+        // Rule 9.5's `wait` is applied and accepted at every opportunity, which is why it is the
+        // fallback: no opportunity in this run rejected anything.
+        let text = String::from_utf8(text).unwrap();
+        let traces = text.matches("event=action_trace").count() as u64;
+        assert_eq!(traces, exchanges);
+        assert_eq!(text.matches("proposal:wait").count() as u64, exchanges);
+        assert!(!text.contains("status:rejected"), "{text}");
+
+        // Rule 15.4: the mark is a property of the record, derived from the count.
+        let config = llm_config(42, 6, true);
+        let record = RunRecord::new(
+            &config,
+            "a-model-identifier",
+            "none",
+            &silent.account,
+            summary.ticks(),
+            RunEnd::Completed(summary.reason()),
+        )
+        .render();
+        assert!(record.contains("\"unfit_to_publish\":true"), "{record}");
+        assert!(
+            record.contains(&format!("\"fallbacks\":{exchanges}")),
+            "{record}"
+        );
+
+        // The twin: every exchange answered, and answered with the same action the fallback takes.
+        let mut proposing =
+            ScriptedPort::always(Action::Wait).billing(declared_prices(), None, synthetic_usage());
+        let mut proposed_text = Vec::new();
+        Simulation::new(llm_config(42, 6, true))
+            .unwrap()
+            .run_recording(&mut proposed_text, None, Some(&mut proposing))
+            .expect("a run in which every exchange answered");
+        assert_eq!(String::from_utf8(proposed_text).unwrap(), text);
+        assert_eq!(
+            proposing.transcript(),
+            silent
+                .transcript()
+                .replace("\"fallback\":true", "\"fallback\":false")
+        );
+
+        // Rule 15.3: a clean run states its zero rather than omitting it, and rule 15.4's mark is
+        // absent because the count is.
+        assert_eq!(proposing.account.fallbacks(), 0);
+        assert_eq!(proposing.account.exchanges(), exchanges);
+        assert_eq!(proposing.account.cost(), SYNTHETIC_COST * exchanges);
+        let config = llm_config(42, 6, true);
+        let record = RunRecord::new(
+            &config,
+            "a-model-identifier",
+            "none",
+            &proposing.account,
+            summary.ticks(),
+            RunEnd::Completed(summary.reason()),
+        )
+        .render();
+        assert!(record.contains("\"fallbacks\":0"), "{record}");
+        assert!(record.contains("\"unfit_to_publish\":false"), "{record}");
+    }
+
+    /// Rule 9.6 and property **P5**: a rejected proposal is not a fallback, and the count agrees
+    /// with the transcript.
+    ///
+    /// The script reaches rule 7.5's gap — an action block D may enumerate and the engine still
+    /// rejects, on a ground the observation did not carry — and the assertion refuses to pass unless
+    /// that gap was actually reached, because a run with no rejection in it would satisfy the count
+    /// half of this case vacuously.
+    ///
+    /// The two figures compared for **P5** are derived independently: the flag is written by
+    /// `exchange_record` from the proposal's absence, and the count is moved by the port that
+    /// obtained nothing. A count incremented beside the flag would make this property unable to
+    /// fail.
+    #[test]
+    fn a_rejected_proposal_is_not_a_fallback_and_the_count_matches_the_transcript() {
+        let mut port = ScriptedPort::answering(varied_script(400)).billing(
+            declared_prices(),
+            None,
+            synthetic_usage(),
+        );
+        let mut text = Vec::new();
+        Simulation::new(llm_config(42, 5, true))
+            .unwrap()
+            .run_recording(&mut text, None, Some(&mut port))
+            .expect("a run whose proposals are sometimes refused");
+        let text = String::from_utf8(text).unwrap();
+
+        let rejections = text.matches("status:rejected").count();
+        assert!(
+            rejections > 0,
+            "no proposal was rejected, so this case measures nothing"
+        );
+
+        let exchanges = port.exchanges().len() as u64;
+        let flagged = port
+            .exchanges()
+            .iter()
+            .filter(|record| transcript_flag(record, "fallback") == Some(true))
+            .count() as u64;
+        assert_eq!(port.account.fallbacks(), flagged);
+        assert!(
+            flagged > 0,
+            "the script yields nothing at two of ten entries"
+        );
+        assert!(flagged < exchanges, "every exchange cannot be a fallback");
+        // The count the script *dictates*: two of its ten entries yield nothing, and the entries are
+        // consumed in order. Derived from the script rather than written as a constant, because a run
+        // in which a Mokiterion died would consume fewer entries and a constant would then be
+        // measuring the population instead of the count. A count that had absorbed the rejections
+        // would be far above this figure.
+        let dictated = varied_script(400)[..exchanges as usize]
+            .iter()
+            .filter(|entry| entry.is_none())
+            .count() as u64;
+        assert_eq!(flagged, dictated);
+
+        // Rule 14.1 from the same run: a rejected proposal was an answered exchange and is billed,
+        // and only the exchanges that yielded nothing are not.
+        assert_eq!(port.account.exchanges(), exchanges);
+        assert_eq!(port.account.cost(), SYNTHETIC_COST * (exchanges - flagged));
+    }
+
+    /// Rules 14.1, 14.2 and 14.3: cost is integer arithmetic over the run's declared prices.
+    ///
+    /// Every expected figure is written out as a product and a sum, so that a change to the
+    /// arithmetic fails against a number a reader can verify rather than against a constant this
+    /// file also produced.
+    #[test]
+    fn cost_is_integer_arithmetic_over_the_declared_prices() {
+        let account = RunAccount::declared(declared_prices(), None);
+        assert_eq!(account.cost_of(&synthetic_usage()), SYNTHETIC_COST);
+        assert_eq!(account.cost_of(&synthetic_usage()), 1_825_000);
+
+        // Rule 11.5: an unreported count contributes nothing, and an exchange that reported nothing
+        // at all costs nothing rather than costing a prompt's worth of default.
+        assert_eq!(account.cost_of(&ExchangeUsage::unreported()), 0);
+        // The cached share is billed once, at the cached price. An implementation that billed the
+        // prompt total *and* the cached total would report 8_575_000 here.
+        assert_eq!(
+            account.cost_of(&ExchangeUsage::reported(6_000, 6_000, 0, 0)),
+            6_000 * 125
+        );
+        // Rule 10.7: the provider's figures are untrusted. A cached count above the prompt count is
+        // nonsense, and the arithmetic neither panics nor underflows into a bill of quintillions.
+        assert_eq!(
+            account.cost_of(&ExchangeUsage::reported(10, 10_000, 0, 0)),
+            10 * 125
+        );
+
+        // Rule 14.1 accumulates, and rule 14.2's integer arithmetic accumulates without drift: ten
+        // exchanges cost exactly ten times one, which a per-exchange division would not.
+        let mut ten = RunAccount::declared(declared_prices(), None);
+        for _ in 0..10 {
+            ten = ten.after_exchange(&synthetic_usage());
+        }
+        assert_eq!(ten.cost(), SYNTHETIC_COST * 10);
+        assert_eq!(ten.exchanges(), 10);
+
+        // Rule 14.3: the prices are the run's. The same usage under prices doubled costs double,
+        // because nothing here is compiled in.
+        let doubled = UnitPrices {
+            uncached_prompt: 2_500,
+            cached_prompt: 250,
+            output: 20_000,
+            reasoning: 20_000,
+        };
+        assert_eq!(
+            RunAccount::declared(doubled, None).cost_of(&synthetic_usage()),
+            SYNTHETIC_COST * 2
+        );
+    }
+
+    /// Rules 14.4 and 14.5: the ratio is computed from the reported figures, and an unreported
+    /// cached figure leaves it uncomputable for the rest of the run.
+    #[test]
+    fn the_cache_ratio_is_the_reported_figures_or_nothing() {
+        let mut account = RunAccount::declared(declared_prices(), None);
+        assert_eq!(account.cache_ratio_basis_points(), None, "nothing reported");
+
+        for _ in 0..3 {
+            account = account.after_exchange(&synthetic_usage());
+        }
+        // 16,200 of 18,000 prompt tokens, which is nine tenths and above rule 14.5's 8_500 floor.
+        assert_eq!(account.cache_ratio_basis_points(), Some(9_000));
+
+        // Rule 14.5's third sentence: one exchange that reported a prompt count with no cached
+        // figure, and the ratio cannot be computed. It stays uncomputable when later exchanges
+        // report both, because a ratio over the run cannot be assembled from the exchanges that
+        // happened to be complete.
+        let incomplete = account.after_exchange(&ExchangeUsage::without_cached_figure(6_000, 40));
+        assert_eq!(incomplete.cache_ratio_basis_points(), None);
+        assert_eq!(
+            incomplete
+                .after_exchange(&synthetic_usage())
+                .cache_ratio_basis_points(),
+            None
+        );
+
+        // A fallback reports neither figure, so it is not rule 14.5's case: an exchange the provider
+        // never answered says nothing about the provider's cache.
+        assert_eq!(
+            account.after_fallback().cache_ratio_basis_points(),
+            Some(9_000)
+        );
+    }
+
+    /// Rule 14.6 and case **L19**: the ceiling is checked before the exchange, so a ceiling equal to
+    /// the cost of two exchanges admits exactly two.
+    ///
+    /// The loop below is the shape rule 14.6 fixes for a caller — ask the account, then spend — and
+    /// it is where a live run's ceiling stop will be made. `WO-MOK-025` is out of scope for the stop
+    /// itself: `REQ-MOK-071` binds a live run, the option that declares a ceiling is `WO-MOK-026`'s,
+    /// and only the arithmetic is in scope here.
+    ///
+    /// L19's first clause — "no exchange is issued whose cost would cross the ceiling" — is rule
+    /// 14.6's check exactly when the ceiling is a whole multiple of an exchange's cost, which this
+    /// one is. It cannot be more than that in general: the cost of the next exchange depends on the
+    /// usage that exchange will report, and a check made before it is issued has no such figure.
+    #[test]
+    fn the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two() {
+        let usage = synthetic_usage();
+        let mut account = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 2));
+        let mut issued = 0;
+        while !account.ceiling_reached() && issued < 10 {
+            account = account.after_exchange(&usage);
+            issued += 1;
+        }
+        assert_eq!(issued, 2);
+        assert_eq!(account.cost(), SYNTHETIC_COST * 2);
+
+        // The check is on the accumulated cost and not on the exchange count: an account under a
+        // ceiling one nanodollar higher has not reached it and the third exchange is issued.
+        let under = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 2 + 1))
+            .after_exchange(&usage)
+            .after_exchange(&usage);
+        assert!(!under.ceiling_reached());
+
+        // Rule 14.8: a run with no declared ceiling never stops here, whatever it has spent.
+        let uncapped = RunAccount::declared(declared_prices(), None).after_exchange(&usage);
+        assert!(!uncapped.ceiling_reached());
+        assert_eq!(uncapped.cost(), SYNTHETIC_COST);
+    }
+
+    /// Case **L30**'s second half: the account belongs to the port the host lends, so a stubbed
+    /// run's cost rises across ticks and reaches a ceiling.
+    ///
+    /// **The figure is not the case's.** L30 names "a ceiling set to the cost of two exchanges", and
+    /// a tick here holds twelve opportunities, so a two-exchange ceiling is reached inside the first
+    /// tick and a port rebuilt every tick would reach it too — the case's own discriminator ("the
+    /// accumulated cost stays at zero, so the ceiling never triggers") would be lost. Eighteen
+    /// exchanges is one and a half ticks: reached in the second tick when the port is lent, and
+    /// unreachable when it is rebuilt. The case's substance is checked and its illustrative figure
+    /// is not.
+    #[test]
+    fn a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling() {
+        let mut port = ScriptedPort::always(Action::Wait).billing(
+            declared_prices(),
+            Some(SYNTHETIC_COST * 18),
+            synthetic_usage(),
+        );
+        let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        let mut costs = Vec::new();
+        let mut reached = Vec::new();
+        for _ in 0..3 {
+            simulation
+                .advance_tick(Some(&mut port))
+                .expect("a tick decided through the port");
+            costs.push(port.account.cost());
+            reached.push(port.account.ceiling_reached());
+        }
+
+        assert_eq!(port.account.exchanges(), 36, "twelve opportunities a tick");
+        assert_eq!(
+            costs,
+            vec![
+                SYNTHETIC_COST * 12,
+                SYNTHETIC_COST * 24,
+                SYNTHETIC_COST * 36
+            ]
+        );
+        // The discriminator: a port rebuilt each tick would report the first figure three times and
+        // would never reach the ceiling.
+        assert_eq!(reached, vec![false, true, true]);
+    }
+
+    /// Rules 15.2 and 15.3: the record carries every figure the rule names, and states its zeros.
+    ///
+    /// Field by field rather than as one expected line, so that a failure names the figure that
+    /// moved. The line is asserted whole in the case below it, where the subject is the bytes.
+    #[test]
+    fn the_run_record_carries_every_figure_rule_15_names() {
+        let config = llm_config(7, 500, true);
+        let account = RunAccount::declared(declared_prices(), Some(1_040_000_000))
+            .after_exchange(&synthetic_usage())
+            .after_fallback();
+        let record = RunRecord::new(
+            &config,
+            "a-model-identifier",
+            "none",
+            &account,
+            250,
+            RunEnd::Completed(TerminationReason::TickLimit),
+        )
+        .render();
+
+        for figure in [
+            // The four token totals, rule 14.1's, with the reasoning total's reported zero stated.
+            "\"tokens\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\"reasoning\":0}",
+            // The ratio, unaffected by the fallback that reported nothing.
+            "\"cache_ratio_basis_points\":9000",
+            // The accumulated cost and the declared ceiling. `$1.04` is rule 9.8's own estimate of
+            // what a full run costs, in the unit rule 14.2 requires it to be stated in.
+            "\"cost_nanodollars\":1825000",
+            "\"ceiling_nanodollars\":1040000000",
+            // The fallback count and rule 15.4's mark.
+            "\"fallbacks\":1",
+            "\"unfit_to_publish\":true",
+            // The tick reached, and the run's own inputs.
+            "\"tick_reached\":250",
+            "\"seed\":7",
+            "\"ticks\":500",
+            "\"density\":\"0.75\"",
+            "\"trace_actions\":true",
+            "\"model\":\"a-model-identifier\"",
+            "\"reasoning\":\"none\"",
+            // Rule 15.1's authority rather than rule 15.2's enumeration: the exchange count is what
+            // rule 14.5's threshold of 200 is counted in.
+            "\"exchanges\":2",
+            "\"ended\":\"tick_limit\"",
+        ] {
+            assert!(record.contains(figure), "{figure} is missing from {record}");
+        }
+
+        // Rule 15.3 against rule 11.5: a run that spent nothing states four zeros and a zero cost,
+        // while the two figures that can be *absent* are `null` rather than `0`. A record that wrote
+        // `0` for an uncomputable ratio would report a run that cached nothing.
+        let clean = RunAccount::declared(declared_prices(), None);
+        let record = RunRecord::new(
+            &config,
+            "a-model-identifier",
+            "none",
+            &clean,
+            0,
+            RunEnd::Completed(TerminationReason::Extinction),
+        )
+        .render();
+        assert!(
+            record.contains(
+                "\"tokens\":{\"prompt\":0,\"cached_prompt\":0,\"output\":0,\"reasoning\":0}"
+            ),
+            "{record}"
+        );
+        assert!(record.contains("\"cost_nanodollars\":0"), "{record}");
+        assert!(record.contains("\"fallbacks\":0"), "{record}");
+        assert!(record.contains("\"unfit_to_publish\":false"), "{record}");
+        assert!(
+            record.contains("\"cache_ratio_basis_points\":null"),
+            "{record}"
+        );
+        assert!(record.contains("\"ceiling_nanodollars\":null"), "{record}");
+        assert!(record.contains("\"ended\":\"extinction\""), "{record}");
+    }
+
+    /// Rule 15.5, case **L18**'s reporting half and scenario **A4**: a ceiling stop says so and
+    /// states the tick reached.
+    ///
+    /// The run that stops is `REQ-MOK-071`'s and lands with live mode; what is built here is the
+    /// record such a run reports, and property **P6** over its bytes: no figure carries a decimal
+    /// separator. The density does, and it is an echoed input rather than an accounting figure —
+    /// `SPEC-MOK-006` rule 4.1 prohibits a floating-point *value*, and this is the same quoted
+    /// two-decimal string the header record carries.
+    #[test]
+    fn a_ceiling_stop_says_so_and_carries_no_decimal_separator() {
+        let config = llm_config(7, 500, false);
+        let mut account = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 18));
+        while !account.ceiling_reached() {
+            account = account.after_exchange(&synthetic_usage());
+        }
+        let record = RunRecord::new(
+            &config,
+            "a-model-identifier",
+            "none",
+            &account,
+            250,
+            RunEnd::Ceiling,
+        )
+        .render();
+
+        assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
+        assert!(record.contains("\"tick_reached\":250"), "{record}");
+        assert!(
+            record.contains(&format!("\"cost_nanodollars\":{}", SYNTHETIC_COST * 18)),
+            "{record}"
+        );
+        assert!(
+            record.contains(&format!("\"ceiling_nanodollars\":{}", SYNTHETIC_COST * 18)),
+            "{record}"
+        );
+
+        // One line, unframed, on `exchange_record`'s precedent: where it goes is the host's.
+        assert!(!record.contains('\n'), "{record}");
+
+        // **P6**: the density is the only decimal separator in the line.
+        let figures = record.replace("\"density\":\"0.75\"", "\"density\":\"\"");
+        assert!(!figures.contains('.'), "{figures}");
+
+        // The other shape a floating-point figure prints in. Scanned as digit-adjacency rather
+        // than as a search for `e`, because half this line's field names contain one.
+        let characters: Vec<char> = figures.chars().collect();
+        assert!(
+            !characters
+                .windows(2)
+                .any(|pair| pair[0].is_ascii_digit() && matches!(pair[1], 'e' | 'E')),
+            "{figures}"
         );
     }
 }
