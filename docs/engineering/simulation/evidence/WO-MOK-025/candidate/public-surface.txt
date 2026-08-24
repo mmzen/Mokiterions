@@ -1,0 +1,212 @@
+The engine's public interface, base against candidate
+=====================================================
+
+SPEC-MOK-002 rule 5 lists the engine's public interface item by item and rule 6 counts it.
+This file is the measurement of what this work order added to it, and the run of rule 5's own
+mechanical checks at the candidate. WO-MOK-025's completion report item 2 is what it serves.
+
+Rule 5 names its files as src/lib.rs and src/simulation.rs, from before ADR-MOK-004 moved
+each package under its own directory. Those paths are mokiterions-core/src/lib.rs and
+mokiterions-core/src/simulation.rs here; nothing else about the checks changes.
+
+--- The enumeration -----------------------------------------------------------------------
+
+Taken with WO-MOK-011's enumerator, unchanged, over the engine package's three library
+sources at both revisions. It counts what rule 6 counts: a pub item, a public field, and the
+pub lines together, with every #[cfg(test)] block skipped whole by brace balance.
+
+    python docs/engineering/simulation/evidence/WO-MOK-011/analysis/interface.py \
+        mokiterions-core/src/lib.rs mokiterions-core/src/cli.rs \
+        mokiterions-core/src/simulation.rs
+
+  base       items 49  public fields 43  pub lines 92
+  candidate  items 60  public fields 43  pub lines 103
+
+Eleven items arrive, no item departs, and no public field moves. The twelfth line of the diff
+is advance_tick, whose signature changed rather than arriving:
+
+  - pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+  + pub fn advance_tick(&mut self, port: Option<&mut dyn Proposer>) -> Result<TickOutcome, String> {
+  + pub trait Proposer {
+  + pub struct DecisionRequest {
+  + pub fn shared_rules(&self) -> &str {
+  + pub fn actor(&self) -> &str {
+  + pub fn observation(&self) -> &str {
+  + pub fn permitted_set(&self) -> &str {
+  + pub fn blocks(&self) -> [&str; 4] {
+  + pub fn tick(&self) -> u64 {
+  + pub fn actor_id(&self) -> &str {
+  + pub struct ReplayPort<R: BufRead> {
+  + pub fn new(reader: R) -> Self {
+
+Policy::Llm is not in that list and its absence is correct: a variant of a public enum is
+written without pub and is in neither figure, which rule 6's 2026-08-19 amendment settled.
+It is measured separately below.
+
+--- The eleven arrivals against rule 5's authorization ------------------------------------
+
+Rule 5's 2026-08-23 growth table authorizes four growths, 1 + 1 + 1 + 1. Item by item:
+
+  Policy, one variant Llm, last                 measured. The enum reads Baseline,
+                                                #[default] Reference, Individual, Social,
+                                                Llm. The #[default] attribute is on
+                                                Reference at both revisions, so no existing
+                                                caller's resolved default moves.
+  advance_tick, one parameter appended          measured, and it is the changed line above.
+  Proposer, added                               measured, one item.
+  DecisionRequest, added                        measured, one item.
+
+Rule 5's DecisionRequest cell describes it as "an opaque value type of four owned or 'static
+string parts, with per-part accessors returning &str and one accessor returning them in the
+composition order". That is five accessors, and five of the eight added functions are
+exactly them: shared_rules, actor, observation and permitted_set are the four parts, blocks
+returns them in the composition order. So eight of the eleven arrivals are enumerated.
+
+  THREE ARE NOT, AND A FOURTH ITEM IS NOT EITHER. DecisionRequest::tick,
+  DecisionRequest::actor_id, ReplayPort and ReplayPort::new are outside every list rule 5
+  carries, against its closing prohibition that "nothing outside the three lists becomes
+  public".
+
+That is a finding of this work order, reported and not repaired. candidate/static-checks.txt
+check 6 is the check that produced it and states the whole of the case: ReplayPort is
+authorized in substance by ARCH-MOK-002, which places the transcript's parsing in the engine
+package as ReplayPort, and it cannot be narrowed, because both hosts construct it -
+mokiterions-core/src/main.rs:85 and mokiterions-tui/src/main.rs:118 - since SPEC-MOK-007 rule
+12.1.1 opens the transcript in the host. tick and actor_id are a sixth and seventh accessor
+beyond the five that cell describes, and tick returns u64 rather than &str, so its wording
+does not reach them. What is open is the enumeration, not the safety: check 3 of the same file
+reads all twelve added items one at a time and finds no transport type, no reference into
+authoritative state and no mutable borrow handed out. WO-MOK-025 stop-and-escalate condition
+6 is what this is, and it is the repository owner's to settle.
+
+--- Rule 5's mechanical checks, run at the candidate --------------------------------------
+
+The three greps for execute, each of which must return exactly one line:
+
+    grep -n 'pub fn execute' mokiterions-core/src/lib.rs
+      87:pub fn execute<I, S, W, E>(
+
+    grep -n 'records: Option<&mut dyn Write>' mokiterions-core/src/lib.rs
+      91:    records: Option<&mut dyn Write>,
+
+    grep -n 'port: Option<&mut dyn Proposer>' mokiterions-core/src/lib.rs
+      92:    port: Option<&mut dyn Proposer>,
+
+One line each. A sixth parameter, a second sink, a second port, a sink that is not optional
+or a port that is not optional fails one of the last two; a second public process-boundary
+function fails the first.
+
+The third grep is the amendment ADR-MOK-007 authorized and this stage wrote. The 2026-08-20
+restatement read "a fifth parameter ... fails the second", and the port on execute is that
+fifth parameter, so a build that added the port and left that sentence standing would fail its
+own specification. Rule 5 says so itself.
+
+The two-door check:
+
+    grep -n 'pub fn .*&mut self' mokiterions-core/src/simulation.rs
+      3731:    pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+      3899:    pub fn advance_tick(&mut self, port: Option<&mut dyn Proposer>) -> Result<TickOutcome, String> {
+
+Exactly run and advance_tick. Rule 5 attaches a second obligation to this check, that
+advance_tick's signature is one line in the source, because a wrapped signature puts the
+declaration keyword and the receiver on different lines and the pattern would then match
+neither - reporting one door where there are two and passing while doing so. It is one line,
+at 100 columns including its leading indentation, which is exactly rustfmt's default
+max_width and there is no rustfmt.toml in this repository to change it. That is the reason the
+trait is named Proposer rather than DecisionPort: rule 5 records that DecisionPort reaches 109
+columns in this signature and 104 with the shortest sensible parameter name. The margin is
+zero, so a future parameter on this method cannot be added within the limit, and rule 5's own
+sentence covers that case - it must change this check's form in the same commit.
+
+The pattern must also not appear in prose in that file. It does not; the two lines above are
+the whole of the output, and rule 5 records that a documentation comment matched during this
+stage's implementation and that the comment was reworded rather than the check loosened.
+
+Interior mutability, which rule 5's paragraph on mutating methods rests on:
+
+    grep -nE '\b(Cell|RefCell|Rc|Arc|Mutex|RwLock|Atomic[A-Za-z0-9]+)\b' \
+        mokiterions-core/src/*.rs mokiterions-tui/src/*.rs | wc -l
+      0
+
+No engine type contains a Cell, a RefCell, an Rc, an Arc, a lock or an atomic, and neither
+does the observer, so no &self method can mutate through one.
+
+--- The two changed signatures in full ----------------------------------------------------
+
+execute, in mokiterions-core/src/lib.rs. Rule 4's literal is what all three greps compare
+against, and the fifth parameter is rule 4's amendment of the same date rather than a second
+growth counted under rule 5:
+
+  base                                   candidate
+  pub fn execute<I, S, W, E>(            pub fn execute<I, S, W, E>(
+      args: I,                               args: I,
+      stdout: &mut W,                        stdout: &mut W,
+      stderr: &mut E,                        stderr: &mut E,
+      records: Option<&mut dyn Write>,       records: Option<&mut dyn Write>,
+  ) -> u8                                    port: Option<&mut dyn Proposer>,
+                                         ) -> u8
+
+Simulation::advance_tick, in mokiterions-core/src/simulation.rs:
+
+  base       pub fn advance_tick(&mut self) -> Result<TickOutcome, String> {
+  candidate  pub fn advance_tick(&mut self, port: Option<&mut dyn Proposer>) -> Result<TickOutcome, String> {
+
+--- pub fn run is not amended -------------------------------------------------------------
+
+    diff <(base simulation.rs:2004) <(candidate simulation.rs:3731)
+      -> no output
+
+  pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
+
+Byte-identical at both revisions. Rule 5 requires this and says why: run delegates with the
+port absent, so its enumerated form in the first list stands unchanged for the second time,
+and adding the parameter to it would grow the interface by something no approved artifact
+authorizes. The line moved from 2004 to 3731 because the file grew above it, which is a
+position and not a change.
+
+--- pub(crate) fn run_recording, disclosed rather than left to be found -------------------
+
+  base                                    candidate
+  pub(crate) fn run_recording<W: Write>(  pub(crate) fn run_recording<W: Write>(
+      &mut self,                              &mut self,
+      output: &mut W,                         output: &mut W,
+      records: Option<&mut dyn Write>,        records: Option<&mut dyn Write>,
+  ) -> io::Result<RunSummary> {               port: Option<&mut dyn Proposer>,
+                                          ) -> io::Result<RunSummary> {
+
+It takes the port down the call chain exactly as it already takes the record sink. It is not
+a third public signature change: pub(crate) fn is not pub fn, so the two-door grep does not
+match it, and rule 5 records that as a fact about the check rather than a way around it -
+run_recording is crate-private, is not on the interface, and is not reachable from any item
+that is. ADR-MOK-007 discloses it so that it is an expected diff.
+
+--- The callers the two public changes broke ----------------------------------------------
+
+execute, in product code, two sites and both in the engine's own binary target:
+
+  mokiterions-core/src/main.rs:99
+  mokiterions-core/src/main.rs:142
+
+advance_tick, in product code, one site and it is the observer:
+
+  mokiterions-tui/src/state.rs:462
+
+  simulation.advance_tick(port.as_mut().map(|port| port as &mut dyn Proposer))?
+
+That is the whole of the product-code breakage: the engine's binary target and the observer,
+and no others. The engine's own run path does not call the public advance_tick - run_recording
+reaches the private step, and the public advance_tick delegates to the private
+advance_tick_with_source - so the library breaks no caller of its own.
+
+Test callers were updated too and are counted rather than listed: 12 call sites in
+simulation.rs's own #[cfg(test)] region, which begins at line 5606; 1 in the observer's
+state.rs test module; 1 in the engine's public-tier tests; 10 execute call sites in the
+engine's public-tier tests. No observer public-tier test calls advance_tick.
+
+--- What this file does not establish -----------------------------------------------------
+
+That the added surface is safe. That is candidate/static-checks.txt check 3, which reads the
+twelve added items one at a time, and check 4, which re-runs rule 6's own drift check.
+
+That the interface is complete or minimal. It establishes what changed and against what
+authorization, and it names the one place the authorization does not reach.
