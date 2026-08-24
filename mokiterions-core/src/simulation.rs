@@ -1,5 +1,5 @@
 use std::fmt;
-use std::io::{self, Write};
+use std::io::{self, BufRead, Write};
 
 const WORLD_SIZE: u8 = 128;
 const TERRITORY_HEIGHT: u8 = 64;
@@ -965,7 +965,42 @@ trait DecisionSource {
     /// about which policy produced it.
     fn name(&self) -> &str;
 
+    /// Announces the run to the source, once, before its first decision.
+    ///
+    /// The roster is every Mokiterion the run created, in ascending identifier order, as two values
+    /// each — which is the whole of `SPEC-MOK-007` rule 5.2's block B and is why the parameter is
+    /// [`RosterEntry`] rather than the agents themselves. `PortDecisionSource` writes the
+    /// transcript's prefix head from it; the four deterministic sources take the default and do
+    /// nothing, which is what keeps rule 16's non-perturbation obligation a property of the call
+    /// graph.
+    ///
+    /// **Called by the whole-run host and not by the observer host.** `Simulation::run_with_source`
+    /// runs once per instance and refuses a second call, so "once" is structural there. The
+    /// observer constructs a fresh source every tick, so a call from `advance_tick_with_source`
+    /// would write the head every tick; it needs none, because rule 20.1 makes it the replay host
+    /// and rule 11.8 leaves a replay writing no transcript.
+    fn open(&mut self, _roster: &[RosterEntry<'_>]) -> io::Result<()> {
+        Ok(())
+    }
+
     fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action;
+
+    /// A failure the source reached while deciding, which ends the run.
+    ///
+    /// [`DecisionSource::decide`] returns an `Action` and cannot fail, and that is right for the
+    /// four deterministic sources: a rule-based source always has an action. A port-backed one does
+    /// not — `SPEC-MOK-007` rule 19.6 makes a failure to write the transcript fatal, and rules 12.3
+    /// and 12.4 make a mismatched or exhausted transcript fatal — so the failure is latched during
+    /// the decision and collected here, at a point where it can be returned rather than absorbed.
+    /// It is taken rather than borrowed, so that the same failure is reported once by the run and
+    /// the port stays the only party that repeats it.
+    ///
+    /// The alternative was `decide` returning `Result`, which would put a `?` on four sources that
+    /// cannot fail and would change five call sites and every test helper that decides once, for a
+    /// failure mode only the fifth source has.
+    fn failure(&mut self) -> Option<io::Error> {
+        None
+    }
 }
 
 /// Selects uniformly among the currently valid actions. It is not held to the
@@ -1383,8 +1418,19 @@ const SHARED_RULES: &str = concat!(
 /// an optimisation: the type then cannot hold a block A that differs from
 /// [`SHARED_RULES`], so rule 3.3's byte-identity across a run is a property of the type and
 /// not of a copy made correctly every time.
+///
+/// The two scalars beside the four blocks are the opportunity's identity, and they are held as
+/// fields rather than read back out of block B's and block C's text. Rule 11.3 binds a transcript
+/// record to "the tick and the acting Mokiterion", and rule 12.3 checks a record against "the
+/// opportunity the engine has reached" — a check a port makes, from the request, because the
+/// engine holds the opportunity and the port holds the record and neither holds both. The
+/// alternative was for [`ReplayPort`] to parse `identifier:` out of block B and `tick:` out of
+/// block C, which would make a change to either block's wording silently break the one check that
+/// stands between a mismatched transcript and a plausible wrong run.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DecisionRequest {
+    tick: u64,
+    actor_id: String,
     shared_rules: &'static str,
     actor: String,
     observation: String,
@@ -1406,6 +1452,22 @@ impl DecisionRequest {
             self.observation.as_str(),
             self.permitted_set.as_str(),
         ]
+    }
+
+    /// The tick this opportunity belongs to, the first half of rule 12.3's match.
+    ///
+    /// Also present inside block C as text. The duplication is the point: the block is what a
+    /// model reads and this is what a program compares, and a comparison that had to find the
+    /// figure inside prose would be a comparison held together by the prose staying put.
+    pub fn tick(&self) -> u64 {
+        self.tick
+    }
+
+    /// The acting Mokiterion's identifier, the second half of rule 12.3's match.
+    ///
+    /// Also present inside block B as text, for the reason [`DecisionRequest::tick`] gives.
+    pub fn actor_id(&self) -> &str {
+        &self.actor_id
     }
 
     /// Block A, rule 4: the shared rules, identical in every request of every run.
@@ -1437,6 +1499,8 @@ impl DecisionRequest {
     /// configuration.
     fn compose(observation: &Observation) -> Self {
         Self {
+            tick: observation.tick,
+            actor_id: observation.agent_id.clone(),
             shared_rules: SHARED_RULES,
             actor: actor_block(observation),
             observation: observation_block(observation),
@@ -1469,6 +1533,31 @@ impl DecisionRequest {
 pub trait Proposer {
     /// Proposes one action for one decision opportunity, or reports that none was obtained.
     fn propose(&mut self, request: DecisionRequest) -> Option<Action>;
+
+    /// Takes one transcript record, already authored, and does whatever the host wants done with
+    /// it.
+    ///
+    /// Rule 11.1 splits the transcript in two: **the engine authors every record and the host owns
+    /// the destination.** This is the seam. The engine formats the line — the framing, the field
+    /// set, the escaping, the version — hands it over complete with no trailing newline, and
+    /// learns nothing about where it went. A recording host appends it to the stream it opened. A
+    /// replay host discards it, because rule 11.8's "a replay writes no transcript" is a statement
+    /// about the destination and not about the authoring, and rule 12.1's "the same code path a
+    /// live run uses" is only true if the authoring happens either way.
+    ///
+    /// **This is also the port's one opportunity to stop the run**, and both hosts need it. A
+    /// recording host reports a failure to write, which rule 19.6 makes fatal: a live run whose
+    /// exchanges were spent and not recorded has produced cost and no evidence. A replay host
+    /// reports rule 12.3's mismatch and rule 12.4's exhaustion, which it detected in
+    /// [`Proposer::propose`] and could not report from there, because a proposal's absence is rule
+    /// 9.5's ordinary fallback and a mismatched transcript is not. The engine calls this once per
+    /// exchange, after the proposal and **before the proposed action is applied**, so an error here
+    /// ends the run with that opportunity unresolved rather than half-resolved.
+    ///
+    /// The engine does not interpret the error, and the error is the port's own words. Rule 19.7
+    /// is the port's to keep: no credential, and no path, because the engine resolved none and has
+    /// nothing to say about the one the host opened.
+    fn record(&mut self, record: &str) -> io::Result<()>;
 }
 
 /// Block B, rule 5: the identifier and the trait constant, and rule 5.2's nothing else.
@@ -1476,10 +1565,19 @@ pub trait Proposer {
 /// Rule 3.4 is why `waste_tolerance` is here and `health`, `satiety`, `energy` and `fear` are
 /// not: this block must not vary within a run, and a trait constant does not.
 fn actor_block(observation: &Observation) -> String {
-    format!(
-        "YOU\nidentifier: {}\nwaste_tolerance: {}\n",
-        observation.agent_id, observation.waste_tolerance
-    )
+    actor_block_of(&observation.agent_id, observation.waste_tolerance)
+}
+
+/// [`actor_block`] from the two values it reads and from nothing else.
+///
+/// Split out for the transcript's prefix head, which states blocks A and B once per Mokiterion
+/// before the run's first exchange and therefore before any observation has been composed. Rule
+/// 5.2's "nothing else" is what makes the split possible at all: a block that read a varying
+/// attribute could not be written ahead of the tick it belonged to. The two callers share this
+/// body rather than each formatting the block, so a prefix in the head and the prefix in every
+/// request for that Mokiterion cannot differ.
+fn actor_block_of(agent_id: &str, waste_tolerance: u8) -> String {
+    format!("YOU\nidentifier: {agent_id}\nwaste_tolerance: {waste_tolerance}\n")
 }
 
 /// Block C, rule 6.1's fields in rule 6.1's order.
@@ -1696,6 +1794,594 @@ fn permitted_form(action: &Action) -> String {
     }
 }
 
+// ---------------------------------------------------------------------------------------
+// The transcript, `SPEC-MOK-007` rules 11 and 12.
+//
+// Two record kinds, one per line, written by `format!` for the reason the record stream above is
+// written by `write!`: the engine's dependency table is empty and no rule permits a crate here.
+//
+// A **prefix** record states blocks A and B for one Mokiterion, once, before the run's first
+// exchange. An **exchange** record states blocks C and D, the digest of that Mokiterion's prefix,
+// and what the exchange yielded. Rule 3.4 is what makes the split sound — neither of the first two
+// blocks varies within a run for a given Mokiterion — and the arithmetic is why it was chosen.
+//
+// The figures are measured, by `a_record_carries_the_variable_part_and_the_head_carries_the_rest`
+// on a 20-tick run of twelve Mokiterions at seed 42. Block A is 5,385 bytes and a prefix record is
+// 5,620, so the head is 67,450 bytes once; an exchange record averages 996. A record carrying the
+// request "in full" would therefore average 6,616 bytes, of which 5,620 would be repetition — that
+// run's 240 exchanges would be 1.6 MB instead of the measured 306,552, and a 1,000-tick run's
+// estimated 10,954 exchanges would be an estimated 72 MB.
+//
+// Rule 11.7's own estimates are 4.7 MB for 1,000 ticks and 100 to 260 KB for 20 to 50 ticks. **The
+// split does not reach either**: 20 ticks measures 299 KB and 1,000 ticks extrapolates to an
+// estimated 11 MB, because blocks C and D are larger than the estimate assumed. That is a figure
+// rule 11.7's amendment carries, not a reason to abbreviate a transcript — rule 11.7's first
+// sentence forbids exactly that, and the split is the whole of what can be saved without dropping
+// a byte anyone recorded.
+//
+// A digest in each exchange is what keeps the prefix load-bearing rather than decorative: rule
+// 12.3's mismatch check is extended to it, so an edit to block A invalidates every transcript
+// taken before the edit, loudly, at the first exchange.
+//
+// **The digest is FNV-1a 64 and is not cryptographic**, which is stated rather than implied. Its
+// job is drift detection between a prefix and the run that replays against it, over bytes that sit
+// in the same file as the digest; an adversary who can edit the prefix can edit the digest beside
+// it, and no digest of any strength changes that. The alternatives were a crate, which
+// `SPEC-MOK-006` rule 12.4 forbids, and roughly eighty lines of hand-written SHA-256, which would
+// be a second thing to verify for no property this needs.
+//
+// **Rule 11.4's closed alphabet does not hold here and cannot.** The record stream's alphabet is
+// `A-Z a-z 0-9 _ . - + : ; >` and blocks A to D are English prose: block A alone carries spaces,
+// commas, parentheses, full stops and an em dash, and all four blocks are multi-line. Rule 11.4
+// adopts `SPEC-MOK-006`'s constraints, and `SPEC-MOK-006` rule 3.4 names this exact branch — a
+// value outside the enumeration "must either be added to that enumeration or arrive together with
+// an escaping function and its own verification". This is that function, and
+// `every_block_survives_the_escaping_unchanged`, `the_escaping_survives_the_framing_and_round_trips`
+// and `an_escape_this_module_never_writes_is_not_read_generously` are that verification.
+// The transcript is still comparable with `cmp` and still carries no floating-point value, no
+// timestamp and no path, which is the rest of rule 11.4 and the part that made it a rule.
+//
+// **What a record does not carry under this work order, and why.** Rule 11.3 asks for the response
+// as received in full and for the provider's four reported token counts. Neither is obtainable
+// here: `Proposer::propose` returns `Option<Action>`, so the engine never sees a response and is
+// never told a count, and `WO-MOK-025` has no provider, no connector and no transport to be told
+// by. So `response` is `null` and `usage` is `null` — **absent, not zero**, which is rule 11.5 and
+// which the specification's own "an exchange that yielded nothing" example writes the same way.
+// The raw response text and the four counts arrive with `WO-MOK-026`, where the port's return type
+// has to grow to carry them. This is a pre-existing tension between rule 1.1's port shape and rule
+// 11.3's field list rather than a consequence of anything decided for this work order.
+// ---------------------------------------------------------------------------------------
+
+/// The transcript's own version integer, on every record of both kinds.
+///
+/// Separate from [`RECORD_SCHEMA_VERSION`] and deliberately so: the two streams are read by
+/// different things for different reasons and neither's compatibility question is the other's. A
+/// reader that meets a version it does not know refuses rather than guessing, which is the whole
+/// purpose of putting the integer on every line instead of only in a head record — a transcript
+/// truncated at any line boundary is still self-describing.
+const TRANSCRIPT_VERSION: u32 = 1;
+
+/// FNV-1a's 64-bit offset basis and prime, from the algorithm's own definition.
+const FNV_OFFSET_BASIS: u64 = 0xcbf2_9ce4_8422_2325;
+const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+/// FNV-1a 64, continued from an existing state so that a digest over two blocks needs no
+/// concatenation of them. `wrapping_mul` is the algorithm, not an overflow accommodation.
+fn fnv1a64(state: u64, bytes: &[u8]) -> u64 {
+    let mut hash = state;
+    for byte in bytes {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash
+}
+
+/// The digest of one Mokiterion's cacheable prefix: blocks A and B, in rule 3.1's order.
+///
+/// The algorithm is named in the value rather than left to a reader of this file, so that a
+/// transcript read years from now says what produced its own digests.
+fn prefix_digest(shared_rules: &str, actor: &str) -> String {
+    let hash = fnv1a64(FNV_OFFSET_BASIS, shared_rules.as_bytes());
+    format!("fnv1a64:{:016x}", fnv1a64(hash, actor.as_bytes()))
+}
+
+/// One block, as a transcript record's string value.
+///
+/// Three characters have to be escaped for the framing to survive — the backslash, the quotation
+/// mark and the newline — and the tab, the carriage return and every remaining control character
+/// are escaped as well. Those last are not in any block today and the test beside this says so;
+/// they are handled anyway, so that this function is total over `&str` rather than total over the
+/// blocks as they happen to be worded, which is the difference between an escaping function and a
+/// transformation that works until a block gains a character.
+fn escape_transcript_text(text: &str) -> String {
+    let mut escaped = String::with_capacity(text.len() + text.len() / 16);
+    for character in text.chars() {
+        match character {
+            '\\' => escaped.push_str("\\\\"),
+            '"' => escaped.push_str("\\\""),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            '\t' => escaped.push_str("\\t"),
+            control if control.is_control() => {
+                escaped.push_str(&format!("\\u{:04x}", control as u32));
+            }
+            other => escaped.push(other),
+        }
+    }
+    escaped
+}
+
+/// [`escape_transcript_text`]'s inverse. `None` on an escape this module never writes, because a
+/// transcript it cannot read is a failure and not a line to interpret generously.
+fn unescape_transcript_text(text: &str) -> Option<String> {
+    let mut plain = String::with_capacity(text.len());
+    let mut characters = text.chars();
+    while let Some(character) = characters.next() {
+        if character != '\\' {
+            plain.push(character);
+            continue;
+        }
+        match characters.next()? {
+            '\\' => plain.push('\\'),
+            '"' => plain.push('"'),
+            'n' => plain.push('\n'),
+            'r' => plain.push('\r'),
+            't' => plain.push('\t'),
+            'u' => {
+                let digits: String = characters.by_ref().take(4).collect();
+                if digits.chars().count() != 4 {
+                    return None;
+                }
+                plain.push(char::from_u32(u32::from_str_radix(&digits, 16).ok()?)?);
+            }
+            _ => return None,
+        }
+    }
+    Some(plain)
+}
+
+/// One string field's value, unescaped, from a record this module wrote.
+///
+/// **This is a field reader and not a parser, and the distinction is load-bearing.** It finds
+/// `"<field>":"` and reads to the next unescaped quotation mark, which is exact here for one
+/// reason: [`escape_transcript_text`] leaves no unescaped quotation mark inside any value, so the
+/// needle cannot occur within one. `\"tick\":` is not `"tick":`. A record from anywhere else may
+/// well defeat this, and that is what rule 12.3's checks are for — a field this cannot read is
+/// absent, and an absent field the replay needs is a named failure rather than a default.
+fn transcript_string(line: &str, field: &str) -> Option<String> {
+    let needle = format!("\"{field}\":\"");
+    let start = line.find(&needle)? + needle.len();
+    let value = &line[start..];
+    let mut escaped = false;
+    let mut end = None;
+    for (offset, character) in value.char_indices() {
+        if escaped {
+            escaped = false;
+        } else if character == '\\' {
+            escaped = true;
+        } else if character == '"' {
+            end = Some(offset);
+            break;
+        }
+    }
+    unescape_transcript_text(&value[..end?])
+}
+
+/// One unsigned field's value. `None` when the field is absent or is not a run of digits.
+fn transcript_number(line: &str, field: &str) -> Option<u64> {
+    let needle = format!("\"{field}\":");
+    let start = line.find(&needle)? + needle.len();
+    let digits: String = line[start..]
+        .chars()
+        .take_while(|character| character.is_ascii_digit())
+        .collect();
+    digits.parse().ok()
+}
+
+/// One boolean field's value. `None` when the field is absent or is neither literal.
+fn transcript_flag(line: &str, field: &str) -> Option<bool> {
+    let needle = format!("\"{field}\":");
+    let start = line.find(&needle)? + needle.len();
+    let value = &line[start..];
+    if value.starts_with("true") {
+        Some(true)
+    } else if value.starts_with("false") {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+/// An action as a transcript record states it: the verb, and its one parameter where it has one.
+///
+/// **The parameter is called `parameter` and not `target`**, which departs from the abbreviated
+/// example under rule 11.3 and does so deliberately. Nine of the eleven verbs take a target; `eat`
+/// takes a resource identifier and `move` takes a direction, and [`Action::target`] returns `None`
+/// for both. A field named `target` would therefore be false on exactly the records where it was
+/// most likely to be read as one, and rule 11.3's own words are "the action the response was parsed
+/// into" rather than a field list.
+///
+/// The rendering is [`permitted_form`]'s, split at its one space. Block D enumerates in that
+/// grammar and rule 8.2's closed grammar is checked against it, so an action a transcript states
+/// is an action block D could have offered, spelled the way it was offered.
+fn action_parts(action: &Action) -> (&'static str, Option<String>) {
+    match action {
+        Action::Wait => ("wait", None),
+        Action::Sleep => ("sleep", None),
+        Action::Eat { food_id } => ("eat", Some(food_id.clone())),
+        Action::Move { direction } => ("move", Some(direction.to_string())),
+        Action::Attack { target } => ("attack", Some(target.clone())),
+        Action::Threaten { target } => ("threaten", Some(target.clone())),
+        Action::Fight { target } => ("fight", Some(target.clone())),
+        Action::Retreat { target } => ("retreat", Some(target.clone())),
+        Action::Surrender { target } => ("surrender", Some(target.clone())),
+        Action::Approach { target } => ("approach", Some(target.clone())),
+        Action::Avoid { target } => ("avoid", Some(target.clone())),
+    }
+}
+
+/// [`action_parts`]'s inverse, and `None` for anything the grammar does not admit — an unknown
+/// verb, a verb given a parameter it does not take, a verb missing the one it does.
+///
+/// `move`'s direction is resolved by rendering each of the four rather than by a table of its own,
+/// so the two directions of this conversion cannot disagree about how a direction is spelled.
+fn action_from_parts(verb: &str, parameter: Option<&str>) -> Option<Action> {
+    let named = |target: Option<&str>| target.map(str::to_string);
+    match (verb, parameter) {
+        ("wait", None) => Some(Action::Wait),
+        ("sleep", None) => Some(Action::Sleep),
+        ("eat", Some(food_id)) => Some(Action::Eat {
+            food_id: food_id.to_string(),
+        }),
+        ("move", Some(name)) => Direction::ORDERED
+            .into_iter()
+            .find(|direction| direction.to_string() == name)
+            .map(|direction| Action::Move { direction }),
+        ("attack", target) => named(target).map(|target| Action::Attack { target }),
+        ("threaten", target) => named(target).map(|target| Action::Threaten { target }),
+        ("fight", target) => named(target).map(|target| Action::Fight { target }),
+        ("retreat", target) => named(target).map(|target| Action::Retreat { target }),
+        ("surrender", target) => named(target).map(|target| Action::Surrender { target }),
+        ("approach", target) => named(target).map(|target| Action::Approach { target }),
+        ("avoid", target) => named(target).map(|target| Action::Avoid { target }),
+        _ => None,
+    }
+}
+
+/// One Mokiterion's invariant identity, as the transcript's prefix head needs it.
+///
+/// Two values and nothing else, which is exactly rule 5.2's content for block B. It is
+/// deliberately not a `&Mokiterion`: a decision source that held one could read a position, a
+/// health, an energy and a fear, and `ADR-MOK-001`'s boundary and `SPEC-MOK-002` rule 6 both refuse
+/// that. What a source receives here it can compose a prefix from and can compose nothing else
+/// from.
+struct RosterEntry<'a> {
+    id: &'a str,
+    waste_tolerance: u8,
+}
+
+/// One prefix record: blocks A and B for one Mokiterion, with their digest.
+///
+/// `blocks` is an array of the two rather than two named fields, because rule 3.6 fixes the order
+/// in one place and an array carries it. A reader that wants the prefix as sent concatenates the
+/// array; there is no second statement of which comes first.
+fn prefix_record(entry: &RosterEntry<'_>) -> String {
+    let actor = actor_block_of(entry.id, entry.waste_tolerance);
+    format!(
+        "{{\"transcript\":\"prefix\",\"version\":{TRANSCRIPT_VERSION},\"actor\":\"{}\",\
+         \"digest\":\"{}\",\"blocks\":[\"{}\",\"{}\"]}}",
+        entry.id,
+        prefix_digest(SHARED_RULES, &actor),
+        escape_transcript_text(SHARED_RULES),
+        escape_transcript_text(&actor),
+    )
+}
+
+/// One exchange record: the opportunity, the prefix it was sent against, blocks C and D, and what
+/// came back.
+///
+/// `prefix` repeats `actor` on purpose. The two must be equal, so the replay compares them, and a
+/// redundant field that is checked is a check rather than a hazard.
+///
+/// `fallback` is the field rule 12.7 replays from, and it is why the proposal's absence is recorded
+/// as its own fact instead of being inferred from the action. `wait` is a proposal a source may
+/// legitimately make, so a record showing `wait` with no flag would be indistinguishable from an
+/// exchange that yielded nothing — and the two must replay differently, because one moves
+/// `REQ-MOK-074`'s count and the other does not.
+fn exchange_record(request: &DecisionRequest, proposal: Option<&Action>) -> String {
+    let [shared_rules, actor, observation, permitted_set] = request.blocks();
+    let (verb, parameter) = match proposal {
+        Some(action) => action_parts(action),
+        None => action_parts(&Action::Wait),
+    };
+
+    let mut record = format!(
+        "{{\"transcript\":\"exchange\",\"version\":{TRANSCRIPT_VERSION},\"tick\":{},\
+         \"actor\":\"{}\",\"prefix\":\"{}\",\"prefix_digest\":\"{}\",\"observation\":\"{}\",\
+         \"permitted\":\"{}\",\"response\":null,\"usage\":null,\"action\":{{\"verb\":\"{verb}\"",
+        request.tick(),
+        request.actor_id(),
+        request.actor_id(),
+        prefix_digest(shared_rules, actor),
+        escape_transcript_text(observation),
+        escape_transcript_text(permitted_set),
+    );
+    if let Some(parameter) = parameter {
+        record.push_str(&format!(",\"parameter\":\"{parameter}\""));
+    }
+    record.push_str(&format!("}},\"fallback\":{}}}", proposal.is_none()));
+    record
+}
+
+/// Distinguishes a transcript failure from a record-sink failure and from the engine's own,
+/// which rule 19.4 requires of the diagnostic and `sink_error` is the precedent for.
+///
+/// The form carries that the transcript was what failed and the port's own reason, and it carries
+/// no path: rule 19.7, and the engine has no path to carry.
+fn transcript_error(error: io::Error) -> io::Error {
+    io::Error::new(error.kind(), format!("transcript: {error}"))
+}
+
+/// A [`Proposer`] that answers from a transcript instead of from a model, `SPEC-MOK-007` rule 12.
+///
+/// **This is the engine library's own item and rule 12.1.1 says why**: both hosts replay, this is
+/// the one place where they do the same work, and a reader written once per host would be two
+/// copies to keep in agreement. Each host supplies only the open reader — it resolves the path, it
+/// opens the file, it owns the handle for the whole run, and this type performs no filesystem
+/// operation of its own, which is rule 20.4 and what keeps `SPEC-MOK-001`'s "the library target
+/// interprets no path at all" true.
+///
+/// It reaches nothing. Rule 12.2: no provider call, no socket, no spawned connector, no credential
+/// read, whether or not one is present in the environment. `R: BufRead` is the whole of its
+/// contact with the outside world, and a `&[u8]` satisfies it, which is what the tests use.
+///
+/// **The cursor is why rule 20.4.1 exists.** A port rebuilt each tick would restart at the first
+/// record and replay tick 1 forever while reporting no drift, so the host builds this once and
+/// lends it per tick.
+///
+/// A failure — rule 12.3's mismatch or rule 12.4's exhaustion — is latched and permanent. Once one
+/// has been reached this port proposes nothing further and reports the same reason for every
+/// subsequent exchange, which is rule 12.3's "produces no further ticks" as a property of the port
+/// rather than as an obligation on a host to notice.
+pub struct ReplayPort<R: BufRead> {
+    reader: R,
+    /// Every prefix digest the head declared, by actor identifier, in the head's order.
+    prefixes: Vec<(String, String)>,
+    /// The head is read once, at the first proposal, because there is no other moment the engine
+    /// gives a port.
+    head_read: bool,
+    /// Reading the head consumes one line too many. That line is the first exchange and waits here.
+    pending: Option<String>,
+    /// Rule 12.3's and 12.4's failure, latched.
+    failure: Option<String>,
+    /// Exchanges served, so that rule 12.4's diagnosis can say how far the transcript went.
+    served: u64,
+}
+
+impl<R: BufRead> ReplayPort<R> {
+    /// Wraps an already-open reader. Nothing is read here: a run refused before its first tick
+    /// must not have consumed a byte, and rule 20.8's refusal happens after construction.
+    pub fn new(reader: R) -> Self {
+        Self {
+            reader,
+            prefixes: Vec::new(),
+            head_read: false,
+            pending: None,
+            failure: None,
+            served: 0,
+        }
+    }
+
+    /// The next line that is not blank, or `None` at the transcript's end.
+    ///
+    /// The trailing newline is trimmed in both spellings, so a transcript checked out with `CRLF`
+    /// endings replays identically to one checked out with `LF`. Nothing else about a line is
+    /// normalized: a record's own bytes are what rule 12.3 compares.
+    fn next_content_line(&mut self) -> io::Result<Option<String>> {
+        loop {
+            let mut line = String::new();
+            if self.reader.read_line(&mut line)? == 0 {
+                return Ok(None);
+            }
+            let line = line.trim_end_matches(['\n', '\r']).to_string();
+            if !line.trim().is_empty() {
+                return Ok(Some(line));
+            }
+        }
+    }
+
+    /// Reads the prefix head, stopping at the first line that is not a prefix record.
+    ///
+    /// Returns that line, which is the first exchange, or `None` for a transcript that held only a
+    /// head. A transcript with no head at all is not an error here — rule 12.3's digest comparison
+    /// is what refuses it, and it refuses it naming the prefix the run needed.
+    fn read_head(&mut self) -> io::Result<Option<String>> {
+        loop {
+            let Some(line) = self.next_content_line()? else {
+                return Ok(None);
+            };
+            if transcript_string(&line, "transcript").as_deref() != Some("prefix") {
+                return Ok(Some(line));
+            }
+            let actor = transcript_string(&line, "actor");
+            let digest = transcript_string(&line, "digest");
+            if let (Some(actor), Some(digest)) = (actor, digest) {
+                self.prefixes.push((actor, digest));
+            }
+        }
+    }
+
+    /// The next exchange record, reading the head first if it has not been read.
+    fn next_exchange(&mut self) -> io::Result<Option<String>> {
+        if !self.head_read {
+            self.head_read = true;
+            self.pending = self.read_head()?;
+        }
+        match self.pending.take() {
+            Some(record) => Ok(Some(record)),
+            None => self.next_content_line(),
+        }
+    }
+
+    /// Latches a failure and returns the fallback-shaped `None` the engine expects from
+    /// [`Proposer::propose`]. The reason reaches the run through [`Proposer::record`].
+    fn fail(&mut self, reason: String) -> Option<Action> {
+        if self.failure.is_none() {
+            self.failure = Some(reason);
+        }
+        None
+    }
+
+    /// Rule 12.3's check, in full: the tick, the acting Mokiterion, the prefix the record names,
+    /// and the digest of the prefix the engine is actually sending.
+    ///
+    /// The digest is the half no rule spelled out, and it is the half that catches an edit to
+    /// block A. Without it a transcript recorded under different shared rules would replay
+    /// silently, every tick and actor matching, against prompts nobody ever sent.
+    fn mismatch(&self, record: &str, request: &DecisionRequest) -> Option<String> {
+        let opportunity = format!("tick {} actor {}", request.tick(), request.actor_id());
+
+        let Some(version) = transcript_number(record, "version") else {
+            return Some(format!("{opportunity}: record states no version"));
+        };
+        if version != u64::from(TRANSCRIPT_VERSION) {
+            return Some(format!(
+                "{opportunity}: record is transcript version {version}, this engine reads \
+                 {TRANSCRIPT_VERSION}"
+            ));
+        }
+
+        match transcript_number(record, "tick") {
+            Some(tick) if tick == request.tick() => {}
+            Some(tick) => {
+                return Some(format!("{opportunity}: record is for tick {tick}"));
+            }
+            None => return Some(format!("{opportunity}: record states no tick")),
+        }
+
+        match transcript_string(record, "actor").as_deref() {
+            Some(actor) if actor == request.actor_id() => {}
+            Some(actor) => {
+                return Some(format!("{opportunity}: record is for actor {actor}"));
+            }
+            None => return Some(format!("{opportunity}: record states no actor")),
+        }
+
+        match transcript_string(record, "prefix").as_deref() {
+            Some(prefix) if prefix == request.actor_id() => {}
+            Some(prefix) => {
+                return Some(format!(
+                    "{opportunity}: record names prefix {prefix} against actor {}",
+                    request.actor_id()
+                ));
+            }
+            None => return Some(format!("{opportunity}: record states no prefix")),
+        }
+
+        let [shared_rules, actor, ..] = request.blocks();
+        let expected = prefix_digest(shared_rules, actor);
+        match transcript_string(record, "prefix_digest") {
+            Some(digest) if digest == expected => {}
+            Some(digest) => {
+                return Some(format!(
+                    "{opportunity}: record was recorded against prefix {digest}, this run sends \
+                     {expected}. The shared rules or the actor block changed since the recording, \
+                     so the transcript answers prompts this run does not ask"
+                ));
+            }
+            None => return Some(format!("{opportunity}: record states no prefix digest")),
+        }
+
+        let declared = self
+            .prefixes
+            .iter()
+            .find(|(actor, _)| actor == request.actor_id());
+        match declared {
+            Some((_, digest)) if *digest == expected => {}
+            Some((_, digest)) => {
+                return Some(format!(
+                    "{opportunity}: the head declares prefix {digest} for this actor and the \
+                     record was taken against {expected}"
+                ));
+            }
+            None => {
+                return Some(format!(
+                    "{opportunity}: the transcript's head declares no prefix for this actor"
+                ));
+            }
+        }
+
+        None
+    }
+}
+
+impl<R: BufRead> Proposer for ReplayPort<R> {
+    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+        if self.failure.is_some() {
+            return None;
+        }
+
+        let record = match self.next_exchange() {
+            Ok(Some(record)) => record,
+            // Rule 12.4: the transcript ended before the run did. The opportunity is named, the
+            // run does not shorten, rule 9.5's fallback is not applied and no rule-based proposal
+            // is substituted — every one of those would produce a plausible wrong run.
+            Ok(None) => {
+                return self.fail(format!(
+                    "the transcript ended after {} exchange(s) and cannot satisfy tick {} actor \
+                     {}. A replay does not shorten the run and does not fall back",
+                    self.served,
+                    request.tick(),
+                    request.actor_id()
+                ));
+            }
+            Err(error) => {
+                return self.fail(format!("cannot read the transcript: {error}"));
+            }
+        };
+
+        if let Some(reason) = self.mismatch(&record, &request) {
+            return self.fail(reason);
+        }
+        self.served += 1;
+
+        // Rule 12.7: an exchange that yielded nothing in the recorded run yields nothing here, so
+        // the engine takes rule 9.5's fallback again and the count moves again. A replay reproduces
+        // the run that happened, contamination included.
+        if transcript_flag(&record, "fallback") != Some(false) {
+            return None;
+        }
+
+        let verb = transcript_string(&record, "verb");
+        let parameter = transcript_string(&record, "parameter");
+        match verb
+            .as_deref()
+            .and_then(|verb| action_from_parts(verb, parameter.as_deref()))
+        {
+            Some(action) => Some(action),
+            None => self.fail(format!(
+                "tick {} actor {}: the record states no action this engine's grammar admits",
+                request.tick(),
+                request.actor_id()
+            )),
+        }
+    }
+
+    /// Rule 11.8: a replay writes no transcript. It has one; it is reading it.
+    ///
+    /// The engine authors the record anyway, because rule 12.1 requires the same code path, and it
+    /// is discarded here. This is also where a latched failure reaches the run, for the reason
+    /// [`Proposer::record`] gives: a mismatch cannot be reported from `propose`, whose `None` means
+    /// rule 9.5's ordinary fallback. The failure is not cleared, so a host that ignores the error
+    /// and advances again meets it again on the first exchange of the next tick.
+    fn record(&mut self, _record: &str) -> io::Result<()> {
+        match &self.failure {
+            Some(reason) => Err(io::Error::new(io::ErrorKind::InvalidData, reason.clone())),
+            None => Ok(()),
+        }
+    }
+}
+
 /// The private adapter of `SPEC-MOK-007` rule 20.6: it implements the engine's own decision-source
 /// abstraction in terms of the public port.
 ///
@@ -1709,13 +2395,53 @@ fn permitted_form(action: &Action) -> String {
 /// shift every subsequent draw in the run and the four existing sources would then behave
 /// differently at the same seed, which is exactly what `REQ-MOK-068`'s byte-identity comparison
 /// exists to catch.
+///
+/// It also **authors every transcript record**, which is rule 11.1's other half. The port owns the
+/// destination and this owns the content: the framing, the field set, the escaping and the version
+/// are all decided here, once, for both hosts and for a live run and a replay alike. That is what
+/// makes rule 12.6's byte-identity structural — a replay's records are authored by the same lines
+/// that authored the recording's, so there is no second writer to hold in agreement with the first.
 struct PortDecisionSource<'port> {
     port: &'port mut dyn Proposer,
+    /// The port's failure, latched from the decision that met it. See [`DecisionSource::failure`].
+    failure: Option<io::Error>,
+}
+
+impl<'port> PortDecisionSource<'port> {
+    fn new(port: &'port mut dyn Proposer) -> Self {
+        Self {
+            port,
+            failure: None,
+        }
+    }
+
+    /// Latches the first failure and keeps it. A later one is dropped: the run ends on the first,
+    /// so a second is a consequence of the first rather than news, and reporting the later one
+    /// would name the wrong opportunity.
+    fn latch(&mut self, error: io::Error) {
+        if self.failure.is_none() {
+            self.failure = Some(error);
+        }
+    }
 }
 
 impl DecisionSource for PortDecisionSource<'_> {
     fn name(&self) -> &str {
         LLM_SOURCE_NAME
+    }
+
+    /// Rule 11.1's prefix head: blocks A and B for every Mokiterion the run created, in ascending
+    /// identifier order, before the first exchange.
+    ///
+    /// Every Mokiterion gets one whether or not it ever decides. A run can kill a Mokiterion before
+    /// it acts, and a head that only declared the ones that acted would make the transcript's own
+    /// contents depend on the run's outcome — so a reader could not tell a Mokiterion that never
+    /// decided from a prefix somebody dropped.
+    fn open(&mut self, roster: &[RosterEntry<'_>]) -> io::Result<()> {
+        for entry in roster {
+            self.port.record(&prefix_record(entry))?;
+        }
+        Ok(())
     }
 
     /// Rule 9.5's fallback: where no proposal was obtained the source proposes `wait`.
@@ -1727,11 +2453,31 @@ impl DecisionSource for PortDecisionSource<'_> {
     /// nothing reads would be a figure no one had checked.
     ///
     /// A proposal the engine then rejects is not this case and is not a fallback, rule 9.6.
+    ///
+    /// One exchange, one record, in that order and unconditionally: rule 11.2's "one line per
+    /// exchange" includes the exchange that yielded nothing, which the specification's own second
+    /// example writes out. The record is handed over **before the proposal is applied**, so a
+    /// transcript failure or a replay mismatch stops the run at an opportunity that is recorded and
+    /// unresolved rather than applied and unrecorded.
+    ///
+    /// The request is cloned because rule 1.1 hands it to the port by value while the record is
+    /// authored from it. The clone copies three owned strings; block A is a `&'static str` and is
+    /// not copied, which is one of the reasons [`DecisionRequest`] holds it as one.
     fn decide(&mut self, observation: &Observation, _entropy: &mut DecisionEntropy<'_>) -> Action {
         debug_assert!(observation.is_consistent());
-        self.port
-            .propose(DecisionRequest::compose(observation))
-            .unwrap_or(Action::Wait)
+        let request = DecisionRequest::compose(observation);
+        let proposal = self.port.propose(request.clone());
+        if let Err(error) = self
+            .port
+            .record(&exchange_record(&request, proposal.as_ref()))
+        {
+            self.latch(error);
+        }
+        proposal.unwrap_or(Action::Wait)
+    }
+
+    fn failure(&mut self) -> Option<io::Error> {
+        self.failure.take()
     }
 }
 
@@ -2601,7 +3347,7 @@ impl Simulation {
             // error. `port` is dropped there, which is that rule and not a leak.
             Policy::Llm => match port {
                 Some(port) => {
-                    let mut source = PortDecisionSource { port };
+                    let mut source = PortDecisionSource::new(port);
                     self.run_with_source(&mut sinks, &mut source)
                 }
                 None => Err(io::Error::new(
@@ -2622,6 +3368,30 @@ impl Simulation {
                 io::ErrorKind::InvalidInput,
                 "a simulation instance can only be run once",
             ));
+        }
+
+        // `SPEC-MOK-007` rule 11.1's prefix head, before the first exchange and therefore before
+        // the first tick. It is written through the source and reaches only whatever the host
+        // connected: it touches neither stream below, so a run's text bytes and record bytes are
+        // the same with a transcript and without one. The four deterministic sources take
+        // `DecisionSource::open`'s default and this loop hands them a roster they ignore.
+        //
+        // The borrow is scoped, because the roster borrows the agents and everything after this
+        // mutates them.
+        {
+            let mut roster: Vec<RosterEntry<'_>> = self
+                .agents
+                .iter()
+                .map(|agent| RosterEntry {
+                    id: &agent.id,
+                    waste_tolerance: agent.waste_tolerance,
+                })
+                .collect();
+            // Imposed here rather than inherited, for the reason `write_run_record` gives about
+            // rule 8.4's agent list: an ordering that came from a collection's iteration order is a
+            // determinism defect waiting to manifest, and the head's order is part of the bytes.
+            roster.sort_by(|left, right| left.id.cmp(right.id));
+            decision_source.open(&roster).map_err(transcript_error)?;
         }
 
         // Rule 5.1: the header is first in the stream, before the first tick and before any
@@ -2724,7 +3494,7 @@ impl Simulation {
             // report.
             Policy::Llm => match port {
                 Some(port) => {
-                    let mut source = PortDecisionSource { port };
+                    let mut source = PortDecisionSource::new(port);
                     self.advance_tick_with_source(&mut source)
                 }
                 None => Err(MISSING_DECISION_PORT.to_string()),
@@ -2752,7 +3522,9 @@ impl Simulation {
                 finished: reason.is_some(),
                 reason,
             }),
-            // `io::sink` cannot fail, so a step's only error is the engine's own.
+            // `io::sink` cannot fail, so a step's error is the engine's own or the port's:
+            // `SPEC-MOK-007` rules 12.3 and 12.4 reach here through `DecisionSource::failure`, and
+            // rule 19.4 requires the message to name the opportunity, which the port's words do.
             Err(error) => Err(error.to_string()),
         }
     }
@@ -2982,6 +3754,21 @@ impl Simulation {
                 let mut entropy = DecisionEntropy::new(&mut self.entropy);
                 decision_source.decide(&observation, &mut entropy)
             };
+            // `SPEC-MOK-007` rules 12.3, 12.4 and 19.6, collected before the proposal is applied.
+            // A replay that met a mismatched or exhausted transcript, and a live run that could not
+            // write one, both end here: the proposal above is discarded, no action is applied for
+            // this opportunity, no further opportunity is reached, and rule 12.3's "produces no
+            // further ticks" therefore holds for the tick in progress as well as for the next.
+            // The four deterministic sources take the default and this is `None` for every one of
+            // them, so no run that existed before the port does can reach it.
+            //
+            // Wrapped like `open`'s and on `sink_error`'s precedent, so that a reader can tell a
+            // transcript failure from the engine's own `SPEC-MOK-001` rule 15 placement failure.
+            // The port's own words survive the wrap, which is what leaves rule 19.4's naming of the
+            // opportunity and the mismatch intact.
+            if let Some(error) = decision_source.failure() {
+                return Err(transcript_error(error));
+            }
             let result = self.apply_action(sinks, agent_index, &proposal)?;
             self.decisions.push(DecisionSnapshot {
                 agent_id: self.agents[agent_index].id.clone(),
@@ -9658,10 +10445,7 @@ mod tests {
             // Asked of the source itself like the other four, through a port that is never
             // consulted: `name` does not reach it, and a source constructed only to be named is
             // the closest this enumeration can come to the four above.
-            PortDecisionSource {
-                port: &mut ForbiddenPort,
-            }
-            .name(),
+            PortDecisionSource::new(&mut ForbiddenPort).name(),
         ] {
             member(&mut evidence, "source", source);
         }
@@ -9737,6 +10521,14 @@ mod tests {
     struct ScriptedPort {
         answers: Vec<Option<Action>>,
         seen: Vec<DecisionRequest>,
+        /// Every record the engine authored, in the order it authored them. This is the transcript
+        /// a recording host would have written, held in memory: rule 11.1 puts the destination in
+        /// the host's hands and a `Vec<String>` is as legitimate a destination as a file, which is
+        /// what lets the whole of rule 11 be exercised without a filesystem operation.
+        written: Vec<String>,
+        /// The record number, counting from one, at which `record` reports a write failure. Rule
+        /// 19.6's path: a run whose exchanges were spent and not recorded ends with an error.
+        fail_at: Option<usize>,
     }
 
     impl ScriptedPort {
@@ -9748,8 +10540,39 @@ mod tests {
         fn answering(answers: Vec<Option<Action>>) -> Self {
             Self {
                 answers,
-                seen: Vec::new(),
+                ..Self::default()
             }
+        }
+
+        /// A port whose `record` fails at the given record number, counting from one.
+        fn failing_to_record_at(record_number: usize) -> Self {
+            Self {
+                fail_at: Some(record_number),
+                ..Self::default()
+            }
+        }
+
+        /// The transcript as a stream: one record per line, with a trailing newline, which is the
+        /// framing rule 11.2 fixes and the one [`ReplayPort`] reads.
+        fn transcript(&self) -> String {
+            self.written
+                .iter()
+                .map(|record| format!("{record}\n"))
+                .collect()
+        }
+
+        fn exchanges(&self) -> Vec<&String> {
+            self.written
+                .iter()
+                .filter(|record| record.contains("\"transcript\":\"exchange\""))
+                .collect()
+        }
+
+        fn prefixes(&self) -> Vec<&String> {
+            self.written
+                .iter()
+                .filter(|record| record.contains("\"transcript\":\"prefix\""))
+                .collect()
         }
     }
 
@@ -9763,6 +10586,14 @@ mod tests {
             self.seen.push(request);
             answer
         }
+
+        fn record(&mut self, record: &str) -> io::Result<()> {
+            self.written.push(record.to_string());
+            if self.fail_at == Some(self.written.len()) {
+                return Err(io::Error::other("the destination refused the record"));
+            }
+            Ok(())
+        }
     }
 
     /// A port that must never be consulted. Rule 20.9's test needs one: a port that is *ignored*
@@ -9775,6 +10606,15 @@ mod tests {
             panic!(
                 "rule 20.9: a port supplied under another source must be ignored, not consulted"
             );
+        }
+
+        /// Panics for the same reason `propose` does, and covers the half rule 20.9 would
+        /// otherwise leave open: an ignored port must receive no *record* either. A source that
+        /// wrote the prefix head before checking whose port it held would have written a
+        /// transcript for a run that never consults one, and only a panic here can tell that
+        /// apart from silence.
+        fn record(&mut self, _record: &str) -> io::Result<()> {
+            panic!("rule 20.9: a port supplied under another source must receive no record");
         }
     }
 
@@ -10186,7 +11026,7 @@ mod tests {
         let observation = simulation.observation(0);
 
         let mut port = ScriptedPort::answering(vec![Some(Action::Sleep)]);
-        let mut source = PortDecisionSource { port: &mut port };
+        let mut source = PortDecisionSource::new(&mut port);
         let mut stream = simulation.entropy;
         let before = stream;
         let mut entropy = DecisionEntropy::new(&mut stream);
@@ -10198,7 +11038,7 @@ mod tests {
         // And the same on the fallback path, which is the branch a later change is most likely
         // to reach for a number.
         let mut port = ScriptedPort::silent();
-        let mut source = PortDecisionSource { port: &mut port };
+        let mut source = PortDecisionSource::new(&mut port);
         let mut stream = simulation.entropy;
         let before = stream;
         let mut entropy = DecisionEntropy::new(&mut stream);
@@ -10420,6 +11260,1001 @@ mod tests {
         assert!(
             records.contains("\"source\":\"llm\""),
             "result.source does not carry the new member"
+        );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007` rules 11 and 12: the transcript the engine authors, and the replay that
+    // reads one back.
+    //
+    // Every transcript here is a `String` and every replay reads a `&[u8]`. No test below opens
+    // a file, resolves a path or names a provider, so rule 12.2's "no provider call, no socket,
+    // no spawned connector, no credential read" is a property of these tests as well as of the
+    // product, and `WO-MOK-025`'s *Out of scope* holds over the suite.
+    // -----------------------------------------------------------------------------------
+
+    /// A recorded run: the port that kept its transcript, and the two streams it produced.
+    ///
+    /// The port is moved out after the run rather than inspected during it, which is the only
+    /// arrangement rule 20.4 admits: the host owns the port for the whole run and the engine
+    /// borrows it, so nothing can read the transcript while it is being written.
+    struct Recording {
+        port: ScriptedPort,
+        text: Vec<u8>,
+        records: Vec<u8>,
+    }
+
+    /// One run of the model-backed source against `script`, with both streams and the transcript.
+    ///
+    /// `trace_actions` is on for every recording here, because rule 12.6 claims byte-identity for
+    /// the matched configuration *including* the tracing selection, and the traced stream is the
+    /// one that states each applied action — so a replay that produced a different action fails on
+    /// the bytes rather than on a summary that happened to agree.
+    fn record_a_run(seed: u64, tick_limit: u64, script: Vec<Option<Action>>) -> Recording {
+        let mut port = ScriptedPort::answering(script);
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        Simulation::new(llm_config(seed, tick_limit, true))
+            .unwrap()
+            .run_recording(&mut text, Some(&mut records), Some(&mut port))
+            .expect("a recorded run completes");
+        Recording {
+            port,
+            text,
+            records,
+        }
+    }
+
+    /// The same configuration, decided from `transcript` instead of from a script.
+    fn replay(seed: u64, tick_limit: u64, transcript: &str) -> io::Result<(Vec<u8>, Vec<u8>)> {
+        let mut port = ReplayPort::new(transcript.as_bytes());
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        Simulation::new(llm_config(seed, tick_limit, true))
+            .unwrap()
+            .run_recording(&mut text, Some(&mut records), Some(&mut port))?;
+        Ok((text, records))
+    }
+
+    /// A script that reaches every shape a record can carry: both parameterless verbs, all four
+    /// directions, a resource parameter, a target parameter, and rule 9.5's no-proposal case.
+    ///
+    /// Cycled rather than listed, so a run of any length is covered and the script never runs out
+    /// where a case still wants a proposal. Ten entries against twelve Mokiterions, so the phase
+    /// shifts each tick and no Mokiterion is handed the same verb every time.
+    fn varied_script(length: usize) -> Vec<Option<Action>> {
+        let cycle = [
+            Some(Action::Sleep),
+            Some(Action::Move {
+                direction: Direction::North,
+            }),
+            None,
+            Some(Action::Wait),
+            Some(Action::Move {
+                direction: Direction::East,
+            }),
+            Some(Action::Eat {
+                food_id: "F0001".to_string(),
+            }),
+            Some(Action::Move {
+                direction: Direction::South,
+            }),
+            None,
+            Some(Action::Move {
+                direction: Direction::West,
+            }),
+            Some(Action::Attack {
+                target: "M02".to_string(),
+            }),
+        ];
+        (0..length)
+            .map(|index| cycle[index % cycle.len()].clone())
+            .collect()
+    }
+
+    /// The transcript with one record edited, by line index.
+    ///
+    /// By index and not by search: the two record kinds share field names on purpose, so a
+    /// replacement over the whole transcript would edit the head as well when the case is about an
+    /// exchange, and the case would then pass for the wrong reason.
+    fn with_line_edited(
+        transcript: &str,
+        line_index: usize,
+        edit: impl Fn(&str) -> String,
+    ) -> String {
+        transcript
+            .lines()
+            .enumerate()
+            .map(|(index, line)| {
+                if index == line_index {
+                    format!("{}\n", edit(line))
+                } else {
+                    format!("{line}\n")
+                }
+            })
+            .collect()
+    }
+
+    /// One rule 12.3 case: what a case edits in the first exchange, and what the failure must say.
+    ///
+    /// A named struct rather than a tuple, because a three-element tuple of a name, a closure and a
+    /// message reads identically whichever way round the two strings go.
+    struct MismatchCase<'case> {
+        name: &'case str,
+        edit: &'case dyn Fn(&str) -> String,
+        expected: &'case str,
+    }
+
+    /// A `BufRead` that counts what was taken from it.
+    ///
+    /// It exists so that "reads nothing" can be a measurement rather than a reading of the code,
+    /// and it doubles as the demonstration that `R: BufRead` is the whole of the replay port's
+    /// contact with the outside world: this type performs no filesystem operation either.
+    struct CountingReader<'bytes> {
+        inner: io::Cursor<&'bytes [u8]>,
+        reads: usize,
+    }
+
+    impl<'bytes> CountingReader<'bytes> {
+        fn new(bytes: &'bytes [u8]) -> Self {
+            Self {
+                inner: io::Cursor::new(bytes),
+                reads: 0,
+            }
+        }
+    }
+
+    impl io::Read for CountingReader<'_> {
+        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            self.reads += 1;
+            self.inner.read(buffer)
+        }
+    }
+
+    impl BufRead for CountingReader<'_> {
+        fn fill_buf(&mut self) -> io::Result<&[u8]> {
+            self.reads += 1;
+            self.inner.fill_buf()
+        }
+
+        fn consume(&mut self, amount: usize) {
+            self.inner.consume(amount);
+        }
+    }
+
+    /// The escaping round trip, and the framing property that makes the record readable at all.
+    #[test]
+    fn the_escaping_survives_the_framing_and_round_trips() {
+        for text in [
+            "",
+            "plain",
+            "a backslash \\ and a quotation mark \"",
+            "a newline\nand a tab\tand a carriage return\r",
+            "a bell \u{0007} and an escape \u{001b}",
+            "\\\"\\n",
+            "an em dash — and a full stop.",
+        ] {
+            let escaped = escape_transcript_text(text);
+            assert_eq!(
+                unescape_transcript_text(&escaped).as_deref(),
+                Some(text),
+                "{text:?} did not round trip through {escaped:?}"
+            );
+
+            // One record is one line, rule 11.2, so nothing that ends a line survives escaping.
+            assert!(!escaped.contains('\n'), "{escaped:?}");
+            assert!(!escaped.contains('\r'), "{escaped:?}");
+            assert!(!escaped.contains('\t'), "{escaped:?}");
+            // And every quotation mark is escaped, which is what makes the field reader exact.
+            let mut previous = None;
+            for character in escaped.chars() {
+                if character == '"' {
+                    assert_eq!(previous, Some('\\'), "unescaped quote in {escaped:?}");
+                }
+                previous = Some(character);
+            }
+        }
+    }
+
+    /// Rule 11.4's closed-alphabet clause, measured over the blocks as they are actually worded.
+    ///
+    /// This is the test the escaping function arrives with, which is `SPEC-MOK-006` rule 3.4's own
+    /// branch for a value that cannot be brought onto the enumerated alphabet: block A carries
+    /// spaces, commas, parentheses, full stops and an em dash, and all four blocks are multi-line,
+    /// so the alphabet does not hold and cannot. What holds instead is stated here — the four
+    /// blocks pass through the escaping unchanged in meaning and unchanged in framing.
+    #[test]
+    fn every_block_survives_the_escaping_unchanged() {
+        let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        let request = DecisionRequest::compose(&simulation.observation(0));
+
+        for block in request.blocks() {
+            let escaped = escape_transcript_text(block);
+            assert_eq!(unescape_transcript_text(&escaped).as_deref(), Some(block));
+            assert_eq!(escaped.lines().count(), 1);
+            assert!(!escaped.contains('"'), "a block carried a quotation mark");
+
+            // The `\u` branch is unreached by the blocks as worded today, and this is the
+            // assertion that says so. It is handled anyway, so that the function is total over
+            // `&str` rather than total over the wording — the difference between an escaping
+            // function and a transformation that works until a block gains a character.
+            for character in block.chars() {
+                assert!(
+                    !character.is_control() || character == '\n',
+                    "block carries the control character {:?}",
+                    character
+                );
+            }
+        }
+    }
+
+    /// An escape this module never writes is a failure rather than a line to interpret.
+    #[test]
+    fn an_escape_this_module_never_writes_is_not_read_generously() {
+        for broken in ["\\q", "\\", "ends with \\", "\\u00", "\\uZZZZ", "\\u{0041}"] {
+            assert_eq!(
+                unescape_transcript_text(broken),
+                None,
+                "{broken:?} was read rather than refused"
+            );
+        }
+    }
+
+    /// The field reader's one load-bearing property: a field name inside a value is not a field.
+    ///
+    /// `\"tick\":` is not `"tick":`, and the reason it can never be is that
+    /// [`escape_transcript_text`] leaves no unescaped quotation mark inside any value. A record
+    /// this cannot read yields `None`, and rule 12.3 turns that into a named failure rather than a
+    /// default — which is why the planted values below must not be found rather than merely not
+    /// preferred.
+    #[test]
+    fn a_field_name_inside_a_value_is_not_a_field() {
+        let planted = format!(
+            "{{\"transcript\":\"exchange\",\"version\":1,\"tick\":7,\"observation\":\"{}\"}}",
+            escape_transcript_text("\"tick\":999 \"actor\":\"M99\" \"fallback\":true")
+        );
+        assert_eq!(transcript_number(&planted, "tick"), Some(7));
+        assert_eq!(transcript_string(&planted, "actor"), None);
+        assert_eq!(transcript_flag(&planted, "fallback"), None);
+        assert_eq!(
+            transcript_string(&planted, "observation").as_deref(),
+            Some("\"tick\":999 \"actor\":\"M99\" \"fallback\":true")
+        );
+
+        // And on a real record, where block C's own `tick:` line and block B's `identifier:` line
+        // are the values a reader would most plausibly trip over.
+        let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        let request = DecisionRequest::compose(&simulation.observation(0));
+        let record = exchange_record(&request, Some(&Action::Sleep));
+        assert!(request.observation().contains("tick: "));
+        assert_eq!(transcript_number(&record, "tick"), Some(request.tick()));
+        assert_eq!(
+            transcript_string(&record, "actor").as_deref(),
+            Some(request.actor_id())
+        );
+        assert_eq!(transcript_flag(&record, "fallback"), Some(false));
+
+        // An absent field is `None` and not a zero, a false or an empty string, which is what
+        // lets rule 12.3 tell "no tick" from "tick 0".
+        assert_eq!(transcript_number(&record, "usage_prompt"), None);
+        assert_eq!(transcript_string(&record, "response_text"), None);
+        assert_eq!(transcript_flag(&record, "ceiling"), None);
+    }
+
+    /// Rule 8.2's closed grammar, both ways, over all eleven verbs.
+    #[test]
+    fn the_action_grammar_round_trips_and_refuses_what_it_does_not_admit() {
+        let mut every = vec![Action::Wait, Action::Sleep];
+        every.push(Action::Eat {
+            food_id: "F0007".to_string(),
+        });
+        for direction in Direction::ORDERED {
+            every.push(Action::Move { direction });
+        }
+        every.extend(every_targeted_action("M07"));
+
+        let mut verbs: HashSet<&str> = HashSet::new();
+        for action in &every {
+            let (verb, parameter) = action_parts(action);
+            verbs.insert(verb);
+            assert_eq!(
+                action_from_parts(verb, parameter.as_deref()).as_ref(),
+                Some(action),
+                "{verb} did not round trip"
+            );
+
+            // The verb and the parameter are block D's own rendering, split at its one space, so
+            // an action a transcript states is an action block D could have offered — spelled the
+            // way it was offered rather than in a second spelling kept in agreement by hand.
+            let offered = permitted_form(action);
+            let mut parts = offered.splitn(2, ' ');
+            assert_eq!(parts.next(), Some(verb));
+            assert_eq!(parts.next().map(str::to_string), parameter);
+        }
+        assert_eq!(verbs.len(), 11, "{verbs:?}");
+
+        // Rule 8.2 again, as the refusals: an unknown verb, a verb given a parameter it does not
+        // take, a verb missing the one it does, and a direction outside the four.
+        for (verb, parameter) in [
+            ("dance", None),
+            ("", None),
+            ("Wait", None),
+            ("wait", Some("M07")),
+            ("sleep", Some("M07")),
+            ("eat", None),
+            ("move", None),
+            ("move", Some("northeast")),
+            ("move", Some("NORTH")),
+            ("attack", None),
+        ] {
+            assert_eq!(
+                action_from_parts(verb, parameter),
+                None,
+                "{verb} {parameter:?} was admitted"
+            );
+        }
+    }
+
+    /// Rule 11.1's prefix head: one record per Mokiterion, before the first exchange.
+    #[test]
+    fn the_head_declares_every_mokiterion_once_in_identifier_order() {
+        let recording = record_a_run(42, 20, varied_script(400));
+        let prefixes = recording.port.prefixes();
+        assert_eq!(prefixes.len(), 12);
+
+        // The head is the transcript's first twelve records and nothing is interleaved with it,
+        // which is what lets a reader take the prefixes without reading the whole file.
+        for (index, prefix) in prefixes.iter().enumerate() {
+            assert_eq!(*prefix, &recording.port.written[index]);
+        }
+
+        // Ascending identifier order, imposed by the roster rather than inherited from the agent
+        // vector's order. Every Mokiterion the run created is declared, whether or not it ever
+        // decided: the head is built from the roster, so the transcript's contents cannot depend
+        // on the run's outcome.
+        let declared: Vec<String> = prefixes
+            .iter()
+            .map(|prefix| transcript_string(prefix, "actor").expect("a prefix names its actor"))
+            .collect();
+        let mut sorted = declared.clone();
+        sorted.sort();
+        assert_eq!(declared, sorted, "the head is not in identifier order");
+
+        let simulation = Simulation::new(llm_config(42, 20, true)).unwrap();
+        let mut expected: Vec<String> = simulation.agents.iter().map(|a| a.id.clone()).collect();
+        expected.sort();
+        assert_eq!(declared, expected);
+
+        // The head's two blocks and its digest are the prefix the exchanges were actually sent
+        // against. The arguments come from a request the engine composed, not from a second call
+        // to the same helpers, so a head that declared a prefix nobody sent fails here.
+        let request = &recording.port.seen[0];
+        let head = prefixes
+            .iter()
+            .find(|prefix| {
+                transcript_string(prefix, "actor").as_deref() == Some(request.actor_id())
+            })
+            .expect("the head declares the first actor");
+        assert!(head.contains(&escape_transcript_text(request.shared_rules())));
+        assert!(head.contains(&escape_transcript_text(request.actor())));
+        assert_eq!(
+            transcript_string(head, "digest"),
+            Some(prefix_digest(request.shared_rules(), request.actor()))
+        );
+        assert_eq!(
+            transcript_number(head, "version"),
+            Some(u64::from(TRANSCRIPT_VERSION))
+        );
+        assert_eq!(head.lines().count(), 1);
+
+        // Twelve distinct digests, because block B differs per Mokiterion. One digest for all
+        // twelve would mean the prefix carried nothing of the actor and rule 12.3's digest check
+        // would then pass for a record taken against any of them.
+        let digests: HashSet<String> = prefixes
+            .iter()
+            .map(|prefix| transcript_string(prefix, "digest").expect("a digest"))
+            .collect();
+        assert_eq!(digests.len(), 12);
+    }
+
+    /// Rule 11.2: one record per exchange, in the order the run made them, bound to its
+    /// opportunity — and nothing of the transcript in either of the run's own streams.
+    #[test]
+    fn one_exchange_is_one_record_naming_its_opportunity() {
+        let recording = record_a_run(42, 20, varied_script(400));
+        let exchanges = recording.port.exchanges();
+        assert_eq!(exchanges.len(), recording.port.seen.len());
+        assert_eq!(recording.port.written.len(), 12 + exchanges.len());
+        assert!(exchanges.len() > 200, "{} exchanges", exchanges.len());
+
+        for (record, request) in exchanges.iter().zip(&recording.port.seen) {
+            let record = record.as_str();
+            assert_eq!(record.lines().count(), 1);
+            assert_eq!(
+                transcript_number(record, "version"),
+                Some(u64::from(TRANSCRIPT_VERSION))
+            );
+            assert_eq!(transcript_number(record, "tick"), Some(request.tick()));
+            assert_eq!(
+                transcript_string(record, "actor").as_deref(),
+                Some(request.actor_id())
+            );
+            assert_eq!(
+                transcript_string(record, "prefix").as_deref(),
+                Some(request.actor_id())
+            );
+            assert_eq!(
+                transcript_string(record, "prefix_digest"),
+                Some(prefix_digest(request.shared_rules(), request.actor()))
+            );
+            assert_eq!(
+                transcript_string(record, "observation").as_deref(),
+                Some(request.observation())
+            );
+            assert_eq!(
+                transcript_string(record, "permitted").as_deref(),
+                Some(request.permitted_set())
+            );
+
+            // What makes the split sound, and rule 3.4 is why it is sound: blocks A and B are
+            // invariant, so a record repeats neither. A record that carried them would put a
+            // measured 5,620 bytes of repetition behind a measured mean of 996.
+            assert!(!record.contains(&escape_transcript_text(request.shared_rules())));
+            assert!(!record.contains(&escape_transcript_text(request.actor())));
+        }
+
+        // The transcript reaches neither of the run's streams. `open` runs before the header
+        // record, so a prefix that leaked would be the record stream's first line.
+        let text = String::from_utf8(recording.text.clone()).unwrap();
+        let records = String::from_utf8(recording.records.clone()).unwrap();
+        assert!(!text.contains("\"transcript\":"));
+        assert!(!records.contains("\"transcript\":"));
+    }
+
+    /// Rules 11.5 and 11.6: what a record does not carry.
+    ///
+    /// Rule 11.3's response text and four token counts are unobtainable from a port whose
+    /// `propose` returns `Option<Action>`, so both fields are recorded **absent** — `null`, not
+    /// zero, which rule 11.5 requires and rule 14.5 depends on. They arrive with the connector in
+    /// `WO-MOK-026`; a `0` written today would be a count nobody reported.
+    #[test]
+    fn a_record_states_no_response_no_usage_and_no_credential() {
+        let recording = record_a_run(42, 10, varied_script(200));
+        for record in recording.port.exchanges() {
+            assert!(record.contains("\"response\":null"), "{record}");
+            assert!(record.contains("\"usage\":null"), "{record}");
+            // Absent, not zero: there is no per-count field for a zero to arrive in. Each needle
+            // begins with the quotation mark that opens a field name, and
+            // `escape_transcript_text` leaves no unescaped quotation mark inside any value, so a
+            // match here can only be a field and never block C's or D's text.
+            for count in [
+                "\"prompt",
+                "\"cached",
+                "\"output",
+                "\"reasoning",
+                "\"usage_",
+            ] {
+                assert!(
+                    !record.contains(count),
+                    "a token count field leaked: {record}"
+                );
+            }
+        }
+
+        // Rule 11.6, over the whole transcript rather than over the fields, because the clause is
+        // about what a retained file contains and not about a field list.
+        let lowered = recording.port.transcript().to_lowercase();
+        for forbidden in [
+            "authorization",
+            "bearer",
+            "api_key",
+            "apikey",
+            "api-key",
+            "credential",
+            "secret",
+            "token",
+            "password",
+            "openai",
+            "gpt-",
+            "sk-",
+            "http",
+        ] {
+            assert!(
+                !lowered.contains(forbidden),
+                "the transcript contains {forbidden:?}"
+            );
+        }
+    }
+
+    /// Rule 12.7's basis: a proposed `wait` and a fallback `wait` are different facts.
+    ///
+    /// Recorded as its own field rather than inferred from the action, because `wait` is a
+    /// proposal a source may legitimately make. The two must replay differently — one moves
+    /// `REQ-MOK-074`'s count and the other does not — so a record showing `wait` with no flag
+    /// would be indistinguishable from an exchange that yielded nothing.
+    #[test]
+    fn a_proposed_wait_and_a_fallback_wait_are_distinguishable() {
+        let script: Vec<Option<Action>> = (0..12).map(|_| Some(Action::Wait)).collect();
+        let recording = record_a_run(42, 3, script);
+        let exchanges = recording.port.exchanges();
+        assert!(exchanges.len() >= 24, "{} exchanges", exchanges.len());
+
+        for (index, record) in exchanges.iter().enumerate() {
+            let record = record.as_str();
+            assert!(record.contains("\"verb\":\"wait\""), "{record}");
+            assert!(!record.contains("\"parameter\""), "{record}");
+            assert_eq!(
+                transcript_flag(record, "fallback"),
+                Some(index >= 12),
+                "exchange {index} states the wrong fallback"
+            );
+        }
+    }
+
+    /// Rule 19.6: a transcript that cannot be written ends the run with an error.
+    ///
+    /// A live run whose exchanges were spent and not recorded has produced cost and no evidence,
+    /// which is the one failure worth aborting for. The diagnostic names the transcript, on
+    /// `sink_error`'s precedent, so a reader can tell it from the engine's own failure.
+    #[test]
+    fn a_transcript_that_cannot_be_written_ends_the_run() {
+        // The thirteenth record is the first exchange: the head is written, the first opportunity
+        // is recorded, and the write is then refused.
+        let mut port = ScriptedPort::failing_to_record_at(13);
+        let mut text = Vec::new();
+        let error = Simulation::new(llm_config(42, 10, true))
+            .unwrap()
+            .run_recording(&mut text, None, Some(&mut port))
+            .expect_err("rule 19.6: a transcript that cannot be written ends the run");
+        assert!(error.to_string().starts_with("transcript: "), "{error}");
+        assert_eq!(port.written.len(), 13);
+
+        // The run stopped at the opportunity and not after the tick, so it produced no summary.
+        let text = String::from_utf8(text).unwrap();
+        assert!(!text.contains("summary reason="), "{text}");
+
+        // A head that cannot be written refuses before the header record, so the run's own
+        // streams hold nothing at all — the same shape rule 20.8's refusal has.
+        let mut port = ScriptedPort::failing_to_record_at(1);
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        let error = Simulation::new(llm_config(42, 10, true))
+            .unwrap()
+            .run_recording(&mut text, Some(&mut records), Some(&mut port))
+            .expect_err("a head that cannot be written is the same failure");
+        assert!(error.to_string().starts_with("transcript: "), "{error}");
+        assert_eq!(port.written.len(), 1);
+        assert!(text.is_empty(), "{}", String::from_utf8_lossy(&text));
+        assert!(records.is_empty(), "{}", String::from_utf8_lossy(&records));
+    }
+
+    /// Rule 12.6: a replay of a matched configuration produces the recorded run's bytes.
+    ///
+    /// Both streams, byte for byte, with tracing on — so every applied action is compared and not
+    /// only the totals. This is the property rules 12.1 and 12.1.1 exist to make structural: the
+    /// records are authored by the same lines in both directions, so there is no second writer to
+    /// hold in agreement with the first.
+    #[test]
+    fn a_replay_reproduces_the_recorded_runs_bytes() {
+        let recording = record_a_run(42, 20, varied_script(400));
+        let transcript = recording.port.transcript();
+
+        // Not a vacuous comparison: the recorded run proposed something other than the fallback at
+        // every shape a record can carry, so a replay that fell back everywhere would differ at
+        // these lines rather than agreeing on a summary.
+        let text = String::from_utf8(recording.text.clone()).unwrap();
+        for proposed in [
+            "proposal:wait",
+            "proposal:sleep",
+            "proposal:move",
+            "proposal:eat",
+            "proposal:attack,target:M02",
+        ] {
+            assert!(
+                text.contains(proposed),
+                "the recording never made {proposed}"
+            );
+        }
+        assert!(!recording.records.is_empty());
+
+        let (replayed_text, replayed_records) =
+            replay(42, 20, &transcript).expect("a matched replay completes");
+        assert_eq!(replayed_text, recording.text);
+        assert_eq!(replayed_records, recording.records);
+
+        // The framing is read and not the file's line endings: a transcript checked out with
+        // `CRLF` replays identically, which is what `.gitattributes` cannot promise for a file a
+        // host opens in text mode on Windows.
+        let (crlf_text, crlf_records) =
+            replay(42, 20, &transcript.replace('\n', "\r\n")).expect("a CRLF transcript replays");
+        assert_eq!(crlf_text, recording.text);
+        assert_eq!(crlf_records, recording.records);
+
+        // Blank lines are skipped rather than read as records, so a transcript concatenated from
+        // two captures with a separating newline is still one transcript.
+        let (spaced_text, _) =
+            replay(42, 20, &transcript.replace('\n', "\n\n")).expect("blank lines are skipped");
+        assert_eq!(spaced_text, recording.text);
+
+        // And a different seed is a different run, so the same transcript must not satisfy it.
+        // Rule 12.3's whole purpose: a transcript from another configuration is detected rather
+        // than producing a plausible wrong run.
+        let error = replay(777, 20, &transcript).expect_err("rule 12.3");
+        assert!(error.to_string().starts_with("transcript: "), "{error}");
+    }
+
+    /// Rule 20.4: the port performs no filesystem operation, and reads nothing at construction.
+    ///
+    /// A run refused before its first tick must not have consumed a byte, and rule 20.8's refusal
+    /// happens after the port is built — so construction reading the head would leave a refused
+    /// run having read a file.
+    #[test]
+    fn a_replay_reads_nothing_until_the_run_needs_a_record() {
+        let recording = record_a_run(42, 5, varied_script(100));
+        let transcript = recording.port.transcript();
+        let mut counter = CountingReader::new(transcript.as_bytes());
+
+        {
+            let mut port = ReplayPort::new(&mut counter);
+            assert_eq!(port.served, 0);
+            // Rule 11.8: a record handed to a replay is accepted and changes nothing, including
+            // before anything has been read.
+            assert!(port.record("{\"transcript\":\"exchange\"}").is_ok());
+        }
+        assert_eq!(counter.reads, 0, "construction read the transcript");
+
+        // The same reader, now lent to a whole run: it is read, and it is the only thing the port
+        // ever touched. `&mut CountingReader` satisfies `R: BufRead`, which is the genericity rule
+        // 12.1.1 relies on — each host supplies its own open stream and nothing else.
+        {
+            let mut port = ReplayPort::new(&mut counter);
+            let mut text = Vec::new();
+            Simulation::new(llm_config(42, 5, true))
+                .unwrap()
+                .run_recording(&mut text, None, Some(&mut port))
+                .expect("the replay completes");
+            assert_eq!(text, recording.text);
+            assert!(port.served > 0);
+        }
+        assert!(counter.reads > 0, "the run read nothing");
+    }
+
+    /// Rule 12.3, case by case: before using a record the replay checks it is this opportunity's.
+    ///
+    /// Each case edits exactly one field of the first exchange and asserts the run fails naming
+    /// both the opportunity, which rule 19.4 requires, and the mismatch. The edit is asserted to
+    /// have changed the transcript, so a case whose needle stopped matching fails rather than
+    /// passing against an unmodified file.
+    #[test]
+    fn a_replay_refuses_a_record_that_is_not_the_opportunity_reached() {
+        let recording = record_a_run(42, 5, varied_script(100));
+        let transcript = recording.port.transcript();
+        let first_exchange = recording.port.prefixes().len();
+        let request = &recording.port.seen[0];
+        let actor = request.actor_id().to_string();
+        let digest = prefix_digest(request.shared_rules(), request.actor());
+        let actor_field = format!("\"actor\":\"{actor}\",");
+        let prefix_field = format!("\"prefix\":\"{actor}\",");
+        let digest_field = format!("\"prefix_digest\":\"{digest}\"");
+
+        let cases = [
+            MismatchCase {
+                name: "another tick",
+                edit: &|line: &str| line.replace("\"tick\":1,", "\"tick\":2,"),
+                expected: "record is for tick 2",
+            },
+            MismatchCase {
+                name: "no tick",
+                edit: &|line: &str| line.replace("\"tick\":1,", ""),
+                expected: "record states no tick",
+            },
+            MismatchCase {
+                name: "another actor",
+                edit: &|line: &str| line.replace(&actor_field, "\"actor\":\"M09\","),
+                expected: "record is for actor M09",
+            },
+            MismatchCase {
+                name: "no actor",
+                edit: &|line: &str| line.replace(&actor_field, ""),
+                expected: "record states no actor",
+            },
+            MismatchCase {
+                name: "another prefix",
+                edit: &|line: &str| line.replace(&prefix_field, "\"prefix\":\"M09\","),
+                expected: "record names prefix M09",
+            },
+            MismatchCase {
+                name: "no prefix",
+                edit: &|line: &str| line.replace(&prefix_field, ""),
+                expected: "record states no prefix",
+            },
+            MismatchCase {
+                name: "another prefix digest",
+                edit: &|line: &str| {
+                    line.replace(
+                        &digest_field,
+                        "\"prefix_digest\":\"fnv1a64:0000000000000000\"",
+                    )
+                },
+                expected: "changed since the recording",
+            },
+            MismatchCase {
+                name: "another transcript version",
+                edit: &|line: &str| line.replace("\"version\":1,", "\"version\":2,"),
+                expected: "record is transcript version 2",
+            },
+            MismatchCase {
+                name: "no transcript version",
+                edit: &|line: &str| line.replace("\"version\":1,", ""),
+                expected: "record states no version",
+            },
+            MismatchCase {
+                name: "a verb outside the grammar",
+                edit: &|line: &str| line.replace("\"verb\":\"sleep\"", "\"verb\":\"dance\""),
+                expected: "no action this engine's grammar admits",
+            },
+        ];
+        assert_eq!(cases.len(), 10);
+
+        for case in cases {
+            let name = case.name;
+            let edited = with_line_edited(&transcript, first_exchange, case.edit);
+            assert_ne!(edited, transcript, "{name}: the edit changed nothing");
+
+            let error = replay(42, 5, &edited).expect_err(name);
+            let message = error.to_string();
+            assert!(message.contains(case.expected), "{name}: {message}");
+            assert!(message.starts_with("transcript: "), "{name}: {message}");
+            // Rule 19.4: the opportunity, named.
+            assert!(message.contains("tick 1 actor "), "{name}: {message}");
+        }
+    }
+
+    /// The digest half of rule 12.3, which no rule spelled out and which is the half that catches
+    /// an edit to block A.
+    ///
+    /// Without it a transcript recorded under different shared rules would replay silently, every
+    /// tick and actor matching, against prompts nobody ever sent. Two cases: a head that declares
+    /// a prefix the records were not taken against, and no head at all.
+    #[test]
+    fn a_replay_refuses_a_transcript_recorded_against_another_prefix() {
+        let recording = record_a_run(42, 5, varied_script(100));
+        let transcript = recording.port.transcript();
+        let request = &recording.port.seen[0];
+        let head_line = recording
+            .port
+            .prefixes()
+            .iter()
+            .position(|prefix| {
+                transcript_string(prefix, "actor").as_deref() == Some(request.actor_id())
+            })
+            .expect("the head declares the first actor");
+
+        // The head's declared digest, altered. Every field a rule spells out still matches — the
+        // tick, the actor, the prefix — and only the digest catches it.
+        let declared = prefix_digest(request.shared_rules(), request.actor());
+        let edited = with_line_edited(&transcript, head_line, |line| {
+            line.replace(
+                &format!("\"digest\":\"{declared}\""),
+                "\"digest\":\"fnv1a64:ffffffffffffffff\"",
+            )
+        });
+        assert_ne!(edited, transcript);
+        let message = replay(42, 5, &edited).expect_err("rule 12.3").to_string();
+        assert!(message.contains("the head declares prefix"), "{message}");
+        assert!(message.contains("tick 1 actor "), "{message}");
+
+        // No head at all. The exchanges are untouched and still name their opportunity, so the
+        // failure has to come from the prefix the run needed and the transcript never declared.
+        let headless: String = transcript
+            .lines()
+            .filter(|line| transcript_string(line, "transcript").as_deref() != Some("prefix"))
+            .map(|line| format!("{line}\n"))
+            .collect();
+        let message = replay(42, 5, &headless).expect_err("rule 12.3").to_string();
+        assert!(
+            message.contains("declares no prefix for this actor"),
+            "{message}"
+        );
+    }
+
+    /// Rule 12.4: the transcript ended before the run did.
+    ///
+    /// The run does not shorten, rule 9.5's fallback is not applied and no rule-based proposal is
+    /// substituted — every one of those would produce a plausible wrong run.
+    #[test]
+    fn a_transcript_that_ends_early_fails_and_names_the_opportunity() {
+        let recording = record_a_run(42, 20, varied_script(400));
+        let transcript = recording.port.transcript();
+        let head = recording.port.prefixes().len();
+
+        // Kept: the head and the first two ticks' exchanges, counted from the run's own requests
+        // rather than assumed, so the case does not depend on how many Mokiterions were alive.
+        let kept = recording
+            .port
+            .seen
+            .iter()
+            .take_while(|request| request.tick() <= 2)
+            .count();
+        assert!(kept > 0);
+        let truncated: String = transcript
+            .lines()
+            .take(head + kept)
+            .map(|line| format!("{line}\n"))
+            .collect();
+
+        let message = replay(42, 20, &truncated)
+            .expect_err("rule 12.4")
+            .to_string();
+        assert!(
+            message.contains(&format!("the transcript ended after {kept} exchange(s)")),
+            "{message}"
+        );
+        assert!(message.contains("tick 3 actor "), "{message}");
+        assert!(message.contains("does not shorten the run"), "{message}");
+
+        // A transcript that is nothing but a head is the same failure at the first opportunity.
+        let head_only: String = transcript
+            .lines()
+            .take(head)
+            .map(|line| format!("{line}\n"))
+            .collect();
+        let message = replay(42, 20, &head_only)
+            .expect_err("rule 12.4")
+            .to_string();
+        assert!(
+            message.contains("the transcript ended after 0 exchange(s)"),
+            "{message}"
+        );
+        assert!(message.contains("tick 1 actor "), "{message}");
+    }
+
+    /// Rule 12.5: a transcript longer than the run needs leaves the surplus unread.
+    ///
+    /// The tail planted here is deliberately one a reader would fail on — a record for a tick past
+    /// the horizon, and a line that is not a record at all — so a pass means unread rather than
+    /// tolerated.
+    #[test]
+    fn a_surplus_tail_is_unread_and_the_run_is_unaffected() {
+        let recording = record_a_run(42, 20, varied_script(400));
+        let mut longer = recording.port.transcript();
+        longer.push_str("{\"transcript\":\"exchange\",\"version\":9,\"tick\":9999}\n");
+        longer.push_str("not a record at all\n");
+
+        let (text, records) = replay(42, 20, &longer).expect("rule 12.5");
+        assert_eq!(text, recording.text);
+        assert_eq!(records, recording.records);
+    }
+
+    /// Rule 12.7: a record whose exchange yielded nothing replays as the fallback.
+    ///
+    /// The flag governs and the action does not. Asserted by editing a fallback record's verb to
+    /// something the run would visibly have applied: the replay must ignore it. The converse is
+    /// asserted in the same pass, because otherwise the first half would also pass if the verb
+    /// were ignored everywhere.
+    #[test]
+    fn a_recorded_fallback_replays_as_the_fallback() {
+        let recording = record_a_run(42, 5, varied_script(100));
+        let transcript = recording.port.transcript();
+        let head = recording.port.prefixes().len();
+        let exchanges = recording.port.exchanges();
+
+        let fallback = exchanges
+            .iter()
+            .position(|record| transcript_flag(record, "fallback") == Some(true))
+            .expect("the script yields nothing somewhere");
+        let edited = with_line_edited(&transcript, head + fallback, |line| {
+            line.replace("\"verb\":\"wait\"", "\"verb\":\"sleep\"")
+        });
+        assert_ne!(edited, transcript);
+        let (text, records) = replay(42, 5, &edited).expect("rule 12.7");
+        assert_eq!(text, recording.text);
+        assert_eq!(records, recording.records);
+
+        // And a record that did carry a proposal is replayed from its verb, so the assertion above
+        // is about the flag rather than about the verb being unread.
+        let proposed = exchanges
+            .iter()
+            .position(|record| {
+                transcript_flag(record, "fallback") == Some(false)
+                    && record.contains("\"verb\":\"sleep\"")
+            })
+            .expect("the script proposes sleep somewhere");
+        let edited = with_line_edited(&transcript, head + proposed, |line| {
+            line.replace("\"verb\":\"sleep\"", "\"verb\":\"wait\"")
+        });
+        let (text, _) = replay(42, 5, &edited).expect("a grammatical verb replays");
+        assert_ne!(text, recording.text);
+    }
+
+    /// Rule 12.3's "produces no further ticks", as a property of the port.
+    ///
+    /// Through the observer's door, which is where a host can ignore an error and call again. The
+    /// failure is latched and not cleared, so the same reason is reported for every subsequent
+    /// exchange rather than the run resuming at the next tick.
+    #[test]
+    fn a_replay_failure_is_latched_and_produces_no_further_ticks() {
+        let recording = record_a_run(42, 10, varied_script(200));
+        let head = recording.port.prefixes().len();
+        let broken = with_line_edited(&recording.port.transcript(), head, |line| {
+            line.replace("\"tick\":1,", "\"tick\":4,")
+        });
+
+        let mut port = ReplayPort::new(broken.as_bytes());
+        let mut simulation = Simulation::new(llm_config(42, 10, true)).unwrap();
+        let first = simulation
+            .advance_tick(Some(&mut port))
+            .expect_err("rule 12.3");
+        assert!(first.contains("record is for tick 4"), "{first}");
+
+        for attempt in 0..3 {
+            let again = simulation
+                .advance_tick(Some(&mut port))
+                .expect_err("the failure is latched");
+            assert_eq!(again, first, "attempt {attempt} reported something else");
+        }
+        // Not finished, because it did not end: a latched failure is a refusal to continue and
+        // not a termination reason a host could present as a result.
+        assert!(!simulation.is_finished());
+        assert!(simulation.termination_reason().is_none());
+    }
+
+    /// Rule 11.8: a replay writes no transcript. It has one; it is reading it.
+    #[test]
+    fn a_replay_writes_no_transcript() {
+        let recording = record_a_run(42, 5, varied_script(100));
+        let transcript = recording.port.transcript();
+        let mut port = ReplayPort::new(transcript.as_bytes());
+        Simulation::new(llm_config(42, 5, true))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut port))
+            .expect("the replay completes");
+
+        // Every record the run authored was handed to this port and accepted, and it is still
+        // prepared to accept another: nothing accumulated, because there is nowhere for it to.
+        // The engine authored them because rule 12.1 requires the same code path, which is what
+        // makes rule 12.6's byte-identity structural rather than maintained.
+        assert!(port.record("{\"transcript\":\"exchange\"}").is_ok());
+        assert!(port.failure.is_none());
+        assert_eq!(port.served, recording.port.exchanges().len() as u64);
+    }
+
+    /// Rule 11.7's size, measured rather than restated from the estimate.
+    ///
+    /// Rule 11.7 carries an estimated 4.7 MB for a 1,000-tick run, which over rule 19.5's estimated
+    /// 10,954 exchanges implies about 429 bytes per record, while rule 11.3 asks for "the request as
+    /// sent, in full" — and block A alone is 5,385 bytes. The two cannot both hold. The split closes
+    /// most of the gap and does not close all of it: the figures printed below are what rule 11.7's
+    /// amendment is measured from, and they are above its band. **This is retained evidence**, which
+    /// is why it prints rather than only asserts.
+    ///
+    /// The assertion is the property, not the figure: an exchange record is a fraction of the prefix
+    /// it was sent against, so a transcript grows with a run's exchanges and not with block A.
+    #[test]
+    fn a_record_carries_the_variable_part_and_the_head_carries_the_rest() {
+        let recording = record_a_run(42, 20, varied_script(400));
+        let transcript = recording.port.transcript();
+        let head: usize = recording
+            .port
+            .prefixes()
+            .iter()
+            .map(|prefix| prefix.len() + 1)
+            .sum();
+        let exchanges = recording.port.exchanges();
+        let mean = (transcript.len() - head) / exchanges.len();
+
+        assert_eq!(SHARED_RULES.len(), 5_385);
+        assert!(
+            mean < SHARED_RULES.len() / 4,
+            "a record is {mean} bytes against block A's {}",
+            SHARED_RULES.len()
+        );
+        println!(
+            "shared_rules_bytes={} head_bytes={head} exchanges={} transcript_bytes={} \
+             mean_record_bytes={mean}",
+            SHARED_RULES.len(),
+            exchanges.len(),
+            transcript.len()
         );
     }
 }
