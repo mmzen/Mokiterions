@@ -5,7 +5,7 @@ title = "Terminal observer as a separate package over a read-only engine surface
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-20"
+updated = "2026-08-24"
 
 [relations]
 addresses = [
@@ -14,8 +14,10 @@ addresses = [
   "REQ-MOK-026",
   "REQ-MOK-028",
   "REQ-MOK-050",
+  "REQ-MOK-063",
+  "REQ-MOK-077",
 ]
-conforms_to = ["SPEC-MOK-003", "SPEC-MOK-004"]
+conforms_to = ["SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
 
 [decision_assessment]
 outcome = "adr_required"
@@ -27,7 +29,7 @@ triggers = [
   "difficult-to-reverse",
   "material-alternatives",
 ]
-rationale = "This architecture introduces a second package and therefore a new system boundary where the repository previously had one crate, and it fixes the dependency direction across that boundary so the engine cannot reach the interface. It promotes the engine's read-only observation surface to a maintained public interface consumed by a second component. It selects a specific external framework and version as the first external dependency the project has ever taken, at a measured surface of 57 crates, which introduces a supply-chain and upgrade obligation the foundation did not have. Reversal is difficult in practice: once the observer is the instrument used to assess later phases, removing it removes the means of assessment, and the observation surface becomes a contract other work depends on. Material alternatives exist and were rejected — a single crate with a feature flag, a piped text-stream consumer, a serialized snapshot protocol, and building no interface at all — each with different consequences for determinism and for the engine's empty dependency set. Amended 2026-08-18: the observer package now builds a library target as well as a binary, which promotes its presentation layer to a stated public interface with a maintained contract, and each package's manifest, sources and tests move under its own directory. Both are boundary and public-interface changes to this architecture rather than to the engine's, and `ADR-MOK-004` decides them; the alternatives it rejected — documenting the asymmetry, a feature-gated test-support seam, and a thin observer binary mirroring the engine's — are material and were weighed. Neither change alters the dependency direction, the framework selection, the trust boundary or the non-perturbation property, so the triggers already recorded are the same triggers. Amended 2026-08-20: ADR-MOK-006 replaces the empty-set premise with a per-package declared set; no boundary, direction or trust property moves."
+rationale = "This architecture introduces a second package and therefore a new system boundary where the repository previously had one crate, and it fixes the dependency direction across that boundary so the engine cannot reach the interface. It promotes the engine's read-only observation surface to a maintained public interface consumed by a second component. It selects a specific external framework and version as the first external dependency the project has ever taken, at a measured surface of 57 crates, which introduces a supply-chain and upgrade obligation the foundation did not have. Reversal is difficult in practice: once the observer is the instrument used to assess later phases, removing it removes the means of assessment, and the observation surface becomes a contract other work depends on. Material alternatives exist and were rejected — a single crate with a feature flag, a piped text-stream consumer, a serialized snapshot protocol, and building no interface at all — each with different consequences for determinism and for the engine's empty dependency set. Amended 2026-08-18: the observer package now builds a library target as well as a binary, which promotes its presentation layer to a stated public interface with a maintained contract, and each package's manifest, sources and tests move under its own directory. Both are boundary and public-interface changes to this architecture rather than to the engine's, and `ADR-MOK-004` decides them; the alternatives it rejected — documenting the asymmetry, a feature-gated test-support seam, and a thin observer binary mirroring the engine's — are material and were weighed. Neither change alters the dependency direction, the framework selection, the trust boundary or the non-perturbation property, so the triggers already recorded are the same triggers. Amended 2026-08-20: ADR-MOK-006 replaces the empty-set premise with a per-package declared set; no boundary, direction or trust property moves. Amended 2026-08-24: `ADR-MOK-007` makes the observer a host of the model-backed decision source in replay only, and no boundary, no dependency direction and no trust property moves. The observer's new capability is to read a file the repository already commits: the binary target opens the operator-named transcript at start-up and lends the engine's library an already-open reader, so the dependency direction, the package split, the framework selection, the non-perturbation property and the containment property are all untouched, and the observer gains no connector, no credential, no ceiling and no live mode. The trust model is the existing one applied to a new input rather than a new model — the transcript is untrusted and is validated by the engine's own rule 6 exactly as any other source's proposal is — and the trigger list therefore does not gain a member. What this amendment does move is stated in the amendment record row: the observation surface's one mutating operation now takes an optional decision port, an inbound host-owned handle, and the flow, trust-boundary and prohibited-pattern clauses that asserted the operator carried no data into engine computation are amended under a separate owner act because this ADR does not name them."
 assessed_by = "technical owner"
 +++
 
@@ -40,6 +42,7 @@ assessed_by = "technical owner"
 | 2026-08-17 | Original approved content for `CAP-MOK-004`. | Approved; implemented under `WO-MOK-005` and verified under `VREC-MOK-005`. |
 | 2026-08-18 | The observer package's target shape and the repository's package-directory layout, for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`. Component 4 no longer calls the observer host "the new binary": it is a library target and a binary target, and component 5's presentation layer is what the library target carries. *Testability without a terminal* extended from "assertable in memory" to "assertable in memory through a stated public interface, from a test tier outside the crate". A required pattern added for the library target and its provenance-closed interface; three prohibited patterns added — widening an item to reach it from a test, ungating a `#[cfg(test)]` item, and any test-support seam. Four conformance checks added. `addresses` grew by `REQ-MOK-028`, `conforms_to` by `SPEC-MOK-004`, and `decision_assessment.rationale` records both changes against the triggers already declared. No dependency edge, no trust boundary, no non-perturbation property and no quality attribute other than testability changes. | Approved 2026-08-18 by the repository owner as technical owner, by way of `ADR-MOK-004`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-006`; it did not decide it. `VREC-MOK-005` binds this architecture's 2026-08-17 content to `WO-MOK-005`'s commit and is not edited. |
 | 2026-08-20 | **The engine's empty-dependency premise becomes a per-package declared set**, decided by `ADR-MOK-006`. Prohibited pattern 1 keeps its first clause — no dependency edge from engine to observer — and its second becomes an external dependency in either package that is not a declared entry of that package's set. The prohibition on re-deriving the engine's validation verdict is **extended** to the observer's declared crates, and with it decision 11's reservation of the proprietary core; it gains reach and does not change meaning. *Containment* is rewritten: the property was that the engine's set survived a 57-crate framework *empty*, and it is now that the set survives it *declared*, established by comparing the resolved graph against the declaration per package. The first conformance check becomes that comparison for both packages instead of *"`cargo tree` for the engine package resolves to the engine package alone"*. **Prohibited pattern 2 — a user-interface dependency anywhere but the observer package, including a dependency shared by both — is deliberately unchanged**: it is the one dependency prohibition this relaxation does not touch. **This row also reaches three clauses the deciding ADR did not enumerate** — component 1's *"Holds no dependency on anything"*, the *Dependency direction* diagram and its bullet *"The engine package depends on nothing"*, and the driver sentence naming `REQ-MOK-026`'s empty-set clause — because each asserted the withdrawn rule, and `REQ-MOK-050` is added to `addresses` beside `REQ-MOK-026` as the requirement carrying what replaced it. Nothing about the dependency *direction*, the trust boundary, non-perturbation, the observation surface or determinism moves. | Approved 2026-08-20 by the repository owner acting as accountable technical owner, by way of `ADR-MOK-006`, whose *Required amendments* section states this amendment in full. The implementation agent wrote the text under `WO-MOK-014`; it did not decide it. `VREC-MOK-005` binds this architecture's 2026-08-17 content and is not edited. |
+| 2026-08-24 | **The observer becomes a host of the model-backed decision source, in replay only. No boundary, no dependency direction, no framework selection, no package split and no trust property moves; the trigger list gains no member.** Under `ADR-MOK-007`'s authorization: **component 4** records the capability — one option, a transcript path, opened at start-up by the binary target, which owns the resulting decision port for the run and refuses a selection of the source without a transcript, and a transcript under any other source, both as invalid configuration; it spawns no connector, reads no credential, takes no ceiling and has no live mode, for the reason `SPEC-MOK-003` rules 6.1 and 6.2 give, whose 33-millisecond frame and 16-millisecond poll budgets an **estimated** 4-to-9-second live tick misses by two orders of magnitude. `relations.addresses` gains **`REQ-MOK-063`** — the source mapping and the replay option being two surfaces of one requirement — and **`REQ-MOK-077`**, which is this component's whole reason for changing and without which the component would have gained a capability no requirement asked for. `relations.conforms_to` gains **`SPEC-MOK-007`**, reversing this ADR's first draft: rule 20's obligations on the replay host are obligations on this component. `decision_assessment.rationale` records this ADR. **`ADR-MOK-007`'s first bullet for this artifact has no provision here to amend**: the authority mapping's fifth entry and the correction of its hard-coded four-source description are `SPEC-MOK-003` rule 11's and `mokiterions-tui/src/authority.rs`'s, and this architecture states no authority mapping — the bullet is discharged there, and it is named here rather than treated as satisfied by silence. **Six locations amended under a separate owner act of the same date, because `ADR-MOK-007` names none of them and three of the six were false at this candidate.** The **required pattern** "exactly one mutating operation on the observation surface, and it takes no operator data" admits a host-owned decision port: measured at the candidate, `advance_tick(&mut self)` became `advance_tick(&mut self, port: Option<&mut dyn Proposer>)`, which adds a parameter and not an operation, so the count of one — the load-bearing half — is unchanged, and the port is inbound so nothing crosses outward. ***Data and control flow*** loses "carrying no data" and its diagram gains the inbound transcript, with the property the section exists for stated and preserved: no key press, viewport size, frame time or rendered value re-enters engine computation, nothing the presentation layer computes reaches the engine, and the two directions still never cross. The **prohibited pattern** on reading repository files admits the operator-named transcript and states what it protects — the observer resolves no repository path, discovers no file and consults nothing to decide how to behave, and that the named path is a committed transcript under continuous integration is a property of the argument rather than of the observer's reach — with its **conformance check** amended to match, since a check left asserting the withdrawn form would condemn the pattern it enforces. ***Trust boundaries*** enumerates three operator inputs where it enumerated two, and gains a bullet for the transcript as the second inbound trust boundary: the path is data and the **content is provider-derived data at rest**, so `ADR-MOK-001`'s "model output is untrusted input and must pass the same validation as the local baseline" applies unchanged — every replayed proposal is put to the engine's rule 6 exactly as every other source's is, so a hostile transcript can make a different run happen and cannot make the engine authorize an action it would refuse. The **non-perturbation conformance check** names the transcript in its determinand, following `INT-MOK-001`'s amended determinism measure. And the **`#[ignore]` conformance check** admits instruments alone, mirroring `SPEC-MOK-004` rule 11 as amended in the owner's earlier act of the same date; measured at the candidate, three ignored functions exist, all three in the engine package and all three instruments, and **no observer test is ignored**. **Four considered non-amendments.** The prohibition on relaxing a `#[cfg(test)]` attribute is untouched and **the four hooks on the observer's state type are still four**, measured. The prohibition on serialization and on a third package is untouched: the transcript's parsing is the engine's `ReplayPort`, in the engine package, and no crate is added to either package. *Containment* and the *Dependency direction* section do not move, no declared set gaining an entry. And *Quality attributes*' **non-perturbation** is unmoved as a property — `SPEC-MOK-007` rule 12.6 makes a replay of a matched configuration byte-identical in standard output, record stream and exit code — which is why it takes a determinand in its check rather than an amendment in its statement. | **Written 2026-08-24 by the implementation agent in two authorizations, kept separate because they are two acts.** The first is `ADR-MOK-007`, whose *Status* provides that every provision under *Required amendments* "remains unwritten in its target artifact and is `WO-MOK-025`'s, `WO-MOK-026`'s or `WO-MOK-027`'s to write under this authorization"; the authorizing act is the repository owner's **"i approve the artifact pack"** of 2026-08-23, taken as **accountable technical owner**, which is the role this architecture's `owners` names and the role `ADR-MOK-007`'s `ARCH-MOK-002` section assigns, and it was approved through that ADR rather than separately. The second covers the six amended locations, which `ADR-MOK-007` does not name and which are therefore `WO-MOK-025` **stop-and-escalate condition 6** — "an amendment turns out to be needed that `ADR-MOK-007` does not name; no approved artifact is amended on an implementation agent's judgement". The agent measured the movement, reported it rather than amending it, and put the disposition to the owner with three courses and the exact replacement text of each shown: amend all five it had found, amend only the three that were false and defer the trust-boundary enumeration and the non-perturbation determinand, or defer all five to `WO-MOK-026` and leave an approved architecture asserting that operator input reaches the engine "carrying no data" while the shipped code passes a port built from an operator-named file into that very operation. **The owner chose to amend all five, on 2026-08-24, acting as accountable technical owner**, and the two declined courses are recorded here rather than left open. The sixth location, the `#[ignore]` check, was found while applying that decision and is **not a sixth escalation**: it restates `SPEC-MOK-004` rule 11, which the owner amended earlier the same day in an act that named the three instruments, and a mirroring check left as written would condemn the rule it enforces. It is reported in `WO-MOK-025`'s completion report as an enumeration miss on the precedent of `SPEC-MOK-003`'s 2026-08-20 seventh location. The agent decided none of the substance and measured every figure at the candidate commit. `VREC-MOK-005`, which binds this architecture's 2026-08-17 content, is not edited, and no file under `evidence/` is edited. |
 
 ## Context and scope
 
@@ -78,6 +81,16 @@ conforms to.
    launch, schedules and loops. The binary keeps that work rather than becoming thin — `ADR-MOK-004`'s Option 4 is
    the rejected alternative — because its start-up and its launch decision are covered by tests that reach private
    items, and promoting them would widen the interface for a test.
+   **Amended 2026-08-24.** This component becomes a **host of the model-backed decision source, in replay only**, under
+   `ADR-MOK-007` decision 8 and `SPEC-MOK-007` rule 20. It gains one option, a transcript path; it opens that file at
+   start-up and owns the resulting decision port for the whole run; and it **refuses a selection of the new source
+   without a transcript**, and a transcript under any other source, both as invalid configuration before the terminal
+   is entered. It spawns no connector, reads no credential, takes no ceiling and has no live mode. The reason is
+   `SPEC-MOK-003` rules 6.1 and 6.2, whose 33-millisecond frame budget and 16-millisecond input poll an **estimated**
+   4-to-9-second live tick misses by two orders of magnitude — an estimate, and named as one. So this component
+   acquires knowledge of the transcript and of nothing else on the far side of the port. The opening stays here rather
+   than moving into component 5 because `SPEC-MOK-007` rule 12.1.1 puts it in the host and rule 19.7 keeps every engine
+   message free of a path the engine resolved; component 5 never opens a path it was told about.
 5. **Presentation layer** — the observer package's library target: layout selection, world-to-canvas mapping, pane
    rendering, key dispatch, event retention and export. Deliberately factored so that layout and mapping are pure
    functions of viewport size and snapshot content, and therefore testable without a terminal. **Amended
@@ -115,21 +128,34 @@ crate and fails silently. A package that does not list the observer as a depende
 ## Data and control flow
 
 ```text
-CLI configuration
-      |
-      v
+CLI configuration          transcript file (llm replay only)
+      |                              |
+      |                    opened by the binary target
+      v                              v
   Simulation  ──snapshot()──▶  WorldSnapshot (owned)  ──▶  layout ──▶ panes ──▶ terminal
-      ▲                                                                            |
-      |                                                                            v
-  advance_tick()  ◀────── progression control only ──────────────────  key press / timer
+      ▲    ▲                                                                       |
+      |    └── decision port ── recorded proposals ──┐                             v
+  advance_tick(port)  ◀── progression control only ──┴───────────────  key press / timer
       |
       v
   ordered events ──▶ retention buffer ──▶ export file
 ```
 
 Control flows one way in each direction and the two never cross. Snapshots flow out of the engine and are never
-handed back. Operator input reaches the engine only as a decision to advance, carrying no data. There is no path by
-which a key press, a viewport size, a frame time, or a rendered value re-enters engine computation.
+handed back. Operator input reaches the engine as a decision to advance and, under the model-backed source in replay,
+as the decisions of a transcript the operator named. There is no path by which a key press, a viewport size, a frame
+time, or a rendered value re-enters engine computation.
+
+**Amended 2026-08-24.** The sentence above read "Operator input reaches the engine only as a decision to advance,
+carrying no data", and the diagram showed one inbound arrow. Both move, and the property this section exists to
+establish survives intact: nothing the presentation layer computes reaches the engine, and no key press, viewport
+size, frame time or rendered value re-enters engine computation — which is the whole of what non-perturbation rests
+on and is unchanged. What now reaches engine computation is a **transcript's recorded proposals**, arriving through a
+decision port the binary target opened and owns, and they are **untrusted data validated by the engine's own rule 6
+exactly as every other source's proposal is**, so authority stays where `ADR-MOK-001` put it and the observer still
+re-derives no verdict. The two directions still never cross: the port carries proposals inward and nothing outward,
+and the snapshot carries state outward and nothing inward. A run naming no transcript is described by the sentence's
+former wording without exception.
 
 The engine's own text-stream path is untouched and continues to exist beside this one.
 
@@ -139,8 +165,18 @@ The engine's own text-stream path is untouched and continues to exist beside thi
   values and holds no mutable handle. The single mutating call it may make changes nothing about *what* the engine
   computes, only *when*.
 - The operator is untrusted with respect to world authority. No operator action mutates world state.
-- Operator input — command-line arguments and the export path — is untrusted and validated before use. The export
-  path is data: never code, never a read.
+- Operator input — command-line arguments, the export path and the transcript path — is untrusted and validated before
+  use. The export path is data: never code, never a read.
+- The **transcript is untrusted input**, and this is the second inbound trust boundary the architecture carries. Added
+  2026-08-24; the bullet above previously enumerated two operator inputs and now enumerates three. Two things are
+  untrusted here and are treated separately. The **path** is data: interpreted only as a path, never as code, never as
+  a format string, never as an option, never as engine input, and opened by the binary target alone. The **content** is
+  provider-derived data at rest, so `ADR-MOK-001`'s rule applies to it unchanged — model output is untrusted input and
+  passes the same validation as the local baseline. Every proposal a transcript supplies is put to the engine's own
+  rule 6 exactly as every other source's is, a malformed or mismatched transcript stops the run with an error rather
+  than being guessed at, and the observer re-derives no verdict of its own about any of it, which is the prohibited
+  pattern below and is untouched. A corrupted or hostile transcript can therefore make a *different* run happen; it
+  cannot make the engine authorize an action the engine would refuse, and it cannot reach the engine's build.
 - The **user-interface framework is untrusted third-party code**, and this is the new trust boundary the
   architecture introduces. It is contained by three properties: it is a dependency of the observer package only, so
   it cannot be reached from the engine; it is granted no engine handle, only owned snapshots; and the engine remains
@@ -153,7 +189,13 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 
 - One-way dependency from observer to engine, expressed as a package dependency.
 - Owned, reference-free snapshots as the only outbound state transfer.
-- Exactly one mutating operation on the observation surface, and it takes no operator data.
+- Exactly one mutating operation on the observation surface, and it carries no operator data other than an optional
+  decision port the host owns. **Amended 2026-08-24.** The pattern read "and it takes no operator data". The count of
+  one is unchanged and is the load-bearing half: `advance_tick(&mut self)` became
+  `advance_tick(&mut self, port: Option<&mut dyn Proposer>)`, which adds a parameter and not an operation. The port is
+  **inbound and host-owned**, so no engine handle escapes and the prohibition below on a mutable handle crossing
+  outward is untouched. It is `None` for the four deterministic sources, so the pattern's original form still describes
+  every run that does not name a transcript.
 - Layout and world-to-canvas mapping as pure functions of viewport size and snapshot content, so they are testable
   without a terminal and cannot depend on time or run history.
 - Rendering into an in-memory buffer that tests can assert cell by cell, so presentation claims are verified rather
@@ -183,7 +225,14 @@ The engine's own text-stream path is untouched and continues to exist beside thi
   advance entropy, or validate an action. The prohibition gains reach rather than changing meaning, which is
   `ADR-MOK-006` decision 11.
 - Advancing more than one tick per scheduling opportunity to recover from falling behind.
-- Reading repository files, invoking version control, or performing network access at run time.
+- Reading any file at run time other than the operator-named transcript, invoking version control, or performing
+  network access at run time. **Amended 2026-08-24.** The clause read "Reading repository files" with no exception, and
+  the transcript is one: under continuous integration the path an operator names is a transcript the repository
+  commits, which is what makes `REQ-MOK-073`'s replay lane free of any provider call. The property the clause protects
+  is stated rather than assumed — the observer **resolves no repository path**, reads no artifact, discovers no file and
+  consults nothing to decide how to behave. That the named file happens to live in the repository is a property of the
+  operator's argument and not of the observer's reach, and the file is opened once, read, and never created, written or
+  removed.
 - Serialization, asynchronous runtimes, threads sharing simulation state, or a third package.
 - Presenting a value the engine does not compute, including an inert placeholder that reads as a computed zero.
 - Widening any item's visibility, in either package, in order to reach it from a test. A test that needs internal
@@ -227,14 +276,21 @@ The engine's own text-stream path is untouched and continues to exist beside thi
 - Confirm the engine package's tests pass with no terminal attached.
 - Confirm the observation surface's public items expose no `&mut self` operation other than the single-tick advance,
   and that snapshot types own their data and offer no mutating method.
-- Confirm an observed run and an unobserved run at the same seed, configuration and decision source produce
-  identical authoritative events and final state, with the observed run subjected to holding, single-stepping,
-  selection, panning, zooming, filtering, export and resizing.
+- Confirm an observed run and an unobserved run at the same seed, configuration, decision source and — under the
+  model-backed source — the same transcript produce identical authoritative events and final state, with the observed
+  run subjected to holding, single-stepping, selection, panning, zooming, filtering, export and resizing. **Amended
+  2026-08-24**: the check named seed, configuration and decision source, and the transcript is named beside them because
+  `INT-MOK-001`'s determinism measure now makes it part of the determinand for this source. The four deterministic
+  sources are unaffected and the check for them is the one already written; `REQ-MOK-009` is not reached, the entropy
+  stream being untouched.
 - Confirm per-tick entropy draw counts are identical observed and unobserved.
 - Confirm layout and world-to-canvas mapping are exercised by tests that construct no terminal.
 - Confirm rendered output is asserted from an in-memory buffer at each named viewport size in `SPEC-MOK-003`.
 - Confirm the terminal is restored on normal exit, on error exit, and on panic.
-- Confirm no repository read, version-control invocation, or network access occurs at run time.
+- Confirm no version-control invocation and no network access occurs at run time, and that the only file the observer
+  opens for reading is the transcript the operator named. **Amended 2026-08-24** to match the prohibited pattern above,
+  which is what it checks. The check is now two-sided: no path the observer resolved for itself is opened, and the one
+  path it is given is opened once, read, and neither created, written nor removed.
 
 Added 2026-08-18 for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`:
 
@@ -246,7 +302,14 @@ Added 2026-08-18 for `REQ-MOK-028`, `REQ-MOK-029` and `REQ-MOK-030`:
   one.
 - Confirm every observer test is in exactly one tier, that each test outside the crate reaches the code only through
   the library target's public interface with its assertions unchanged, and that one `cargo test` invocation runs both
-  tiers of both packages with no feature, environment variable, `#[ignore]` or terminal.
+  tiers of both packages with no feature, environment variable or terminal, and with `#[ignore]` on instruments alone.
+  **Amended 2026-08-24.** The check read "with no feature, environment variable, `#[ignore]` or terminal", and it is
+  amended because `SPEC-MOK-004` rule 11 was amended in the same act to admit `#[ignore]` for **instruments** — a
+  `#[test]` function that asserts nothing — leaving the prohibition intact for every test that does assert something.
+  This check mirrors that rule rather than deciding anything of its own, and restating it is part of that amendment:
+  left as written it would condemn the rule it exists to enforce. Measured at the candidate commit: **three** ignored
+  functions exist, all three in the engine package and all three instruments, and **no observer test is ignored**, so
+  the half of this check that is about the observer's tiers is unmoved.
 - Confirm each package's manifest, sources and tests are under one directory named for that package, that the
   repository root's manifest declares no package, and that every package name, target name, target kind and operator
   command resolves as it did before.
