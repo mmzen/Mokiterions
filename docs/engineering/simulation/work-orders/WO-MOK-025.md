@@ -58,6 +58,30 @@ below**. What that act does not do is write the amendments: every provision rema
 is this stage's to write, with each row's re-measured figures measured when the row is written rather than copied from the
 ADR.
 
+### Two later rulings of 2026-08-24, on the defect continuous integration found
+
+Recorded here because a work order carries no amendment record and these two rulings change what this work order
+requires.
+
+**Escalation `E19`: `VER-MOK-018` gains case `L34`, and this work order's *Required verification* enumeration names
+it.** The Linux lane of continuous integration failed on this work order's own candidate: `fs::File::open` on a
+directory succeeds on Linux and refuses only at the first read, so a directory named as a transcript began the run in
+both hosts there — the engine binary printed a whole tick before failing, and the observer entered the terminal with
+nothing but a key press to end it. On Windows the open itself fails, so every local gate was green. `dbc9e6d` fixes both
+hosts. The escalation is not the defect but what it revealed: **no case in this work order's required list covered a
+transcript the platform refuses**, so running that list in full would not have found it. The owner ruled on 2026-08-24,
+over commit `4cfb297`, that the case be added rather than recorded as a gap and deferred to `WO-MOK-026`; the deferral
+was put beside it and declined. The case is already satisfied by evidence measured on both platforms at `dbc9e6d`, so
+naming it here widens the required list without asserting coverage ahead of its evidence.
+
+**Escalation `E20`: `VER-MOK-018`'s check `C6` withdraws the clause "no check can see this".** Secret names are
+enumerable through the hosting platform's API at every scope a workflow can read a secret from, and this stage's
+evidence retains that measurement at zero for all of them. A value is still unseeable and a later moment is still
+unmeasured, so the attestation remains the repository owner's and its force is unchanged; what moves is a sentence that
+claimed more ignorance than the repository is in. Ruled in the same pass as `E19`.
+
+Neither ruling changes the scope below, the change surface or any figure in the retained evidence.
+
 **No provider is contacted in this stage and nothing is spent.** That is not a limitation of the stage, it is its point.
 Everything `VER-MOK-018` can check without money is checked before any money can be spent, and the live path does not
 exist yet to be used by accident.
@@ -328,7 +352,11 @@ halves the paragraph below and evidence item 12 both enumerate.)*
 
 **Matrix cases**: **L1**, **L2**, **L3**, **L4**, **L5**, **L6**, **L7**, **L8**, **L9**, **L10**, **L11**, **L12**,
 **L13**, **L14**, **L15a**, **L16**, **L17**, **L18**, **L19**, **L20** *(in part)*, **L21a**, **L21b**, **L22**,
-**L23**, **L26**, **L27**, **L29**, **L30**, **L31**, **L32** *(in part)*, **L33**.
+**L23**, **L26**, **L27**, **L29**, **L30**, **L31**, **L32** *(in part)*, **L33**, **L34**.
+
+**L34 was added to `VER-MOK-018` on 2026-08-24 and is named here in the same commit**, so that the list and the matrix
+agree as they were made to on 2026-08-24 for **L20** and **L32**. It is in scope and it is verified: the case needs no
+provider, and the evidence for it exists at `dbc9e6d` on Windows and on Linux.
 
 **L20** and **L32** were absent from that enumeration until 2026-08-24, while the two paragraphs below brought each
 in by half. They are named here now, each marked *(in part)*, so that the list and the prose agree and a reader
