@@ -272,7 +272,13 @@ def read_transcript(path: Path) -> tuple[list[dict], list[dict]]:
     `-text`: a CRLF checkout would leave one at the end of every record, and every length this
     program reports would then be one byte long.
     """
-    raw = path.read_bytes()
+    # A platform refusal is a `Failure` like any other, so that `main`'s handler reports it as a
+    # FAIL line naming the transcript. Letting `OSError` escape would print a traceback instead,
+    # and the handler that exists for exactly this case would be unreachable.
+    try:
+        raw = path.read_bytes()
+    except OSError as error:
+        raise Failure(f"{path.as_posix()}: {error.strerror}") from error
     if b"\r" in raw:
         raise Failure(
             f"{path}: the transcript holds a carriage return; check the `-text` entry in "
@@ -429,7 +435,10 @@ def check(path: Path, out) -> list[tuple[str, bool, str]]:
         results.append((label, held, detail))
         print(f"  {'PASS' if held else 'FAIL'}  {label}  {detail}", file=out)
 
-    print(f"transcript: {path}", file=out)
+    # `as_posix` rather than the path itself: this line is captured into a retained evidence file,
+    # and a `Path` prints with the running platform's separator, so the same command on Windows and
+    # on Linux would produce two captures that differ in a line that says nothing about the run.
+    print(f"transcript: {path.as_posix()}", file=out)
     print(
         f"records: {len(prefixes) + len(exchanges)} "
         f"({len(prefixes)} prefix, {len(exchanges)} exchange)",
@@ -703,7 +712,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             results = check(path, out)
         except Failure as error:
-            print(f"transcript: {path}", file=out)
+            print(f"transcript: {path.as_posix()}", file=out)
             print(f"  FAIL  the transcript could not be read  {error}", file=out)
             failures += 1
             continue

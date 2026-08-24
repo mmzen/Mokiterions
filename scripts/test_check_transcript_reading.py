@@ -518,6 +518,29 @@ class BrokenTranscripts(unittest.TestCase):
         self.assertEqual(outcome.status, 1, outcome.text)
         self.assertIn("not a record", outcome.text)
 
+    def test_a_transcript_that_is_not_there_is_refused_and_not_a_traceback(self) -> None:
+        """The refusal path `main` already had, reached rather than bypassed.
+
+        A missing file used to raise `OSError` past the `except Failure` handler, so the program
+        printed a traceback where a FAIL line naming the transcript was intended. The handler was
+        unreachable, which is the kind of defect only a test for the absent case finds.
+        """
+        outcome = run(self.directory / "absent.jsonl")
+        self.assertEqual(outcome.status, 1, outcome.text)
+        self.assertIn("absent.jsonl", outcome.text)
+        self.assertIn("the transcript could not be read", outcome.text)
+        self.assertNotIn("Traceback", outcome.text)
+
+    def test_the_reported_path_carries_no_platform_separator(self) -> None:
+        """The report line is captured into retained evidence, so it must not name a platform.
+
+        `Path` prints with the running platform's separator, so the same command on Windows and on
+        Linux would produce two captures differing in a line that says nothing about the run.
+        """
+        outcome = run(TRANSCRIPT)
+        self.assertIn(f"transcript: {TRANSCRIPT.as_posix()}", outcome.text)
+        self.assertNotIn("\\", outcome.text)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
