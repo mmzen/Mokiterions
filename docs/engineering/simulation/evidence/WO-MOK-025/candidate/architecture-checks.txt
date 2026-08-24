@@ -1,7 +1,7 @@
 # VER-MOK-018: the architecture, usage and security checks with no other runner
 #
 # repository root:  C:\Users\mathi\Mokiterions-understand-20260823-op5-1603
-# candidate:        6309f9c944b8bf22bfe65c4a76b4431c97575d72
+# candidate:        dbc9e6dcbe6b02a99186fe2935e1276d228e5024
 # base commit:      cc54185
 # imported:         docs\engineering\simulation\evidence\WO-MOK-019\analysis\static-checks.py  (Source, Report, strip_rust)
 # imported:         docs\engineering\simulation\evidence\WO-MOK-025\analysis\static-checks.py  (MODE_VOCABULARY)
@@ -21,9 +21,9 @@
 # survive the blanking. `product_only` excludes lines inside a `#[cfg(test)]` module,
 # and a check that wants the test tier too asks for it and prints both figures.
 #
-# engine library: lib.rs, cli.rs, simulation.rs  (13,724 lines)
-# engine binary:  main.rs  (211 lines)
-# observer:       authority.rs, export.rs, layout.rs, lib.rs, main.rs, options.rs, render.rs, spatial.rs, state.rs, verification.rs  (7,237 lines)
+# engine library: lib.rs, cli.rs, simulation.rs  (13,728 lines)
+# engine binary:  main.rs  (226 lines)
+# observer:       authority.rs, export.rs, layout.rs, lib.rs, main.rs, options.rs, render.rs, spatial.rs, state.rs, verification.rs  (7,250 lines)
 
 ============================================================================================================
 1. S1 — the declared dependency sets, unchanged from the base commit
@@ -77,7 +77,7 @@
     mokiterions-tui: mokiterions-tui at src/main.rs
 
   raw string literals searched for a path shape:
-    2672 literal(s) across 14 file(s)
+    2674 literal(s) across 14 file(s)
   path-shaped literals: none
 
   the connector, named in blanked product source:
@@ -88,10 +88,10 @@
     cli.rs:87  "                  model is reached through a separate connector program you\n",
     cli.rs:90  "                  run replays exactly from its transcript. Given no connector,\n",
     cli.rs:310  // host with nothing to record from and no connector to reach is in exactly the same position.
-    simulation.rs:1853  // never told a count, and `WO-MOK-025` has no provider, no connector and no transport to be tol
+    simulation.rs:1855  // never told a count, and `WO-MOK-025` has no provider, no connector and no transport to be tol
     these are the usage text and the comments that explain it. The sentence an operator reads is "the model is reached through a separate connector program you supply, never by this program itself", which is the absence this check measures, written down.
 
-  verdict: PASS — two members, three manifests, two binary targets each in its own package, no path-shaped literal among 2672 and no connector identifier in either package
+  verdict: PASS — two members, three manifests, two binary targets each in its own package, no path-shaped literal among 2674 and no connector identifier in either package
   limit:   a bare program name in a literal - "connector", say - is not distinguishable from prose by shape, so this check does not rest on the literal search alone. It rests on check 4: there is no process-spawning site in either package, so a default path would have nothing to be passed to.
 
 ============================================================================================================
@@ -154,8 +154,8 @@
 
   the environment, over every source file of both packages:
     engine binary   main.rs:42  argument vector  let arguments: Vec<String> = env::args().skip(1).collect();
-    observer binary main.rs:155  argument vector  let mut observer = match prepare(env::args().skip(1), &mut stdout, &mu
-    observer binary main.rs:388  other            let directory = env::temp_dir().join("mokiterions-startup-export");
+    observer binary main.rs:168  argument vector  let mut observer = match prepare(env::args().skip(1), &mut stdout, &mu
+    observer binary main.rs:401  other            let directory = env::temp_dir().join("mokiterions-startup-export");
   environment-variable reads (env::var, env::var_os, env::vars): 0
 
   verdict: PASS — no process-spawning site in either package at any tier, and no environment variable is read anywhere: 2 `env::args` site(s), which is the argument vector, and 1 other `env::` site(s)
@@ -227,18 +227,18 @@
     simulation.rs:1306  const SHARED_RULES: &str = concat!(
     simulation.rs:1419  /// [`SHARED_RULES`], so rule 3.3's byte-identity across a run is a property of the type
     simulation.rs:1504  shared_rules: SHARED_RULES,
-    simulation.rs:2080  prefix_digest(SHARED_RULES, &actor),
-    simulation.rs:2081  escape_transcript_text(SHARED_RULES),
-    simulation.rs:11160  assert_eq!(blocks[0], SHARED_RULES);
-    simulation.rs:11193  assert_eq!(request.shared_rules(), SHARED_RULES);
-    simulation.rs:11211  let lowered = SHARED_RULES.to_lowercase();
-    simulation.rs:11239  !SHARED_RULES.contains(&agent.id),
-    simulation.rs:11246  !SHARED_RULES.contains(&food.id),
-    simulation.rs:11274  SHARED_RULES.contains(required),
-    simulation.rs:12727  assert_eq!(SHARED_RULES.len(), 5_385);
-    simulation.rs:12729  mean < SHARED_RULES.len() / 4,
-    simulation.rs:12731  SHARED_RULES.len()
-    simulation.rs:12736  SHARED_RULES.len(),
+    simulation.rs:2082  prefix_digest(SHARED_RULES, &actor),
+    simulation.rs:2083  escape_transcript_text(SHARED_RULES),
+    simulation.rs:11162  assert_eq!(blocks[0], SHARED_RULES);
+    simulation.rs:11195  assert_eq!(request.shared_rules(), SHARED_RULES);
+    simulation.rs:11213  let lowered = SHARED_RULES.to_lowercase();
+    simulation.rs:11241  !SHARED_RULES.contains(&agent.id),
+    simulation.rs:11248  !SHARED_RULES.contains(&food.id),
+    simulation.rs:11276  SHARED_RULES.contains(required),
+    simulation.rs:12731  assert_eq!(SHARED_RULES.len(), 5_385);
+    simulation.rs:12733  mean < SHARED_RULES.len() / 4,
+    simulation.rs:12735  SHARED_RULES.len()
+    simulation.rs:12740  SHARED_RULES.len(),
 
   verdict: PASS — one declaration, and every literal of it occurs in that file alone
   limit:   the rules are also written in prose in SIMULATION_RULES.md and in SPEC-MOK-001 rule 21. That is the authority the block is derived from, not a second copy, and this check does not compare the two - whether the block says what the rules say is case L27, a manual assessment. What is established here is that there is one object for that assessment to be about.
@@ -252,10 +252,10 @@
   credential vocabulary in product source: none
   the same vocabulary at every tier, tests included: 0 hit(s)
     a count of zero at every tier does not mean the words are absent from the file. They are in string literals, and the blanking removes literals, so a raw search is the only way to see them. Where they are:
-      simulation.rs:12227  "authorization",
-      simulation.rs:12228  "bearer",
-      simulation.rs:12229  "api_key",
-      simulation.rs:12232  "credential",
+      simulation.rs:12231  "authorization",
+      simulation.rs:12232  "bearer",
+      simulation.rs:12233  "api_key",
+      simulation.rs:12236  "credential",
     that is the vocabulary list a test holds in order to assert its absence from a record: `a_record_states_no_response_no_usage_and_no_credential`. The list being in a test and nowhere else is the reading this check wants.
 
   every filesystem-opening site in either package's product code, and what it does:
@@ -263,11 +263,11 @@
     engine binary: 4 site(s)
       main.rs:82  Some(path) => match fs::File::open(path) {
           reads a path the operator wrote on the command line
-      main.rs:122  let opened = match fs::OpenOptions::new()
+      main.rs:137  let opened = match fs::OpenOptions::new()
           writes a path the operator wrote on the command line
-      main.rs:129  fs::File::create(&destination).map(|file| (file, false))
+      main.rs:144  fs::File::create(&destination).map(|file| (file, false))
           writes a path the operator wrote on the command line
-      main.rs:176  if let Err(error) = fs::remove_file(&destination) {
+      main.rs:191  if let Err(error) = fs::remove_file(&destination) {
           removes a destination this process created, per SPEC-MOK-007 rule 13.4
     observer library: 2 site(s)
       export.rs:40  let file = fs::File::create(path).map_err(|error| error.to_str
@@ -277,7 +277,7 @@
     observer binary: 1 site(s)
       main.rs:115  (Policy::Llm, Some(path)) => match fs::File::open(path) {
           reads a path the operator wrote on the command line
-    7 site(s): 0 in the engine library, 4 in the engine binary, 2 in the observer library, 1 in the observer binary. The engine's library target opens nothing, which is check 3. The 2 site(s) outside a binary are in the observer's export module, which writes and removes the file an operator asked it to export to; it predates this work order and no path of it reaches a decision. Each takes a variable, never a literal: check 2 searched the 2,672 string literals of both packages' product source and found no path-shaped one. So no site here can be a configuration directory, a keychain or a dotfile - there is no constant for one to be named by, and nothing in either package searches for a path it was not given.
+    7 site(s): 0 in the engine library, 4 in the engine binary, 2 in the observer library, 1 in the observer binary. The engine's library target opens nothing, which is check 3. The 2 site(s) outside a binary are in the observer's export module, which writes and removes the file an operator asked it to export to; it predates this work order and no path of it reaches a decision. Each takes a variable, never a literal: check 2 searched the 2,674 string literals of both packages' product source and found no path-shaped one. So no site here can be a configuration directory, a keychain or a dotfile - there is no constant for one to be named by, and nothing in either package searches for a path it was not given.
   environment-variable reads: 0
 
   verdict: FINDING — the measurable half passes and C1's second half cannot be run at this stage: no code path reads a credential, so there is no value to set synthetically and no byte for it to appear in. The connector, which is where SPEC-MOK-007 rules 10.5 and 13.4 place the credential, is out of this work order's scope.
@@ -306,7 +306,7 @@
 # summary
 ============================================================================================================
    1. PASS     S1 — the declared dependency sets, unchanged from the base com no manifest and no lockfile entry moved between cc54185 and the candidate, and the captured gate reports every declared set equal to its resolved graph
-   2. PASS     S2a — nothing makes a connector reachable without an operator  two members, three manifests, two binary targets each in its own package, no path-shaped literal among 2672 and no connector identifier in either package
+   2. PASS     S2a — nothing makes a connector reachable without an operator  two members, three manifests, two binary targets each in its own package, no path-shaped literal among 2674 and no connector identifier in either package
    3. PASS     S3 — the library target performs none of the four capabilities no filesystem operation, no socket, no spawn and no environment read in lib.rs, cli.rs or simulation.rs
    4. PASS     S3a — no process spawn in either package, and where the enviro no process-spawning site in either package at any tier, and no environment variable is read anywhere: 2 `env::args` site(s), which is the argument vector, and 1 other `env::` site(s)
    5. PASS     S5 — the fifth policy value is in both texts and the withdrawn both texts carry the five-value option line and exactly one `llm` entry, and neither carries the withdrawn sentence outside a comment that explains its withdrawal

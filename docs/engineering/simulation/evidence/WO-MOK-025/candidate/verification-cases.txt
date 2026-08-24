@@ -16,6 +16,40 @@ why. The correction is in the row, and candidate/per-tick-lending.txt is the cap
 the whole measurement. Nothing else in this file was re-measured, and no package file changed
 between the two readings - bce4229 remains the last commit that did.
 
+AMENDED A SECOND TIME 2026-08-24 at commit dbc9e6d. Two things in the paragraph above are now
+false: bce4229 is not the last commit that changed a package file -- 77f2974 and then dbc9e6d did --
+and the suite reading below was taken on Windows and does not say so.
+
+  The suite total is re-measured on both platforms at dbc9e6d, with --no-fail-fast added so that
+  one failing binary cannot hide the rest:
+
+    cargo test --workspace --locked --no-fail-fast
+      Windows 11, x86_64-pc-windows-msvc          -> 422 passed, 0 failed, 3 ignored, exit 0
+      Ubuntu 24.04 (WSL 2), x86_64-unknown-linux  -> 422 passed, 0 failed, 3 ignored, exit 0
+
+  Same total, same three ignored instruments, same 23 binaries and 2 doc-test targets. The rows
+  below rest on that reading and every one of them stands.
+
+  The rows whose evidence is a capture rather than a test were re-measured too, because dbc9e6d
+  changed both hosts' transcript-opening arm and the binary genuinely moved: L7's and L8's
+  candidate/replay-identity.txt cells and cases all reproduce figure for figure, L9's and L10's
+  eighty manifest cells and twenty entropy configurations reproduce byte for byte, and the two
+  files that print source line numbers -- candidate/static-checks.txt and
+  candidate/architecture-checks.txt, which L3, L11 and the S and C rows cite -- were re-run and
+  replaced, with no finding, verdict or sentence changed and only the commit named and the numbers
+  inside them differing. candidate/gates.txt's third amendment is that session in full.
+
+  ESCALATION E19 IS RAISED HERE AND IS NOT MINE TO SETTLE, and this file is where it belongs
+  because it is a statement about the required list rather than about a row in it. The defect
+  dbc9e6d fixes -- a transcript the platform refuses being read as one that can be read, on Linux,
+  on both hosts -- falls in a gap in VER-MOK-018: no case in the required list covers a transcript
+  the platform refuses. L32 covers the parser's exit 2, L8 covers a mismatch detected while
+  replaying, and rule 13.2's host behaviour on a read that fails has no case of its own on either
+  host. So this defect could not have been caught by running the required list; what caught it was
+  CI on a platform no local gate ran, and what should have caught it was an implementation test
+  whose assertion was too weak to fire. No row below is changed, because there is no row to
+  change. The completion report carries E19 with what it would take to close it.
+
     RESULT: 67 rows, one per case and per required half-case. 59 pass, one of those against a
     figure this work order and VER-MOK-018 both state differently (L30's ceiling: eighteen
     exchanges rather than two, deliberately, and the row says why). One passes and is

@@ -11,6 +11,63 @@ release builds of both binary targets. bce4229 is the last commit that changed a
 package, so these readings are of the same source at any later commit of this packet -
 candidate/gates.txt states that measurement.
 
+AMENDED 2026-08-24 at commit dbc9e6d, in the one way that matters for this file: the sentence above
+is no longer true, and the commit that broke it changed the exact code path this file measures. Both
+hosts' transcript-opening arm now forces the first read before lending the reader, because
+fs::File::open on a directory succeeds on Linux and refuses only when it is read. CI's Linux lane
+found it; every reading in this file was taken on Windows, where the open itself fails.
+
+Two consequences, and the second is a correction to a row below rather than an addition:
+
+  Every measurement in this file was re-taken at dbc9e6d against fresh release builds, and every
+  one reproduces. The six text cells and two record streams: all eight sha256 digests, all eight
+  byte counts, all six exit codes 0 and all six standard errors 0 bytes, equal to the tables below
+  figure for figure. The eight boundary and refusal cases R1, R2, R3b, R4, R6, R7 and R8: every
+  exit code and every standard-output byte count as recorded -- 0, 0, 0, 12,852, 53,281, 78,069
+  and 48,050 -- and every first line of standard error as quoted. The four observer cases O1, O2,
+  O4 and O6: the same, with O4's whole standard error still byte-identical to R3b's at 104 bytes,
+  diff empty. So the peek consumed nothing: a fill_buf that had swallowed a byte would have moved
+  every digest in the first table.
+
+  R3 was not re-run in its original form. Its message quotes the path MSYS handed the process, and
+  the re-run was made with that conversion disabled, so the argv differed and the message differed
+  with it -- /c/Users/... and os error 3 rather than C:/Users/... and os error 2. What R3 is here
+  to establish still reproduced: exit 1, 0 bytes of standard output, and a message echoing argv
+  unchanged. R3b is the case that pins that without MSYS in the way, and R3b reproduced character
+  for character.
+
+  O6 -- the observer given a directory -- WAS TRUE OF WINDOWS ONLY as measured. It is recorded
+  above as exit 1 with Access is denied. (os error 5), which is what Windows does. On Linux, before
+  dbc9e6d, the same invocation entered the terminal instead and was still running when it was
+  killed twenty seconds later, with nothing on standard error: an observer drawing a run whose
+  decisions cannot be obtained, and nothing to end it but a key press. Measured on a Linux
+  pseudo-terminal sized 120x40, twice, with only the two hosts' opening arms differing:
+
+    without the fix   exit 124 (the killer's), 0 bytes of standard output, 0 bytes of standard error
+    with the fix      exit 1, 0 bytes of standard output, and
+                      runtime error: transcript <dir>: Is a directory (os error 21)
+
+  A new case belongs beside R3b and is measured on both platforms, because the engine binary's set
+  above had no directory case at all -- which is how the defect reached CI:
+
+    R3c  --transcript-path naming a directory                                        exit 1
+           Windows   runtime error: transcript <dir>: Access is denied. (os error 5)
+           Linux     runtime error: transcript <dir>: Is a directory (os error 21)
+           Standard output: 0 bytes on both. The message is the platform's own; what is equal
+           across the two is the exit code, the empty standard output and the host's prefix.
+           The suite's a_transcript_that_cannot_be_read_exits_one_and_names_it now asserts
+           exactly this, where it previously asserted only that the code was not 0.
+
+  The rule 19.7 section below cites mokiterions-core/src/main.rs:85 and
+  mokiterions-tui/src/main.rs:118 as where the resolution happens. Those line numbers moved with
+  the fix and the sentence did not: the open is now at src/main.rs:82 and mokiterions-tui:115, the
+  forced first read is at :95 and :126, and the port is constructed at :99 and :130. What crosses
+  into the library is still an already-open reader and still never a path.
+
+Nothing else in this file was re-measured or edited, and no figure in it changed. A capture is not
+rewritten after the fact; this block is the correction, and candidate/gates.txt's third amendment
+carries the same measurement session in full, including the gates on both platforms.
+
     RESULT, item 4: every replay of the committed transcript is byte-identical run to run and with
     and without a record sink; each of the seven mismatched configurations fails and names the
     mismatch, none leaves a partial record stream, and the one case that is not a mismatch - a run

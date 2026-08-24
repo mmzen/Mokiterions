@@ -16,9 +16,10 @@ order exactly, so a numbered heading below is that clause and not a topic chosen
 **This work order is not complete and does not claim to be.** All fourteen *In scope* items are built.
 Of the sixty-seven required verification rows, fifty-nine pass, three are the assurance owner's
 assessments and are not mine to make, three pass in part and are escalated for the part that does not
-run, one passes and is escalated anyway, and one does not apply at this stage. **Eighteen escalations were raised.
-Seven were resolved as they arose; the remaining eleven were put to the owner in one pass on
-2026-08-24 and all eleven were ruled in the turn the question was asked** (item 11). What the rulings
+run, one passes and is escalated anyway, and one does not apply at this stage. **Nineteen escalations were raised.
+Seven were resolved as they arose; eleven were put to the owner in one pass on
+2026-08-24 and all eleven were ruled in the turn the question was asked; the nineteenth was raised after
+them, at `dbc9e6d`, and is open** (item 11). What the rulings
 authorized is written; what they left to an owner is in the section after them, and one of those is
 `E15`, deferred to `WO-MOK-026` and recorded as untriggered rather than met. `VER-MOK-018`'s **C6** — the attestation
 that no provider credential is configured in the repository's automation secrets — is outstanding, and
@@ -107,12 +108,19 @@ manifests:
 ### The gates, at the candidate
 
 `candidate/gates.txt` is the reading; `base/gates.txt` is its pair, taken before the change. **Every one
-of the six was re-read at `77f2974`** after the owner's rulings of 2026-08-24, and every figure below is
-that reading rather than the earlier one; none of the six moved.
+of the six was re-read at `77f2974`** after the owner's rulings of 2026-08-24, and again at `dbc9e6d`
+after the cross-platform fix below, this time **on Linux as well as Windows**; every figure below is the
+`dbc9e6d` reading and none of the six has moved across any of the three.
+
+**Every reading in this report before `dbc9e6d` was taken on Windows and none of them said so, and two
+were true of Windows only.** That is the subject of *The defect CI found* below, and the figures here are
+now stated per platform because of it.
 
     cargo fmt --all -- --check                                                     exit 0, no output
     cargo clippy --workspace --all-targets --all-features --locked -- -D warnings   exit 0, no warnings
-    cargo test --workspace --locked                     exit 0; 422 passed, 0 failed, 3 ignored
+    cargo test --workspace --locked --no-fail-fast       exit 0; 422 passed, 0 failed, 3 ignored
+      the same three figures on Windows 11 (x86_64-pc-windows-msvc) and on Ubuntu 24.04 under
+      WSL 2 (x86_64-unknown-linux-gnu), each with the same 25 result lines
     cargo build -p Mokiterions --locked                                            exit 0
     python3 scripts/test_check_workflow_credentials.py                             38 tests, OK
     python3 scripts/check_workflow_credentials.py --root .                         exit 0
@@ -138,6 +146,55 @@ The harness pair, read from the pinned 0.4.0 evaluator outside the checkout:
     se_harness preflight --work-order WO-MOK-025 --phase review   PASS
 
 `validate` reported **FAIL** from `0aa0527` until `5ae4f46`, and finding that is escalation **E7**.
+
+### The defect CI found, and what it says about every gate above it
+
+**`cargo test` was green on this machine and red in CI, and CI was right.** The `Dependency declarations`
+lane failed at rule 8.4c's `cargo test -p Mokiterions --locked --offline` on
+`mokiterions-core/tests/replay.rs:127`, `assertion failed: output.stdout.is_empty()`. The cause is one
+platform difference: **`fs::File::open` on a directory succeeds on Linux** and refuses only when the file
+is read. Both hosts opened the transcript and handed the reader straight to `ReplayPort`, so on Linux a
+directory named as a transcript *began the run* — the engine binary printed the whole of tick 0 to
+standard output and only then failed with `Is a directory (os error 21)`, and the observer entered the
+terminal and was still drawing twenty seconds later with nothing on standard error. On Windows the open
+itself fails, so nothing was printed and every local gate was green.
+
+That contradicts `mokiterions-core/src/main.rs`'s own comment — *"opening it creates nothing, so a failure
+here leaves the filesystem exactly as it was"*, offered as the reason the ordering means exiting `1`
+before any tick runs — and it contradicts `SPEC-MOK-007` rule 13.2, which requires exactly that ordering.
+
+`dbc9e6d` fixes it in **both** hosts, because rule 12.2's guarantee holds *"in both hosts"* and a fix in
+one would have left them disagreeing on Linux. Each now calls `fill_buf()` on the `BufReader` before
+lending it: `fill_buf` peeks without consuming, so the port reads exactly the bytes it would have read
+anyway, and an empty file is still `Ok(&[])` — a transcript that ran out at the first opportunity, which
+is the engine's own rule 12.4 refusal and a different case. Both properties were measured rather than
+reasoned: a directory exits `1` with **0 bytes** of standard output on both platforms, and an empty file
+exits `1` after **12,859 bytes** on both.
+
+**Three things about this are worth more than the fix.**
+
+- **The test that should have caught it was written in a way that could not.** Its directory case asserted
+  `assert_ne!(code, Some(0))` rather than the exit code, and asserted an empty standard output at a point
+  where the partial run had already been written. So on Linux the assertion that fired was the one about
+  output, and the one that would have named the defect was never strict enough to fire at all. It now
+  asserts the missing file's case exactly: exit `1`, empty standard output, the host's message naming the
+  path, and no usage text.
+- **No case in the required list covers this**, which is escalation **E19** below. `L32` covers the
+  parser's exit `2` and `L8` covers a mismatch found while replaying; a transcript the platform refuses
+  has no case on either host. Running the whole of `VER-MOK-018` would not have found this.
+- **The observer's half had no automated test of any kind**, and its failure was the worse of the two — a
+  live observer over a transcript that cannot be read, with nothing to end it but a key press. That gap
+  was already recorded in this packet before the defect was found; the defect is what it costs.
+
+**Everything in the packet that depends on a build was re-measured at `dbc9e6d`**, because the source
+change is behavioural this time rather than a comment: the four Rust gates on both platforms, the whole
+eighty-cell `REQ-MOK-068` matrix in both modes, the twenty entropy configurations, all eight
+`replay-identity.txt` cells and all twelve of its boundary and refusal cases, and the four Python
+readings. **Every figure reproduces.** Two captures that print source line numbers —
+`candidate/static-checks.txt` and `candidate/architecture-checks.txt` — were re-run and **replaced**
+rather than annotated, 30 differing lines each of which one is the commit named and 29 are digit-only,
+with no finding, verdict or sentence changed. `candidate/gates.txt`'s third amendment carries the session
+in full and `README.md` carries the departure from this packet's no-editing-a-capture rule.
 
 ## 2. The public surface, before and after
 
@@ -841,9 +898,9 @@ assurance owner's.
 
 ## 11. Every escalation raised, and how it was resolved
 
-**Eighteen were raised. Seven were resolved as they arose. The remaining eleven were put to the owner
-in one pass on 2026-08-24 — each with its measurement displayed — and all eleven were ruled in the turn
-the question was asked.** A ruling is not the same as the work it authorizes: each entry below states the
+**Nineteen were raised. Seven were resolved as they arose. Eleven were put to the owner in one pass on
+2026-08-24 — each with its measurement displayed — and all eleven were ruled in the turn the question was
+asked. `E19` was raised after those rulings, at `dbc9e6d`, out of the defect CI found, and is open.** A ruling is not the same as the work it authorizes: each entry below states the
 ruling and what was written under it, and the acts that remain nobody's but an owner's are in the section
 after this one.
 
@@ -975,6 +1032,18 @@ after this one.
   Both steps are green locally. It stays in `scripts/`: its sibling is there, and a check that must be
   able to refuse a change to `.github/` cannot live inside the evidence packet of one work order. **This
   adds to in-scope item 11 rather than correcting it**, and the *Lifecycle* note says so.
+- **E19 — `VER-MOK-018` has no case for a transcript the platform refuses.** Raised 2026-08-24 at
+  `dbc9e6d`, out of the defect CI found. The required list covers the parser's refusal (`L32`, exit `2`)
+  and a mismatch detected while replaying (`L8`), and rule 13.2's host behaviour on a read that fails has
+  no case of its own on either host — so the required list, run in full, would not have found a defect
+  that made a directory replay as a transcript on Linux. What would close it is a case in `VER-MOK-018`
+  naming the exit code, the empty standard output and the message prefix for a transcript the platform
+  refuses, exercised on more than one platform, on both hosts. **That is an owner act**: `VER-MOK-018` is
+  approved, a case is not added to a required list on an implementation agent's judgement, and the
+  alternative — recording it as a known gap for `WO-MOK-026` — is a decision and not a default. The
+  behaviour itself is now tested and measured on both platforms; what is missing is the contract's row
+  for it. `candidate/verification-cases.txt` raises the same escalation where a reader of the required
+  list will meet it.
 - **E18 — `REPOSITORY_CONTEXT.md`'s amendment,** which `ADR-MOK-007` requires and which is the
   repository owner's to write.
   **Ruled: draft it as a diff for the owner to approve or replace.** Drafting is not approving, and the
@@ -1000,3 +1069,7 @@ Listed here so that no reader takes this report for a completion.
   them is in item 7 above and is not a substitute for them.
 - **C6's attestation** — the repository owner's, and it is the fact the cost containment rests on.
 - **`REPOSITORY_CONTEXT.md`'s amendment** — the repository owner's, per `ADR-MOK-007`.
+- **`E19`'s ruling** — whether `VER-MOK-018` gains a case for a transcript the platform refuses, or the
+  gap is recorded and deferred. The behaviour is implemented, tested and measured on two platforms; what
+  is missing is the required list's row for it, and a required list is not extended by the agent whose
+  code it verifies.

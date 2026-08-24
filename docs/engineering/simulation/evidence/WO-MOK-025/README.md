@@ -77,8 +77,8 @@ which is an upper bound on when it was taken and not a claim about the tree it r
 | `candidate/public-surface.txt` | what this work order added to the engine's public interface, and `SPEC-MOK-002` rule 5's own mechanical checks run | names no commit; committed at `1854f7b` |
 | `candidate/replay-identity.txt` | a replay reproducing a recorded run byte for byte, and the same transcript through both hosts | `1854f7b` |
 | `candidate/observer-screen.txt` | the observer's six panes reconstructed from the drawn screen, which is what `L31` is about | names no commit; committed at `3675592` |
-| `candidate/static-checks.txt` | `L3` and `L11`'s static checks | `3c7a551` |
-| `candidate/architecture-checks.txt` | the architecture, usage and security checks that have no other runner | `6309f9c` |
+| `candidate/static-checks.txt` | `L3` and `L11`'s static checks | `dbc9e6d`; **re-run and replaced**, see below |
+| `candidate/architecture-checks.txt` | the architecture, usage and security checks that have no other runner | `dbc9e6d`; **re-run and replaced**, see below |
 | `candidate/declared-dependencies.txt` | `S1`: each package's resolved graph against its declared set, via the repository's own gate | `6309f9c` |
 | `candidate/request-layout.txt` | completion-report item 6: the request's blocks as built, measured over the committed transcript | names no commit; committed at `6309f9c`, amended at `bdaad99` |
 | `candidate/transcript-reading.txt` | the independent reading over the transcript: `L4`, `L5`, `L6`, `L12`–`L14`, `L15a`, `L17` | `84f0452` |
@@ -135,6 +135,43 @@ named above, and the two scripts that reproduce it. One consequence is recorded 
 implicit: the schema-digit check runs over the recapture's streams, because the original capture's streams
 were never retained and only their manifest was.
 
+**A third correction, and this one is a defect rather than a bookkeeping matter: `dbc9e6d` changed the
+binary, and every gate reading in this packet before it was taken on Windows only.** `fs::File::open` on a
+directory succeeds on Linux and refuses only at the first read, so a directory named as a transcript began
+the run on Linux in both hosts — the engine binary printed the whole of tick 0 before failing, and the
+observer entered the terminal and stayed there with nothing on standard error. On Windows the open itself
+fails and neither happened, which is why every local gate was green and CI's Linux lane was red. `dbc9e6d`
+forces the first read in both hosts with `fill_buf`, which peeks without consuming, so the port reads
+exactly the bytes it would have read anyway and an empty file still replays as a transcript that ran out.
+
+**Everything in this packet that depends on a build was re-measured at `dbc9e6d` rather than argued to be
+unaffected**, because this time the source change is behavioural and not a comment: the four Rust gates on
+**both** platforms (422 passed, 0 failed, 3 ignored on each, with `--no-fail-fast` so that one red binary
+could not hide the others), the whole eighty-cell `REQ-MOK-068` matrix in both modes, the twenty entropy
+configurations, all eight `replay-identity.txt` cells and all twelve of its boundary and refusal cases, and
+the four Python readings. **Every figure reproduces.** `candidate/gates.txt`'s third amendment is that
+session in full, and `candidate/replay-identity.txt` and `candidate/verification-cases.txt` carry their own
+amendment blocks.
+
+**Two captures are replaced rather than annotated**, which is a departure from this packet's rule that a
+capture is not edited after the fact, and it is stated here rather than buried: `candidate/static-checks.txt`
+and `candidate/architecture-checks.txt` both scan source and print line numbers, and 226 lines of engine
+binary where there were 211 moves them. Each was re-run at `dbc9e6d` and compared line for line with the
+file it replaced: 1,414 and 1,267 lines, 30 differing lines each, of which one is the commit the file names
+and 29 are digit-only once every number is masked. **No finding, no verdict and no sentence of either file
+changed.** `analysis/static-checks.py` was edited in the same commit and for the same reason — its prose
+cited the two port-construction sites as `src/main.rs:85` and `mokiterions-tui/src/main.rs:118`, now `:99`
+and `:130` — and because the instrument embeds its own source in its output, the two necessarily move
+together. Annotating the two files instead would have left a reader comparing a stale line number against
+the tree and finding a comment.
+
+**`replay-identity.txt`'s `O6` was true of Windows only, and escalation `E19` comes out of that.** `O6` is
+the observer given a directory; it passed on Windows and, before `dbc9e6d`, left a live observer running on
+Linux. No case in `VER-MOK-018`'s required list covers a transcript the platform refuses — `L32` covers the
+parser's exit `2` and `L8` covers a mismatch found while replaying — so running the whole required list
+would not have found this. `candidate/verification-cases.txt` raises `E19` and the completion report carries
+it; neither closes it, because the required list is the owner's.
+
 **`bfdbf71` appears in `candidate/request-layout.txt` and is not that file's capture commit.** It is the
 commit the repository owner's six rule 11 rulings were taken over, cited where the file reports the finding
 those rulings bear on. The file's own figures come from the committed transcript, which is a file in this
@@ -187,9 +224,10 @@ repository rather than a build, so a reader who distrusts them can re-derive the
 - **`completion-report.md`** — the work order's completion report, in the eleven-item order
   `WO-MOK-025`'s *Completion report format* fixes. It cites the captures above rather than restating
   their figures, and it is the account of a candidate written by the agent that wrote the code: it
-  verifies nothing. It names all eighteen escalations — the seven resolved as they arose and the eleven the
-  owner ruled in one pass on 2026-08-24, each with what was written under its ruling — and the five acts
-  that belong to an owner and are still outstanding.
+  verifies nothing. It names all nineteen escalations — the seven resolved as they arose, the eleven the
+  owner ruled in one pass on 2026-08-24, each with what was written under its ruling, and `E19`, raised
+  after those rulings out of the defect CI found — and the acts that belong to an owner and are still
+  outstanding.
 
 ## Retention: what is kept whole, what is kept as a digest, and why
 

@@ -109,6 +109,133 @@ move with artifact prose, and their figures are stated with the commit they were
   below. The four Rust gates read on source that still has not moved since bce4229, so their
   figures stand unchanged.
 
+  A THIRD AMENDMENT, and it is not a bookkeeping one. Every reading in this file above was
+  taken on Windows and none of them says so. Two of them were true of Windows only.
+
+  Commit dbc9e6d fixes a defect that CI's Linux lane found and that no local gate could:
+  fs::File::open on a directory succeeds on Linux and refuses only at the first read. Both
+  hosts opened the transcript and handed the reader straight to ReplayPort, so on Linux a
+  directory named as a transcript began the run. The engine binary printed the whole of tick 0
+  to standard output before failing; the observer entered the terminal and stayed there. On
+  Windows the open itself fails, so neither happened and every gate was green.
+
+  What that means for this file: the four Rust gates below were a platform-limited reading, and
+  the one test that should have caught the defect was written in a way that could not. Its
+  directory case asserted assert_ne!(code, Some(0)) rather than the exit code, and it asserted
+  an empty standard output at a point where the partial run had already been written -- so the
+  assertion that failed on Linux was the one about output, and the exit-code assertion that
+  would have named the defect was never strict enough to fire. That test now asserts the
+  missing file's case exactly: exit 1, empty standard output, the host's message naming the
+  path, and no usage text.
+
+  The gates are therefore re-read on BOTH platforms at dbc9e6d, and the figures are stated per
+  platform rather than merged:
+
+    Windows 11, x86_64-pc-windows-msvc, in this tree
+      cargo fmt --check                                              -> exit 0, no output
+      cargo clippy --workspace --all-targets --all-features --locked -D warnings
+                                                                     -> exit 0, no warnings
+      cargo test --workspace --locked --no-fail-fast
+                                     -> 422 passed, 0 failed, 3 ignored, 25 result lines
+      cargo build --workspace --locked                               -> exit 0
+
+    Ubuntu 24.04 under WSL 2, x86_64-unknown-linux-gnu, in a separate clone of this branch
+      cargo fmt --check                                              -> exit 0, no output
+      cargo clippy --workspace --all-targets --all-features --locked -D warnings
+                                                                     -> exit 0, no warnings
+      cargo test --workspace --locked --no-fail-fast
+                                     -> 422 passed, 0 failed, 3 ignored, 25 result lines
+      cargo build --release --locked                                 -> exit 0
+
+  --no-fail-fast is new to this reading and it is the reason the picture is trustworthy: the
+  suite aborts after the first failing binary without it, so the run that found the defect
+  could not have said whether it was the only one. It was: 422 of 422 on both platforms, with
+  the same three ignored instruments and the same 25 result lines, so the two platforms differ
+  in nothing the suite can see.
+
+  The refusal itself, measured on both platforms rather than inferred from the test:
+
+    a directory named as the transcript, engine binary
+      Windows   exit 1, 0 bytes of standard output
+                runtime error: transcript <dir>: Access is denied. (os error 5)
+      Linux     exit 1, 0 bytes of standard output
+                runtime error: transcript <dir>: Is a directory (os error 21)
+
+    an empty file named as the transcript -- the case that must NOT be refused here
+      Windows   exit 1 after 12,859 bytes of standard output
+      Linux     exit 1 after 12,859 bytes of standard output
+                runtime error: transcript: the transcript ended after 0 exchange(s) and cannot
+                satisfy tick 1 actor M01. A replay does not shorten the run and does not fall
+                back
+
+  The second pair is why the fix reads the first byte with fill_buf rather than by reading a
+  line: fill_buf peeks without consuming, so an empty file is Ok(&[]) and still replays as a
+  transcript that ran out at the first opportunity -- the engine's own rule 12.4 refusal, not
+  the host's -- and the port below reads exactly the bytes it would have read anyway. Both
+  platforms produce the same 12,859 bytes and the same message, which is the check that the
+  peek consumed nothing.
+
+  The observer's half was measured the same way, and its defect was the worse of the two. On a
+  Linux pseudo-terminal sized 120x40, given a directory as its transcript:
+
+    without the fix   still running when killed after 20 seconds -- exit 124 is the killer's --
+                      and 0 bytes to standard error. An operator watching an observer over a
+                      transcript that cannot be read, with nothing to end it but a key press.
+    with the fix      exit 1, 0 bytes of standard output, and
+                      runtime error: transcript <dir>: Is a directory (os error 21)
+
+  Both readings are of the same tree with only the two hosts' opening arms differing, taken in
+  the same session. That case is replay-identity.txt's O6, which was measured on Windows and
+  passed there. It is the second reading in this packet that was true of Windows only, and it
+  had no automated test of any kind, which is the gap that file already records.
+
+  Everything else was re-measured at dbc9e6d rather than argued to be unaffected, because the
+  binary genuinely changed this time:
+
+    the whole REQ-MOK-068 matrix, both modes, 80 cells
+      diff <(tail -n +2 <recap>/nosink-manifest.txt) <(tail -n +2 candidate/nosink-manifest.txt)
+        -> no output
+      diff <(tail -n +2 <recap>/sink-manifest.txt)   <(tail -n +2 candidate/sink-manifest.txt)
+        -> no output
+    the twenty entropy configurations
+      diff <(tail -n +2 <recap>/entropy-manifest.txt) <(tail -n +2 candidate/entropy-manifest.txt)
+        -> no output
+    the eight replay-identity cells from the release binary: all eight digests, byte counts and
+      exit codes equal to candidate/replay-identity.txt's, all six text cells 0 bytes of
+      standard error
+    the eight boundary and refusal cases R1, R2, R3b, R4, R6, R7, R8 and the four observer
+      cases O1, O2, O4, O6: every exit code, every standard-output byte count and every first
+      line of standard error as recorded, and O4's whole standard error still byte-identical to
+      R3b's at 104 bytes
+    scripts/check_workflow_credentials.py -> exit 0; its own suite -> 38 tests OK;
+      scripts/check_transcript_reading.py's suite -> 36 tests OK; the reader over the committed
+      transcript -> PASS for L4, L5, L6, L12, L13, L14, L15a and L17
+
+  Two capture files in this directory are REPLACED rather than annotated, because their content
+  moved: candidate/static-checks.txt and candidate/architecture-checks.txt. Both scan source and
+  print line numbers, and 226 lines of engine binary where there were 211 shifts them. Each was
+  re-run at dbc9e6d and the result compared line for line with what it replaced:
+
+    static-checks.txt        1,414 lines, 30 differ: the candidate hash, and 29 changes that are
+                             digit-only once every number is masked
+    architecture-checks.txt  1,267 lines, 30 differ: the same shape
+
+  No finding, no verdict and no sentence of either file changed -- only the commit each names
+  and the numbers inside them. The replacement is stated here and in README.md rather than left
+  to a reader comparing digests, and analysis/static-checks.py was edited in the same commit for
+  the same reason: its prose cited the two port-construction sites as src/main.rs:85 and
+  mokiterions-tui/src/main.rs:118, which are now :99 and :130. The instrument embeds its own
+  source in its own output, so the two move together by construction.
+
+  The harness pair was re-read over the tree carrying these edits, from the pinned 0.4.0 evaluator
+  outside the checkout, immediately before the commit that contains them -- so the figures are of
+  this file as amended rather than of the tree before it:
+
+    validate                                        PASS, 179 artifacts, 0 errors, 0 warnings
+                                                    structure E0/W0 governance E0/W0
+                                                    policy E0/W0 maintenance E0/W0
+    preflight --work-order WO-MOK-025 --phase review PASS, commit-bound verification required
+
 --- Formatting and lint, in the forms preflight prescribes -------------------------------
 
     cargo fmt --all -- --check

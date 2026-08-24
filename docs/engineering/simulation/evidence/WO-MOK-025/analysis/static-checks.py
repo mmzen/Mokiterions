@@ -939,7 +939,7 @@ def check_6(report, added, simulation):
                    'to be')
         report.say('  public and cannot be narrowed: two separate crates construct the port, '
                    '`mokiterions-core/`')
-        report.say('  `src/main.rs:85` and `mokiterions-tui/src/main.rs:118`, because '
+        report.say('  `src/main.rs:99` and `mokiterions-tui/src/main.rs:130`, because '
                    '`SPEC-MOK-007` rule 12.1.1')
         report.say('  puts the opening of the transcript in the host. `ARCH-MOK-002` names the type '
                    'by name —')
