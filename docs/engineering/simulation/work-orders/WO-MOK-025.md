@@ -2,7 +2,7 @@
 id = "WO-MOK-025"
 type = "work_order"
 title = "Stage 5a: the decision port, the request, the transcript and the replay — everything the model-backed source needs, with no provider and no cost"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-23"
 updated = "2026-08-24"
@@ -159,6 +159,38 @@ condition 6 forbids amending an approved artifact on an implementation agent's j
 been a scope decision the agent has no authority to take. **This work order's status does not move here** —
 it remains `in_progress`, and the transition to `implemented` requires the completed change and the retained evidence,
 which is a separate act.
+
+### Transition to `implemented`, 2026-08-24
+
+**Set to `implemented` on 2026-08-24 by the repository owner acting as engineering owner.** The instruction, verbatim and
+complete, in the turn it was given, answering a question that put the transition together with the two acts it forces:
+
+> Yes — transition it
+
+It is the fourth owner act of the day on this stage, after the eleven escalations ruled in one pass, the two later rulings
+recorded above, and the three acts retained in the evidence packet — the **M1** and **M2** assessments and the **C6**
+credential attestation. It is recorded here rather than in the evidence packet because a work order's own status is not a
+measurement, and it takes a subsection of *Lifecycle* rather than a row in an amendment record because
+`WORK_ORDER.template.md` defines no such table, on the `WO-MOK-014` precedent.
+
+`implemented` records that the change of the scope below is complete and its evidence retained. **It is not a
+verification.** It authorizes the capture of a commit-bound verification record, which `[assurance]` above requires and
+which the harness refuses while this status is anything else; it authorizes nothing wider than that. It does not decide
+`VER-MOK-018` — that is the assurance owner's act in `VREC-MOK-024` — and it does not authorize release, a tag, or a
+merge. It authorizes no provider call and no spend, which no act of this stage can, and it lifts no stop-and-escalate
+condition.
+
+**This transition takes a commit of its own, before the record is captured.** A verification record binds a candidate
+commit and a set of evidence paths as provenance, neither of which can be re-pointed afterwards; a record that bound the
+commit performing the transition it depends on would bind its own precondition. So the ordering is fixed and stated: the
+three owner records of 2026-08-24 land first, because they change the evidence path's contents; this transition lands
+second, alone; the capture runs against that commit.
+
+**What it does not claim.** Eight of the sixty-eight required verification rows are not a plain green, and the completion
+report names each one with what is missing. `L28` — a genuine authorization for a live run — is not verified, because
+there is no live run to authorize at this stage and the standing instruction is that explicit permission from the
+repository owner is needed to launch one. `M3` is out of scope for this stage's assessment, because it needs the live run
+`L24` describes. `implemented` asserts the completed scope, not an unqualified pass.
 
 ## Objective
 
