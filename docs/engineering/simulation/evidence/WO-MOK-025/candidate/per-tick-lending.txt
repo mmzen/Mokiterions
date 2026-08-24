@@ -1,0 +1,208 @@
+The port is lent, not rebuilt: the per-tick evidence
+===================================================
+
+`WO-MOK-025` required evidence item 11 is what this file serves, and its last sentence is what
+shapes it: "Both halves of a port rebuilt each tick are recorded as the failure they would produce,
+so a later reader can tell the case was exercised rather than merely present." So each half below
+states the figures a lent port produces AND the figures a rebuilt one would produce, because a test
+that only asserts the right answer cannot tell a reader it would have caught the wrong one.
+
+`VER-MOK-018` case **L30** is the case, and its own words for the defect are "the case for the
+defect that compiles, runs and reports success". Its discriminator, verbatim: "A port rebuilt each
+tick passes neither half: the cursor restarts and the accumulated cost stays at zero, so the ceiling
+never triggers."
+
+Taken 2026-08-24 in the implementation tree on `feature/phase-5-definition` at commit d002f04.
+`analysis/lending-cursor.py`, whose output is quoted below, is untracked at that commit and is
+committed together with this file - the instrument is new here, and every source file it measures is
+at d002f04. `bce4229` is still the last commit that changed a file under either package, which
+`candidate/gates.txt` measures.
+
+    RESULT: both halves hold, each in a test that asserts the discriminator rather than only the
+    right answer.
+
+    The replay half: 20 ticks driven one at a time through `Simulation::advance_tick` with the
+    public `ReplayPort` over the committed transcript consume all 221 exchange records, in the same
+    order and at the same ticks as the recording that produced them. A restarted cursor does not
+    reach a wrong run here - it fails at tick 2, by an already-verified refusal.
+
+    The ceiling half: a stubbed run's cost reaches 12, 24 and 36 exchange-units over three ticks and
+    reaches its ceiling in the second, where a rebuilt port would report 12 three times and never
+    reach it. THE CEILING IS EIGHTEEN EXCHANGES AND NOT THE CASE'S TWO; the reason is below and is
+    disclosed to the owner.
+
+    A FINDING that fell out of the measurement rather than being looked for: on this transcript the
+    ACTOR half of rule 12.3's check would not catch a restarted cursor, because every tick's first
+    opportunity belongs to M01. The TICK half is what catches it. A transcript whose per-tick actor
+    order varied would hide that, and a check written against the actor alone would pass a rebuilt
+    port. Recorded because it is a property of the discriminator, not of this run.
+
+--- Half one: the replay consumes successive records ------------------------------------------
+
+L30's replay half is "a replay of at least three ticks through the single-tick entry point consumes
+successive transcript records rather than the first record three times". The test that is exactly
+that, twenty ticks rather than three:
+
+    mokiterions-core/tests/replay.rs:1134  both_of_rule_twenty_fives_doors_carry_the_port
+      Door two opens the committed transcript, wraps the public `ReplayPort` in a counting port and
+      drives `Simulation::advance_tick` to the horizon. It asserts 20 ticks, that the opportunities
+      reached are the same (tick, actor) pairs in the same order as the recording door one made, and
+      that the two doors authored the same number of exchange records. A cursor that restarted each
+      tick would fail the pair comparison at tick 2 - and, before that, would fail rule 12.3.
+
+      The test's own printed figures are in the run below (`--nocapture`), so the counts are read
+      from the run rather than copied here.
+
+    mokiterions-core/src/simulation.rs:12371  a_replay_reads_nothing_until_the_run_needs_a_record
+      The same port over a counting reader: 0 reads at construction, and reads only once a run needs
+      a record. A cursor is only "successive" if there is one cursor, and this is where the port's
+      state is shown to belong to the run rather than to the call.
+
+The failure a rebuilt port would produce is not hypothetical here; it is a verified refusal:
+
+    mokiterions-core/src/simulation.rs:12408  a_replay_refuses_a_record_that_is_not_the_opportunity_reached
+      Rule 12.3, case by case: each case edits one field of the first exchange record and asserts the
+      run fails naming both the opportunity and the mismatch. Its "another tick" case is precisely
+      the record a restarted cursor would offer at tick 2, and the expected message is
+      "record is for tick 2".
+
+    mokiterions-core/src/simulation.rs:12655  a_replay_failure_is_latched_and_produces_no_further_ticks
+      What makes that refusal terminal rather than a stumble.
+
+So on this transcript a rebuilt port does not produce a plausible wrong run: it produces a failed one
+at tick 2. That is stronger than the case asks for, and it is why the transcript's own shape matters
+- measured from outside the crate, so the figure does not come from the code under test:
+
+    python docs/engineering/simulation/evidence/WO-MOK-025/analysis/lending-cursor.py
+
+prefix records: 12
+exchange records: 221 over 20 tick(s)
+
+tick  records  first actor  last actor
+   1       12  M01          M12
+   2       12  M01          M12
+   3       12  M01          M12
+   4       12  M01          M12
+   5       12  M01          M12
+   6       12  M01          M12
+   7       12  M01          M12
+   8       12  M01          M12
+   9       11  M01          M12
+  10       11  M01          M12
+  11       11  M01          M12
+  12       11  M01          M12
+  13       11  M01          M12
+  14       10  M01          M12
+  15       10  M01          M12
+  16       10  M01          M12
+  17       10  M01          M12
+  18       10  M01          M12
+  19       10  M01          M12
+  20       10  M01          M12
+
+If the cursor restarted at every tick, the record offered at the first opportunity of
+  tick 2 would be the record for tick 1 actor M01, against the opportunity tick 2 actor M01
+      same actor; tick 1 vs 2: the TICK is what differs
+  tick 3 would be the record for tick 1 actor M01, against the opportunity tick 3 actor M01
+      same actor; tick 1 vs 3: the TICK is what differs
+  tick 4 would be the record for tick 1 actor M01, against the opportunity tick 4 actor M01
+      same actor; tick 1 vs 4: the TICK is what differs
+
+So the actor half of rule 12.3's check would not catch a restarted cursor on this
+transcript - every tick's first opportunity is M01 - and the tick half is what does.
+
+Cumulative records consumed by the end of each of the first three ticks, lent versus rebuilt:
+  tick 1: lent 12, rebuilt 12
+  tick 2: lent 24, rebuilt 12
+  tick 3: lent 36, rebuilt 12
+
+221 exchange records over 20 ticks, with the per-tick count falling from 12 to 11 to 10 as
+Mokiterions die, is the transcript's own shape. What matters is the last three lines: a lent port's
+consumed count rises with it and a rebuilt one's does not.
+
+--- Half two: the accumulated cost, and the ceiling ------------------------------------------
+
+L30's second half is "a stubbed live run's accumulated cost rises across ticks and trips a ceiling".
+The figures are asserted in the tests run below and are quoted with their sites, because the
+assertion is the evidence:
+
+    mokiterions-core/src/simulation.rs:11625  a_port_lent_for_the_run_accumulates_across_ticks
+      10 ticks, 12 Mokiterions, 120 requests seen and none lost between ticks; the distinct ticks the
+      requests report are exactly 1 to 10. A rebuilt port would hold one tick's requests.
+
+    mokiterions-core/src/simulation.rs:13077  a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling
+      3 ticks, 36 exchanges ("twelve opportunities a tick"), costs 12, 24 and 36 times the synthetic
+      unit cost, ceiling reached [false, true, true]. Its own comment states the discriminator: "a
+      port rebuilt each tick would report the first figure three times and would never reach the
+      ceiling."
+
+    mokiterions-tui/tests/replay.rs:159  one_port_serves_the_whole_run_and_is_never_rebuilt
+      The same property in the observer, through that host's own single-tick door: 5 ticks,
+      proposals accumulating 12, 24, 36, 48, 60, and 60 records handed back. Its comment states which
+      of its assertions a rebuilt port could still satisfy - the tick ordering - and which it could
+      not: the counts. Both are asserted for that reason.
+
+  THE CEILING FIGURE IS NOT THE CASE'S, and the deviation is deliberate and documented in the test
+  itself. L30 names "a ceiling set to the cost of two exchanges". A tick here holds twelve
+  opportunities, so a two-exchange ceiling is reached INSIDE the first tick - and a port rebuilt
+  every tick would reach it too, which destroys the case's own discriminator ("the accumulated cost
+  stays at zero, so the ceiling never triggers"). The test uses eighteen exchanges, one and a half
+  ticks: reached in the second tick when the port is lent, unreachable when it is rebuilt. The case's
+  substance is checked and its illustrative figure is not.
+
+  `VER-MOK-018` line 150 and `WO-MOK-025` item 11 both say two, so this is a divergence between the
+  artifacts' figure and the evidence. It is disclosed rather than papered over, and it is put to the
+  owner with this work order's other open questions. `candidate/verification-cases.txt`'s L30 row
+  carries the same disclosure.
+
+  Case **L19**'s "a ceiling equal to the cost of two exchanges yields exactly two" is a different
+  measurement and does use two: it is over the account alone rather than over a run of whole ticks,
+  and rule 14.6's before-the-exchange check is its subject. That test is
+  mokiterions-core/src/simulation.rs:13042
+  the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two, in the block below.
+
+--- The runs -----------------------------------------------------------------------------------
+
+    $ cargo test -p Mokiterions --test replay -- --exact --nocapture \
+    both_of_rule_twenty_fives_doors_carry_the_port
+
+running 1 test
+execute and advance_tick both carried the port over 221 opportunit(ies) and 221 exchange record(s); the head's 12 prefix record(s) are door one's alone
+test both_of_rule_twenty_fives_doors_carry_the_port ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.05s
+
+    $ cargo test -p Mokiterions --lib -- --exact \
+    simulation::tests::a_port_lent_for_the_run_accumulates_across_ticks \
+    simulation::tests::a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling \
+    simulation::tests::the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two \
+    simulation::tests::a_replay_reads_nothing_until_the_run_needs_a_record \
+    simulation::tests::a_replay_refuses_a_record_that_is_not_the_opportunity_reached \
+    simulation::tests::a_replay_failure_is_latched_and_produces_no_further_ticks
+
+running 6 tests
+test simulation::tests::the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two ... ok
+test simulation::tests::a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling ... ok
+test simulation::tests::a_port_lent_for_the_run_accumulates_across_ticks ... ok
+test simulation::tests::a_replay_failure_is_latched_and_produces_no_further_ticks ... ok
+test simulation::tests::a_replay_reads_nothing_until_the_run_needs_a_record ... ok
+test simulation::tests::a_replay_refuses_a_record_that_is_not_the_opportunity_reached ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 137 filtered out; finished in 0.04s
+
+    $ cargo test -p mokiterions-tui --test replay -- --exact \
+    one_port_serves_the_whole_run_and_is_never_rebuilt
+
+running 1 test
+test one_port_serves_the_whole_run_and_is_never_rebuilt ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+--- What this file does not establish --------------------------------------------------------
+
+The port in half two is the scripted stub, not a connector. `WO-MOK-025` says so and says why: the
+stub is an in-process implementation of the port, so it exercises both entry points and the per-tick
+lending without a process, and the difference between this stage's green and `WO-MOK-026`'s is which
+of the two supplies the proposals. Half one's port is the real `ReplayPort`, over a committed file.
+
+It establishes nothing about a live run's cost. The unit price and the usage are declared and
+synthetic; only the arithmetic over them is measured. No provider was called, no socket opened, no
+credential read and no process spawned - `candidate/architecture-checks.txt` measures those absences
+over both packages.

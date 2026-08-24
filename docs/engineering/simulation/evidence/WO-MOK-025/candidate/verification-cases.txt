@@ -5,12 +5,20 @@ WO-MOK-025's completion report item 7 is what this file serves: "Each verificati
 required list, with its result and the path to its evidence." The governing sentence of that
 section is the one that shapes this file more than any other: "A case that cannot be run is
 escalated, not omitted." Six rows below are therefore not green, one more passes and is escalated
-anyway, and one does not apply at this stage. Each says why in the row rather than in a footnote a
-reader can miss.
+anyway, one passes against a figure the artifacts state differently (L30), and one does not apply
+at this stage. Each says why in the row rather than in a footnote a reader can miss.
 
 Taken 2026-08-24 in the implementation tree on feature/phase-5-definition at commit bdaad99.
 
-    RESULT: 67 rows, one per case and per required half-case. 59 pass. One passes and is
+AMENDED at commit d002f04's successor, same day, in one place: L30's row said the ceiling is "set
+to two exchanges", which is the case's figure and not the test's. The test uses eighteen and says
+why. The correction is in the row, and candidate/per-tick-lending.txt is the capture that carries
+the whole measurement. Nothing else in this file was re-measured, and no package file changed
+between the two readings - bce4229 remains the last commit that did.
+
+    RESULT: 67 rows, one per case and per required half-case. 59 pass, one of those against a
+    figure this work order and VER-MOK-018 both state differently (L30's ceiling: eighteen
+    exchanges rather than two, deliberately, and the row says why). One passes and is
     escalated anyway (L5, whose literal wording is wider than the check). Three pass in part and
     are escalated for the part that does not run (L16's retried exchange, L17's withdrawn clause,
     C1's synthetic-credential test). Three are owner acts and are not mine to make (L27 and M1,
@@ -229,12 +237,31 @@ L29  both of rule 20.5's doors carry the port                                   
        points are exercised without a process.
 
 L30  the port is lent, not rebuilt                                                      PASS
-     mokiterions-core/src/simulation.rs:11625   a_port_lent_for_the_run_accumulates_across_ticks
-     mokiterions-core/src/simulation.rs:13077   a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling
-       the ceiling half: accumulated cost rises across ticks and trips a ceiling set to two
-       exchanges, which a port rebuilt each tick would never reach
+     candidate/per-tick-lending.txt   the whole case, both halves, with each half's rebuilt-port
+       counterfactual stated as the failure it would produce, which is what item 11 asks for
+     mokiterions-core/tests/replay.rs:1134   both_of_rule_twenty_fives_doors_carry_the_port
+       the cursor half as the case words it: twenty ticks through the single-tick entry point with
+       the public ReplayPort over the committed transcript, consuming all 221 exchange records at
+       the same ticks and for the same actors as the recording that produced them
      mokiterions-core/src/simulation.rs:12371   a_replay_reads_nothing_until_the_run_needs_a_record
-       the cursor half: successive records rather than the first record repeatedly
+       that there is one cursor at all: nothing read at construction, read only when the run needs
+       a record
+     mokiterions-core/src/simulation.rs:12408   a_replay_refuses_a_record_that_is_not_the_opportunity_reached
+       the failure a restarted cursor would produce, already verified: its "another tick" case is
+       exactly the record tick 2 would be offered, and the message is "record is for tick 2"
+     mokiterions-core/src/simulation.rs:13077   a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling
+       the ceiling half: accumulated cost rises across ticks - 12, 24, 36 exchange-units - and
+       reaches the ceiling in the second tick, which a port rebuilt each tick would never do
+       THE FIGURE IS NOT THE CASE'S. L30 and this work order's item 11 both name a ceiling set to
+       two exchanges. A tick here holds twelve opportunities, so a two-exchange ceiling is reached
+       inside the first tick and a rebuilt port would reach it too - the case's own discriminator
+       ("the accumulated cost stays at zero, so the ceiling never triggers") would be lost. The
+       test uses eighteen, one and a half ticks, and its doc comment states this reason. The
+       case's substance is checked and its illustrative figure is not; the deviation is put to the
+       owner rather than resolved here.
+     mokiterions-core/src/simulation.rs:11625   a_port_lent_for_the_run_accumulates_across_ticks
+       the same accumulation over ten ticks and 120 requests, with no cost in it, so the lending
+       is not being read off the arithmetic
      mokiterions-tui/tests/replay.rs:159   one_port_serves_the_whole_run_and_is_never_rebuilt
        the same case in the observer, which is the host most likely to rebuild it
 
