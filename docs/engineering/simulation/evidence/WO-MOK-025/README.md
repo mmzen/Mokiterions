@@ -90,14 +90,34 @@ which is an upper bound on when it was taken and not a claim about the tree it r
 `candidate/observer-screen.txt` is a drawn frame with no header at all — a header would have been part of the
 screen. `candidate/public-surface.txt` and `candidate/request-layout.txt` say "base" and "candidate" and
 name the tree they were taken in without pinning it. What holds them together is the same fact that holds
-`gates.txt`'s four Rust readings together: `bce4229` is the last commit to change a file under either
-package, every one of these was taken after it, and `request-layout.txt`'s figures come from the committed
-transcript rather than from a build at all. A capture cannot be corrected after the fact, so the binding is
-supplied here instead of edited into them.
+`gates.txt`'s four Rust readings together: at the time each was taken, `bce4229` was the last commit to
+change a file under either package, every one of these was taken after it, and `request-layout.txt`'s
+figures come from the committed transcript rather than from a build at all. A capture cannot be corrected
+after the fact, so the binding is supplied here instead of edited into them.
+
+**`bce4229` is no longer the last such commit, and this is the correction rather than a re-capture.**
+`77f2974` — the eleven owner rulings of 2026-08-24 — changed `mokiterions-core/src/simulation.rs`, because
+escalation `E11` corrects `SPEC-MOK-007` rule 11.4.1's character list at the rule and at both restatements
+of it in that file. The whole package diff `bce4229..77f2974` is 9 added and 5 removed lines in that one
+file, and **every one of the 14 is a comment line** — measured, not asserted: each added and removed line
+begins with `//` or `///` once its indentation is stripped, and none carries a fenced block, so no doctest
+appears or disappears either. That is still an argument about the binary, so it was not relied on: all four
+Rust gates were re-read at `77f2974`, and **the whole `REQ-MOK-068` matrix was recaptured there in both
+modes and compared through `manifest.sh` — all eighty cells reproduce byte for byte, standard output,
+standard error, exit code and record stream.** `candidate/gates.txt` carries that measurement as its second
+disclosed amendment, together with the re-read gate figures.
+
+Four capture files in `candidate/` restate the superseded sentence in their own headers and are **left
+exactly as captured**, because a capture is not edited after the fact and each was true when it was
+written: `per-tick-lending.txt` line 18, `replay-identity.txt` line 10, `request-layout.txt` line 224 —
+which cites `gates.txt` rather than asserting it — and `verification-cases.txt` lines 17 and 35. This
+paragraph and `gates.txt`'s amendment are the correction for all four, stated in both places so that a
+reader who opens one of them first is not left to find it in only one.
 
 **One of those commits is earlier than `bce4229`, and the captures taken there were re-run rather than
-argued for.** `candidate/gates.txt` establishes that `bce4229` is the last commit to change a file under
-either package. `8162b18` — the three manifests and the `REQ-MOK-068` comparison — precedes it. The
+argued for.** `candidate/gates.txt` established `bce4229` as the last commit to change a file under either
+package at the time, and carries the amendment for `77f2974` above. `8162b18` — the three manifests and
+the `REQ-MOK-068` comparison — precedes `bce4229`. The
 argument that would close that gap is that only test files intervened, and it is true: `git diff --stat
 8162b18 bce4229` over both packages reports `mokiterions-core/tests/no_outcome_threshold.rs`,
 `mokiterions-core/tests/replay.rs` and `mokiterions-tui/tests/replay.rs`, `3 files changed`, and
@@ -167,7 +187,9 @@ repository rather than a build, so a reader who distrusts them can re-derive the
 - **`completion-report.md`** — the work order's completion report, in the eleven-item order
   `WO-MOK-025`'s *Completion report format* fixes. It cites the captures above rather than restating
   their figures, and it is the account of a candidate written by the agent that wrote the code: it
-  verifies nothing, and it names the eleven open escalations and the five acts that belong to an owner.
+  verifies nothing. It names all eighteen escalations — the seven resolved as they arose and the eleven the
+  owner ruled in one pass on 2026-08-24, each with what was written under its ruling — and the five acts
+  that belong to an owner and are still outstanding.
 
 ## Retention: what is kept whole, what is kept as a digest, and why
 

@@ -7,7 +7,7 @@ order exactly, so a numbered heading below is that clause and not a topic chosen
 |---|---|
 | Work order | `WO-MOK-025`, Phase 5, status `in_progress` |
 | Base commit | `cc5418553cb433715b7d6b15dea3886bff30ffaa` — the pre-change captures, taken before any change of this work order |
-| Last commit that changed a package file | `bce4229` — every commit after it carries evidence files, artifact prose or `scripts/`, which `candidate/gates.txt` measures |
+| Last commit that changed a package file | `77f2974` — the eleven owner rulings of 2026-08-24, whose only package edit is two comments in `simulation.rs` for escalation `E11`. It supersedes `bce4229`, which held this row until then. All four Rust gates were re-read there and the whole `REQ-MOK-068` matrix was recaptured there in both modes: **all eighty cells reproduce byte for byte.** `candidate/gates.txt` carries the measurement as its second disclosed amendment |
 | Branch | `feature/phase-5-definition` |
 | Date | 2026-08-24 |
 | Toolchain | `rustc 1.97.1 (8bab26f4f 2026-07-14)`, `cargo 1.97.1 (c980f4866 2026-06-30)`, pinned in `rust-toolchain.toml` |
@@ -16,8 +16,11 @@ order exactly, so a numbered heading below is that clause and not a topic chosen
 **This work order is not complete and does not claim to be.** All fourteen *In scope* items are built.
 Of the sixty-seven required verification rows, fifty-nine pass, three are the assurance owner's
 assessments and are not mine to make, three pass in part and are escalated for the part that does not
-run, one passes and is escalated anyway, and one does not apply at this stage. **Eleven escalations are
-open** and every one of them is an owner's to settle (item 11). `VER-MOK-018`'s **C6** — the attestation
+run, one passes and is escalated anyway, and one does not apply at this stage. **Eighteen escalations were raised.
+Seven were resolved as they arose; the remaining eleven were put to the owner in one pass on
+2026-08-24 and all eleven were ruled in the turn the question was asked** (item 11). What the rulings
+authorized is written; what they left to an owner is in the section after them, and one of those is
+`E15`, deferred to `WO-MOK-026` and recorded as untriggered rather than met. `VER-MOK-018`'s **C6** — the attestation
 that no provider credential is configured in the repository's automation secrets — is outstanding, and
 it is the single fact the cost containment rests on. The transition of this work order to `implemented`
 is the engineering owner's act; the verification decision and its record are the assurance owner's; no
@@ -64,7 +67,7 @@ manifests:
 
 | File | Added | Removed |
 |---|---|---|
-| `mokiterions-core/src/simulation.rs` | 4,390 | 29 |
+| `mokiterions-core/src/simulation.rs` | 4,394 | 29 |
 | `mokiterions-core/src/cli.rs` | 128 | 24 |
 | `mokiterions-core/src/main.rs` | 67 | 11 |
 | `mokiterions-core/src/lib.rs` | 49 | 5 |
@@ -85,19 +88,27 @@ manifests:
 | `scripts/check_workflow_credentials.py` | 565 | 0 |
 | `scripts/test_check_transcript_reading.py` | 546 | 0 |
 | `scripts/test_check_workflow_credentials.py` | 506 | 0 |
-| `.github/workflows/provider-credentials.yml` | 152 | 0 |
-| **Total** | **10,444** | **117** |
+| `.github/workflows/provider-credentials.yml` | 206 | 0 |
+| **Total** | **10,502** | **117** |
 
   **The diff algorithm changes this table, and the figure above is the honest one.** Git's default
-  Myers algorithm reports 17,031 insertions and 6,704 deletions for the same two commits, because it
+  Myers algorithm reports 17,089 insertions and 6,704 deletions for the same two commits, because it
   mis-pairs `simulation.rs`'s large test region and reports 6,616 lines of it as removed and rewritten.
-  `--histogram` and `--patience` both report 4,390 added and 29 removed for that file, which is what
-  the change is: the file grew from 8,878 lines to 13,239 by insertion. The Myers figure is recorded
+  `--histogram` and `--patience` both report 4,394 added and 29 removed for that file, which is what
+  the change is: the file grew from 8,878 lines to 13,243 by insertion. The Myers figure is recorded
   here so that a reader who runs the plain command and sees a different number knows which is which.
+
+  **Every figure in this table was re-measured at `77f2974`**, the candidate the owner's eleven rulings
+  of 2026-08-24 produced, and three of them moved: `simulation.rs` from 4,390 to 4,394 and
+  `provider-credentials.yml` from 152 to 206, carrying the total from 10,444 to 10,502. The removed
+  column did not move at all. Nothing else in the table changed, and the two rulings that reach code
+  are `E11`'s comment corrections and `E17`'s third workflow job.
 
 ### The gates, at the candidate
 
-`candidate/gates.txt` is the reading; `base/gates.txt` is its pair, taken before the change.
+`candidate/gates.txt` is the reading; `base/gates.txt` is its pair, taken before the change. **Every one
+of the six was re-read at `77f2974`** after the owner's rulings of 2026-08-24, and every figure below is
+that reading rather than the earlier one; none of the six moved.
 
     cargo fmt --all -- --check                                                     exit 0, no output
     cargo clippy --workspace --all-targets --all-features --locked -- -D warnings   exit 0, no warnings
@@ -105,6 +116,14 @@ manifests:
     cargo build -p Mokiterions --locked                                            exit 0
     python3 scripts/test_check_workflow_credentials.py                             38 tests, OK
     python3 scripts/check_workflow_credentials.py --root .                         exit 0
+
+Two further commands were run and are **not** gates, and are named here rather than folded into the six,
+because `WO-MOK-025`'s *Completion report format* fixes what a gate is and this report does not widen it.
+Both come from escalation `E17`, which gave `scripts/check_transcript_reading.py` its first automated
+caller: `python3 scripts/test_check_transcript_reading.py` reports 36 tests OK, and the program itself
+reports PASS over the committed transcript for `L4`, `L5`, `L6`, `L12`, `L13`, `L14`, `L15a` and `L17`.
+They are now the third job of `.github/workflows/provider-credentials.yml`, so from this candidate on
+they run on every pull request and every push to `master` rather than by hand.
 
 The suite declared 344 passing tests across 22 binaries at the base commit and declares 425 across 23
 here, of which 422 execute. The three that do not are instruments, and they are named rather than
@@ -636,28 +655,49 @@ the wrong one.
 
 ## 8. The amendments made
 
-Nine amendment record rows across eight artifacts. Each names its provision in the row itself; what
-follows is the artifact, the provision in short, and the approval act.
+Fifteen amendment record rows across ten artifacts, counted afresh at `77f2974`. Each names its
+provision in the row itself; what follows is the artifact, the provision in short, and the approval act.
+**The count this paragraph carried until 2026-08-24 was nine rows across eight artifacts and it was
+stale in both figures**: rows were added to the table below as the stage went on without the sentence
+above them being re-counted, and the eleven owner rulings of 2026-08-24 then added three more. The
+figures are stated here as measured rather than corrected silently, because a count that drifts once
+will be read as a count that was never checked.
 
 | Artifact | Row | Provision | Approval act |
 |---|---|---|---|
 | `SPEC-MOK-006` | 2026-08-23, line 28 | Rule 3.2's policy and source domains gain `llm`; `schema` becomes `3` | Approved 2026-08-23 by the repository owner as accountable technical owner, by way of `ADR-MOK-007`. **The 2026-08-21 row it depended on was ratified in the same act** — this is escalation **E1** |
 | `SPEC-MOK-002` | 2026-08-23, line 40 | Rules 4 and 5 amended so the decision port can be conformed to; rules 6 and 13 re-checked and recorded as unmoved | Approved 2026-08-23 by the repository owner as technical owner, by way of `ADR-MOK-007`, which states rule 4's amendment and rule 5's three amendments in full |
 | `SPEC-MOK-002` | 2026-08-24, line 41 | The last two amendments `ADR-MOK-007` requires, which the 2026-08-23 row declined to write because no commit had yet made them true | The same act; written when the code made them true, in `ac827b1` |
+| `SPEC-MOK-002` | 2026-08-24, line 42 | Rule 5's additions list gains `ReplayPort` and two `DecisionRequest` accessors; rule 6 gains a carve-out for a reference into a `pub(crate)` type | Approved interactively on 2026-08-24 as escalations **E13** and **E14** — *"All four as recommended"*. **The row records that the recommendation the owner approved for E14 was wrong in mechanism**: it named `EventType::as_str`, which rule 5's `'static` clause already carves out, where the six references actually remaining are `DecisionRequest`'s accessors. The conclusion did not move; the mechanism did, and the row says so |
 | `SPEC-MOK-007` | 2026-08-24, line 82 | Rule 11 amended in five places so the committed transcript is described truthfully, discharging six owner rulings of 2026-08-24 | **Two acts, both recorded because neither alone suffices**: the substance is the owner's six rulings, and the instruction to write them was given interactively — *"Write into `SPEC-MOK-007` now"*. Every one of the five was found by building the transcript and measuring it |
+| `SPEC-MOK-007` | 2026-08-24, line 83 | Rule 11.4.1's list of the characters that put block A outside the record stream's alphabet is corrected to the census measured over the block | Approved interactively on 2026-08-24 as escalation **E11** — *"All four as recommended"*. **This is the only ruling of the eleven that reaches source**: both restatements of the list in `mokiterions-core/src/simulation.rs` are corrected in the same commit, which is why `77f2974` supersedes `bce4229` as the candidate |
 | `SPEC-MOK-004` | 2026-08-24, line 33 | Rule 11 admits `#[ignore]` for **instruments**; rules 9, 10 and 11's figures corrected | **Three approvals covering different things, and the third is OUTSTANDING.** The figure corrections are covered by `ADR-MOK-007`; the instrument class was approved interactively — *"Amend rule 11 to admit instruments"* |
 | `SPEC-MOK-004` | 2026-08-24, line 34 | Rules 9 and 11's figures re-measured at `bce4229`, after four commits that closed cases the row above did not cover | Covered by `ADR-MOK-007`. No rule's substance changes and no obligation on any test or target changes |
 | `SPEC-MOK-003` | 2026-08-24, line 87 | The observer becomes a host of the fifth source: rule 11's authority row, *Start-up inputs*, and the byte-identity obligation extended to the new shared option descriptions | **Written under `ADR-MOK-007`'s authorization for three provisions, and under a separate owner act the same day for four locations** — *"Amend all three now"*. No new rule and no new exit code |
 | `ARCH-MOK-002` | 2026-08-24, line 45 | The observer becomes a replay host, in replay only. No boundary, dependency direction, framework selection, package split or trust property moves; the trigger list gains no member | **Two authorizations, kept separate because they are two acts**: `ADR-MOK-007`, and the owner's interactive *"Amend all five now"* |
 | `ARCH-MOK-002` | 2026-08-24, line 46 | `decision_assessment.rationale` re-expressed within the validator's 2,000-character limit | **Written by the implementation agent and reported rather than presented as authorized.** Stop condition 6 in form; escalation **E7** |
 | `ARCH-MOK-001` | 2026-08-24, line 56 | The model-backed source: seven provisions, one deliberately empty; *Components* gains the decision port and the transcript | Approved 2026-08-23 by the repository owner, who holds the technical owner's role, by way of `ADR-MOK-007` |
-| `SPEC-MOK-001` | 2026-08-24, line 79 | A decision source outside the engine: seven provisions landing in eleven places, and one appended rule; *Actors and external systems* names **five** sources | Approved 2026-08-23 by the repository owner as technical owner, by way of `ADR-MOK-007` |
+| `SPEC-MOK-001` | 2026-08-24, line 80 | A decision source outside the engine: seven provisions landing in eleven places, and one appended rule; *Actors and external systems* names **five** sources | Approved 2026-08-23 by the repository owner as technical owner, by way of `ADR-MOK-007` |
+| `VER-MOK-018` | 2026-08-24, line 37 | Three cases amended: **L5** restricted to the requests that enumerate a targeted action, **L17**'s closed-alphabet clause withdrawn, **L30**'s ceiling figure withdrawn and replaced by a derivation from the tick's arity | Approved interactively on 2026-08-24 as escalations **E8**, **E9** and **E10** — *"All three as recommended"*. **This row also created this contract's amendment record**, which had none before: `VER-MOK-018` was the only verification contract of the five carrying amendments without a table, and `VER-MOK-016`'s form was followed |
 | `INT-MOK-001` | 2026-08-24, line 21 | The determinism determinand: the success measure and the matching desired outcome gain the retained transcript | **Two acts.** The measure was approved 2026-08-23 by the repository owner, who holds the product owner's role; `ADR-MOK-007`'s own rationale records that it is put to the product owner "because a success measure is the product owner's". The instruction to write both was *"Amend both now"* |
 
-Two further commits belong to this item without being amendments. `792a877` corrects two source comments
-that this stage's amendments falsified — a correction of prose that had gone false, not a change of
-behaviour. `8162b18` reconciles the roadmap with the chain that was approved for Phase 5, and it carries
-no work-order trailer and says why: the roadmap sits outside every work order.
+Three further commits belong to this item without being amendments. `792a877` corrects two source
+comments that this stage's amendments falsified — a correction of prose that had gone false, not a change
+of behaviour. `8162b18` reconciles the roadmap with the chain that was approved for Phase 5, and it
+carries no work-order trailer and says why: the roadmap sits outside every work order. `db8cf46` moves two
+`SPEC-MOK-001` amendment rows that had been written outside their own table into it — the 2026-08-20
+record-stream row, which sat alone after the table, and the 2026-08-21 waste-condition row, which sat
+between the title and *Scope*. **Nothing but their position moved**, verified as a set comparison of the
+table's rows against `cc54185`, and it carries no work-order trailer either, for the reason that
+specification's own placement note gives: it is escalation **E16**, authorized by the owner on 2026-08-24
+as a separate commit rather than borrowed onto `WO-MOK-025`'s authorization.
+
+**Two of the eleven rulings amend an artifact that carries no amendment record at all, and they are not
+rows.** `WO-MOK-025`'s own *Required verification* section named the connector half of **L32** where three
+halves are in scope (**E12**), and in-scope item 11 gained the transcript reader's first automated caller
+(**E17**). `WORK_ORDER.template.md` defines no amendment record, so both are written into *Lifecycle* as a
+dated correction note, on the precedent `WO-MOK-014` set at line 93 of that work order. The note states
+which of the three is an addition rather than a correction, because `E17` is one.
 
 ## 9. What was not verified, and why
 

@@ -37,6 +37,69 @@ move with artifact prose, and their figures are stated with the commit they were
     git diff --stat bce4229 HEAD -- .github
       -> empty
 
+  A second amendment, disclosed for the same reason and superseding the first. Commit 77f2974
+  changed a file under a package, so bce4229 is no longer the last commit that did and the
+  sentence above no longer holds in any pathspec. Commit 77f2974 writes the eleven owner
+  rulings of 2026-08-24 into their artifacts, and two of those rulings land in source:
+  escalation E11 corrects SPEC-MOK-007 rule 11.4.1's character list at the rule and at both
+  restatements of it in mokiterions-core/src/simulation.rs.
+
+    git diff --stat bce4229 77f2974 -- mokiterions-core mokiterions-tui Cargo.toml \
+        Cargo.lock rust-toolchain.toml
+      ->  mokiterions-core/src/simulation.rs | 14 +++++++++-----
+          1 file changed, 9 insertions(+), 5 deletions(-)
+
+  Every one of those 14 lines is a comment line, measured rather than asserted: the added and
+  removed lines of that diff, with leading whitespace stripped, all begin with // or ///, and
+  none carries a fenced code block, so no doctest is created or removed either. That is a
+  measurement of the diff and it is still an argument about the binary, so it was not relied
+  on. All four Rust gates were re-read at 77f2974 and are reproduced below unchanged, and the
+  whole REQ-MOK-068 matrix was recaptured at that commit with capture.sh in both modes and
+  compared through manifest.sh against candidate/nosink-manifest.txt and
+  candidate/sink-manifest.txt:
+
+    diff <(tail -n +2 <recapture>/nosink-manifest.txt) \
+         <(tail -n +2 candidate/nosink-manifest.txt)
+      -> no output
+
+    diff <(tail -n +2 <recapture>/sink-manifest.txt) \
+         <(tail -n +2 candidate/sink-manifest.txt)
+      -> no output
+
+  All eighty cells reproduce byte for byte -- standard output, standard error, exit code and
+  record stream -- at 77f2974. Line 1 is excluded from each comparison and only line 1,
+  because it names the commit the capture was taken at, which is the one thing that differs by
+  construction. The recapture itself is not retained, for the reason README.md gives: the
+  streams were never retained at any commit and only their manifests were, so a retained
+  recapture would be the only raw stream set in the packet and would read as the authoritative
+  one.
+
+    git diff --stat bce4229 77f2974 -- .github
+      ->  .github/workflows/provider-credentials.yml | 54 ++++++++++++++++++++
+          1 file changed, 54 insertions(+)
+
+  That is escalation E17: check_transcript_reading.py gains its first automated caller, a third
+  job in that file. Both Python gates were re-read at 77f2974 for it -- 38 tests OK and the
+  credential scan exit 0, with the scan now reporting the replay step at line 150 rather than
+  143, the shift the added head comment causes -- and the two steps of the new job were run
+  locally as well: the transcript reader's own suite reports 36 tests OK, and the reader
+  reports PASS over the committed transcript for L4, L5, L6, L12, L13, L14, L15a and L17.
+  Those two are not gates and are not counted as gates; they are recorded here because this
+  file is where a reader looks for what was run.
+
+  The harness pair was re-read at 77f2974 as well, since artifact prose moved: validate PASS,
+  179 artifacts, 0 errors, 0 warnings; preflight PASS for WO-MOK-025 at phase review, with
+  commit-bound verification required and decided by the engineering owner. Both from the
+  pinned 0.4.0 interpreter outside the checkout.
+
+  Four other files in this directory restate the superseded sentence in their own headers and
+  are left exactly as captured, because a capture is not edited after the fact:
+  per-tick-lending.txt line 18, replay-identity.txt line 10, request-layout.txt line 224 --
+  which cites this file rather than asserting it -- and verification-cases.txt lines 17 and
+  35. Each was true when it was written. This paragraph is the correction for all four, and
+  README.md carries it too so that a reader who opens one of them first is not left to find it
+  here.
+
   What that commit does not touch is what the two Python gates read. Neither
   check_workflow_credentials.py nor its test file names check_transcript_reading.py, and no
   file under .github/ does either, which was measured by grep and not assumed. The changed
