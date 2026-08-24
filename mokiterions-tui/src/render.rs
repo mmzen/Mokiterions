@@ -1349,7 +1349,15 @@ fn authority_lines(observer: &Observer) -> Vec<Line<'static>> {
     }
     lines.push(Line::from(""));
     for (event_type, identifier) in authority::table(observer.config().policy) {
-        lines.push(Line::from(format!("{event_type:<26} {identifier}")));
+        // A row's identifier may occupy more than one line: the source-dependent row carries one
+        // per decision source, because five on one line is wider than a 132-column terminal and
+        // `fit`'s reason applies here too — choosing a form beats letting the pane truncate.
+        // Continuations align under the first line rather than repeating the event type, so one
+        // entry still reads as one entry.
+        for (index, part) in identifier.lines().enumerate() {
+            let label = if index == 0 { event_type } else { "" };
+            lines.push(Line::from(format!("{label:<26} {part}")));
+        }
     }
     lines.push(Line::from(""));
     lines.push(Line::from(format!(
@@ -2513,6 +2521,48 @@ mod tests {
             text.contains("Requirement text lives in the artifact"),
             "{text}"
         );
+    }
+
+    /// `SPEC-MOK-007` rule 18.5 at the width that decides it: every source's identifier is on the
+    /// frame, and the fifth is not the one that fell off the right edge.
+    ///
+    /// 132 columns, because that is where the correction matters. The row this replaces was 117
+    /// columns and fitted here; with a fifth source appended it would have been 135 and the paragraph
+    /// truncates rather than wrapping, so `REQ-MOK-063` would have been drawn nowhere while every
+    /// assertion about the other four still passed. That is the shape of the failure, so the case is
+    /// written at a width that has it.
+    #[test]
+    fn the_authority_overlay_shows_every_source_at_a_width_that_would_have_cut_one() {
+        let mut observer = start(&[]);
+        observer.set_overlay_for_test(Overlay::Authority);
+        let text = text_of(&frame_of(&mut observer, 132, 60));
+
+        for (identifier, source) in [
+            ("REQ-MOK-008", "baseline"),
+            ("REQ-MOK-015", "reference"),
+            ("REQ-MOK-033", "individual"),
+            ("REQ-MOK-057", "social"),
+            ("REQ-MOK-063", "llm"),
+        ] {
+            assert!(
+                text.contains(&format!("{identifier} {source}")),
+                "{identifier} {source} is not on the frame:\n{text}"
+            );
+        }
+
+        // No line the mapping contributes reaches the overlay's right edge, which is what stops a
+        // sixth source from re-creating the defect this case was written for. The frame's rows are
+        // the viewport's full width and carry the border, so what is measured is the interior: 130
+        // columns at this width, and a content line that reached it would be a line whose end cannot
+        // be told from a cut.
+        for row in text.lines().filter(|row| row.contains("REQ-MOK-")) {
+            let content = row.trim_matches('│').trim_end();
+            assert!(
+                content.chars().count() < 130,
+                "{} columns: {content}",
+                content.chars().count()
+            );
+        }
     }
 
     /// Rule 5's resize behavior: presentation state survives, and so does the run.

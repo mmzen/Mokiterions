@@ -15,6 +15,13 @@
 //! `WO-MOK-016` added a fourth source and three event types, on the same terms: the sweep runs
 //! under four policies, the source-dependent mapping names four, and the specified-mapping case
 //! carries the three added rows. Again nothing was removed or weakened.
+//!
+//! `WO-MOK-025` added a fifth source and no event type, on the same terms once more: the sweep runs
+//! under five policies and the source-dependent mapping names five. One case arrives rather than
+//! being folded into an existing one — `SPEC-MOK-007` rule 18.5 obliges two things, an entry for the
+//! fifth source *and* the correction of a hard-coded four-source description, and the second is a
+//! property of `table`'s row rather than of `for_type`'s answer. A repository that satisfied the
+//! first and not the second would pass every case above.
 
 use mokiterions::simulation::{Event, EventDetail};
 use mokiterions::simulation::{EventType, Policy};
@@ -27,6 +34,7 @@ fn every_event_type_the_observer_can_present_has_an_entry() {
         Policy::Reference,
         Policy::Individual,
         Policy::Social,
+        Policy::Llm,
     ] {
         for event_type in EventType::ALL {
             let resolved = for_type(event_type, Some(policy));
@@ -85,10 +93,59 @@ fn the_decision_source_maps_by_the_source_the_record_names() {
     assert_eq!(for_event(&source("reference")), Some("REQ-MOK-015"));
     assert_eq!(for_event(&source("individual")), Some("REQ-MOK-033"));
     assert_eq!(for_event(&source("social")), Some("REQ-MOK-057"));
+    // `SPEC-MOK-007` rule 18.5's identifier. `REQ-MOK-063` authorizes the source itself, which is
+    // what this row answers; `REQ-MOK-067`'s replay determinism would name the observer's own
+    // restriction instead of the record's authority.
+    assert_eq!(for_event(&source("llm")), Some("REQ-MOK-063"));
 
     // A source the observer does not know is reported as missing, never guessed.
     assert_eq!(for_event(&source("something-else")), None);
     assert_eq!(for_type(EventType::DecisionSourceSelected, None), None);
+}
+
+/// `SPEC-MOK-007` rule 18.5's second obligation: the overlay's row names every source, and names it
+/// with the identifier `for_type` gives.
+///
+/// The row is compared against `for_type` rather than against a written-out expectation, because a
+/// written-out expectation is exactly the hard-coded description this rule corrects — a second copy
+/// of the mapping, in a file that has no way to know when the first one moved.
+#[test]
+fn the_source_row_names_every_source_and_agrees_with_the_mapping() {
+    let row = table(Policy::Baseline)
+        .into_iter()
+        .find(|(event_type, _)| *event_type == EventType::DecisionSourceSelected.as_str())
+        .expect("rule 11.2: every event type has a row")
+        .1;
+
+    let sources = [
+        ("baseline", Policy::Baseline),
+        ("reference", Policy::Reference),
+        ("individual", Policy::Individual),
+        ("social", Policy::Social),
+        ("llm", Policy::Llm),
+    ];
+    let lines: Vec<&str> = row.lines().collect();
+    assert_eq!(lines.len(), sources.len(), "{row}");
+    for (line, (name, policy)) in lines.iter().zip(sources) {
+        let identifier =
+            for_type(EventType::DecisionSourceSelected, Some(policy)).expect("a known source");
+        assert_eq!(*line, format!("{identifier} {name}"), "{row}");
+    }
+
+    // The row does not vary with the run's own source: rule 11's mapping is static and presented in
+    // full, so an operator watching a `social` replay can still see what authorizes the others.
+    for policy in [Policy::Reference, Policy::Social, Policy::Llm] {
+        let other = table(policy)
+            .into_iter()
+            .find(|(event_type, _)| *event_type == EventType::DecisionSourceSelected.as_str())
+            .expect("rule 11.2: every event type has a row")
+            .1;
+        assert_eq!(other, row);
+    }
+
+    // Rule 11.2's exhaustiveness is a count of event types, and splitting one row across five lines
+    // must not change it. This is the half of the rule the multi-line form could have broken.
+    assert_eq!(table(Policy::Llm).len(), EventType::ALL.len());
 }
 
 #[test]

@@ -62,16 +62,56 @@ pub fn for_event(event: &Event) -> Option<&'static str> {
 }
 
 /// The mapping as rule 11's table presents it, for the authority overlay.
+///
+/// The source-dependent row is **derived from [`for_type`]** rather than written out. Until
+/// `SPEC-MOK-007` rule 18.5 it was a hand-written string naming four sources and repeating their
+/// four identifiers, and a hand-written copy of a mapping is what goes stale the moment the mapping
+/// grows: rule 11's clause 2 asks for exhaustiveness, and a duplicate is exhaustive only for as long
+/// as someone remembers it exists. Derived, this row and [`for_event`] cannot disagree, and rule
+/// 18.5's "hard-coded four-source description" has no second copy left to correct.
+///
+/// One thing the derivation does not buy, stated rather than left to be discovered: `SOURCES` below
+/// is still a list, so a sixth decision source has to be added to it. What has changed is that
+/// forgetting is no longer silent — [`for_type`]'s `match` over `Policy` is exhaustive, so a sixth
+/// variant stops the build in the one function whose comment points here.
+///
+/// The row's identifier carries **one line per source**, joined by newlines. Five sources on one
+/// line is 135 columns, and the overlay renders a paragraph that truncates rather than wraps, so on
+/// a 132-column terminal the row would show four sources and say nothing about the fifth — the
+/// plausible-but-incomplete presentation rule 11.2 exists to forbid. The row *count* is unchanged at
+/// one per event type; only its height is.
 pub fn table(policy: Policy) -> Vec<(&'static str, String)> {
+    /// Every value `Policy` admits, in `SPEC-MOK-007` rule 18.1's order: the four existing values
+    /// unchanged, with the fifth after them.
+    ///
+    /// Local, and deliberately. `SPEC-MOK-004` rule 6 counts one item per `pub` declaration and its
+    /// **Growth** clause admits a new one only when an approved requirement needs it; nothing needs
+    /// this outside this function, and the engine's `Policy` carries no `ALL` of its own that this
+    /// could read instead — `WO-MOK-025` fixes the engine's public surface and adding one there is
+    /// not in it.
+    const SOURCES: [Policy; 5] = [
+        Policy::Baseline,
+        Policy::Reference,
+        Policy::Individual,
+        Policy::Social,
+        Policy::Llm,
+    ];
+
     EventType::ALL
         .iter()
         .map(|event_type| {
             let identifier = match event_type {
-                EventType::DecisionSourceSelected => {
-                    "REQ-MOK-008 baseline / REQ-MOK-015 reference / REQ-MOK-033 individual \
-                     / REQ-MOK-057 social"
-                        .to_string()
-                }
+                EventType::DecisionSourceSelected => SOURCES
+                    .iter()
+                    .map(|source| match for_type(*event_type, Some(*source)) {
+                        Some(identifier) => format!("{identifier} {source}"),
+                        // Unreachable while `for_type`'s arm is exhaustive over `Policy`, and
+                        // written anyway on rule 11.2's terms: the same words the other rows use
+                        // for a gap, never a plausible identifier.
+                        None => format!("mapping missing {source}"),
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n"),
                 other => for_type(*other, Some(policy))
                     .map(str::to_string)
                     .unwrap_or_else(|| "mapping missing".to_string()),
