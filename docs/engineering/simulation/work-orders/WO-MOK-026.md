@@ -12,6 +12,25 @@ commit_bound_verification = "required"
 rationale = "This is the first work in this repository that can spend money and the first that sends anything outside it, and both facts are verifiable only over evidence. That a credential reaches the connector and appears in no transcript, no record stream, no run record and no error message is a claim about produced bytes. That no provider call occurs unless both an explicit live selection and a credential are present is a claim about four combinations of two conditions, one of which is an environment variable, and a defect in it spends the owner's money without their instruction. That the ceiling is checked before an exchange rather than after it is a claim about ordering that only a run driven past the ceiling can show. The stage also produces the first real usage figures, and `REQ-MOK-070`'s eighty-five percent obligation is measured from them rather than from the estimate that motivated it — so the number this stage reports either confirms the cache-ordered layout or refutes it, and either way a later reader will cite it. Verification requires an owner-authorised live run, which means the record binds evidence that cannot be regenerated on demand."
 decided_by = "engineering owner"
 
+[execution_scope]
+paths = [
+  "docs/CONNECTOR_PROTOCOL.md",
+  "docs/engineering/REPOSITORY_CONTEXT.md",
+  "docs/engineering/simulation/evidence/WO-MOK-026/",
+  "docs/engineering/simulation/specifications/SPEC-MOK-003.md",
+  "docs/engineering/simulation/specifications/SPEC-MOK-004.md",
+  "docs/engineering/simulation/work-orders/WO-MOK-026.md",
+  "mokiterions-core/Cargo.toml",
+  "mokiterions-core/src/cli.rs",
+  "mokiterions-core/src/lib.rs",
+  "mokiterions-core/src/main.rs",
+  "mokiterions-core/src/simulation.rs",
+  "mokiterions-core/tests/",
+  "mokiterions-tui/src/main.rs",
+  "mokiterions-tui/src/options.rs",
+  "mokiterions-tui/tests/",
+]
+
 [relations]
 implements = ["REQ-MOK-069", "REQ-MOK-070", "REQ-MOK-071", "REQ-MOK-072", "REQ-MOK-077"]
 specifications = ["SPEC-MOK-001", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
@@ -348,3 +367,23 @@ Under the evidence path this work order names, fixed before the first capture:
     surface of any connector this repository does not own, which `S2` cannot reach and `VER-MOK-018` records as a limit
     rather than a gap.
 12. **Every local decision** taken under the envelope, and **every escalation** raised, with its resolution.
+
+## Amendment record
+
+**2026-08-28, `[execution_scope]` added, under `WO-HUP-002`, by the engineering owner.**
+
+This work order was approved on 2026-08-23 under the `se_harness` 0.4.0 work-order template, which carried no
+`[execution_scope]` table. The 0.8.0 root adopted under `WO-HUP-001` requires one to start work and enforces it
+at the `start` checkpoint, so from that adoption until this amendment the work order was authorized and
+unstartable, refused with `QGP-G3-SCOPE: WO-MOK-026 has no assessable execution scope`.
+
+The table is derived item by item from this work order's own *Expected change surface*, which is unchanged. The
+mapping from each surface item to the path admitting it is retained in
+`../../harness/evidence/WO-HUP-002/`. Two paths are **owner decisions of 2026-08-28 rather than derivations**,
+because the surface text does not settle them: `mokiterions-core/Cargo.toml`, because the canned connector must
+be a real child process and therefore a declared target, and `docs/CONNECTOR_PROTOCOL.md`, because the surface
+requires a connector protocol document without saying where it lives.
+
+Nothing else in this artifact moves. Not `status`, not a relation, not an assurance field, and not one word of
+the scope prose the table is derived from. This amendment changes what this work order *declares*, never what
+it delivers.
