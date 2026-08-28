@@ -61,7 +61,7 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
   # Must equal `[harness].tool_version` in `.engineering-harness.toml`. The compliance job
   # asserts that rather than trusting this line.
-  SE_HARNESS_VERSION: "0.4.0"
+  SE_HARNESS_VERSION: "0.8.0"
   CARGO_TERM_COLOR: always
 
 jobs:

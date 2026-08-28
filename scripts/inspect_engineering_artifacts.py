@@ -110,6 +110,21 @@ FINDING_SUGGESTION_CATALOG = {
         "assurance-owner",
         "Assess explicit supersession against one eligible verified or released successor; do not transition automatically.",
     ),
+    "W-REB-001": (
+        "review-competing-release-proposals",
+        "release-owner",
+        "Review same-version release proposals and record an accountable disposition without automatic selection.",
+    ),
+    "W-REB-002": (
+        "review-overlapping-verification-candidates",
+        "assurance-owner",
+        "Review overlapping ready verification candidates and govern any supersession explicitly.",
+    ),
+    "W-REB-003": (
+        "review-competing-release-contracts",
+        "release-owner",
+        "Review competing release contracts and proposals without changing either chain automatically.",
+    ),
 }
 
 

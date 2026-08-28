@@ -1,8 +1,107 @@
 {
+  "evaluator": {
+    "archive_name": null,
+    "archive_sha256": null,
+    "payload_manifest": "se-harness-installed-payload-v1",
+    "payload_sha256": "ea75cc53a518cfe0f027336f1a9aabfa301175a00410091f6c2f4b50ccd92eb5",
+    "version": "0.8.0"
+  },
   "files": {
+    ".agents/skills/harness-draft-change/SKILL.md": {
+      "mode": "managed",
+      "sha256": "7c20b2af963df91b35146dcfe2e0bf13d7de7eb80bcb03a8f90cea1077efecfc"
+    },
+    ".agents/skills/harness-draft-change/agents/openai.yaml": {
+      "mode": "managed",
+      "sha256": "a1499d95abd8447558c535fe5554adcc3c9b988a0a39264a6283d430effe1e94"
+    },
+    ".agents/skills/harness-draft-change/scripts/guard.py": {
+      "mode": "managed",
+      "sha256": "bb7fd59305675df915160b4cf6c05a0d9d74383f13597744927911fada2db7d0"
+    },
+    ".agents/skills/harness-draft-change/skill-contract.json": {
+      "mode": "managed",
+      "sha256": "a6a6d34bc0dc1f10f7336fd4426718b9c755f99eab3f8cdde24a0bc7a65e7485"
+    },
+    ".agents/skills/harness-execute-work-order/SKILL.md": {
+      "mode": "managed",
+      "sha256": "f9644f95cce081d50af199a8ace7759ca940559f7b915d2eadc8bc72f39076ca"
+    },
+    ".agents/skills/harness-execute-work-order/agents/openai.yaml": {
+      "mode": "managed",
+      "sha256": "a1499d95abd8447558c535fe5554adcc3c9b988a0a39264a6283d430effe1e94"
+    },
+    ".agents/skills/harness-execute-work-order/scripts/check_scope.py": {
+      "mode": "managed",
+      "sha256": "b3067d4b73b1a408882bf215b00bce33db3049fdd73c9582cdbf3aa58b892ccb"
+    },
+    ".agents/skills/harness-execute-work-order/skill-contract.json": {
+      "mode": "managed",
+      "sha256": "cc11150703c4ee5bfb86d03dae41034845950c7de4d973ea600b48ef93bd238e"
+    },
+    ".agents/skills/harness-operator-brief/SKILL.md": {
+      "mode": "managed",
+      "sha256": "b7502217f5aac07c4bb3bd185f52e82d47c8f12fc0f4690efcb58eb8e42e5fd3"
+    },
+    ".agents/skills/harness-operator-brief/scripts/check_brief.py": {
+      "mode": "managed",
+      "sha256": "b7a8a83d70f18cd8fd21ca0bc619131a80cc41413e84aa5ce3a4044c77f11683"
+    },
+    ".agents/skills/harness-operator-brief/skill-contract.json": {
+      "mode": "managed",
+      "sha256": "e5cf54b4ae635dad0087fdb800bbd0d72c31453de0d91b45d7bac9f5ce423e52"
+    },
+    ".agents/skills/harness-orient/SKILL.md": {
+      "mode": "managed",
+      "sha256": "487216696f211d6668f5131df354189bb39dea29dc5e738ae90fca77d912c386"
+    },
+    ".agents/skills/harness-orient/scripts/orient.py": {
+      "mode": "managed",
+      "sha256": "02adac90805941f2efc2e667faf3849e3bfc0b05e8ab4a80260595b8e253ee04"
+    },
+    ".agents/skills/harness-orient/skill-contract.json": {
+      "mode": "managed",
+      "sha256": "8e51bcc50b00edbd834a443f134835e04b655ccfaf02a3953c03a45287386627"
+    },
+    ".agents/skills/harness-prepare-assurance/SKILL.md": {
+      "mode": "managed",
+      "sha256": "cb43a6aeff9b0fbf490aeeee2087c41050907b3ee73dc9093d11826e69aed4ab"
+    },
+    ".agents/skills/harness-prepare-assurance/agents/openai.yaml": {
+      "mode": "managed",
+      "sha256": "a1499d95abd8447558c535fe5554adcc3c9b988a0a39264a6283d430effe1e94"
+    },
+    ".agents/skills/harness-prepare-assurance/scripts/check_prepare.py": {
+      "mode": "managed",
+      "sha256": "056f627408f76483b0fdd7a5223b002e5d1f61830b4527b8013cc3e96e3c3f92"
+    },
+    ".agents/skills/harness-prepare-assurance/skill-contract.json": {
+      "mode": "managed",
+      "sha256": "7fd329ebe9045de923045a0ff22dbb1dfaf30393f37d9bd02c73fea996bc1fe1"
+    },
+    ".claude/skills/harness-draft-change/SKILL.md": {
+      "mode": "managed",
+      "sha256": "94b37eabe3024b985035a7d7319815154790419e95348e7c667c6301b4f4e5a2"
+    },
+    ".claude/skills/harness-execute-work-order/SKILL.md": {
+      "mode": "managed",
+      "sha256": "2331b74a35e4324edcfc55b57b8e0aeaecc14f5d57284d6a7dd03b141f0e8123"
+    },
+    ".claude/skills/harness-orient/SKILL.md": {
+      "mode": "managed",
+      "sha256": "8da58e3e22b3e9d7a7fc332aaf1df1fd45463b65208c3798c30b0d99d9548295"
+    },
+    ".claude/skills/harness-prepare-assurance/SKILL.md": {
+      "mode": "managed",
+      "sha256": "c3f8c1313de356bcaa05057264ce3609bbca9ee6118665568b3e46582cd323e4"
+    },
     ".engineering-harness.toml": {
       "mode": "managed",
-      "sha256": "366d6d7583ca704b925663f90f5d8e8f904443406a99295cee300a090f7e99b0"
+      "sha256": "cc23ffdd158d1f7554eae13d5b16fd35d0c77685979b092ce6bd05609351f325"
+    },
+    ".gitattributes": {
+      "mode": "fragment",
+      "sha256": "fba4cf22b45939f8c705f2a9c3bd964408b5003d0599993e72735ce865b97e3b"
     },
     ".github/PULL_REQUEST_TEMPLATE.md": {
       "mode": "seed",
@@ -10,7 +109,7 @@
     },
     ".github/workflows/engineering-harness.yml": {
       "mode": "managed",
-      "sha256": "0b850207fb04c054f3c936bcbf2e2a18c1d9f79de14232b25fa328a0159c5ed4"
+      "sha256": "db18e32ed5a8b74ece4e4b317b5f0950da91e365a365048d12eb9f3a4fc330d9"
     },
     ".gitignore": {
       "mode": "fragment",
@@ -18,39 +117,55 @@
     },
     "AGENTS.md": {
       "mode": "fragment",
-      "sha256": "bcf46d13ceee8c2606834a897eba153a654f0092c1d41c8737723739a1405f1c"
+      "sha256": "864a2c3bafbc3191c778fe20402a2e983b4bece1c11103540164c06c46b4bef5"
     },
     "CLAUDE.md": {
       "mode": "fragment",
-      "sha256": "a5d3b02b3200e5dc147578f81f2b80ca4a0f055a0a4a1c94a535352572ade2cd"
+      "sha256": "459bf70b6e9b45726ebcd48c1d93b64f603e36c1d22d94d4daccc08181a59f26"
     },
     "ENGINEERING_HARNESS.md": {
       "mode": "managed",
-      "sha256": "8b503c8a2c4a4a70725eb4355fc1ec55d10e8515bf342c0ac4718aeaf4769023"
+      "sha256": "9817cfba9bff90f3181b885436ebcf75b939a647230d2aaf02ed53667edb2364"
+    },
+    "docs/engineering/ARTIFACT_AUTHORING.md": {
+      "mode": "managed",
+      "sha256": "b7a5232ee80ef2234e2bffac88b35427c155fcd1431578092893422dad6dcc10"
     },
     "docs/engineering/DECISION_RIGHTS.md": {
       "mode": "managed",
-      "sha256": "e873e18da307f2a8aeb12ea1fea9296761254c50f189b378bf11e8b86936bf2b"
+      "sha256": "5072d1993903fad4515cd0688917c1625648867fabd6b2571670a0f06b6908fe"
+    },
+    "docs/engineering/OPERATING_CARD.md": {
+      "mode": "managed",
+      "sha256": "1b9f6dcd497b07f9b1658eeebea09ab915e250a69090634b8f738c59ada95baf"
+    },
+    "docs/engineering/QUALITY_GATES.json": {
+      "mode": "managed",
+      "sha256": "db457523957a0cda6d61cd27470959901ca3b45a453d119baffc27789ac93c27"
     },
     "docs/engineering/QUALITY_GATES.md": {
       "mode": "managed",
-      "sha256": "b68b28e8f999e6d8dd63d2901c43b16f1b73ad309ab545381b822eac018eb8ad"
+      "sha256": "a103d48e2120ebf7d47eeb3ffa196ceac2c9ac45813859794d7ea88928d12e03"
     },
     "docs/engineering/README.md": {
       "mode": "seed",
       "state": "present"
     },
-    "docs/engineering/REPOSITORY_CONTEXT.md": {
-      "mode": "seed",
-      "state": "present"
+    "docs/engineering/TECHNICAL_COMMUNICATION.md": {
+      "mode": "managed",
+      "sha256": "0f710e2a53f65e63e8904214531e6d8ca8c24487e7e14b9210b62a53db37c245"
     },
     "docs/engineering/TRACEABILITY.md": {
       "mode": "managed",
-      "sha256": "3ee0039ef5e342fd4b64b472587ebbb4d7985a9633dadc662120c4ae4c506c67"
+      "sha256": "485f692e62ecefee06589964671971a976229b710a1a848e483428c8d9854646"
+    },
+    "docs/engineering/WORKFLOW.json": {
+      "mode": "managed",
+      "sha256": "e00970bdc395a6d9994950835295e6600cae77018bef25563b7b675bd9d407a1"
     },
     "docs/engineering/WORKFLOW.md": {
       "mode": "managed",
-      "sha256": "8d0c32dbb9b00fb03b577933e135f79f19c853cafc26ca9b40cc24eacd958e97"
+      "sha256": "a83e06f4be9a37eaf6ca75b5550187b4afdaee6f8a39aa83880198439cde7da1"
     },
     "docs/engineering/templates/ADR.template.md": {
       "mode": "managed",
@@ -74,19 +189,19 @@
     },
     "docs/engineering/templates/README.md": {
       "mode": "managed",
-      "sha256": "d8b1a1de9ff26d7e888de1bf6b9d1f24f86488ea4801d09138991c4113c8f2c9"
+      "sha256": "6c2ca1fb32791313178fbdb77c7946287f2609470cd7be1bdcaecb0c80e1bab1"
     },
     "docs/engineering/templates/RELEASE_CONTRACT.template.md": {
       "mode": "managed",
-      "sha256": "60e3828ba0a5865e97b94a7d1a3ec3ec988e6b66fc30ec1100468ad037fca6a8"
+      "sha256": "2ea05c0c0b0ffa529c2999350609d125c584e9ad8a0c866402f9350b5213a3b6"
     },
     "docs/engineering/templates/RELEASE_RECORD.template.md": {
       "mode": "managed",
-      "sha256": "61b30eb7f9f104e0278e953a3fa8d8397f5c346e680e0320890344e49fa43bb3"
+      "sha256": "24e90652e4b9582b56ec5ab28b69208a4389fbe5524d50f36e1cc0a7d827a1ff"
     },
     "docs/engineering/templates/REQUIREMENT.template.md": {
       "mode": "managed",
-      "sha256": "072030c531b4786c3d771613fea5151d3942c7a229b4d35d87ae7e8a86447ff6"
+      "sha256": "294a2bf9ac52c45ad0602e4d448888f1b0b5842dc4c51027c86032f1509b58e7"
     },
     "docs/engineering/templates/SPECIFICATION.template.md": {
       "mode": "managed",
@@ -98,11 +213,11 @@
     },
     "docs/engineering/templates/VERIFICATION_RECORD.template.md": {
       "mode": "managed",
-      "sha256": "9e3074bc439c5f58b18045b6a4a2fc64c380fceba47ef2b3b1fc8d613beb19d7"
+      "sha256": "5223be7b6c0c1243a7d00dcab37474fda634f110e85c891b2a87da9312fa32f5"
     },
     "docs/engineering/templates/WORK_ORDER.template.md": {
       "mode": "managed",
-      "sha256": "465a5dce3c76886c8e6d853fcaee32845f178333eb8e71e6ee9436ee603a9c75"
+      "sha256": "3748de19f7ee185caf177668825e7bd1e625e2a0da81cb52eed7219765fdee06"
     },
     "scripts/artifact_layout_registry.py": {
       "mode": "managed",
@@ -118,27 +233,27 @@
     },
     "scripts/generate_harness_dashboard.py": {
       "mode": "managed",
-      "sha256": "d6fe46e4cafcd0524bdee8afdd65cea34d41effdac2fc3b12c4e3500ec02716d"
+      "sha256": "7df41908049a01b972eda9f5678248ab38b23e870d88defe523d7f479dc8843b"
     },
     "scripts/harness_explorer/index.template.html": {
       "mode": "managed",
-      "sha256": "8c923a7dfc3b0722cca77d3c52804e81e8a25e875190aa8d6d6455d2505319e7"
+      "sha256": "5cc567fba62463b1eae2c1d8afa373eabba1f57b15c9f73776466e3763414d99"
     },
     "scripts/inspect_engineering_artifacts.py": {
       "mode": "managed",
-      "sha256": "78ce4988c98ffa45fb927f54435d3a7525b13e0cb113950b1beeafe4f41e9831"
+      "sha256": "0a8d7cae178f695967823bcbe6ee1ff89b47a32526365d0a438dfeebaab99b8a"
     },
     "scripts/select_harness_work_order.py": {
       "mode": "managed",
-      "sha256": "1c2453e3cac2c7637d1a313baf8e3408e4e860fce614b017ffe18d568c98f5a1"
+      "sha256": "680e318370fdcf286ce026918b9b11e3406b1beb0b996b7f45088dc9d70e00aa"
     },
     "scripts/validate_engineering_artifacts.py": {
       "mode": "managed",
-      "sha256": "7c09ea29d076ef82be869f997bd002cb87dcaf2beabab4135b4bc20281f82667"
+      "sha256": "50f417ef53922c9e936db39df2a5e45adba5afb886ad6268930f9b6a516f3ffa"
     }
   },
   "hash_algorithm": "sha256",
   "hash_mode": "utf8-text-lf-v1",
-  "schema": 2,
-  "tool_version": "0.4.0"
+  "schema": 3,
+  "tool_version": "0.8.0"
 }

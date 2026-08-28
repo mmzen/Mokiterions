@@ -23,4 +23,6 @@ Use `evidence/` for retained work-order evidence and `acceptance/` for Gherkin s
 
 Templates are intentionally excluded from active-artifact validation.
 
+`docs/engineering/ARTIFACT_AUTHORING.md` states how each type is written; `create-artifact` prints its checklist for the created type (`--quiet` suppresses it).
+
 Use `VERIFICATION_RECORD.template.md` and `RELEASE_RECORD.template.md` only for commit-bound assurance and release instances. Prefer `harnessctl capture-verification` and `harnessctl prepare-release`, which derive the candidate commit safely, choose a domain-aware destination, and always produce `ready` records.
