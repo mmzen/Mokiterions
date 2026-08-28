@@ -2,7 +2,7 @@
 id = "WO-HUP-001"
 type = "work_order"
 title = "Adopt exact public se_harness 0.8.0 as the standard root, declaring RLS-MOK-001 as a release that predates evaluator evidence"
-status = "approved"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-28"
 updated = "2026-08-28"
@@ -56,6 +56,18 @@ verification = ["VER-HUP-001"]
 from = "draft"
 to = "approved"
 decided_at = "2026-08-28T20:00:00Z"
+decided_by = "engineering owner"
+
+[[lifecycle_events]]
+from = "approved"
+to = "in_progress"
+decided_at = "2026-08-28T20:20:31Z"
+decided_by = "engineering owner"
+
+[[lifecycle_events]]
+from = "in_progress"
+to = "implemented"
+decided_at = "2026-08-28T20:22:00Z"
 decided_by = "engineering owner"
 +++
 
