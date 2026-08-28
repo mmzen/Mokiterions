@@ -12,6 +12,15 @@ commit_bound_verification = "required"
 rationale = "This work order produces the only figures this initiative exists to produce, and they are figures no one can regenerate cheaply: each seed's run costs an estimated $1.04 and takes an estimated 1.2 to 2.4 hours, so a defect found after publication is not repaired by re-running. Two claims here are checkable only over retained evidence. That every published figure comes from a run whose fallback count is zero is a claim about each run's record rather than about code, and `REQ-MOK-074`'s fitness rule is the only thing standing between an incomplete run and a published number. That the reference and social figures beside it were re-run at the same seeds and the same horizon, rather than quoted from their own longer runs, is a claim about which commands were issued — the exact error `VER-MOK-018`'s assessment M3 exists to catch. The stage also carries the initiative's central negative claim, that no outcome threshold governs the result, and a verification record is the only place a reader can confirm that the absence was decided rather than overlooked. Verification requires owner-authorized live runs, so the record binds evidence that a later commit cannot reproduce."
 decided_by = "engineering owner"
 
+[execution_scope]
+paths = [
+  "docs/PHASE_5_MEASUREMENT.md",
+  "docs/engineering/simulation/evidence/WO-MOK-027/",
+  "docs/engineering/simulation/intent/INT-MOK-001.md",
+  "docs/engineering/simulation/work-orders/WO-MOK-027.md",
+  "scripts/",
+]
+
 [relations]
 implements = ["REQ-MOK-075", "REQ-MOK-076"]
 specifications = ["SPEC-MOK-001", "SPEC-MOK-007"]
@@ -267,3 +276,25 @@ Under the evidence path this work order names, fixed before the first capture:
 8. **The statement of limits**, verbatim as it appears in the report.
 9. **A statement that no threshold was applied and none exists**, with `L26`'s result.
 10. **Every local decision** taken under the envelope, and **every escalation** raised, with its resolution.
+
+## Amendment record
+
+**2026-08-28, `[execution_scope]` added, under `WO-HUP-002`, by the engineering owner.**
+
+Approved on 2026-08-23 under the `se_harness` 0.4.0 work-order template, which carried no `[execution_scope]`
+table, and therefore unstartable under the 0.8.0 root with `QGP-G3-SCOPE: WO-MOK-027 has no assessable
+execution scope`. The table is derived item by item from this work order's own *Expected change surface*, which
+is unchanged, and the mapping is retained in `../../harness/evidence/WO-HUP-002/`.
+
+`docs/PHASE_5_MEASUREMENT.md` is an **owner decision of 2026-08-28, not a derivation**. The surface calls the
+comparison report only "a new document" and names no path, which fired `WO-HUP-002`'s stop-and-escalate
+condition; the path was decided rather than inferred.
+
+`scripts/` is a derivation: the surface places the static check "beside
+`scripts/validate_engineering_artifacts.py`" and so names the directory itself.
+
+The scope admits **no path under `mokiterions-core/` or `mokiterions-tui/` and not `SPEC-MOK-004`**, because
+this work order's surface states positively that it changes neither. A scope wider than the work order would
+defeat the boundary it exists to be.
+
+Nothing else in this artifact moves.

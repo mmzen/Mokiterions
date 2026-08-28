@@ -69,6 +69,9 @@ post-adoption effect and settled by its own change.
 
 - `REQ-HUP-001` — the adopted root validates the complete artifact graph with zero errors. *(Approved for this
   capability.)*
+- `REQ-HUP-002` — the adopted root leaves every already-approved work order startable. *(Added 2026-08-28 under
+  `WO-HUP-002`. This capability's *Outcomes* said the graph validates and said nothing about whether authorized
+  work could still begin, and the 0.8.0 adoption satisfied the first while breaking the second.)*
 - A release that predates evaluator-evidence enforcement is resolved by declaration and not by written
   evidence. *(Stated as `SPEC-HUP-001` rules 4 to 6 under `REQ-HUP-001`; a separate requirement is not raised
   because the obligation is observable only through the same measure.)*
