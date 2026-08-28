@@ -28,6 +28,7 @@ fn the_trait_aware_source_never_waits_and_proposes_only_valid_actions() {
         policy: Policy::Individual,
         density: Density::DEFAULT,
         trace_actions: true,
+        spend_ceiling: None,
     })
     .unwrap();
     let mut output = Vec::new();
@@ -63,6 +64,7 @@ fn social_run(seed: u64) -> String {
         policy: Policy::Social,
         density: Density::DEFAULT,
         trace_actions: true,
+        spend_ceiling: None,
     })
     .unwrap();
     let mut output = Vec::new();

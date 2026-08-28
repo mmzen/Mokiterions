@@ -30,6 +30,7 @@ fn defaults_are_stable() {
             policy: Policy::Reference,
             density: Density::DEFAULT,
             trace_actions: false,
+            spend_ceiling: None,
         })
     );
 }
@@ -55,6 +56,7 @@ fn options_work_in_any_order() {
             policy: Policy::Baseline,
             density: Density::parse("1.50").unwrap(),
             trace_actions: true,
+            spend_ceiling: None,
         })
     );
 }
@@ -177,6 +179,7 @@ fn config_with(policy: Policy) -> Config {
         policy,
         density: Density::DEFAULT,
         trace_actions: false,
+        spend_ceiling: None,
     }
 }
 
@@ -789,7 +792,15 @@ fn the_transcript_option_states_when_it_is_required_and_when_it_is_refused() {
     let effect = description("--transcript-path").to_lowercase();
 
     assert!(effect.contains("transcript"), "{effect}");
-    assert!(effect.contains("required with --policy llm"), "{effect}");
+    // Amended under `WO-MOK-026`. This assertion read `required with --policy llm` until
+    // `SPEC-MOK-007` rule 18.4.4 gave the source a second way to obtain decisions: with a
+    // connector it records rather than replays, and `--transcript-output` is what it writes
+    // to. So this option is no longer *required* by the source, and a help text still saying
+    // so would be stating something untrue — which is the defect rule 18.3 exists to correct,
+    // met here in a test rather than in the text.
+    assert!(effect.contains("--policy llm replays"), "{effect}");
+    assert!(effect.contains("--live"), "{effect}");
+    assert!(effect.contains("may not be given together"), "{effect}");
     assert!(effect.contains("refused with any other policy"), "{effect}");
     // Rule 12.6's byte-identity and rule 12.3's refusal, which together are what decides whether an
     // operator can trust a replayed run at all.

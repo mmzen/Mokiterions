@@ -48,6 +48,8 @@ pub const USAGE: &str = concat!(
     "                   [--policy <baseline|reference|individual|social|llm>]\n",
     "                   [--density <percent>] [--trace-actions]\n",
     "                   [--events-path <path>] [--transcript-path <path>]\n",
+    "                   [--connector-path <path>] [--live]\n",
+    "                   [--transcript-output <path>] [--spend-ceiling <amount>]\n",
     "       Mokiterions --help\n",
     "\n",
     "Mokiterions simulates a small closed world. Twelve creatures, each also called a\n",
@@ -112,11 +114,42 @@ pub const USAGE: &str = concat!(
     "\n",
     "  --transcript-path <path>\n",
     "      Read this run's decisions from a transcript of an earlier run, rather\n",
-    "      than asking a model for them again. Required with --policy llm, and\n",
+    "      than asking a model for them again. This is how --policy llm replays;\n",
+    "      use --live instead to make a new recording. One of the two is needed\n",
+    "      with --policy llm and they may not be given together, and both are\n",
     "      refused with any other policy, which needs no transcript and would\n",
-    "      ignore one. The replayed run reproduces the recorded one exactly, and\n",
+    "      ignore one. The replayed run reproduces the recorded one exactly and\n",
     "      stops with an error rather than guessing if the transcript does not\n",
     "      match the run being replayed.\n",
+    "\n",
+    "  --connector-path <path>\n",
+    "      A program you supply that this one runs and talks to, which is the\n",
+    "      only way a model is ever reached: this program makes no network call\n",
+    "      itself and never reads your credentials. The connector reads them\n",
+    "      from its own environment. Needed with --live and refused without it.\n",
+    "      docs/CONNECTOR_PROTOCOL.md says how to write one.\n",
+    "\n",
+    "  --live\n",
+    "      Ask a model for this run's decisions instead of replaying recorded\n",
+    "      ones. This is the only option that spends money, and it is off\n",
+    "      unless given. It will not start unless all three of the options\n",
+    "      named --connector-path and --transcript-output and --spend-ceiling\n",
+    "      are given too. Two runs with the same seed may differ, which no other\n",
+    "      option can cause.\n",
+    "\n",
+    "  --transcript-output <path>\n",
+    "      Write this live run's decisions to this file, replacing any file\n",
+    "      already there, so the run can be replayed later using the option\n",
+    "      called --transcript-path instead. Required with --live: a run that\n",
+    "      spent its exchanges without recording them would have cost money and\n",
+    "      left no evidence. It may not be given together with the option\n",
+    "      called --transcript-path.\n",
+    "\n",
+    "  --spend-ceiling <amount>\n",
+    "      The most this run may spend, as an amount with at most two decimal\n",
+    "      places, such as 2 or 2.50. Checked before each question rather than\n",
+    "      after it, so the run stops rather than passing the figure. Required\n",
+    "      with --live. The run reports what it spent either way.\n",
     "\n",
     "  --help\n",
     "      Print this text and exit without running a simulation.\n",
@@ -131,13 +164,56 @@ pub const USAGE: &str = concat!(
     "Exit status: 0 when the run finished or this text was printed, 2 when an option\n",
     "was unknown, repeated, missing its value or outside what it accepts, and when\n",
     "the options given do not go together, and 1 when output could not be written or\n",
-    "a transcript could not be read.\n",
+    "a transcript could not be read or written.\n",
 );
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Command {
     Help,
     Run(Config),
+}
+
+/// An operator's amount to an integer count of minor units, with **no floating-point value at any
+/// point**. `SPEC-MOK-007` rule 14.2 fixes cost as integer arithmetic in a stated minor unit, and
+/// `SPEC-MOK-006` forbids a floating-point value in a stream, so a `f64` here would have to be
+/// converted back before anything could be reported and would carry its rounding into the figure.
+///
+/// `Density::parse` is the precedent and this follows it: at most two decimal places, both digits
+/// significant, and the fractional part padded rather than truncated so that `2.5` is 250 minor
+/// units and not 25.
+///
+/// `2` is 200 minor units. A bare integer is the common case and the operator should not have to
+/// write `2.00` to get it.
+fn parse_minor_units(value: &str) -> Result<u64, String> {
+    let (whole, fraction) = match value.split_once('.') {
+        Some((whole, fraction)) => (whole, fraction),
+        None => (value, ""),
+    };
+    if whole.is_empty() || !whole.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err("expected an amount such as 2 or 2.50".into());
+    }
+    if fraction.len() > 2 || !fraction.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err("expected at most two decimal places".into());
+    }
+    let major: u64 = whole
+        .parse()
+        .map_err(|_| "the amount is larger than this program can hold".to_string())?;
+    // Padded, not truncated: `.5` is fifty minor units, and reading it as five would silently
+    // authorise a tenth of what the operator wrote.
+    let minor: u64 = match fraction.len() {
+        0 => 0,
+        1 => {
+            fraction
+                .parse::<u64>()
+                .map_err(|_| "invalid amount".to_string())?
+                * 10
+        }
+        _ => fraction.parse().map_err(|_| "invalid amount".to_string())?,
+    };
+    major
+        .checked_mul(100)
+        .and_then(|units| units.checked_add(minor))
+        .ok_or_else(|| "the amount is larger than this program can hold".to_string())
 }
 
 pub fn parse<I, S>(args: I) -> Result<Command, String>
@@ -161,6 +237,15 @@ where
     // opening in the host. Unlike the sink, both hosts open this one, so both re-read the raw
     // argument — the observer as well as the engine's binary target.
     let mut transcript_path = false;
+    // Three `bool`s and one value, and which is which is `VER-MOK-018` case `S6a` rather than a
+    // preference. `--connector-path` and `--transcript-output` carry paths, so rule 18.4 has this
+    // parser validate them and forget them; the binary target re-reads the raw argument it opens.
+    // `--live` carries nothing to forget. `--spend-ceiling` carries a quantity the run acts on, so
+    // it is the one new option whose value the configuration retains — see `Config::spend_ceiling`.
+    let mut connector_path = false;
+    let mut transcript_output = false;
+    let mut live = false;
+    let mut spend_ceiling = None;
     let mut help = false;
     let mut index = 0;
 
@@ -262,6 +347,53 @@ where
                 transcript_path = true;
                 index += 2;
             }
+            "--connector-path" => {
+                if connector_path {
+                    return Err("--connector-path may appear at most once".into());
+                }
+                let value = option_value(&args, index, "--connector-path")?;
+                // The same rejection as every other path-carrying option, for a reason that is
+                // this option's own: `-` conventionally denotes a standard stream, and the
+                // connector is a *program to spawn*. A standard stream is not an executable, so
+                // the spelling could only ever be a mistake.
+                if value.is_empty() || value == "-" {
+                    return Err(format!(
+                        "invalid --connector-path value: {value}; expected a path to a connector program, and no path denotes a standard stream"
+                    ));
+                }
+                connector_path = true;
+                index += 2;
+            }
+            "--transcript-output" => {
+                if transcript_output {
+                    return Err("--transcript-output may appear at most once".into());
+                }
+                let value = option_value(&args, index, "--transcript-output")?;
+                if value.is_empty() || value == "-" {
+                    return Err(format!(
+                        "invalid --transcript-output value: {value}; expected a file path, and no path denotes a standard stream"
+                    ));
+                }
+                transcript_output = true;
+                index += 2;
+            }
+            "--live" => {
+                if live {
+                    return Err("--live may appear at most once".into());
+                }
+                live = true;
+                index += 1;
+            }
+            "--spend-ceiling" => {
+                if spend_ceiling.is_some() {
+                    return Err("--spend-ceiling may appear at most once".into());
+                }
+                let value = option_value(&args, index, "--spend-ceiling")?;
+                spend_ceiling = Some(parse_minor_units(value).map_err(|reason| {
+                    format!("invalid --spend-ceiling value: {value}; {reason}")
+                })?);
+                index += 2;
+            }
             "--help" => {
                 if help {
                     return Err("--help may appear at most once".into());
@@ -298,6 +430,33 @@ where
         ));
     }
 
+    // Rule 18.4.3 again, for the three options `WO-MOK-026` adds: rejected when another source is
+    // selected, not accepted and ignored. One arm each rather than a loop, so the diagnostic names
+    // the option the operator actually typed.
+    for (present, option) in [
+        (connector_path, "--connector-path"),
+        (transcript_output, "--transcript-output"),
+        (live, "--live"),
+        (spend_ceiling.is_some(), "--spend-ceiling"),
+    ] {
+        if present && policy != Policy::Llm {
+            return Err(format!(
+                "{option} is only used by --policy llm; --policy {policy} was selected, which obtains its own decisions"
+            ));
+        }
+    }
+
+    // Rule 18.4.4: the two transcript options are mutually exclusive, and giving both is a usage
+    // error under rule 19.2. A run reads a transcript or writes one and never both, so there is no
+    // reading of the pair that could be honoured — refusing is the only answer that does not
+    // silently pick one.
+    if transcript_path && transcript_output {
+        return Err(
+            "--transcript-path and --transcript-output may not be given together: a run either replays from a recorded transcript or records a live one, never both"
+                .into(),
+        );
+    }
+
     // Rule 13.2 — "when the live-mode selection is absent, the run replays if a transcript was
     // supplied and otherwise refuses with the usage-error status" — and rule 19.2, which names
     // "a replay with no transcript" among the usage errors. Under this work order there is no
@@ -308,9 +467,47 @@ where
     // construction rather than by a second implementation of it. It also refuses for the engine's
     // binary target, which rule 20.1 makes the recording host — correctly, because a recording
     // host with nothing to record from and no connector to reach is in exactly the same position.
-    if policy == Policy::Llm && !transcript_path {
+    // Rule 13.2 as it now reads with a live-mode selection in existence. `WO-MOK-025` left this
+    // check unconditional and said so — "under this work order there is no live-mode selection at
+    // all, so the condition is unconditional; `WO-MOK-026` adds the selection and this check gains
+    // its second term rather than moving". This is that second term.
+    //
+    // A run under this source obtains its decisions from a transcript or from a connector. With
+    // neither it has no source at all, which rule 19.2 names among the usage errors as "a replay
+    // with no transcript", and rule 20.3 requires of the observer specifically.
+    if policy == Policy::Llm && !transcript_path && !live {
         return Err(
-            "--policy llm needs --transcript-path <path>: the transcript supplies this run's decisions, and a run under this policy is never given a different source"
+            "--policy llm needs --transcript-path <path> to replay, or --live to record a new run: this source obtains its decisions from one or the other, and is never given a different source"
+                .into(),
+        );
+    }
+
+    // Rule 13.1's selection half, stated as a configuration error rather than discovered at the
+    // first exchange. The credential half is the connector's and is checked nowhere here: rule
+    // 13.1 puts the two conditions in two components deliberately, so that no single one of them
+    // can authorise spending.
+    if live && !connector_path {
+        return Err(
+            "--live needs --connector-path <path>: a live run reaches the model through a connector program you supply, and this engine makes no provider call itself"
+                .into(),
+        );
+    }
+
+    // Rule 19.6: a live run whose exchanges were spent and not recorded has produced cost and no
+    // evidence, which is the one failure worth refusing in advance rather than discovering.
+    if live && !transcript_output {
+        return Err(
+            "--live needs --transcript-output <path>: a live run records every exchange, and one that spent its exchanges without recording them would have produced cost and no evidence"
+                .into(),
+        );
+    }
+
+    // Rule 14.6 needs a ceiling to check against, and rule 19.2 names "a live run with no ceiling"
+    // among the usage errors. Refused before any tick, which is where a spend limit has to be
+    // decided: a run that discovered it had no ceiling after its first exchange has already spent.
+    if live && spend_ceiling.is_none() {
+        return Err(
+            "--live needs --spend-ceiling <amount>: a live run spends money, and the ceiling is checked before each exchange rather than after it"
                 .into(),
         );
     }
@@ -321,6 +518,7 @@ where
         policy,
         density: density.unwrap_or_default(),
         trace_actions,
+        spend_ceiling,
     }))
 }
 

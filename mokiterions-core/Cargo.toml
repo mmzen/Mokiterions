@@ -15,6 +15,21 @@ edition = "2024"
 # SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
 # lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
 # that appears in the first line of `USAGE`.
+# `cargo run -p Mokiterions` was unambiguous while this package built one binary. The canned
+# connector of `SPEC-MOK-007` rule 20.5 makes two, and Cargo then refuses to choose:
+#
+#     error: `cargo run` could not determine which binary to run
+#     available binaries: Mokiterions, canned-connector
+#
+# Two repository-owned workflows invoke it that way -- `provider-credentials.yml`, which replays
+# the committed transcript on every pull request, and `release.yml`, which would have failed at
+# the next release and not before. Declaring the package's primary binary fixes both without
+# touching either, which matters because `.github/` is outside `WO-MOK-026`'s execution scope.
+#
+# It is also simply true: `Mokiterions` is what this package is for, and the connector is a test
+# fixture that happens to need a target in order to be a child process.
+default-run = "Mokiterions"
+
 [lib]
 name = "mokiterions"
 path = "src/lib.rs"
@@ -22,6 +37,33 @@ path = "src/lib.rs"
 [[bin]]
 name = "Mokiterions"
 path = "src/main.rs"
+
+# `SPEC-MOK-007` rule 20.5's canned connector: the offline fixture that speaks rule 10's protocol
+# and answers from a script, so the spawn, the framing, the two gates, the usage accounting, the
+# ceiling and the retry path are exercisable with no provider, no credential, no network and no
+# cost. `VER-MOK-018` case `S2` is what checks it, and rule 10.6 is why checking it establishes
+# nothing about an operator's connector.
+#
+# It is declared as a target rather than left as a plain source file because a connector is a
+# *child process*: the host spawns it and speaks to it over pipes, so a fixture that is not a real
+# executable cannot exercise the thing it exists for. A `[[bin]]` is what gives an integration test
+# a path to spawn, through `CARGO_BIN_EXE_canned-connector`. That is `WO-HUP-002`'s recorded owner
+# decision of 2026-08-28: `WO-MOK-026` requires "a test fixture inside an existing package's test
+# tree - not a third workspace member" and does not say how it becomes a process, so the decision
+# was taken rather than inferred, and this manifest was admitted to that work order's execution
+# scope for it.
+#
+# The path is `tests/support/` and not `tests/` because Cargo auto-discovers `tests/*.rs` as
+# integration-test targets. A file directly in `tests/` would be built twice, as a test and as this
+# binary. `tests/support/` is inside the test tree the work order requires and outside what Cargo
+# discovers.
+#
+# It declares no dependency and adds none to this package's resolved graph, so `SPEC-MOK-002`
+# rule 13's declared set is untouched and `scripts/check_declared_dependencies.py` reads the same
+# empty set it read before.
+[[bin]]
+name = "canned-connector"
+path = "tests/support/canned_connector.rs"
 
 # This table is empty, and that is a fact about `SPEC-MOK-002` rule 13's declared set rather
 # than a rule of its own. Amended 2026-08-20 under `ADR-MOK-006`: the earlier comment here

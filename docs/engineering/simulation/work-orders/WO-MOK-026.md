@@ -2,10 +2,10 @@
 id = "WO-MOK-026"
 type = "work_order"
 title = "Stage 5b: the connector, the live path, the two gates, the usage accounting and the spend ceiling"
-status = "approved"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-23"
-updated = "2026-08-23"
+updated = "2026-08-28"
 
 [assurance]
 commit_bound_verification = "required"
@@ -36,6 +36,12 @@ implements = ["REQ-MOK-069", "REQ-MOK-070", "REQ-MOK-071", "REQ-MOK-072", "REQ-M
 specifications = ["SPEC-MOK-001", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
 verification = ["VER-MOK-018"]
 architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-007"]
+
+[[lifecycle_events]]
+from = "approved"
+to = "in_progress"
+decided_at = "2026-08-28T21:15:16Z"
+decided_by = "engineering owner"
 +++
 
 # Work Order: Stage 5b — the connector, the live path and the ceiling

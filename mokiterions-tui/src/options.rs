@@ -79,9 +79,11 @@ pub const USAGE: &str = concat!(
     "\n",
     "  --transcript-path <path>\n",
     "      Read this run's decisions from a transcript of an earlier run, rather\n",
-    "      than asking a model for them again. Required with --policy llm, and\n",
+    "      than asking a model for them again. This is how --policy llm replays;\n",
+    "      use --live instead to make a new recording. One of the two is needed\n",
+    "      with --policy llm and they may not be given together, and both are\n",
     "      refused with any other policy, which needs no transcript and would\n",
-    "      ignore one. The replayed run reproduces the recorded one exactly, and\n",
+    "      ignore one. The replayed run reproduces the recorded one exactly and\n",
     "      stops with an error rather than guessing if the transcript does not\n",
     "      match the run being replayed.\n",
     "\n",
@@ -251,6 +253,7 @@ where
                 // choice. `SPEC-MOK-001` makes tracing observational, so this cannot
                 // perturb a run.
                 trace_actions: true,
+                spend_ceiling: None,
                 ..config
             },
             speed: speed.unwrap_or(DEFAULT_SPEED),

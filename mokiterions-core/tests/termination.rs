@@ -25,6 +25,7 @@ fn config(seed: u64, tick_limit: u64, trace_actions: bool) -> Config {
         policy: Policy::Baseline,
         density: Density::DEFAULT,
         trace_actions,
+        spend_ceiling: None,
     }
 }
 
@@ -65,6 +66,7 @@ fn a_long_run_is_bounded_under_either_source() {
             policy,
             density: Density::DEFAULT,
             trace_actions: false,
+            spend_ceiling: None,
         })
         .unwrap();
 
@@ -93,6 +95,7 @@ fn a_long_run_is_bounded_under_the_social_source() {
             policy: Policy::Social,
             density: Density::DEFAULT,
             trace_actions: false,
+            spend_ceiling: None,
         })
         .unwrap();
 
@@ -121,6 +124,7 @@ fn a_long_run_is_bounded_under_the_trait_aware_source() {
         policy: Policy::Individual,
         density: Density::DEFAULT,
         trace_actions: false,
+        spend_ceiling: None,
     })
     .unwrap();
 

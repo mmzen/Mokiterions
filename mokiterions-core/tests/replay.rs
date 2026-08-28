@@ -214,12 +214,27 @@ fn a_refused_replay_names_no_provider_and_no_credential() {
         ],
     ] {
         let output = invoke(&arguments);
-        let text = format!(
-            "{}{}",
-            stderr(&output),
-            String::from_utf8_lossy(&output.stdout)
-        )
-        .to_lowercase();
+        // The **diagnostic**, not everything the process wrote. `execute` prints the usage text
+        // after a configuration error, and rule 19.7's obligation is about an error message: "no
+        // error message contains a credential, and no error message contains a path the engine
+        // resolved". Amended under `WO-MOK-026`, which is where the distinction started to matter.
+        //
+        // Before this change the assertion read the usage text too, and that made it forbid the
+        // program from **documenting its own credential-safety property**. Stage 5b's help has to
+        // be able to say that this program never reads a credential and that the connector reads
+        // its own — an operator who does not know that cannot reason about where their key goes.
+        // A test that prevents stating a security property is protecting the wrong thing.
+        //
+        // What is still checked is exactly what leaks: the message the program composes about the
+        // operator's own arguments. The usage text is a fixed literal, identical on every run,
+        // carries no value from any input, and is checked for what it must say by
+        // `tests/cli.rs`.
+        let diagnostic = stderr(&output);
+        let diagnostic = diagnostic
+            .split_once("Usage: Mokiterions")
+            .map_or(diagnostic.as_str(), |(before, _)| before);
+        let text =
+            format!("{}{}", diagnostic, String::from_utf8_lossy(&output.stdout)).to_lowercase();
         for forbidden in [
             "authorization",
             "bearer",
@@ -1170,6 +1185,7 @@ fn both_of_rule_twenty_fives_doors_carry_the_port() {
         policy: Policy::Llm,
         density: Density::DEFAULT,
         trace_actions: true,
+        spend_ceiling: None,
     })
     .expect("the recorded run's configuration is valid");
 
