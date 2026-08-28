@@ -8,7 +8,7 @@ created = "2026-08-28"
 updated = "2026-08-28"
 
 [relations]
-specifies = ["REQ-HUP-001"]
+specifies = ["REQ-HUP-001", "REQ-HUP-002"]
 
 [[lifecycle_events]]
 from = "draft"
@@ -103,6 +103,18 @@ artifact root, naming the adopted version, the file surface, and every identifie
 refuses the transaction with no file written. It is never merged, never overwritten silently, and never
 resolved inside the transaction.
 
+**Rule 11 — approved work is startable afterwards.** Every work order in a state the adopted evaluator
+treats as authority-granting, and which has not reached `implemented`, has its `start` checkpoint evaluated
+by the adopted evaluator after the transaction. Every refusal is surfaced. A refusal arising from the
+adoption itself is repaired, or the adoption is not complete.
+
+The rule exists because rule 4's validity is not sufficient. An approved work order that carries no
+`[execution_scope]` is a perfectly valid artifact — every field its schema requires is present and every
+relation resolves — and it is also unstartable under a root that requires one. Validation cannot see the
+condition and an operator meets it only when they try to begin. Repair may require amending an approved
+artifact, which is an accountable owner act; this rule obliges the adoption to *find* the refusal, not to
+resolve it on its own authority.
+
 **Rule 10 — no product effect.** The transaction changes no file under `mokiterions-core/` or
 `mokiterions-tui/`, no `Cargo.toml`, no `Cargo.lock` and no `rust-toolchain.toml`, and creates, moves and
 deletes no tag.
@@ -187,3 +199,25 @@ produced today. Validation passes and the transaction proceeds. This violates ru
 - Whether the 141 authoring advisories are addressed, and by whom. They are outside this transaction.
 - The content of the managed policy the adopted version brings. This specification governs the act of
   adoption, not what is adopted.
+
+## Amendment record
+
+**2026-08-28, rule 11 added, under `WO-HUP-002`, by the engineering owner.**
+
+The 0.4.0-to-0.8.0 adoption governed by this specification reported complete success: `validate` 0 errors,
+`doctor` 0 FAIL, and all eleven of `VER-HUP-001`'s assessments passing. It also left both of this
+repository's approved work orders — `WO-MOK-026` and `WO-MOK-027`, which between them authorize every
+remaining piece of forward work — unable to start, each refused with `QGP-G3-SCOPE: has no assessable
+execution scope`. They were approved on 2026-08-23 under the 0.4.0 work-order template, which had no
+`[execution_scope]` table.
+
+Nothing in rules 1 to 10 was violated. The specification simply did not require anyone to look, and the
+condition is invisible to every check it did require. Rule 11 is that obligation, stated where the *next*
+adoption will meet it rather than only in this repair's evidence — which is what `VER-HUP-002`'s manual
+assessment M1 confirms.
+
+Rule 11 is numbered after rule 10 and placed before it in the text, because rules 1 to 10 read as one
+sequence describing the transaction and rule 11 describes what must be true when it is over. No existing
+rule's text, number or meaning moves. `REQ-HUP-002` is the requirement it specifies, and this specification's `specifies` relation is widened to
+name it — without which `REQ-HUP-002` is an active requirement with no active specification coverage, which
+is `E007`. `REQ-HUP-001` is untouched and still states only the validity obligation.
