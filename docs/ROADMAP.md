@@ -24,6 +24,21 @@
   `draft` and exposed a second, older error beside it: this document called `WO-MOK-008` the release-authorization
   chain, which is `WO-MOK-009`. Both are corrected, and the correction is reported apart from the status change
   because only one of the two was caused by a merge.
+- **Re-measured a fourth time:** 2026-08-28, at `baca409`, after pull requests #48, #49 and #50 merged.
+  Two facts here change how every claim in this document is read, and neither is a phase.
+  **The default branch is no longer `master`. It is `main`**, renamed on 2026-08-28 in pull request #50 on
+  the owner's decision. Every sentence below that says `master` and states a *past* merge is left exactly as
+  it is: those merges happened when the branch was named that, and rewriting them would make this document
+  claim something untrue about its own history. Sentences that named `master` as the branch a reader should
+  act on are corrected.
+  **The standard root moved from `se_harness` 0.4.0 to exact public 0.8.0**, in the same pull request under
+  `WO-HUP-001`. Every lifecycle word below was previously measured by a 0.4.0 evaluator and is now measured
+  by a 0.8.0 one. The artifact graph validates with **0 errors** under it, and with **142 warnings**, all at
+  `maintenance` severity. 141 are pre-existing authoring advisories against requirement wording — real,
+  someone's work, and no phase's. The 142nd is new and is not an advisory: `W024` records that `RLS-MOK-001`
+  predates evaluator-evidence enforcement and is exempt through `WO-HUP-001`, "the binding remains
+  outstanding". It is the visible trace of the declaration that upgrade required, and it will stand for as long
+  as that release record does.
 
 ## Purpose
 
@@ -141,17 +156,26 @@ the record stream — no batch runner, no distribution across seeds, no outcome 
 combat behavior and structured observability each appeared on this list until 2026-08-20 and are struck from it: the
 first three arrived under `WO-MOK-016` and the fourth under `WO-MOK-019`.
 
-**The list above is stated of `master`. `WO-MOK-025` — Phase 5's first stage — is in flight on a branch, and this
-paragraph states what that branch adds.** Implemented and tested at this candidate: one decision port at the existing
+**The list above is stated of `main`. `WO-MOK-025` — Phase 5's first stage — is on it**, merged as `a0a69d4`
+in pull request #48 on 2026-08-24 and verified at `VREC-MOK-024`, which binds `b0c18b8` and is an ancestor of
+`main`. **What it adds is therefore no longer a description of a branch**, and the paragraph is otherwise
+unchanged because what it describes did not move between the candidate and the merge. Implemented and
+verified: one decision port at the existing
 trust boundary, taking a request by value and returning a proposal or nothing; a fifth `--policy` value, `llm`, with a
 required `--transcript-path`; the request layout of `SPEC-MOK-007` rule 2, ordered so that the provider's cache matches
 the longest identical leading span; a transcript committed to the repository —
 `mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl`, 233 records and 305,568 bytes — and both hosts
 replaying decisions from it. **No provider call, no credential read, no socket and no process spawn exists in either
 package**, and no crate is added to either. The component that would make a call is a connector outside both packages
-and is `WO-MOK-026`'s. So "LLM-backed decisions" stays on the list above until that stage lands and this chain is
-verified, merged and released: at this candidate a decision the model actually made cannot be obtained anywhere in
-this tree, only replayed from a record of one.
+and is `WO-MOK-026`'s. So **"LLM-backed decisions" stays on the list above** even though this chain is now
+verified and merged, and the reason has narrowed to one clause rather than three: on `main` today a decision
+the model actually made cannot be obtained anywhere in this tree, only replayed from a record of one. It
+leaves that list when `WO-MOK-026` lands, not before.
+
+> **Earlier form.** Until 2026-08-28 this read "`WO-MOK-025` — Phase 5's first stage — is in flight on a
+> branch, and this paragraph states what that branch adds", and closed "until that stage lands and this chain
+> is verified, merged and released". Two of those three conditions are now met; the third, release, is not,
+> and no release has been cut since v0.1.0.
 
 Two limitations carried forward from Phase 1 are recorded in `VER-MOK-002`'s residual uncertainty and are not
 restated as analysis here: high-class resources accumulate against capacity, and the viability floor is a claim
@@ -1068,7 +1092,7 @@ for free and its metrics arrive as `schema: 2`.
 ## Phase 5 — LLM decision source
 
 **This phase is no longer a proposal.** Its governing chain was approved on 2026-08-23 and the first of its three
-stages is implemented on a branch. What follows is what was decided; the proposal it replaces is retained in the
+stages is implemented, verified and merged to `main`. What follows is what was decided; the proposal it replaces is retained in the
 blockquote at the end of this section, as this document's convention requires. The paragraphs below are not a
 restatement of it — its goal states the wrong verb, its central decision has been taken, and every artifact its
 governance paragraph asks for now exists.
@@ -1096,7 +1120,7 @@ approved by implication.
 
 | Stage | Work order | What it holds | State |
 |---|---|---|---|
-| 5a | `WO-MOK-025` | The decision port, the request, the retained transcript and the replay. No provider, no credential, no network, no process spawn and no cost | `in_progress`, on a branch |
+| 5a | `WO-MOK-025` | The decision port, the request, the retained transcript and the replay. No provider, no credential, no network, no process spawn and no cost | `implemented`, verified at `VREC-MOK-024` (`b0c18b8`), merged `a0a69d4`. **Not released** |
 | 5b | `WO-MOK-026` | The connector, the live path, the two gates a live call needs, the usage accounting and the spend ceiling | `approved`, unstarted |
 | 5c | `WO-MOK-027` | The authorized measurement: the model-backed source published beside `reference` and `social` at the same seeds and horizon | `approved`, unstarted |
 
@@ -1217,7 +1241,7 @@ is that the conditions permit emergence and that observed outcomes are not engin
 
 ### Governed chains delivered outside the phase sequence
 
-**Seven work orders were authorized, implemented and verified without a numbered phase.** They are listed because
+**Eight work orders were authorized, implemented and verified without a numbered phase.** They are listed because
 the phase sequence is not a census of delivered work, and a reader who treats it as one will conclude either that
 this work was never planned or that it was never governed. Both would be wrong.
 
@@ -1229,6 +1253,16 @@ sentence that used to cover this whole table would be false of it. Its reason fo
 different way — both of its requirements derive from `CAP-MOK-004`, Phase 1.5's capability, so the chain reused an
 existing capability instead of opening a new intent, which is the same reason `WO-MOK-014` below is invisible to a
 reader walking intents down to phases.
+
+**`WO-HUP-001` is an exception of a third kind, and the newest.** The other seven have no phase; that one has no
+*domain* in common with this document. It lives under `docs/engineering/harness/` rather than
+`docs/engineering/simulation/`, on its own intent, capability, requirement, specification and verification
+contract, and it is the first work in this repository to hang from anything outside the simulation lineage. It is
+listed here anyway, because a reader auditing what was governed should not have to know that a second domain
+exists in order to find it.
+
+> **Earlier form, 2026-08-28.** Until this date the count read **seven**, and the paragraph above it accounted for
+> exactly two kinds of exception. `WO-HUP-001` is a third and the count is now eight.
 
 > **Earlier form.** Until 2026-08-22 this read "**Five work orders were authorized, implemented and verified without
 > a numbered phase.** Each states a property of the repository or of the build rather than a behavior of the world,
@@ -1245,6 +1279,7 @@ reader walking intents down to phases.
 | `WO-MOK-014` | The engine's empty-dependency rule replaced by a declared-set comparison, checked on every pull request and at release | `REQ-MOK-050` → `CAP-MOK-004` | `VREC-MOK-014` at `65ac88b`, `VREC-MOK-015` at `9599c0a` | **no** |
 | `WO-MOK-020` | A cumulative activity profile in the inspector: fourteen totals for a selected Mokiterion, and the same totals summed over every Mokiterion the run initialized where nothing is selected | `REQ-MOK-061`, `REQ-MOK-062` → `CAP-MOK-004` | `VREC-MOK-023` at `f633eda` | **no** |
 | `WO-MOK-024` | Both help texts restructured: one entry per option, every accepted value explained, nothing left implicit | `REQ-MOK-018` → `CAP-MOK-001` | `VREC-MOK-022` at `cdd88dd` | **no** |
+| `WO-HUP-001` | The standard root moved from `se_harness` 0.4.0 to exact public 0.8.0, declaring `RLS-MOK-001` as a release that predates evaluator evidence | `REQ-HUP-001` → `CAP-HUP-001` → `INT-HUP-001`, in the `harness` domain | `VREC-HUP-001` at `3b826f5` | **no** |
 
 The first four are covered a second time by `VREC-MOK-009`, the aggregate candidate at `755db72` that names eight
 work orders and is the commit `RLS-MOK-001` released as v0.1.0.
@@ -1458,7 +1493,7 @@ means to the same risk reduction.
 | 3 | `REQ-MOK-005` amended in place rather than superseded; new intent, capability and ten requirements added; `SPEC-MOK-001`, `SPEC-MOK-002` and `SPEC-MOK-003` all amended in place; `REQ-MOK-034` amended because a fourth source must not be read as extending the floor it freezes; `ARCH-MOK-001` confirmed unchanged. Broader than this row anticipated in the same way Phase 2 was: the carried floors had to be re-measured, `REQ-MOK-057`'s branch order and engagement threshold had to be amended after the first measurement, and `REQ-MOK-060`'s numeric ceiling took the second amendment it was deferred to — made under `WO-MOK-017` on 2026-08-21, after the requirement was descoped out of `WO-MOK-016` |
 | 4a | New intent, capability and five requirements added; new specification `SPEC-MOK-006` and new `ADR-MOK-005`; `ARCH-MOK-001`, `SPEC-MOK-001` and `SPEC-MOK-002` amended in place; `REQ-MOK-010` preserved and extended additively — not one byte of the text stream changed; no existing requirement changed. Broader than this row anticipated by one artifact: **`SPEC-MOK-004` rule 11 was amended too**, beyond `ADR-MOK-005`'s approved list, because rule 11 obliges a work order that changes the test census to correct the recorded figures — 212 → 246 in the workspace, 85 → 119 in the engine. That row was approved separately by the technical owner on 2026-08-20 |
 | 4b | Not yet argued. Depends on 4a's measurement of whether a batch loop needs to be a program: either a runbook and a verification contract with no architecture delta, or a third package argued against `ARCH-MOK-001` |
-| 5 | **Decided and approved 2026-08-23, and far wider than this row anticipated.** New `INT-MOK-011`, new `CAP-MOK-011`, fifteen new requirements `REQ-MOK-063` – `REQ-MOK-077`, new specification `SPEC-MOK-007`, new `VER-MOK-018`, and new **`ADR-MOK-007` deciding both `ARCH-MOK-001` and `ARCH-MOK-002`** — the third ADR here to decide both, after `ADR-MOK-003` and `ADR-MOK-006`, measured from the `decides` relation of all seven rather than from the row above. `REQ-MOK-009` **decided by not being amended**: the entropy stream is untouched because this source draws from it not at all. `INT-MOK-001`'s reproducibility measure amended 2026-08-24, and its matching **desired outcome** amended by a second owner act on the same date, because the intent states the property twice while the ADR names only the measure. **Eight approved artifacts amended, each with its own row**: `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-006`, `ARCH-MOK-001`, `ARCH-MOK-002` and `INT-MOK-001` — plus `engineering/REPOSITORY_CONTEXT.md`, which is repository-owned rather than governed and is the one amendment still owed. `SPEC-MOK-006` takes `schema: 3`. **No dependency artifact is amended and no crate is added to either package**, which is decision 3's whole point; the ADR records the six amendment rows that removed. Three work orders rather than one — `WO-MOK-025`, `WO-MOK-026`, `WO-MOK-027` — and only 5a is implemented, on a branch, **not verified and not released** |
+| 5 | **Decided and approved 2026-08-23, and far wider than this row anticipated.** New `INT-MOK-011`, new `CAP-MOK-011`, fifteen new requirements `REQ-MOK-063` – `REQ-MOK-077`, new specification `SPEC-MOK-007`, new `VER-MOK-018`, and new **`ADR-MOK-007` deciding both `ARCH-MOK-001` and `ARCH-MOK-002`** — the third ADR here to decide both, after `ADR-MOK-003` and `ADR-MOK-006`, measured from the `decides` relation of all seven rather than from the row above. `REQ-MOK-009` **decided by not being amended**: the entropy stream is untouched because this source draws from it not at all. `INT-MOK-001`'s reproducibility measure amended 2026-08-24, and its matching **desired outcome** amended by a second owner act on the same date, because the intent states the property twice while the ADR names only the measure. **Eight approved artifacts amended, each with its own row**: `SPEC-MOK-001`, `SPEC-MOK-002`, `SPEC-MOK-003`, `SPEC-MOK-004`, `SPEC-MOK-006`, `ARCH-MOK-001`, `ARCH-MOK-002` and `INT-MOK-001` — plus `engineering/REPOSITORY_CONTEXT.md`, which is repository-owned rather than governed and is the one amendment still owed. `SPEC-MOK-006` takes `schema: 3`. **No dependency artifact is amended and no crate is added to either package**, which is decision 3's whole point; the ADR records the six amendment rows that removed. Three work orders rather than one — `WO-MOK-025`, `WO-MOK-026`, `WO-MOK-027` — and only 5a is implemented: **verified at `VREC-MOK-024` and merged as `a0a69d4` on 2026-08-24, still not released**. The `REPOSITORY_CONTEXT.md` amendment this row called the one still owed was made on the same day, in pull request #49 as `0970363`, and is owed no longer |
 | 6 | New verification contract; no existing artifact changed |
 | *No phase* — repository contract (`WO-MOK-003`, `WO-MOK-004`, `WO-MOK-006`, `WO-MOK-009`) | Delivered inside the v0.1.0 window against `CAP-MOK-001`, `CAP-MOK-003`, `CAP-MOK-005` and `CAP-MOK-007`, none of which any phase row above claims. Target split, per-package directories and contracts, help-output completeness, and the release authorization gate. All four released under `RLS-MOK-001`. See *Governed chains delivered outside the phase sequence* |
 | *No phase* — inspector activity profile (`WO-MOK-020`) | New `REQ-MOK-061` and `REQ-MOK-062` under Phase 1.5's `CAP-MOK-004` rather than a new intent, which is why this chain has no phase. `SPEC-MOK-003` and `SPEC-MOK-004` amended in place, one row each, both ratified by the technical owner on 2026-08-22: nine provisions of `SPEC-MOK-003` — seven additions and **two corrections of statements that were untrue when they were approved**, the *State model* table's silence about retention the observer already performed and rule 4's claim that it holds no name table — and `SPEC-MOK-004`'s recorded interface extent and test-tier figures. Those figures were ratified as measured at the candidate with a reconciliation owed at the next merge of `master`, and that reconciliation is written — though pull request #44 has since overtaken them again, which is measured in the owed note above rather than corrected here. **No engine change, and that is the boundary the chain rests on**: no new intent, capability, architecture or ADR; `ARCH-MOK-002` relied upon and not moved, on the triggers its own amendment record declares; the alternative of per-Mokiterion counters published on `AgentSnapshot` rejected in `REQ-MOK-061`'s rationale. `REQ-MOK-059`'s prohibition moves from being met by absence to being met by a measured boundary |
