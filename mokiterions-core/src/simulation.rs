@@ -74,6 +74,23 @@ pub struct Config {
     pub policy: Policy,
     pub density: Density,
     pub trace_actions: bool,
+    /// The spend ceiling of `SPEC-MOK-007` rule 14.6, in minor units, or `None` when none was
+    /// declared. `--spend-ceiling` is the option, fixed by rule 18.4.0.
+    ///
+    /// **This is the one new option value the configuration retains, and the asymmetry is the
+    /// specification's rather than a convenience.** Rule 18.4 has the shared parser validate a
+    /// path and then discard it, so that no path reaches the simulation's rules by travelling
+    /// inside the configuration; `VER-MOK-018` case `S6a` scopes that prohibition precisely — the
+    /// configuration "gains no field **for either new path**". A ceiling is not a path. It is a
+    /// quantity the run itself must act on: rule 14.6 stops the run *before* an exchange when the
+    /// accumulated cost has reached it, and rule 15.2 reports it in the run record. Neither is
+    /// something a host can do on the library's behalf without the library knowing the number.
+    ///
+    /// Minor units, as an integer, because rule 14.2 fixes cost as integer arithmetic in a stated
+    /// minor unit and `SPEC-MOK-006` forbids a floating-point value in a stream. The parser turns
+    /// the operator's decimal into this integer, on `Density`'s precedent, so no float exists at
+    /// any point.
+    pub spend_ceiling: Option<u64>,
 }
 
 /// Resource density as an exact count of hundredths of a percent of a territory's
@@ -5622,6 +5639,7 @@ mod tests {
             policy: Policy::Baseline,
             density: Density::DEFAULT,
             trace_actions,
+            spend_ceiling: None,
         }
     }
 
@@ -5645,6 +5663,7 @@ mod tests {
             policy: Policy::Reference,
             density: Density::DEFAULT,
             trace_actions,
+            spend_ceiling: None,
         }
     }
 
@@ -6808,6 +6827,7 @@ mod tests {
                 policy,
                 density: Density::DEFAULT,
                 trace_actions: true,
+                spend_ceiling: None,
             };
             let mut first = Simulation::new(configuration).unwrap();
             let mut second = Simulation::new(configuration).unwrap();
@@ -6896,6 +6916,7 @@ mod tests {
             policy: Policy::Individual,
             density: Density::DEFAULT,
             trace_actions,
+            spend_ceiling: None,
         }
     }
 
@@ -7118,6 +7139,7 @@ mod tests {
                         policy,
                         density: Density::parse(density).unwrap(),
                         trace_actions: false,
+                        spend_ceiling: None,
                     })
                     .unwrap();
                     assert_eq!(
@@ -9428,6 +9450,7 @@ mod tests {
                 policy: Policy::Individual,
                 density: Density::parse("1.50").unwrap(),
                 trace_actions: true,
+                spend_ceiling: None,
             },
         )
         .unwrap();
@@ -9615,6 +9638,7 @@ mod tests {
                 policy: Policy::Baseline,
                 density: Density::DEFAULT,
                 trace_actions: false,
+                spend_ceiling: None,
             };
             print_entropy_trace(
                 Config {
@@ -9688,6 +9712,7 @@ mod tests {
                 policy,
                 density: Density::DEFAULT,
                 trace_actions: false,
+                spend_ceiling: None,
             };
             let states = match policy {
                 Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
@@ -9738,6 +9763,7 @@ mod tests {
                     policy,
                     density: Density::DEFAULT,
                     trace_actions: false,
+                    spend_ceiling: None,
                 };
                 let states = match policy {
                     Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
@@ -9881,6 +9907,7 @@ mod tests {
                     policy: Policy::Baseline,
                     density: Density::DEFAULT,
                     trace_actions,
+                    spend_ceiling: None,
                 };
                 assert_a_sink_is_entropy_neutral(
                     Config {
@@ -9932,6 +9959,7 @@ mod tests {
                                 policy,
                                 density: Density::parse(density).unwrap(),
                                 trace_actions,
+                                spend_ceiling: None,
                             };
                             observed.push((
                                 (policy, trace_actions, record),
@@ -10073,6 +10101,7 @@ mod tests {
                         policy,
                         density: Density::parse(density).unwrap(),
                         trace_actions: false,
+                        spend_ceiling: None,
                     };
 
                     let mut plain = Simulation::new(config).unwrap();
@@ -10119,6 +10148,7 @@ mod tests {
                     policy,
                     density: Density::DEFAULT,
                     trace_actions,
+                    spend_ceiling: None,
                 };
 
                 let mut plain = Simulation::new(config).unwrap();
@@ -10902,6 +10932,7 @@ mod tests {
             policy: Policy::Reference,
             density: Density::parse("1.50").unwrap(),
             trace_actions: true,
+            spend_ceiling: None,
         })
         .unwrap();
         sizes.push(("subject.agent", simulation.agents.len()));
@@ -11135,6 +11166,7 @@ mod tests {
             policy: Policy::Llm,
             density: Density::DEFAULT,
             trace_actions,
+            spend_ceiling: None,
         }
     }
 
@@ -11602,6 +11634,7 @@ mod tests {
                 policy,
                 density: Density::DEFAULT,
                 trace_actions: true,
+                spend_ceiling: None,
             };
 
             Simulation::new(config)
