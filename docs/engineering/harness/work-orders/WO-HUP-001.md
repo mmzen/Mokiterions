@@ -55,7 +55,7 @@ verification = ["VER-HUP-001"]
 [[lifecycle_events]]
 from = "draft"
 to = "approved"
-decided_at = "2026-08-28T20:30:00Z"
+decided_at = "2026-08-28T20:00:00Z"
 decided_by = "engineering owner"
 +++
 
