@@ -1,0 +1,61 @@
+{
+  "schema": "se-harness-skill-contract-v1",
+  "name": "harness-orient",
+  "version": "1.0.0",
+  "outcome": "Orient an operator to installed harness state and the next accountable decision without mutation.",
+  "activation": {
+    "explicit": true,
+    "implicit": true,
+    "must_not_match": [
+      "implement or edit repository content",
+      "approve or apply a lifecycle transition",
+      "prepare or perform a release",
+      "commit, push, publish, deploy, operate, or use credentials"
+    ]
+  },
+  "inputs": [
+    {"name": "target", "required": true, "type": "repository-path"},
+    {"name": "evaluator-launcher", "required": true, "type": "evaluator-launcher"},
+    {"name": "expected-evaluator-version", "required": true, "type": "version"},
+    {"name": "expected-evaluator-root", "required": true, "type": "directory-path"},
+    {"name": "artifact", "required": false, "type": "artifact-id"},
+    {"name": "preflight-phase", "required": false, "type": "phase"}
+  ],
+  "preconditions": [
+    {"id": "target-unambiguous", "description": "The supplied target resolves to one repository root without escaping it."},
+    {"id": "instructions-loaded", "description": "Applicable repository instructions and this complete skill procedure have been read."},
+    {"id": "released-evaluator-supplied", "description": "The caller supplied a structured launcher and expected identity for the exact released evaluator."}
+  ],
+  "mutation_class": "read-only",
+  "evaluator": {
+    "minimum_version": "0.5.0",
+    "required_operations": ["version", "identity", "doctor", "validate-json", "inspect-json"],
+    "optional_operations": ["focus-json", "preflight"],
+    "missing_required": "blocked",
+    "missing_optional": "degraded"
+  },
+  "harness_operations": [
+    {"id": "version", "required": true},
+    {"id": "identity", "required": true},
+    {"id": "doctor", "required": true},
+    {"id": "validate-json", "required": true},
+    {"id": "inspect-json", "required": true},
+    {"id": "focus-json", "required": false},
+    {"id": "preflight", "required": false}
+  ],
+  "delegation": {"allowed": false, "fallback": "single-agent"},
+  "evidence": {"receipt_schema": "se-harness-execution-receipt-v1", "target_retention": false},
+  "stop_conditions": [
+    {"id": "target-ambiguous", "outcome": "blocked"},
+    {"id": "evaluator-identity-unavailable", "outcome": "blocked"},
+    {"id": "managed-integrity-failed", "outcome": "blocked"},
+    {"id": "formal-graph-invalid", "outcome": "blocked"},
+    {"id": "required-json-invalid", "outcome": "failed"},
+    {"id": "optional-capability-missing", "outcome": "degraded"},
+    {"id": "state-changed-during-orientation", "outcome": "failed"}
+  ],
+  "outputs": [
+    {"name": "orientation-result", "schema": "se-harness-orientation-result-v1", "retention": "inline"},
+    {"name": "execution-receipt", "schema": "se-harness-execution-receipt-v1", "retention": "inline"}
+  ]
+}

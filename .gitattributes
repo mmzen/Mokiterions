@@ -19,3 +19,8 @@ docs/engineering/simulation/evidence/** -text
 # CRLF checkout fails the comparison and leaves a carriage return at the end of every record, and
 # neither failure would be about anything a reader of the diff had changed.
 mokiterions-core/tests/*.jsonl -text
+
+# se-harness:begin
+# Preserve canonical evaluator-evidence bytes and their bound SHA-256 on every platform.
+docs/engineering/**/evidence/*.json text eol=lf
+# se-harness:end

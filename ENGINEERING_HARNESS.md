@@ -1,50 +1,126 @@
 # Engineering Harness for Mokiterions
 
-This repository uses SE Harness 0.4.0. This file is the single managed contract and router. Repository-owned instructions may add stricter local constraints, but they cannot waive this contract.
+This repository uses SE Harness 0.8.0.
 
-## Authority model
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**,
+**SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **NOT RECOMMENDED**, **MAY**, and
+**OPTIONAL** in this document are to be interpreted as described in BCP 14
+(RFC 2119 and RFC 8174) when, and only when, they appear in all capitals.
 
-- `docs/engineering/REPOSITORY_CONTEXT.md` contains owner-curated repository facts and commands. It informs execution but grants no product or governance authority.
-- Formal artifacts under `docs/engineering/` are the only repository-native source of product intent, requirements, architecture decisions, work authorization, verification contracts, and release constraints.
-- Source, tests, conversations, dashboards, preflight, and CI are observations or evidence. They do not approve work, verification, or release.
+## Goals
 
-## Author engineering artifacts
+This harness makes engineering authority explicit, limits execution to approved
+scope, binds assurance and release claims to exact evidence, and gives every
+actor the same deterministic next step. These goals are informative; the rules
+below and the routed policies are normative.
 
-Use `harnessctl scaffold-domain . --domain <lowercase-kebab-domain>` to establish the canonical domain organization. Use `harnessctl create-artifact . --domain <domain> --type <type> --id <ID>` to create one incomplete draft from the installed template in its canonical type directory. Complete accountable fields and validate the graph before approval.
+## Global invariants
 
-Canonical paths make repositories predictable, but paths never establish artifact identity, type, relations, lifecycle state, or authority. Existing valid flat layouts remain supported and may produce nonblocking migration guidance. Installation and upgrade never move repository-owned artifacts automatically.
+`HRN-001` - Formal artifacts under `docs/engineering/` are the repository-native
+source of product intent, requirements, architecture decisions, work authority,
+verification contracts, assurance decisions, and release decisions. Code,
+tests, commits, tickets, dashboards, and conversation text are evidence or
+observations; they MUST NOT substitute for formal authority.
 
-## Start implementation
+`HRN-002` - Repository facts and commands belong in the owner-controlled region
+of `AGENTS.md`. That content is repository-owned and MUST NOT grant product,
+engineering, assurance, release, or external-action authority. This harness does
+not scaffold, track, or require it.
 
-1. Select one bounded work order.
-2. Run `harnessctl preflight . --work-order WO-...`.
-3. Read every file in the returned manifest.
-4. Inspect the affected implementation, tests, templates, and documentation.
-5. Implement only the authorized scope and retain work-order-keyed evidence.
+`HRN-003` - An actor MUST select one bounded artifact scope before acting. It
+MUST NOT report findings from unrelated work orders as findings of the selected
+scope. A discovered issue outside scope MAY be identified only as an unassessed
+observation with its artifact ID, and MUST NOT block the selected work unless a
+declared dependency or gate connects it.
 
-Preflight is read-only. It validates installed integrity, repository-context completeness, the formal graph, phase-appropriate work-order status, and the complete governing chain. It does not prove that the material was read or that a diff semantically matches the work order.
+`HRN-004` - Only `harnessctl` MAY compute lifecycle legality and the canonical
+next action. Agent prose, prompts, Skills, dashboards, and repository notes MAY
+render or invoke that result and MUST NOT redefine it.
 
-## Policy router
+`HRN-005` - Preparation, inspection, validation, and evidence capture MUST NOT
+exercise a decision right. A state change requires the exact artifact, target
+state, accountable actor, passing gates, and an explicit applied transition.
 
-| Decision point | Managed policy |
+`HRN-006` - A transition MUST change only the artifacts explicitly selected by
+the accountable actor. Related artifact states MUST NOT be synchronized by
+inference.
+
+`HRN-007` - Repository-owned instructions MAY add stricter local constraints.
+They MUST NOT waive, weaken, or contradict this managed contract.
+
+`HRN-008` - Managed integrity, graph validation, scope validation, and required
+gates MUST fail closed. A warning MUST NOT be treated as approval or accepted
+risk.
+
+## Scope of these obligations
+
+The bounded-scope invariant above, the lifecycle handoff rules, and the stop
+conditions bind an actor executing or reporting a lifecycle stage. Reading,
+analysis, and answering questions are unconstrained, provided no lifecycle
+state changes, no decision right is exercised, and no finding is presented as
+a formal result.
+
+Before acting on a lifecycle stage, read `docs/engineering/OPERATING_CARD.md`,
+the selected work order, and every governing artifact listed by the phase
+reading manifest. The routed policies below are reference for humans and for
+the evaluator; an agent is not required to read them to act.
+
+## Routing
+
+Each subject has one policy owner. Other documents MUST reference the owner and
+MUST NOT restate its rules.
+
+| Subject | Normative owner |
 | --- | --- |
-| Creating or changing artifacts and lifecycle state | `docs/engineering/WORKFLOW.md` |
-| Approving work, assurance, release, risk, or operations | `docs/engineering/DECISION_RIGHTS.md` |
-| Defining or executing verification and release gates | `docs/engineering/QUALITY_GATES.md` |
-| Defining artifact purpose, applicability, reuse, or relations; recording evidence, VRECs, supersession, or releases | `docs/engineering/TRACEABILITY.md` |
+| Lifecycle states, transitions, procedures, next actions, and handoff fields | `docs/engineering/WORKFLOW.md` and its machine-readable `WORKFLOW.json` |
+| Roles, accountabilities, delegation, and reserved decisions | `docs/engineering/DECISION_RIGHTS.md` |
+| Gate criteria, executable predicates, validation planes, pass/fail behavior, and exceptions | `docs/engineering/QUALITY_GATES.md` and `docs/engineering/QUALITY_GATES.json` |
+| Normative chain, artifact applicability, relation types, and coverage | `docs/engineering/TRACEABILITY.md` |
+| Eligible operator and technical-artifact English prose | `docs/engineering/TECHNICAL_COMMUNICATION.md` |
+| Artifact authoring locations and templates | `docs/engineering/templates/README.md` |
+| Authoring rules for formal artifacts | `docs/engineering/ARTIFACT_AUTHORING.md` |
+| Repository-specific facts and commands | the owner-controlled region of `AGENTS.md` |
 
-Use the repository-owned `docs/engineering/README.md` only as the index of local artifact domains and supporting engineering documentation.
+`docs/engineering/README.md` is an index. It MUST NOT become a second policy
+source.
 
-## Review and visualization
+## Lifecycle handoff
 
-Review readiness and visualization follow `docs/engineering/WORKFLOW.md`, subject to `QUALITY_GATES.md`. Preflight and Harness Explorer outputs are derived, read-only evidence; neither approves work nor verifies a candidate.
+After completing a lifecycle stage or reaching a stop condition, the actor MUST
+obtain the selected workflow result using result schema 2. The structured
+result is authoritative. The actor MUST preserve its actual artifact IDs,
+lifecycle state, observed effects, material non-effects, blockers, accountable
+decision, recommended next action, and command argument boundaries or suggested
+response meaning. It MUST NOT claim an effect, decision, or authority absent
+from that result.
 
-## Commit-bound verification and release
+For human interaction, the actor SHOULD summarize the result clearly and
+concisely. It MAY adapt wording and structure to the user and situation, add
+relevant explanation, and omit empty fields. It MUST distinguish completed
+work from remaining work, identify any required accountable decision, and
+recommend exactly one next action. Complete alternatives MAY be shown
+separately. It MUST NOT add an unrelated finding or another recommendation.
 
-Verification and release follow `docs/engineering/WORKFLOW.md`, subject to `QUALITY_GATES.md`, `TRACEABILITY.md`, and `DECISION_RIGHTS.md`. VRECs and release records must identify the exact candidate commit they govern and therefore reside in later governance commits. Harness commands may prepare records, but never exercise accountable decision rights or commit, push, tag, release, publish, or deploy.
+When exact headings or bytes are required, the application or automation MUST
+invoke the deterministic human renderer directly. Model transcription MUST NOT
+be used as the enforcement mechanism. The complete procedure is
+`WORKFLOW.md#lifecycle-handoff-procedure`.
 
 ## Stop conditions
 
-Stop and escalate when managed integrity fails, repository context is incomplete, the graph is invalid, no phase-eligible work order exists, the governing chain is incomplete, owner instructions materially conflict with this contract, required verification fails, or a requested action exceeds explicit authority.
+The actor MUST stop before changing state or scope when any of these conditions
+is true:
 
-> Approved intent and requirements define why work exists. Code and tests are evidence, not replacement product authority.
+- managed integrity fails;
+- the formal graph is invalid;
+- no phase-eligible selected work order exists;
+- a required governing artifact or gate is missing;
+- a required check fails;
+- owner instructions conflict with this contract;
+- remediation would exceed the selected work order; or
+- the requested action lacks the decision right or explicit authority defined
+  by the routed policies.
+
+The actor MUST report the failing rule or gate, the unchanged lifecycle state,
+and one exact retry or accountable escalation. It MUST NOT ask an open-ended
+next-action question when `harnessctl` provides a canonical recommendation.

@@ -1,0 +1,91 @@
+{
+  "schema": "se-harness-skill-contract-v3",
+  "name": "harness-draft-change",
+  "version": "2.0.0",
+  "outcome": "Prepare declared draft artifacts through the Phase 4 evaluator client and stop without direct target writes, approval, or delivery.",
+  "activation": {
+    "explicit": true,
+    "implicit": false,
+    "must_not_match": [
+      "discuss or explain a possible change",
+      "approve or apply a lifecycle transition",
+      "implement an approved work order",
+      "commit, push, publish, deploy, operate, or use credentials"
+    ]
+  },
+  "inputs": [
+    {"name": "target", "required": true, "type": "repository-path"},
+    {"name": "evaluator-launcher", "required": true, "type": "evaluator-launcher"},
+    {"name": "expected-evaluator-version", "required": true, "type": "version"},
+    {"name": "expected-evaluator-root", "required": true, "type": "directory-path"},
+    {"name": "explicit-skill", "required": true, "type": "skill-name"},
+    {"name": "requested-outcome", "required": true, "type": "bounded-text"},
+    {"name": "declared-non-effects", "required": true, "type": "text-list"},
+    {"name": "domain", "required": true, "type": "domain-name"},
+    {"name": "artifact-plan", "required": true, "type": "artifact-plan"},
+    {"name": "planning-note", "required": false, "type": "repository-path"},
+    {"name": "revisable-artifacts", "required": false, "type": "artifact-id-list"},
+    {"name": "work-order", "required": true, "type": "artifact-id"},
+    {"name": "delegation-evidence", "required": true, "type": "json-object"},
+    {"name": "evaluator-request", "required": true, "type": "json-object"}
+  ],
+  "preconditions": [
+    {"id": "explicit-selection", "description": "The operator explicitly selected harness-draft-change and one repository target."},
+    {"id": "released-evaluator", "description": "The supplied external evaluator identity and installed integrity are current."},
+    {"id": "collision-audit", "description": "Every proposed identifier was checked across all locally available Git refs."},
+    {"id": "draft-boundary", "description": "Every new destination is canonical and every selected revision is currently draft."},
+    {"id": "phase4-delegation", "description": "One approved work order delegates the exact Phase 4 start, bundle, and completion operations for the declared draft paths."}
+  ],
+  "mutation_class": "draft-writing",
+  "evaluator": {
+    "minimum_version": "0.6.0",
+    "required_operations": ["version", "identity", "doctor", "delegated-workflow-catalog", "delegated-workflow-execute"],
+    "optional_operations": ["validate-json", "inspect-json"],
+    "missing_required": "blocked",
+    "missing_optional": "degraded"
+  },
+  "client": {
+    "request_schema": "se-harness-evaluator-client-request-v1",
+    "result_schema": "se-harness-evaluator-client-result-v1",
+    "workflow_schema": "se-harness-workflow-v4",
+    "interface_operation": "delegated-workflow-execute",
+    "operation_catalog": ["delegated-work-order-start", "change-bundle-apply", "delegated-work-order-complete"],
+    "bundle_owner": "evaluator",
+    "target_writer": "evaluator",
+    "direct_target_writes": false,
+    "canonical_restitution": "required"
+  },
+  "checkpoints": [
+    {"id": "identity-before-effect", "stage": "before-effect", "operation": "identity", "required": true},
+    {"id": "integrity-before-effect", "stage": "before-effect", "operation": "doctor", "required": true},
+    {"id": "capability-before-effect", "stage": "before-effect", "operation": "delegated-workflow-catalog", "required": true},
+    {"id": "delegated-execution-after-effect", "stage": "after-effect", "operation": "delegated-workflow-execute", "required": true},
+    {"id": "git-stop-handoff", "stage": "handoff", "operation": "decision-packet", "required": true}
+  ],
+  "effects": {
+    "permitted": ["draft-create", "draft-revise", "planning-note-write"],
+    "prohibited": ["accountable-approval", "assurance-decision", "child-delegation", "credential-use", "delivery-selection", "direct-target-write", "external-action", "git-mutation", "lifecycle-authority", "lifecycle-transition", "network-mutation", "parallel-writer", "release-decision", "verification-decision", "work-completion", "work-start"],
+    "path_source": "declared-draft-destinations",
+    "lifecycle_transitions": []
+  },
+  "delegation": {"allowed": false, "fallback": "single-agent"},
+  "evidence": {
+    "receipt_schemas": ["se-harness-execution-receipt-v1", "se-harness-effect-receipt-v1"],
+    "target_retention": false,
+    "required_retained_kinds": ["draft-artifacts", "planning-note", "effect-receipt"]
+  },
+  "stop_conditions": [
+    {"id": "implicit-or-ambiguous-activation", "outcome": "blocked"},
+    {"id": "phase4-capability-unavailable", "outcome": "blocked"},
+    {"id": "invalid-or-missing-delegation", "outcome": "blocked"},
+    {"id": "direct-target-write-requested", "outcome": "blocked"},
+    {"id": "canonical-restitution-failed", "outcome": "failed"},
+    {"id": "accountable-review-required", "outcome": "stopped"}
+  ],
+  "outputs": [
+    {"name": "skill-result", "schema": "se-harness-evaluator-client-result-v1", "retention": "inline"},
+    {"name": "execution-receipt", "schema": "se-harness-execution-receipt-v1", "retention": "inline"},
+    {"name": "effect-receipt", "schema": "se-harness-effect-receipt-v1", "retention": "retained"},
+    {"name": "decision-packet", "schema": "se-harness-decision-packet-v2", "retention": "inline"}
+  ]
+}
