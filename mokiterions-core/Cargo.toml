@@ -15,6 +15,21 @@ edition = "2024"
 # SPEC-MOK-002 rule 2: the library target is named in snake case because the declared
 # lint gate implies `non_snake_case`; the binary target keeps the operator-facing name
 # that appears in the first line of `USAGE`.
+# `cargo run -p Mokiterions` was unambiguous while this package built one binary. The canned
+# connector of `SPEC-MOK-007` rule 20.5 makes two, and Cargo then refuses to choose:
+#
+#     error: `cargo run` could not determine which binary to run
+#     available binaries: Mokiterions, canned-connector
+#
+# Two repository-owned workflows invoke it that way -- `provider-credentials.yml`, which replays
+# the committed transcript on every pull request, and `release.yml`, which would have failed at
+# the next release and not before. Declaring the package's primary binary fixes both without
+# touching either, which matters because `.github/` is outside `WO-MOK-026`'s execution scope.
+#
+# It is also simply true: `Mokiterions` is what this package is for, and the connector is a test
+# fixture that happens to need a target in order to be a child process.
+default-run = "Mokiterions"
+
 [lib]
 name = "mokiterions"
 path = "src/lib.rs"
