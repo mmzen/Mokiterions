@@ -2,7 +2,7 @@
 id = "VREC-HUP-001"
 type = "verification_record"
 title = "Verification candidate for WO-HUP-001"
-status = "ready"
+status = "verified"
 owners = ["assurance owner"]
 created = "2026-08-28"
 updated = "2026-08-28"
@@ -16,12 +16,53 @@ evidence_paths = ["docs/engineering/harness/evidence/WO-HUP-001/a1-validate.md",
 evaluator_evidence_path = "docs/engineering/harness/evidence/VREC-HUP-001-evaluator.json"
 evaluator_evidence_sha256 = "4f500366462d5da855322aa725d6a1d23250f1ef82b37e371b43317ef81945b6"
 
+verified_at = "2026-08-28T20:33:34Z"
+verified_by = "assurance owner"
 [relations]
 verifies_work_order = ["WO-HUP-001"]
 conforms_to = ["VER-HUP-001"]
+
+[[lifecycle_events]]
+from = "ready"
+to = "verified"
+decided_at = "2026-08-28T20:33:34Z"
+decided_by = "assurance owner"
 +++
 
 # Verification Record Candidate
+
+## Verification decision, 2026-08-28
+
+The repository owner, acting as accountable assurance owner, verified this record on 2026-08-28 under
+`DR-VREC-DECIDE`. They were shown the four gaps this record's *Residual uncertainty* carries and the
+fact that the managed lane has not run, and directed that the packet be bound and verified as it
+stands. The transition was taken with the released 0.8.0 evaluator through `python -I -m se_harness`,
+and it moved `status`, `verified_at` and `verified_by` and nothing else. The heading below still says
+*Candidate*, and the prose beneath it is left exactly as `capture-verification` wrote it.
+
+Every figure was re-measured immediately before the field moved, because a verified record can never
+be corrected and this commit is the last chance to fix its own numbers:
+
+| Figure | Reading |
+|---|---|
+| Worktree | clean, 0 changes |
+| Bound candidate `3b826f56` | exists |
+| Evidence tracked at the candidate | 14 of 14 |
+| `validate`, released 0.8.0, isolated | exit 0, **0 errors** |
+| `validate`, in-tree cross-check | exit 0 |
+| `doctor` | **0 FAIL** |
+| `WO-HUP-001` | `implemented` |
+| `evaluator_evidence_sha256` | `4f500366…`, recomputed and equal |
+
+The record's own assessments are `VER-HUP-001`'s A1 through A7, N1, N2, S1 and M1, and the retained
+packet is the evidence for each. A1 carries `REQ-HUP-001` and reads zero errors over the complete
+graph, which is the requirement's whole measure. A5 is byte identity on `RLS-MOK-001`, and N1 is the
+exemption that identifier resolves to. None of the four recorded gaps touches any of the three.
+
+This decision verifies work. It does not authorize a release, a tag, a publication or a deployment,
+and it selects no delivery path — the next checkpoint is `DR-DELIVERY-SELECT`, which is a separate
+act by the repository or release owner.
+
 
 This ready record binds retained evidence for `WO-HUP-001` to candidate commit `3b826f562420c6f9fc6502a92b56f0bada1ae32c`. An accountable assurance owner must review the evidence and transition the record to `verified`; this command did not approve, commit, tag, release, or publish anything.
 
