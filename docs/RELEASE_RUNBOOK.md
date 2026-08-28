@@ -43,8 +43,8 @@ Almost every mistake in this procedure comes from conflating these.
 
 | | What it is | Where it lives |
 |---|---|---|
-| **candidate commit** | the code being released | reachable from `master` or a `release/*` branch |
-| **governance revision** | the tip of `master` holding the release record | strictly later than the candidate |
+| **candidate commit** | the code being released | reachable from `main` or a `release/*` branch |
+| **governance revision** | the tip of `main` holding the release record | strictly later than the candidate |
 
 A release record names a commit, so it quotes that commit's hash and can therefore only be
 written **afterwards**. The harness says so itself: *"The release candidate commit may precede
@@ -56,8 +56,8 @@ Consequences you cannot design around:
 
 - **The tagged tree does not contain its own release record.** That is normal. Don't try to
   fix it.
-- The workflow therefore reads the formal graph from `master` and resolves the tag separately.
-  It pins the `master` commit it read and hands it to the compliance job, so a push landing
+- The workflow therefore reads the formal graph from `main` and resolves the tag separately.
+  It pins the `main` commit it read and hands it to the compliance job, so a push landing
   mid-run cannot change the answer underneath it.
 - The compliance job runs `doctor`, `validate` and `preflight` at the **governance** revision,
   not the candidate. The candidate's own graph was already validated by the managed
@@ -135,7 +135,7 @@ Nothing in this phase is mechanical. Do not start Phase B until each item has an
 ## Phase B — establish the candidate commit
 
 ```bash
-git switch master
+git switch main
 git pull --ff-only
 git status --porcelain --untracked-files=all   # must print nothing
 CANDIDATE="$(git rev-parse HEAD)"; echo "$CANDIDATE"
@@ -182,17 +182,17 @@ workflow does not create it: by the time CI runs, the moment has passed.
 ```bash
 git switch --create release/0.1 "$CANDIDATE"
 git push --set-upstream origin release/0.1
-git switch master
+git switch main
 ```
 
 From here on:
 
 - Only release-specific fixes may target `release/0.1`, on a `release-fix/<short-description>`
   branch cut from it.
-- A fix that also applies to the current product must be forward-ported to `master`.
+- A fix that also applies to the current product must be forward-ported to `main`.
 - If stabilization adds commits, **the candidate commit changes** — it becomes the tip of
   `release/0.1`. Re-run Phase B against the new tip and use that value for `CANDIDATE`
-  everywhere below. The workflow accepts a candidate reachable from `master` or from any
+  everywhere below. The workflow accepts a candidate reachable from `main` or from any
   `origin/release/*` branch, and refuses anything else.
 
 ---
@@ -205,14 +205,14 @@ enforces it (`prepare_release`) and so does the gate. So an aggregate release ne
 verification record captured at the final candidate commit. The existing records are not
 edited and not replaced; they remain the record of their own work.
 
-Pick the next free record ID, and pick it from `origin/master` rather than from the branch you are on.
+Pick the next free record ID, and pick it from `origin/main` rather than from the branch you are on.
 `VREC-MOK-001` through `008` are taken as of `a8fa962`: `007` was claimed by `WO-MOK-007` while `WO-MOK-009`
 was in flight, which is the case this step exists for, and skipping the check once already produced an add/add
 merge conflict — `docs/engineering/simulation/evidence/WO-MOK-009/id-collision.md` records it. Do not read
 that count as current either; run the query, then set the variable from what it returns:
 
 ```bash
-git ls-tree -r --name-only origin/master \
+git ls-tree -r --name-only origin/main \
   -- docs/engineering/simulation/verification-records/ | sort
 VREC=VREC-MOK-0NN      # the next ID the command above does not list
 ```
@@ -365,7 +365,7 @@ The **release owner** reviews and transitions `ready` → `released`. `docs/engi
 reserves this transition, and it is the single act the whole workflow is downstream of: nothing
 is built or published without it.
 
-Commit and merge to `master` through a pull request. **That merge is the governance revision.**
+Commit and merge to `main` through a pull request. **That merge is the governance revision.**
 
 ---
 
@@ -392,7 +392,7 @@ blocker.
 Then the gate itself, which also runs locally. Create the tag but do not push it:
 
 ```bash
-git switch master && git pull --ff-only
+git switch main && git pull --ff-only
 git tag -a v0.1.0 "$CANDIDATE" -m "Mokiterions 0.1.0"
 python scripts/check_release_authorization.py --root . --tag v0.1.0
 ```
@@ -411,7 +411,7 @@ gate runnable in a clone with no remote:
 
 ```bash
 python scripts/check_release_reachability.py --root . --commit "$CANDIDATE" \
-  --default-branch master --remote origin
+  --default-branch main --remote origin
 ```
 
 It prints the release-bearing branch that contains the candidate. It reads
@@ -440,7 +440,7 @@ The push triggers `release.yml`:
 
 1. **Authorization** — pins the governance revision, runs the gate (which resolves the tag,
    checks it is annotated, and reads the graph), records who tagged, then runs the reachability
-   check against `origin/master` and every `origin/release/*` branch.
+   check against `origin/main` and every `origin/release/*` branch.
 2. **Harness compliance** — asserts the installed `se-harness` equals the version
    `.engineering-harness.toml` declares, then `doctor`, `validate`, and a review `preflight`
    per released work order, at the governance revision.
