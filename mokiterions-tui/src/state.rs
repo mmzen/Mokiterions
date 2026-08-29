@@ -310,13 +310,24 @@ pub struct KeyResponse {
 /// makes the field a sized type again, and a sized type coerces to a trait object of whatever
 /// lifetime the call site needs.
 ///
-/// The two methods are `Proposer`'s two and this type adds nothing to either: it forwards, so what
-/// the engine calls is the port the host built. Its own `record` therefore carries the replay port's
-/// mismatch and exhaustion reports — `SPEC-MOK-007` rules 12.3 and 12.4 — unaltered, and a run this
-/// host cannot replay stops with the engine's own words.
+/// The three methods are `Proposer`'s three and this type adds nothing to any of them: it forwards,
+/// so what the engine calls is the port the host built. Its own `record` therefore carries the replay
+/// port's mismatch and exhaustion reports — `SPEC-MOK-007` rules 12.3 and 12.4 — unaltered, and a
+/// run this host cannot replay stops with the engine's own words.
+///
+/// `halted` is forwarded rather than defaulted, and the difference is not academic even though this
+/// host only ever holds a replay port. Taking the trait's default would make *this* type answer the
+/// question, so a port the host came to hold that did have a ceiling would spend past it while the
+/// wrapper said `false` — a defect visible nowhere, since the wrapper compiles and the run completes.
+/// Forwarding leaves the answer where rule 14.6 puts it, and a replay port's own default answers
+/// `false` for rule 14.8's reason instead of for this wrapper's.
 struct LentPort(Box<dyn Proposer>);
 
 impl Proposer for LentPort {
+    fn halted(&self) -> bool {
+        self.0.halted()
+    }
+
     fn propose(&mut self, request: DecisionRequest) -> Proposal {
         self.0.propose(request)
     }

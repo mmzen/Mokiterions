@@ -34,8 +34,8 @@ use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::process::{Child, Command as Spawn, ExitCode, Stdio};
 
 use mokiterions::cli::{self, Command};
-use mokiterions::execute;
 use mokiterions::simulation::{ConnectorPort, Proposer, ReplayPort, UnitPrices};
+use mokiterions::{CEILING_STOP_EXIT, execute};
 
 /// The option whose value names the record stream's destination.
 ///
@@ -315,11 +315,26 @@ fn run_with_port<W: Write, E: Write>(
         code = 1;
     }
 
-    if code != 0 {
-        // Rule 13.4: no partial stream survives to be read as a complete run. The condition is
-        // the exit code rather than the sink's own failure, because a text-stream failure ends
-        // the run just as abruptly and leaves a record stream with no run record, which is
-        // just as partial and just as misleading.
+    // Rule 13.4: no partial stream survives to be read as a complete run. The condition is
+    // the exit code rather than the sink's own failure, because a text-stream failure ends
+    // the run just as abruptly and leaves a record stream with no run record, which is
+    // just as partial and just as misleading.
+    //
+    // **`CEILING_STOP_EXIT` is excepted, and it is the one non-zero code whose stream must
+    // survive.** `SPEC-MOK-007` rule 14.7 requires a run stopped at its ceiling to leave the
+    // transcript and the record stream "complete and readable to the tick reached", and rule
+    // 15.5 has a reader quote figures at that tick — neither is possible if this target deletes
+    // the file on the way out. The stream is short of a run record, which is exactly what rule
+    // 13.4 calls partial, and the two rules disagree only in appearance: 13.4 removes a stream
+    // that would be *misread* as a complete run, and a run record's absence beside a distinct
+    // exit status and a message naming the tick is not a stream anybody reads as complete.
+    //
+    // The exception is tested against the code and not against the port, deliberately. Asking
+    // the port whether it halted would answer `true` for a run that reached its ceiling at its
+    // very last exchange and then failed to flush — a partial stream this branch must remove —
+    // because the port's account holds the same figure either way. The code is the library's
+    // verdict on the run, and every later failure below overwrites it with `1`.
+    if code != 0 && code != CEILING_STOP_EXIT {
         if created {
             if let Err(error) = fs::remove_file(&destination) {
                 // In addition to the original failure, never instead of it, and the exit code

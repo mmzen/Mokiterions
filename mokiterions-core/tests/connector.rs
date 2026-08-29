@@ -64,11 +64,22 @@ const CREDENTIAL: &str = "sk-canned-0000-authenticates-nothing";
 
 /// Two US dollars, which is `WO-MOK-026`'s fixed ceiling, and the prices from rule 14.3a's example.
 ///
-/// Both are required by the parser for any live run and neither is exercised here: the ceiling is
-/// item 10's and the arithmetic is item 9's. They appear because a live invocation is invalid
-/// without them.
+/// Both are required by the parser for any live run. The prices' arithmetic is item 9's and is
+/// checked at the internal tier, where the figures can be stated as integers rather than parsed out
+/// of a string; **this ceiling is never reached**, because the operator declares dollars and rule
+/// 14.2 accounts in cents, so two dollars is two hundred cents against a tick holding twelve
+/// exchanges. The one case that reaches a ceiling declares [`REACHABLE_CEILING`] instead.
 const CEILING: &str = "2";
 const PRICES: &str = "125:13:1000:0";
+
+/// Two US cents, as the operator writes them: the same option as [`CEILING`] with a figure one tick
+/// can spend.
+///
+/// The two decimal places are load-bearing and are the reason this is a string rather than a number.
+/// `--spend-ceiling` takes an amount in dollars and `cli::parse_minor_units` converts it to rule
+/// 14.2's cents, so the smallest ceiling an operator can declare is `0.01` and this one is twice it —
+/// two exchanges at [`WHOLE_CENT_EXCHANGE`]'s usage, which is case **L19**'s figure exactly.
+const REACHABLE_CEILING: &str = "0.02";
 
 /// An empty directory of this test's own, removed and recreated so a run cannot inherit a file from
 /// a previous one. `tests/replay.rs`'s helper, with this file's own prefix.
@@ -101,6 +112,21 @@ fn engine(
     script: Option<&Path>,
     credential: Option<&str>,
 ) -> Command {
+    spending(connector, transcript, script, credential, CEILING)
+}
+
+/// [`engine`] with a ceiling of the case's own choosing.
+///
+/// The ceiling is a parameter rather than an argument the caller appends, because `--spend-ceiling`
+/// may appear at most once: a second one is a configuration error and a test that added it would be
+/// asserting on the parser's refusal instead of on the run.
+fn spending(
+    connector: &str,
+    transcript: &Path,
+    script: Option<&Path>,
+    credential: Option<&str>,
+    ceiling: &str,
+) -> Command {
     let mut command = Command::new(ENGINE);
     command.args([
         "--policy",
@@ -111,7 +137,7 @@ fn engine(
         "--ticks",
         "1",
         "--spend-ceiling",
-        CEILING,
+        ceiling,
         "--prices",
         PRICES,
     ]);
@@ -147,6 +173,16 @@ fn exchanges(transcript: &str) -> Vec<&str> {
 /// The twelve Mokiterions the default density produces at every declared seed, which is the number
 /// of prefix records and the number of opportunities in one tick.
 const ROSTER: usize = 12;
+
+/// A directive whose usage costs exactly one cent at [`PRICES`]: a thousand prompt tokens all served
+/// from the cache at 13 microcents each, and 987 output tokens at 1,000 each.
+///
+/// One cent exactly, and that is the point: [`REACHABLE_CEILING`] is two of them, so the second
+/// exchange reaches the ceiling and the third is never issued. A directive that cost a fraction of a
+/// cent — the fixture's own default usage costs 0.0322 of one — would need thirty-two exchanges and
+/// three ticks to reach the smallest declarable ceiling, and the count the case names would then
+/// depend on how many Mokiterions were still alive in the third tick.
+const WHOLE_CENT_EXCHANGE: &str = "ok wait prompt=1000 cached=1000 output=987 reasoning=0";
 
 /// Rules 10.1, 10.2, 13.1 and 20.1: a live run starts the connector, exchanges with it over the two
 /// pipes, and records every exchange.
@@ -517,4 +553,96 @@ fn a_response_that_names_neither_model_nor_level_is_a_fallback() {
         // And the line is recorded as received, so a reader can see what was refused.
         assert!(record.contains("sleep"), "{record}");
     }
+}
+
+/// `SPEC-MOK-007` rules 14.6, 14.7 and 19.3, and `SPEC-MOK-006` rule 13.4's exception: a live run
+/// that reaches its ceiling exits with a status of its own and leaves everything it wrote behind.
+///
+/// **Three assertions, and the middle one is the reason this test is at this tier.** The exit status
+/// is `3`, which rule 19.3 requires to be distinct from a clean completion and from an error and
+/// which the library names `CEILING_STOP_EXIT`; the record stream *survives*, which no library-tier
+/// test can check because rule 13.4's removal is this host's act and nobody else's; and exactly two
+/// exchanges were issued, which is case **L19**'s figure reached through a real child process
+/// reporting its own usage rather than through a fixture declaring it.
+///
+/// Rule 13.4 has this host remove a record sink it created when the run failed, and rule 14.7
+/// requires a ceiling-stopped stream to survive complete and readable to the tick reached. The two
+/// disagree only in appearance: a ceiling stop is not a failure, and the host tells them apart by the
+/// library's exit code. A host that compared against `0` alone would delete the evidence of every
+/// ceiling-stopped run.
+///
+/// What the surviving stream does *not* carry is asserted too. There is no run record and no
+/// `simulation_ended` event, because the run did not end — `SPEC-MOK-006` rule 8.9's `reason` domain
+/// has no member for a stop and rule 15.5 forbids quoting a figure at a horizon the run did not
+/// reach — and there is no summary line on standard output for the same reason.
+#[test]
+fn a_live_run_stops_at_its_ceiling_and_leaves_the_record_stream_behind() {
+    let directory = scratch("ceiling");
+    let transcript = directory.join("ceiling.jsonl");
+    let events = directory.join("ceiling-records.jsonl");
+    let script = script(&directory, &[WHOLE_CENT_EXCHANGE]);
+
+    let output = spending(
+        CONNECTOR,
+        &transcript,
+        Some(&script),
+        Some(CREDENTIAL),
+        REACHABLE_CEILING,
+    )
+    .arg("--events-path")
+    .arg(&events)
+    .output()
+    .unwrap();
+
+    // Rule 19.3's fourth status. The literal is the contract a caller sees, which is why it is
+    // written out here rather than imported: this tier asserts `0`, `1` and `2` the same way, and a
+    // status a caller cannot predict is not a status.
+    assert_eq!(output.status.code(), Some(3), "{}", stderr(&output));
+    let complaint = stderr(&output);
+    assert!(
+        complaint.contains("spend ceiling reached at tick 1"),
+        "{complaint}"
+    );
+    // Neither severity keyword: a ceiling stop is the run doing what it was asked.
+    assert!(!complaint.contains("runtime error:"), "{complaint}");
+    assert!(!complaint.contains("configuration error:"), "{complaint}");
+
+    // Rule 14.6 as a count, and rule 13.4's exception: both files the host created are still here.
+    let recorded = fs::read_to_string(&transcript).unwrap();
+    assert_eq!(
+        exchanges(&recorded).len(),
+        2,
+        "two cents at a cent an exchange, and the third is never issued"
+    );
+    assert_eq!(
+        recorded
+            .lines()
+            .filter(|line| line.contains("\"transcript\":\"prefix\""))
+            .count(),
+        ROSTER,
+        "the prefix head is complete: it is written before the first exchange"
+    );
+    for record in exchanges(&recorded) {
+        assert!(record.contains("\"fallback\":false"), "{record}");
+    }
+
+    let stream = fs::read_to_string(&events).expect("the record stream survived the ceiling stop");
+    assert!(
+        stream
+            .lines()
+            .next()
+            .unwrap()
+            .contains("\"record\":\"header\""),
+        "{stream}"
+    );
+    assert!(!stream.contains("\"record\":\"run\""), "{stream}");
+    assert!(!stream.contains("simulation_ended"), "{stream}");
+    for line in stream.lines() {
+        assert!(line.starts_with('{') && line.ends_with('}'), "{line}");
+    }
+    assert!(
+        !stdout(&output).contains("summary reason="),
+        "{}",
+        stdout(&output)
+    );
 }

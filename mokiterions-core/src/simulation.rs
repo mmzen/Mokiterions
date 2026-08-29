@@ -1086,6 +1086,20 @@ trait DecisionSource {
         Ok(())
     }
 
+    /// Whether this source has stopped spending, asked before each opportunity is composed.
+    ///
+    /// The private half of [`Proposer::halted`], and the reason it exists on this trait too is the
+    /// reason [`DecisionSource::failure`] does: the run loop drives a `DecisionSource` and knows
+    /// nothing of a port. Only `PortDecisionSource` overrides it; the four deterministic sources take
+    /// the default, so no run that existed before the port does can reach `SPEC-MOK-007` rule 14.6's
+    /// stop, which is rule 16's non-perturbation obligation stated once more as a call graph.
+    ///
+    /// Defaulted to `false` on the same ground as the public method's default: a source that spends
+    /// nothing cannot reach a spending ceiling.
+    fn halted(&self) -> bool {
+        false
+    }
+
     fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action;
 
     /// A failure the source reached while deciding, which ends the run.
@@ -1725,6 +1739,34 @@ impl Proposal {
 ///
 /// `&mut self` for that reason: an implementation is expected to carry state across a run.
 pub trait Proposer {
+    /// Whether this port has stopped spending, asked **before** each exchange is composed.
+    ///
+    /// Rule 14.6's check, at the only place it can honestly be made: the port is what spends, so the
+    /// port is what knows whether the declared ceiling has been reached, and the engine — which by
+    /// rule 14's *State model* may read no accounting figure at all — asks a question rather than
+    /// inspecting a number. A port that answers `true` is not asked for a proposal at that
+    /// opportunity: the request is not composed, nothing is written to it, and the run ends. That is
+    /// what makes the check *precede* the spending rather than trail it by one exchange.
+    ///
+    /// **Defaulted to `false`, and the default is rule 14.8.** A replay spends nothing and has no
+    /// ceiling, so [`ReplayPort`] takes this default rather than implementing it, and so does any
+    /// port with nothing behind it. A port that never spends can never halt, and stating that by
+    /// omission is the same shape [`Proposer::record`]'s replay behaviour already has.
+    ///
+    /// `&self` and not `&mut self`: asking must not move a figure. A method that could bill, count or
+    /// advance a cursor while answering would make the number the answer depends on a function of how
+    /// often the engine asked, and the engine asks once per opportunity today and is not held to
+    /// that by anything.
+    ///
+    /// This is not rule 1.1a's declined second method. That one would have returned the *previous*
+    /// exchange's evidence, so its correctness rested on a temporal contract between two calls that
+    /// no type enforces. This one is asked before an exchange exists, its answer concerns no
+    /// exchange, and a port that answered it wrongly stops a run early or spends past a ceiling —
+    /// both visible in the run's own figures rather than silently written into a record.
+    fn halted(&self) -> bool {
+        false
+    }
+
     /// Proposes one action for one decision opportunity, or reports that none was obtained,
     /// together with the evidence of the exchange it came from.
     ///
@@ -2988,6 +3030,21 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
 }
 
 impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
+    /// Rule 14.6: whether the accumulated cost has reached the declared ceiling.
+    ///
+    /// The whole of the answer is [`accounting::RunAccount::ceiling_reached`], compared in the unit
+    /// the cost is accumulated in rather than in the cent the ceiling was declared in, so a run whose
+    /// spending has passed a one-cent ceiling by a fraction stops on the fraction. A port built with
+    /// no ceiling answers `false` for ever, which is the same run rule 13.5 forbids the host to start
+    /// and this type does not police.
+    ///
+    /// Nothing is written and nothing is read: asking must not speak to the child. That is what lets
+    /// the engine ask before every opportunity, including the one where the answer is `true` and the
+    /// child is left with an empty input queue and a live process the host will close.
+    fn halted(&self) -> bool {
+        self.account.ceiling_reached()
+    }
+
     fn propose(&mut self, request: DecisionRequest) -> Proposal {
         let proposal = match self.exchange(&request) {
             Ok(line) => Self::interpret(&line),
@@ -3429,6 +3486,15 @@ impl<'port> PortDecisionSource<'port> {
 impl DecisionSource for PortDecisionSource<'_> {
     fn name(&self) -> &str {
         LLM_SOURCE_NAME
+    }
+
+    /// Rule 14.6's question, forwarded and nothing more.
+    ///
+    /// This adapter holds no accounting figure and computes none — rule 14's *State model* keeps every
+    /// accumulator in the port, rule 20.4.1 keeps the port in the host, and an adapter that cached the
+    /// answer would be a third party to a two-party fact.
+    fn halted(&self) -> bool {
+        self.port.halted()
     }
 
     /// Rule 11.1's prefix head: blocks A and B for every Mokiterion the run created, in ascending
@@ -4083,6 +4149,57 @@ impl fmt::Display for TerminationReason {
             Self::Extinction => formatter.write_str("extinction"),
         }
     }
+}
+
+/// How a recorded run ended: as a simulation, or at `SPEC-MOK-007` rule 14.6's ceiling.
+///
+/// `pub(crate)` and not `pub`, on `Simulation::run_recording`'s precedent and for the same reason:
+/// rule 20.5.2 makes that entry point the crate-private carrier between the binary target and the
+/// engine, this is what it now carries back, and `SPEC-MOK-002` rule 5's public interface grows by
+/// nothing here. `Simulation::run` keeps its `RunSummary` and its exact signature, so every host
+/// that never lends a port sees no change at all.
+///
+/// A ceiling stop is **not** a third [`TerminationReason`]. That enum is public, both hosts match on
+/// it, and it is written into `SPEC-MOK-006`'s run record as `reason` — so a third value there is a
+/// domain change and a `schema` increment that this work order is out of scope for. It is also not a
+/// simulation outcome: no rule of `SPEC-MOK-001` produced it, and the world it stopped is neither
+/// extinct nor finished. [`accounting::RunEnd`] states the same separation on the accounting side and
+/// states it first; this type is the run loop's half of it.
+/// `Debug` because `Result::unwrap_err` requires it of the success type, and four existing tests
+/// assert on a run that failed to write its record sink.
+#[derive(Debug)]
+pub(crate) enum RunOutcome {
+    /// The run reached one of `SPEC-MOK-001`'s two endings and has a summary.
+    Completed(RunSummary),
+    /// Rule 14.6's stop. The tick reached is rule 15.5's figure and rule 14.7's boundary — the
+    /// streams are complete and readable to it — and it is the tick that was **in progress** when the
+    /// ceiling was met, so the last tick with a metrics record is the one before it.
+    Ceiling { tick_reached: u64 },
+}
+
+/// What one tick's opportunities came to.
+///
+/// Private, and a two-variant enum rather than a `bool`, because the caller acts differently on each
+/// and a `bool` at a call site says nothing about which way is which.
+enum TickFlow {
+    /// Every living Mokiterion was given its opportunity.
+    Completed,
+    /// Rule 14.6's ceiling was reached before an opportunity could be issued. That opportunity and
+    /// every later one in the tick was not taken, no action was applied for it, and the tick has no
+    /// metrics record because it is not a completed tick — rule 7.1 of `SPEC-MOK-006` gives one to a
+    /// tick that *terminates* the run, which this is not.
+    CeilingReached,
+}
+
+/// What one step came to: [`TickFlow`] with the termination check folded in.
+enum StepFlow {
+    /// The tick completed and the run continues.
+    Continued,
+    /// The tick completed and terminated the run.
+    Ended(TerminationReason),
+    /// [`TickFlow::CeilingReached`], carried out unchanged. The termination check is not reached,
+    /// because a tick that was cut short cannot be asked whether it emptied the world.
+    CeilingReached,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -4846,8 +4963,23 @@ impl Simulation {
     /// The consequence is that a `Policy::Llm` run cannot be started through here: it is an
     /// invalid configuration with no port, and this reports [`MISSING_DECISION_PORT`] rather
     /// than substituting a source. That is rule 20.8 and not an oversight of rule 20.5.1.
+    ///
+    /// It reports a [`RunSummary`] and not a [`RunOutcome`], and can, because with no port there is
+    /// nothing that spends: [`DecisionSource::halted`]'s default is `false` for all four deterministic
+    /// sources and `Policy::Llm` is refused above, so rule 14.6's ceiling is unreachable from here.
+    /// The arm is still written out rather than asserted away — `ARCH-MOK-001` wants ordinary `Result`
+    /// propagation rather than a panic, and a refusal a later reader can read beats an
+    /// `unreachable!()` a later change can reach.
     pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
-        self.run_recording(output, None, None)
+        match self.run_recording(output, None, None)? {
+            RunOutcome::Completed(summary) => Ok(summary),
+            RunOutcome::Ceiling { tick_reached } => Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!(
+                    "a run with no decision port reported a spend ceiling at tick {tick_reached}"
+                ),
+            )),
+        }
     }
 
     /// [`Simulation::run`], additionally projecting every record `SPEC-MOK-006` fixes onto
@@ -4869,7 +5001,7 @@ impl Simulation {
         output: &mut W,
         records: Option<&mut dyn Write>,
         port: Option<&mut dyn Proposer>,
-    ) -> io::Result<RunSummary> {
+    ) -> io::Result<RunOutcome> {
         let mut sinks = Sinks {
             text: output,
             records,
@@ -4916,7 +5048,7 @@ impl Simulation {
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
-    ) -> io::Result<RunSummary> {
+    ) -> io::Result<RunOutcome> {
         if self.tick != 0 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -4967,17 +5099,30 @@ impl Simulation {
         self.emit(sinks, event)?;
 
         loop {
-            if let Some(reason) = self.step(sinks, decision_source)? {
-                let summary = self.summary(reason);
-                self.emit_summary(&mut *sinks.text, &summary)?;
-                // Rule 8.1: one run record per run, last in the stream, after the final
-                // tick's metrics record. Rule 9.3 pairs it with the summary line above, which
-                // is why it is written here and not inside `emit_summary`: the text stream has
-                // one authority and this record is the other stream's counterpart to it.
-                if let Some(sink) = sinks.records() {
-                    self.write_run_record(sink, &summary).map_err(sink_error)?;
+            match self.step(sinks, decision_source)? {
+                StepFlow::Continued => {}
+                StepFlow::Ended(reason) => {
+                    let summary = self.summary(reason);
+                    self.emit_summary(&mut *sinks.text, &summary)?;
+                    // Rule 8.1: one run record per run, last in the stream, after the final
+                    // tick's metrics record. Rule 9.3 pairs it with the summary line above, which
+                    // is why it is written here and not inside `emit_summary`: the text stream has
+                    // one authority and this record is the other stream's counterpart to it.
+                    if let Some(sink) = sinks.records() {
+                        self.write_run_record(sink, &summary).map_err(sink_error)?;
+                    }
+                    return Ok(RunOutcome::Completed(summary));
                 }
-                return Ok(summary);
+                // Rule 14.6's stop, leaving both streams exactly as the cut-short tick left them.
+                // No summary line, because `RunSummary` reports a `TerminationReason` and there is
+                // none — a run that stopped spending is not a run that ended, and writing the
+                // twelve-figure summary of a horizon the run did not reach is precisely what rule
+                // 15.5 exists to prevent.
+                StepFlow::CeilingReached => {
+                    return Ok(RunOutcome::Ceiling {
+                        tick_reached: self.tick,
+                    });
+                }
             }
         }
     }
@@ -5071,11 +5216,29 @@ impl Simulation {
         let stepped = self.step(&mut sinks, decision_source);
         let events = self.collected_events.take().unwrap_or_default();
         match stepped {
-            Ok(reason) => Ok(TickOutcome {
+            Ok(StepFlow::Continued) => Ok(TickOutcome {
                 events,
-                finished: reason.is_some(),
-                reason,
+                finished: false,
+                reason: None,
             }),
+            Ok(StepFlow::Ended(reason)) => Ok(TickOutcome {
+                events,
+                finished: true,
+                reason: Some(reason),
+            }),
+            // Rule 14.8 is why this is an error and not a fourth shape of [`TickOutcome`]: **a replay
+            // has no ceiling**, rule 20.1 makes this entry point the observer host's, and rule 18.4.2
+            // gives that host no live-mode selection to make — so a port reaching here that has
+            // stopped spending is a port this door was never meant to be given. Reporting it as an
+            // error says so; `TickOutcome { finished: true, reason: None }` is representable and would
+            // say instead that the run ended for no reason, to a host whose `is_finished` reads
+            // `self.outcome` and would answer `false` at the same moment. `TickOutcome` is public and
+            // `SPEC-MOK-002` rule 5's interface does not grow here to carry a case rule 14.8 excludes.
+            Ok(StepFlow::CeilingReached) => Err(format!(
+                "the decision port reported its spend ceiling reached at tick {}, \
+                 and this entry point has no spending to bound",
+                self.tick
+            )),
             // `io::sink` cannot fail, so a step's error is the engine's own or the port's:
             // `SPEC-MOK-007` rules 12.3 and 12.4 reach here through `DecisionSource::failure`, and
             // rule 19.4 requires the message to name the opportunity, which the port's words do.
@@ -5242,9 +5405,20 @@ impl Simulation {
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
-    ) -> io::Result<Option<TerminationReason>> {
+    ) -> io::Result<StepFlow> {
         self.tick += 1;
-        self.run_tick(sinks, decision_source)?;
+        // Rule 14.7's orderly stop, and what makes it orderly is everything this branch does not do.
+        // No metrics record for the tick that was cut short, because it is not a completed tick; no
+        // `simulation_ended` event, because the simulation did not end and `SPEC-MOK-006` admits no
+        // reason it could carry; no run record, because rule 8.1 of that specification gives one to a
+        // run and this one has no outcome to state. What was written stays written: rule 13.4's
+        // removal is for a *partial* stream nobody should read as a whole run, and this stream is
+        // complete and readable to the tick reached, which is what rule 14.7 asks for in so many
+        // words. `self.outcome` also stays `None`, so a host that asks whether the run finished is
+        // told the truth — it did not, it stopped.
+        if let TickFlow::CeilingReached = self.run_tick(sinks, decision_source)? {
+            return Ok(StepFlow::CeilingReached);
+        }
 
         let extinct = self.agents.iter().all(|agent| !agent.alive);
         let tick_limit_reached = self.tick >= self.config.tick_limit;
@@ -5260,10 +5434,10 @@ impl Simulation {
             // Rule 7.1: a tick that terminates the run is a completed tick and carries its
             // metrics record, after that tick's `simulation_ended` event.
             self.write_metrics(sinks)?;
-            return Ok(Some(reason));
+            return Ok(StepFlow::Ended(reason));
         }
         self.write_metrics(sinks)?;
-        Ok(None)
+        Ok(StepFlow::Continued)
     }
 
     /// Writes one authoritative event to the host's sink, projects it onto the record stream
@@ -5293,11 +5467,31 @@ impl Simulation {
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
-    ) -> io::Result<()> {
+    ) -> io::Result<TickFlow> {
         self.decisions.clear();
         for agent_index in 0..self.agents.len() {
             if !self.agents[agent_index].alive {
                 continue;
+            }
+
+            // `SPEC-MOK-007` rule 14.6, and its whole substance is where these three lines sit.
+            // **Before** the observation is composed, before the request is built, before anything is
+            // said to the source: the check precedes the spending, so a declared ceiling bounds a run
+            // rather than being overshot by one exchange. Moving it below `decide` would compile, pass
+            // a test that only compared the final cost against the ceiling, and spend one exchange
+            // past every ceiling ever declared.
+            //
+            // Per opportunity and not per tick, because an exchange is issued per acting Mokiterion:
+            // a tick of twelve is twelve exchanges, and a check at the tick boundary would admit
+            // eleven of them past the ceiling. `VER-MOK-018` case L30 is the measurement that makes
+            // the distinction matter — at that configuration a ceiling of eighteen falls inside the
+            // second tick.
+            //
+            // The four deterministic sources take `DecisionSource::halted`'s default and never enter
+            // this branch, so `REQ-MOK-068`'s byte-identity is untouched: no draw is taken here and no
+            // record is written, whichever way the answer goes.
+            if decision_source.halted() {
+                return Ok(TickFlow::CeilingReached);
             }
 
             let observation = self.observation(agent_index);
@@ -5357,7 +5551,7 @@ impl Simulation {
                 self.regenerate_food(sinks, territory)?;
             }
         }
-        Ok(())
+        Ok(TickFlow::Completed)
     }
 
     fn observation(&self, agent_index: usize) -> Observation {
@@ -11222,9 +11416,11 @@ mod tests {
                     let mut recorded = Simulation::new(config).unwrap();
                     let mut recorded_text = Vec::new();
                     let mut records = Vec::new();
-                    let recorded_summary = recorded
-                        .run_recording(&mut recorded_text, Some(&mut records), None)
-                        .unwrap();
+                    let recorded_summary = completed(
+                        recorded
+                            .run_recording(&mut recorded_text, Some(&mut records), None)
+                            .unwrap(),
+                    );
 
                     assert_eq!(plain_text, recorded_text, "{seed} {density} {policy}");
                     assert_eq!(plain_summary, recorded_summary);
@@ -11270,9 +11466,11 @@ mod tests {
                 let mut recorded = Simulation::new(config).unwrap();
                 let mut recorded_text = Vec::new();
                 let mut records = Vec::new();
-                let recorded_summary = recorded
-                    .run_recording(&mut recorded_text, Some(&mut records), None)
-                    .unwrap();
+                let recorded_summary = completed(
+                    recorded
+                        .run_recording(&mut recorded_text, Some(&mut records), None)
+                        .unwrap(),
+                );
 
                 assert_eq!(plain_text, recorded_text, "{policy:?} {trace_actions}");
                 assert_eq!(plain_summary, recorded_summary);
@@ -12228,6 +12426,18 @@ mod tests {
     }
 
     impl Proposer for ScriptedPort {
+        /// Rule 14.6, answered from this port's own account exactly as
+        /// [`ConnectorPort::halted`](super::ConnectorPort::halted) answers from its own.
+        ///
+        /// The two implementations are one line each and the line is the same line, deliberately:
+        /// the fixture must not be able to stop at a ceiling the connector would run past, or the
+        /// run-level cases below would be measuring the fixture. A port built without
+        /// [`Self::billing`] has a default account with no ceiling and answers `false` for ever,
+        /// which is what leaves every test that predates rule 14.6 running exactly as it did.
+        fn halted(&self) -> bool {
+            self.account.ceiling_reached()
+        }
+
         fn propose(&mut self, request: DecisionRequest) -> Proposal {
             let answer = match self.answers.get(self.seen.len()) {
                 Some(answer) => answer.clone(),
@@ -12280,6 +12490,15 @@ mod tests {
     struct ForbiddenPort;
 
     impl Proposer for ForbiddenPort {
+        /// Panics for the third time, and this one closes the half rule 14.6 opened: an ignored port
+        /// must not be *asked* anything either. The question is asked before every opportunity, so a
+        /// source that asked it without checking whose port it held would consult an ignored port at
+        /// every tick of every run — while proposing nothing and writing nothing, which is a
+        /// consultation no other assertion in this file could see.
+        fn halted(&self) -> bool {
+            panic!("rule 20.9: a port supplied under another source must be ignored, not asked");
+        }
+
         fn propose(&mut self, _request: DecisionRequest) -> Proposal {
             panic!(
                 "rule 20.9: a port supplied under another source must be ignored, not consulted"
@@ -12331,6 +12550,22 @@ mod tests {
         Proposal {
             action: Some(action),
             ..Proposal::nothing()
+        }
+    }
+
+    /// The summary of a run that reached one of `SPEC-MOK-001`'s two endings.
+    ///
+    /// Every test that predates `SPEC-MOK-007` rule 14.6 asserts on a summary and cannot reach the
+    /// ceiling — a deterministic source takes `DecisionSource::halted`'s default, and a scripted port
+    /// declares no ceiling unless the test says so. This states that in one place instead of at each
+    /// call site, and it panics rather than defaulting, so a run that stopped short fails the test it
+    /// was borrowed by rather than being read as a run that finished.
+    fn completed(outcome: RunOutcome) -> RunSummary {
+        match outcome {
+            RunOutcome::Completed(summary) => summary,
+            RunOutcome::Ceiling { tick_reached } => {
+                panic!("the run stopped at its spend ceiling at tick {tick_reached}")
+            }
         }
     }
 
@@ -13612,6 +13847,12 @@ mod tests {
     }
 
     impl<P: Proposer> Proposer for RecordKeeper<P> {
+        /// Forwarded, on `LentPort`'s reasoning in the observer host: a wrapper that answered rule
+        /// 14.6's question itself would be a wrapper that changed what the run does.
+        fn halted(&self) -> bool {
+            self.inner.halted()
+        }
+
         fn propose(&mut self, request: DecisionRequest) -> Proposal {
             self.inner.propose(request)
         }
@@ -14268,10 +14509,12 @@ mod tests {
         let config = llm_config(42, 6, true);
         let mut silent = ScriptedPort::silent().billing(declared_prices(), None, synthetic_usage());
         let mut text = Vec::new();
-        let summary = Simulation::new(config)
-            .unwrap()
-            .run_recording(&mut text, None, Some(&mut silent))
-            .expect("rule 9.8: a run that fell back is not aborted");
+        let summary = completed(
+            Simulation::new(config)
+                .unwrap()
+                .run_recording(&mut text, None, Some(&mut silent))
+                .expect("rule 9.8: a run that fell back is not aborted"),
+        );
 
         // Rule 9.8: the run's ticks are real and it reached its horizon.
         assert_eq!(summary.reason(), TerminationReason::TickLimit);
@@ -14581,6 +14824,16 @@ mod tests {
     /// exchanges is one and a half ticks: reached in the second tick when the port is lent, and
     /// unreachable when it is rebuilt. The case's substance is checked and its illustrative figure
     /// is not.
+    ///
+    /// **Two ticks and not three, as of rule 14.6's check.** Until the check existed this drove three
+    /// ticks and recorded a cost of twelve, twenty-four and thirty-six cents — a run that noticed its
+    /// ceiling in the second tick and spent past it into the third. That reading is now impossible and
+    /// the case is stronger for it: the cost stops at the ceiling rather than at the tick boundary,
+    /// which is the whole of rule 14.6's "before spending" and is asserted below as eighteen
+    /// exchanges rather than twenty-four. The refusal from the single-tick door is
+    /// `Simulation::advance_tick`'s own, for rule 14.8's reason — a replay has no ceiling and this
+    /// entry point is the replay host's, so a port reaching it with a ceiling reached is a port it was
+    /// never meant to hold.
     #[test]
     fn a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling() {
         let mut port = ScriptedPort::always(Action::Wait).billing(
@@ -14589,24 +14842,169 @@ mod tests {
             whole_cent_usage(),
         );
         let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
-        let mut costs = Vec::new();
-        let mut reached = Vec::new();
-        for _ in 0..3 {
-            simulation
-                .advance_tick(Some(&mut port))
-                .expect("a tick decided through the port");
-            costs.push(port.account.cost());
-            reached.push(port.account.ceiling_reached());
-        }
 
-        assert_eq!(port.account.exchanges(), 36, "twelve opportunities a tick");
-        assert_eq!(
-            costs,
-            vec![WHOLE_CENT * 12, WHOLE_CENT * 24, WHOLE_CENT * 36]
+        simulation
+            .advance_tick(Some(&mut port))
+            .expect("the first tick is under the ceiling");
+        // The discriminator: a port rebuilt each tick would report this same figure for every tick
+        // and would never reach the ceiling at all.
+        assert_eq!(port.account.cost(), WHOLE_CENT * 12, "twelve a tick");
+        assert!(!port.account.ceiling_reached(), "not in the first tick");
+
+        let refused = simulation
+            .advance_tick(Some(&mut port))
+            .expect_err("the second tick meets the ceiling");
+        assert!(
+            refused.contains("spend ceiling reached at tick 2"),
+            "{refused}"
         );
-        // The discriminator: a port rebuilt each tick would report the first figure three times and
-        // would never reach the ceiling.
-        assert_eq!(reached, vec![false, true, true]);
+        assert!(port.account.ceiling_reached(), "in a later tick");
+
+        // Rule 14.6 as a count: the ceiling is eighteen cents, an exchange costs one, and eighteen
+        // exchanges were issued. Nineteen would be the check made after the spending, and twenty-four
+        // would be the check made at the tick boundary.
+        assert_eq!(port.account.exchanges(), 18);
+        assert_eq!(port.account.cost(), WHOLE_CENT * 18);
+        assert_eq!(port.account.cost_cents(), 18);
+    }
+
+    /// Case **L18**, and rules 14.6, 14.7 and 15.5: a run that reaches its ceiling mid-run issues no
+    /// exchange after it and leaves both streams complete to the tick reached.
+    ///
+    /// Eighteen cents at one cent an exchange, which [`whole_cent_usage`] makes exact, so the stop
+    /// falls in the second tick of a run whose horizon is ten — **mid-run**, and not at a boundary
+    /// the run would have stopped at anyway, which is what makes the absences below mean something.
+    ///
+    /// **What is absent is the case.** `SPEC-MOK-006` rule 8.1 gives a run one run record and rule
+    /// 8.9's `reason` domain has no member for a ceiling stop, so a run that stopped short writes
+    /// neither that record nor rule 9.3's summary line, rather than writing either of them about a
+    /// horizon it did not reach — which is rule 15.5's prohibition read as an instruction. The
+    /// `simulation_ended` event is absent for the same reason and for one more: the simulation did not
+    /// end, and `is_finished` is asked below and agrees. Rule 15.5's "the record says so" is met by
+    /// rule 15's own record, which is a separate output and item 11's; nothing here is a record that
+    /// says a false thing.
+    ///
+    /// Rule 14.7's "complete and readable to the tick reached" is asserted as the shape of what did
+    /// survive: a header first, the one completed tick's metrics record, and every line a whole
+    /// record rather than a truncation.
+    #[test]
+    fn a_run_stops_at_its_ceiling_and_leaves_both_streams_complete_to_the_tick_reached() {
+        let mut port = ScriptedPort::always(Action::Wait).billing(
+            declared_prices(),
+            Some(18),
+            whole_cent_usage(),
+        );
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+
+        let outcome = simulation
+            .run_recording(&mut text, Some(&mut records), Some(&mut port))
+            .expect("a ceiling stop is not an error");
+
+        assert!(
+            matches!(outcome, RunOutcome::Ceiling { tick_reached: 2 }),
+            "{outcome:?}"
+        );
+        // The horizon was ten and the run reached two, so the stop is the ceiling's and not the tick
+        // limit's, and the engine does not claim otherwise to a host that asks.
+        assert!(!simulation.is_finished());
+        assert_eq!(simulation.termination_reason(), None);
+
+        // Rule 14.6 as a count, and L18's "issues no exchange after the ceiling": eighteen, out of the
+        // hundred and twenty opportunities ten ticks hold. The port's own transcript agrees with the
+        // port's own account, which is rule 11.3 and rule 14.1 reading the same exchanges.
+        assert_eq!(port.account.exchanges(), 18);
+        assert_eq!(port.account.cost_cents(), 18);
+        assert_eq!(port.exchanges().len(), 18);
+
+        let text = String::from_utf8(text).unwrap();
+        let records = String::from_utf8(records).unwrap();
+        assert!(
+            !text.contains("summary reason="),
+            "a summary of a horizon the run did not reach"
+        );
+        for stream in [&text, &records] {
+            assert!(!stream.contains("simulation_ended"), "{stream}");
+        }
+        assert!(!records.contains("\"record\":\"run\""), "{records}");
+
+        let lines: Vec<&str> = records.lines().collect();
+        assert!(lines[0].contains("\"record\":\"header\""), "{}", lines[0]);
+        assert_eq!(
+            lines
+                .iter()
+                .filter(|line| line.contains("\"record\":\"metrics\""))
+                .count(),
+            1,
+            "one metrics record, for the one tick that completed"
+        );
+        for line in &lines {
+            assert!(line.starts_with('{') && line.ends_with('}'), "{line}");
+        }
+    }
+
+    /// Case **L19** at the run level: a ceiling equal to the cost of two exchanges admits exactly two.
+    ///
+    /// The arithmetic of that claim is checked in
+    /// [`the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two`], where a loop asks and
+    /// spends. What this adds is that **the engine's own seam is that loop**: the check is made per
+    /// decision opportunity, so a two-exchange ceiling stops the run inside the first tick with ten
+    /// opportunities of that tick still unspent. A check at the tick boundary would have issued all
+    /// twelve and reported a cost of twelve cents against a ceiling of two.
+    #[test]
+    fn the_engine_stops_inside_the_first_tick_when_the_ceiling_is_two_exchanges() {
+        let mut port = ScriptedPort::always(Action::Wait).billing(
+            declared_prices(),
+            Some(2),
+            whole_cent_usage(),
+        );
+        let outcome = Simulation::new(llm_config(42, 10, false))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut port))
+            .expect("a ceiling stop is not an error");
+
+        assert!(
+            matches!(outcome, RunOutcome::Ceiling { tick_reached: 1 }),
+            "{outcome:?}"
+        );
+        assert_eq!(port.account.exchanges(), 2);
+        assert_eq!(port.account.cost(), WHOLE_CENT * 2);
+        assert_eq!(port.exchanges().len(), 2);
+    }
+
+    /// Rule 14.8: **a replay has no ceiling.** [`ReplayPort`] takes [`Proposer::halted`]'s default
+    /// and answers `false` for ever, whatever the run it is replaying spent.
+    ///
+    /// Stated as a pair of runs, because the interesting failure is a replay port that answered from
+    /// a figure it read out of the transcript: the recording below declares prices and a ceiling and
+    /// costs twelve cents, and the replay of the transcript it produced spends nothing, computes no
+    /// ratio, meets no ceiling and completes. The port is asked before and after, so a `halted` that
+    /// became true partway through the replay fails here as well.
+    #[test]
+    fn a_replay_never_halts_whatever_the_recorded_run_spent() {
+        let recording = record_a_run_with(
+            42,
+            1,
+            ScriptedPort::always(Action::Wait).billing(
+                declared_prices(),
+                Some(100),
+                whole_cent_usage(),
+            ),
+        );
+        assert_eq!(recording.port.account.cost_cents(), 12, "a tick of twelve");
+        assert!(!recording.port.account.ceiling_reached());
+
+        let transcript = recording.port.transcript();
+        let mut port = ReplayPort::new(transcript.as_bytes());
+        assert!(!port.halted(), "before the first exchange");
+
+        let outcome = Simulation::new(llm_config(42, 1, true))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut port))
+            .expect("the replay completes");
+        assert!(matches!(outcome, RunOutcome::Completed(_)), "{outcome:?}");
+        assert!(!port.halted(), "after the last one");
     }
 
     /// Rules 15.2 and 15.3: the record carries every figure the rule names, and states its zeros.

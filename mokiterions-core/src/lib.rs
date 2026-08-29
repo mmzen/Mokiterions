@@ -57,11 +57,33 @@ pub mod cli;
 pub mod simulation;
 
 use cli::Command;
-use simulation::{MISSING_DECISION_PORT, Policy, Proposer, Simulation};
+use simulation::{MISSING_DECISION_PORT, Policy, Proposer, RunOutcome, Simulation};
+
+/// `SPEC-MOK-007` rule 19.3's status: a run stopped at its declared spend ceiling.
+///
+/// **Public for one reason: the binary target is a separate crate and acts on this value.** Rule 13.4
+/// of `SPEC-MOK-006` has that host remove a record sink it created when the run failed, and rule 14.7
+/// of `SPEC-MOK-007` requires a ceiling-stopped run's record stream to survive "complete and readable
+/// to the tick reached" — so the host has to tell this status from a failure, and a `3` written out in
+/// both crates is a `3` that can drift.
+///
+/// `simulation::MISSING_DECISION_PORT` is not the precedent, and the difference is what fixes the
+/// visibility: that message is shared between two modules of *this* crate and is `pub(crate)`, no host
+/// reading it. This value crosses a crate boundary, which `pub(crate)` cannot express.
+///
+/// The other three statuses stay literals inside [`execute`]. They are not asymmetry for its own
+/// sake: `0`, `1` and `2` are `SPEC-MOK-001` rule 4's and no host acts differently on any of them,
+/// while this one is the only status that means *the run did what it was asked and stopped short*.
+/// **Three, because the three it must differ from are taken**: rule 19.3 requires a status distinct
+/// from a clean completion and from an error, and this target already spends `0` on the first and `1`
+/// and `2` on the second.
+pub const CEILING_STOP_EXIT: u8 = 3;
 
 /// The process boundary. Maps arguments and the caller's writers to an exit code and owns
 /// no state: `0` on success or help, `1` on output failure, `2` on invalid configuration,
-/// with the usage text written to standard error on invalid configuration.
+/// with the usage text written to standard error on invalid configuration, and
+/// [`CEILING_STOP_EXIT`] on `SPEC-MOK-007` rule 14.6's stop — a fourth status because rule 19.3
+/// requires a caller to be able to tell a ceiling stop, a clean completion and an error apart.
 ///
 /// `records` is the structured record stream's sink, `SPEC-MOK-006`'s subject. It is written
 /// when it is present and nothing is produced when it is absent, and the run is otherwise
@@ -131,7 +153,23 @@ where
             };
 
             match simulation.run_recording(stdout, records, port) {
-                Ok(_) => 0,
+                Ok(RunOutcome::Completed(_)) => 0,
+                // `SPEC-MOK-007` rule 19.3, and the line above is what it has to be distinct from.
+                // The note goes to standard error and not to standard output, because rule 14.7
+                // requires the text stream complete and readable *to the tick reached* and a line
+                // after the last tick's events would be a line no replay of that stream produces.
+                //
+                // It states the tick and no figure, which is rule 15.5's division of labour rather
+                // than reticence: the ceiling and the accumulated cost belong to the run record, where
+                // a reader can recompute them, and a cost quoted here would be a second statement of
+                // a number with no seed, no horizon and no token totals beside it.
+                Ok(RunOutcome::Ceiling { tick_reached }) => {
+                    let _ = writeln!(
+                        stderr,
+                        "spend ceiling reached at tick {tick_reached}: the run stopped before the next exchange"
+                    );
+                    CEILING_STOP_EXIT
+                }
                 Err(error) => {
                     let _ = writeln!(stderr, "runtime error: {error}");
                     1
