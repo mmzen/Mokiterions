@@ -1094,6 +1094,98 @@ fn a_live_run_with_no_prices_is_refused_before_any_tick() {
     );
 }
 
+/// `a_live_run` minus one option and the value that follows it, found by name.
+///
+/// By name rather than by index, so that the argument list may grow or be reordered without
+/// silently changing which refusal each test below provokes. `cli::parse` checks the four options a
+/// live run requires in the order connector, transcript, ceiling, prices, so removing exactly one
+/// pair leaves the other three satisfied and the refusal under test is the only one reachable.
+///
+/// The prices are declared here and in one place, because they are the argument this list is most
+/// likely to be made to grow: `SPEC-MOK-007` rule 14.3a fixes their count, and a fifth price would
+/// move this literal and nothing else in the three tests below.
+fn a_live_run_without(option: &str) -> Vec<String> {
+    let mut without = a_live_run("125:13:1000:0");
+    let at = without
+        .iter()
+        .position(|argument| argument == option)
+        .unwrap_or_else(|| panic!("a complete live run declares {option}"));
+    without.drain(at..at + 2);
+    without
+}
+
+/// Rule 13.1's selection half: a live run with no connector is refused, and this engine reaches no
+/// provider by itself.
+///
+/// `a_live_run` states in its own comment that the parser refuses `--live` without a connector, and
+/// until this test nothing asserted it. Every live-run test in this file supplies all four options,
+/// so the check could be deleted and the suite would stay green — and `VER-MOK-018` case `L20`
+/// requires this refusal, which makes it a case with no assertion under it.
+///
+/// The refusal names no path of its own, asserted as the absence of either separator. Rule 13.1
+/// puts the model behind a program the operator supplies, so a message offering a path would be
+/// supplying the thing the rule reserves to the operator.
+#[test]
+fn a_live_run_with_no_connector_is_refused_before_any_tick() {
+    let refusal = parse(a_live_run_without("--connector-path"))
+        .expect_err("a live run with no connector is a usage error");
+    assert!(refusal.contains("--connector-path"), "{refusal}");
+    assert!(refusal.contains("--live"), "{refusal}");
+    assert!(
+        !refusal.contains('/') && !refusal.contains('\\'),
+        "the refusal offers a connector path of its own: {refusal}"
+    );
+}
+
+/// Rule 19.6: a live run with nowhere to record its exchanges is refused, not run unrecorded.
+///
+/// The failure this prevents is the one that cannot be undone. A run refused for any other reason
+/// has spent nothing; a run that spent its exchanges and recorded none of them has produced cost
+/// and no evidence, and there is no later step that recovers the records. That is why the check is
+/// in the parser and not at the first write, and why the assertion is here rather than in a test
+/// that inspects a transcript — there would be no transcript to inspect.
+///
+/// Named beside the connector's test and asserted the same way, including that the message supplies
+/// no path.
+#[test]
+fn a_live_run_with_no_transcript_output_is_refused_before_any_tick() {
+    let refusal = parse(a_live_run_without("--transcript-output"))
+        .expect_err("a live run with no transcript output is a usage error");
+    assert!(refusal.contains("--transcript-output"), "{refusal}");
+    assert!(refusal.contains("--live"), "{refusal}");
+    assert!(
+        !refusal.contains('/') && !refusal.contains('\\'),
+        "the refusal offers an output path of its own: {refusal}"
+    );
+}
+
+/// Rules 14.6 and 19.2: a live run with no declared ceiling is refused before the first exchange.
+///
+/// This is the refusal whose absence from the suite cost the most. Rule 14.6 has the ceiling
+/// checked before each exchange, and `REQ-MOK-071` makes the ceiling a stop rather than a report, so
+/// a live run that reached its first exchange without one would have no limit to check and nothing
+/// to stop it. The check that prevents it is one condition in this parser, and until this test any
+/// change that dropped it would have left every test in both packages green.
+///
+/// Refused *before any tick* is the whole of it: a run that discovered it had no ceiling after its
+/// first exchange has already spent money outside any limit, which is the failure rule 19.2 names as
+/// a usage error rather than a run-time one.
+///
+/// The refusal proposes no amount, asserted as the absence of any numeral, for the same reason the
+/// prices refusal proposes no price: the ceiling is the operator's declaration under rule 14.6, and
+/// a message naming a figure would be offering one on the program's behalf.
+#[test]
+fn a_live_run_with_no_ceiling_is_refused_before_any_tick() {
+    let refusal = parse(a_live_run_without("--spend-ceiling"))
+        .expect_err("a live run with no ceiling is a usage error");
+    assert!(refusal.contains("--spend-ceiling"), "{refusal}");
+    assert!(refusal.contains("--live"), "{refusal}");
+    assert!(
+        !refusal.chars().any(char::is_numeric),
+        "the refusal offers a ceiling of its own: {refusal}"
+    );
+}
+
 /// Rule 18.4.3: prices under a source that obtains its own decisions are refused, not accepted and
 /// ignored.
 ///

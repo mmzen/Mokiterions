@@ -429,6 +429,45 @@ fn no_credential_refuses_on_the_first_exchange() {
     assert!(exchanges[0].contains("refused"), "{}", exchanges[0]);
 }
 
+/// Rule 13.3: an **empty** credential is treated as absent and takes the arm absence takes.
+///
+/// The rule gives "absent, empty or malformed" one treatment and the connector implements the three
+/// as one arm, guarded by whether the value it read is empty. `no_credential_refuses_on_the_first_exchange`
+/// above enters that arm by removing the variable altogether, which leaves the guard itself
+/// unexercised — and a connector that answered on an empty credential would pass every other test
+/// in this file while sending a request with no authentication on it.
+///
+/// The assertion is that the outcome is the one absence produces, not merely that something failed:
+/// the same exit code, the same fallback on every exchange, and the refusal on the first. A weaker
+/// test that only checked for an error would pass against a connector that failed for an unrelated
+/// reason.
+///
+/// `VER-MOK-018` case `L20` asks for a malformed credential as well, which `WO-MOK-032` records as a
+/// stated deviation rather than covering. A non-Unicode value has no portable constructor, so
+/// reaching it would need the first platform-conditional code in either package — to enter the same
+/// arm this test already enters.
+#[test]
+fn an_empty_credential_is_treated_as_absent() {
+    let directory = scratch("empty-credential");
+    let transcript = directory.join("refused.jsonl");
+    let script = script(&directory, &[&format!("credential {CREDENTIAL_VARIABLE}")]);
+
+    let output = engine(CONNECTOR, &transcript, Some(&script), Some(""))
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let recorded = fs::read_to_string(&transcript).unwrap();
+    let exchanges = exchanges(&recorded);
+    assert_eq!(exchanges.len(), ROSTER);
+    for record in &exchanges {
+        assert!(record.contains("\"fallback\":true"), "{record}");
+        assert!(record.contains("\"verb\":\"wait\""), "{record}");
+        assert!(record.contains("refused"), "{record}");
+    }
+    assert!(exchanges[0].contains("refused"), "{}", exchanges[0]);
+}
+
 /// `REQ-MOK-073`, `ADR-MOK-001` and `VER-MOK-018` case `C1`: the credential's value reaches no
 /// produced byte.
 ///
