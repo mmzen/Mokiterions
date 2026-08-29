@@ -5,7 +5,7 @@ title = "Package directories, observer targets, and observer test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-18"
-updated = "2026-08-24"
+updated = "2026-08-29"
 
 [relations]
 specifies = ["REQ-MOK-028", "REQ-MOK-029", "REQ-MOK-030"]
@@ -1174,7 +1174,12 @@ than by count:
 **The engine's public-tier target count moves from ten to eleven** and `SPEC-MOK-002` rule 8's closing sentence is again
 the authority, on the same ground `tests/replay.rs` and `tests/no_outcome_threshold.rs` were admitted by the two
 paragraphs above; that rule already records `tests/connector.rs`'s arrival in its own amendment record. The observer's
-public-tier target count is unmoved at **nine** and its internal-tier count at **three**. The figures are measured by
+public-tier target count is unmoved at **nine** and its internal-tier file count at **four**, not the three an earlier
+draft of this paragraph stated: rule 10's own enumeration a few sentences above names four files — `src/main.rs`,
+`src/render.rs`, `src/state.rs` and `src/verification.rs` — and the figure is corrected here to agree with the
+enumeration it was drawn from rather than the enumeration being reduced to it. It is **four at this branch's merge base
+`d96cced` as well**, so the claim of unmovedness this sentence makes was true when it was written and only its number
+was wrong. The figures are measured by
 `cargo test --workspace --locked`, which reports **475 passed, 0 failed, 3 ignored**, and independently by counting
 `#[test]` per file, which agrees target by target and yields 478 for the reason the paragraphs above give, that the count
 reads the attribute and not the run. **Rule 6's interface is unmoved** at the **95** items, **26** public fields and
