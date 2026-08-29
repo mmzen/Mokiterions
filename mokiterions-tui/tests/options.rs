@@ -380,12 +380,13 @@ fn every_target_spells_the_transcript_option_the_same_way() {
     }
 }
 
-/// The engine's own live-run invocation: the four options it owns, with the source that needs them.
+/// The engine's own live-run invocation: the five options it owns, with the source that needs them.
 ///
-/// All four together, because the engine's parser refuses each of them alone — rules 13.1, 19.6 and
-/// 14.6 require a connector, an output transcript and a ceiling with `--live`, so no smaller list is
-/// an invocation the engine accepts and the assertion "the shared parser accepts these" can only be
-/// made of the whole set.
+/// All five together, because the engine's parser refuses each of them alone — rules 13.1, 19.6,
+/// 14.6 and 14.3a require a connector, an output transcript, a ceiling and prices with `--live`, so
+/// no smaller list is an invocation the engine accepts and the assertion "the shared parser accepts
+/// these" can only be made of the whole set. `--prices` joined it on 2026-08-29 with rule 14.3a, and
+/// the engine's refusal of `--live` without it is what made this list grow rather than a preference.
 fn a_live_run() -> Vec<&'static str> {
     vec![
         "--policy",
@@ -397,6 +398,8 @@ fn a_live_run() -> Vec<&'static str> {
         "out.jsonl",
         "--spend-ceiling",
         "2",
+        "--prices",
+        "125:13:1000:0",
     ]
 }
 
@@ -410,13 +413,14 @@ fn has_entry(usage: &str, option: &str) -> bool {
         .any(|line| line == format!("  {option}") || line.starts_with(&format!("  {option} ")))
 }
 
-/// The four options themselves, each with a value where it takes one.
+/// The five options themselves, each with a value where it takes one.
 fn live_run_options() -> Vec<Vec<&'static str>> {
     vec![
         vec!["--connector-path", "connector"],
         vec!["--live"],
         vec!["--transcript-output", "out.jsonl"],
         vec!["--spend-ceiling", "2"],
+        vec!["--prices", "125:13:1000:0"],
     ]
 }
 
@@ -429,6 +433,10 @@ fn live_run_options() -> Vec<Vec<&'static str>> {
 /// that parser, so all four were accepted here from the moment they existed: a ceiling was carried
 /// into the configuration and then overwritten with `None`, and a connector path and a live-mode
 /// selection were accepted and acted on by nothing. That is the shape of GitHub issue 40 exactly.
+///
+/// `--prices` is the fifth and the only one that never had the defect: rule 14.3a added it to the
+/// shared parser later the same day, by which time this refusal existed and the list it reads was the
+/// thing that had to be extended for the shared parser to be extended at all.
 ///
 /// The refusal has to be this program's own and not the shared parser's, which is what the last two
 /// assertions establish. Rule 18.4.3's refusal — "only used by --policy llm" — is the parser's, it
@@ -560,10 +568,11 @@ fn a_refused_live_run_enters_no_terminal_and_spawns_nothing() {
 /// The refusal covers every live-run option the shared parser accepts, and no other.
 ///
 /// Two lists have to agree and neither can be derived from the other: the engine's parser decides
-/// what an operator can type, and this program decides which of those it cannot honour. A fifth
-/// option added to that parser and not to this list is accepted and ignored again — rule 14.3a's
-/// `--prices` is the next one, and this fails when it lands. An option in this list the parser does
-/// not accept is worse: the refusal would claim the other binary accepts something it does not.
+/// what an operator can type, and this program decides which of those it cannot honour. An option
+/// added to that parser and not to this list is accepted and ignored again — this test named rule
+/// 14.3a's `--prices` as the next one and then failed when it landed, which is the whole of what it
+/// is for. An option in this list the parser does not accept is worse: the refusal would claim the
+/// other binary accepts something it does not.
 #[test]
 fn the_refused_list_and_the_engines_own_options_agree() {
     let source = include_str!("../src/options.rs");
@@ -581,7 +590,7 @@ fn the_refused_list_and_the_engines_own_options_agree() {
     assert_eq!(declared, expected);
 
     // Every one of them has an entry in the engine's help and none in this program's synopsis, and
-    // this program's help names all four as that binary's.
+    // this program's help names every one of them as that binary's.
     let text = unwrapped(USAGE);
     for option in &declared {
         assert!(

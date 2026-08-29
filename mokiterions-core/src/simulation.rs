@@ -91,6 +91,20 @@ pub struct Config {
     /// the operator's decimal into this integer, on `Density`'s precedent, so no float exists at
     /// any point.
     pub spend_ceiling: Option<u64>,
+    /// The unit prices of `SPEC-MOK-007` rule 14.3a, or `None` when none were declared.
+    /// `--prices` is the option.
+    ///
+    /// The second value the configuration retains, and the reasoning above transfers without
+    /// change: prices are not a path, and rule 14.2's cost "is computed from the reported counts and
+    /// the unit prices declared for the run" by the run itself. Rule 14.6 stops the run *before* an
+    /// exchange once the accumulated cost reaches the ceiling, and rule 15.2 reports the cost — so
+    /// the library needs the ceiling and the multipliers that turn token counts into it, and a host
+    /// can supply neither on its behalf.
+    ///
+    /// `None` on every replay and on the four deterministic sources, per rule 14.8: "a replay spends
+    /// nothing, computes no ratio and has no ceiling". `Some` on every live run, because rule 14.3
+    /// forbids a compiled-in default and `cli::parse` therefore refuses `--live` without it.
+    pub prices: Option<UnitPrices>,
 }
 
 /// Resource density as an exact count of hundredths of a percent of a territory's
@@ -196,6 +210,78 @@ impl fmt::Display for Density {
             self.hundredths_of_percent / 100,
             self.hundredths_of_percent % 100
         )
+    }
+}
+
+/// The provider's unit prices for one live run, in **US cents per million tokens**.
+///
+/// `SPEC-MOK-007` rule 14.3 makes these "inputs of the run, not compiled-in constants" — "the
+/// provider's prices are the provider's to change" — and rule 14.3a, amended 2026-08-29 under
+/// `WO-MOK-030`, fixes how they arrive: four integers, colon-separated, in the order below.
+/// `--prices 125:13:1000:0` is the rule's own example.
+///
+/// Integers rather than a decimal, in the rule's words, "so rule 14.2's arithmetic is integer
+/// arithmetic from the input onward and no rounding enters at the edge". Cents per **million**
+/// tokens rather than per token because a per-token price in cents is not an integer for any
+/// provider: the four figures above are $1.25, $0.13, $10.00 and $0.00 per million.
+///
+/// A named type rather than `[u64; 4]`, which is this work order's *Authorized decision envelope*
+/// naming "the unit-price representation and the cost unit" as the implementation's to decide. The
+/// four differ by nearly two orders of magnitude and three of them are plausible values for each
+/// other's position, so a positional array puts a silent eighty-fold cost error one transposition
+/// away — and rule 14.3a chose integers precisely to keep arithmetic error out of the edge. It costs
+/// one type and one function in `SPEC-MOK-002` rule 5's census, which its 2026-08-29 row records,
+/// and it is `Density`'s shape exactly: an operator-supplied quantity, parsed and validated once,
+/// held in [`Config`], computed with as an integer.
+///
+/// No `Default`. Rule 14.3 forbids a compiled-in default, so there is no value to give one, and a
+/// live run with no declared prices is refused by `cli::parse` rather than run at a guess.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UnitPrices {
+    /// Uncached prompt tokens.
+    pub prompt: u64,
+    /// Prompt tokens the provider reported as served from its cache.
+    pub cached: u64,
+    /// Output tokens.
+    pub output: u64,
+    /// Reasoning tokens. `0` is a legal price and is the rule's own example, because
+    /// `SPEC-MOK-007` fixes the reasoning level at `none` for this stage.
+    pub reasoning: u64,
+}
+
+impl UnitPrices {
+    /// Parses rule 14.3a's compact form: exactly four non-negative integers separated by `:`, in
+    /// the order prompt, cached, output, reasoning.
+    ///
+    /// Every rejection names what was expected rather than what was wrong, on `Density::parse`'s
+    /// precedent, because an operator who mistyped a price list needs the shape and not a diagnosis.
+    /// The count is checked before the digits so that `125:13:1000` is answered with "four" rather
+    /// than with a complaint about a field that is not there.
+    pub fn parse(value: &str) -> Result<Self, String> {
+        let fields: Vec<&str> = value.split(':').collect();
+        if fields.len() != 4 {
+            return Err(format!(
+                "expected four prices separated by colons, in the order prompt, cached, output, reasoning, such as 125:13:1000:0; {} were given",
+                fields.len()
+            ));
+        }
+        let mut prices = [0u64; 4];
+        for (field, price) in fields.iter().zip(prices.iter_mut()) {
+            if field.is_empty() || !field.bytes().all(|byte| byte.is_ascii_digit()) {
+                return Err(format!(
+                    "expected a whole number of cents per million tokens, such as 125; found {field}"
+                ));
+            }
+            *price = field
+                .parse()
+                .map_err(|_| format!("the price {field} is larger than this program can hold"))?;
+        }
+        Ok(Self {
+            prompt: prices[0],
+            cached: prices[1],
+            output: prices[2],
+            reasoning: prices[3],
+        })
     }
 }
 
@@ -5640,6 +5726,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -5664,6 +5751,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -6828,6 +6916,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: true,
                 spend_ceiling: None,
+                prices: None,
             };
             let mut first = Simulation::new(configuration).unwrap();
             let mut second = Simulation::new(configuration).unwrap();
@@ -6917,6 +7006,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -7140,6 +7230,7 @@ mod tests {
                         density: Density::parse(density).unwrap(),
                         trace_actions: false,
                         spend_ceiling: None,
+                        prices: None,
                     })
                     .unwrap();
                     assert_eq!(
@@ -9451,6 +9542,7 @@ mod tests {
                 density: Density::parse("1.50").unwrap(),
                 trace_actions: true,
                 spend_ceiling: None,
+                prices: None,
             },
         )
         .unwrap();
@@ -9639,6 +9731,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: false,
                 spend_ceiling: None,
+                prices: None,
             };
             print_entropy_trace(
                 Config {
@@ -9713,6 +9806,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: false,
                 spend_ceiling: None,
+                prices: None,
             };
             let states = match policy {
                 Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
@@ -9764,6 +9858,7 @@ mod tests {
                     density: Density::DEFAULT,
                     trace_actions: false,
                     spend_ceiling: None,
+                    prices: None,
                 };
                 let states = match policy {
                     Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
@@ -9908,6 +10003,7 @@ mod tests {
                     density: Density::DEFAULT,
                     trace_actions,
                     spend_ceiling: None,
+                    prices: None,
                 };
                 assert_a_sink_is_entropy_neutral(
                     Config {
@@ -9960,6 +10056,7 @@ mod tests {
                                 density: Density::parse(density).unwrap(),
                                 trace_actions,
                                 spend_ceiling: None,
+                                prices: None,
                             };
                             observed.push((
                                 (policy, trace_actions, record),
@@ -10102,6 +10199,7 @@ mod tests {
                         density: Density::parse(density).unwrap(),
                         trace_actions: false,
                         spend_ceiling: None,
+                        prices: None,
                     };
 
                     let mut plain = Simulation::new(config).unwrap();
@@ -10149,6 +10247,7 @@ mod tests {
                     density: Density::DEFAULT,
                     trace_actions,
                     spend_ceiling: None,
+                    prices: None,
                 };
 
                 let mut plain = Simulation::new(config).unwrap();
@@ -10933,6 +11032,7 @@ mod tests {
             density: Density::parse("1.50").unwrap(),
             trace_actions: true,
             spend_ceiling: None,
+            prices: None,
         })
         .unwrap();
         sizes.push(("subject.agent", simulation.agents.len()));
@@ -11167,6 +11267,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -11635,6 +11736,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: true,
                 spend_ceiling: None,
+                prices: None,
             };
 
             Simulation::new(config)

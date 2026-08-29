@@ -27,6 +27,7 @@ fn config_at(seed: u64, tick_limit: u64, density: &str) -> Config {
         density: Density::parse(density).unwrap(),
         trace_actions: false,
         spend_ceiling: None,
+        prices: None,
     }
 }
 

@@ -1186,6 +1186,7 @@ fn both_of_rule_twenty_fives_doors_carry_the_port() {
         density: Density::DEFAULT,
         trace_actions: true,
         spend_ceiling: None,
+        prices: None,
     })
     .expect("the recorded run's configuration is valid");
 

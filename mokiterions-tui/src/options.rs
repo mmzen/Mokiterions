@@ -131,11 +131,11 @@ pub const USAGE: &str = concat!(
     "picture would stop moving and the keys would stop answering. --transcript-path\n",
     "is therefore this program's only share of that policy, and it is required.\n",
     "\n",
-    "So the four options that make a recording rather than read one belong to the\n",
-    "Mokiterions binary alone: --connector-path, --live, --transcript-output and\n",
-    "--spend-ceiling. That binary accepts them and this one refuses them, saying\n",
-    "which, rather than accepting one and doing nothing with it. Record a run\n",
-    "there, then watch it back here.\n",
+    "So the five options that make a recording rather than read one belong to the\n",
+    "Mokiterions binary alone: --connector-path, --live, --transcript-output,\n",
+    "--spend-ceiling and --prices. That binary accepts them and this one refuses\n",
+    "them, saying which, rather than accepting one and doing nothing with it.\n",
+    "Record a run there, then watch it back here.\n",
     "\n",
     "Press ? inside the observer for the key bindings.\n",
     "\n",
@@ -166,17 +166,20 @@ const TRANSCRIPT_PATH_OPTION: &str = "--transcript-path";
 /// argument it does not recognise to the engine's parser, so an option that parser accepts arrives
 /// here whether or not this program can do anything with it — which is how `--events-path` came to
 /// be accepted and ignored, the defect GitHub issue 40 tracks and rule 18.4.1 refuses to reproduce.
-/// All four of these were accepted by the shared parser the moment it learned them, so without this
-/// list an operator would receive no connector, no recording, no ceiling and no diagnostic.
+/// Every one of these was accepted by the shared parser the moment it learned it, so without this
+/// list an operator would receive no connector, no recording, no ceiling, no prices and no
+/// diagnostic.
 ///
-/// `--prices` is absent deliberately and is not an omission: it is a live run's unit prices, and it
-/// is refused here by the same arm the moment the shared parser learns it, at which point it joins
-/// this list. It is not in the shared parser yet.
-const LIVE_RUN_OPTIONS: [&str; 4] = [
+/// `--prices` joined the list in the commit that taught the shared parser to accept it, which is
+/// what the previous revision of this comment said would happen. Rule 18.4.2 enumerates six options
+/// as the engine binary's and names `--prices` among them, added 2026-08-29 under `WO-MOK-030` by
+/// rule 14.3a; five of the six are refused here and `--transcript-path` is the one this host shares.
+const LIVE_RUN_OPTIONS: [&str; 5] = [
     "--connector-path",
     "--live",
     "--transcript-output",
     "--spend-ceiling",
+    "--prices",
 ];
 
 /// The speed steps `SPEC-MOK-003` fixes, ascending. `+` and `-` step through this list.

@@ -1,4 +1,4 @@
-use crate::simulation::{Config, Density, Policy};
+use crate::simulation::{Config, Density, Policy, UnitPrices};
 
 /// The usage text, whose content is specified by `SPEC-MOK-001`'s *Help output* section
 /// under `REQ-MOK-018`. Every default stated below is the value `parse` applies when the
@@ -39,6 +39,24 @@ use crate::simulation::{Config, Density, Policy};
 /// 18.4.3 and 13.2, and a transcript that cannot be read, which is neither a configuration error
 /// nor an output failure and had no clause at all.
 ///
+/// Amended again 2026-08-29 under `WO-MOK-026` for `SPEC-MOK-007` rule 14.3a, which adds
+/// `--prices`. It is the second of these options whose value is retained rather than discarded, and
+/// its entry says what the four numbers are, in what unit and in what order, because a price list
+/// written in the wrong order produces a plausible cost figure and no error at all. It does not
+/// state a default, because rule 14.3 forbids one. The `--live` entry's "all three" became "all
+/// four" in the same act: a help text that enumerates a set is a help text that has to be counted
+/// again whenever the set grows.
+///
+/// **A continuation line must not begin with `--`, and this is written down because it was found by
+/// failing rather than by reading.** `tests/cli.rs` reads the options block by taking a line whose
+/// first non-blank characters are `--` to open a new entry, which is the only way to know where one
+/// entry ends without a second declaration of the list. Rewrapping the `--live` entry so that
+/// `--connector-path` and `--prices` began lines therefore invented two entries and shadowed the
+/// real `--prices` one, and three tests failed at once. The wrap is chosen around that constraint —
+/// "named" ends one line and "and" opens the next — rather than the constraint being loosened, and
+/// the `--prices` entry says "the option called --live" for the same reason and in the same idiom
+/// `--transcript-output`'s entry already used.
+///
 /// The five entries `--seed`, `--ticks`, `--policy`, `--density` and `--transcript-path` are
 /// shared verbatim with the observer's own usage text. `mokiterions-tui/tests/options.rs` holds
 /// each of them equal to this constant, so the two texts cannot drift apart while describing the
@@ -50,6 +68,7 @@ pub const USAGE: &str = concat!(
     "                   [--events-path <path>] [--transcript-path <path>]\n",
     "                   [--connector-path <path>] [--live]\n",
     "                   [--transcript-output <path>] [--spend-ceiling <amount>]\n",
+    "                   [--prices <prompt:cached:output:reasoning>]\n",
     "       Mokiterions --help\n",
     "\n",
     "Mokiterions simulates a small closed world. Twelve creatures, each also called a\n",
@@ -132,10 +151,10 @@ pub const USAGE: &str = concat!(
     "  --live\n",
     "      Ask a model for this run's decisions instead of replaying recorded\n",
     "      ones. This is the only option that spends money, and it is off\n",
-    "      unless given. It will not start unless all three of the options\n",
+    "      unless given. It will not start unless all four of the options\n",
     "      named --connector-path and --transcript-output and --spend-ceiling\n",
-    "      are given too. Two runs with the same seed may differ, which no other\n",
-    "      option can cause.\n",
+    "      and --prices are given too. Two runs with the same seed may differ,\n",
+    "      which no other option can cause.\n",
     "\n",
     "  --transcript-output <path>\n",
     "      Write this live run's decisions to this file, replacing any file\n",
@@ -150,6 +169,16 @@ pub const USAGE: &str = concat!(
     "      places, such as 2 or 2.50. Checked before each question rather than\n",
     "      after it, so the run stops rather than passing the figure. Required\n",
     "      with --live. The run reports what it spent either way.\n",
+    "\n",
+    "  --prices <prompt:cached:output:reasoning>\n",
+    "      What the model charges, as four whole numbers of US cents per million\n",
+    "      tokens, separated by colons and given in that order, such as\n",
+    "      125:13:1000:0 for $1.25, $0.13, $10.00 and nothing. Required with\n",
+    "      the option called --live, and there is no built-in list: prices are\n",
+    "      the provider's to change, so a run states the ones it was costed at\n",
+    "      and a later reader can check the figure it reports. Find them in the\n",
+    "      provider's own pricing page. The second number is the reduced price\n",
+    "      for prompt tokens the provider serves from its cache.\n",
     "\n",
     "  --help\n",
     "      Print this text and exit without running a simulation.\n",
@@ -237,15 +266,18 @@ where
     // opening in the host. Unlike the sink, both hosts open this one, so both re-read the raw
     // argument — the observer as well as the engine's binary target.
     let mut transcript_path = false;
-    // Three `bool`s and one value, and which is which is `VER-MOK-018` case `S6a` rather than a
+    // Three `bool`s and two values, and which is which is `VER-MOK-018` case `S6a` rather than a
     // preference. `--connector-path` and `--transcript-output` carry paths, so rule 18.4 has this
     // parser validate them and forget them; the binary target re-reads the raw argument it opens.
-    // `--live` carries nothing to forget. `--spend-ceiling` carries a quantity the run acts on, so
-    // it is the one new option whose value the configuration retains — see `Config::spend_ceiling`.
+    // `--live` carries nothing to forget. `--spend-ceiling` and `--prices` carry quantities the run
+    // acts on, so they are the two new options whose values the configuration retains — `S6a`
+    // "scopes the discard rule to paths and this is not one", in rule 14.3a's own words. See
+    // `Config::spend_ceiling` and `Config::prices`.
     let mut connector_path = false;
     let mut transcript_output = false;
     let mut live = false;
     let mut spend_ceiling = None;
+    let mut prices = None;
     let mut help = false;
     let mut index = 0;
 
@@ -394,6 +426,17 @@ where
                 })?);
                 index += 2;
             }
+            "--prices" => {
+                if prices.is_some() {
+                    return Err("--prices may appear at most once".into());
+                }
+                let value = option_value(&args, index, "--prices")?;
+                prices = Some(
+                    UnitPrices::parse(value)
+                        .map_err(|reason| format!("invalid --prices value: {value}; {reason}"))?,
+                );
+                index += 2;
+            }
             "--help" => {
                 if help {
                     return Err("--help may appear at most once".into());
@@ -438,6 +481,7 @@ where
         (transcript_output, "--transcript-output"),
         (live, "--live"),
         (spend_ceiling.is_some(), "--spend-ceiling"),
+        (prices.is_some(), "--prices"),
     ] {
         if present && policy != Policy::Llm {
             return Err(format!(
@@ -512,6 +556,18 @@ where
         );
     }
 
+    // Rule 14.3: "The declared unit prices are inputs of the run, not compiled-in constants." With
+    // no prices a live run cannot do rule 14.2's arithmetic, cannot make rule 14.6's pre-exchange
+    // check and cannot report rule 15.2's cost, and the only other thing it could do is the one
+    // thing rule 14.3 forbids. So it is refused here, in rule 19.2's own shape and beside the
+    // ceiling's refusal above — both before any tick and before any provider call.
+    if live && prices.is_none() {
+        return Err(
+            "--live needs --prices <prompt:cached:output:reasoning>: cost is computed from the provider's prices, which are the provider's to change and are therefore declared for each run rather than built into this program"
+                .into(),
+        );
+    }
+
     Ok(Command::Run(Config {
         seed: seed.unwrap_or(0),
         tick_limit: ticks.unwrap_or(100),
@@ -519,6 +575,7 @@ where
         density: density.unwrap_or_default(),
         trace_actions,
         spend_ceiling,
+        prices,
     }))
 }
 

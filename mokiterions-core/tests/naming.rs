@@ -30,6 +30,7 @@ fn config_at(seed: u64, tick_limit: u64, policy: Policy, trace_actions: bool) ->
         density: Density::DEFAULT,
         trace_actions,
         spend_ceiling: None,
+        prices: None,
     }
 }
 
