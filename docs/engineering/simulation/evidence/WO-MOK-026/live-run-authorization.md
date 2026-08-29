@@ -42,8 +42,9 @@ was offered, on the precedent that a wrong cost figure in the framing makes a wr
 3. **Retry disposition — re-run at the same seed and horizon if a retry occurs.** `VER-MOK-018` case `L25` requires a
    fallback count of `0` and no stop at the ceiling for a publishable transcript. Rather than accept a transcript
    containing a provider retry, the owner authorized repeated attempts at the same seed and the same horizon until a
-   retry-free transcript is obtained. Each attempt costs the same **estimated** $0.05, the ceiling is untouched, and no
-   approved rule moves. The ceiling governs each run; this is not authorization to exceed it in aggregate.
+   retry-free transcript is obtained. Each attempt costs the same as the first — see *Cost* below, where that figure
+   turns out to be tariff-dependent — the ceiling is untouched, and no approved rule moves. The ceiling governs each run;
+   this is not authorization to exceed it in aggregate.
 4. **The connector — written by the implementation agent, run by the owner.** The agent wrote a connector for the
    declared binding outside this repository, and it is never committed to it. The owner supplies the credential and
    executes the run. **The credential does not reach the implementation agent and appears in no byte the agent
@@ -98,10 +99,40 @@ owner-gated at `L15b`; it is not a condition the run enforces on itself.
 
 ## Cost
 
-**Estimated $0.05** for 600 exchanges, against the ceiling of **$2**. `WO-MOK-026` item 13 states the run as an
-**estimated** $0.02 to $0.03 at 200 exchanges; 600 exchanges at the same per-exchange figure is consistent with that.
-The actual cost, in the provider's units and in currency, is recorded in `live-run-measurements.md` beside the estimate —
-`WO-MOK-026`'s *Evidence to record* item 5 calls that "the first point in this initiative where an estimate meets a
-measurement".
+**The estimate depends entirely on a tariff no artifact in this repository states, and the two figures available differ
+by a factor of seven.** This is written before the run because a ceiling is only a safeguard if someone has checked that
+the run fits under it.
+
+- **$0.05**, derived from `ADR-MOK-007`'s own **estimated** $1.04 for a 1,000-tick run at reasoning level `none`, which
+  is 12,000 exchanges and so $0.0000867 an exchange. This is the figure consistent with `WO-MOK-026` item 13's
+  **estimated** $0.02 to $0.03 at 200 exchanges.
+- **$0.35**, computed at the four example prices `SPEC-MOK-007` rule 14.3a itself prints, `125:13:1000:0`. Measured, not
+  estimated: a 50-tick rehearsal against a local stand-in, using the per-exchange token figures the measured character
+  counts imply, produced a run record reading `cost_cents` **35**.
+
+Neither is `gpt-5.6-luna`'s tariff. Rule 14.3 forbids a compiled-in price precisely because the price is an input, and
+the four integers are the owner's to declare at the command line. Both figures are far below the **$2** ceiling, so the
+authorization stands on either.
+
+**The check the owner should make before running.** The run's token volume is now known well enough to test a tariff
+against the ceiling in one line. Projected from measured character counts at 600 exchanges: about **160,000 uncached
+prompt tokens**, **768,000 cached prompt tokens** and **7,000 output tokens**. With the four prices in cents per million
+tokens as `p:c:o:r`, the run costs about
+
+```text
+    0.16 p  +  0.77 c  +  0.007 o    cents
+```
+
+and must come out below **200**. At the example prices that is 20.0 + 10.0 + 6.6 = **36.6 cents**. The term that
+dominates is the cached one, so **a provider that charges full price for cached tokens costs roughly three times as much
+as one that discounts them by 90 %**. A tariff around ten times the example prices would exceed the ceiling, and the run
+would stop at it — which `REQ-MOK-071` makes a correct outcome and `VER-MOK-018` case `L25` makes an unpublishable one,
+so the spend would be real and the transcript useless. **If the arithmetic above comes out near or above 200, the run
+should not be started under this authorization**; the horizon or the ceiling is then the owner's to revisit.
+
+The actual cost, in the provider's units and in currency, is recorded in `live-run-measurements.md` beside both
+estimates — `WO-MOK-026`'s *Evidence to record* item 5 calls that "the first point in this initiative where an estimate
+meets a measurement", and it turns out to be the point where two of this initiative's own estimates meet each other as
+well.
 
 This record contains no credential and no account identifier, as `REQ-MOK-076`'s constraints require.
