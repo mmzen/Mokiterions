@@ -5,7 +5,7 @@ title = "Stage 5b: the connector, the live path, the two gates, the usage accoun
 status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-08-23"
-updated = "2026-08-28"
+updated = "2026-08-29"
 
 [assurance]
 commit_bound_verification = "required"
@@ -17,6 +17,7 @@ paths = [
   "docs/CONNECTOR_PROTOCOL.md",
   "docs/engineering/REPOSITORY_CONTEXT.md",
   "docs/engineering/simulation/evidence/WO-MOK-026/",
+  "docs/engineering/simulation/specifications/SPEC-MOK-002.md",
   "docs/engineering/simulation/specifications/SPEC-MOK-003.md",
   "docs/engineering/simulation/specifications/SPEC-MOK-004.md",
   "docs/engineering/simulation/work-orders/WO-MOK-026.md",
@@ -33,7 +34,7 @@ paths = [
 
 [relations]
 implements = ["REQ-MOK-069", "REQ-MOK-070", "REQ-MOK-071", "REQ-MOK-072", "REQ-MOK-077"]
-specifications = ["SPEC-MOK-001", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
+specifications = ["SPEC-MOK-001", "SPEC-MOK-002", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
 verification = ["VER-MOK-018"]
 architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-007"]
 
@@ -393,3 +394,48 @@ requires a connector protocol document without saying where it lives.
 Nothing else in this artifact moves. Not `status`, not a relation, not an assurance field, and not one word of
 the scope prose the table is derived from. This amendment changes what this work order *declares*, never what
 it delivers.
+
+**2026-08-29, `SPEC-MOK-002.md` admitted to `[execution_scope]` and to `[relations].specifications`, by the
+repository owner acting as accountable engineering owner.**
+
+`WO-MOK-030` added `SPEC-MOK-007` rule 14.3a on 2026-08-29 — the unit prices "arrive through `--prices`", and
+"the shared parser validates it and **retains** the four values, like `--spend-ceiling` and unlike the paths,
+because the run computes with them". The library is what computes with them: `SPEC-MOK-007` rule 14.6 stops the
+run *before* an exchange and rule 15.2 puts the cost in the run record, which the library writes to a sink the
+host lends it. So retaining the four values means a sixth public field on `simulation::Config`, and `SPEC-MOK-002`
+rule 5's census enumerates that struct's public fields **exactly** and closes with "nothing outside the three
+lists becomes public".
+
+That file was outside this work order's scope, measured rather than assumed:
+
+    QGP-G4I-PATHS: WEX201: changed path is outside execution scope:
+    docs/engineering/simulation/specifications/SPEC-MOK-002.md
+
+and the harness's own next step was to escalate under `DR-REMEDIATION-SCOPE`, which is what happened. So this is
+a seventh gap of the same kind as the six `WO-MOK-030` closed, found one commit into the implementation rather
+than by the conformance pass: that pass amended the census for `spend_ceiling`, which a commit had already added,
+and did not amend it for the field the option it was creating in the same act would require.
+
+Every alternative route was also an interface change, and `SPEC-MOK-002`'s own 2026-08-29 row had already worked
+the identical question through for `spend_ceiling` one day earlier: "a sixth `execute` parameter moves rule 4,
+and putting the ceiling on the port leaves the library unable to write the run record rule 15.2 requires". The
+same holds of the prices, for the same two reasons, so nothing here re-derives it.
+
+The alternative put to the owner was a fourth governance work order scoped to `SPEC-MOK-002.md` alone, following
+`WO-MOK-028`, `WO-MOK-029` and `WO-MOK-030`. It was **declined** in favour of this amendment. Its cost was two
+stacked pull requests; this amendment's cost is that this work order's own diff carries a specification amendment
+and that the formal snapshot moves from `47aad296aa8686c64d37453fe230124226823260881163bd9da670714d7eac3e`.
+The second cost is nil at this moment and only at this moment: the `handoff` check reports no evidence bound to
+that snapshot, and no verification record is prepared, so nothing has to be re-captured. A later amendment would
+have paid for a live run twice.
+
+**The ordering is right this time and that is the point of the amendment.** The census is amended before the
+field exists, not after — which is what `SPEC-MOK-002`'s 2026-08-29 row recorded as wrong about `spend_ceiling`
+and "recorded rather than tidied". No gate would have caught the alternative: `validate` reads that census as
+prose and cannot compare it to a struct.
+
+Nothing else in this artifact moves. Not `status`, not an assurance field, not the scope prose, and not one item
+of *In scope*, *Out of scope* or the *Expected change surface*. The prices are already **item 5**'s — "the engine
+needs them for its ceiling arithmetic, so they are declared to the engine per rule 14. The engine holds prices;
+it holds no endpoint" — and items 9, 10 and 11 are what compute with them. What this amendment admits is the
+artifact that has to authorize the field, not any new work.
