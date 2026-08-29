@@ -6,20 +6,24 @@ lives: "it is the repository owner's statement, **retained with the evidence**",
 lists "The credential attestation | Beside the measurement's evidence | one file". This is that file for this
 stage.
 
-**State: PROPOSED — awaiting the repository owner's statement.** The body below is the implementation
-agent's, and is complete and measured. The attestation itself is not, and cannot be: it is the owner's
-sentence about a surface outside this repository. Nothing in this file asserts that the attestation has been
-made.
+**The attestation, verbatim, made 2026-08-29 by the repository owner over commit `964a49b`:**
+
+> *"Attest — none is configured, as of 2026-08-29."*
 
 | Fact | Value |
 |---|---|
 | Check | `VER-MOK-018` **C6** |
-| What is to be attested | no model-provider credential is configured in this repository's automation secrets |
+| What is attested | no model-provider credential is configured in this repository's automation secrets |
 | Accountable role | repository owner |
 | Date | 2026-08-29 |
-| Commit the attestation is made over | the candidate this packet is bound to |
-| Corroborating measurement | **not re-taken at this candidate** — see *The corroborating measurement* below, which states why and what stands in its place |
-| State | **PROPOSED — awaiting the owner's statement** |
+| Commit the attestation was made over | `964a49b` |
+| Corroborating measurement | see *The corroborating measurement* below |
+| State | **RECORDED — attested** |
+
+The wording is the owner's and follows the form of the attestation they made on 2026-08-24, with the date
+made explicit. The date is explicit because `C6`'s own text is what makes it load-bearing: "what no
+measurement establishes is the state of that surface at any moment other than the one it was taken at". An
+attestation about a standing fact still speaks from a moment, and this one says which.
 
 ## Why this attestation is re-made rather than inherited
 

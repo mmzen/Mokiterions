@@ -4,19 +4,29 @@
 checked below. The other half the contract states in bold: "**Whether the authorization is genuine is an owner
 attestation**, not a check". This file is that attestation.
 
-**State: PROPOSED — awaiting the repository owner's statement.** Everything below the attestation table is the
-implementation agent's, and every static figure in it was measured at the candidate. The attestation is the
-owner's and is not made here.
+**The attestation, verbatim, made 2026-08-29 by the repository owner over commit `964a49b`:**
+
+> *"Attest — the authorization record is genuine. I gave that authorization on 2026-08-29, with the horizon,
+> seed set and ceiling it names."*
 
 | Fact | Value |
 |---|---|
 | Case | `VER-MOK-018` **L28**, genuineness half, under `REQ-MOK-076` |
-| What is to be attested | that `live-run-authorization.md` records an authorization the owner actually gave, on the date it names, with the horizon, seed set and ceiling it names |
+| What is attested | that `live-run-authorization.md` records an authorization the owner actually gave, on the date it names, with the horizon, seed set and ceiling it names |
 | Accountable role | repository owner |
 | Date | 2026-08-29 |
+| Commit the attestation was made over | `964a49b` |
 | The record attested to | `docs/engineering/simulation/evidence/WO-MOK-026/live-run-authorization.md` |
 | Static half | **PASSES** in full — measured below |
-| State | **PROPOSED — awaiting the owner's statement** |
+| State | **RECORDED — attested** |
+
+**The attestation names the three terms `L28` gates and not the fourth the record carries.** The record also
+states a retry disposition — re-run at the same seed and horizon if a retry occurs — and the attestation above
+does not mention it. That is not an omission to be read as a doubt: `L28`'s static half enumerates exactly
+"the authorizing owner, the date, the horizon, the seed set and the ceiling", the retry disposition is not
+among them, and the owner was offered a fuller wording covering it and chose this one. The retry disposition
+was never exercised — the transcript records **0** fallbacks and **0** `error` records, so no retry occurred
+and no second attempt at seed 0 was needed under it.
 
 ## Why this attestation exists at all, and why here
 
