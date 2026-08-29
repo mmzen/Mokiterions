@@ -20,6 +20,7 @@ paths = [
   "docs/engineering/simulation/specifications/SPEC-MOK-002.md",
   "docs/engineering/simulation/specifications/SPEC-MOK-003.md",
   "docs/engineering/simulation/specifications/SPEC-MOK-004.md",
+  "docs/engineering/simulation/specifications/SPEC-MOK-007.md",
   "docs/engineering/simulation/work-orders/WO-MOK-026.md",
   "mokiterions-core/Cargo.toml",
   "mokiterions-core/src/cli.rs",
@@ -439,3 +440,64 @@ of *In scope*, *Out of scope* or the *Expected change surface*. The prices are a
 needs them for its ceiling arithmetic, so they are declared to the engine per rule 14. The engine holds prices;
 it holds no endpoint" — and items 9, 10 and 11 are what compute with them. What this amendment admits is the
 artifact that has to authorize the field, not any new work.
+
+**2026-08-29, `SPEC-MOK-007.md` admitted to `[execution_scope]`, by the repository owner acting as accountable
+engineering owner.**
+
+Two provisions of that specification have to move before **item 8** can be written, and both were found by reading
+the specification against the code rather than by a gate.
+
+**The port's return type, rules 1.1 and 1.4.** Rule 11.3 obliges an exchange record to carry "the response as
+received, in full, or the error", the provider's four reported counts, and "the action the response was parsed
+into, or the fact that it was not parsed **and why**". Rule 11.1 puts the authoring of every record in the engine,
+so the engine has to be told all three. It cannot be: rule 1.1's interface "returns either a proposal or the fact
+that none was obtained" and rule 1.4 fixes that as "a value of the engine's existing action type, or as the absence
+of one", which carries no response text, no count and no reason. `mokiterions-core/src/simulation.rs` has recorded
+this since `WO-MOK-025` as "a pre-existing tension between rule 1.1's port shape and rule 11.3's field list", and
+named this work order as where "the port's return type has to grow to carry them". Rule 11.3.1 says the same from
+the other side: the two fields are "present and empty until a provider is called" and "`WO-MOK-026` is where either
+first carries a value".
+
+**Rule 19.2's credential condition cannot be reached.** It makes "a live-mode selection with no credential" a usage
+error exiting "before any tick runs and before any provider call". Rule 13.1 puts that condition's check in the
+connector — "the selection by the host, the credential by the connector — and neither component can satisfy the
+other's condition" — rule 13.3 has the refusal "arrive after the connector was spawned", on the first exchange, and
+rule 13.4 forbids either host to read the credential at all. So no host can detect the condition before a tick, and
+rule 19.5a, amended one day later, makes a `refused` response an unconditional "immediate counted fallback" which a
+host cannot except the credential case out of without interpreting a message rule 13.3 has it pass through in the
+connector's own terms. The list item is a defect and is to be recorded as one at the rule.
+
+That file was outside this work order's scope, measured rather than assumed:
+
+    QGP-G4I-PATHS: WEX201: changed path is outside execution scope:
+    docs/engineering/simulation/specifications/SPEC-MOK-007.md
+
+and the harness's own next step was again to escalate under `DR-REMEDIATION-SCOPE`, which is what happened.
+
+**Three routes were put to the owner with each one's cost measured, and the other two were declined.** The first
+declined route was to leave rules 1.1 and 1.4 word for word and record in `SPEC-MOK-002` rule 5 that they already
+admit evidence travelling beside the proposal, on the ground that rule 1.4's own stated purpose — "nothing arriving
+through it can bypass rule 9's validation by being expressed in some other form" — holds either way. Its cost was
+that a later reader meets a rule whose plain words and whose build disagree, reconciled in a different artifact. The
+second declined route was a third method on the port, leaving both rules untouched and amending only the census: the
+engine would ask the port for the exchange's evidence after each proposal. Its cost was a temporal contract between
+two calls that no type enforces, so a port returning the previous exchange's evidence writes a wrong record in
+silence — the one hazard the chosen route closes in the type. The chosen route's cost is that this work order's diff
+carries a second specification amendment and that the formal snapshot moves again, from
+`670b8733a05aa5af74157a2f2e78dfa8401fe14b1c502f4ae7f16d42eba39309`. That cost is still nil and still only at this
+moment, for the reason the row above gives: the `handoff` check reports no evidence bound to that snapshot and no
+verification record is prepared, so nothing has to be re-captured.
+
+**Neither provision is a relaxation.** The proposal still crosses back as an action or its absence and the engine
+still reads nothing else to decide, so rule 9's validation is untouched; what grows is what the *record* can say
+about the exchange the proposal came from. And rule 19.2's defect is recorded rather than repaired by weakening a
+gate: the run follows rule 19.5a, which is both the more specific rule and the later-dated one, and the connector's
+message reaches the transcript's `response` field verbatim, which is what rule 13.3 and `VER-MOK-018` case `L20`
+actually require — `L20` says "no provider call occurs and the run reports which condition was missing without
+printing any value", and says nothing about an early exit.
+
+Nothing else in this artifact moves. Not `status`, not a relation — `SPEC-MOK-007` has been in
+`[relations].specifications` since approval — not an assurance field, not the scope prose, and not one item of *In
+scope*, *Out of scope* or the *Expected change surface*. **Item 8** is already "the usage accounting: the provider's
+reported counts into the transcript's reserved fields", and this amendment admits the artifact that has to authorize
+the interface item 8 needs, not any new work.
