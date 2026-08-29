@@ -2763,8 +2763,10 @@ const RESPONSE_VERBS: [&str; 11] = [
 ///
 /// It is built once and lent per tick, rule 20.4.1. The reason is sharper here than for
 /// [`ReplayPort`]: a port rebuilt each tick would hand the child a request on a stream nobody was
-/// reading, and from `WO-MOK-026`'s item 9 onward it would also reset the accumulated cost the
-/// ceiling of rule 14.6 is checked against — a run that never stops spending.
+/// reading, and it would reset the accumulated cost the ceiling of rule 14.6 is checked against — a
+/// run that never stops spending. That second half is no longer hypothetical: the account is a field
+/// of this type, so a rebuild is a reset in the literal sense the rule describes, which is what case
+/// **L30** measures.
 ///
 /// **One attempt per exchange, in this stage.** Rule 19.5's retry bound is `WO-MOK-026`'s item 12
 /// and is not here yet, so a `transport` or `provider` error becomes a counted fallback where rule
@@ -2786,18 +2788,47 @@ pub struct ConnectorPort<'sink, R: BufRead, W: Write> {
     /// a run, and a request field that varies for no reason is a field a later reader has to prove
     /// constant.
     schema: String,
+    /// Rules 14.1 and 9.5's accumulators, in the party rule 20.4.1 puts them in.
+    ///
+    /// It is `accounting::RunAccount` and therefore no part of this type's public surface: the field
+    /// is private and the type is private to `simulation`, which is why `SPEC-MOK-002` rule 5's
+    /// census for this port is one item and two declarations with no field among them. The engine
+    /// never reads it — rule 14's *State model* says none of it may influence a decision, and a
+    /// figure the engine cannot see cannot.
+    account: accounting::RunAccount,
 }
 
 impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
-    /// Wraps the child's two streams and the host's transcript. Nothing is written and nothing is
-    /// read: a run refused before its first tick must not have spoken to the connector, and rule
-    /// 20.8's refusal happens after construction.
-    pub fn new(responses: R, requests: W, transcript: &'sink mut dyn Write) -> Self {
+    /// Wraps the child's two streams and the host's transcript, and takes the run's declared prices
+    /// and ceiling. Nothing is written and nothing is read: a run refused before its first tick must
+    /// not have spoken to the connector, and rule 20.8's refusal happens after construction.
+    ///
+    /// **The prices and the ceiling arrive here rather than being read here**, rule 14.3: they are
+    /// inputs of the run, and this type has no route to an environment variable, a file or a
+    /// constant holding either. The ceiling is in whole US cents, rule 14.2, which is what
+    /// `--spend-ceiling` parses to; `None` is a run with none declared, which for a live run rule
+    /// 13.5 forbids and which this type does not police because rule 13.1 leaves the live selection's
+    /// conditions to the host.
+    ///
+    /// They are parameters of `new` and not of `propose` because rule 20.4.1 builds this once and
+    /// lends it per tick. Prices arriving per exchange could differ between exchanges of one run,
+    /// which is a cost figure no reader could reconstruct from the record.
+    pub fn new(
+        responses: R,
+        requests: W,
+        transcript: &'sink mut dyn Write,
+        prices: UnitPrices,
+        ceiling: Option<u64>,
+    ) -> Self {
         Self {
             responses,
             requests,
             transcript,
             schema: response_schema(),
+            account: accounting::RunAccount::declared(
+                accounting::PerTokenPrices::declared(&prices),
+                ceiling,
+            ),
         }
     }
 
@@ -2958,7 +2989,7 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
 
 impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
     fn propose(&mut self, request: DecisionRequest) -> Proposal {
-        match self.exchange(&request) {
+        let proposal = match self.exchange(&request) {
             Ok(line) => Self::interpret(&line),
             // A pipe that failed is the connector's error, so it is recorded as one: rule 11.3
             // asks for "the response as received, in full, **or the error**", and this is the
@@ -2973,7 +3004,26 @@ impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
                 response: Some(format!("connector: {error}")),
                 usage: ReportedUsage::default(),
             },
+        };
+
+        // Rules 14.1 and 9.5, booked here because this is where the exchange happened and rule
+        // 20.4.1 puts the accumulators in this type.
+        //
+        // **Every exchange is billed, and then a fallback is counted.** Not one or the other: rule
+        // 10.4c's response arrived, carried usage, and failed the grammar check on a missing model or
+        // reasoning level — `Self::interpret` returns no action and the usage it reported, and that
+        // exchange was paid for. Billing it as an absence would understate the run. The two exchanges
+        // that genuinely reported nothing — the pipe failure above and rule 10.4's error response —
+        // reach `after_exchange` with four absences, and rule 11.5 makes an absence contribute zero,
+        // so the one statement is right for all three.
+        //
+        // A rejection the engine decides afterwards cannot reach here, which is rule 9.6: the port
+        // sees what the connector answered and never learns what the world did with it.
+        self.account = self.account.after_exchange(&proposal.usage);
+        if proposal.action.is_none() {
+            self.account = self.account.counting_fallback();
         }
+        proposal
     }
 
     /// Rule 11.2's one line per exchange, appended to the host's transcript and flushed.
@@ -3479,22 +3529,48 @@ mod accounting {
     /// floor exactly, with no decimal separator anywhere in the figure or in its computation.
     const BASIS_POINTS: u64 = 10_000;
 
-    /// The unit prices declared for a live run, in **nanodollars per token** — a nanodollar being
-    /// 10^-9 of the currency the provider prices in.
+    /// One US cent, in the unit this module accumulates in. See [`PerTokenPrices`].
+    const MICROCENTS_PER_CENT: u64 = 1_000_000;
+
+    /// The unit prices declared for a live run, in **microcents per token** — a microcent being
+    /// 10^-6 of a US cent.
     ///
-    /// Rule 14.2 requires integer arithmetic in a stated minor unit, and this is the unit stated. It
-    /// is chosen for exactness rather than for familiarity. A provider publishes a price per million
-    /// tokens, so `$1.25 per 1M` is `1_250` nanodollars per token and `$0.125 per 1M` is `125`, both
-    /// without a remainder. Cents per token would round every published price to zero. A price held
-    /// per million tokens would push a division into every exchange's cost, where the truncation
-    /// would accumulate once per exchange and rule 14.6's ceiling would then bound the run at a
-    /// figure depending on how many exchanges it happened to make.
+    /// **Rule 14.2's stated minor unit is the US cent, and every figure this specification states
+    /// is in cents**: `--spend-ceiling`'s amount, rule 15.2's accumulated cost and declared ceiling,
+    /// and `SPEC-MOK-006` rule 8.9's `cost` and `ceiling`. What is held here is finer than that, and
+    /// the reason is that the cent cannot carry one exchange's cost. Measured at rule 14.3a's own
+    /// example prices and this stage's own exchange — `--prices 125:13:1000:0` against a
+    /// 1,000-token prompt of which 900 were cached and an 8-token response — one exchange costs
+    /// **0.0322 cents**, and `WO-MOK-026` item 13 puts a 200-exchange run at an estimated 2 to 3
+    /// cents in total. An accumulation truncated to whole cents per exchange would therefore add
+    /// zero every time: rule 14.6's ceiling would never be reached and rule 15.2's cost would be
+    /// reported as `0` for a run that spent money. So the accumulation is exact and only the
+    /// reported figure is a cent, which is [`RunAccount::cost_cents`].
+    ///
+    /// **The microcent is chosen so that no arithmetic happens at the edge.** Rule 14.3a declares
+    /// prices in *cents per million tokens*, and one cent per million tokens **is** one microcent
+    /// per token — the same integer, with no multiplication, no division and therefore no rounding
+    /// between what the operator typed and what this module computes with. That is rule 14.3a's
+    /// closing sentence discharged by the unit rather than by care: "integers rather than a decimal,
+    /// so rule 14.2's arithmetic is integer arithmetic from the input onward and no rounding enters
+    /// at the edge". [`PerTokenPrices::declared`] is consequently a renaming of four fields.
+    ///
+    /// Two units were measured and rejected. **Cents per token** rounds every published price to
+    /// zero. **A price held per million tokens** pushes a division into every exchange's cost, where
+    /// the truncation accumulates once per exchange and rule 14.6's ceiling would then bound the run
+    /// at a figure depending on how many exchanges it happened to make.
     ///
     /// Rule 14.3: these are **inputs of the run**. No constant here holds a provider's number,
     /// because the provider's prices are the provider's to change and a price compiled into the
     /// engine would be a figure a release declared rather than a run.
+    ///
+    /// **The name is not [`UnitPrices`](super::UnitPrices)'s, and that is deliberate.** The public
+    /// type of that name carries the operator's four declared prices in the order rule 14.3a fixes;
+    /// this one carries the same four in the order the *arithmetic* reads them, where the first is
+    /// the price of a prompt token the cache did **not** serve. Two types of one name in one file,
+    /// differing in which of the two the first field means, is a transposition nobody would see.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-    pub(super) struct UnitPrices {
+    pub(super) struct PerTokenPrices {
         /// Per prompt token the provider did **not** serve from its cache.
         ///
         /// The uncached share and not the whole prompt count, which is a distinction rule 14.1's
@@ -3506,6 +3582,25 @@ mod accounting {
         pub(super) cached_prompt: u64,
         pub(super) output: u64,
         pub(super) reasoning: u64,
+    }
+
+    impl PerTokenPrices {
+        /// The operator's declared prices, in the order this module's arithmetic reads them.
+        ///
+        /// **No arithmetic, by construction of the unit.** Rule 14.3a declares cents per million
+        /// tokens and this module holds microcents per token, which are the same integer, so the four
+        /// values cross unchanged and no rounding can enter here. The whole of the conversion is that
+        /// [`UnitPrices::prompt`](super::UnitPrices::prompt) is the price of a prompt token the cache
+        /// did not serve — which rule 14.3a's ordering implies and does not say, and which the field
+        /// name here says outright.
+        pub(super) fn declared(prices: &super::UnitPrices) -> Self {
+            Self {
+                uncached_prompt: prices.prompt,
+                cached_prompt: prices.cached,
+                output: prices.output,
+                reasoning: prices.reasoning,
+            }
+        }
     }
 
     /// One exchange's usage, as the provider reported it: [`ReportedUsage`] under the name this
@@ -3597,9 +3692,14 @@ mod accounting {
     /// the *State model*'s own sentence and the whole reason none of it can influence a decision.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
     pub(super) struct RunAccount {
-        prices: UnitPrices,
-        /// Rule 14.6's declared ceiling, absent where none was declared. A replay declares none,
-        /// rule 14.8.
+        prices: PerTokenPrices,
+        /// Rule 14.6's declared ceiling, **in microcents**, absent where none was declared. A replay
+        /// declares none, rule 14.8.
+        ///
+        /// Converted once, in [`Self::declared`], from the cents the operator wrote. Held in the
+        /// accumulation's own unit rather than in cents, because the comparison rule 14.6 makes is
+        /// against the accumulated cost and a comparison between two units is the one place a
+        /// factor of a million goes unnoticed.
         ceiling: Option<u64>,
         /// Every exchange issued, including one that yielded nothing: rule 11.2's "a retry is its
         /// own record, because it was its own billed exchange" is the same accounting from the
@@ -3613,6 +3713,7 @@ mod accounting {
         /// cleared. Rule 14.5: the ratio then cannot be computed, and that is a failure to evaluate
         /// rather than a pass — so one such exchange has to survive to the end of the run.
         cache_unreported: bool,
+        /// The accumulated cost, **in microcents**. [`Self::cost_cents`] is rule 14.2's figure.
         cost: u64,
         fallbacks: u64,
     }
@@ -3620,10 +3721,17 @@ mod accounting {
     impl RunAccount {
         /// A run's opening account: the prices it declared, the ceiling it declared, and nothing
         /// spent.
-        pub(super) fn declared(prices: UnitPrices, ceiling: Option<u64>) -> Self {
+        ///
+        /// The ceiling arrives in **cents**, which is what `--spend-ceiling` parses to and what rule
+        /// 14.2 states, and is converted here to the accumulation's unit. Saturating, because a
+        /// ceiling so large that a million times it does not fit in a `u64` is a ceiling no run could
+        /// reach, and `u64::MAX` is that same unreachable ceiling — where a wrap would turn a very
+        /// large declared ceiling into a very small effective one, which is the one arithmetic
+        /// failure here that would stop a run early rather than late.
+        pub(super) fn declared(prices: PerTokenPrices, ceiling: Option<u64>) -> Self {
             Self {
                 prices,
-                ceiling,
+                ceiling: ceiling.map(|cents| cents.saturating_mul(MICROCENTS_PER_CENT)),
                 ..Self::default()
             }
         }
@@ -3677,18 +3785,32 @@ mod accounting {
             }
         }
 
-        /// Rule 9.5's occurrence, counted: an exchange that yielded no proposal.
+        /// Rule 9.5's occurrence, counted, and **nothing else**.
         ///
-        /// It is still an exchange, so the exchange count moves and the usage it reported — none, by
-        /// definition — is added like any other. What it is *not* is rule 9.6's rejected proposal:
-        /// a source that answered and a world that refused the answer leave this count alone, and
-        /// the port never learns that the refusal happened.
-        pub(super) fn after_fallback(self) -> Self {
-            let counted = Self {
+        /// It moves the fallback count and no other figure. The exchange itself is booked by
+        /// [`Self::after_exchange`], which every exchange goes through whether or not it yielded a
+        /// proposal, so a fallback is `self.after_exchange(&usage).counting_fallback()` and the
+        /// exchange count moves exactly once.
+        ///
+        /// **This shape replaces one that billed the fallback as an unreported exchange**, and the
+        /// reason is rule 10.4c. That earlier shape's own comment — "the usage it reported — none, by
+        /// definition" — was true of rule 9.4's exchange, where the transport failed or the provider
+        /// returned nothing, and it is false of rule 10.4c's, where a response arrived carrying
+        /// usage and an action naming neither the model nor the reasoning level. That exchange fails
+        /// the grammar check, becomes a counted fallback, and **was billed**:
+        /// [`ConnectorPort::interpret`](super::ConnectorPort::interpret) is explicit that "the counts
+        /// travel even when the action does not". Billing it as an absence would have understated
+        /// every such run's cost, and rule 10.8 does not cover that — it covers a connector that
+        /// under-reports, not a host that discards what was reported.
+        ///
+        /// What this is *not* is rule 9.6's rejected proposal: a source that answered and a world
+        /// that refused the answer leave this count alone, and the port never learns that the
+        /// refusal happened.
+        pub(super) fn counting_fallback(self) -> Self {
+            Self {
                 fallbacks: self.fallbacks.saturating_add(1),
                 ..self
-            };
-            counted.after_exchange(&ExchangeUsage::unreported())
+            }
         }
 
         /// Rule 14.6: whether the accumulated cost has reached the declared ceiling. Reached, not
@@ -3727,8 +3849,42 @@ mod accounting {
             )
         }
 
+        /// The accumulated cost in the unit it is accumulated in, **microcents**.
+        ///
+        /// Rule 14.2's reportable figure is [`Self::cost_cents`]. This one exists because a test that
+        /// asserted only the cent figure could not distinguish a run that spent 0.03 cents from one
+        /// that spent nothing, and rule 14.6's ceiling is compared here.
         pub(super) fn cost(&self) -> u64 {
             self.cost
+        }
+
+        /// Rule 14.2's accumulated cost, in **whole US cents**.
+        ///
+        /// **Truncated, and the truncation is the point.** Rule 14.6 compares the accumulated cost
+        /// against the ceiling in the accumulation's own unit, so truncating the *reported* figure
+        /// keeps one invariant checkable from the outside: a run that stopped at its ceiling reports
+        /// a cost at or above that ceiling, and a run that did not reports one below it. Rounding up
+        /// would break exactly that — a run one microcent short of a 2-cent ceiling would report
+        /// `2`, indistinguishable from the run that stopped, and `REQ-MOK-071` is about telling those
+        /// two apart.
+        ///
+        /// The sub-cent remainder is not lost to a reader: rule 14.1's four token totals and rule
+        /// 14.3a's declared prices are both reported, and the exact figure is their product. That is
+        /// rule 14.3's own reasoning — the prices are inputs of the run, so a record that states them
+        /// beside the counts has stated the cost to any precision.
+        pub(super) fn cost_cents(&self) -> u64 {
+            self.cost / MICROCENTS_PER_CENT
+        }
+
+        /// Rule 14.6's declared ceiling in **whole US cents**, which is the figure the operator wrote.
+        ///
+        /// Exact for every ceiling [`Self::declared`]'s conversion did not clamp, being that
+        /// conversion undone. A ceiling large enough to have clamped comes back smaller than it was
+        /// declared, and that is a ceiling of more than eighteen trillion cents — unreachable before
+        /// and after, so the only figure it misstates is one no run could have spent against.
+        pub(super) fn ceiling_cents(&self) -> Option<u64> {
+            self.ceiling
+                .map(|microcents| microcents / MICROCENTS_PER_CENT)
         }
 
         pub(super) fn fallbacks(&self) -> u64 {
@@ -3820,6 +3976,13 @@ mod accounting {
         /// count is here on rule 15.1's authority — it is an accounting figure this specification
         /// produces, at rule 14.5's threshold of 200 — rather than on rule 15.2's enumeration.
         ///
+        /// **The two money figures are named for their unit and the unit is rule 14.2's.** They were
+        /// `cost_nanodollars` and `ceiling_nanodollars` while `WO-MOK-025` accumulated in
+        /// nanodollars; rule 14.2 as amended 2026-08-29 states the minor unit, and it is the US cent,
+        /// so they are `cost_cents` and `ceiling_cents`. The rename is a rename of the *reported*
+        /// figures only — [`PerTokenPrices`] records why the accumulation behind them is finer — and
+        /// naming a field for a unit it does not carry is the failure this pair exists to avoid.
+        ///
         /// The seed, tick limit, density and tracing selection are spelled as
         /// [`write_header_record`](super::write_header_record) spells them, including the density as
         /// a quoted two-decimal string. That is the one decimal separator in the line and it is an
@@ -3831,8 +3994,8 @@ mod accounting {
                 "{{\"run_record\":\"{LLM_SOURCE_NAME}\",\"seed\":{},\"ticks\":{},\"density\":\"{}\",\
                  \"trace_actions\":{},\"model\":\"{}\",\"reasoning\":\"{}\",\"exchanges\":{},\
                  \"tokens\":{{\"prompt\":{},\"cached_prompt\":{},\"output\":{},\"reasoning\":{}}},\
-                 \"cache_ratio_basis_points\":{},\"cost_nanodollars\":{},\
-                 \"ceiling_nanodollars\":{},\"fallbacks\":{},\"unfit_to_publish\":{},\
+                 \"cache_ratio_basis_points\":{},\"cost_cents\":{},\
+                 \"ceiling_cents\":{},\"fallbacks\":{},\"unfit_to_publish\":{},\
                  \"tick_reached\":{},\"ended\":\"{}\"}}",
                 self.config.seed,
                 self.config.tick_limit,
@@ -3846,8 +4009,8 @@ mod accounting {
                 self.account.output_tokens,
                 self.account.reasoning_tokens,
                 optional_figure(self.account.cache_ratio_basis_points()),
-                self.account.cost,
-                optional_figure(self.account.ceiling),
+                self.account.cost_cents(),
+                optional_figure(self.account.ceiling_cents()),
                 self.account.fallbacks,
                 // Rule 15.4's mark, and a property of the record rather than of a summary written
                 // afterwards. It is derived here from the count rather than set by a caller,
@@ -6562,7 +6725,7 @@ fn write_attribute(
 mod tests {
     use std::collections::HashSet;
 
-    use super::accounting::{ExchangeUsage, RunAccount, RunEnd, RunRecord, UnitPrices};
+    use super::accounting::{ExchangeUsage, PerTokenPrices, RunAccount, RunEnd, RunRecord};
     use super::*;
 
     /// The historical helper. It selects the baseline source so that the foundation
@@ -11999,7 +12162,20 @@ mod tests {
 
         /// Declares the run's prices, its ceiling and the usage each answered exchange reports —
         /// rule 14.3's inputs, arriving as inputs.
-        fn billing(self, prices: UnitPrices, ceiling: Option<u64>, usage: ExchangeUsage) -> Self {
+        ///
+        /// The prices arrive as [`PerTokenPrices`] and not as the public [`UnitPrices`] that
+        /// [`ConnectorPort::new`](super::ConnectorPort::new) takes, which is deliberate: the
+        /// conversion between the two is
+        /// [`PerTokenPrices::declared`](super::accounting::PerTokenPrices::declared) and it has a
+        /// case of its own. A fixture that went through it would make every assertion below depend on
+        /// that one function being right, and the field this file's figures name outright — the
+        /// *uncached* prompt price — is the field the conversion exists to name.
+        fn billing(
+            self,
+            prices: PerTokenPrices,
+            ceiling: Option<u64>,
+            usage: ExchangeUsage,
+        ) -> Self {
             Self {
                 account: RunAccount::declared(prices, ceiling),
                 usage,
@@ -12059,12 +12235,19 @@ mod tests {
             };
             self.seen.push(request);
             // Rule 14.1 and rule 9.5's count, in the party rule 20.4.1 puts them in and at the
-            // moment the exchange happened. An answered exchange bills the declared usage; an
-            // unanswered one reports none and moves the fallback count. A rejection the engine
-            // decides later cannot reach here, which is rule 9.6.
+            // moment the exchange happened, in the two statements
+            // [`ConnectorPort::propose`](super::ConnectorPort::propose) uses: every exchange is
+            // billed, and an unanswered one then counts a fallback. This double bills the declared
+            // usage for an answered exchange and four absences for an unanswered one, because *this*
+            // port's unanswered exchange is rule 9.4's — it reports no usage, which is not true of
+            // rule 10.4c's and is why the count and the bill are two statements rather than one.
+            // A rejection the engine decides later cannot reach here, which is rule 9.6.
             self.account = match &answer {
                 Some(_) => self.account.after_exchange(&self.usage),
-                None => self.account.after_fallback(),
+                None => self
+                    .account
+                    .after_exchange(&ExchangeUsage::unreported())
+                    .counting_fallback(),
             };
             // Rule 1.1a's evidence. An answered exchange reports what the port declares; an
             // unanswered one reports the response only, because rule 11.3's `response` field is
@@ -14010,17 +14193,24 @@ mod tests {
     // -----------------------------------------------------------------------------------
 
     /// Prices in the shape a provider publishes them, converted once: `$1.25`, `$0.125` and `$10.00`
-    /// per million tokens are `1_250`, `125` and `10_000` nanodollars per token. The reasoning price
-    /// matches the output price, which is how a provider that bills reasoning tokens bills them.
+    /// per million tokens are `125`, `13` and `1_000` **cents per million tokens**, which rule 14.3a
+    /// declares and which are the same integers as microcents per token. The reasoning price matches
+    /// the output price, which is how a provider that bills reasoning tokens bills them.
+    ///
+    /// The cached figure is `13` and not `12.5`, because rule 14.3a's four values are integers: the
+    /// operator declares a whole number of cents per million tokens and there is no finer thing to
+    /// declare. `WO-MOK-026` moved these figures from nanodollars per token, where the same three
+    /// prices were `1_250`, `125` and `10_000`, when rule 14.2 as amended 2026-08-29 stated the minor
+    /// unit as the US cent.
     ///
     /// Round numbers, and deliberately: a case about integer arithmetic should fail on the
     /// arithmetic rather than on a reader's inability to check the expected figure.
-    fn declared_prices() -> UnitPrices {
-        UnitPrices {
-            uncached_prompt: 1_250,
-            cached_prompt: 125,
-            output: 10_000,
-            reasoning: 10_000,
+    fn declared_prices() -> PerTokenPrices {
+        PerTokenPrices {
+            uncached_prompt: 125,
+            cached_prompt: 13,
+            output: 1_000,
+            reasoning: 1_000,
         }
     }
 
@@ -14035,8 +14225,31 @@ mod tests {
     }
 
     /// [`synthetic_usage`] at [`declared_prices`], computed longhand: 600 uncached prompt tokens,
-    /// 5,400 cached ones and 40 output tokens.
-    const SYNTHETIC_COST: u64 = 600 * 1_250 + 5_400 * 125 + 40 * 10_000;
+    /// 5,400 cached ones and 40 output tokens, in **microcents**.
+    ///
+    /// 185,200 microcents is 0.1852 of a cent, which is the figure that decides the unit: one
+    /// exchange of this size costs a fifth of a cent, so an accumulation in whole cents would add
+    /// zero here and rule 14.6's ceiling would never move. See [`PerTokenPrices`].
+    const SYNTHETIC_COST: u64 = 600 * 125 + 5_400 * 13 + 40 * 1_000;
+
+    /// One exchange's usage costing exactly one whole US cent at [`declared_prices`]: a
+    /// 1,000-token prompt served entirely from the provider's cache at 13 microcents each, and 987
+    /// output tokens at 1,000 each — 13,000 plus 987,000 microcents.
+    ///
+    /// **It exists because a ceiling cannot be finer than a cent and an exchange can.** Rule 14.2's
+    /// minor unit is the US cent, so rule 14.6's ceiling is declared in whole cents, while one
+    /// exchange of [`synthetic_usage`] costs 0.1852 of one. Cases **L19** and **L30** both state a
+    /// ceiling as a multiple of an exchange's cost, and that claim cannot be written down at all
+    /// unless an exchange costs a whole number of cents. This is the usage those cases spend, so
+    /// that their figures are the figures the cases name rather than figures chosen to divide.
+    fn whole_cent_usage() -> ExchangeUsage {
+        ExchangeUsage::reported(1_000, 1_000, 987, 0)
+    }
+
+    /// [`whole_cent_usage`] at [`declared_prices`], in microcents. One whole cent, by construction,
+    /// and written as the product and sum rather than as `1_000_000` so that a change to either
+    /// input fails here rather than silently making the name a lie.
+    const WHOLE_CENT: u64 = 1_000 * 13 + 987 * 1_000;
 
     /// Rules 9.5 and 9.8: the fallback is `wait`, it is counted, the run continues, and the record
     /// marks it.
@@ -14224,22 +14437,22 @@ mod tests {
     fn cost_is_integer_arithmetic_over_the_declared_prices() {
         let account = RunAccount::declared(declared_prices(), None);
         assert_eq!(account.cost_of(&synthetic_usage()), SYNTHETIC_COST);
-        assert_eq!(account.cost_of(&synthetic_usage()), 1_825_000);
+        assert_eq!(account.cost_of(&synthetic_usage()), 185_200);
 
         // Rule 11.5: an unreported count contributes nothing, and an exchange that reported nothing
         // at all costs nothing rather than costing a prompt's worth of default.
         assert_eq!(account.cost_of(&ExchangeUsage::unreported()), 0);
         // The cached share is billed once, at the cached price. An implementation that billed the
-        // prompt total *and* the cached total would report 8_575_000 here.
+        // prompt total *and* the cached total would report 828_000 here.
         assert_eq!(
             account.cost_of(&ExchangeUsage::reported(6_000, 6_000, 0, 0)),
-            6_000 * 125
+            6_000 * 13
         );
         // Rule 10.7: the provider's figures are untrusted. A cached count above the prompt count is
         // nonsense, and the arithmetic neither panics nor underflows into a bill of quintillions.
         assert_eq!(
             account.cost_of(&ExchangeUsage::reported(10, 10_000, 0, 0)),
-            10 * 125
+            10 * 13
         );
 
         // Rule 14.1 accumulates, and rule 14.2's integer arithmetic accumulates without drift: ten
@@ -14253,11 +14466,11 @@ mod tests {
 
         // Rule 14.3: the prices are the run's. The same usage under prices doubled costs double,
         // because nothing here is compiled in.
-        let doubled = UnitPrices {
-            uncached_prompt: 2_500,
-            cached_prompt: 250,
-            output: 20_000,
-            reasoning: 20_000,
+        let doubled = PerTokenPrices {
+            uncached_prompt: 250,
+            cached_prompt: 26,
+            output: 2_000,
+            reasoning: 2_000,
         };
         assert_eq!(
             RunAccount::declared(doubled, None).cost_of(&synthetic_usage()),
@@ -14291,10 +14504,14 @@ mod tests {
             None
         );
 
-        // A fallback reports neither figure, so it is not rule 14.5's case: an exchange the provider
-        // never answered says nothing about the provider's cache.
+        // An exchange that reported neither figure is not rule 14.5's case: an exchange the provider
+        // never answered says nothing about the provider's cache. Nor is counting a fallback, which
+        // moves one figure and it is not one of these two.
         assert_eq!(
-            account.after_fallback().cache_ratio_basis_points(),
+            account
+                .after_exchange(&ExchangeUsage::unreported())
+                .counting_fallback()
+                .cache_ratio_basis_points(),
             Some(9_000)
         );
     }
@@ -14308,32 +14525,50 @@ mod tests {
     /// and only the arithmetic is in scope here.
     ///
     /// L19's first clause — "no exchange is issued whose cost would cross the ceiling" — is rule
-    /// 14.6's check exactly when the ceiling is a whole multiple of an exchange's cost, which this
-    /// one is. It cannot be more than that in general: the cost of the next exchange depends on the
-    /// usage that exchange will report, and a check made before it is issued has no such figure.
+    /// 14.6's check exactly when the ceiling is a whole multiple of an exchange's cost, which
+    /// [`whole_cent_usage`] makes this one. It cannot be more than that in general: the cost of the
+    /// next exchange depends on the usage that exchange will report, and a check made before it is
+    /// issued has no such figure.
     #[test]
     fn the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two() {
-        let usage = synthetic_usage();
-        let mut account = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 2));
+        let usage = whole_cent_usage();
+        let mut account = RunAccount::declared(declared_prices(), Some(2));
         let mut issued = 0;
         while !account.ceiling_reached() && issued < 10 {
             account = account.after_exchange(&usage);
             issued += 1;
         }
         assert_eq!(issued, 2);
-        assert_eq!(account.cost(), SYNTHETIC_COST * 2);
+        assert_eq!(account.cost(), WHOLE_CENT * 2);
+        assert_eq!(account.cost_cents(), 2);
 
-        // The check is on the accumulated cost and not on the exchange count: an account under a
-        // ceiling one nanodollar higher has not reached it and the third exchange is issued.
-        let under = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 2 + 1))
+        // The check is on the accumulated cost and not on the exchange count: two exchanges under a
+        // three-cent ceiling have not reached it and the third is issued.
+        let under = RunAccount::declared(declared_prices(), Some(3))
             .after_exchange(&usage)
             .after_exchange(&usage);
         assert!(!under.ceiling_reached());
 
+        // **The comparison is made in the accumulation's unit and not in the ceiling's**, which is
+        // the whole reason the accumulation is finer than the ceiling. One cent buys six exchanges of
+        // `synthetic_usage`'s size: five cost 926,000 microcents and the sixth crosses. An
+        // implementation that compared truncated cents against the declared cents would have admitted
+        // the first five at a reported cost of `0` — and, at a ceiling declared in cents against
+        // exchanges costing a fifth of one, would have admitted them for ever.
+        let mut cheap = RunAccount::declared(declared_prices(), Some(1));
+        let mut issued = 0;
+        while !cheap.ceiling_reached() && issued < 100 {
+            cheap = cheap.after_exchange(&synthetic_usage());
+            issued += 1;
+        }
+        assert_eq!(issued, 6);
+        assert_eq!(cheap.cost(), SYNTHETIC_COST * 6);
+        assert_eq!(cheap.cost_cents(), 1);
+
         // Rule 14.8: a run with no declared ceiling never stops here, whatever it has spent.
         let uncapped = RunAccount::declared(declared_prices(), None).after_exchange(&usage);
         assert!(!uncapped.ceiling_reached());
-        assert_eq!(uncapped.cost(), SYNTHETIC_COST);
+        assert_eq!(uncapped.cost(), WHOLE_CENT);
     }
 
     /// Case **L30**'s second half: the account belongs to the port the host lends, so a stubbed
@@ -14350,8 +14585,8 @@ mod tests {
     fn a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling() {
         let mut port = ScriptedPort::always(Action::Wait).billing(
             declared_prices(),
-            Some(SYNTHETIC_COST * 18),
-            synthetic_usage(),
+            Some(18),
+            whole_cent_usage(),
         );
         let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
         let mut costs = Vec::new();
@@ -14367,11 +14602,7 @@ mod tests {
         assert_eq!(port.account.exchanges(), 36, "twelve opportunities a tick");
         assert_eq!(
             costs,
-            vec![
-                SYNTHETIC_COST * 12,
-                SYNTHETIC_COST * 24,
-                SYNTHETIC_COST * 36
-            ]
+            vec![WHOLE_CENT * 12, WHOLE_CENT * 24, WHOLE_CENT * 36]
         );
         // The discriminator: a port rebuilt each tick would report the first figure three times and
         // would never reach the ceiling.
@@ -14385,9 +14616,10 @@ mod tests {
     #[test]
     fn the_run_record_carries_every_figure_rule_15_names() {
         let config = llm_config(7, 500, true);
-        let account = RunAccount::declared(declared_prices(), Some(1_040_000_000))
+        let account = RunAccount::declared(declared_prices(), Some(104))
             .after_exchange(&synthetic_usage())
-            .after_fallback();
+            .after_exchange(&ExchangeUsage::unreported())
+            .counting_fallback();
         let record = RunRecord::new(
             &config,
             "a-model-identifier",
@@ -14403,10 +14635,9 @@ mod tests {
             "\"tokens\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\"reasoning\":0}",
             // The ratio, unaffected by the fallback that reported nothing.
             "\"cache_ratio_basis_points\":9000",
-            // The accumulated cost and the declared ceiling. `$1.04` is rule 9.8's own estimate of
-            // what a full run costs, in the unit rule 14.2 requires it to be stated in.
-            "\"cost_nanodollars\":1825000",
-            "\"ceiling_nanodollars\":1040000000",
+            // The declared ceiling. `$1.04` is rule 9.8's own estimate of what a full run costs,
+            // and 104 is that figure in the minor unit rule 14.2 states.
+            "\"ceiling_cents\":104",
             // The fallback count and rule 15.4's mark.
             "\"fallbacks\":1",
             "\"unfit_to_publish\":true",
@@ -14425,6 +14656,16 @@ mod tests {
         ] {
             assert!(record.contains(figure), "{figure} is missing from {record}");
         }
+
+        // **The reported cost of this two-exchange run is `0` cents, and that is the truncation
+        // stated rather than a figure gone missing.** One exchange of `synthetic_usage` costs 185,200
+        // microcents — 0.1852 of a cent — and rule 14.2's unit cannot carry it. Both figures are
+        // asserted, because a case that checked only the cent would pass against an account that
+        // accumulated nothing at all, which is the failure `PerTokenPrices` exists to prevent. The
+        // exact figure stays recoverable from the record: rule 14.1's four token totals are in it and
+        // rule 14.3a's prices are inputs of the run.
+        assert!(record.contains("\"cost_cents\":0"), "{record}");
+        assert_eq!(account.cost(), SYNTHETIC_COST);
 
         // Rule 15.3 against rule 11.5: a run that spent nothing states four zeros and a zero cost,
         // while the two figures that can be *absent* are `null` rather than `0`. A record that wrote
@@ -14445,14 +14686,15 @@ mod tests {
             ),
             "{record}"
         );
-        assert!(record.contains("\"cost_nanodollars\":0"), "{record}");
+        assert!(record.contains("\"cost_cents\":0"), "{record}");
+        assert_eq!(clean.cost(), 0, "and zero in the finer unit too");
         assert!(record.contains("\"fallbacks\":0"), "{record}");
         assert!(record.contains("\"unfit_to_publish\":false"), "{record}");
         assert!(
             record.contains("\"cache_ratio_basis_points\":null"),
             "{record}"
         );
-        assert!(record.contains("\"ceiling_nanodollars\":null"), "{record}");
+        assert!(record.contains("\"ceiling_cents\":null"), "{record}");
         assert!(record.contains("\"ended\":\"extinction\""), "{record}");
     }
 
@@ -14467,9 +14709,9 @@ mod tests {
     #[test]
     fn a_ceiling_stop_says_so_and_carries_no_decimal_separator() {
         let config = llm_config(7, 500, false);
-        let mut account = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 18));
+        let mut account = RunAccount::declared(declared_prices(), Some(18));
         while !account.ceiling_reached() {
-            account = account.after_exchange(&synthetic_usage());
+            account = account.after_exchange(&whole_cent_usage());
         }
         let record = RunRecord::new(
             &config,
@@ -14483,14 +14725,11 @@ mod tests {
 
         assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
         assert!(record.contains("\"tick_reached\":250"), "{record}");
-        assert!(
-            record.contains(&format!("\"cost_nanodollars\":{}", SYNTHETIC_COST * 18)),
-            "{record}"
-        );
-        assert!(
-            record.contains(&format!("\"ceiling_nanodollars\":{}", SYNTHETIC_COST * 18)),
-            "{record}"
-        );
+        // The reported cost is at or above the declared ceiling, which is the invariant
+        // [`RunAccount::cost_cents`]'s truncation exists to keep: a run that stopped here can be told
+        // from one that did not by its own record.
+        assert!(record.contains("\"cost_cents\":18"), "{record}");
+        assert!(record.contains("\"ceiling_cents\":18"), "{record}");
 
         // One line, unframed, on `exchange_record`'s precedent: where it goes is the host's.
         assert!(!record.contains('\n'), "{record}");
@@ -14545,7 +14784,13 @@ mod tests {
         let mut requests = Vec::new();
         let mut transcript = Vec::new();
         let proposal = {
-            let mut port = ConnectorPort::new(responses.as_bytes(), &mut requests, &mut transcript);
+            let mut port = ConnectorPort::new(
+                responses.as_bytes(),
+                &mut requests,
+                &mut transcript,
+                connector_prices(),
+                None,
+            );
             let proposal = port.propose(request.clone());
             port.record(&exchange_record(&request, &proposal)).unwrap();
             proposal
@@ -14555,6 +14800,39 @@ mod tests {
             proposal,
             String::from_utf8(transcript).unwrap(),
         )
+    }
+
+    /// [`declared_prices`]'s four figures in the shape the *operator* declares them, rule 14.3a's
+    /// [`UnitPrices`], whose first field is the price of a prompt token the cache did not serve.
+    ///
+    /// The two are held equal by a case of their own, so the accounting figures asserted through this
+    /// port and those asserted through [`ScriptedPort`] are the same prices.
+    fn connector_prices() -> UnitPrices {
+        UnitPrices {
+            prompt: 125,
+            cached: 13,
+            output: 1_000,
+            reasoning: 1_000,
+        }
+    }
+
+    /// One exchange over in-memory streams, returning the proposal and the port's account.
+    ///
+    /// A sibling of [`exchange_over`] rather than a widening of it. Rule 14's accounting is what a
+    /// few cases below are about and what none of the grammar cases are, and a fixture returning a
+    /// figure every caller ignored would be a figure nothing holds.
+    fn billed_exchange_over(responses: &str) -> (Proposal, accounting::RunAccount) {
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let mut port = ConnectorPort::new(
+            responses.as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
+        let proposal = port.propose(connector_request());
+        (proposal, port.account)
     }
 
     /// A response that every grammar case below starts from and spoils in one way.
@@ -14764,6 +15042,97 @@ mod tests {
         }
     }
 
+    /// The two price shapes are the same four figures, and the conversion between them names the
+    /// field rule 14.3a's ordering only implies.
+    ///
+    /// The one place a transposition could enter the arithmetic, held by a case: `UnitPrices::prompt`
+    /// is documented "Uncached prompt tokens" and `PerTokenPrices::uncached_prompt` says so in its
+    /// name, and a conversion that crossed the first two fields would bill a cached token at the
+    /// uncached price and still pass every ratio assertion in this file.
+    #[test]
+    fn the_declared_prices_cross_into_the_arithmetics_order_unchanged() {
+        assert_eq!(
+            PerTokenPrices::declared(&connector_prices()),
+            declared_prices()
+        );
+
+        // Rule 14.3a's own example, parsed rather than written: the four integers reach the
+        // arithmetic as the four integers the operator typed, in that order and in that unit.
+        let parsed = UnitPrices::parse("125:13:1000:0").expect("rule 14.3a's example");
+        assert_eq!(
+            PerTokenPrices::declared(&parsed),
+            PerTokenPrices {
+                uncached_prompt: 125,
+                cached_prompt: 13,
+                output: 1_000,
+                reasoning: 0,
+            }
+        );
+    }
+
+    /// Rules 14.1 and 10.4c: **every** exchange is billed, and a grammar-refused one is billed *and*
+    /// counted.
+    ///
+    /// This is the case the fallback's accounting was reshaped for. A response that carries usage and
+    /// an action naming neither the model nor the reasoning level is refused by rule 10.4c and became
+    /// a counted fallback — and it was *paid for*, because the provider answered. The two figures are
+    /// asserted against the admitted twin: same response but for the missing `model`, so the cost is
+    /// identical and the only difference is the count.
+    ///
+    /// An earlier shape booked a fallback as an exchange reporting nothing, which would report `0`
+    /// here. Rule 10.8 does not cover that — it covers a connector that under-reports its usage, not
+    /// a host that discards usage the connector did report.
+    #[test]
+    fn a_grammar_refused_response_is_billed_as_well_as_counted() {
+        const BILLED: u64 = 100 * 125 + 900 * 13 + 8 * 1_000;
+
+        let (admitted, account) = billed_exchange_over(WELL_FORMED);
+        assert_eq!(admitted.action, Some(Action::Sleep));
+        assert_eq!(account.exchanges(), 1);
+        assert_eq!(account.fallbacks(), 0);
+        assert_eq!(account.cost(), BILLED);
+
+        // The same response with `model` removed, which rule 10.4c refuses.
+        let refused_line = WELL_FORMED.replace("\"model\":\"a-model-identifier\",", "");
+        let (refused, refused_account) = billed_exchange_over(&refused_line);
+        assert_eq!(refused.action, None, "{refused_line}");
+        assert_eq!(refused_account.exchanges(), 1);
+        assert_eq!(refused_account.fallbacks(), 1);
+        assert_eq!(
+            refused_account.cost(),
+            BILLED,
+            "a refused response's exchange was billed at the same figure as the admitted one"
+        );
+
+        // Rule 14.4 is unaffected: the counts reached the totals, so the ratio is the response's own.
+        assert_eq!(refused_account.cache_ratio_basis_points(), Some(9_000));
+    }
+
+    /// Rule 11.5 and rule 9.4 from the accounting's side: an exchange that reported nothing costs
+    /// nothing, and the exchange still happened.
+    ///
+    /// The counterpart of the case above, and the reason the bill and the count are two statements
+    /// rather than one. Rule 10.4's error response and a pipe that failed both carry no usage at all,
+    /// and each is a fallback whose cost is zero — so a `0` here is the absence rule 11.5 describes
+    /// and not an accounting that lost a figure.
+    #[test]
+    fn an_exchange_that_reported_nothing_costs_nothing_and_is_still_an_exchange() {
+        for response in [
+            "{\"protocol\":1,\"error\":{\"kind\":\"refused\",\"message\":\"no credential\"}}",
+            "not a response at all",
+            "",
+        ] {
+            let (proposal, account) = billed_exchange_over(response);
+            assert_eq!(proposal.action, None, "{response}");
+            assert_eq!(account.exchanges(), 1, "{response}");
+            assert_eq!(account.fallbacks(), 1, "{response}");
+            assert_eq!(account.cost(), 0, "{response}");
+            // Rule 14.5: no prompt count was reported, so the denominator is zero and the ratio is
+            // uncomputable rather than zero.
+            assert_eq!(account.cache_ratio_basis_points(), None, "{response}");
+        }
+    }
+
     /// Rule 11.5: an unusable count is **absent**, not zero, and does not cost the exchange its
     /// action.
     ///
@@ -14854,7 +15223,13 @@ mod tests {
         // No response is needed: this is the recording half of [`Proposer`], and the two halves are
         // separate for exactly this reason — a record is written whether an exchange yielded
         // anything or not.
-        let mut port = ConnectorPort::new("".as_bytes(), &mut requests, &mut transcript);
+        let mut port = ConnectorPort::new(
+            "".as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
 
         port.record("first").unwrap();
         port.record("second").unwrap();

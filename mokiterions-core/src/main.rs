@@ -35,7 +35,7 @@ use std::process::{Child, Command as Spawn, ExitCode, Stdio};
 
 use mokiterions::cli::{self, Command};
 use mokiterions::execute;
-use mokiterions::simulation::{ConnectorPort, Proposer, ReplayPort};
+use mokiterions::simulation::{ConnectorPort, Proposer, ReplayPort, UnitPrices};
 
 /// The option whose value names the record stream's destination.
 ///
@@ -73,6 +73,50 @@ const TRANSCRIPT_OUTPUT_OPTION: &str = "--transcript-output";
 /// and told to make no call. The spawn lives inside the one branch this flag opens.
 const LIVE_OPTION: &str = "--live";
 
+/// The option that declares rule 14.3a's four unit prices.
+///
+/// **Named here and read nowhere here.** Unlike the four options above, this target does not look
+/// this one up in the argument list: `Config` retains its value, because rule 14.3 makes the prices
+/// an input of the run rather than a path the host resolves. The spelling exists only so that the
+/// one diagnostic naming it names what an operator would type.
+const PRICES_OPTION: &str = "--prices";
+
+/// The option that declares rule 14.6's ceiling, in whole US cents per rule 14.2.
+///
+/// Named and not read, for the reason [`PRICES_OPTION`] gives.
+const SPEND_CEILING_OPTION: &str = "--spend-ceiling";
+
+/// The four inputs `--live` adds to a run, as one value.
+///
+/// They travel together because they are needed together and at one place — rule 18.4.1's
+/// interlocks make `--live` require all four, so a run has four or none, and `run_live` destructures
+/// them in a single refusal rather than in four. The two paths come from the argument list and the
+/// two figures from the parsed configuration, which is a distinction of provenance and not of kind:
+/// `SPEC-MOK-006` rule 1.2 keeps every path out of the library, and rule 14.3 keeps every price
+/// inside the run.
+struct LiveTerms {
+    connector: Option<String>,
+    output: Option<String>,
+    prices: Option<UnitPrices>,
+    ceiling: Option<u64>,
+}
+
+impl LiveTerms {
+    /// The terms of a list that did not parse as a run, or that asked for help.
+    ///
+    /// Not [`Default`], because rule 14.3 forbids a default price and a derived `Default` on this
+    /// type would be exactly that in the one place nobody would look for it. `None` here is the
+    /// absence of a declaration and never a zero.
+    fn none() -> Self {
+        Self {
+            connector: None,
+            output: None,
+            prices: None,
+            ceiling: None,
+        }
+    }
+}
+
 fn main() -> ExitCode {
     let arguments: Vec<String> = env::args().skip(1).collect();
 
@@ -99,17 +143,30 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     // would touch a path for a process that runs nothing. `--help` and an invalid
     // configuration therefore open no file, which is rule 13.1's "runs nothing" taken to
     // include the filesystem.
-    let (destination, transcript, connector, output, live) =
-        match cli::parse(arguments.iter().cloned()) {
-            Ok(Command::Run(_)) => (
-                argument_after(arguments, EVENTS_PATH_OPTION),
-                argument_after(arguments, TRANSCRIPT_PATH_OPTION),
-                argument_after(arguments, CONNECTOR_PATH_OPTION),
-                argument_after(arguments, TRANSCRIPT_OUTPUT_OPTION),
-                contains_option(arguments, LIVE_OPTION),
-            ),
-            Ok(Command::Help) | Err(_) => (None, None, None, None, false),
-        };
+    //
+    // The verdict now also yields the configuration, where before it was discarded. Two of the
+    // live path's four terms are figures rather than paths — the prices and the ceiling — and the
+    // parser is the one component that has already interpreted their units. The paths stay with
+    // `argument_after` because the parser validates them and keeps nothing.
+    let (destination, transcript, live, terms) = match cli::parse(arguments.iter().cloned()) {
+        Ok(Command::Run(config)) => (
+            argument_after(arguments, EVENTS_PATH_OPTION),
+            argument_after(arguments, TRANSCRIPT_PATH_OPTION),
+            contains_option(arguments, LIVE_OPTION),
+            LiveTerms {
+                connector: argument_after(arguments, CONNECTOR_PATH_OPTION),
+                output: argument_after(arguments, TRANSCRIPT_OUTPUT_OPTION),
+                // The two the *configuration* keeps rather than this target scraping them back out
+                // of the argument list. `Config` holds them because rule 14.3 makes them inputs of
+                // the run, and reading them here off `--prices` and `--spend-ceiling` would be a
+                // second parser for two figures whose units the first one already fixed — cents per
+                // million tokens, and cents.
+                prices: config.prices,
+                ceiling: config.spend_ceiling,
+            },
+        ),
+        Ok(Command::Help) | Err(_) => (None, None, false, LiveTerms::none()),
+    };
 
     // `SPEC-MOK-007` rule 13.2 and rule 13.1's selection gate, as a branch and not as a check.
     // **Nothing below this point spawns anything**, and nothing inside the branch asks again
@@ -122,7 +179,7 @@ fn run<W: Write, E: Write>(arguments: &[String], stdout: &mut W, stderr: &mut E)
     // A live run and a replay cannot coexist: rule 18.4.4's mutual exclusion is enforced by the
     // parser above, so the early return here cannot skip a transcript somebody asked to replay.
     if live {
-        return run_live(arguments, stdout, stderr, destination, connector, output);
+        return run_live(arguments, stdout, stderr, destination, terms);
     }
 
     // The transcript is opened first, and it is only ever read. Two reasons, and the second is
@@ -343,18 +400,27 @@ fn run_live<W: Write, E: Write>(
     stdout: &mut W,
     stderr: &mut E,
     destination: Option<String>,
-    connector: Option<String>,
-    output: Option<String>,
+    terms: LiveTerms,
 ) -> u8 {
-    // Rule 18.4.1's interlocks make both of these present in any list that parsed as a run with
+    // Rule 18.4.1's interlocks make all four of these present in any list that parsed as a run with
     // `--live`, so this is not a second gate and cannot fire from the command line. It is written
     // rather than asserted because the consequence of being wrong is spawning a connector with
-    // nowhere to record what it was paid for, and a diagnostic is a better outcome than a panic
-    // for the one property of this function that costs money to get wrong.
-    let (Some(connector), Some(output)) = (connector, output) else {
+    // nowhere to record what it was paid for — or, for the two figures, with no ceiling on what it
+    // may spend — and a diagnostic is a better outcome than a panic for the one property of this
+    // function that costs money to get wrong.
+    let LiveTerms {
+        connector,
+        output,
+        prices,
+        ceiling,
+    } = terms;
+    let (Some(connector), Some(output), Some(prices), Some(ceiling)) =
+        (connector, output, prices, ceiling)
+    else {
         let _ = writeln!(
             stderr,
-            "configuration error: {LIVE_OPTION} requires {CONNECTOR_PATH_OPTION} and {TRANSCRIPT_OUTPUT_OPTION}"
+            "configuration error: {LIVE_OPTION} requires {CONNECTOR_PATH_OPTION}, \
+             {TRANSCRIPT_OUTPUT_OPTION}, {PRICES_OPTION} and {SPEND_CEILING_OPTION}"
         );
         return 2;
     };
@@ -417,7 +483,13 @@ fn run_live<W: Write, E: Write>(
     // a buffer whose failures happen somewhere else. Two writes per exchange reach the platform,
     // against rule 20.2's estimated 0.4–0.8 seconds of provider latency for the same exchange.
     let code = {
-        let mut port = ConnectorPort::new(BufReader::new(responses), requests, &mut sink);
+        let mut port = ConnectorPort::new(
+            BufReader::new(responses),
+            requests,
+            &mut sink,
+            prices,
+            Some(ceiling),
+        );
         run_with_port(arguments, stdout, stderr, destination, Some(&mut port))
     };
     // The port is gone here, and with it the child's standard input.
