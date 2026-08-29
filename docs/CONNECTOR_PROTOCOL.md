@@ -53,6 +53,32 @@ input, and reads response lines from its standard output. That is the entire int
     other source's proposal
 ```
 
+## How your connector is started
+
+**The engine starts the value of `--connector-path` directly, and passes it no arguments.** Whatever that option names
+has to be something the operating system can execute on its own.
+
+That is worth spelling out, because on Windows it excludes the obvious choice. A `.py`, `.js` or `.sh` file is not
+directly executable there, and naming one produces `runtime error: connector <path>: %1 is not a valid Win32
+application` — a message about the platform, not about this protocol. Two ways round it, and no others are needed:
+
+- **Ship an executable.** A compiled binary, or on Unix a script with a `#!` line and the execute bit set.
+- **Name a wrapper.** On Windows a two-line `.cmd` file that invokes the interpreter works. Begin it with `@echo off`:
+  without that the shell echoes each command to standard output, and standard output is the protocol channel.
+
+Four more facts about the child, each of which decides something a connector author would otherwise guess at:
+
+- **It is started once per run**, before the first tick, and it lives until the run ends. It is not restarted per tick,
+  per actor or per exchange, so anything expensive to set up should be set up once.
+- **Only two pipes are connected**: your standard input and your standard output. **Standard error is inherited** — it
+  goes to the operator's terminal, and the engine never reads it. Write diagnostics there freely.
+- **Your environment and your working directory are the engine's**, unmodified. That is how the credential reaches you
+  (see [The credential](#the-credential)). Do not depend on the working directory; an operator may run the engine from
+  anywhere.
+- **Your exit status is reported and does not fail the run.** The engine closes your standard input, waits for you, and
+  writes `connector <path>: exited with status <n>` to standard error if you exit nonzero. By that point every exchange
+  has already happened, so a nonzero exit is a diagnostic and not a failure. Exit `0` anyway.
+
 ## Framing
 
 **One JSON object per line, in each direction, in the same order.** Rule 10.2.
@@ -245,6 +271,7 @@ name `gpt-5.6-luna` at reasoning level `none` because this response said so, and
 
 ## Checklist for a new connector
 
+- [ ] Is directly executable by the platform, taking no arguments — a wrapper if the implementation is a script.
 - [ ] Reads one line at a time from standard input; exits `0` at end-of-file.
 - [ ] Writes exactly one response line per request, in order.
 - [ ] Sends `prompt` to the model **byte-for-byte unchanged**.
