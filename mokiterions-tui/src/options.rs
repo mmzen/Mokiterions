@@ -283,15 +283,15 @@ where
             // option for a second reason. What is wrong with the invocation is the program, not the
             // policy, so this arm says so and the value is never examined.
             //
-            // It is not an unknown option and is not called one — the shared parser accepts all
-            // four — and it is not silently ignored, which is the whole point of rule 18.4.1. It
-            // offers no substitute source either, for rule 20.3's reason.
+            // It is not an unknown option and is not called one — the shared parser accepts every
+            // one of them — and it is not silently ignored, which is the whole point of rule
+            // 18.4.1. It offers no substitute source either, for rule 20.3's reason.
             //
             // `--help` given alongside does not win, unlike the two combination checks in the
             // engine's parser, and for the same reason `--speed 3 --help` does not win here: this
             // is a rejection of one named option and every such rejection in this loop is
             // immediate. The operator is not left without the answer — a refusal writes the usage
-            // text after the message, and rule 18.2's entry for these four is what it now says.
+            // text after the message, and rule 18.2's entry for each of them is what it now says.
             option if LIVE_RUN_OPTIONS.contains(&option) => {
                 return Err(format!(
                     "{option} belongs to the Mokiterions binary: this program only replays --policy llm, so it starts no connector program, asks no model and spends nothing. Record a live run with that binary, then watch it back here with --transcript-path <path>"
