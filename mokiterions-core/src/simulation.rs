@@ -1687,6 +1687,13 @@ pub struct ReportedUsage {
 /// as an oversight: rule 10.7 makes the connector untrusted in whole, and a transcript that recorded
 /// a response the engine had silently overruled would hide exactly the disagreement a reader needs
 /// to see.
+///
+/// **A fourth field arrived on 2026-08-29 for rule 19.5's retry**, and it is evidence of the same
+/// kind rather than a second mechanism: [`Self::earlier_attempts`] carries the exchanges the
+/// opportunity spent before this one, because rule 11.2 gives each attempt its own record and rule
+/// 11.1 leaves the authoring of every record with the engine. It is empty for every port that does
+/// not retry, which is every port but a live connector, and its own documentation states what the
+/// engine does with it. `SPEC-MOK-002` rule 5's amendment of that date enumerates the field.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proposal {
     /// The proposal, or the fact that none was obtained. Rule 1.4's value, unchanged, and still the
@@ -1699,6 +1706,35 @@ pub struct Proposal {
     /// The provider's reported counts. Four absences for a port with no provider behind it, which
     /// rule 11.5 distinguishes from four zeros and rule 14.5 acts on.
     pub usage: ReportedUsage,
+    /// The exchanges this opportunity spent **before** the one this proposal came from, oldest
+    /// first, and empty for the single-attempt case that is every exchange of every port but a
+    /// retrying one.
+    ///
+    /// Rule 19.5 retries a failed exchange a bounded number of times and rule 11.2 gives each
+    /// attempt "its own record, because it was its own billed exchange" — while rule 11.1 puts the
+    /// authoring of every record in the engine. The attempts therefore have to reach the engine,
+    /// and this is the field they reach it by. The engine writes one record per element, in this
+    /// order, before the record for the proposal itself.
+    ///
+    /// **The list is flat and every element's own list is empty.** An element is one exchange, not
+    /// a sub-run: a port fills this by pushing each attempt it abandons, so nesting would mean an
+    /// attempt of an attempt, which rule 19.5 has no notion of.
+    ///
+    /// **No element carries an action**, because an attempt that returned one would have ended the
+    /// retrying. That is an invariant of how a port fills the field rather than a shape the type
+    /// enforces, and nothing depends on it: rule 1.4 makes [`Self::action`] of *this* proposal the
+    /// whole of what the engine decides from, and an element's action would be read by nothing.
+    ///
+    /// **None of these records is rule 9.5's fallback and none is marked as one.** An attempt is not
+    /// a decision; the opportunity's decision is this proposal's, and it is a fallback exactly when
+    /// this proposal carries no action. Rule 15.4's count reconciles against the records marked as
+    /// fallbacks, which `VER-MOK-018` case **P5** checks, so a run that retried three times and then
+    /// succeeded moves that count by nothing and writes four records.
+    ///
+    /// Every element was billed. Rule 11.2's reason for the record is the reason for the field: the
+    /// attempts are what the run paid for, and a retry that vanished from the evidence would be an
+    /// exchange the transcript could not account for.
+    pub earlier_attempts: Vec<Proposal>,
 }
 
 impl Proposal {
@@ -1713,6 +1749,7 @@ impl Proposal {
             action: None,
             response: None,
             usage: ReportedUsage::default(),
+            earlier_attempts: Vec::new(),
         }
     }
 }
@@ -2348,6 +2385,28 @@ fn prefix_record(entry: &RosterEntry<'_>) -> String {
 /// exchange that yielded nothing — and the two must replay differently, because one moves
 /// `REQ-MOK-074`'s count and the other does not.
 fn exchange_record(request: &DecisionRequest, proposal: &Proposal) -> String {
+    exchange_line(request, proposal, proposal.action.is_none())
+}
+
+/// One exchange record for a retried attempt: rule 11.2's "a retry is its own record, because it was
+/// its own billed exchange".
+///
+/// Identical to [`exchange_record`] in every field but one. **`fallback` is `false` whatever the
+/// attempt returned**, and that is rule 11.3's own wording rather than a convenience: the field
+/// states "whether the **decision** was rule 9.5's fallback", and an abandoned attempt is not a
+/// decision — the opportunity's decision is the proposal the retrying ended with. Rule 15.4's count
+/// is reconciled against the records marked as fallbacks, which case **P5** checks, so marking an
+/// attempt would make a run that retried once and then succeeded report a fallback it never took.
+///
+/// The request is the same request. Rule 19.5 retries *the exchange*, not the opportunity, so blocks
+/// C and D, the tick, the actor and the prefix digest are the ones already composed; a retry that
+/// recomposed them would be a second opportunity wearing the first one's tick.
+fn attempt_record(request: &DecisionRequest, attempt: &Proposal) -> String {
+    exchange_line(request, attempt, false)
+}
+
+/// The bytes both record kinds share, with `fallback` supplied by the caller rather than derived.
+fn exchange_line(request: &DecisionRequest, proposal: &Proposal, fallback: bool) -> String {
     let [shared_rules, actor, observation, permitted_set] = request.blocks();
     let (verb, parameter) = match &proposal.action {
         Some(action) => action_parts(action),
@@ -2370,7 +2429,7 @@ fn exchange_record(request: &DecisionRequest, proposal: &Proposal) -> String {
     if let Some(parameter) = parameter {
         record.push_str(&format!(",\"parameter\":\"{parameter}\""));
     }
-    record.push_str(&format!("}},\"fallback\":{}}}", proposal.action.is_none()));
+    record.push_str(&format!("}},\"fallback\":{fallback}}}"));
     record
 }
 
@@ -2703,6 +2762,12 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
                 action: None,
                 response,
                 usage,
+                // A replay attempts nothing: it reads one record per opportunity, so there is no
+                // earlier attempt for it to carry even where the recorded run made several. See
+                // the note on [`Proposal::earlier_attempts`] — a transcript that holds a retried
+                // exchange is not replayable at all, and this field being empty is not what makes
+                // that so.
+                earlier_attempts: Vec::new(),
             };
         }
 
@@ -2716,6 +2781,7 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
                 action: Some(action),
                 response,
                 usage,
+                earlier_attempts: Vec::new(),
             },
             None => self.fail(format!(
                 "tick {} actor {}: the record states no action this engine's grammar admits",
@@ -2766,6 +2832,17 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
 /// connector is a program this repository did not build and a version negotiated out of band is a
 /// version nobody can check.
 const CONNECTOR_PROTOCOL: u64 = 1;
+
+/// Rule 19.5's bound: how many times a failed exchange is tried **again**, so an exchange is
+/// attempted at most four times.
+///
+/// The number is the rule's, as amended 2026-08-29 under `WO-MOK-030`, and not this module's — the
+/// rule gave none until then, and it records why three: an exchange costs an **estimated** $0.0001,
+/// so every exchange of a two-hundred-exchange run retrying to exhaustion is an **estimated** four
+/// cents. It sits here as a retry count rather than as an attempt count because that is the figure
+/// the rule states, and a constant one greater than the rule's would be an off-by-one nobody could
+/// see by reading either.
+const RETRY_BOUND: usize = 3;
 
 /// The eleven verbs, as the request's `schema` enumerates them for the provider's structured-output
 /// facility.
@@ -2936,23 +3013,67 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
     /// record must state it. The two halves are therefore read independently: [`Self::usage`] does
     /// not consult the action and [`Self::action`] does not consult the counts beyond rule 10.4a's
     /// requirement that a `usage` accompany an action at all.
-    fn interpret(line: &str) -> Proposal {
+    /// The second half of the return is rule 19.5a's question: whether this response asks for
+    /// another attempt. It is answered here rather than by a second parse of the same line, and the
+    /// answer is about *this* response only — the bound belongs to [`Self::propose`], which is the
+    /// only place that knows how many attempts an opportunity has already spent.
+    fn interpret(line: &str) -> (Proposal, bool) {
         let response = Some(line.to_string());
         let Some(parsed) = json::parse(line) else {
             // Rule 19.5a's `malformed`: an immediate counted fallback, and the line is the whole of
             // why. Not a parse *error* to report — the engine does not interpret a port's diagnosis,
-            // and a reader of the transcript has the bytes this reader refused.
-            return Proposal {
-                action: None,
-                response,
-                usage: ReportedUsage::default(),
-            };
+            // and a reader of the transcript has the bytes this reader refused. **Not retried**: a
+            // line this reader could not parse would be answered by the same request, and rule 19.5a
+            // says so of the kind a connector reports as `malformed` for the same reason.
+            return (
+                Proposal {
+                    action: None,
+                    response,
+                    usage: ReportedUsage::default(),
+                    earlier_attempts: Vec::new(),
+                },
+                false,
+            );
         };
-        Proposal {
-            action: Self::action(&parsed),
-            response,
-            usage: Self::usage(&parsed),
+        let retry = Self::asks_for_another_attempt(&parsed);
+        (
+            Proposal {
+                action: Self::action(&parsed),
+                response,
+                usage: Self::usage(&parsed),
+                earlier_attempts: Vec::new(),
+            },
+            retry,
+        )
+    }
+
+    /// Rule 19.5a's vocabulary, as far as this engine acts on it: `transport` and `provider` are
+    /// retried, `malformed` and `refused` are not.
+    ///
+    /// The two that are retried are the two the rule calls ordinarily transient — the connector could
+    /// not reach the provider, or the provider answered and failed, "a rate limit and a server error
+    /// being this shape". The two that are not are the two where the same request would produce the
+    /// same answer, so a retry would buy nothing and cost an exchange.
+    ///
+    /// **A kind outside the four is not retried**, which is rule 19.5a's own instruction to treat it
+    /// as `malformed`: the connector is untrusted under rule 10.7 "and that includes its error
+    /// vocabulary", so an unrecognised kind must not be able to make this engine spend four times.
+    ///
+    /// **A response that carries an action is never retried whatever else it carries.** Rule 10.4
+    /// admits exactly one of `action` and `error`, so a response carrying both fails the grammar
+    /// check in [`Self::action`] and becomes a fallback; retrying it would be this engine deciding
+    /// which of the two the connector meant, on the strength of the half it is told to distrust.
+    fn asks_for_another_attempt(response: &json::Value) -> bool {
+        if response.member("action").is_some() {
+            return false;
         }
+        matches!(
+            response
+                .member("error")
+                .and_then(|error| error.member("kind"))
+                .and_then(json::Value::text),
+            Some("transport" | "provider")
+        )
     }
 
     /// Rule 10.4a's four counts, as reported, and rule 11.5's absence for everything else.
@@ -3027,6 +3148,56 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
         };
         action_from_parts(verb, parameter)
     }
+
+    /// One exchange, billed: rules 14.1 and 11.2, where an attempt is what gets billed and recorded.
+    fn attempt(&mut self, request: &DecisionRequest) -> (Proposal, bool) {
+        let (proposal, asks_for_another) = match self.exchange(request) {
+            Ok(line) => Self::interpret(&line),
+            // A pipe that failed is the connector's error, so it is recorded as one: rule 11.3
+            // asks for "the response as received, in full, **or the error**", and this is the
+            // error. It becomes rule 9.5's counted fallback rather than ending the run, per rule
+            // 9.8 — and once the child is gone every later exchange reaches here too, so a run
+            // whose connector died reports itself as a run of fallbacks rather than as a run.
+            //
+            // Rule 19.7 is kept by the message: an `io::Error` from a pipe names no credential and
+            // no path, and this target resolved neither.
+            //
+            // **Not retried, and the pipe is why.** Rule 19.5a's four kinds are kinds a connector
+            // *reports*, and a connector that cannot be written to or read from has reported nothing:
+            // the child is gone, so three more attempts would write three more identical records for
+            // one dead process. The canned connector's `close` directive is exactly this case. Which
+            // transport failures are retried is this work order's envelope, and this is the line it
+            // decides.
+            Err(error) => (
+                Proposal {
+                    action: None,
+                    response: Some(format!("connector: {error}")),
+                    usage: ReportedUsage::default(),
+                    earlier_attempts: Vec::new(),
+                },
+                false,
+            ),
+        };
+
+        // Rule 14.1, booked here because this is where the exchange happened and rule 20.4.1 puts the
+        // accumulators in this type.
+        //
+        // **Every exchange is billed, whatever it returned.** Rule 10.4c's response arrived, carried
+        // usage, and failed the grammar check on a missing model or reasoning level — `Self::interpret`
+        // returns no action and the usage it reported, and that exchange was paid for. Billing it as an
+        // absence would understate the run. The exchanges that genuinely reported nothing — the pipe
+        // failure above, rule 10.4's error response and every abandoned attempt — reach
+        // `after_exchange` with four absences, and rule 11.5 makes an absence contribute zero, so the
+        // one statement is right for all of them.
+        //
+        // Rule 9.5's count is **not** here, and rule 19.5 is why: an attempt that fails and is retried
+        // is not a fallback, so the count belongs to the opportunity and is taken in `propose` once the
+        // retrying has ended. A rejection the engine decides afterwards cannot reach either place,
+        // which is rule 9.6: the port sees what the connector answered and never learns what the world
+        // did with it.
+        self.account = self.account.after_exchange(&proposal.usage);
+        (proposal, asks_for_another)
+    }
 }
 
 impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
@@ -3045,38 +3216,54 @@ impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
         self.account.ceiling_reached()
     }
 
+    /// Rule 19.5's bounded retry, and rule 11.2's record for every attempt of it.
+    ///
+    /// One attempt is the whole of this method for every exchange that succeeds and for every failure
+    /// rule 19.5a does not retry, which is the case the loop is written to cost nothing:
+    /// `earlier_attempts` stays an empty `Vec`, which allocates nothing.
+    ///
+    /// **Three things end the retrying, and they are checked in this order**: the bound, the kind, and
+    /// the ceiling.
+    ///
+    /// - [`RETRY_BOUND`] attempts have already been abandoned, so this exchange has been attempted
+    ///   four times and rule 19.5's bound is spent. Rule 9.5 then applies to the opportunity, which
+    ///   is the `counting_fallback` below and **not** an error: rule 19.5 says the run continues, and
+    ///   `VER-MOK-018` case **R2** checks that it does.
+    /// - The response is not one rule 19.5a retries — it succeeded, or it is `malformed`, `refused`,
+    ///   an unrecognised kind, or a pipe that failed.
+    /// - The ceiling has been reached. **This is rule 14.6's check standing before each attempt**, and
+    ///   it is the half of it that the engine cannot make: the engine asks [`Proposer::halted`] once
+    ///   per opportunity, before this method is entered, and every attempt after the first is inside
+    ///   it. Without this line a bound of three could spend three exchanges past a ceiling, which is
+    ///   the reading rule 19.5 forecloses when it says "rule 14.6's check runs before each attempt, so
+    ///   the bound cannot breach a ceiling whatever it is set to".
+    ///
+    /// **There is no delay between attempts, and that is a decision this work order's envelope leaves
+    /// here rather than an omission.** The envelope delegates "the retry count, the backoff shape and
+    /// which transport failures are retried"; the count is rule 19.5's own and is
+    /// [`RETRY_BOUND`], and the shape is none. A delay would leave no trace in the evidence — rule
+    /// 11.4 admits no timestamp in a transcript, so nothing this repository retains could show that a
+    /// backoff happened or how long it was — and case **R5** forbids making any wall-clock figure a
+    /// pass condition, so a backoff would be behaviour no verification case could check. It would also
+    /// stretch a run's wall clock by an amount no rule bounds, where rule 19.5 bounds attempts. A
+    /// successor that wants one needs a rule fixing it, because it changes what a run costs in time.
     fn propose(&mut self, request: DecisionRequest) -> Proposal {
-        let proposal = match self.exchange(&request) {
-            Ok(line) => Self::interpret(&line),
-            // A pipe that failed is the connector's error, so it is recorded as one: rule 11.3
-            // asks for "the response as received, in full, **or the error**", and this is the
-            // error. It becomes rule 9.5's counted fallback rather than ending the run, per rule
-            // 9.8 — and once the child is gone every later exchange reaches here too, so a run
-            // whose connector died reports itself as a run of fallbacks rather than as a run.
-            //
-            // Rule 19.7 is kept by the message: an `io::Error` from a pipe names no credential and
-            // no path, and this target resolved neither.
-            Err(error) => Proposal {
-                action: None,
-                response: Some(format!("connector: {error}")),
-                usage: ReportedUsage::default(),
-            },
+        let mut earlier_attempts = Vec::new();
+        let mut proposal = loop {
+            let (proposal, asks_for_another) = self.attempt(&request);
+            if earlier_attempts.len() == RETRY_BOUND
+                || !asks_for_another
+                || self.account.ceiling_reached()
+            {
+                break proposal;
+            }
+            earlier_attempts.push(proposal);
         };
+        proposal.earlier_attempts = earlier_attempts;
 
-        // Rules 14.1 and 9.5, booked here because this is where the exchange happened and rule
-        // 20.4.1 puts the accumulators in this type.
-        //
-        // **Every exchange is billed, and then a fallback is counted.** Not one or the other: rule
-        // 10.4c's response arrived, carried usage, and failed the grammar check on a missing model or
-        // reasoning level — `Self::interpret` returns no action and the usage it reported, and that
-        // exchange was paid for. Billing it as an absence would understate the run. The two exchanges
-        // that genuinely reported nothing — the pipe failure above and rule 10.4's error response —
-        // reach `after_exchange` with four absences, and rule 11.5 makes an absence contribute zero,
-        // so the one statement is right for all three.
-        //
-        // A rejection the engine decides afterwards cannot reach here, which is rule 9.6: the port
-        // sees what the connector answered and never learns what the world did with it.
-        self.account = self.account.after_exchange(&proposal.usage);
+        // Rule 9.5, counted once for the opportunity and not once per attempt. The billing happened
+        // in `attempt`, per exchange, because that is what rule 11.2 calls each attempt; this is the
+        // *decision*, and an opportunity has one however many exchanges it took.
         if proposal.action.is_none() {
             self.account = self.account.counting_fallback();
         }
@@ -3548,6 +3735,19 @@ impl DecisionSource for PortDecisionSource<'_> {
         debug_assert!(observation.is_consistent());
         let request = DecisionRequest::compose(observation);
         let proposal = self.port.propose(request.clone());
+        // Rule 11.2's record for every attempt the port abandoned, in the order it made them and
+        // before the one it ended with. The engine authors these as it authors every record, rule
+        // 11.1, and it learns of them the only way rule 1.1 leaves open: they arrived with the
+        // proposal, in the field rule 19.5's retry grew it by.
+        //
+        // A write failure on any of them is latched exactly as one on the record below is. The run
+        // then ends under rule 19.6 with the attempts before it recorded and the opportunity's own
+        // record missing, which is the honest shape: those exchanges were spent.
+        for attempt in &proposal.earlier_attempts {
+            if let Err(error) = self.port.record(&attempt_record(&request, attempt)) {
+                self.latch(error);
+            }
+        }
         if let Err(error) = self.port.record(&exchange_record(&request, &proposal)) {
             self.latch(error);
         }
@@ -12472,6 +12672,9 @@ mod tests {
                 action: answer,
                 response: self.response.clone(),
                 usage,
+                // This port answers from a list and retries nothing, so rule 19.5's field stays
+                // empty: it is the shape every port but a retrying one has.
+                earlier_attempts: Vec::new(),
             }
         }
 
@@ -15177,6 +15380,11 @@ mod tests {
     /// two — `propose` answers and `record` keeps — and [`PortDecisionSource::decide`] is what
     /// pairs them in a run. Doing the same pairing here is what makes the transcript below the
     /// transcript a run would have written.
+    ///
+    /// **Including rule 11.2's record for every abandoned attempt**, which is why the loop is here
+    /// and not only in `decide`: for the single-attempt responses most cases below supply it runs
+    /// zero times, and for a retried one a fixture that wrote the outcome alone would report a
+    /// transcript no run produces.
     fn exchange_over(responses: &str) -> (String, Proposal, String) {
         let request = connector_request();
         let mut requests = Vec::new();
@@ -15190,6 +15398,9 @@ mod tests {
                 None,
             );
             let proposal = port.propose(request.clone());
+            for attempt in &proposal.earlier_attempts {
+                port.record(&attempt_record(&request, attempt)).unwrap();
+            }
             port.record(&exchange_record(&request, &proposal)).unwrap();
             proposal
         };
@@ -15220,6 +15431,17 @@ mod tests {
     /// few cases below are about and what none of the grammar cases are, and a fixture returning a
     /// figure every caller ignored would be a figure nothing holds.
     fn billed_exchange_over(responses: &str) -> (Proposal, accounting::RunAccount) {
+        billed_exchange_under(responses, None)
+    }
+
+    /// [`billed_exchange_over`] with a ceiling in rule 14.2's cents.
+    ///
+    /// The ceiling is a parameter of the port's construction, rule 14.3, so a case about rule 14.6
+    /// cannot reach it by any other route than building a second port.
+    fn billed_exchange_under(
+        responses: &str,
+        ceiling: Option<u64>,
+    ) -> (Proposal, accounting::RunAccount) {
         let mut requests = Vec::new();
         let mut transcript = Vec::new();
         let mut port = ConnectorPort::new(
@@ -15227,7 +15449,7 @@ mod tests {
             &mut requests,
             &mut transcript,
             connector_prices(),
-            None,
+            ceiling,
         );
         let proposal = port.propose(connector_request());
         (proposal, port.account)
@@ -15747,5 +15969,313 @@ mod tests {
             schema.contains("\"parameter\":{\"type\":\"string\"}"),
             "{schema}"
         );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007` rule 19.5: the bounded retry, over the same assembled streams.
+    //
+    // The bound, the vocabulary of rule 19.5a and rule 14.6's check before each attempt are all
+    // decisions taken inside `ConnectorPort::propose`, so they are measured here, where a response
+    // is a line of text and a retry is the next line. `VER-MOK-018` cases **R1** and **R2** are the
+    // same properties through a real child process, in `tests/connector.rs`.
+    //
+    // No case below asserts a duration, which is case **R5**: rule 11.4 admits no timestamp in a
+    // transcript, so an elapsed figure is not something this repository retains and not something a
+    // case may pass on.
+    // -----------------------------------------------------------------------------------
+
+    /// Rule 19.5a's transient kind, the one every case below retries.
+    const TRANSPORT_FAILURE: &str =
+        "{\"protocol\":1,\"error\":{\"kind\":\"transport\",\"message\":\"the socket closed\"}}";
+
+    /// A provider failure that reports what it cost, which is the case rule 14.6's check before each
+    /// attempt exists for.
+    ///
+    /// Rule 10.4a puts a `usage` on a response carrying an action, and this one carries an error
+    /// instead — but [`ConnectorPort::interpret`] reads the two halves independently, and a provider
+    /// that answered and failed has billed for it. Its counts are [`whole_cent_usage`]'s, so each
+    /// attempt costs exactly one cent and a ceiling can be declared in attempts.
+    const BILLED_PROVIDER_FAILURE: &str = "{\"protocol\":1,\"error\":{\"kind\":\"provider\",\"message\":\"rate limited\"},\
+         \"usage\":{\"prompt\":1000,\"cached_prompt\":1000,\"output\":987,\"reasoning\":0}}";
+
+    /// A response repeated as its own lines, which is what a connector failing the same way looks
+    /// like from this side of the pipe.
+    fn repeated(response: &str, times: usize) -> String {
+        vec![response; times].join("\n")
+    }
+
+    /// Rule 19.5 and case **R2**: a transient failure is attempted four times and no more, every
+    /// attempt is its own record, and the opportunity counts **one** fallback.
+    ///
+    /// The count is the load-bearing assertion and case **P5** is why. Rule 15.4's figure is
+    /// reconciled against the records marked as fallbacks, so a port that counted per attempt would
+    /// report four against one marked record and the property would fail — which is the failure this
+    /// case exists to make impossible. The bill goes the other way: rule 11.2 calls each attempt its
+    /// own billed exchange, so the exchange count is four.
+    #[test]
+    fn a_transient_failure_is_attempted_four_times_and_counts_one_fallback() {
+        let (_, proposal, transcript) = exchange_over(&repeated(TRANSPORT_FAILURE, 6));
+
+        // Rule 19.5's bound is three retries, so three attempts were abandoned and the fourth is
+        // the one the opportunity ended on. The two lines the fixture did not need were not read:
+        // the loop stops at the bound and not at the end of the stream.
+        assert_eq!(proposal.earlier_attempts.len(), RETRY_BOUND);
+        assert!(proposal.action.is_none());
+        assert_eq!(proposal.response.as_deref(), Some(TRANSPORT_FAILURE));
+
+        // Rule 11.2: one record per attempt, in the order they were made, and the last is the
+        // opportunity's own.
+        let records: Vec<&str> = transcript.lines().collect();
+        assert_eq!(records.len(), RETRY_BOUND + 1, "{transcript}");
+        for record in &records[..RETRY_BOUND] {
+            assert_eq!(transcript_flag(record, "fallback"), Some(false), "{record}");
+        }
+        assert_eq!(
+            transcript_flag(records[RETRY_BOUND], "fallback"),
+            Some(true),
+            "{transcript}"
+        );
+
+        // Every record is the same tick and the same actor, because they are one opportunity. This
+        // is also the shape no replay can read: see [`Proposal::earlier_attempts`].
+        let request = connector_request();
+        for record in &records {
+            assert!(
+                record.contains(&format!("\"tick\":{}", request.tick())),
+                "{record}"
+            );
+            assert!(record.contains(request.actor_id()), "{record}");
+        }
+
+        // Rule 14.1 against rule 9.5: four billed exchanges, one counted decision. An error
+        // response reports no usage, so the bill is zero and the *count* of exchanges is what moved.
+        let (_, account) = billed_exchange_over(&repeated(TRANSPORT_FAILURE, 6));
+        assert_eq!(account.exchanges(), (RETRY_BOUND + 1) as u64);
+        assert_eq!(account.fallbacks(), 1);
+        assert_eq!(account.cost(), 0);
+    }
+
+    /// Rule 19.5 and case **R1**: a transient failure that succeeds on a later attempt is not a
+    /// fallback at all, and the attempts before it are still recorded.
+    ///
+    /// The pair with the case above, and the reason the count cannot be taken per exchange: this run
+    /// spent three exchanges and reached a decision, so rule 15.4's mark must stay off it. A port
+    /// that counted a fallback when an attempt failed would report two here and mark a clean run as
+    /// unfit to publish.
+    #[test]
+    fn a_transient_failure_that_then_succeeds_counts_no_fallback() {
+        let script = format!(
+            "{}\n{}\n{WELL_FORMED}",
+            TRANSPORT_FAILURE, TRANSPORT_FAILURE
+        );
+        let (sent, proposal, transcript) = exchange_over(&script);
+
+        assert_eq!(proposal.action, Some(Action::Sleep));
+        assert_eq!(proposal.earlier_attempts.len(), 2);
+        assert_eq!(proposal.response.as_deref(), Some(WELL_FORMED));
+
+        // Rule 10.2's one-for-one ordering holds per *attempt*: three requests were written for one
+        // opportunity, which is what makes each attempt an exchange rather than a re-reading.
+        assert_eq!(sent.lines().count(), 3, "{sent}");
+
+        // Three records, none of them a fallback: the two abandoned attempts are marked `false`
+        // because they were not the decision, and the decision was an action.
+        let records: Vec<&str> = transcript.lines().collect();
+        assert_eq!(records.len(), 3, "{transcript}");
+        for record in &records {
+            assert_eq!(transcript_flag(record, "fallback"), Some(false), "{record}");
+        }
+        // The two abandoned attempts carry rule 11.3's response, which is the failure a reader is
+        // looking for, and rule 9.5's `wait` in the action field, because they obtained no action.
+        for record in &records[..2] {
+            assert!(
+                record.contains("\"action\":{\"verb\":\"wait\"}"),
+                "{record}"
+            );
+            assert!(record.contains("the socket closed"), "{record}");
+        }
+        assert!(
+            records[2].contains("\"action\":{\"verb\":\"sleep\"}"),
+            "{transcript}"
+        );
+
+        let (_, account) = billed_exchange_over(&script);
+        assert_eq!(account.exchanges(), 3);
+        assert_eq!(account.fallbacks(), 0);
+        // Rule 14.1: only the third exchange reported anything, and the two before it contributed
+        // nothing rather than being unbilled.
+        assert_eq!(account.cost(), 100 * 125 + 900 * 13 + 8 * 1_000);
+    }
+
+    /// Rule 19.5a: everything but `transport` and `provider` is attempted **once**.
+    ///
+    /// The four cases are the rule's own reasoning as a list. `malformed` and `refused` would be
+    /// answered identically by the same request, an unrecognised kind is treated as `malformed`
+    /// because rule 10.7 distrusts the connector's error vocabulary too, and a response carrying an
+    /// action is not an error however it is dressed. Each of them retried would cost three exchanges
+    /// per opportunity for nothing, which is why the count of requests is what is asserted.
+    #[test]
+    fn only_the_two_transient_kinds_are_attempted_more_than_once() {
+        for (why, response) in [
+            (
+                "rule 19.5a's `malformed`, reported as the kind",
+                "{\"protocol\":1,\"error\":{\"kind\":\"malformed\",\"message\":\"m\"}}",
+            ),
+            (
+                "rule 19.5a's `refused`",
+                "{\"protocol\":1,\"error\":{\"kind\":\"refused\",\"message\":\"no credential\"}}",
+            ),
+            (
+                "a kind outside the four, which rule 19.5a treats as `malformed`",
+                "{\"protocol\":1,\"error\":{\"kind\":\"transport-ish\",\"message\":\"m\"}}",
+            ),
+            (
+                "a line this reader cannot parse, which is `malformed` in fact",
+                "not a response at all",
+            ),
+            (
+                "a transient kind alongside an action, which rule 10.4 admits one of",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\
+                 \"error\":{\"kind\":\"transport\",\"message\":\"m\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+        ] {
+            let (sent, proposal, transcript) = exchange_over(&repeated(response, 6));
+            assert!(proposal.earlier_attempts.is_empty(), "retried {why}");
+            assert_eq!(sent.lines().count(), 1, "retried {why}");
+            assert_eq!(transcript.lines().count(), 1, "retried {why}");
+            assert_eq!(
+                transcript_flag(transcript.trim_end(), "fallback"),
+                Some(true),
+                "{why}: {transcript}"
+            );
+        }
+    }
+
+    /// Rule 19.5's own sentence: "rule 14.6's check runs before each attempt, so the bound cannot
+    /// breach a ceiling whatever it is set to".
+    ///
+    /// The ceiling is declared in attempts, one cent each, and the measurement is the count of
+    /// exchanges the port issued. Without the check inside the loop a bound of three would spend up
+    /// to three exchanges past a ceiling, which is the reading the rule forecloses — and it would do
+    /// it invisibly, because the engine's own check happens once per opportunity and every attempt
+    /// after the first is inside a single call to `propose`.
+    ///
+    /// The unbounded row is the control: the same response with no ceiling reaches the bound, so a
+    /// low count in the rows above is the ceiling stopping the retrying rather than the response
+    /// failing to be retried at all.
+    #[test]
+    fn the_ceiling_stops_the_retrying_before_the_bound() {
+        for (ceiling, attempts) in [
+            (Some(1), 1),
+            (Some(2), 2),
+            (Some(3), 3),
+            (Some(4), RETRY_BOUND + 1),
+            // A ceiling the four attempts cannot reach, and none at all: the bound is what stops it.
+            (Some(99), RETRY_BOUND + 1),
+            (None, RETRY_BOUND + 1),
+        ] {
+            let (proposal, account) =
+                billed_exchange_under(&repeated(BILLED_PROVIDER_FAILURE, 8), ceiling);
+            assert_eq!(
+                account.exchanges(),
+                attempts as u64,
+                "under a ceiling of {ceiling:?} cents"
+            );
+            assert_eq!(proposal.earlier_attempts.len(), attempts - 1);
+            // Whatever stopped it, the opportunity counts one fallback and costs a cent an attempt.
+            assert_eq!(account.fallbacks(), 1, "under {ceiling:?}");
+            assert_eq!(
+                account.cost(),
+                WHOLE_CENT * attempts as u64,
+                "under {ceiling:?}"
+            );
+        }
+    }
+
+    /// A pipe that failed is not retried, and the reason is that there is nothing left to ask.
+    ///
+    /// Which transport failures are retried is `WO-MOK-026`'s envelope, and this is the line it
+    /// draws: rule 19.5a's kinds are kinds a connector *reports*, and a connector whose output has
+    /// closed has reported nothing. Three further attempts would write three more identical records
+    /// for a process that is gone.
+    ///
+    /// The second half is the one that shows the retrying is not merely unreachable: the port's
+    /// first exchange succeeded, so it was in working order when the pipe went.
+    #[test]
+    fn a_pipe_that_failed_is_not_retried() {
+        // Closed before answering anything.
+        let (proposal, account) = billed_exchange_over("");
+        assert!(proposal.earlier_attempts.is_empty());
+        assert_eq!(account.exchanges(), 1);
+        assert!(
+            proposal
+                .response
+                .unwrap_or_default()
+                .starts_with("connector: "),
+            "rule 11.3's \"or the error\""
+        );
+
+        // Closed after one answer, over a port that is reused as a run reuses it.
+        let one_answer = format!("{WELL_FORMED}\n");
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let mut port = ConnectorPort::new(
+            one_answer.as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
+        let first = port.propose(connector_request());
+        assert_eq!(first.action, Some(Action::Sleep));
+        assert!(first.earlier_attempts.is_empty());
+
+        let second = port.propose(connector_request());
+        assert!(second.action.is_none());
+        assert!(
+            second.earlier_attempts.is_empty(),
+            "the dead pipe was retried"
+        );
+        assert_eq!(port.account.exchanges(), 2);
+    }
+
+    /// The gap this work order **discloses and does not repair**: a transcript holding a retried
+    /// exchange cannot be replayed.
+    ///
+    /// Rule 11.2 gives every attempt its own record and rule 12.3 has a replay read one record per
+    /// decision opportunity, checking the tick and the actor. The two do not reconcile. The first
+    /// attempt's record matches the first opportunity and is consumed by it — an attempt record is
+    /// marked `"fallback":false` under rule 11.3, because the attempt was not the decision, and it
+    /// carries rule 9.5's `wait`, so it is indistinguishable from a legitimately recorded `wait` —
+    /// and the *second* opportunity then meets a record for the first actor and fails rule 12.3's
+    /// check.
+    ///
+    /// **The failure is loud, which is the whole reason this is a disclosure rather than a stop.**
+    /// Rule 12.3 refuses and names the disagreement, so no replay silently invents a run. What it
+    /// names is the wrong record, and repairing that means either a field on the exchange record
+    /// distinguishing an attempt — which amends rule 11.3 — or rule 12.3 reading a group per
+    /// opportunity. Both are changes of substance in an approved artifact, which this work order's
+    /// stop-and-escalate condition 6 reserves to the owner.
+    ///
+    /// This case exists so the behaviour is pinned rather than discovered by a live run: a live
+    /// transcript that retried is not a replay input, and case **L30**'s replay identity would have
+    /// to be captured from a run that did not retry.
+    #[test]
+    fn a_transcript_holding_a_retried_exchange_cannot_be_replayed() {
+        // One opportunity's worth of records, written the way `PortDecisionSource::decide` writes
+        // them: two abandoned attempts and the decision.
+        let script = format!(
+            "{}\n{}\n{WELL_FORMED}",
+            TRANSPORT_FAILURE, TRANSPORT_FAILURE
+        );
+        let (_, _, transcript) = exchange_over(&script);
+        assert_eq!(transcript.lines().count(), 3, "{transcript}");
+
+        // The first record is not distinguishable from a recorded `wait` by any field rule 11.3
+        // fixes, which is the half a replay cannot see.
+        let first = transcript.lines().next().unwrap();
+        assert_eq!(transcript_flag(first, "fallback"), Some(false), "{first}");
+        assert!(first.contains("\"action\":{\"verb\":\"wait\"}"), "{first}");
     }
 }

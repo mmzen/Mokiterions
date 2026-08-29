@@ -646,3 +646,201 @@ fn a_live_run_stops_at_its_ceiling_and_leaves_the_record_stream_behind() {
         stdout(&output)
     );
 }
+
+/// `SPEC-MOK-007` rule 19.5 and `VER-MOK-018` case **R1**: a transport failure is retried a bounded
+/// number of times and each attempt appears as its own transcript record.
+///
+/// The stub is the canned connector with a script that fails a fixed number of times, which is what
+/// the case asks for: two transport errors and then an answer, so the first opportunity spends three
+/// exchanges and every opportunity after it spends one. Fourteen records for twelve opportunities is
+/// the whole claim — a host that retried nothing would write twelve, and one that retried without
+/// recording the attempts would also write twelve.
+///
+/// **No record is marked as a fallback, and that is the half rule 15.4 rests on.** The opportunity
+/// reached a decision, so nothing about it was rule 9.5's fallback: the two abandoned attempts are
+/// marked `false` because they were not the decision, and the third is marked `false` because it
+/// carried an action. A run that retried and succeeded is a clean run.
+#[test]
+fn a_transport_failure_is_retried_and_every_attempt_is_recorded() {
+    let directory = scratch("retried");
+    let transcript = directory.join("retried.jsonl");
+    let script = script(
+        &directory,
+        &[
+            "error transport the socket closed",
+            "error transport the socket closed",
+            "ok wait",
+        ],
+    );
+
+    let output = engine(CONNECTOR, &transcript, Some(&script), Some(CREDENTIAL))
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let recorded = fs::read_to_string(&transcript).unwrap();
+    let exchanges = exchanges(&recorded);
+    assert_eq!(
+        exchanges.len(),
+        ROSTER + 2,
+        "twelve opportunities and two abandoned attempts"
+    );
+    for record in &exchanges {
+        assert!(record.contains("\"fallback\":false"), "{record}");
+    }
+
+    // The three records of the first opportunity: same tick, same actor, and the failures ahead of
+    // the answer. The actor is read from the first record rather than named, because which
+    // Mokiterion is asked first is the engine's ordering and not this test's business.
+    let first_actor = exchanges[0]
+        .split_once("\"actor\":\"")
+        .and_then(|(_, rest)| rest.split_once('"'))
+        .map(|(actor, _)| actor)
+        .expect("every record names its actor");
+    for record in &exchanges[..3] {
+        assert!(
+            record.contains(&format!("\"actor\":\"{first_actor}\"")),
+            "{record}"
+        );
+        assert!(record.contains("\"tick\":1"), "{record}");
+    }
+    for record in &exchanges[..2] {
+        assert!(record.contains("the socket closed"), "{record}");
+    }
+    assert!(
+        !exchanges[2].contains("the socket closed"),
+        "{}",
+        exchanges[2]
+    );
+    // And the fourth record has moved on, so the retrying was bounded by the answer rather than
+    // running to the bound.
+    assert!(
+        !exchanges[3].contains(&format!("\"actor\":\"{first_actor}\"")),
+        "{}",
+        exchanges[3]
+    );
+}
+
+/// Rule 19.5 and `VER-MOK-018` case **R2**: exhausted retries produce a counted fallback and the run
+/// continues.
+///
+/// The script's one directive repeats, so every exchange of the run fails transiently and every
+/// opportunity spends the bound: four attempts, forty-eight records for twelve opportunities, and
+/// **exactly one of every four marked as a fallback**. That last figure is case **P5**'s
+/// reconciliation in the only form available before the run record carries the count — rule 15.4's
+/// figure is the number of records marked as fallbacks, so twelve marks for twelve opportunities is
+/// what a count taken per opportunity looks like from outside. A port counting per attempt would
+/// report forty-eight against these same twelve marks.
+///
+/// "The run continues" is the exit code and the text stream together. Rule 19.5 says an exhausted
+/// retry takes rule 9.5's fallback "rather than ending the run", so this is a run that reached its
+/// horizon, exits `0`, and holds twelve accepted `wait` decisions no provider chose.
+#[test]
+fn exhausted_retries_are_a_counted_fallback_and_the_run_continues() {
+    let directory = scratch("exhausted");
+    let transcript = directory.join("exhausted.jsonl");
+    let script = script(&directory, &["error transport the socket closed"]);
+
+    // The trace is asked for here and nowhere else in this file, because "the run continues" is a
+    // claim about the *decisions* and not only about the exit code: rule 9.5's `wait` has to be
+    // applied and accepted twelve times, and without the trace the text stream says nothing about
+    // any individual opportunity.
+    let output = engine(CONNECTOR, &transcript, Some(&script), Some(CREDENTIAL))
+        .arg("--trace-actions")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+
+    let recorded = fs::read_to_string(&transcript).unwrap();
+    let exchanges = exchanges(&recorded);
+    // Four attempts an opportunity: rule 19.5's bound of three retries.
+    assert_eq!(exchanges.len(), ROSTER * 4, "four attempts an opportunity");
+    let marked: Vec<usize> = exchanges
+        .iter()
+        .enumerate()
+        .filter(|(_, record)| record.contains("\"fallback\":true"))
+        .map(|(at, _)| at)
+        .collect();
+    assert_eq!(marked.len(), ROSTER, "one fallback an opportunity");
+    // And it is the *last* attempt of each group that carries the mark, not the first: the earlier
+    // ones were retried and a retried attempt is not a decision.
+    assert_eq!(
+        marked,
+        (0..ROSTER)
+            .map(|group| group * 4 + 3)
+            .collect::<Vec<usize>>()
+    );
+    for record in &exchanges {
+        assert!(record.contains("the socket closed"), "{record}");
+        // Rule 9.5's `wait` on every one of them, and rule 9.7's prohibition with it: nothing
+        // supplied a substitute action from elsewhere for an attempt that obtained none.
+        assert!(
+            record.contains("\"action\":{\"verb\":\"wait\"}"),
+            "{record}"
+        );
+    }
+
+    // Rules 9.5 and 9.8 in the text stream: the fallback is applied and accepted, and the run
+    // reached its horizon rather than ending at the first exhausted opportunity.
+    let text = stdout(&output);
+    assert_eq!(text.matches("proposal:wait").count(), ROSTER, "{text}");
+    assert!(!text.contains("status:rejected"), "{text}");
+    assert!(text.contains("summary reason=tick_limit"), "{text}");
+}
+
+/// **A disclosure, not a property**: a transcript holding a retried exchange is not a replay input.
+///
+/// Rule 11.2 gives every attempt its own record and rule 12.3 has a replay consume one record per
+/// decision opportunity, checking the tick and the actor. The two do not reconcile, and this is the
+/// run that shows it: the first attempt's record is consumed by the first opportunity — it is marked
+/// `"fallback":false` and carries rule 9.5's `wait`, so nothing distinguishes it from a legitimately
+/// recorded decision — and the second opportunity then meets a record naming the first actor and
+/// fails rule 12.3's check.
+///
+/// **The refusal is loud and specific, which is why this is disclosed rather than stopped on.** No
+/// replay silently invents a run: the message names the opportunity and the actor the record was for,
+/// and the exit code is rule 4's `1`. What it cannot say is that the record was an attempt, because
+/// no field rule 11.3 fixes distinguishes one.
+///
+/// Repairing it means either a new field on the exchange record or rule 12.3 reading a group per
+/// opportunity, both changes of substance in an approved artifact — `WO-MOK-026`'s stop-and-escalate
+/// condition 6 reserves those to the owner. The consequence for this work order is recorded here so
+/// it is not discovered later: **a live run that retried cannot supply case `L30`'s replay
+/// identity**, and this test is what will fail if the reconciliation is ever decided.
+#[test]
+fn a_transcript_holding_a_retried_exchange_is_refused_by_its_own_replay() {
+    let directory = scratch("retried-replay");
+    let transcript = directory.join("retried.jsonl");
+    let script = script(
+        &directory,
+        &["error transport the socket closed", "ok wait"],
+    );
+
+    let recorded = engine(CONNECTOR, &transcript, Some(&script), Some(CREDENTIAL))
+        .output()
+        .unwrap();
+    assert_eq!(recorded.status.code(), Some(0), "{}", stderr(&recorded));
+    assert_eq!(
+        exchanges(&fs::read_to_string(&transcript).unwrap()).len(),
+        ROSTER + 1,
+        "one opportunity retried once"
+    );
+
+    let mut replay = Command::new(ENGINE);
+    replay.args(["--policy", "llm", "--seed", "42", "--ticks", "1"]);
+    replay.arg("--transcript-path").arg(&transcript);
+    let output = replay.output().unwrap();
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "the replay of a retried transcript must not pass: {}",
+        stderr(&output)
+    );
+    let complaint = stderr(&output);
+    assert!(complaint.starts_with("runtime error:"), "{complaint}");
+    // Rule 12.3's own words for the disagreement it found: a record for an actor other than the one
+    // being asked. It is the second opportunity that fails, the first having consumed the attempt.
+    assert!(complaint.contains("record is for actor"), "{complaint}");
+}
