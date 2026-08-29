@@ -2,7 +2,7 @@
 id = "WO-MOK-026"
 type = "work_order"
 title = "Stage 5b: the connector, the live path, the two gates, the usage accounting and the spend ceiling"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-23"
 updated = "2026-08-29"
@@ -45,6 +45,12 @@ from = "approved"
 to = "in_progress"
 decided_at = "2026-08-28T21:15:16Z"
 decided_by = "engineering owner"
+
+[[lifecycle_events]]
+from = "in_progress"
+to = "implemented"
+decided_at = "2026-08-29T18:46:30Z"
+decided_by = "engineering-owner"
 +++
 
 # Work Order: Stage 5b — the connector, the live path and the ceiling
