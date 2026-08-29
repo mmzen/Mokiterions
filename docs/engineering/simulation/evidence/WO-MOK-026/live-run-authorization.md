@@ -99,9 +99,48 @@ owner-gated at `L15b`; it is not a condition the run enforces on itself.
 
 ## Cost
 
-**The estimate depends entirely on a tariff no artifact in this repository states, and the two figures available differ
-by a factor of seven.** This is written before the run because a ceiling is only a safeguard if someone has checked that
-the run fits under it.
+### The tariff, as published
+
+**Retrieved from the provider's own pricing page on 2026-08-29**, for `gpt-5.6-luna` on the **Standard** tier at
+**short context**, per million tokens: input **$0.20**, cached input **$0.02**, output **$1.20**. In the unit
+`SPEC-MOK-007` rule 14.3a fixes — cents per million tokens, `prompt:cached:output:reasoning` — that is
+
+```text
+    --prices 20:2:120:120
+```
+
+**The fourth integer is the output price and not zero.** A reasoning token bills at the output rate, so that is its unit
+price. The declared reasoning level is `none`, so the reasoning count should be `0` and the term should be multiplied
+away; pricing it at `0` instead would agree with the example in rule 14.3a but would silently value a reasoning token at
+nothing if one ever appeared, and under-reporting cost is the one direction that matters when a ceiling is the safeguard.
+
+**Projected cost at 600 exchanges: 5 cents, against a ceiling of 200.** That is the engine's own arithmetic, not this
+document's: a 50-tick rehearsal at these prices against a local stand-in produced a run record reading `cost_cents` **5**
+and `ceiling_cents` **200**. A margin of about **forty times**.
+
+**This settles the discrepancy recorded below in favour of `ADR-MOK-007`.** That ADR's **estimated** $1.04 per 1,000-tick
+run prorates to $0.05 for 600 exchanges, which is what the published tariff gives. The four prices printed in rule
+14.3a's example are about **6.7 times** the real tariff and are, as that rule presents them, an example rather than a
+quotation.
+
+Four qualifications on the figure, each of which would change it:
+
+- **Long-context rates are double.** Not reached: the mean prompt is about 1,550 tokens.
+- **Fast-mode rates are double** the Standard tier, and **Batch and Flex are half**. The projection assumes Standard.
+- **Data-residency endpoints carry a 10 % uplift.**
+- **There is a cache-write rate, and this engine has no input for it.** The published rate is **$0.25** per million
+  tokens standard short — *higher* than the $0.20 input rate. Rule 14's cost model takes four prices and none of them is
+  a cache-write price, which is `WO-MOK-026` item 9's open "cache-write multiplier" question with a number attached at
+  last. The exposure is bounded and small: twelve cache writes, one per actor's first exchange, at about 1,350 tokens
+  each and a $0.05 difference per million is about **$0.0008**, roughly **1 %** of a five-cent run. So the engine's
+  reported cost will read very slightly low, by an amount that is immaterial against a $2 ceiling but is a real gap in
+  the model rather than a rounding artefact.
+
+### Why the estimate was worth checking at all
+
+**The estimate depended entirely on a tariff no artifact in this repository stated, and the two figures available differed
+by a factor of seven.** This is retained because a ceiling is only a safeguard if someone has checked that the run fits
+under it, and because the check is what found the answer.
 
 - **$0.05**, derived from `ADR-MOK-007`'s own **estimated** $1.04 for a 1,000-tick run at reasoning level `none`, which
   is 12,000 exchanges and so $0.0000867 an exchange. This is the figure consistent with `WO-MOK-026` item 13's
@@ -110,20 +149,21 @@ the run fits under it.
   estimated: a 50-tick rehearsal against a local stand-in, using the per-exchange token figures the measured character
   counts imply, produced a run record reading `cost_cents` **35**.
 
-Neither is `gpt-5.6-luna`'s tariff. Rule 14.3 forbids a compiled-in price precisely because the price is an input, and
-the four integers are the owner's to declare at the command line. Both figures are far below the **$2** ceiling, so the
-authorization stands on either.
+The first of the two proved right, as the published tariff above shows. Rule 14.3 forbids a compiled-in price precisely
+because the price is an input, and the four integers stay the owner's to declare at the command line: this document
+records what the provider publishes, and it does not turn that into a value the program carries.
 
-**The check the owner should make before running.** The run's token volume is now known well enough to test a tariff
-against the ceiling in one line. Projected from measured character counts at 600 exchanges: about **160,000 uncached
-prompt tokens**, **768,000 cached prompt tokens** and **7,000 output tokens**. With the four prices in cents per million
-tokens as `p:c:o:r`, the run costs about
+**The check to make before running, kept because a published price is not a promise.** The run's token volume is known
+well enough to test any tariff against the ceiling in one line. Projected from measured character counts at 600
+exchanges: about **160,000 uncached prompt tokens**, **768,000 cached prompt tokens** and **7,000 output tokens**. With
+the four prices in cents per million tokens as `p:c:o:r`, the run costs about
 
 ```text
     0.16 p  +  0.77 c  +  0.007 o    cents
 ```
 
-and must come out below **200**. At the example prices that is 20.0 + 10.0 + 6.6 = **36.6 cents**. The term that
+and must come out below **200**. At the published tariff that is 3.2 + 1.5 + 0.8 = **5.5 cents**; at rule 14.3a's
+example prices it is 20.0 + 10.0 + 6.6 = **36.6 cents**. The term that
 dominates is the cached one, so **a provider that charges full price for cached tokens costs roughly three times as much
 as one that discounts them by 90 %**. A tariff around ten times the example prices would exceed the ceiling, and the run
 would stop at it — which `REQ-MOK-071` makes a correct outcome and `VER-MOK-018` case `L25` makes an unpublishable one,
