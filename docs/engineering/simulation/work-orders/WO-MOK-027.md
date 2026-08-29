@@ -5,7 +5,7 @@ title = "Stage 5c: the authorized measurement — the model-backed source publis
 status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-23"
-updated = "2026-08-23"
+updated = "2026-08-29"
 
 [assurance]
 commit_bound_verification = "required"
@@ -162,9 +162,12 @@ the figures exist.
 - **Every measurement run is executed from the engine's binary target.** `REQ-MOK-077` makes a live run reachable from
   that host and no other, so a figure sourced from an observer run is not merely wrong provenance — it could not have
   been produced.
-- **Every run's evidence is committed complete**: transcript, record stream, run record, authorization. An **estimated**
-  4.7 MB per transcript and 23 MB for five seeds is what the repository takes on, and that figure is confirmed against
-  the tree rather than assumed.
+- **Every run's evidence is committed complete**: transcript, record stream, run record, authorization. A **measured**
+  12.7 to 13.9 MB per 1,000-tick transcript, and therefore an **extrapolated** 64 to 70 MB for five seeds, is what the
+  repository takes on *(amended 2026-08-29 under `WO-MOK-031`)*. The per-transcript figures are quoted from
+  `SPEC-MOK-007` rules 11.7.2 and 11.7.3 — 12,722,347 bytes and 13,901,867 bytes, the two extrapolations that rule
+  makes from this repository's two live transcripts at their two different exchange rates — and the five-seed total is
+  those figures multiplied out rather than a second measurement.
 - **The evidence path is named before the first capture**, and never renamed. Here a rename means paying for the runs
   again.
 - **Governance artifacts are written CRLF and retained evidence LF.** This stage commits the initiative's largest
@@ -278,6 +281,44 @@ Under the evidence path this work order names, fixed before the first capture:
 10. **Every local decision** taken under the envelope, and **every escalation** raised, with its resolution.
 
 ## Amendment record
+
+**2026-08-29, the transcript-size figure replaced, under `WO-MOK-031`, by the engineering owner.**
+
+*Constraints* stated "an **estimated** 4.7 MB per transcript and 23 MB for five seeds is what the repository takes on,
+and that figure is confirmed against the tree rather than assumed". Both halves were false by the time they were read.
+
+The figure is low by a factor of about **2.8**. `WO-MOK-026`'s accepted 50-tick live run produced a transcript of
+**700,192 bytes**, which `SPEC-MOK-007` rule 11.7.2 extrapolates to **12,722,347 bytes** at 1,000 ticks, and rule 11.7.3
+confirms a second time at **13,901,867 bytes** at a different exchange rate. Five 1,000-tick seeds are therefore roughly
+64 to 70 MB rather than 23.
+
+The claim of confirmation was the worse half. `SPEC-MOK-007` rule 11.7.1 **withdrew** the 4.7 MB estimate on 2026-08-24,
+naming it as superseded together with the band "100 to 260 KB for a 20-to-50-tick run" that 298 KiB at 20 ticks had
+already exceeded. So this work order cited as "confirmed against the tree" a figure the tree records as retired, five
+days before the sentence was read.
+
+**The specification's current estimate was not falsified; only this work order's retired one was.** Rule 11.7.1 replaced
+4.7 MB with **12 MB** at 1,000 ticks on the same day it withdrew it, and both measurements are above that figure —
+`WO-MOK-026`'s completion report calls 12.7 MB against it **1.06×, confirmed**, and rule 11.7.3 states that its own
+13.9 MB is above it as well. What was wrong here was quoting the superseded number, not the estimating.
+
+**The cost figures in this work order are deliberately not amended.** They are wrong too, and by a **larger** factor than
+the size claim rather than the same one. `WO-MOK-026`'s completion report measures the per-run cost at **4.1× the
+estimate** — 20.55 cents billed against 5 cents prorated — and puts this work order's `$5.20` for five seeds at about
+**$20.55**, ten times the $2 ceiling that run was authorized under.
+
+But *Constraints* already requires the estimate to be "re-derived from `WO-MOK-026`'s **measured** per-exchange cost
+before the authorization is sought", so that figure is bound to be replaced by the act that spends the money. Amending it
+here would put a second number in front of that step without removing the obligation to derive it. Only the size claim
+moves, because only the size claim asserted a confirmation it did not have.
+
+Nothing else in this work order moves: not its horizon, not its seed set, not its `[execution_scope]`, not its status,
+and no figure in its *Objective*, *In scope* or *Required verification*. The `rationale` in `[assurance]` still carries
+the `$1.04` estimate, and is left word for word for the reason above.
+
+The frontmatter's `updated` moves to **2026-08-29**. The row below left it at the approval date of 2026-08-23 and should
+not have; because the field records only the latest edit, today's date covers both amendments and that omission needs no
+separate repair.
 
 **2026-08-28, `[execution_scope]` added, under `WO-HUP-002`, by the engineering owner.**
 
