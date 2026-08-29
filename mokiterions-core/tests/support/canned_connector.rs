@@ -32,6 +32,7 @@
 //! ok <verb> [<parameter>] [prompt=N] [cached=N] [output=N] [reasoning=N] [model=ID] [level=TEXT]
 //! error <kind> <message ...>
 //! malformed <raw text>
+//! credential <VARIABLE>
 //! close
 //! ```
 //!
@@ -52,6 +53,16 @@
 //! - `malformed` writes the raw text as the whole line. It exists so the host's parsing can be
 //!   driven off the protocol entirely — a connector is untrusted in whole under rule 10.7, and a
 //!   fixture that could only emit well-formed lines could not demonstrate that.
+//! - `credential` is the second of rule 13's two gates, and it is here because **only a connector
+//!   can hold it**. Rules 10.5 and 13.4 put the read in the connector's own environment and forbid
+//!   every other component from performing it, so a fixture that did not read one could not
+//!   demonstrate that the gate exists at all. With the named variable present and non-empty it
+//!   answers exactly as `ok wait` does; otherwise it answers rule 13.3's error — `refused`, on the
+//!   first exchange, in the connector's own terms, **naming the variable and never its value.**
+//!   The name is a directive argument rather than a constant because rule 13.3 leaves the variable
+//!   to the connector, and a fixture that fixed one would be asserting a name no artifact fixes.
+//!   No real credential is involved: a test sets the variable to `sk-not-a-real-key` or leaves it
+//!   unset, and the fixture makes no network call either way.
 //! - `close` stops reading and exits `0` with the request unanswered, which is a connector that
 //!   died mid-run.
 
@@ -117,6 +128,10 @@ enum Directive {
     Malformed {
         raw: String,
     },
+    /// Rule 13's second gate: answer from the environment, not from the script.
+    Credential {
+        variable: String,
+    },
     Close,
 }
 
@@ -132,6 +147,14 @@ impl Directive {
             "malformed" => Ok(Self::Malformed {
                 raw: line["malformed".len()..].trim().to_string(),
             }),
+            "credential" => {
+                let variable = words
+                    .next()
+                    .ok_or_else(|| "credential needs a variable name".to_string())?;
+                Ok(Self::Credential {
+                    variable: variable.to_string(),
+                })
+            }
             "error" => {
                 let kind = words
                     .next()
@@ -180,6 +203,27 @@ impl Directive {
         match self {
             Self::Close => None,
             Self::Malformed { raw } => Some(raw.clone()),
+            // The one directive whose answer is not a function of the script. `env::var` fails on
+            // an absent variable and on one that is not Unicode, and an empty value is caught
+            // beside them: rule 13.3 gives absent, empty and malformed one treatment, so they get
+            // one arm. The message names the variable because that is what an operator has to fix,
+            // and it cannot name the value because the value is never brought into scope — `Ok(_)`
+            // binds nothing on the failing side and the succeeding side discards it.
+            Self::Credential { variable } => match env::var(variable) {
+                Ok(value) if !value.is_empty() => Self::Ok {
+                    verb: "wait".to_string(),
+                    parameter: None,
+                    answered: Answered::default(),
+                    usage: Usage::default(),
+                }
+                .response(),
+                _ => Some(format!(
+                    "{{\"protocol\":1,\"error\":{{\"kind\":\"refused\",\"message\":\
+                     \"no usable credential in the connector's environment: {} is absent, empty \
+                     or unreadable\"}}}}",
+                    escape(variable)
+                )),
+            },
             Self::Error { kind, message } => Some(format!(
                 "{{\"protocol\":1,\"error\":{{\"kind\":\"{}\",\"message\":\"{}\"}}}}",
                 escape(kind),

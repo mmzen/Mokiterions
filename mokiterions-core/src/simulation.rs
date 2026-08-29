@@ -2698,6 +2698,641 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
     }
 }
 
+// ---------------------------------------------------------------------------------------
+// `SPEC-MOK-007` rule 10: the connector's line protocol, and the port that speaks it.
+//
+// **The library speaks the protocol and does not start the program that answers it.** Rule 10.1
+// makes the connector "an operator-named executable spawned as a child", and `SPEC-MOK-006` rule
+// 1.2 puts every path resolution and every process in the binary target — so what lives here is
+// the composition of a request, the reading of one response line and the grammar check, over two
+// already-connected streams a host owns. Nothing below opens, spawns, resolves or reads an
+// environment variable, which is `WO-MOK-026` stop-and-escalate condition 2 met rather than
+// escalated.
+//
+// **The connector's output is untrusted in whole**, rule 10.7, and that governs every line of the
+// reader below: a response is parsed without panicking on any input, without recursing without a
+// bound, and without a single figure being believed further than rule 10.8 admits. Rule 10.8 states
+// the limit plainly — the ceiling protects against an honest connector and not a dishonest one —
+// so the reader's job is to be total over its input, not to be safe against a liar.
+// ---------------------------------------------------------------------------------------
+
+/// The protocol version this engine speaks and the only one it reads.
+///
+/// On every request, and required on every response: a response stating another version fails the
+/// grammar check and becomes rule 9.5's counted fallback, exactly as an unknown verb does. The
+/// integer is on the wire in both directions rather than agreed once at start-up, because the
+/// connector is a program this repository did not build and a version negotiated out of band is a
+/// version nobody can check.
+const CONNECTOR_PROTOCOL: u64 = 1;
+
+/// The eleven verbs, as the request's `schema` enumerates them for the provider's structured-output
+/// facility.
+///
+/// Rule 8.2's closed grammar, in the order `docs/CONNECTOR_PROTOCOL.md` lists it. It is a second
+/// statement of the verb set — [`action_from_parts`] is the first — and it is held equal to that one
+/// by a test rather than by care, because the two disagreeing would mean the schema offered a
+/// provider a verb this engine then refused, which is a paid exchange spent on a counted fallback.
+const RESPONSE_VERBS: [&str; 11] = [
+    "wait",
+    "sleep",
+    "eat",
+    "move",
+    "attack",
+    "fight",
+    "threaten",
+    "retreat",
+    "surrender",
+    "approach",
+    "avoid",
+];
+
+/// A [`Proposer`] that answers from a connector the host spawned, `SPEC-MOK-007` rules 10 and 13.
+///
+/// **It holds streams and not a process.** `R` is the child's standard output and `W` its standard
+/// input, both already connected by the host that spawned it; the transcript is the sink that host
+/// opened. This type never learns the connector's path, never learns whether a credential exists,
+/// and cannot start, signal or reap anything — rule 13.4's "neither host reads the credential and
+/// the library target reaches it by no route", stated as a type that has no route to reach it by.
+///
+/// **The two gates are not checked here and that is rule 13.1.** The live selection is the host's
+/// condition and the credential is the connector's, and "neither component can satisfy the other's
+/// condition". A gate this type checked would be a gate one component could pass alone. What this
+/// type does is speak to whatever the host connected: with no live selection the host spawns nothing
+/// and builds none of these (rule 13.2), and with no credential the connector answers rule 13.3's
+/// error on the first exchange and this type records it as the error it is.
+///
+/// It is built once and lent per tick, rule 20.4.1. The reason is sharper here than for
+/// [`ReplayPort`]: a port rebuilt each tick would hand the child a request on a stream nobody was
+/// reading, and from `WO-MOK-026`'s item 9 onward it would also reset the accumulated cost the
+/// ceiling of rule 14.6 is checked against — a run that never stops spending.
+///
+/// **One attempt per exchange, in this stage.** Rule 19.5's retry bound is `WO-MOK-026`'s item 12
+/// and is not here yet, so a `transport` or `provider` error becomes a counted fallback where rule
+/// 19.5a asks for it to be retried first. `malformed` and `refused` are already correct — rule 19.5a
+/// makes both immediate counted fallbacks — and every kind's record is written either way, so the
+/// evidence a retry would add to is being kept from the first exchange.
+pub struct ConnectorPort<'sink, R: BufRead, W: Write> {
+    /// The child's standard output: one response object per line.
+    responses: R,
+    /// The child's standard input: one request object per line.
+    requests: W,
+    /// The transcript the host opened. Rule 11.1's destination, owned by the host and written
+    /// through here because [`Proposer::record`] is the seam the engine hands a finished record to.
+    transcript: &'sink mut dyn Write,
+    /// Rule 8.4's response schema, built once in [`ConnectorPort::new`].
+    ///
+    /// Once and not per request, and the reason is rule 3.3 rather than efficiency: the schema is
+    /// not part of the prompt, but a schema rebuilt per exchange is a value that *could* vary within
+    /// a run, and a request field that varies for no reason is a field a later reader has to prove
+    /// constant.
+    schema: String,
+}
+
+impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
+    /// Wraps the child's two streams and the host's transcript. Nothing is written and nothing is
+    /// read: a run refused before its first tick must not have spoken to the connector, and rule
+    /// 20.8's refusal happens after construction.
+    pub fn new(responses: R, requests: W, transcript: &'sink mut dyn Write) -> Self {
+        Self {
+            responses,
+            requests,
+            transcript,
+            schema: response_schema(),
+        }
+    }
+
+    /// One request object, on one line, in the field order `docs/CONNECTOR_PROTOCOL.md` documents.
+    ///
+    /// **The prompt is [`DecisionRequest::blocks`] concatenated and nothing else.** Rule 3.6 refuses
+    /// an implementation that "composes the parts in this order and then serialises them through a
+    /// structure whose field order is not guaranteed", and this is that rule discharged: the order
+    /// comes from the one function that states it, the four blocks are joined with no separator of
+    /// this module's invention, and rule 3.3's byte-identical block A is byte-identical here because
+    /// [`DecisionRequest`] holds it as a `&'static str`.
+    ///
+    /// **The request names no model, no reasoning level and no credential**, rules 10.3a and 10.3.
+    /// There are five fields and the type has no field to put a sixth in.
+    ///
+    /// The escaping is [`escape_transcript_text`]'s, which is a JSON string escaper and is reused
+    /// rather than reimplemented: a second escaper would be a second place for the framing of rule
+    /// 10.2 — "no newline within an object" — to be got wrong, and the blocks are full of newlines.
+    fn request_line(&self, request: &DecisionRequest) -> String {
+        format!(
+            "{{\"protocol\":{CONNECTOR_PROTOCOL},\"tick\":{},\"actor\":\"{}\",\"prompt\":\"{}\",\
+             \"schema\":{}}}",
+            request.tick(),
+            escape_transcript_text(request.actor_id()),
+            escape_transcript_text(&request.blocks().concat()),
+            self.schema,
+        )
+    }
+
+    /// Writes one request and reads one response, rule 10.2's one-for-one ordering.
+    ///
+    /// Flushed before the read, because the child cannot answer a request sitting in this process's
+    /// buffer and the read would then block until one of the two gave up.
+    ///
+    /// End of input is an error and not an empty response: rule 10.2 fixes exactly one response per
+    /// request, so a connector that closed its output has stopped answering rather than answered
+    /// nothing. The canned connector's `close` directive is that case on purpose.
+    fn exchange(&mut self, request: &DecisionRequest) -> io::Result<String> {
+        let line = self.request_line(request);
+        self.requests.write_all(line.as_bytes())?;
+        self.requests.write_all(b"\n")?;
+        self.requests.flush()?;
+
+        let mut response = String::new();
+        if self.responses.read_line(&mut response)? == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "the connector closed its output without answering",
+            ));
+        }
+        Ok(response.trim_end_matches(['\n', '\r']).to_string())
+    }
+
+    /// One response line to one proposal, with the line itself as the evidence either way.
+    ///
+    /// **The response travels whole and unconditionally**, rule 11.3's "the response as received, in
+    /// full, or the error". The ill-formed line is the one a reader most needs, so it is recorded
+    /// exactly as it arrived — not summarised, not truncated and not re-serialised from whatever this
+    /// function managed to read out of it.
+    ///
+    /// **The counts travel even when the action does not.** An exchange whose response failed the
+    /// grammar check was still billed, so rule 14's arithmetic must see its usage and rule 11.3's
+    /// record must state it. The two halves are therefore read independently: [`Self::usage`] does
+    /// not consult the action and [`Self::action`] does not consult the counts beyond rule 10.4a's
+    /// requirement that a `usage` accompany an action at all.
+    fn interpret(line: &str) -> Proposal {
+        let response = Some(line.to_string());
+        let Some(parsed) = json::parse(line) else {
+            // Rule 19.5a's `malformed`: an immediate counted fallback, and the line is the whole of
+            // why. Not a parse *error* to report — the engine does not interpret a port's diagnosis,
+            // and a reader of the transcript has the bytes this reader refused.
+            return Proposal {
+                action: None,
+                response,
+                usage: ReportedUsage::default(),
+            };
+        };
+        Proposal {
+            action: Self::action(&parsed),
+            response,
+            usage: Self::usage(&parsed),
+        }
+    }
+
+    /// Rule 10.4a's four counts, as reported, and rule 11.5's absence for everything else.
+    ///
+    /// A count that is missing, is not a number, is negative, carries a fraction or carries an
+    /// exponent is **absent**. Rule 11.5 fixes that an unreported count is absent and not zero, and
+    /// rule 10.8 is why the same treatment covers a count that is present and unusable: this figure
+    /// comes from a program rule 10.7 declares untrusted, and a `-1` coerced to `0` would be a
+    /// cost of zero for an exchange that was billed. Rule 14.5 is what acts on the absence — an
+    /// uncomputable ratio is a failure to evaluate, which is exactly the outcome wanted.
+    ///
+    /// A `usage` that is present and is not an object yields four absences rather than a rejection,
+    /// because [`Self::action`] already requires the member to be present and the two checks are
+    /// deliberately independent.
+    fn usage(response: &json::Value) -> ReportedUsage {
+        let Some(usage) = response.member("usage") else {
+            return ReportedUsage::default();
+        };
+        ReportedUsage {
+            prompt: usage.member("prompt").and_then(json::Value::count),
+            cached_prompt: usage.member("cached_prompt").and_then(json::Value::count),
+            output: usage.member("output").and_then(json::Value::count),
+            reasoning: usage.member("reasoning").and_then(json::Value::count),
+        }
+    }
+
+    /// Rule 10.4's grammar check, in full. `None` is rule 9.5's counted fallback and carries no
+    /// diagnosis, per rule 1.4.
+    ///
+    /// The checks are in the order a reader of rule 10.4 meets them, and each one's absence would be
+    /// a different silent wrong run:
+    ///
+    /// - **The protocol version.** A connector written against a later protocol may mean something
+    ///   else by every field below, so a version this engine does not read is not a response to
+    ///   interpret generously.
+    /// - **Exactly one of `action` and `error`.** Rule 10.4's own words. A response carrying both is
+    ///   two answers, and picking either would be this engine deciding which one the connector meant.
+    /// - **`model` and `reasoning` accompany the action**, rule 10.4c: "a response reporting neither
+    ///   fails the grammar check and becomes a counted fallback". An empty `model` is not a name, so
+    ///   it fails here too — a run record naming the empty string would claim to name what answered.
+    /// - **A `usage` member is present.** Rule 10.4a puts it on every response that carries an
+    ///   action, so an action arriving without one is not the documented response. Its *contents* are
+    ///   [`Self::usage`]'s and no count is required, which is rule 11.5 and not a relaxation of this.
+    /// - **The verb and its parameter**, through [`action_from_parts`], which is the same function
+    ///   [`ReplayPort`] parses a transcript with. One grammar, one implementation: a connector's
+    ///   answer and a recorded answer are admitted by the same eleven cases or by neither.
+    fn action(response: &json::Value) -> Option<Action> {
+        if response.member("protocol").and_then(json::Value::count) != Some(CONNECTOR_PROTOCOL) {
+            return None;
+        }
+        let action = response.member("action")?;
+        if response.member("error").is_some() {
+            return None;
+        }
+        if response
+            .member("model")
+            .and_then(json::Value::text)
+            .is_none_or(str::is_empty)
+        {
+            return None;
+        }
+        response.member("reasoning").and_then(json::Value::text)?;
+        response.member("usage")?;
+
+        let verb = action.member("verb").and_then(json::Value::text)?;
+        // A `parameter` that is present and is not a string is a defect and not an absence: the
+        // difference between `avoid M07` and `avoid` is the difference between two admitted actions,
+        // so a value this reader cannot read must not become the one without a parameter.
+        let parameter = match action.member("parameter") {
+            Some(value) => Some(value.text()?),
+            None => None,
+        };
+        action_from_parts(verb, parameter)
+    }
+}
+
+impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
+        match self.exchange(&request) {
+            Ok(line) => Self::interpret(&line),
+            // A pipe that failed is the connector's error, so it is recorded as one: rule 11.3
+            // asks for "the response as received, in full, **or the error**", and this is the
+            // error. It becomes rule 9.5's counted fallback rather than ending the run, per rule
+            // 9.8 — and once the child is gone every later exchange reaches here too, so a run
+            // whose connector died reports itself as a run of fallbacks rather than as a run.
+            //
+            // Rule 19.7 is kept by the message: an `io::Error` from a pipe names no credential and
+            // no path, and this target resolved neither.
+            Err(error) => Proposal {
+                action: None,
+                response: Some(format!("connector: {error}")),
+                usage: ReportedUsage::default(),
+            },
+        }
+    }
+
+    /// Rule 11.2's one line per exchange, appended to the host's transcript and flushed.
+    ///
+    /// **Flushed on every record, and that is not caution.** A live run's records are evidence that
+    /// was paid for, and a buffer holding the last few exchanges of a run that then died would lose
+    /// exactly the records nobody can regenerate without spending again. Rule 19.6 makes a failure
+    /// here end the run, which is the other half of the same reasoning: an exchange spent and not
+    /// recorded has produced cost and no evidence.
+    ///
+    /// The newline is written as one byte, on every platform. `SPEC-MOK-004`'s retained evidence is
+    /// `-text` and a transcript is compared byte for byte under rule 12.6, so a record terminated
+    /// differently on Windows would make a replay of a Windows recording fail on a line ending.
+    fn record(&mut self, record: &str) -> io::Result<()> {
+        self.transcript.write_all(record.as_bytes())?;
+        self.transcript.write_all(b"\n")?;
+        self.transcript.flush()
+    }
+}
+
+/// Rule 8.4's schema: the response `action` object, for the provider's structured-output facility.
+///
+/// Built rather than written out as a literal, so that [`RESPONSE_VERBS`] is the one statement of
+/// the verb set on this side and a twelfth verb cannot be added to the enumeration without appearing
+/// here. The shape is the one `docs/CONNECTOR_PROTOCOL.md` publishes, which rule 10.4b makes
+/// normative as documented: `parameter` is not required, because seven of the eleven verbs take one
+/// and four do not.
+fn response_schema() -> String {
+    let verbs: Vec<String> = RESPONSE_VERBS
+        .iter()
+        .map(|verb| format!("\"{verb}\""))
+        .collect();
+    format!(
+        "{{\"type\":\"object\",\"required\":[\"verb\"],\"properties\":{{\"verb\":{{\"enum\":[{}]}},\
+         \"parameter\":{{\"type\":\"string\"}}}}}}",
+        verbs.join(",")
+    )
+}
+
+/// A reader for the connector's responses: `SPEC-MOK-007` rule 10.7's untrusted input, read without
+/// a crate.
+///
+/// **It exists because rule 10.1 forbids the alternative.** "Neither package acquires a crate" for
+/// this binding, so the responses of a program written by somebody else are read by code in this
+/// file. `REQ-MOK-050`, `SPEC-MOK-002` rule 13 and `ARCH-MOK-001`'s conformance check all rest on
+/// that, and this module is what it costs.
+///
+/// Three properties are the whole of its defence, and each is a line of code rather than a habit:
+///
+/// - **It is total over `&str`.** Every path returns `Option`, nothing indexes without a bound and
+///   nothing unwraps. A response is a line from a child process, so a panic here would be a run
+///   ended by the connector's choice of bytes.
+/// - **Nesting is bounded** by [`MAX_DEPTH`]. A recursive-descent reader with no bound is a stack
+///   overflow one line of `[[[[…` away, and a stack overflow is not a `Result`.
+/// - **No floating-point type appears.** A number is held as the text it arrived as and is converted
+///   only where an unsigned integer is what a field means, so `1e999`, `1.5` and `-1` are each a
+///   count this engine does not have rather than a count it invented. `SPEC-MOK-007` rule 14.2's
+///   integer arithmetic and case **P6**'s claim about the accounting both depend on no `f64` ever
+///   holding a figure that reaches them.
+///
+/// It reads what rule 10.4's responses are made of and no more: objects, arrays, strings, numbers
+/// and the three literals. It is not a general JSON library and is not offered as one — it is
+/// private, and the one caller is [`ConnectorPort`].
+mod json {
+    /// The nesting this reader admits, counted in containers.
+    ///
+    /// Rule 10.4's response nests two deep — the object, then `action` or `usage`. Sixteen is far
+    /// past anything the protocol describes and far short of anything that troubles a stack, which
+    /// is the point: the bound exists to make a hostile line a refused line, not to be a limit a
+    /// conforming connector could meet.
+    const MAX_DEPTH: u32 = 16;
+
+    /// One JSON value, in the shapes rule 10.4's responses are made of.
+    ///
+    /// `Number` holds the text it arrived as, for the reason the module comment gives: this crate
+    /// holds no floating-point value, and a number's meaning is decided by the field it is read for
+    /// rather than by this type.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub(super) enum Value {
+        Null,
+        Bool(bool),
+        Number(String),
+        Text(String),
+        List(Vec<Value>),
+        /// Members in the order they arrived, with duplicates kept. [`Value::member`] returns the
+        /// first, which is a choice and is stated: JSON fixes no meaning for a repeated key, so a
+        /// reader that took the last would let a connector append an override after a value the
+        /// operator's provider produced.
+        Map(Vec<(String, Value)>),
+    }
+
+    impl Value {
+        /// One member of an object, or `None` for an absent member and for every non-object.
+        ///
+        /// The two cases are deliberately one: every caller in [`super::ConnectorPort`] is asking
+        /// "is this field here and usable", and a `usage` that arrived as a string is a field that
+        /// is not usable in exactly the way an absent one is not.
+        pub(super) fn member(&self, name: &str) -> Option<&Value> {
+            match self {
+                Self::Map(members) => members
+                    .iter()
+                    .find(|(key, _)| key == name)
+                    .map(|(_, value)| value),
+                _ => None,
+            }
+        }
+
+        /// The value as a string, and `None` for every other shape.
+        pub(super) fn text(&self) -> Option<&str> {
+            match self {
+                Self::Text(text) => Some(text.as_str()),
+                _ => None,
+            }
+        }
+
+        /// The value as an unsigned integer count, and `None` for anything else at all.
+        ///
+        /// A run of ASCII digits and nothing else: no sign, no fraction, no exponent, and no
+        /// leading `+`. `u64::from_str` refuses the rest, and where it refuses the count is
+        /// **absent** under rule 11.5 rather than coerced — a negative count, a fractional count and
+        /// `1e999` are three things a provider did not report.
+        pub(super) fn count(&self) -> Option<u64> {
+            match self {
+                Self::Number(text) => text.parse().ok(),
+                _ => None,
+            }
+        }
+    }
+
+    /// One line to one value, or `None` for anything this reader will not read.
+    ///
+    /// Trailing content after the value is a refusal and not something to ignore: rule 10.2 puts one
+    /// object on a line, so a line carrying an object and then more bytes is not that.
+    pub(super) fn parse(line: &str) -> Option<Value> {
+        let mut reader = Reader {
+            characters: line.chars().collect(),
+            at: 0,
+        };
+        let value = reader.value(0)?;
+        reader.skip_whitespace();
+        if reader.at != reader.characters.len() {
+            return None;
+        }
+        Some(value)
+    }
+
+    /// A cursor over the line's characters.
+    ///
+    /// Characters and not bytes, so that a multi-byte character in a message can never be sliced
+    /// through the middle. A response line is a few hundred characters, so the collection costs
+    /// nothing worth a byte-index reader's care.
+    struct Reader {
+        characters: Vec<char>,
+        at: usize,
+    }
+
+    impl Reader {
+        fn peek(&self) -> Option<char> {
+            self.characters.get(self.at).copied()
+        }
+
+        fn take(&mut self) -> Option<char> {
+            let character = self.peek()?;
+            self.at += 1;
+            Some(character)
+        }
+
+        /// JSON's four whitespace characters and no others. A vertical tab or a form feed between
+        /// tokens is not whitespace here, because it is not whitespace in the grammar.
+        fn skip_whitespace(&mut self) {
+            while matches!(self.peek(), Some(' ' | '\t' | '\n' | '\r')) {
+                self.at += 1;
+            }
+        }
+
+        fn expect(&mut self, expected: char) -> Option<()> {
+            (self.take()? == expected).then_some(())
+        }
+
+        fn literal(&mut self, text: &str) -> Option<()> {
+            for expected in text.chars() {
+                self.expect(expected)?;
+            }
+            Some(())
+        }
+
+        fn value(&mut self, depth: u32) -> Option<Value> {
+            if depth > MAX_DEPTH {
+                return None;
+            }
+            self.skip_whitespace();
+            match self.peek()? {
+                '{' => self.map(depth),
+                '[' => self.list(depth),
+                '"' => self.text().map(Value::Text),
+                't' => self.literal("true").map(|()| Value::Bool(true)),
+                'f' => self.literal("false").map(|()| Value::Bool(false)),
+                'n' => self.literal("null").map(|()| Value::Null),
+                '-' | '0'..='9' => self.number(),
+                _ => None,
+            }
+        }
+
+        fn map(&mut self, depth: u32) -> Option<Value> {
+            self.expect('{')?;
+            let mut members = Vec::new();
+            self.skip_whitespace();
+            if self.peek()? == '}' {
+                self.at += 1;
+                return Some(Value::Map(members));
+            }
+            loop {
+                self.skip_whitespace();
+                let key = self.text()?;
+                self.skip_whitespace();
+                self.expect(':')?;
+                members.push((key, self.value(depth + 1)?));
+                self.skip_whitespace();
+                match self.take()? {
+                    ',' => continue,
+                    '}' => return Some(Value::Map(members)),
+                    _ => return None,
+                }
+            }
+        }
+
+        fn list(&mut self, depth: u32) -> Option<Value> {
+            self.expect('[')?;
+            let mut entries = Vec::new();
+            self.skip_whitespace();
+            if self.peek()? == ']' {
+                self.at += 1;
+                return Some(Value::List(entries));
+            }
+            loop {
+                entries.push(self.value(depth + 1)?);
+                self.skip_whitespace();
+                match self.take()? {
+                    ',' => continue,
+                    ']' => return Some(Value::List(entries)),
+                    _ => return None,
+                }
+            }
+        }
+
+        /// A string, with JSON's escapes and with a surrogate pair joined into the character it
+        /// denotes.
+        ///
+        /// A lone surrogate is refused rather than replaced. `char::from_u32` cannot hold one, and
+        /// the two alternatives are a replacement character — which would silently change a message
+        /// — and a panic, which rule 10.7 makes unavailable. A response carrying one is a response
+        /// this reader does not read, and rule 9.5's fallback is what follows.
+        fn text(&mut self) -> Option<String> {
+            self.expect('"')?;
+            let mut text = String::new();
+            loop {
+                match self.take()? {
+                    '"' => return Some(text),
+                    '\\' => match self.take()? {
+                        '"' => text.push('"'),
+                        '\\' => text.push('\\'),
+                        '/' => text.push('/'),
+                        'b' => text.push('\u{8}'),
+                        'f' => text.push('\u{c}'),
+                        'n' => text.push('\n'),
+                        'r' => text.push('\r'),
+                        't' => text.push('\t'),
+                        'u' => text.push(self.escaped_character()?),
+                        _ => return None,
+                    },
+                    // Rule 10.2: no object contains a raw newline, and a control character inside a
+                    // string is outside JSON's grammar besides. Refused rather than accepted, so a
+                    // response cannot smuggle a line break past the framing.
+                    control if control.is_control() => return None,
+                    character => text.push(character),
+                }
+            }
+        }
+
+        /// One `\u` escape, and the second half of a surrogate pair where the first half needs one.
+        fn escaped_character(&mut self) -> Option<char> {
+            let first = self.hex_quad()?;
+            // The high half of a surrogate pair. The low half must follow, spelled as its own
+            // escape, which is how JSON carries a character outside the basic multilingual plane.
+            if (0xd800..0xdc00).contains(&first) {
+                self.expect('\\')?;
+                self.expect('u')?;
+                let second = self.hex_quad()?;
+                if !(0xdc00..0xe000).contains(&second) {
+                    return None;
+                }
+                let combined = 0x1_0000 + ((first - 0xd800) << 10) + (second - 0xdc00);
+                return char::from_u32(combined);
+            }
+            char::from_u32(first)
+        }
+
+        fn hex_quad(&mut self) -> Option<u32> {
+            let mut value = 0u32;
+            for _ in 0..4 {
+                value = value * 16 + self.take()?.to_digit(16)?;
+            }
+            Some(value)
+        }
+
+        /// A number, kept as the text it arrived as and validated against JSON's grammar.
+        ///
+        /// Validated rather than merely collected, so that `count` refusing a value means "this is
+        /// not an unsigned integer" and never "this reader stopped early". `01`, `1.`, `.5`, `1e`
+        /// and a bare `-` are each refused here, where refusing the whole line is the right answer,
+        /// rather than becoming a truncated value in a field.
+        fn number(&mut self) -> Option<Value> {
+            let start = self.at;
+            if self.peek() == Some('-') {
+                self.at += 1;
+            }
+            match self.take()? {
+                // A leading zero admits no further digit, which is JSON's grammar and not a
+                // strictness of this reader's.
+                '0' => {}
+                '1'..='9' => self.skip_digits(),
+                _ => return None,
+            }
+            if self.peek() == Some('.') {
+                self.at += 1;
+                self.digits()?;
+            }
+            if matches!(self.peek(), Some('e' | 'E')) {
+                self.at += 1;
+                if matches!(self.peek(), Some('+' | '-')) {
+                    self.at += 1;
+                }
+                self.digits()?;
+            }
+            Some(Value::Number(
+                self.characters[start..self.at].iter().collect(),
+            ))
+        }
+
+        /// At least one digit, for the two places JSON's grammar requires one.
+        fn digits(&mut self) -> Option<()> {
+            if !self.peek()?.is_ascii_digit() {
+                return None;
+            }
+            self.skip_digits();
+            Some(())
+        }
+
+        fn skip_digits(&mut self) {
+            while self
+                .peek()
+                .is_some_and(|character| character.is_ascii_digit())
+            {
+                self.at += 1;
+            }
+        }
+    }
+}
+
 /// The private adapter of `SPEC-MOK-007` rule 20.6: it implements the engine's own decision-source
 /// abstraction in terms of the public port.
 ///
@@ -13872,6 +14507,472 @@ mod tests {
                 .windows(2)
                 .any(|pair| pair[0].is_ascii_digit() && matches!(pair[1], 'e' | 'E')),
             "{figures}"
+        );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007` rule 10: the connector port, over streams assembled here.
+    //
+    // **No process is started anywhere in this section.** The port holds two streams and a sink,
+    // so an exchange is a slice of bytes going in and a `Vec<u8>` coming out, and every case rule
+    // 10.4 admits or refuses can be written down as a line of text. The host's half — the spawn,
+    // the inheritance, the reaping — is `tests/connector.rs`, which needs a real child; this tier
+    // is the reading, which does not.
+    //
+    // Rule 10.7 declares the connector's output untrusted in whole, and that is what most of the
+    // cases below are: lines no honest connector would send, each of which must become rule 9.5's
+    // counted fallback rather than a panic, a coerced figure or a plausible wrong action.
+    // -----------------------------------------------------------------------------------
+
+    /// A request composed from a real observation.
+    ///
+    /// Composed and not hand-built, because the request's own bytes are part of what is asserted:
+    /// rule 3.6 is a claim about the order and the joining of the four blocks, and a request whose
+    /// blocks this test wrote could not check it.
+    fn connector_request() -> DecisionRequest {
+        let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        DecisionRequest::compose(&simulation.observation(0))
+    }
+
+    /// One exchange over in-memory streams: what was sent, what came back, and the transcript.
+    ///
+    /// The record is written here rather than inside the port, because [`Proposer`] separates the
+    /// two — `propose` answers and `record` keeps — and [`PortDecisionSource::decide`] is what
+    /// pairs them in a run. Doing the same pairing here is what makes the transcript below the
+    /// transcript a run would have written.
+    fn exchange_over(responses: &str) -> (String, Proposal, String) {
+        let request = connector_request();
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let proposal = {
+            let mut port = ConnectorPort::new(responses.as_bytes(), &mut requests, &mut transcript);
+            let proposal = port.propose(request.clone());
+            port.record(&exchange_record(&request, &proposal)).unwrap();
+            proposal
+        };
+        (
+            String::from_utf8(requests).unwrap(),
+            proposal,
+            String::from_utf8(transcript).unwrap(),
+        )
+    }
+
+    /// A response that every grammar case below starts from and spoils in one way.
+    ///
+    /// Well formed in full: the protocol, an action with a legal verb, what answered, at what
+    /// level, and the four counts. A case that spoils one field therefore differs from an admitted
+    /// response in exactly that field.
+    const WELL_FORMED: &str = "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\
+                               \"model\":\"a-model-identifier\",\"reasoning\":\"none\",\
+                               \"usage\":{\"prompt\":1000,\"cached_prompt\":900,\"output\":8,\
+                               \"reasoning\":0}}";
+
+    /// Rules 10.2, 10.3, 10.3a and 3.6: the request is one line of five fields, and the prompt is
+    /// the four blocks in order.
+    ///
+    /// The field order is asserted by position rather than by membership, because rule 10.4b makes
+    /// the names `docs/CONNECTOR_PROTOCOL.md` documents normative and a connector author reading
+    /// that document writes a reader against this shape.
+    ///
+    /// **The absence of a sixth field is the security-relevant half.** Rule 10.3a keeps the model,
+    /// the reasoning level and the credential off the request: the first two are the connector's
+    /// choice to make and report back, and the third is a value this process never holds.
+    #[test]
+    fn the_request_is_one_line_of_the_five_documented_fields() {
+        let request = connector_request();
+        let (sent, _, _) = exchange_over(WELL_FORMED);
+
+        // Rule 10.2's framing: one object, one terminator, and no raw newline inside — which is
+        // the whole reason the four blocks are escaped rather than sent as they are worded.
+        assert!(sent.ends_with('\n'), "{sent}");
+        assert_eq!(sent.matches('\n').count(), 1, "{sent}");
+
+        let line = sent.trim_end_matches('\n');
+        assert!(line.starts_with("{\"protocol\":1,\"tick\":"), "{line}");
+        let expected_head = format!(
+            "{{\"protocol\":1,\"tick\":{},\"actor\":\"{}\",\"prompt\":\"",
+            request.tick(),
+            request.actor_id()
+        );
+        assert!(line.starts_with(&expected_head), "{line}");
+        assert!(
+            line.ends_with(&format!(",\"schema\":{}}}", response_schema())),
+            "{line}"
+        );
+
+        // Rule 3.6: the prompt is `blocks()` concatenated, with no separator this module invented.
+        // Asserted through the round trip, so it is the *bytes* that are checked rather than a
+        // second composition agreeing with the first.
+        let prompt = line
+            .split_once("\"prompt\":\"")
+            .and_then(|(_, rest)| rest.split_once("\",\"schema\":"))
+            .map(|(prompt, _)| prompt)
+            .unwrap();
+        assert_eq!(
+            unescape_transcript_text(prompt).as_deref(),
+            Some(request.blocks().concat().as_str())
+        );
+
+        // Rule 10.3a: no sixth field. Checked as the field forms, because the prompt is prose and
+        // may legitimately contain any word.
+        let fields = format!("{}\"schema\"", line.split_once("\"prompt\"").unwrap().0);
+        for absent in ["\"model\"", "\"reasoning\"", "\"key\"", "\"credential\""] {
+            assert!(!fields.contains(absent), "{fields} names {absent}");
+        }
+    }
+
+    /// Rule 10.4: an admitted response yields the action, the counts and the line.
+    ///
+    /// All three, because rule 11.3 and rule 14 need different halves of the same exchange and the
+    /// port is the only place both are visible: the action reaches the run, the counts reach the
+    /// accounting, and the line reaches the transcript.
+    #[test]
+    fn an_admitted_response_yields_the_action_the_counts_and_the_line() {
+        let (_, proposal, transcript) = exchange_over(WELL_FORMED);
+
+        assert_eq!(proposal.action, Some(Action::Sleep));
+        assert_eq!(proposal.usage.prompt, Some(1000));
+        assert_eq!(proposal.usage.cached_prompt, Some(900));
+        assert_eq!(proposal.usage.output, Some(8));
+        assert_eq!(proposal.usage.reasoning, Some(0));
+        assert_eq!(proposal.response.as_deref(), Some(WELL_FORMED));
+
+        // Rule 11.2's one line per exchange, terminated with one byte on every platform.
+        assert_eq!(transcript.matches('\n').count(), 1, "{transcript}");
+        assert!(!transcript.contains('\r'), "{transcript}");
+        assert!(transcript.contains("\"fallback\":false"), "{transcript}");
+    }
+
+    /// Rule 10.2's one-for-one ordering, and the trailing carriage return a connector on Windows
+    /// may write.
+    ///
+    /// A response line is terminated by the connector and this engine did not choose how. A reader
+    /// that kept the `\r` would carry it into every parsed string and would fail the grammar check
+    /// on a well-formed response, for a reason no operator could see.
+    #[test]
+    fn a_response_terminated_with_a_carriage_return_is_read() {
+        let (_, proposal, _) = exchange_over(&format!("{WELL_FORMED}\r\n"));
+        assert_eq!(proposal.action, Some(Action::Sleep));
+    }
+
+    /// Rules 10.4, 10.4c and 8.2: every case the grammar refuses, and each is a counted fallback
+    /// carrying its own line.
+    ///
+    /// One test for all of them, because the assertion is identical and the cases are a list: no
+    /// action, the line recorded as received, and the record marked. What differs between them is
+    /// only which field was spoiled, and naming that in the loop is what a failure needs to say.
+    ///
+    /// The `usage` case is a reading of rule 10.4a rather than of 10.4c, and it is disclosed as
+    /// one: 10.4a puts a `usage` on the response that carries an action, so an action arriving
+    /// with no `usage` at all is not the documented response. Its *contents* are not required —
+    /// rule 11.5 makes every individual count absent-able — which the case below the list checks.
+    #[test]
+    fn every_response_the_grammar_refuses_is_a_counted_fallback() {
+        for (why, response) in [
+            (
+                "a protocol version this engine does not read",
+                "{\"protocol\":2,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "no protocol version at all",
+                "{\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\"reasoning\":\"none\",\
+                 \"usage\":{}}",
+            ),
+            (
+                "both an action and an error, which rule 10.4 admits exactly one of",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"error\":{\"kind\":\"provider\",\
+                 \"message\":\"m\"},\"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "an error, which is rule 19.5a's immediate fallback and carries no action",
+                "{\"protocol\":1,\"error\":{\"kind\":\"refused\",\"message\":\"no credential\"}}",
+            ),
+            (
+                "no model, which rule 10.4c names",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"reasoning\":\"none\",\
+                 \"usage\":{}}",
+            ),
+            (
+                "an empty model, which is not a name",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a model that is not a string",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":7,\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "no reasoning level, which rule 10.4c names beside the model",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\"usage\":{}}",
+            ),
+            (
+                "a reasoning level that is the count and not the level",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\"reasoning\":0,\
+                 \"usage\":{}}",
+            ),
+            (
+                "no usage, which rule 10.4a puts on every response carrying an action",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\"}",
+            ),
+            (
+                "a verb outside rule 8.2's eleven",
+                "{\"protocol\":1,\"action\":{\"verb\":\"negotiate\",\"parameter\":\"M02\"},\
+                 \"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a verb given a parameter it does not take",
+                "{\"protocol\":1,\"action\":{\"verb\":\"wait\",\"parameter\":\"M02\"},\
+                 \"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a verb missing the parameter it does take",
+                "{\"protocol\":1,\"action\":{\"verb\":\"eat\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a parameter that is present and is not a string",
+                "{\"protocol\":1,\"action\":{\"verb\":\"avoid\",\"parameter\":2},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "an action that is not an object",
+                "{\"protocol\":1,\"action\":\"sleep\",\"model\":\"m\",\"reasoning\":\"none\",\
+                 \"usage\":{}}",
+            ),
+            (
+                "no action and no error, which answers nothing at all",
+                "{\"protocol\":1,\"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+        ] {
+            let (_, proposal, transcript) = exchange_over(response);
+            assert!(proposal.action.is_none(), "admitted {why}: {response}");
+            // Rule 11.3: as received, in full. The refused line is the one a reader needs most.
+            assert_eq!(proposal.response.as_deref(), Some(response), "{why}");
+            assert!(
+                transcript.contains("\"fallback\":true"),
+                "{why}: {transcript}"
+            );
+            // Rule 9.5's fallback is `wait`, and rule 9.7 forbids a substitute from elsewhere: the
+            // refused `sleep` must not have become the recorded action.
+            assert!(
+                transcript.contains("\"action\":{\"verb\":\"wait\"}"),
+                "{why}: {transcript}"
+            );
+        }
+    }
+
+    /// Rule 11.5: an unusable count is **absent**, not zero, and does not cost the exchange its
+    /// action.
+    ///
+    /// The two halves are one test because they are one design decision. Rule 10.8 says the ceiling
+    /// protects against an honest connector and not a dishonest one, so a figure this reader cannot
+    /// use is not a reason to refuse an action that is otherwise well formed — but it must not be
+    /// read as zero either, because zero is a cost and absence is a failure to evaluate, and rule
+    /// 14.5 acts on the second.
+    #[test]
+    fn an_unusable_count_is_absent_rather_than_zero() {
+        for figure in ["-1", "1.5", "1e9", "\"1000\"", "null", "true", "[]", "{}"] {
+            let response = format!(
+                "{{\"protocol\":1,\"action\":{{\"verb\":\"sleep\"}},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{{\"prompt\":{figure},\"cached_prompt\":900,\
+                 \"output\":8,\"reasoning\":0}}}}"
+            );
+            let (_, proposal, transcript) = exchange_over(&response);
+            assert_eq!(proposal.action, Some(Action::Sleep), "{figure}");
+            assert_eq!(proposal.usage.prompt, None, "{figure} became a count");
+            assert_eq!(proposal.usage.cached_prompt, Some(900), "{figure}");
+            // And the record says absent rather than omitting the member, which rule 11.5's second
+            // level of absence is for.
+            assert!(transcript.contains("\"prompt\":null"), "{transcript}");
+        }
+    }
+
+    /// Rule 19.5a's `malformed`, and rule 10.7's totality: a line that is not a response is a
+    /// counted fallback and never a panic.
+    ///
+    /// The list is what a connector goes wrong in: a truncated line, a line that is not JSON at
+    /// all, an empty line, a second object after the first, and nesting past this reader's bound.
+    /// Every one of them arrives from a child process, so a reader that panicked on any of them
+    /// would be a run ended by the connector's choice of bytes.
+    #[test]
+    fn a_line_that_is_not_a_response_is_a_counted_fallback() {
+        let deep = format!("{}1{}", "[".repeat(64), "]".repeat(64));
+        for line in [
+            "",
+            " ",
+            "not json",
+            "{",
+            "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"}",
+            "{\"protocol\":1} {\"protocol\":1}",
+            "{\"protocol\":1}trailing",
+            "{\"protocol\":01}",
+            "{\"protocol\":1,\"model\":\"\\ud800\"}",
+            "{\"protocol\":1,\"model\":\"a\tb\"}",
+            &deep,
+        ] {
+            let (_, proposal, transcript) = exchange_over(line);
+            assert!(proposal.action.is_none(), "admitted {line:?}");
+            assert_eq!(proposal.usage, ReportedUsage::default(), "{line:?}");
+            assert!(transcript.contains("\"fallback\":true"), "{line:?}");
+        }
+    }
+
+    /// Rule 10.2's exactly one response per request: a connector that closed its output has
+    /// stopped answering, which is an error and not an empty answer.
+    ///
+    /// Recorded as rule 11.3's "or the error", and a counted fallback rather than an abort under
+    /// rule 9.8. Rule 19.7 is kept by what the message can contain: an `io::Error` from a stream
+    /// names no credential, and this port resolved no path to name.
+    #[test]
+    fn a_closed_output_is_an_error_and_not_an_empty_response() {
+        let (sent, proposal, transcript) = exchange_over("");
+
+        // The request was still written: the failure is the answer's absence, not a refusal to ask.
+        assert!(sent.ends_with('\n'), "{sent}");
+        assert!(proposal.action.is_none());
+        let recorded = proposal.response.unwrap();
+        assert!(recorded.starts_with("connector: "), "{recorded}");
+        assert!(transcript.contains("\"fallback\":true"), "{transcript}");
+        for forbidden in ["sk-", "api", "key", "authorization"] {
+            assert!(!recorded.to_lowercase().contains(forbidden), "{recorded}");
+        }
+    }
+
+    /// Rule 11.2: one record per line, and the sink is flushed as each is written.
+    ///
+    /// The flush is asserted as bytes present in the sink *before* the port is dropped, which is
+    /// the only way to tell a written record from a buffered one. A live run's records are evidence
+    /// somebody paid for, and a buffer holding the last exchanges of a run that then died would
+    /// lose exactly the records nobody can regenerate without spending again.
+    #[test]
+    fn every_record_reaches_the_transcript_before_the_port_is_dropped() {
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        // No response is needed: this is the recording half of [`Proposer`], and the two halves are
+        // separate for exactly this reason — a record is written whether an exchange yielded
+        // anything or not.
+        let mut port = ConnectorPort::new("".as_bytes(), &mut requests, &mut transcript);
+
+        port.record("first").unwrap();
+        port.record("second").unwrap();
+        drop(port);
+
+        assert_eq!(String::from_utf8(transcript).unwrap(), "first\nsecond\n");
+    }
+
+    /// Rule 11.3 and rule 12.6: a response is recorded so that reading the record back yields the
+    /// bytes the connector sent.
+    ///
+    /// The round trip is what rule 11.4.1 asks for and what a replay of a live recording depends
+    /// on. A response is the one string on a record that this library did not compose, so it is
+    /// the one that can carry a quotation mark, a backslash or a newline of somebody else's
+    /// choosing — and a record that escaped it wrongly would replay as a different exchange.
+    #[test]
+    fn a_response_survives_the_record_it_is_written_into() {
+        let awkward = "{\"protocol\":1,\"model\":\"a \\\"quoted\\\" \\\\ name\"}";
+        let (_, proposal, transcript) = exchange_over(awkward);
+
+        assert_eq!(proposal.response.as_deref(), Some(awkward));
+        assert_eq!(transcript.lines().count(), 1, "{transcript}");
+        let recorded = transcript
+            .split_once("\"response\":\"")
+            .and_then(|(_, rest)| rest.split_once("\",\"usage\":"))
+            .map(|(response, _)| response)
+            .unwrap();
+        assert_eq!(unescape_transcript_text(recorded).as_deref(), Some(awkward));
+    }
+
+    /// Rule 8.4 against rule 8.2: the schema offers a provider exactly the verbs this engine
+    /// admits, and no others.
+    ///
+    /// [`RESPONSE_VERBS`] is a second statement of a set [`action_from_parts`] already fixes, and
+    /// this is the test that makes the duplication safe rather than merely small. The failure it
+    /// prevents costs money: a schema offering a twelfth verb would have a provider answer with it
+    /// under a structured-output guarantee, and the answer would be refused by the grammar check —
+    /// a paid exchange spent on a counted fallback, every time, for as long as the two disagreed.
+    #[test]
+    fn the_schema_offers_exactly_the_verbs_the_engine_admits() {
+        // Forwards: every verb the schema offers is admitted under *some* parameter. Three forms,
+        // because the eleven do not agree on what a parameter is — four take none, six take an
+        // identifier and `move` takes a direction — and the claim being checked here is that the
+        // verb is admitted at all rather than that any particular pairing is.
+        let direction = Direction::ORDERED[0].to_string();
+        for verb in RESPONSE_VERBS {
+            assert!(
+                [None, Some("M02"), Some(direction.as_str())]
+                    .into_iter()
+                    .any(|parameter| action_from_parts(verb, parameter).is_some()),
+                "the schema offers {verb}, which the grammar refuses"
+            );
+        }
+
+        // Backwards: every action the engine can carry has its verb in the schema. The eleven are
+        // written out because the enumeration has no iterator, and the count is asserted so that a
+        // twelfth variant fails here rather than being silently unlisted.
+        let every_action = [
+            Action::Wait,
+            Action::Sleep,
+            Action::Eat {
+                food_id: "F01".to_string(),
+            },
+            Action::Move {
+                direction: Direction::ORDERED[0],
+            },
+            Action::Attack {
+                target: "M02".to_string(),
+            },
+            Action::Threaten {
+                target: "M02".to_string(),
+            },
+            Action::Fight {
+                target: "M02".to_string(),
+            },
+            Action::Retreat {
+                target: "M02".to_string(),
+            },
+            Action::Surrender {
+                target: "M02".to_string(),
+            },
+            Action::Approach {
+                target: "M02".to_string(),
+            },
+            Action::Avoid {
+                target: "M02".to_string(),
+            },
+        ];
+        let verbs: std::collections::BTreeSet<&str> = every_action
+            .iter()
+            .map(|action| action_parts(action).0)
+            .collect();
+        assert_eq!(verbs.len(), every_action.len(), "two actions share a verb");
+        assert_eq!(
+            verbs,
+            RESPONSE_VERBS
+                .into_iter()
+                .collect::<std::collections::BTreeSet<&str>>()
+        );
+
+        // And the schema states them as its enumeration, in the documented order.
+        let schema = response_schema();
+        assert!(
+            schema.contains(&format!(
+                "\"enum\":[{}]",
+                RESPONSE_VERBS
+                    .iter()
+                    .map(|verb| format!("\"{verb}\""))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )),
+            "{schema}"
+        );
+        // `parameter` is offered and is not required, because four of the eleven take none.
+        assert!(schema.contains("\"required\":[\"verb\"]"), "{schema}");
+        assert!(
+            schema.contains("\"parameter\":{\"type\":\"string\"}"),
+            "{schema}"
         );
     }
 }
