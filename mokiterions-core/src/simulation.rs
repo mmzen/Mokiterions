@@ -1100,6 +1100,20 @@ trait DecisionSource {
         false
     }
 
+    /// This source's accounting, asked once when the run loop has ended.
+    ///
+    /// The private half of [`Proposer::accounting`], on [`DecisionSource::halted`]'s exact grounds:
+    /// the run loop drives a `DecisionSource` and knows nothing of a port. Only `PortDecisionSource`
+    /// overrides it, so the four deterministic sources report no accounting and therefore no run
+    /// record — which is rule 16's non-perturbation obligation stated once more as a call graph
+    /// rather than as a branch, and is why a `baseline` run's bytes cannot move.
+    ///
+    /// Defaulted to `None` for the public method's reason: a source that spends nothing has no
+    /// account to state.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        None
+    }
+
     fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action;
 
     /// A failure the source reached while deciding, which ends the run.
@@ -1754,6 +1768,91 @@ impl Proposal {
     }
 }
 
+/// A live run's accounting as one value: `SPEC-MOK-007` rule 15.2's figures, leaving the party that
+/// accumulates them for the party that reports them.
+///
+/// **Why it crosses the boundary at all.** Rule 15.1 makes the run record the one place every
+/// accounting figure is stated, and rule 20.4.1 keeps every accumulator in the port; the two rules
+/// meet only if the figures cross rule 1.1's boundary. Rule 1.1d is the amendment that admits them
+/// and this is the value it admits.
+///
+/// **It is also what makes rule 15.6 keepable.** [`mod accounting`](accounting) recorded the
+/// blocker: a replay reports no run record, and "[`PortDecisionSource`] cannot tell a replaying port
+/// from a live one — rule 1.1 leaves `propose` returning the same `Option<Action>` either way", so a
+/// record written by the engine would have been "an account of spending that never happened". An
+/// `Option` of this type *is* that discrimination: [`ReplayPort`] takes
+/// [`Proposer::accounting`]'s default and answers `None`, so rule 15.6 holds by the shape of a
+/// return rather than by a party guessing.
+///
+/// **A value the engine formats, over the two alternatives, and the repository owner chose it.** A
+/// port that rendered the record itself would put rule 15's field set, its spelling and its escaping
+/// behind rule 1.1's boundary, leaving the engine unable to state what its own record says while rule
+/// 11.1 makes it the author of every other one. Reading the figures out one method at a time is rule
+/// 1.1a's declined shape a third time — a set of calls whose mutual agreement is a temporal contract
+/// no type enforces. One value, taken once, when the run has ended.
+///
+/// **No decision reads it and none can.** Rule 14's *State model* forbids any accounting figure to
+/// influence a decision, and the call graph is what keeps that literal: this is asked after the run
+/// loop has returned, by the code that renders the record and by nothing else. There is no
+/// opportunity left to spend it on.
+///
+/// Every figure is an integer or an absence — rule 15.3's positive zero and rule 11.5's absence,
+/// which is why the two that can be missing are `Option` and the totals are not. **No field is a
+/// floating-point value**, case **P6**'s claim about the accounting region, which is why the ratio is
+/// basis points and not a fraction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LiveAccounting {
+    /// Every exchange the run issued, including each one rule 19.5 retried and each that yielded
+    /// nothing. Rule 15.1's authority rather than rule 15.2's enumeration: it is an accounting
+    /// figure this specification produces, and rule 14.5's threshold of 200 counts these.
+    pub exchanges: u64,
+    /// Prompt tokens over the run, as the provider reported them. Rule 11.5 makes an unreported
+    /// count contribute nothing, so a total is always a number even where an exchange reported none.
+    pub prompt_tokens: u64,
+    /// Prompt tokens the provider reported as served from its cache.
+    pub cached_prompt_tokens: u64,
+    /// Output tokens over the run.
+    pub output_tokens: u64,
+    /// Reasoning tokens over the run. A **count**, not the level: rule 15.2 asks for both and they
+    /// are two fields here as they are two members of a response.
+    pub reasoning_tokens: u64,
+    /// Rule 14.4's cache ratio in basis points, or rule 14.5's absence.
+    ///
+    /// A separate figure and not the two totals above divided, because the absence is not derivable
+    /// from them: rule 14.5 makes the ratio uncomputable once *any* exchange reported a prompt count
+    /// with no cached-prompt figure, and the partial sum of the exchanges that did report one is a
+    /// real total that the record still states. The party that saw the exchanges is the only one that
+    /// can tell those two apart, so it answers rather than leaving a reader to divide.
+    pub cache_ratio_basis_points: Option<u64>,
+    /// Rule 14.2's accumulated cost in **whole US cents**, truncated. The unit is in the name
+    /// because rule 14.2 fixes the minor unit and a field named for a unit it does not carry is the
+    /// failure this pair exists to avoid.
+    pub cost_cents: u64,
+    /// Rule 14.6's declared ceiling in whole US cents, or `None` for a run that declared none —
+    /// which for a live run rule 13.5 forbids the host to start and which rule 14.8 is the ordinary
+    /// case of.
+    pub ceiling_cents: Option<u64>,
+    /// Rule 9.5's occurrences, counted. Rule 15.4 marks the run unfit to source a published figure
+    /// when this exceeds zero, and rule 15.3 has a clean run state its zero positively.
+    pub fallbacks: u64,
+    /// The model identifier the connector reported, rule 15.2, and `None` for a run no response of
+    /// which carried one.
+    ///
+    /// **From the first response that carried it, and never replaced.** Rule 15.2 states "the model
+    /// identifier" in the singular while a connector may report a different one per exchange, and
+    /// the repository owner decided this on 2026-08-29: a run's cost was quoted against the binding
+    /// in force from its first exchange, and a figure that could change within a run is one a later
+    /// reader has to prove constant — which is rule 3.3's own reasoning about the response schema.
+    /// **A connector that changed models mid-run is not detected**, and that is disclosed rather
+    /// than repaired: detecting it costs two more fields and a `null` whose meaning rule 15.3's
+    /// idiom does not cover.
+    pub model: Option<String>,
+    /// The reasoning level the connector reported, taken with [`Self::model`] in the same act and on
+    /// the same terms. Rule 8.5 fixes the level a run may use at `none`, so this is where a run shows
+    /// it got what it asked for.
+    pub reasoning_level: Option<String>,
+}
+
 /// The engine's one interface for obtaining a proposal from outside itself.
 ///
 /// `SPEC-MOK-007` rule 1.1: it takes a request by value and returns either a proposal or the
@@ -1838,6 +1937,28 @@ pub trait Proposer {
     /// is the port's to keep: no credential, and no path, because the engine resolved none and has
     /// nothing to say about the one the host opened.
     fn record(&mut self, record: &str) -> io::Result<()>;
+
+    /// This port's accounting, asked **once**, after the run has ended, or `None` from a port that
+    /// spent nothing.
+    ///
+    /// Rule 1.1d's amendment and rule 15's obligation met: rule 15.1 makes the run record the one
+    /// place every accounting figure is stated and rule 20.4.1 keeps every accumulator here, so this
+    /// is the one route between them. [`LiveAccounting`] states what crosses and why it is a value
+    /// rather than a rendered line or a family of getters.
+    ///
+    /// **Defaulted to `None`, and the default is rule 15.6.** A replay reports no run record, and it
+    /// reports none by answering here rather than by a caller knowing what it is: [`ReplayPort`]
+    /// takes this default, so does any port with nothing behind it, and the engine's own question
+    /// stops being "which kind of port is this" — which rule 1.1 gives it no way to ask — and becomes
+    /// "did anything spend". A port that spends nothing has no account to state.
+    ///
+    /// `&self`, on [`Proposer::halted`]'s reason and one further one. Asking must not move a figure;
+    /// and a method that could bill while reporting would make a run's *reported* cost a function of
+    /// how often it was asked, which is the one arithmetic error here that no test comparing a record
+    /// against a transcript would catch.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        None
+    }
 }
 
 /// Block B, rule 5: the identifier and the trait constant, and rule 5.2's nothing else.
@@ -2915,6 +3036,19 @@ pub struct ConnectorPort<'sink, R: BufRead, W: Write> {
     /// never reads it — rule 14's *State model* says none of it may influence a decision, and a
     /// figure the engine cannot see cannot.
     account: accounting::RunAccount,
+    /// Rule 15.2's model identifier and reasoning level, **as the connector reported them**, from the
+    /// first response that carried both and never replaced.
+    ///
+    /// Retained here because rule 5 declares the binding in the connector and rule 10.3a keeps it out
+    /// of the request: the engine names no model, so the only place a run can learn which one answered
+    /// is a response. Rule 10.4c already requires every action-carrying response to name both, so a
+    /// run that obtained a single proposal has them; a run of nothing but failures has neither, and
+    /// reports the absence rather than an invented name.
+    ///
+    /// The repository owner decided *first and never replaced* on 2026-08-29, over the last reported
+    /// and over detecting a disagreement. [`LiveAccounting::model`] carries the reasoning and the
+    /// disclosure.
+    binding: Option<(String, String)>,
 }
 
 impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
@@ -2948,6 +3082,10 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
                 accounting::PerTokenPrices::declared(&prices),
                 ceiling,
             ),
+            // Nothing is known about what will answer, and a constant here would be a model this
+            // engine chose — rule 14.3's principle about the prices, applied to the one input rule 5
+            // keeps on the other side of the boundary.
+            binding: None,
         }
     }
 
@@ -3017,7 +3155,12 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
     /// another attempt. It is answered here rather than by a second parse of the same line, and the
     /// answer is about *this* response only — the bound belongs to [`Self::propose`], which is the
     /// only place that knows how many attempts an opportunity has already spent.
-    fn interpret(line: &str) -> (Proposal, bool) {
+    ///
+    /// **`&mut self` for rule 15.2's binding and for nothing else.** The model identifier and the
+    /// reasoning level are read from the same parse the two halves above are read from, because a
+    /// second parse of one line is a second reader to keep in agreement with the first. Nothing else
+    /// here consults or moves any state of this port: the proposal is a function of the line.
+    fn interpret(&mut self, line: &str) -> (Proposal, bool) {
         let response = Some(line.to_string());
         let Some(parsed) = json::parse(line) else {
             // Rule 19.5a's `malformed`: an immediate counted fallback, and the line is the whole of
@@ -3036,6 +3179,7 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
             );
         };
         let retry = Self::asks_for_another_attempt(&parsed);
+        self.retain_binding(&parsed);
         (
             Proposal {
                 action: Self::action(&parsed),
@@ -3045,6 +3189,38 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
             },
             retry,
         )
+    }
+
+    /// Rule 15.2's model identifier and reasoning level, from the first response that carried both.
+    ///
+    /// **Both or neither.** Rule 10.4c names them together and refuses an action that has only one, so
+    /// a half-filled binding would be a record naming a model at a reasoning level nobody reported.
+    /// An empty model is not a name, exactly as [`Self::action`] refuses it: a record stating the
+    /// empty string would claim to name what answered.
+    ///
+    /// **A response that failed the grammar check still binds.** Rule 10.4c's refused response was
+    /// billed, and this is deliberately not `Self::action`'s check repeated: an exchange that named a
+    /// model and a level and then failed on its verb reported the binding the run was spending
+    /// against, and a run every one of whose responses failed that way would otherwise report no
+    /// model while having reported one on every line.
+    ///
+    /// Once and never again, which is the whole of the owner's decision: the first response to carry
+    /// both fixes the figure for the run.
+    fn retain_binding(&mut self, response: &json::Value) {
+        if self.binding.is_some() {
+            return;
+        }
+        let Some(model) = response
+            .member("model")
+            .and_then(json::Value::text)
+            .filter(|model| !model.is_empty())
+        else {
+            return;
+        };
+        let Some(level) = response.member("reasoning").and_then(json::Value::text) else {
+            return;
+        };
+        self.binding = Some((model.to_string(), level.to_string()));
     }
 
     /// Rule 19.5a's vocabulary, as far as this engine acts on it: `transport` and `provider` are
@@ -3152,7 +3328,7 @@ impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
     /// One exchange, billed: rules 14.1 and 11.2, where an attempt is what gets billed and recorded.
     fn attempt(&mut self, request: &DecisionRequest) -> (Proposal, bool) {
         let (proposal, asks_for_another) = match self.exchange(request) {
-            Ok(line) => Self::interpret(&line),
+            Ok(line) => self.interpret(&line),
             // A pipe that failed is the connector's error, so it is recorded as one: rule 11.3
             // asks for "the response as received, in full, **or the error**", and this is the
             // error. It becomes rule 9.5's counted fallback rather than ending the run, per rule
@@ -3214,6 +3390,22 @@ impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
     /// child is left with an empty input queue and a live process the host will close.
     fn halted(&self) -> bool {
         self.account.ceiling_reached()
+    }
+
+    /// Rule 15's figures, read out of the accumulators rule 20.4.1 puts here.
+    ///
+    /// **Always `Some`, and that is what the return type means.** This port is what spends, so it has
+    /// an account whatever the run came to: a run whose connector died on its first exchange spent one
+    /// exchange and reports it, and a run that issued none reports the zeros rule 15.3 has it state
+    /// positively. The `None` the trait defaults to is a port that *cannot* spend, which is rule
+    /// 15.6's replay, and conflating the two would give a live run of failures no record at all.
+    ///
+    /// Every figure is taken through [`accounting::RunAccount`]'s own accessors rather than read off
+    /// its fields, so the units are the ones those methods document: the two money figures are rule
+    /// 14.2's whole cents and not the microcents the accumulation runs in, and the ratio is rule
+    /// 14.4's basis points with rule 14.5's absence intact.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        Some(self.account.reported(self.binding.as_ref()))
     }
 
     /// Rule 19.5's bounded retry, and rule 11.2's record for every attempt of it.
@@ -3684,6 +3876,12 @@ impl DecisionSource for PortDecisionSource<'_> {
         self.port.halted()
     }
 
+    /// Rule 15's figures, forwarded and nothing more, for the same reason [`Self::halted`] forwards
+    /// rule 14.6's answer: this adapter holds no accounting figure and computes none.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        self.port.accounting()
+    }
+
     /// Rule 11.1's prefix head: blocks A and B for every Mokiterion the run created, in ascending
     /// identifier order, before the first exchange.
     ///
@@ -3763,27 +3961,37 @@ impl DecisionSource for PortDecisionSource<'_> {
 
 /// `SPEC-MOK-007` rules 14 and 15: what a live run accumulates, and the run record it reports.
 ///
-/// **One module with one `#[allow(dead_code)]` on it, because nothing in this crate calls any of it
-/// yet.** `WO-MOK-025`'s item 7 builds the arithmetic and exercises it against declared prices and
-/// synthetic usage; there is no live run to feed it a provider's usage, because the connector, live
-/// mode and the ceiling option are `WO-MOK-026`'s and this stage is expressly out of scope for all
-/// three. The alternative was to have the recording path emit a run record now, and rule 15.6
-/// forbids it: a replay reports no run record, [`PortDecisionSource`] cannot tell a replaying port
-/// from a live one — rule 1.1 leaves `propose` returning the same `Option<Action>` either way — and
-/// a record written by a party that had to guess would be an account of spending that never
-/// happened. `mokiterions-tui`'s `is_empty` and `camera` carry the same attribute for the same
-/// reason: an item the tests read and the product does not yet.
+/// **One module with one `#[allow(dead_code)]` on it, for six items the tests read and the product
+/// does not.** They are [`RunAccount::cost`], [`RunAccount::fallbacks`], [`RunAccount::exchanges`],
+/// [`ExchangeUsage::reported`], [`ExchangeUsage::unreported`] and
+/// [`ExchangeUsage::without_cached_figure`]: three accessors in rule 14.2's finer unit or in a form
+/// [`RunAccount::reported`] now supplies as a field, and three constructors a live run reaches only
+/// through [`ConnectorPort`]'s reading of a response. The list is enumerated rather than described,
+/// so an item that stops being called makes this paragraph wrong instead of hiding under a blanket.
 ///
-/// A module rather than an attribute per item, so the exemption is stated once and in one place —
-/// and because **case P6's second half is a claim about this region**: no floating-point type
-/// appears in the accounting code. Every figure below is a `u64`, every operation on one is integer,
-/// and a reader can check that by reading one module instead of trusting a grep.
+/// **Everything else here is now called by the product**, which is the change of 2026-08-29 and the
+/// removal of `WO-MOK-025`'s blocker. That stage's reason for the whole module being uncalled was
+/// rule 15.6: a replay reports no run record, and `PortDecisionSource` could not tell a replaying
+/// port from a live one, because rule 1.1 left `propose` returning the same `Option<Action>` either
+/// way — so a record written by a party that had to guess would be an account of spending that never
+/// happened. Rule 1.1d as amended is that discrimination, and it is a return type rather than a
+/// party's judgement: [`Proposer::accounting`] defaults to `None`, a replaying port takes the
+/// default, and [`Simulation::live_run_record`] is a `?` on the answer.
 ///
-/// Nothing here is public. `WO-MOK-025`'s constraint is that the public surface grows by exactly one
-/// interface and one request type, and the host that needs these types is the host that gains live
-/// mode. Every operation takes `self` by value and returns a new account rather than mutating one,
-/// which is also why `SPEC-MOK-002` rule 5's public-surface check cannot be disturbed by any of it:
-/// there is no `&mut self` receiver here to match, in this stage or in the stage that publishes it.
+/// A module attribute and not six item attributes, so the exemption is stated once and in one place —
+/// and because **case P6's second half is a claim about this region**: no floating-point type appears
+/// in the accounting code. Every figure below is a `u64`, every operation on one is integer, and a
+/// reader can check that by reading one module instead of trusting a grep.
+/// `mokiterions-tui`'s `is_empty` and `camera` carry the same attribute for the same reason: an item
+/// the tests read and the product does not yet.
+///
+/// **Nothing here is public, and that survived the change of 2026-08-29.** What crosses to a host is
+/// [`LiveAccounting`], which is declared outside this module and is a value with no method on it, so
+/// the surface `SPEC-MOK-002` rule 5 counts grows by a type and its fields and by nothing in here.
+/// [`RunAccount::reported`] is the one function that names it, and naming a public type is not
+/// declaring one. Every operation still takes `self` by value and returns a new account rather than
+/// mutating one, apart from that one `&self` reader, so rule 5's mutating-method check finds nothing
+/// to match in this region either.
 #[allow(dead_code)]
 mod accounting {
     use std::fmt;
@@ -4160,6 +4368,34 @@ mod accounting {
         pub(super) fn exchanges(&self) -> u64 {
             self.exchanges
         }
+
+        /// This account as rule 15.2's reportable figures: [`super::LiveAccounting`], the value rule
+        /// 1.1d has cross the port's boundary.
+        ///
+        /// **The one place the conversion happens.** Every unit change is here and nowhere else —
+        /// the two money figures become rule 14.2's whole cents from the microcents this accumulates
+        /// in, and the ratio becomes rule 14.4's basis points with rule 14.5's absence intact — so a
+        /// second caller cannot state a figure in a unit this account does not mean. That is
+        /// [`super::ConnectorPort::accounting`]'s whole body and the tests' route to the same value.
+        ///
+        /// The binding is borrowed and cloned rather than taken, because the port keeps it: rule
+        /// 15.2's figure is one a run may be asked for more than once and a method that emptied a
+        /// field while reporting it would answer differently the second time.
+        pub(super) fn reported(&self, binding: Option<&(String, String)>) -> super::LiveAccounting {
+            super::LiveAccounting {
+                exchanges: self.exchanges,
+                prompt_tokens: self.prompt_tokens,
+                cached_prompt_tokens: self.cached_prompt_tokens,
+                output_tokens: self.output_tokens,
+                reasoning_tokens: self.reasoning_tokens,
+                cache_ratio_basis_points: self.cache_ratio_basis_points(),
+                cost_cents: self.cost_cents(),
+                ceiling_cents: self.ceiling_cents(),
+                fallbacks: self.fallbacks,
+                model: binding.map(|(model, _)| model.clone()),
+                reasoning_level: binding.map(|(_, level)| level.clone()),
+            }
+        }
     }
 
     /// How a live run ended, as rule 15.2's last field states it.
@@ -4202,12 +4438,16 @@ mod accounting {
     /// [`exchange_record`](super::exchange_record)'s precedent.
     pub(super) struct RunRecord<'a> {
         config: &'a Config,
-        /// Rule 15.2's model identifier and reasoning level. Inputs of the run under the *Inputs*
-        /// section's "in live mode only", on rule 14.3's principle: a model named by a constant here
-        /// would be a model this engine chose.
-        model: &'a str,
-        reasoning: &'a str,
-        account: &'a RunAccount,
+        /// Rule 15.2's figures, as the port reported them across rule 1.1d's boundary, **including
+        /// the model identifier and the reasoning level**.
+        ///
+        /// A [`super::LiveAccounting`] and not a [`RunAccount`], which is the change of 2026-08-29:
+        /// this type is the engine's and the account is the port's, so a record that borrowed the
+        /// accumulator could only ever be rendered inside the party rule 20.4.1 puts it in. The two
+        /// strings arrived here as parameters while nothing reported them; rule 5 declares the binding
+        /// in the connector, so the value that crosses is where they belong and a caller can no longer
+        /// name a model the run did not use.
+        live: &'a super::LiveAccounting,
         /// Rule 15.2's tick reached, which rule 15.5 requires again for a ceiling stop, "so that a
         /// figure is never quoted at a horizon the run did not reach".
         tick_reached: u64,
@@ -4217,17 +4457,13 @@ mod accounting {
     impl<'a> RunRecord<'a> {
         pub(super) fn new(
             config: &'a Config,
-            model: &'a str,
-            reasoning: &'a str,
-            account: &'a RunAccount,
+            live: &'a super::LiveAccounting,
             tick_reached: u64,
             ended: RunEnd,
         ) -> Self {
             Self {
                 config,
-                model,
-                reasoning,
-                account,
+                live,
                 tick_reached,
                 ended,
             }
@@ -4255,10 +4491,16 @@ mod accounting {
         /// echoed input rather than an accounting figure: `SPEC-MOK-006` rule 4.1 prohibits a
         /// floating-point *value*, which a string is not, and a second spelling of a density across
         /// two streams would be worse than the quoting.
+        ///
+        /// **The model and the level are `null` where no response reported them**, which is rule
+        /// 11.5's absence again and not an omission: a run every one of whose exchanges failed learnt
+        /// no binding, and the empty string would claim to name what answered. They are escaped
+        /// because they are the only two free-text values in the line — rule 10.7 makes the connector
+        /// untrusted in whole, and that includes the length and the bytes of a model identifier.
         pub(super) fn render(&self) -> String {
             format!(
                 "{{\"run_record\":\"{LLM_SOURCE_NAME}\",\"seed\":{},\"ticks\":{},\"density\":\"{}\",\
-                 \"trace_actions\":{},\"model\":\"{}\",\"reasoning\":\"{}\",\"exchanges\":{},\
+                 \"trace_actions\":{},\"model\":{},\"reasoning\":{},\"exchanges\":{},\
                  \"tokens\":{{\"prompt\":{},\"cached_prompt\":{},\"output\":{},\"reasoning\":{}}},\
                  \"cache_ratio_basis_points\":{},\"cost_cents\":{},\
                  \"ceiling_cents\":{},\"fallbacks\":{},\"unfit_to_publish\":{},\
@@ -4267,22 +4509,22 @@ mod accounting {
                 self.config.tick_limit,
                 self.config.density,
                 self.config.trace_actions,
-                escape_transcript_text(self.model),
-                escape_transcript_text(self.reasoning),
-                self.account.exchanges,
-                self.account.prompt_tokens,
-                self.account.cached_prompt_tokens,
-                self.account.output_tokens,
-                self.account.reasoning_tokens,
-                optional_figure(self.account.cache_ratio_basis_points()),
-                self.account.cost_cents(),
-                optional_figure(self.account.ceiling_cents()),
-                self.account.fallbacks,
+                optional_text(self.live.model.as_deref()),
+                optional_text(self.live.reasoning_level.as_deref()),
+                self.live.exchanges,
+                self.live.prompt_tokens,
+                self.live.cached_prompt_tokens,
+                self.live.output_tokens,
+                self.live.reasoning_tokens,
+                optional_figure(self.live.cache_ratio_basis_points),
+                self.live.cost_cents,
+                optional_figure(self.live.ceiling_cents),
+                self.live.fallbacks,
                 // Rule 15.4's mark, and a property of the record rather than of a summary written
                 // afterwards. It is derived here from the count rather than set by a caller,
                 // because a mark a caller could forget is a mark that a run under pressure would
                 // not carry.
-                self.account.fallbacks > 0,
+                self.live.fallbacks > 0,
                 self.tick_reached,
                 self.ended,
             )
@@ -4296,6 +4538,18 @@ mod accounting {
     fn optional_figure(figure: Option<u64>) -> String {
         match figure {
             Some(figure) => figure.to_string(),
+            None => String::from("null"),
+        }
+    }
+
+    /// [`optional_figure`] for a string: the escaped value in quotation marks, or `null`.
+    ///
+    /// `null` and not `""`, on the same distinction: a model nobody reported is not a model whose
+    /// name is empty, and [`super::ConnectorPort::retain_binding`] refuses the empty name for that
+    /// reason on the other side of the boundary.
+    fn optional_text(text: Option<&str>) -> String {
+        match text {
+            Some(text) => format!("\"{}\"", escape_transcript_text(text)),
             None => String::from("null"),
         }
     }
@@ -4370,11 +4624,38 @@ impl fmt::Display for TerminationReason {
 #[derive(Debug)]
 pub(crate) enum RunOutcome {
     /// The run reached one of `SPEC-MOK-001`'s two endings and has a summary.
-    Completed(RunSummary),
+    Completed {
+        summary: RunSummary,
+        /// `SPEC-MOK-007` rule 15's record, rendered as one unframed line, or `None` from a run whose
+        /// source reported no accounting.
+        ///
+        /// **The library renders it and the host places it**, which is rule 11.1's division applied
+        /// to the *Outputs* section's fourth output: no rule fixes a destination, so the engine
+        /// authors the line and hands it back exactly as it hands a transcript record to the port.
+        /// The two streams that do have destinations are both closed to it, and rule 12.6 is why —
+        /// a replay must reproduce the recorded run's standard output and record-stream bytes while
+        /// rule 15.6 gives it no record of its own, so a record in either stream makes those two
+        /// rules contradict each other. **The binary target writes it to the diagnostic stream**,
+        /// the one stream rule 12.6 does not claim byte-identity for, on the repository owner's
+        /// decision of 2026-08-29.
+        ///
+        /// `None` is rule 15.6 kept structurally rather than by a branch: it is
+        /// [`Proposer::accounting`]'s default answer, so the four deterministic sources and every
+        /// replay reach here with nothing to report and no run in the four existing policies can
+        /// gain a byte — which is rule 16.
+        run_record: Option<String>,
+    },
     /// Rule 14.6's stop. The tick reached is rule 15.5's figure and rule 14.7's boundary — the
     /// streams are complete and readable to it — and it is the tick that was **in progress** when the
     /// ceiling was met, so the last tick with a metrics record is the one before it.
-    Ceiling { tick_reached: u64 },
+    Ceiling {
+        tick_reached: u64,
+        /// As above, and rule 15.5 is why a ceiling stop has one at all: the record "says so and
+        /// states the tick reached, so that a figure is never quoted at a horizon the run did not
+        /// reach". A stop that reported no accounting would be the one ending whose cost nobody could
+        /// state.
+        run_record: Option<String>,
+    },
 }
 
 /// What one tick's opportunities came to.
@@ -5170,10 +5451,15 @@ impl Simulation {
     /// The arm is still written out rather than asserted away — `ARCH-MOK-001` wants ordinary `Result`
     /// propagation rather than a panic, and a refusal a later reader can read beats an
     /// `unreachable!()` a later change can reach.
+    ///
+    /// **The run record is discarded here and is always `None`** for the same reason, rule 15.6's from
+    /// the other end: a source that spends nothing reports no accounting, so there is no record to
+    /// drop. Rule 20.5.1 forbids this signature to grow, and a host that wants rule 15's record is a
+    /// host that lends a port.
     pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
         match self.run_recording(output, None, None)? {
-            RunOutcome::Completed(summary) => Ok(summary),
-            RunOutcome::Ceiling { tick_reached } => Err(io::Error::new(
+            RunOutcome::Completed { summary, .. } => Ok(summary),
+            RunOutcome::Ceiling { tick_reached, .. } => Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
                     "a run with no decision port reported a spend ceiling at tick {tick_reached}"
@@ -5244,6 +5530,26 @@ impl Simulation {
         }
     }
 
+    /// `SPEC-MOK-007` rule 15's record for a run that had an accounting, and `None` for one that did
+    /// not.
+    ///
+    /// The whole of the live-versus-not decision is the `?`: rule 15.6 gives a replay no run record
+    /// and [`Proposer::accounting`]'s default is how a replay says so, so this asks "did anything
+    /// spend" rather than "which kind of source is this" — which rule 1.2 leaves the engine no way to
+    /// ask, there being no branch on live-versus-replay anywhere in this target.
+    ///
+    /// `&self` and the source by shared reference: rendering a record must move no figure and take no
+    /// decision. It is called at exactly two places, both after the run loop has ended.
+    fn live_run_record<D: DecisionSource>(
+        &self,
+        decision_source: &D,
+        tick_reached: u64,
+        ended: accounting::RunEnd,
+    ) -> Option<String> {
+        let live = decision_source.accounting()?;
+        Some(accounting::RunRecord::new(&self.config, &live, tick_reached, ended).render())
+    }
+
     fn run_with_source<W: Write, D: DecisionSource>(
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
@@ -5311,7 +5617,19 @@ impl Simulation {
                     if let Some(sink) = sinks.records() {
                         self.write_run_record(sink, &summary).map_err(sink_error)?;
                     }
-                    return Ok(RunOutcome::Completed(summary));
+                    // Rule 15's record, asked for after both streams are complete. It is asked
+                    // **once** and after the run loop has returned, which is what keeps rule 14's
+                    // *State model* literal: there is no opportunity left for an accounting figure
+                    // to influence.
+                    let run_record = self.live_run_record(
+                        decision_source,
+                        summary.ticks(),
+                        accounting::RunEnd::Completed(reason),
+                    );
+                    return Ok(RunOutcome::Completed {
+                        summary,
+                        run_record,
+                    });
                 }
                 // Rule 14.6's stop, leaving both streams exactly as the cut-short tick left them.
                 // No summary line, because `RunSummary` reports a `TerminationReason` and there is
@@ -5319,8 +5637,17 @@ impl Simulation {
                 // twelve-figure summary of a horizon the run did not reach is precisely what rule
                 // 15.5 exists to prevent.
                 StepFlow::CeilingReached => {
+                    // Rule 15.5: this ending's record is the one that most has to exist, because it
+                    // is the ending at which a figure could be quoted at a horizon the run did not
+                    // reach.
+                    let run_record = self.live_run_record(
+                        decision_source,
+                        self.tick,
+                        accounting::RunEnd::Ceiling,
+                    );
                     return Ok(RunOutcome::Ceiling {
                         tick_reached: self.tick,
+                        run_record,
                     });
                 }
             }
@@ -12638,6 +12965,22 @@ mod tests {
             self.account.ceiling_reached()
         }
 
+        /// Rule 15's figures, from the same account `halted` reads, and **always `Some`** exactly as
+        /// [`ConnectorPort::accounting`](super::ConnectorPort::accounting) is always `Some`. That is
+        /// what makes this fixture a live port for rule 15.6's purposes: a run driven by it reports a
+        /// run record and a run driven by [`ReplayPort`] does not, and neither of them told the engine
+        /// which it was.
+        ///
+        /// The binding is `None`, so a record rendered from this states `"model":null` and
+        /// `"reasoning":null`. That is a run whose responses named neither, which is a shape rule 15.2
+        /// admits — and it is the honest one here, because this port parses no response and so has
+        /// nothing to have retained. **Where the binding travels is measured at the process tier**,
+        /// against the canned connector's `model=` and `level=` directives, where a real response
+        /// carries them; a fixture with a declared binding would assert its own declaration.
+        fn accounting(&self) -> Option<LiveAccounting> {
+            Some(self.account.reported(None))
+        }
+
         fn propose(&mut self, request: DecisionRequest) -> Proposal {
             let answer = match self.answers.get(self.seen.len()) {
                 Some(answer) => answer.clone(),
@@ -12716,6 +13059,18 @@ mod tests {
         fn record(&mut self, _record: &str) -> io::Result<()> {
             panic!("rule 20.9: a port supplied under another source must receive no record");
         }
+
+        /// Panics for the same reason `halted` does, and closes the last of rule 20.9's four doors.
+        /// Rule 15's figures are asked for at the end of a run, after every tick and after every
+        /// other assertion in a passing case has already been made, so an ignored port asked for
+        /// its account would be a consultation that produced no wrong byte anywhere — the run
+        /// record is `None` for a deterministic source either way. The panic is the only thing
+        /// that could see it.
+        fn accounting(&self) -> Option<LiveAccounting> {
+            panic!(
+                "rule 20.9: a port supplied under another source must be ignored, not accounted"
+            );
+        }
     }
 
     /// `SPEC-MOK-001` rule 21's seven verbs against one target, in rule 21's order.
@@ -12763,10 +13118,15 @@ mod tests {
     /// declares no ceiling unless the test says so. This states that in one place instead of at each
     /// call site, and it panics rather than defaulting, so a run that stopped short fails the test it
     /// was borrowed by rather than being read as a run that finished.
+    ///
+    /// It discards rule 15's run record rather than asserting anything about it, and the cases that
+    /// measure the record match the outcome themselves. That is deliberate: every case that borrows
+    /// this helper predates the record, and having it assert `None` would make each of them a claim
+    /// about accounting that its author did not write.
     fn completed(outcome: RunOutcome) -> RunSummary {
         match outcome {
-            RunOutcome::Completed(summary) => summary,
-            RunOutcome::Ceiling { tick_reached } => {
+            RunOutcome::Completed { summary, .. } => summary,
+            RunOutcome::Ceiling { tick_reached, .. } => {
                 panic!("the run stopped at its spend ceiling at tick {tick_reached}")
             }
         }
@@ -14658,6 +15018,21 @@ mod tests {
         }
     }
 
+    /// An account's figures as [`Proposer::accounting`] reports them, with a model identifier and a
+    /// reasoning level standing in for the ones a live response would have carried.
+    ///
+    /// The two strings are the binding [`ConnectorPort`] retains from the first response that named
+    /// both, and they are supplied here rather than left absent so that a record rendered from this
+    /// states them. The cases that measure their *absence* pass `None` themselves — a helper that
+    /// could only produce one of the two shapes would decide rule 15.2's hardest field for every
+    /// case that borrows it.
+    fn reported(account: &RunAccount) -> LiveAccounting {
+        account.reported(Some(&(
+            String::from("a-model-identifier"),
+            String::from("none"),
+        )))
+    }
+
     /// One exchange's synthetic usage: a 6,000-token prompt of which 5,400 were served from the
     /// cache, a 40-token response and no reasoning tokens, which is rule 8.5's level stated as a
     /// reported zero rather than as an absence.
@@ -14749,11 +15124,10 @@ mod tests {
 
         // Rule 15.4: the mark is a property of the record, derived from the count.
         let config = llm_config(42, 6, true);
+        let live = reported(&silent.account);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &silent.account,
+            &live,
             summary.ticks(),
             RunEnd::Completed(summary.reason()),
         )
@@ -14800,11 +15174,10 @@ mod tests {
         assert_eq!(proposing.account.exchanges(), exchanges);
         assert_eq!(proposing.account.cost(), SYNTHETIC_COST * exchanges);
         let config = llm_config(42, 6, true);
+        let live = reported(&proposing.account);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &proposing.account,
+            &live,
             summary.ticks(),
             RunEnd::Completed(summary.reason()),
         )
@@ -15084,8 +15457,9 @@ mod tests {
     /// horizon it did not reach — which is rule 15.5's prohibition read as an instruction. The
     /// `simulation_ended` event is absent for the same reason and for one more: the simulation did not
     /// end, and `is_finished` is asked below and agrees. Rule 15.5's "the record says so" is met by
-    /// rule 15's own record, which is a separate output and item 11's; nothing here is a record that
-    /// says a false thing.
+    /// rule 15's own record, which is a separate output and is asserted here as of 2026-08-29:
+    /// nothing in either stream is a record that says a false thing, and the record that says the
+    /// true thing is present, names the ceiling and states the tick the run reached.
     ///
     /// Rule 14.7's "complete and readable to the tick reached" is asserted as the shape of what did
     /// survive: a header first, the one completed tick's metrics record, and every line a whole
@@ -15105,9 +15479,24 @@ mod tests {
             .run_recording(&mut text, Some(&mut records), Some(&mut port))
             .expect("a ceiling stop is not an error");
 
+        let RunOutcome::Ceiling {
+            tick_reached,
+            run_record,
+        } = &outcome
+        else {
+            panic!("{outcome:?}");
+        };
+        assert_eq!(*tick_reached, 2);
+        // Rule 15.5, both halves and in one record: the stop is named and the tick reached is stated.
+        // The tick is compared against the outcome's own figure rather than against a literal, so a
+        // run that stopped at a different tick cannot pass this by agreeing with itself.
+        let record = run_record
+            .as_deref()
+            .expect("rule 15: a live run reports a run record");
+        assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
         assert!(
-            matches!(outcome, RunOutcome::Ceiling { tick_reached: 2 }),
-            "{outcome:?}"
+            record.contains(&format!("\"tick_reached\":{tick_reached}")),
+            "{record}"
         );
         // The horizon was ten and the run reached two, so the stop is the ceiling's and not the tick
         // limit's, and the engine does not claim otherwise to a host that asks.
@@ -15168,7 +15557,13 @@ mod tests {
             .expect("a ceiling stop is not an error");
 
         assert!(
-            matches!(outcome, RunOutcome::Ceiling { tick_reached: 1 }),
+            matches!(
+                outcome,
+                RunOutcome::Ceiling {
+                    tick_reached: 1,
+                    ..
+                }
+            ),
             "{outcome:?}"
         );
         assert_eq!(port.account.exchanges(), 2);
@@ -15206,7 +15601,20 @@ mod tests {
             .unwrap()
             .run_recording(&mut io::sink(), None, Some(&mut port))
             .expect("the replay completes");
-        assert!(matches!(outcome, RunOutcome::Completed(_)), "{outcome:?}");
+        // Rule 15.6 as well as rule 14.8, and the two are one fact here: [`ReplayPort`] takes
+        // [`Proposer::accounting`]'s default alongside `halted`'s, so the replay reports no run
+        // record. That is the whole of the discrimination rule 15.6 needs — a replaying port answers
+        // `None` and there is no branch anywhere that had to guess.
+        assert!(
+            matches!(
+                outcome,
+                RunOutcome::Completed {
+                    run_record: None,
+                    ..
+                }
+            ),
+            "{outcome:?}"
+        );
         assert!(!port.halted(), "after the last one");
     }
 
@@ -15221,11 +15629,10 @@ mod tests {
             .after_exchange(&synthetic_usage())
             .after_exchange(&ExchangeUsage::unreported())
             .counting_fallback();
+        let live = reported(&account);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &account,
+            &live,
             250,
             RunEnd::Completed(TerminationReason::TickLimit),
         )
@@ -15272,11 +15679,10 @@ mod tests {
         // while the two figures that can be *absent* are `null` rather than `0`. A record that wrote
         // `0` for an uncomputable ratio would report a run that cached nothing.
         let clean = RunAccount::declared(declared_prices(), None);
+        let live = reported(&clean);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &clean,
+            &live,
             0,
             RunEnd::Completed(TerminationReason::Extinction),
         )
@@ -15314,15 +15720,8 @@ mod tests {
         while !account.ceiling_reached() {
             account = account.after_exchange(&whole_cent_usage());
         }
-        let record = RunRecord::new(
-            &config,
-            "a-model-identifier",
-            "none",
-            &account,
-            250,
-            RunEnd::Ceiling,
-        )
-        .render();
+        let live = reported(&account);
+        let record = RunRecord::new(&config, &live, 250, RunEnd::Ceiling).render();
 
         assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
         assert!(record.contains("\"tick_reached\":250"), "{record}");
@@ -15453,6 +15852,38 @@ mod tests {
         );
         let proposal = port.propose(connector_request());
         (proposal, port.account)
+    }
+
+    /// Rule 15's figures as the port *reports* them, after the given number of exchanges.
+    ///
+    /// A third fixture beside [`exchange_over`] and [`billed_exchange_under`], and each of its three
+    /// differences from them is a rule:
+    ///
+    /// - it makes **several** exchanges from one stream, because rule 15.2's binding is "the first
+    ///   response that reported both" and a claim about a first is a claim about a sequence;
+    /// - it asks through [`Proposer::accounting`] rather than reading [`ConnectorPort::account`], so
+    ///   the crossing rule 1.1d added is the thing measured and not bypassed;
+    /// - it therefore carries the model identifier and the reasoning level, which no
+    ///   [`accounting::RunAccount`] holds and which are the two fields these cases are about.
+    ///
+    /// The stream is consumed front to back and an exhausted one yields end of input, which is
+    /// rule 10.4's dead-pipe case — so `exchanges` above the number of lines supplied is how a case
+    /// asks what a run reports after its connector stopped answering.
+    fn reported_over(responses: &str, exchanges: usize) -> LiveAccounting {
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let mut port = ConnectorPort::new(
+            responses.as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
+        for _ in 0..exchanges {
+            port.propose(connector_request());
+        }
+        port.accounting()
+            .expect("rule 15: a connector port always reports its account")
     }
 
     /// A response that every grammar case below starts from and spoils in one way.
@@ -15878,6 +16309,168 @@ mod tests {
             .map(|(response, _)| response)
             .unwrap();
         assert_eq!(unescape_transcript_text(recorded).as_deref(), Some(awkward));
+    }
+
+    /// Rule 15.6 from the deterministic side, and rule 16's non-perturbation obligation stated as a
+    /// call graph: **the four deterministic sources report no accounting, so no run record exists.**
+    ///
+    /// It is the same fact as the replay case above and it is not the same *route*: a replay is a port
+    /// that answers `None`, and these four are sources that never had a port to ask. Both arrive at
+    /// rule 15.6 through the shape of a return type rather than through a branch that asked what kind
+    /// of run this was, which is what makes the rule keepable at all — the party that would have had
+    /// to guess does not exist.
+    ///
+    /// All four variants, and written out rather than looped over a list this file could get short: an
+    /// omitted variant is a source that could report an account nobody would notice.
+    #[test]
+    fn a_deterministic_source_reports_no_run_record() {
+        for policy in [
+            Policy::Baseline,
+            Policy::Reference,
+            Policy::Individual,
+            Policy::Social,
+        ] {
+            let mut config = config(42, 2, false);
+            config.policy = policy;
+            let outcome = Simulation::new(config)
+                .unwrap()
+                .run_recording(&mut io::sink(), None, None)
+                .expect("a deterministic run completes");
+            assert!(
+                matches!(
+                    outcome,
+                    RunOutcome::Completed {
+                        run_record: None,
+                        ..
+                    }
+                ),
+                "{policy:?}: {outcome:?}"
+            );
+        }
+    }
+
+    /// Rule 15.2's binding, and the repository owner's decision of 2026-08-29: **the model identifier
+    /// and the reasoning level are the first ones reported, and they are never replaced.**
+    ///
+    /// Three responses naming three different models, and the record states the first. The owner's
+    /// reason is quotability — "a run's cost was quoted against that binding from its first exchange,
+    /// and a figure that could change mid-run is one a later reader has to prove constant" — and the
+    /// disclosed consequence is asserted here as well: **a connector that changed models mid-run is
+    /// not detected.** The second and third names appear nowhere in the reported figures, so this case
+    /// is also the record of what the design gives up.
+    ///
+    /// The last-reported alternative would pass a case that supplied one response, which is why three
+    /// are supplied and why the *middle* one is asserted absent as well as the last.
+    #[test]
+    fn the_binding_is_the_first_reported_and_is_never_replaced() {
+        let responses = [
+            WELL_FORMED,
+            &WELL_FORMED.replace("a-model-identifier", "a-second-model"),
+            &WELL_FORMED.replace("a-model-identifier", "a-third-model"),
+        ]
+        .join("\n");
+        let live = reported_over(&responses, 3);
+
+        assert_eq!(
+            live.exchanges, 3,
+            "three exchanges, so three chances to move"
+        );
+        assert_eq!(live.model.as_deref(), Some("a-model-identifier"));
+        assert_eq!(live.reasoning_level.as_deref(), Some("none"));
+
+        // The disclosure, as an assertion: nothing anywhere in the reported account names the models
+        // the connector switched to. A later reader of this run cannot tell that it happened.
+        let rendered = format!("{live:?}");
+        assert!(!rendered.contains("a-second-model"), "{rendered}");
+        assert!(!rendered.contains("a-third-model"), "{rendered}");
+    }
+
+    /// Rule 15.2's binding survives a connector that stops answering, which is the same decision
+    /// measured where an alternative would visibly differ.
+    ///
+    /// One well-formed response and then a dead pipe for four more exchanges. A port that retained
+    /// the *last* reported binding would report no model here, because the four failures reported
+    /// none — and a run whose connector died after answering once did have a model, spent money
+    /// against it, and must say which.
+    ///
+    /// The token totals are the same one exchange's, which is rule 11.5 beside it: a dead pipe reports
+    /// no usage and an absence is not a zero, so five exchanges bill one exchange's counts.
+    #[test]
+    fn the_binding_survives_a_connector_that_stops_answering() {
+        let live = reported_over(WELL_FORMED, 5);
+
+        assert_eq!(live.exchanges, 5);
+        assert_eq!(live.model.as_deref(), Some("a-model-identifier"));
+        assert_eq!(live.reasoning_level.as_deref(), Some("none"));
+        assert_eq!(live.prompt_tokens, 1_000);
+        assert_eq!(live.output_tokens, 8);
+        // Rule 9.5's count: four of the five opportunities obtained nothing.
+        assert_eq!(live.fallbacks, 4);
+    }
+
+    /// Rule 15.2's binding is **both or neither**, and an empty model is not a name.
+    ///
+    /// Rule 10.4c names the two fields together and refuses an action that carries only one, so a
+    /// half-filled binding would be a record naming a model at a level nobody reported — or a level
+    /// with nothing to attribute it to. Four spoilings, each of one field, and then a well-formed
+    /// response through the same port to show that none of them consumed the binding: a port that
+    /// bound the empty string or bound a lone level would answer differently on the fifth exchange.
+    ///
+    /// The empty model is the case rule 10.4c does not itself cover, because a response with
+    /// `"model":""` carries both members. [`ConnectorPort::action`] refuses an empty identifier for
+    /// the same reason and this repeats that judgement rather than inheriting it.
+    #[test]
+    fn a_binding_needs_both_fields_and_a_nonempty_model() {
+        for spoiled in [
+            // The level absent, the model named.
+            "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"a-model-identifier\",\
+             \"usage\":{\"prompt\":1,\"cached_prompt\":0,\"output\":1,\"reasoning\":0}}",
+            // The model absent, the level named.
+            "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"reasoning\":\"none\",\
+             \"usage\":{\"prompt\":1,\"cached_prompt\":0,\"output\":1,\"reasoning\":0}}",
+            // The model present and empty, which is not a name.
+            &WELL_FORMED.replace("\"a-model-identifier\"", "\"\""),
+            // The model present and not a string at all.
+            &WELL_FORMED.replace("\"a-model-identifier\"", "7"),
+        ] {
+            let live = reported_over(spoiled, 1);
+            assert_eq!(live.model, None, "{spoiled}");
+            assert_eq!(live.reasoning_level, None, "{spoiled}");
+
+            // And the same port binds the next well-formed response, so the refusal above left the
+            // binding open rather than consuming it.
+            let responses = format!("{spoiled}\n{WELL_FORMED}");
+            let live = reported_over(&responses, 2);
+            assert_eq!(
+                live.model.as_deref(),
+                Some("a-model-identifier"),
+                "{spoiled}"
+            );
+            assert_eq!(live.reasoning_level.as_deref(), Some("none"), "{spoiled}");
+        }
+    }
+
+    /// A response that failed rule 10.4c's grammar check **still binds**, and that is deliberate.
+    ///
+    /// The exchange was billed — rule 14.1 adds what was reported whatever the action did — so the
+    /// run spent money against a model, and a run every one of whose responses failed on its verb
+    /// would otherwise report no model while having been told one on every line. This is the one
+    /// place [`ConnectorPort::retain_binding`] is not [`ConnectorPort::action`]'s check repeated, so
+    /// it is the one place worth a case of its own.
+    ///
+    /// The verb is the spoiling, because it is the field that fails *after* the two this rule reads:
+    /// the response is otherwise complete, names both, and reports its counts.
+    #[test]
+    fn a_response_refused_on_its_verb_still_reports_what_answered() {
+        let refused = WELL_FORMED.replace("\"sleep\"", "\"hibernate\"");
+        let live = reported_over(&refused, 1);
+
+        // Rule 9.5: no action came back, so the opportunity was a counted fallback.
+        assert_eq!(live.fallbacks, 1);
+        // And rule 14.1 billed it, because it was an exchange.
+        assert_eq!(live.prompt_tokens, 1_000);
+        assert_eq!(live.model.as_deref(), Some("a-model-identifier"));
+        assert_eq!(live.reasoning_level.as_deref(), Some("none"));
     }
 
     /// Rule 8.4 against rule 8.2: the schema offers a provider exactly the verbs this engine

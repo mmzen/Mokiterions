@@ -153,7 +153,10 @@ where
             };
 
             match simulation.run_recording(stdout, records, port) {
-                Ok(RunOutcome::Completed(_)) => 0,
+                Ok(RunOutcome::Completed { run_record, .. }) => {
+                    write_run_record(stderr, run_record.as_deref());
+                    0
+                }
                 // `SPEC-MOK-007` rule 19.3, and the line above is what it has to be distinct from.
                 // The note goes to standard error and not to standard output, because rule 14.7
                 // requires the text stream complete and readable *to the tick reached* and a line
@@ -163,11 +166,24 @@ where
                 // than reticence: the ceiling and the accumulated cost belong to the run record, where
                 // a reader can recompute them, and a cost quoted here would be a second statement of
                 // a number with no seed, no horizon and no token totals beside it.
-                Ok(RunOutcome::Ceiling { tick_reached }) => {
+                Ok(RunOutcome::Ceiling {
+                    tick_reached,
+                    run_record,
+                }) => {
                     let _ = writeln!(
                         stderr,
                         "spend ceiling reached at tick {tick_reached}: the run stopped before the next exchange"
                     );
+                    // The note first and the record last, the same order as the completed arm, so
+                    // that one sentence covers both: **the record is the last thing this function
+                    // writes to standard error.** The note above points forward at it — it names the
+                    // tick and no figure precisely because the figures are one line below.
+                    //
+                    // "This function" and not "the process": the binary target reaps the connector
+                    // after `execute` returns and reports a child that exited badly, so a line can
+                    // follow the record on the same stream. That is the host's own diagnostic about
+                    // the child and not part of the run's account.
+                    write_run_record(stderr, run_record.as_deref());
                     CEILING_STOP_EXIT
                 }
                 Err(error) => {
@@ -181,5 +197,33 @@ where
             let _ = stderr.write_all(cli::USAGE.as_bytes());
             2
         }
+    }
+}
+
+/// Place `SPEC-MOK-007` rule 15's run record, which the engine rendered and this host places.
+///
+/// **Standard error, and that destination is the repository owner's decision** taken on 2026-08-29
+/// over two alternatives — a sixth command-line option naming a path, and rule 8.9's structured
+/// record stream. It is the one destination that amends no approved rule. Rule 15 leaves the
+/// destination to the host and names none. Rule 12.6 claims byte-identity between a replay and the
+/// recorded run for standard output, for the structured record stream and for the exit code, and
+/// says in terms that it is "not claimed for standard error" — so a line that a live run writes and
+/// a replay does not breaks nothing. The record stream would break exactly that, rule 8.9
+/// notwithstanding, and the conflict is recorded as a defect under this work order rather than
+/// repaired here.
+///
+/// `None` is the whole of the live-versus-not test and it needs no branch of its own: rule 15.6
+/// says a replay reports no run record, and a replaying port reports no accounting, so the option
+/// this receives is already the answer. **A deterministic source reaches here with `None` too**,
+/// which is the same rule read from the other side rather than a second case.
+///
+/// The write is unchecked, like every other diagnostic on this stream. A failed write to standard
+/// error is not an output failure under rule 13.6 — that rule's `1` is for standard output and the
+/// record sink, the two streams a run's result is made of — and a run whose figures could not be
+/// reported has still run, so turning this into an exit code would let the diagnostic stream decide
+/// a simulation's status.
+fn write_run_record<E: Write>(stderr: &mut E, run_record: Option<&str>) {
+    if let Some(record) = run_record {
+        let _ = writeln!(stderr, "{record}");
     }
 }

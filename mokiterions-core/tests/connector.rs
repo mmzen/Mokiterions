@@ -162,6 +162,41 @@ fn stdout(output: &Output) -> String {
     String::from_utf8(output.stdout.clone()).unwrap()
 }
 
+/// `SPEC-MOK-007` rule 15's run record, from the standard error of a live run.
+///
+/// **Standard error is the destination, decided by the repository owner on 2026-08-29** over a sixth
+/// command-line option and over the structured record stream. Rule 15 leaves the destination to the
+/// host and names none; rule 12.6 claims byte-identity between a replay and the recorded run for
+/// standard output, the record stream and the exit code, and says outright that it is "not claimed
+/// for standard error" — so this is the one stream on which a live-only line breaks nothing.
+///
+/// It is found by its own field and not by position, because `src/main.rs` reaps the connector after
+/// the run and a child that exited badly is reported on this same stream. A record located as "the
+/// last line" would then be the reaping message for exactly the runs where the connector misbehaved.
+///
+/// The field it is found by is `run_record` and **not** `SPEC-MOK-006` rule 8's `"record":"run"`. The
+/// two are different records with different fields on different streams, and the spelling keeps them
+/// apart: the record-stream one is written per rule 8.1 by the engine's own recording path, and this
+/// one is rule 15's account of a live run's spending.
+///
+/// The panic is the assertion: every caller is a live run, and rule 15.1 makes the record owed.
+fn run_record(output: &Output) -> String {
+    let stderr = stderr(output);
+    let mut found = stderr
+        .lines()
+        .filter(|line| line.contains("\"run_record\":"));
+    let record = found
+        .next()
+        .unwrap_or_else(|| {
+            panic!("rule 15: a live run reports a run record, and this one did not: {stderr}")
+        })
+        .to_string();
+    // One run record per run, checked here rather than assumed, because the host writes this line at
+    // two exits and a host that wrote it at both would satisfy every assertion below twice.
+    assert!(found.next().is_none(), "two run records: {stderr}");
+    record
+}
+
 /// The exchange records of a transcript, in order.
 fn exchanges(transcript: &str) -> Vec<&str> {
     transcript
@@ -206,12 +241,68 @@ fn a_live_run_spawns_the_connector_and_records_every_exchange() {
         .unwrap();
 
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    assert!(stderr(&output).is_empty(), "{}", stderr(&output));
+    // Rule 15.1 and the whole of what standard error carries: **the run record and nothing else.**
+    // This assertion was `stderr.is_empty()` until 2026-08-29, and the equality below is that claim
+    // kept rather than weakened — a successful live run's diagnostic stream is one line long and the
+    // line is the account of what the run spent. A message of any other kind reaching this stream
+    // still fails here.
+    assert_eq!(
+        stderr(&output),
+        format!("{}\n", run_record(&output)),
+        "a successful live run says one thing on standard error"
+    );
     let text = stdout(&output);
     assert!(
         text.contains("event=decision_source_selected result=source:llm"),
         "{text}"
     );
+
+    // Rule 15.2's figures reaching the host, against the twelve exchanges this run made at the
+    // fixture's default usage. Multiplied out rather than written as constants, so a change to
+    // `ROSTER` or to the connector's defaults moves the expectation with the run.
+    let record = run_record(&output);
+    for figure in [
+        format!("\"exchanges\":{ROSTER}"),
+        // The four totals as one block, and not as four substrings: `"reasoning"` appears twice in
+        // this record — the level as a string and the token count as an integer, which is rule
+        // 10.4a's two levels — so a bare `"reasoning":0` would be an assertion about whichever the
+        // formatter happened to put first.
+        format!(
+            "\"tokens\":{{\"prompt\":{},\"cached_prompt\":{},\"output\":{},\"reasoning\":0}}",
+            1_000 * ROSTER,
+            900 * ROSTER,
+            8 * ROSTER
+        ),
+        // Rule 14.5's ratio: nine hundred of every thousand prompt tokens came from the cache.
+        String::from("\"cache_ratio_basis_points\":9000"),
+        // Rule 15.3's zeros stated, and rule 15.4's mark absent because the count is.
+        String::from("\"fallbacks\":0"),
+        String::from("\"unfit_to_publish\":false"),
+        // Rule 15.2's inputs, echoed: the seed and the horizon `engine` declares.
+        String::from("\"seed\":42"),
+        String::from("\"ticks\":1"),
+        // The ceiling as rule 14.2's minor unit, which is `REACHABLE_CEILING`'s own reasoning read
+        // the other way: the operator declared two dollars and the record states two hundred cents.
+        String::from("\"ceiling_cents\":200"),
+        // Rule 15.5's other ending, so the record says which one this was.
+        String::from("\"ended\":\"tick_limit\""),
+        String::from("\"tick_reached\":1"),
+    ] {
+        assert!(
+            record.contains(&figure),
+            "{figure} is missing from {record}"
+        );
+    }
+    // **Rule 15.2's model identifier and reasoning level, retained from the connector's own
+    // response.** This is the one assertion in the suite that shows the binding travelling: the
+    // canned connector names itself in every response's `model` member, the port keeps the first one
+    // it saw, and the record states it. A port that read the field and dropped it would pass every
+    // other assertion above.
+    assert!(
+        record.contains("\"model\":\"canned-connector\""),
+        "{record}"
+    );
+    assert!(record.contains("\"reasoning\":\"none\""), "{record}");
 
     let recorded = fs::read_to_string(&transcript).unwrap();
     assert_eq!(
@@ -262,6 +353,9 @@ fn no_connector_is_spawned_without_the_live_selection() {
         .output()
         .unwrap();
     assert_eq!(recorded.status.code(), Some(0), "{}", stderr(&recorded));
+    // The live run that produced the transcript reported a run record, so the emptiness asserted in
+    // the loop below is rule 15.6's difference between two runs rather than a feature nobody built.
+    let _ = run_record(&recorded);
 
     // A path with nothing at it. Well formed, so the parser accepts it, and unstartable, so a host
     // that reached the platform with it would fail loudly.
@@ -285,8 +379,15 @@ fn no_connector_is_spawned_without_the_live_selection() {
             credential.is_some(),
             stderr(&output)
         );
+        // **Rule 15.6, and this is where it is worth measuring: a replay reports no run record.**
+        // The recording above wrote one to this same stream, so the emptiness here is a difference
+        // between the two runs and not the absence of a feature. It holds without a branch anywhere
+        // asking which kind of run this was — `ReplayPort` takes `Proposer::accounting`'s default and
+        // answers `None`, so there is nothing that had to guess.
         assert!(stderr(&output).is_empty(), "{}", stderr(&output));
         // And the replay produced the recording's own bytes, so the decisions came from the file.
+        // Rule 12.6, whose byte-identity is claimed for standard output and *not* for standard error
+        // — which is the whole reason the record above may differ between the two runs.
         assert_eq!(stdout(&output), stdout(&recorded));
     }
 }
@@ -480,8 +581,39 @@ fn a_connector_that_dies_mid_run_leaves_a_run_of_fallbacks() {
         assert!(record.contains("connector"), "{record}");
     }
     // The connector exited `0` — it closed its output deliberately — so there is nothing to report
-    // about its status.
-    assert!(stderr(&output).is_empty(), "{}", stderr(&output));
+    // about its status, and rule 15's record is therefore the whole of standard error.
+    let record = run_record(&output);
+    assert_eq!(
+        stderr(&output),
+        format!("{record}\n"),
+        "the connector exited cleanly, so nothing but the record is reported"
+    );
+    // Rules 15.4 and 14.1 over a run that mostly failed: eleven of the twelve opportunities fell
+    // back, the record marks the run unfit, and the one exchange that answered is the only one that
+    // billed. A dead pipe reports no usage — rule 11.5's absence is not a zero — so the totals are
+    // one exchange's and the count of exchanges is still twelve, because every opportunity spent one.
+    assert!(
+        record.contains(&format!("\"fallbacks\":{}", ROSTER - 1)),
+        "{record}"
+    );
+    assert!(record.contains("\"unfit_to_publish\":true"), "{record}");
+    assert!(
+        record.contains(&format!("\"exchanges\":{ROSTER}")),
+        "{record}"
+    );
+    assert!(
+        record.contains(
+            "\"tokens\":{\"prompt\":1000,\"cached_prompt\":900,\"output\":8,\"reasoning\":0}"
+        ),
+        "{record}"
+    );
+    // The binding survives the pipe's death, which is the "first reported, never replaced" decision
+    // measured where it bites: one response named the model and eleven failures named nothing, and
+    // the record still states what answered.
+    assert!(
+        record.contains("\"model\":\"canned-connector\""),
+        "{record}"
+    );
 }
 
 /// A connector that exits badly is reported, and the exit code does not move.
@@ -571,10 +703,15 @@ fn a_response_that_names_neither_model_nor_level_is_a_fallback() {
 /// library's exit code. A host that compared against `0` alone would delete the evidence of every
 /// ceiling-stopped run.
 ///
-/// What the surviving stream does *not* carry is asserted too. There is no run record and no
-/// `simulation_ended` event, because the run did not end — `SPEC-MOK-006` rule 8.9's `reason` domain
-/// has no member for a stop and rule 15.5 forbids quoting a figure at a horizon the run did not
-/// reach — and there is no summary line on standard output for the same reason.
+/// What the surviving stream does *not* carry is asserted too. There is no `SPEC-MOK-006` rule 8
+/// run record and no `simulation_ended` event, because the run did not end — rule 8.9's `reason`
+/// domain has no member for a stop and rule 15.5 forbids quoting a figure at a horizon the run did
+/// not reach — and there is no summary line on standard output for the same reason.
+///
+/// **Rule 15's own record is present, on standard error, and it says the run stopped.** That is the
+/// fourth assertion as of 2026-08-29 and it is what makes the third paragraph's absences legible: the
+/// record stream is short of a rule 8 run record and the operator is nevertheless told the whole
+/// account, so nothing here is a stream a reader mistakes for a complete run.
 #[test]
 fn a_live_run_stops_at_its_ceiling_and_leaves_the_record_stream_behind() {
     let directory = scratch("ceiling");
@@ -607,6 +744,23 @@ fn a_live_run_stops_at_its_ceiling_and_leaves_the_record_stream_behind() {
     assert!(!complaint.contains("runtime error:"), "{complaint}");
     assert!(!complaint.contains("configuration error:"), "{complaint}");
 
+    // Rule 15.5, both halves, through a real child that reported its own usage: the record names the
+    // stop and states the tick reached. The cost is at the declared ceiling and not above it, which
+    // is the *stop* rather than the report — `REQ-MOK-071`'s distinction, and a run that overshot
+    // would state a larger figure here while passing every other assertion in this test.
+    let record = run_record(&output);
+    assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
+    assert!(record.contains("\"tick_reached\":1"), "{record}");
+    assert!(record.contains("\"cost_cents\":2"), "{record}");
+    assert!(record.contains("\"ceiling_cents\":2"), "{record}");
+    assert!(record.contains("\"exchanges\":2"), "{record}");
+    // The two lines standard error carries, and only those two: the note and the record.
+    assert_eq!(
+        complaint.lines().count(),
+        2,
+        "the ceiling note and the run record: {complaint}"
+    );
+
     // Rule 14.6 as a count, and rule 13.4's exception: both files the host created are still here.
     let recorded = fs::read_to_string(&transcript).unwrap();
     assert_eq!(
@@ -636,6 +790,10 @@ fn a_live_run_stops_at_its_ceiling_and_leaves_the_record_stream_behind() {
         "{stream}"
     );
     assert!(!stream.contains("\"record\":\"run\""), "{stream}");
+    // And rule 15's record did not leak into this stream either, which is the destination decision
+    // asserted where it would fail: rule 12.6 requires a replay to reproduce these bytes and a
+    // replay reports no run record, so a rule 15 record here would make the two rules contradict.
+    assert!(!stream.contains("\"run_record\":"), "{stream}");
     assert!(!stream.contains("simulation_ended"), "{stream}");
     for line in stream.lines() {
         assert!(line.starts_with('{') && line.ends_with('}'), "{line}");
