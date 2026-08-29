@@ -4222,20 +4222,31 @@ mod accounting {
         /// Rule 10.7 makes the provider's figures untrusted input, and a cached count larger than
         /// the prompt count is arithmetic nonsense that would otherwise underflow the uncached
         /// share into a bill of roughly eighteen quintillion tokens.
+        ///
+        /// **Two of the four reported counts are totals containing another, and both are handled
+        /// the same way**, rule 14.2a. The prompt count contains the cached count, so the uncached
+        /// share is priced at the uncached price and the cached share at the cached price. The
+        /// output count likewise contains the reasoning count, so the billable output is
+        /// `output - reasoning` and the reasoning is priced once, at the reasoning price. Pricing
+        /// the full output count *and* the reasoning count bills every reasoning token twice; that
+        /// was this function's behaviour until `WO-MOK-026` measured it against a live run at a
+        /// non-zero reasoning level, where reported output exceeded reported reasoning by the size
+        /// of one action object on every one of 567 exchanges.
+        ///
+        /// Each inclusive count is clamped to its total before the subtraction, for the one reason
+        /// rule 10.7 gives: the figures are the provider's and are not trusted.
         pub(super) fn cost_of(&self, usage: &ExchangeUsage) -> u64 {
             let prompt = usage.prompt.unwrap_or(0);
             let cached = usage.cached_prompt.unwrap_or(0).min(prompt);
             let uncached = prompt - cached;
+            let output = usage.output.unwrap_or(0);
+            let reasoning = usage.reasoning.unwrap_or(0).min(output);
+            let billable_output = output - reasoning;
             uncached
                 .saturating_mul(self.prices.uncached_prompt)
                 .saturating_add(cached.saturating_mul(self.prices.cached_prompt))
-                .saturating_add(usage.output.unwrap_or(0).saturating_mul(self.prices.output))
-                .saturating_add(
-                    usage
-                        .reasoning
-                        .unwrap_or(0)
-                        .saturating_mul(self.prices.reasoning),
-                )
+                .saturating_add(billable_output.saturating_mul(self.prices.output))
+                .saturating_add(reasoning.saturating_mul(self.prices.reasoning))
         }
 
         /// Rule 14.1: the account after one exchange, with the four totals and the accumulated cost
@@ -15295,6 +15306,71 @@ mod tests {
             RunAccount::declared(doubled, None).cost_of(&synthetic_usage()),
             SYNTHETIC_COST * 2
         );
+    }
+
+    /// Rule 14.2a: the reported output count contains the reported reasoning count, so a reasoning
+    /// token is billed once.
+    ///
+    /// This is the output/reasoning twin of the cached-share assertion in the case above, and it is
+    /// a separate case because it is the one this crate did not have. Until `WO-MOK-026` **no cost
+    /// assertion anywhere in this crate declared a non-zero reasoning count**, so an implementation
+    /// pricing the full output count *and* the reasoning count passed the whole suite. It was found
+    /// by a live run rather than by a test, which is why the figures below are chosen to fail loudly
+    /// on the arithmetic instead of on a fixture.
+    #[test]
+    fn the_reasoning_share_of_the_output_count_is_billed_once() {
+        // Prices that tell the two quantities apart. [`declared_prices`] sets the reasoning price
+        // *equal* to the output price, which is how a provider bills them and which is also what
+        // hides a misattribution between the two; here they differ, so a wrong split shows up as a
+        // wrong figure rather than as the same figure by two routes.
+        let distinct = PerTokenPrices {
+            uncached_prompt: 0,
+            cached_prompt: 0,
+            output: 1_000,
+            reasoning: 7,
+        };
+        let account = RunAccount::declared(distinct, None);
+
+        // 500 output tokens of which 200 were reasoning: 300 billable output and 200 reasoning. An
+        // implementation billing the output total *and* the reasoning total would report 501_400.
+        assert_eq!(
+            account.cost_of(&ExchangeUsage::reported(0, 0, 500, 200)),
+            300 * 1_000 + 200 * 7
+        );
+
+        // The fault is not a difference between two rates, so it is still present when the rates
+        // agree: at [`declared_prices`] the double bill is the reasoning count's entire cost. An
+        // implementation that double-billed would report 700_000 here.
+        let equal = RunAccount::declared(declared_prices(), None);
+        assert_eq!(
+            equal.cost_of(&ExchangeUsage::reported(0, 0, 500, 200)),
+            500 * 1_000
+        );
+
+        // A reported zero leaves the output count whole, which is every exchange of this
+        // repository's one accepted live run and the reason that run's cost figure does not move
+        // with rule 14.2a.
+        assert_eq!(
+            equal.cost_of(&ExchangeUsage::reported(0, 0, 500, 0)),
+            500 * 1_000
+        );
+
+        // Rule 11.5: an *absent* reasoning count subtracts nothing, and is not read as a zero that
+        // happens to subtract nothing either — there is nothing to attribute away from the output.
+        assert_eq!(
+            equal.cost_of(&ExchangeUsage {
+                prompt: None,
+                cached_prompt: None,
+                output: Some(500),
+                reasoning: None,
+            }),
+            500 * 1_000
+        );
+
+        // Rule 10.7, as for the cached count above: a reasoning count exceeding the output count is
+        // the provider's nonsense. It is clamped, so the billable output floors at zero instead of
+        // underflowing, and the whole reported output is billed at the reasoning price.
+        assert_eq!(account.cost_of(&ExchangeUsage::reported(0, 0, 2, 3)), 2 * 7);
     }
 
     /// Rules 14.4 and 14.5: the ratio is computed from the reported figures, and an unreported

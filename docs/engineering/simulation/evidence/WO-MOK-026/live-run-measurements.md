@@ -267,9 +267,10 @@ behaves differently is untested here and is not an implementation agent's to cho
 
 ## The owner's dispositions, taken 2026-08-29
 
-Three questions this stage's measurements raised were put to the repository owner, each with its options costed before it
-was offered. The selections are recorded here because a measurement that ends in a decision should retain the decision
-beside it.
+**Seven** questions this stage's measurements raised were put to the repository owner, each with its options costed
+before it was offered. The selections are recorded here because a measurement that ends in a decision should retain the
+decision beside it. All seven are kept together here rather than filed beside their separate measurements, so that a
+reader can see the whole set of choices this stage's figures forced; each names the measurement it turned on.
 
 ### `REQ-MOK-070` — recorded as outstanding, and nothing is amended
 
@@ -331,6 +332,73 @@ the confirmed 12.7 MB extrapolation is set out under *Item 13's canned transcrip
 changed is worth naming here**: it moved the formal snapshot from `94609ecb…` to `57e4ebd1…`, so any handoff evidence
 bound before it would now be stale.
 
+### `L15b`'s failure and this stage's verification record
+
+**The disposition: the verification record verifies this stage and records `L15b` as FAILED, with the measurement and its
+provider-binding cause disclosed, plus a carried-forward item to revisit either the floor or the model binding.**
+
+The question was how a verification record can bind a contract in which a *required* case fails. Three options were put.
+Withholding verification was costed and declined: nothing in this repository can make `L15b` pass, because the cause is
+the provider's exact-prompt caching rather than anything in the engine, the prompt or the connector — so the only two
+routes are changing the model binding, which is reserved to the owner, or moving the floor, which the owner had already
+declined. Withholding would therefore not have delayed verification, it would have suspended it indefinitely over a fact
+no code change here can reach. Deferring `L15b` to `WO-MOK-027` was declined for a stronger reason: that stage needs a
+live run anyway for `L24` and `L25`, and it would meet the identical `0.000000`, so deferral would schedule a known
+failure into a later stage and spend another paid run to re-observe it.
+
+**What makes the chosen route defensible is that `VER-MOK-018` anticipated it in writing.** Its *Residual uncertainty*
+already says: "Case **L15b** fails against a layout that was correct when written, and that is the intended behaviour: it
+is a signal to re-measure and bring the layout or the floor back to the owner, not a reason to soften the number in
+place." That process has now run to completion — the measurement was taken, the cause was diagnosed, the layout and the
+floor were both brought back to the owner, and the owner declined to move either. The case is recorded failing, and the
+contract is not edited to make it pass. Every other required case of this stage passes.
+
+### Rule 14's double-billing of reasoning tokens — amended in this work order
+
+**The disposition: amended here rather than recorded as a defect for a later work order.** The fault, its measurement and
+the full account of what changed are in *Attempt 1's separate arithmetic error* below. Two options were put. What decided
+it was a measured fact stated in the framing: because this stage's accepted run reports **no** reasoning tokens, the
+corrected arithmetic yields identical figures, so the amendment invalidates no retained cost, no run record and no
+replay — the fix is far cheaper here than the words "amend an approved specification" suggest. Against that, recording it
+as a defect would have left a known-wrong pricing rule in an approved specification, reachable only by spending real
+money at a reasoning level above `none`, which is precisely the condition under which nobody would want to discover it.
+
+### The cache-write charge — to be settled from the provider's billing record
+
+**The disposition: the owner reads the provider's billing record for 2026-08-29 and reports the charged total.** The
+measurement and the two readings it cannot choose between are in *The cache-write rate* below: about **4.1 cents**
+unbilled if a written token is charged instead of the input rate, about **20.4 cents** if in addition — the latter more
+than the entire 16-cent figure the engine reported. The API does not say which. The alternative, leaving the packet's
+cost as a disclosed lower bound, was declined because it leaves the true price of a live run unknown by a factor that may
+exceed the reported cost, which weakens every projection built on it including `WO-MOK-027`'s.
+
+**This is the one measurement left in this stage that costs nothing**, and it is an owner act rather than an agent one:
+the billing record is outside this repository and behind the owner's provider account, which is exactly where
+`ADR-MOK-001` requires that relationship to live. Until it is read, every cost figure this engine reports is a lower
+bound rather than a figure, and that is stated wherever this packet gives one.
+
+### The two runs' evidence layout — the asymmetry stands and is disclosed
+
+**The disposition: attempt 1's captures are retained under an `attempt-1/` subdirectory, attempt 2's stay at the top
+level of this evidence directory, and the departure from `VER-MOK-018`'s "one directory per run" is disclosed rather than
+hidden.**
+
+The retention table says each authorised live run's transcript is committed "under that measurement's evidence path, one
+directory per run". Attempt 2's three files sit at the top level, not in a per-run directory, and that is a real
+departure. It arose for a reason worth stating plainly rather than dressing up: **when attempt 2's paths were fixed, a
+second retained run was not contemplated** — attempt 1 had been rejected and was expected to be discarded, and the
+decision to retain it came later, after its figures turned out to support a claim no reader could otherwise re-derive.
+
+Moving attempt 2 into an `attempt-2/` directory was costed and declined. The same contract's retention principle 2 says
+the evidence directory name is fixed before the first capture *because it is provenance*, and that getting the path wrong
+costs the whole capture — which for a live transcript means paying for another run. `SPEC-MOK-007` rule 11.7.2 and the
+committed leak-check guard both name attempt 2's current paths as well. Amending the retention wording to match what was
+done was also declined: it would edit an approved verification contract to fit the evidence, on a clause written
+specifically so that the layout is decidable before the first capture.
+
+So the literal reading of "one directory per run" is **not** satisfied for attempt 2, and this packet says so rather than
+claiming a compliance it does not have.
+
 ## Cost: the actual figure beside both estimates
 
 `WO-MOK-026`'s *Evidence to record* item 5 calls this "the first point in this initiative where an estimate meets a
@@ -386,18 +454,56 @@ what settles it**, and reading it is the one remaining measurement that costs no
 of a live run should be treated as a **lower bound** rather than a figure, and that is true of every run this engine has
 priced, not only this one.
 
-### Attempt 1's separate arithmetic error, kept because it is a real gap
+### Attempt 1's separate arithmetic error — found here, and fixed in this work order
 
-Attempt 1 exposed a second defect in rule 14's model, which attempt 2 makes moot without fixing.
+Attempt 1 exposed a second defect in rule 14's model. Attempt 2 makes it invisible; it does not make it harmless, and
+the owner's disposition was to amend rather than to record.
 
 **`completion_tokens` is inclusive of `reasoning_tokens`**, so pricing `output` and `reasoning` as two disjoint
 quantities bills the reasoning twice. Measured, not inferred: across all 567 of attempt 1's exchanges, `output` minus
 `reasoning` was between 18 and 26 with a mean of 24.1 — the size of the action object, on every single exchange. Attempt
 1's true cost was **28.21 cents** against the 37.37 the engine computed.
 
-It does not affect attempt 2, where the reasoning count is zero and there is nothing to double-count. It is recorded
-because it is a live fault in the cost model that only a reasoning run reveals, and a later work order raising the
-reasoning level above `none` would meet it immediately.
+**Rule 14 already had this convention right for the other inclusive pair, and that asymmetry is the whole defect.** The
+prompt count likewise contains the cached count, and cost has always been `prompt − cached` at the uncached price plus
+`cached` at the cached price — rule 14.4's ratio is built on exactly that containment. The output and reasoning counts
+have the same shape. One pair was handled and one was not.
+
+**Why no check caught it, which is the part worth keeping.** Two independent gaps had to line up, and both did:
+
+- **No cost assertion anywhere in the engine crate declared a non-zero reasoning count.** Every one passed
+  `reasoning = 0`, and at zero the double bill adds nothing.
+- **The internal fixture sets the reasoning price equal to the output price** — `1_000` and `1_000` — which is how a
+  provider bills them, and is also what makes a misattribution between the two invisible to any assertion that happens
+  to split them the wrong way.
+
+The one place a non-zero reasoning count did appear was a framing test, `ExchangeUsage::reported(1, 0, 2, 3)`, which
+asserts a response's round trip and no cost figure at all. It is worth noting for a different reason: its reasoning
+count *exceeds* its output count, so it is the case that would panic on subtraction overflow if the corrected
+arithmetic did not clamp. The clamp is therefore already exercised by a test that was not written for it.
+
+**What was changed.** `SPEC-MOK-007` **rule 14.2a** was added, stating the containment, the subtraction and the clamp,
+and stating that rule 14.1's four run totals stay exactly as the provider reported them so that a reader recomputing a
+cost from those totals must subtract likewise. `RunAccount::cost_of` was corrected to mirror its own treatment of the
+cached share. One internal-tier case was added,
+`the_reasoning_share_of_the_output_count_is_billed_once`, which closes both gaps above: it prices the two quantities at
+**different** rates so a wrong split cannot hide, and it also asserts the equal-rate case, because the double bill is
+the reasoning count's entire cost rather than a difference between two rates.
+
+**The guard was verified against the defect, not merely written.** With the previous arithmetic restored it fails,
+reporting 501,400 microcents against the correct 301,400 — a difference of exactly the 200 reasoning tokens at the
+output price. A guard test that passes against both the fault and the fix would evidence nothing, so this was measured
+rather than assumed.
+
+**No retained figure moves.** The fault is reachable only when a run reports reasoning tokens, and attempt 2 reports
+none, so this stage's 16.67 cents, its run record, its transcript and its replay are all unchanged — confirmed by the
+full suite passing both before and after the change, with the same figures. Had attempt 1 been the accepted run, its
+cost figure would have been wrong by 9.16 cents in the direction that understates nothing and overstates spend.
+
+**This does not address the cache-write quantity.** That is the separate and still-open finding above: `cache_write_tokens`
+is a *fifth* quantity rule 14's four prices cannot express at all, and whether it is charged instead of or in addition to
+the input rate is unread, so the shape of any price for it is undecided. The double-billing fix is about the four
+quantities the rule already has.
 
 ## Replay identity
 
