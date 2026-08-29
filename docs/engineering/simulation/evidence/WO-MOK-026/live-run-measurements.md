@@ -265,6 +265,72 @@ One lever is named without being recommended, because naming it is not deciding 
 at this endpoint with this request shape. Whether another model, another endpoint or an explicit cache-control parameter
 behaves differently is untested here and is not an implementation agent's to choose.
 
+## The owner's dispositions, taken 2026-08-29
+
+Three questions this stage's measurements raised were put to the repository owner, each with its options costed before it
+was offered. The selections are recorded here because a measurement that ends in a decision should retain the decision
+beside it.
+
+### `REQ-MOK-070` — recorded as outstanding, and nothing is amended
+
+**The disposition: `VER-MOK-018` case `L15b` fails, the failure is recorded against it, and `REQ-MOK-070`'s text does not
+move.** Four options were put — record it as outstanding and amend nothing; amend the requirement into a
+provider-conditional obligation, thresholded only where a provider matches prefixes; retire it as resting on a premise
+measurement falsifies; or try another model or endpoint, at the price of a further authorised run and a decision reserved
+to the owner by rule 8.5. The owner chose the first.
+
+**What that means, stated plainly rather than left to be inferred:**
+
+- **`L15b` is a required case of this work order** — *Required verification* lists it first, as "owner-gated, and
+  therefore dependent on the authorised live run" — and it now has a measured result of **0.000000** against a floor of
+  **0.85**. It is reported as failing. It is not softened, not re-scoped, and not marked inapplicable.
+- **`WO-MOK-026` stop-and-escalate condition 3 is the route this took**, and it anticipated this outcome exactly: "The
+  cache ratio comes in below eighty-five percent. Escalate rather than adjusting the threshold, the layout or the
+  measurement. `REQ-MOK-070` is an obligation on the design, so a miss means the design is wrong or the number was wrong
+  — and which of those it is, is the owner's to decide." The condition asks for the measured value, the split that
+  produced it, and whether the provider's cached-token reporting behaved as documented. All three are above.
+- **The requirement stands unsatisfied rather than satisfied-as-amended.** That is the substantive content of the
+  choice: an amendment would have made the contract passable, and recording it outstanding keeps the contract honest at
+  the price of a permanent red case. Any later run against this binding fails `L15b` the same way, for the same reason.
+- **`VER-MOK-018` needs no amendment for this**, because its own *Five cases cannot be satisfied by a build* section
+  already treats `L15b` as a case that can fail against a layout that was correct when written, and says what that means:
+  "it is a signal to re-measure and bring the layout or the floor back to the owner, not a reason to soften the number in
+  place."
+
+**One consequence is flagged rather than resolved**: this stage's verification record will bind a failing required case.
+Whether it may, and how it must disclose it, is the assurance owner's and is not settled by this row.
+
+### Block D's layout — the flat form stands
+
+**The disposition: block D stays flat, and the measurement above is the record of why.** The two options were costed
+before being offered: leave it flat, at no code change and no spec amendment, or nest it for 3,967 tokens over the run —
+19.6 % of block D, 0.51 % of the prompt, **0.079 cents** of a 16.67-cent run and about 1.6 cents of a 1,000-tick run's
+$3.33. The owner chose flat.
+
+The measured case for it, beyond the size: the flat form produced a valid verb on all **503** exchanges with **0** parse
+failures, so the "may be harder to answer well" half of the specification's trade-off has one clean reading in its favour
+and the nested form has none.
+
+**`SPEC-MOK-007`'s *Explicitly unspecified decisions* is deliberately left as it stands.** Its third bullet says the
+flat-versus-nested trade-off "is unspecified, and the trade-off is left to measurement", and it is tempting to read a
+completed measurement as closing it. It does not. That bullet states what the *specification* declines to fix, and an
+implementation measuring and choosing does not make the specification fix anything — writing the flat form into the rule
+would narrow it, turning a measured local choice into an obligation on every future implementation, which is a wider act
+than the question asked for.
+
+### Rule 11.7's singular phrasing — amended in this work order
+
+**The disposition: amended here, not deferred and not recorded as a defect.** Rule 11.7 read "the transcript this
+repository commits" and this branch commits two. Three options were put with their costs — amend it here, since
+`SPEC-MOK-007.md` is already in this work order's execution scope; record it as a defect, as this work order did with the
+third target and with `SPEC-MOK-006`'s duplicate rule 8.9; or defer it to a governance work order behind a stacked pull
+request. The owner chose to amend it here.
+
+`SPEC-MOK-007`'s amendment record carries the row, rule **11.7.2** carries the live transcript's measured figures, and
+the confirmed 12.7 MB extrapolation is set out under *Item 13's canned transcript* above. **One thing that amendment
+changed is worth naming here**: it moved the formal snapshot from `94609ecb…` to `57e4ebd1…`, so any handoff evidence
+bound before it would now be stale.
+
 ## Cost: the actual figure beside both estimates
 
 `WO-MOK-026`'s *Evidence to record* item 5 calls this "the first point in this initiative where an estimate meets a
