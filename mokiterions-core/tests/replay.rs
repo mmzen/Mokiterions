@@ -27,7 +27,8 @@ use std::process::{Command, Output};
 
 use mokiterions::execute;
 use mokiterions::simulation::{
-    Action, Config, DecisionRequest, Density, Direction, Policy, Proposer, ReplayPort, Simulation,
+    Action, Config, DecisionRequest, Density, Direction, Policy, Proposal, Proposer, ReplayPort,
+    Simulation,
 };
 
 const BINARY: &str = env!("CARGO_BIN_EXE_Mokiterions");
@@ -334,7 +335,7 @@ struct HuntingPort {
 }
 
 impl Proposer for HuntingPort {
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
         let permitted = request.permitted_set();
         let forms: Vec<&str> = permitted
             .lines()
@@ -353,7 +354,13 @@ impl Proposer for HuntingPort {
             request.actor_id().to_string(),
             (*chosen).to_string(),
         ));
-        Some(action)
+        // No evidence: this fixture answers from block D and not from a provider, so rule 11.5's
+        // four counts are absent and there is no response to record. That is what keeps the
+        // transcript it records byte-identical to the one it replays.
+        Proposal {
+            action: Some(action),
+            ..Proposal::nothing()
+        }
     }
 
     fn record(&mut self, record: &str) -> io::Result<()> {
@@ -1120,7 +1127,7 @@ impl<P: Proposer> CountingPort<P> {
 }
 
 impl<P: Proposer> Proposer for CountingPort<P> {
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
         // Read before forwarding: `propose` takes the request by value.
         self.opportunities
             .push((request.tick(), request.actor_id().to_string()));

@@ -11,7 +11,7 @@
 
 use std::io::{self, Write};
 
-use mokiterions::simulation::{Action, DecisionRequest, Proposer};
+use mokiterions::simulation::{Action, DecisionRequest, Proposal, Proposer};
 use mokiterions::{cli, execute};
 
 /// The failing-writer helper, relocated with the test that needs it. `SPEC-MOK-002` leaves
@@ -213,8 +213,11 @@ struct WaitingPort {
 }
 
 impl Proposer for WaitingPort {
-    fn propose(&mut self, _request: DecisionRequest) -> Option<Action> {
-        Some(Action::Wait)
+    fn propose(&mut self, _request: DecisionRequest) -> Proposal {
+        Proposal {
+            action: Some(Action::Wait),
+            ..Proposal::nothing()
+        }
     }
 
     fn record(&mut self, record: &str) -> io::Result<()> {

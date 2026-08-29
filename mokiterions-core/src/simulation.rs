@@ -1612,6 +1612,97 @@ impl DecisionRequest {
     }
 }
 
+/// The four token counts a provider reported for one exchange, each present or absent.
+///
+/// **`Option<u64>` and not `u64`, because `SPEC-MOK-007` rule 11.5 fixes the difference**: "a
+/// reported count that the provider did not report is recorded as **absent**, not as zero", and
+/// rule 14.5 is what depends on telling them apart. A run whose provider reported no cached-token
+/// figure "cannot compute the ratio, and that is a failure to evaluate rather than a pass"; a run
+/// that reported a cached figure of zero computed a ratio of zero and failed `REQ-MOK-070` on the
+/// merits. Four absences and four zeros are the same bytes in any representation that loses this,
+/// and the two outcomes are not the same outcome.
+///
+/// A named type rather than four more fields on [`Proposal`], for the reason [`UnitPrices`] is one
+/// and measured the same way: the four are unlabelled integers of similar magnitude in a fixed
+/// order, and rule 14's cost arithmetic and `REQ-MOK-070`'s cache ratio are both computed from
+/// them, so a transposed pair is a wrong cost figure *and* a wrong ratio with nothing to catch
+/// either. `SPEC-MOK-002` rule 5's 2026-08-29 row enumerates the type and its four fields.
+///
+/// [`Default`] is derived and its value is four **absent** counts, which is rule 11.3.1's reading
+/// of an empty usage — "an empty usage is four **absent** counts rather than four zeros" — rather
+/// than a convenience.
+///
+/// `accounting::ExchangeUsage` is an alias of this type and not a second one, so rule 14's cost
+/// arithmetic reads the counts the port reported rather than a copy of them.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReportedUsage {
+    /// Prompt tokens as the provider reported them, rule 10.4a's `usage.prompt`, and the
+    /// denominator of `REQ-MOK-070`'s ratio.
+    pub prompt: Option<u64>,
+    /// Prompt tokens the provider reported as served from its cache, rule 10.4a's
+    /// `usage.cached_prompt`, and that ratio's numerator.
+    pub cached_prompt: Option<u64>,
+    /// Output tokens, as reported.
+    pub output: Option<u64>,
+    /// Reasoning tokens, as reported. Rule 8.5 fixes the level a run may use at `none`, so this is
+    /// where a run shows it got what it asked for. It is a **count** and not the level: rule 10.4a
+    /// puts the level at the response's top level, as a string, and names both `reasoning`.
+    pub reasoning: Option<u64>,
+}
+
+/// What a port obtained for one decision opportunity: the proposal, and the evidence of the
+/// exchange it came from.
+///
+/// `SPEC-MOK-007` rule 1.1, as rule 1.1a grew it on 2026-08-29. **The proposal is `action` and
+/// nothing else here is one.** Rule 1.4a states that plainly: the engine decides nothing from the
+/// other two fields, so rule 9's validation is reached by exactly the value it was reached by
+/// before this type existed. `response` is consumed by the transcript and by nothing else, and
+/// `usage` by rule 14's accounting and by nothing else.
+///
+/// **The two evidence fields exist because rule 11.3 obliges the record to carry them and rule 11.1
+/// obliges the engine to author it.** That rule asks for "the response as received, in full, or the
+/// error", the four reported counts, and "the action the response was parsed into, or the fact that
+/// it was not parsed **and why**" — and the port is the engine's only contact with whatever
+/// answered, so a return of `Option<Action>` alone left the engine obliged to write three things it
+/// had no route to. This module recorded that under `WO-MOK-025` as "a pre-existing tension between
+/// rule 1.1's port shape and rule 11.3's field list", naming `WO-MOK-026` as where the return type
+/// would have to grow. It grew here.
+///
+/// A port that reports a response contradicting its own action changes what the record says about
+/// the exchange and changes no decision, which rule 1.4a records as the honest outcome rather than
+/// as an oversight: rule 10.7 makes the connector untrusted in whole, and a transcript that recorded
+/// a response the engine had silently overruled would hide exactly the disagreement a reader needs
+/// to see.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Proposal {
+    /// The proposal, or the fact that none was obtained. Rule 1.4's value, unchanged, and still the
+    /// only field the engine acts on.
+    pub action: Option<Action>,
+    /// The response as received, in full, or the error, in the port's own bytes. `None` where there
+    /// was no response at all — a port that spoke to nothing, which is every replay of a transcript
+    /// recorded before a provider was ever called.
+    pub response: Option<String>,
+    /// The provider's reported counts. Four absences for a port with no provider behind it, which
+    /// rule 11.5 distinguishes from four zeros and rule 14.5 acts on.
+    pub usage: ReportedUsage,
+}
+
+impl Proposal {
+    /// Nothing obtained, nothing received and nothing reported: rule 9.5's case at its emptiest.
+    ///
+    /// A named function rather than a derived `Default`, because "the default proposal" names
+    /// nothing a reader can check against a rule where "nothing was obtained" is rule 9.5's own
+    /// words. [`ReportedUsage`] derives `Default` instead, four absent counts being a value rule
+    /// 11.3.1 gives a meaning to.
+    pub fn nothing() -> Self {
+        Self {
+            action: None,
+            response: None,
+            usage: ReportedUsage::default(),
+        }
+    }
+}
+
 /// The engine's one interface for obtaining a proposal from outside itself.
 ///
 /// `SPEC-MOK-007` rule 1.1: it takes a request by value and returns either a proposal or the
@@ -1634,8 +1725,15 @@ impl DecisionRequest {
 ///
 /// `&mut self` for that reason: an implementation is expected to carry state across a run.
 pub trait Proposer {
-    /// Proposes one action for one decision opportunity, or reports that none was obtained.
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action>;
+    /// Proposes one action for one decision opportunity, or reports that none was obtained,
+    /// together with the evidence of the exchange it came from.
+    ///
+    /// [`Proposal::action`] is rule 1.4's value and the only field the engine decides from. The
+    /// other two are rule 11.3's obligations travelling to the engine that has to author the
+    /// record, and rule 1.4a states what they are not: not an answer, and not consulted by any
+    /// decision. A port with no provider behind it returns [`Proposal::nothing`] or a proposal whose
+    /// evidence fields are empty, and neither is an error.
+    fn propose(&mut self, request: DecisionRequest) -> Proposal;
 
     /// Takes one transcript record, already authored, and does whatever the host wants done with
     /// it.
@@ -1952,15 +2050,23 @@ fn permitted_form(action: &Action) -> String {
 // The transcript is still comparable with `cmp` and still carries no floating-point value, no
 // timestamp and no path, which is the rest of rule 11.4 and the part that made it a rule.
 //
-// **What a record does not carry under this work order, and why.** Rule 11.3 asks for the response
-// as received in full and for the provider's four reported token counts. Neither is obtainable
-// here: `Proposer::propose` returns `Option<Action>`, so the engine never sees a response and is
-// never told a count, and `WO-MOK-025` has no provider, no connector and no transport to be told
-// by. So `response` is `null` and `usage` is `null` — **absent, not zero**, which is rule 11.5 and
-// which the specification's own "an exchange that yielded nothing" example writes the same way.
-// The raw response text and the four counts arrive with `WO-MOK-026`, where the port's return type
-// has to grow to carry them. This is a pre-existing tension between rule 1.1's port shape and rule
-// 11.3's field list rather than a consequence of anything decided for this work order.
+// **How the response and the four counts reach a record, and what an empty one still says.** Rule
+// 11.3 asks for the response as received in full and for the provider's four reported token counts,
+// and until `WO-MOK-026` neither was obtainable: `Proposer::propose` returned `Option<Action>`, so
+// the engine never saw a response and was never told a count. This module recorded that under
+// `WO-MOK-025` as a tension between rule 1.1's port shape and rule 11.3's field list, and named this
+// work order as where the return type would have to grow. It grew: `SPEC-MOK-007` rule 1.1a of
+// 2026-08-29 puts the evidence on [`Proposal`] beside the action, and both fields are carried here
+// from whatever the port obtained, escaped by the same function every other string value goes
+// through.
+//
+// A port with nothing behind it still authors a record, and the empty values are **absences, not
+// zeros** — rule 11.5. `response` is `null` where the port received nothing; `usage` is `null` where
+// **all four** counts are absent, and otherwise an object whose four members are each an integer or
+// `null`. `null` for four absences rather than an object of four nulls, because the specification's
+// own "an exchange that yielded nothing" example writes it that way, and because it makes every
+// transcript recorded before a provider existed replay byte-identically under rule 12.6 rather than
+// needing a version bump for a shape no reader would read differently.
 // ---------------------------------------------------------------------------------------
 
 /// The transcript's own version integer, on every record of both kinds.
@@ -2199,9 +2305,9 @@ fn prefix_record(entry: &RosterEntry<'_>) -> String {
 /// legitimately make, so a record showing `wait` with no flag would be indistinguishable from an
 /// exchange that yielded nothing — and the two must replay differently, because one moves
 /// `REQ-MOK-074`'s count and the other does not.
-fn exchange_record(request: &DecisionRequest, proposal: Option<&Action>) -> String {
+fn exchange_record(request: &DecisionRequest, proposal: &Proposal) -> String {
     let [shared_rules, actor, observation, permitted_set] = request.blocks();
-    let (verb, parameter) = match proposal {
+    let (verb, parameter) = match &proposal.action {
         Some(action) => action_parts(action),
         None => action_parts(&Action::Wait),
     };
@@ -2209,19 +2315,72 @@ fn exchange_record(request: &DecisionRequest, proposal: Option<&Action>) -> Stri
     let mut record = format!(
         "{{\"transcript\":\"exchange\",\"version\":{TRANSCRIPT_VERSION},\"tick\":{},\
          \"actor\":\"{}\",\"prefix\":\"{}\",\"prefix_digest\":\"{}\",\"observation\":\"{}\",\
-         \"permitted\":\"{}\",\"response\":null,\"usage\":null,\"action\":{{\"verb\":\"{verb}\"",
+         \"permitted\":\"{}\",\"response\":{},\"usage\":{},\"action\":{{\"verb\":\"{verb}\"",
         request.tick(),
         request.actor_id(),
         request.actor_id(),
         prefix_digest(shared_rules, actor),
         escape_transcript_text(observation),
         escape_transcript_text(permitted_set),
+        transcript_response_value(proposal.response.as_deref()),
+        transcript_usage_value(&proposal.usage),
     );
     if let Some(parameter) = parameter {
         record.push_str(&format!(",\"parameter\":\"{parameter}\""));
     }
-    record.push_str(&format!("}},\"fallback\":{}}}", proposal.is_none()));
+    record.push_str(&format!("}},\"fallback\":{}}}", proposal.action.is_none()));
     record
+}
+
+/// The `response` field's value: the bytes the port received, escaped, or the format's absence.
+///
+/// Escaped by [`escape_transcript_text`] and by nothing of its own, which is what makes rule
+/// 11.4.1's round-trip obligation hold for a response as much as for a block. It matters more here
+/// than anywhere else in this module: every other string value on a record is composed by this
+/// library from its own vocabulary, and this one arrives from a program rule 10.7 declares untrusted
+/// in whole. A response is recorded **as received**, in full — not summarised, not truncated, not
+/// re-serialised from whatever the host managed to parse out of it — because rule 11.3's purpose is
+/// that a reader can see what the engine was actually sent, including the ill-formed line that
+/// became a fallback.
+fn transcript_response_value(response: Option<&str>) -> String {
+    match response {
+        Some(response) => format!("\"{}\"", escape_transcript_text(response)),
+        None => "null".to_string(),
+    }
+}
+
+/// The `usage` field's value: rule 11.5's four counts, each present or absent.
+///
+/// `null` when **all four** are absent, and otherwise an object stating all four with `null` for the
+/// ones that are. Two levels of absence for one reason: rule 11.5 fixes that an unreported count is
+/// absent and not zero, and both "the provider reported nothing" and "the provider reported three of
+/// the four" have to survive to a reader. Collapsing the first to an object of four nulls would
+/// change every record produced before a provider existed, which rule 12.6's byte-identity would
+/// then read as drift; collapsing the second by omitting members would leave a reader unable to tell
+/// an absent count from a field this module forgot to write.
+fn transcript_usage_value(usage: &ReportedUsage) -> String {
+    let counts = [
+        usage.prompt,
+        usage.cached_prompt,
+        usage.output,
+        usage.reasoning,
+    ];
+    if counts.iter().all(Option::is_none) {
+        return "null".to_string();
+    }
+    let [prompt, cached_prompt, output, reasoning] = counts.map(transcript_count_value);
+    format!(
+        "{{\"prompt\":{prompt},\"cached_prompt\":{cached_prompt},\"output\":{output},\
+         \"reasoning\":{reasoning}}}"
+    )
+}
+
+/// One reported count as a record states it: the integer, or the format's absence.
+fn transcript_count_value(count: Option<u64>) -> String {
+    match count {
+        Some(count) => count.to_string(),
+        None => "null".to_string(),
+    }
 }
 
 /// Distinguishes a transcript failure from a record-sink failure and from the engine's own,
@@ -2334,13 +2493,46 @@ impl<R: BufRead> ReplayPort<R> {
         }
     }
 
-    /// Latches a failure and returns the fallback-shaped `None` the engine expects from
+    /// Latches a failure and returns the empty proposal the engine expects from
     /// [`Proposer::propose`]. The reason reaches the run through [`Proposer::record`].
-    fn fail(&mut self, reason: String) -> Option<Action> {
+    ///
+    /// [`Proposal::nothing`] and not the recorded evidence: the record whose evidence it would be is
+    /// the one this port has just refused, and re-authoring its response under a failed replay would
+    /// put a recorded exchange's own words on a record the run is about to abandon. Nothing is lost —
+    /// rule 11.8 discards a replay's records, and the run ends on the [`Proposer::record`] call that
+    /// immediately follows.
+    fn fail(&mut self, reason: String) -> Proposal {
         if self.failure.is_none() {
             self.failure = Some(reason);
         }
-        None
+        Proposal::nothing()
+    }
+
+    /// The evidence a recorded exchange carried, read back out so that the replay's re-authored
+    /// record states it again.
+    ///
+    /// **Rule 12.6's byte-identity is what makes this necessary.** A replay authors its records
+    /// through the same lines that authored the recording's, so the response and the four counts have
+    /// to reach [`exchange_record`] on a replay exactly as they reached it on the recording, or every
+    /// record of a live run's replay would differ from the record it replays in two fields. The
+    /// response round-trips through [`unescape_transcript_text`] here and back through
+    /// [`escape_transcript_text`] there, which rule 11.4.1's round-trip obligation makes exact.
+    ///
+    /// A field this cannot read is **absent**, and that is not a mismatch: [`Self::mismatch`] checks
+    /// what rule 12.3 asks it to check, the evidence is not part of it, and a transcript recorded
+    /// before a provider existed states both fields as `null` legitimately. The four counts are read
+    /// unconditionally rather than only inside a `usage` object, because a record's `"usage":null`
+    /// contains no count for any of the four needles to find.
+    fn evidence(record: &str) -> (Option<String>, ReportedUsage) {
+        (
+            transcript_string(record, "response"),
+            ReportedUsage {
+                prompt: transcript_number(record, "prompt"),
+                cached_prompt: transcript_number(record, "cached_prompt"),
+                output: transcript_number(record, "output"),
+                reasoning: transcript_number(record, "reasoning"),
+            },
+        )
     }
 
     /// Rule 12.3's check, in full: the tick, the acting Mokiterion, the prefix the record names,
@@ -2427,9 +2619,9 @@ impl<R: BufRead> ReplayPort<R> {
 }
 
 impl<R: BufRead> Proposer for ReplayPort<R> {
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
         if self.failure.is_some() {
-            return None;
+            return Proposal::nothing();
         }
 
         let record = match self.next_exchange() {
@@ -2456,11 +2648,20 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
         }
         self.served += 1;
 
+        // The recorded exchange's own evidence, re-authored with the replayed record. It travels
+        // whether or not the record was a fallback, because the recorded fallback carried a response
+        // too — an ill-formed one, which is the one a reader most needs to still be there.
+        let (response, usage) = Self::evidence(&record);
+
         // Rule 12.7: an exchange that yielded nothing in the recorded run yields nothing here, so
         // the engine takes rule 9.5's fallback again and the count moves again. A replay reproduces
         // the run that happened, contamination included.
         if transcript_flag(&record, "fallback") != Some(false) {
-            return None;
+            return Proposal {
+                action: None,
+                response,
+                usage,
+            };
         }
 
         let verb = transcript_string(&record, "verb");
@@ -2469,7 +2670,11 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
             .as_deref()
             .and_then(|verb| action_from_parts(verb, parameter.as_deref()))
         {
-            Some(action) => Some(action),
+            Some(action) => Proposal {
+                action: Some(action),
+                response,
+                usage,
+            },
             None => self.fail(format!(
                 "tick {} actor {}: the record states no action this engine's grammar admits",
                 request.tick(),
@@ -2567,12 +2772,13 @@ impl DecisionSource for PortDecisionSource<'_> {
     /// marked as fallbacks, and a count this method incremented in the same statement that wrote the
     /// flag would satisfy P5 by construction, leaving the property nothing to catch.
     ///
-    /// What the *engine* cannot record is the **cause**. Rule 1.1 gives the port one way to say that
-    /// it obtained nothing, and `None` carries no diagnosis, so an exchange that yielded no response
-    /// and a response whose action the enumeration does not admit arrive here identically — case
-    /// **L22** distinguishes them and both distinctions are made on the port's side of rule 1.1. The
-    /// cause reaches the transcript with the response itself, in the field this record writes as
-    /// `null` until `WO-MOK-026`'s connector supplies one.
+    /// What the *engine* does not decide is the **cause**. [`Proposal::action`]'s absence carries no
+    /// diagnosis, so an exchange that yielded no response and a response whose action the enumeration
+    /// does not admit arrive here identically — case **L22** distinguishes them and both distinctions
+    /// are made on the port's side of rule 1.1. The cause reaches the transcript **with the response
+    /// itself**, in the field rule 1.1a grew the port's return to carry: the engine records the two
+    /// cases differently without telling them apart, which is rule 1.4a's point about what the
+    /// evidence is and is not.
     ///
     /// A proposal the engine then rejects is not this case and is not a fallback, rule 9.6. The port
     /// is never told that a rejection happened, which is that rule as a call graph: there is no
@@ -2591,13 +2797,12 @@ impl DecisionSource for PortDecisionSource<'_> {
         debug_assert!(observation.is_consistent());
         let request = DecisionRequest::compose(observation);
         let proposal = self.port.propose(request.clone());
-        if let Err(error) = self
-            .port
-            .record(&exchange_record(&request, proposal.as_ref()))
-        {
+        if let Err(error) = self.port.record(&exchange_record(&request, &proposal)) {
             self.latch(error);
         }
-        proposal.unwrap_or(Action::Wait)
+        // Rule 1.4a: the action and nothing else. The response and the counts went to the record
+        // above and reach no decision from here — there is no route by which they could.
+        proposal.action.unwrap_or(Action::Wait)
     }
 
     fn failure(&mut self) -> Option<io::Error> {
@@ -2668,19 +2873,29 @@ mod accounting {
         pub(super) reasoning: u64,
     }
 
-    /// One exchange's usage, as the provider reported it.
+    /// One exchange's usage, as the provider reported it: [`ReportedUsage`] under the name this
+    /// module's arithmetic reads it by.
+    ///
+    /// **An alias and not a second struct, which is the whole point.** This module declared its own
+    /// four-`Option<u64>` type under `WO-MOK-025`, when the port's return could not carry a count and
+    /// nothing but a test could supply one. `SPEC-MOK-007` rule 1.1a of 2026-08-29 put the four on
+    /// the port's return, and two structurally identical types would then need a conversion between
+    /// them — four unlabelled integers of similar magnitude copied field by field, where a transposed
+    /// pair is a wrong cost figure *and* a wrong cache ratio with nothing in the type system to catch
+    /// either. The alias means the four values exist once and the conversion does not exist at all.
     ///
     /// Every count is optional because rule 11.5 makes a count the provider did not report
     /// **absent, not zero**, while rule 15.3 makes a reported zero a positive statement. The two
     /// stay distinguishable only if the absence has a representation, and `Option<u64>` is it.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-    pub(super) struct ExchangeUsage {
-        prompt: Option<u64>,
-        cached_prompt: Option<u64>,
-        output: Option<u64>,
-        reasoning: Option<u64>,
-    }
+    pub(super) type ExchangeUsage = super::ReportedUsage;
 
+    /// The three usages `SPEC-MOK-007` names, as named constructors.
+    ///
+    /// They live here rather than beside [`ReportedUsage`] because each one states a *rule's* case
+    /// rather than a shape, and the rules are this module's: 14.1's billed exchange, 9.4's exchange
+    /// that reported nothing, and 14.5's exchange that reported all but the cached figure. They are
+    /// `pub(super)` and are therefore no part of the public surface `SPEC-MOK-002` rule 5 enumerates,
+    /// which lists the type and its four fields and nothing else.
     impl ExchangeUsage {
         /// What a connector produces when the provider reported all four counts.
         pub(super) fn reported(
@@ -11115,7 +11330,15 @@ mod tests {
         account: RunAccount,
         /// The usage this port reports for an exchange that yielded a proposal. Synthetic by
         /// construction: no provider reported it and nothing here estimates it.
+        ///
+        /// It is billed *and* reported, which a real connector will also do with one figure: rule
+        /// 14's accounting and rule 11.3's record read the same counts, and a fixture that declared
+        /// them twice could pass case **P4** while a connector that disagreed with itself failed it.
         usage: ExchangeUsage,
+        /// The response rule 1.1a has the port return beside the proposal, where the test declares
+        /// one. `None` — no response at all — for every port built before this existed, so their
+        /// records still state `"response":null` byte for byte.
+        response: Option<String>,
     }
 
     impl ScriptedPort {
@@ -11145,6 +11368,18 @@ mod tests {
             Self {
                 account: RunAccount::declared(prices, ceiling),
                 usage,
+                ..self
+            }
+        }
+
+        /// Declares the response the port received, rule 1.1a's other field.
+        ///
+        /// Separate from [`Self::billing`] because the two are independent: a response arrives from a
+        /// connector whether or not the run declared prices, and rule 14.8 makes the prices live-only
+        /// while rule 11.3's record field is owed by every exchange.
+        fn receiving(self, response: &str) -> Self {
+            Self {
+                response: Some(response.to_string()),
                 ..self
             }
         }
@@ -11182,7 +11417,7 @@ mod tests {
     }
 
     impl Proposer for ScriptedPort {
-        fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+        fn propose(&mut self, request: DecisionRequest) -> Proposal {
             let answer = match self.answers.get(self.seen.len()) {
                 Some(answer) => answer.clone(),
                 None => self.standing.clone(),
@@ -11196,7 +11431,20 @@ mod tests {
                 Some(_) => self.account.after_exchange(&self.usage),
                 None => self.account.after_fallback(),
             };
-            answer
+            // Rule 1.1a's evidence. An answered exchange reports what the port declares; an
+            // unanswered one reports the response only, because rule 11.3's `response` field is
+            // where an exchange that yielded no action says why — and the same declared response
+            // travelling with both is what lets a test assert that the record differs in the
+            // `action` and `fallback` fields alone.
+            let usage = match &answer {
+                Some(_) => self.usage,
+                None => ReportedUsage::default(),
+            };
+            Proposal {
+                action: answer,
+                response: self.response.clone(),
+                usage,
+            }
         }
 
         fn record(&mut self, record: &str) -> io::Result<()> {
@@ -11214,7 +11462,7 @@ mod tests {
     struct ForbiddenPort;
 
     impl Proposer for ForbiddenPort {
-        fn propose(&mut self, _request: DecisionRequest) -> Option<Action> {
+        fn propose(&mut self, _request: DecisionRequest) -> Proposal {
             panic!(
                 "rule 20.9: a port supplied under another source must be ignored, not consulted"
             );
@@ -11257,6 +11505,15 @@ mod tests {
             },
             Action::Avoid { target },
         ]
+    }
+
+    /// A proposal carrying an action and no evidence, which is what a port with nothing behind it
+    /// returns and what every case predating rule 1.1a asserted against.
+    fn proposed(action: Action) -> Proposal {
+        Proposal {
+            action: Some(action),
+            ..Proposal::nothing()
+        }
     }
 
     fn llm_config(seed: u64, tick_limit: u64, trace_actions: bool) -> Config {
@@ -11907,7 +12164,13 @@ mod tests {
     /// one that states each applied action — so a replay that produced a different action fails on
     /// the bytes rather than on a summary that happened to agree.
     fn record_a_run(seed: u64, tick_limit: u64, script: Vec<Option<Action>>) -> Recording {
-        let mut port = ScriptedPort::answering(script);
+        record_a_run_with(seed, tick_limit, ScriptedPort::answering(script))
+    }
+
+    /// [`record_a_run`] against a port the case built, for the cases that declare what the port
+    /// reports as well as what it proposes.
+    fn record_a_run_with(seed: u64, tick_limit: u64, port: ScriptedPort) -> Recording {
+        let mut port = port;
         let mut text = Vec::new();
         let mut records = Vec::new();
         Simulation::new(llm_config(seed, tick_limit, true))
@@ -12143,7 +12406,7 @@ mod tests {
         // are the values a reader would most plausibly trip over.
         let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
         let request = DecisionRequest::compose(&simulation.observation(0));
-        let record = exchange_record(&request, Some(&Action::Sleep));
+        let record = exchange_record(&request, &proposed(Action::Sleep));
         assert!(request.observation().contains("tick: "));
         assert_eq!(transcript_number(&record, "tick"), Some(request.tick()));
         assert_eq!(
@@ -12499,6 +12762,228 @@ mod tests {
         // than producing a plausible wrong run.
         let error = replay(777, 20, &transcript).expect_err("rule 12.3");
         assert!(error.to_string().starts_with("transcript: "), "{error}");
+    }
+
+    /// A port that forwards to another and keeps every record the engine handed it.
+    ///
+    /// Rule 11.8 has a replay write no transcript, so the records a replay *authors* have no
+    /// destination and cannot otherwise be seen. Rule 12.6's byte-identity is a claim about exactly
+    /// those bytes, and the streams the cases above compare are the text and the record stream
+    /// rather than the transcript itself.
+    struct RecordKeeper<P: Proposer> {
+        inner: P,
+        written: Vec<String>,
+    }
+
+    impl<P: Proposer> RecordKeeper<P> {
+        fn new(inner: P) -> Self {
+            Self {
+                inner,
+                written: Vec::new(),
+            }
+        }
+
+        /// What a recording host would have written, in [`ScriptedPort::transcript`]'s framing so
+        /// that the two are comparable as whole files.
+        fn transcript(&self) -> String {
+            self.written
+                .iter()
+                .map(|record| format!("{record}\n"))
+                .collect()
+        }
+    }
+
+    impl<P: Proposer> Proposer for RecordKeeper<P> {
+        fn propose(&mut self, request: DecisionRequest) -> Proposal {
+            self.inner.propose(request)
+        }
+
+        fn record(&mut self, record: &str) -> io::Result<()> {
+            self.written.push(record.to_string());
+            self.inner.record(record)
+        }
+    }
+
+    /// Rule 11.3 and rule 1.1a: the record carries the response as received and the provider's four
+    /// reported counts, because the port's return now carries them to the engine that authors it.
+    #[test]
+    fn a_record_carries_the_response_and_the_reported_counts() {
+        let response = "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\
+                        \"reasoning\":\"none\",\"usage\":{\"prompt\":6000,\"cached_prompt\":5400,\
+                        \"output\":40,\"reasoning\":0}}";
+        let recording = record_a_run_with(
+            42,
+            3,
+            ScriptedPort::always(Action::Sleep)
+                .billing(declared_prices(), None, synthetic_usage())
+                .receiving(response),
+        );
+
+        let exchanges = recording.port.exchanges();
+        assert!(!exchanges.is_empty());
+        for record in &exchanges {
+            assert!(
+                record.contains(
+                    "\"usage\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\
+                     \"reasoning\":0}"
+                ),
+                "{record}"
+            );
+            // "As received, in full", which for a response carrying quotation marks means the value
+            // is escaped and is therefore a string rather than a nested object. The record's own
+            // `usage` is the only object a field reader can find, and the four counts below are
+            // read past the response to prove it.
+            assert_eq!(
+                transcript_string(record, "response").as_deref(),
+                Some(response)
+            );
+            assert_eq!(transcript_number(record, "prompt"), Some(6_000));
+            assert_eq!(transcript_number(record, "cached_prompt"), Some(5_400));
+            assert_eq!(transcript_number(record, "output"), Some(40));
+            assert_eq!(transcript_number(record, "reasoning"), Some(0));
+        }
+
+        // The counts billed and the counts recorded are the same figures, which is case **P4** from
+        // the record's side: the port reports one usage and it reaches both.
+        assert_eq!(
+            recording.port.account.cost(),
+            SYNTHETIC_COST * exchanges.len() as u64
+        );
+    }
+
+    /// Rule 11.5: an unreported count is **absent, not zero**, at both levels of absence.
+    #[test]
+    fn an_unreported_count_is_absent_and_not_zero() {
+        // All four absent: the field itself is the format's absence. This is how every record
+        // authored before a provider existed states it, and it is why those transcripts replay
+        // byte-identically under rule 12.6 rather than needing a version bump.
+        let recording = record_a_run_with(42, 2, ScriptedPort::always(Action::Wait));
+        let empty = recording.port.exchanges();
+        assert!(!empty.is_empty());
+        for record in &empty {
+            assert!(
+                record.contains("\"response\":null,\"usage\":null,"),
+                "{record}"
+            );
+        }
+
+        // One of the four absent: the object states all four and the missing one is `null`, so a
+        // reader can tell an unreported count from a field this module forgot to write. Rule 14.5
+        // acts on exactly this record — the exchange succeeded and was billed, and what is missing
+        // is one figure rather than the response.
+        let recording = record_a_run_with(
+            42,
+            2,
+            ScriptedPort::always(Action::Wait).billing(
+                declared_prices(),
+                None,
+                ExchangeUsage::without_cached_figure(6_000, 40),
+            ),
+        );
+        let partial = recording.port.exchanges();
+        assert!(!partial.is_empty());
+        for record in &partial {
+            assert!(
+                record.contains(
+                    "\"usage\":{\"prompt\":6000,\"cached_prompt\":null,\"output\":40,\
+                     \"reasoning\":0}"
+                ),
+                "{record}"
+            );
+            assert_eq!(transcript_number(record, "cached_prompt"), None);
+            assert_eq!(transcript_number(record, "prompt"), Some(6_000));
+        }
+        // And the absence survived to the end of the run, which is rule 14.5's failure to evaluate
+        // rather than a ratio computed from a zero.
+        assert_eq!(recording.port.account.cache_ratio_basis_points(), None);
+    }
+
+    /// Rule 11.4.1's round trip, over the one string value this module does not compose itself.
+    ///
+    /// A response arrives from a program rule 10.7 declares untrusted in whole, so the input worth
+    /// testing is the one that attacks the framing: quotation marks, a backslash, a newline, control
+    /// characters, and the field names the record's own readers look for. The counts and the flag
+    /// asserted below are written *after* the response on the record, so a response that escaped its
+    /// value would be found first and these would read its planted figures.
+    #[test]
+    fn a_response_survives_the_framing_and_names_no_field() {
+        let hostile =
+            "\"usage\":{\"prompt\":999},\"fallback\":true, a \\ backslash\nand \u{7}\u{1b} too";
+        let recording = record_a_run_with(
+            42,
+            2,
+            ScriptedPort::always(Action::Sleep)
+                .billing(declared_prices(), None, ExchangeUsage::reported(1, 0, 2, 3))
+                .receiving(hostile),
+        );
+
+        let exchanges = recording.port.exchanges();
+        assert!(!exchanges.is_empty());
+        for record in &exchanges {
+            assert_eq!(
+                transcript_string(record, "response").as_deref(),
+                Some(hostile)
+            );
+            assert_eq!(transcript_number(record, "prompt"), Some(1));
+            assert_eq!(transcript_number(record, "cached_prompt"), Some(0));
+            assert_eq!(transcript_flag(record, "fallback"), Some(false));
+            // Rule 11.2's one line per exchange, which a raw newline in a response would break.
+            assert!(!record.contains('\n'), "{record}");
+        }
+    }
+
+    /// Rule 12.6 over rule 1.1a's two new fields: a replay re-authors the evidence it read.
+    ///
+    /// This is the half of byte-identity these fields could break, and the only half that is not
+    /// structural. Every other field on a replayed record is composed from the run — the tick, the
+    /// actor, the blocks, the digest — so a replay that reached the same opportunity states them
+    /// again by construction. The response and the counts came from outside the engine, and they
+    /// appear on a replayed record only because [`ReplayPort`] read them back out of the record it
+    /// replaced. The whole transcript is compared, head included.
+    #[test]
+    fn a_replay_re_authors_the_evidence_the_recording_carried() {
+        let response = "{\"note\":\"a \\\\ backslash, a \\\" quote and a\nnewline\",\
+                        \"usage\":{\"prompt\":9}}";
+        let recording = record_a_run_with(
+            42,
+            10,
+            ScriptedPort::answering(varied_script(200))
+                .billing(declared_prices(), None, synthetic_usage())
+                .receiving(response),
+        );
+        let transcript = recording.port.transcript();
+
+        // Not a vacuous comparison. The recording carried both fields, on records of both kinds:
+        // rule 12.7's recorded fallback carries a response too, and it is the ill-formed response
+        // that a reader most needs to still be there.
+        assert!(
+            transcript.contains("\"cached_prompt\":5400"),
+            "{transcript}"
+        );
+        let recorded = recording.port.exchanges();
+        assert!(
+            recorded
+                .iter()
+                .any(|record| record.contains("\"fallback\":true"))
+        );
+        for record in &recorded {
+            assert_eq!(
+                transcript_string(record, "response").as_deref(),
+                Some(response)
+            );
+        }
+
+        let mut keeper = RecordKeeper::new(ReplayPort::new(transcript.as_bytes()));
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        Simulation::new(llm_config(42, 10, true))
+            .unwrap()
+            .run_recording(&mut text, Some(&mut records), Some(&mut keeper))
+            .expect("a matched replay completes");
+
+        assert_eq!(text, recording.text);
+        assert_eq!(records, recording.records);
+        assert_eq!(keeper.transcript(), transcript);
     }
 
     /// Rule 20.4: the port performs no filesystem operation, and reads nothing at construction.
@@ -12994,11 +13479,25 @@ mod tests {
             .run_recording(&mut proposed_text, None, Some(&mut proposing))
             .expect("a run in which every exchange answered");
         assert_eq!(String::from_utf8(proposed_text).unwrap(), text);
+
+        // Two differences between the transcripts, and exactly two, each one a rule. Rule 12.7's
+        // flag; and rule 11.5's usage, because an exchange that yielded nothing reported no counts —
+        // so its record states `"usage":null` where the answered twin's states what the port
+        // reported. Both are asserted present before being substituted away, so the second
+        // difference is checked rather than tolerated, and the substitutions are then the *whole* of
+        // it: the blocks, the digests, the prefix digests, the actions and the ticks are identical.
+        // That is what leaves the flag, the count and the mark as the only things distinguishing a
+        // contaminated run from a clean one.
+        const REPORTED: &str = "\"usage\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\
+                                \"reasoning\":0}";
+        assert!(proposing.transcript().contains(REPORTED));
+        assert!(silent.transcript().contains("\"usage\":null"));
         assert_eq!(
             proposing.transcript(),
             silent
                 .transcript()
                 .replace("\"fallback\":true", "\"fallback\":false")
+                .replace("\"usage\":null", REPORTED)
         );
 
         // Rule 15.3: a clean run states its zero rather than omitting it, and rule 15.4's mark is

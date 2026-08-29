@@ -11,7 +11,7 @@ use std::io;
 use mokiterions::simulation::DecisionSnapshot;
 use mokiterions::simulation::{
     Action, AgentSnapshot, Config, DecisionOutcome, DecisionRequest, Event, EventDetail, EventType,
-    Proposer, Simulation, TerminationReason, WorldSnapshot,
+    Proposal, Proposer, Simulation, TerminationReason, WorldSnapshot,
 };
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 
@@ -317,7 +317,7 @@ pub struct KeyResponse {
 struct LentPort(Box<dyn Proposer>);
 
 impl Proposer for LentPort {
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
         self.0.propose(request)
     }
 
