@@ -1,0 +1,107 @@
+The workspace suite at the candidate, on both platforms
+======================================================
+
+cargo test --workspace --locked --no-fail-fast, run twice: once natively on Windows in the
+implementation tree, once on Linux in a fresh clone of this branch at the same commit. --no-fail-fast
+is there so that one failing binary cannot hide the rest, which is the reading WO-MOK-025 established.
+
+  candidate commit  6e9ca13ba70ec46696113bb742f45d78d602d41e
+  branch            feature/wo-mok-026-live-path
+  taken             2026-08-29
+
+  Windows 11, x86_64-pc-windows-msvc            EXIT=0
+  Ubuntu (WSL 2), x86_64-unknown-linux-gnu      EXIT=0
+
+  totals    Windows   481 passed, 0 failed, 3 ignored, over 27 result lines
+            Linux     481 passed, 0 failed, 3 ignored, over 27 result lines
+            agree     yes, figure for figure
+
+Per target, so that an agreeing total cannot hide two disagreeing binaries:
+
+  target                                         Windows            Linux             
+  ---------------------------------------------- ------------------ ------------------
+  mokiterions-core  doc-tests                    ok 0/0/0           ok 0/0/0          
+  mokiterions-core  tests/cli.rs                 ok 30/0/0          ok 30/0/0         
+  mokiterions-core  tests/connector.rs           ok 13/0/0          ok 13/0/0         
+  mokiterions-core  tests/decisions.rs           ok 3/0/0           ok 3/0/0          
+  mokiterions-core  tests/density.rs             ok 2/0/0           ok 2/0/0          
+  mokiterions-core  tests/naming.rs              ok 3/0/0           ok 3/0/0          
+  mokiterions-core  tests/no_outcome_threshold.rs ok 1/0/0           ok 1/0/0          
+  mokiterions-core  tests/process.rs             ok 8/0/0           ok 8/0/0          
+  mokiterions-core  tests/records.rs             ok 17/0/0          ok 17/0/0         
+  mokiterions-core  tests/replay.rs              ok 19/0/1          ok 19/0/1         
+  mokiterions-core  tests/termination.rs         ok 5/0/0           ok 5/0/0          
+  mokiterions-core  tests/viability.rs           ok 5/0/0           ok 5/0/0          
+  mokiterions-core  unittests src/lib.rs         ok 173/0/2         ok 173/0/2        
+  mokiterions-core  unittests src/main.rs        ok 0/0/0           ok 0/0/0          
+  mokiterions-core  unittests tests/support/canned_connector.rs ok 0/0/0           ok 0/0/0          
+  mokiterions-tui  doc-tests                     ok 0/0/0           ok 0/0/0          
+  mokiterions-tui  tests/authority.rs            ok 5/0/0           ok 5/0/0          
+  mokiterions-tui  tests/export.rs               ok 7/0/0           ok 7/0/0          
+  mokiterions-tui  tests/layout.rs               ok 11/0/0          ok 11/0/0         
+  mokiterions-tui  tests/options.rs              ok 18/0/0          ok 18/0/0         
+  mokiterions-tui  tests/render.rs               ok 29/0/0          ok 29/0/0         
+  mokiterions-tui  tests/replay.rs               ok 5/0/0           ok 5/0/0          
+  mokiterions-tui  tests/spatial.rs              ok 7/0/0           ok 7/0/0          
+  mokiterions-tui  tests/state.rs                ok 22/0/0          ok 22/0/0         
+  mokiterions-tui  tests/verification.rs         ok 31/0/0          ok 31/0/0         
+  mokiterions-tui  unittests src/lib.rs          ok 59/0/0          ok 59/0/0         
+  mokiterions-tui  unittests src/main.rs         ok 8/0/0           ok 8/0/0          
+
+  each cell is  result passed/failed/ignored
+
+No target disagrees between the platforms: every one of the 27 result lines carries the same
+verdict and the same three figures on both.
+
+The three ignored tests are the same three instruments on both platforms, named in
+SPEC-MOK-004 rule 11's own paragraphs:
+  Windows  test regenerate_the_committed_transcript ... ignored, writes into the working tree; run deliberately when the recorded run changes
+  Windows  test simulation::tests::print_base_commit_entropy_literals ... ignored, instrument: prints the base-commit constant in source form, run it by name
+  Windows  test simulation::tests::the_four_existing_sources_entropy_state_at_every_tick_boundary ... ignored, instrument: prints ~20,000 lines for an external capture, run it by name
+  Linux    test regenerate_the_committed_transcript ... ignored, writes into the working tree; run deliberately when the recorded run changes
+  Linux    test simulation::tests::print_base_commit_entropy_literals ... ignored, instrument: prints the base-commit constant in source form, run it by name
+  Linux    test simulation::tests::the_four_existing_sources_entropy_state_at_every_tick_boundary ... ignored, instrument: prints ~20,000 lines for an external capture, run it by name
+
+The same reading outside the suite: replay identity on both platforms
+--------------------------------------------------------------------
+
+The suite's own byte comparison is `the_live_transcript_replays_into_the_run_its_record_stream_describes`,
+and it passes on both platforms above. It is re-taken here outside the suite, because the one fact this
+work order's disclosures leave open is whether an engine output depends on the platform that produced it.
+
+    Mokiterions --policy llm --seed 0 --ticks 50         --transcript-path docs/.../WO-MOK-026/live-run-transcript.jsonl         --events-path <scratch>/records.jsonl
+
+  Windows, target/release/Mokiterions.exe    exit 0, standard error 0 bytes
+  Linux,   target/debug/Mokiterions          exit 0, standard error 0 bytes
+
+  rendered output       76,819 bytes on both
+                        9563b4817a6696f0ce40af3bc6fd82cc0d57e80841182d3ad81beb14780a48bb on both,
+                        which is the digest of the retained live-run-stdout.txt: the replay reproduces
+                        the live run's own output byte for byte on each platform independently.
+
+  record stream         157,153 bytes, 785 lines, 0 CRs on both
+                        d0c281b3e60d10591be712d7ed9acae2b576fed1ce604af5934ca039efa71e4c on both
+
+So every byte the engine produces from this transcript is platform-independent, and the debug and release
+profiles agree as well, since the two readings were taken one of each.
+
+This narrows the disclosure in live-run-measurements.md rather than contradicting it. That disclosure is
+about live-run-record-stream.txt, 443 bytes and 2 lines, whose single CR is on line 1 --
+`connector ready: model=gpt-5.6-luna endpoint=...` -- which the operator's connector wrote through
+Python's text-mode standard error. Line 2, the engine's own run record, carries no CR. The retained
+file's bytes therefore depend on the platform the *connector* ran on, and nothing in either Rust target
+writes a CR. What is still unmeasured, and unmeasurable without paying for a third run, is whether a
+live run on another platform would produce the same transcript; that is a statement about a provider and
+a connector, not about this repository's code.
+
+The two retained live captures are byte-identical in the Linux clone and in the Windows tree, which is
+`.gitattributes`' `-text` doing what it is there for:
+
+  live-run-transcript.jsonl    9ee7794beaf3fc1fc63b03ed80d15c8e04c7d0679fae65bba50d40720f42ec78  both
+  live-run-record-stream.txt   9cd393a3484ee74a323bcd1a7fa0d3030e1f9b11206057b224fad96ea335814a  both
+  live-run-stdout.txt          9563b4817a6696f0ce40af3bc6fd82cc0d57e80841182d3ad81beb14780a48bb  both
+
+The Linux reading was taken in a fresh clone at /home/mm/mok-wo026-linux, cloned from this working tree
+with --no-local so that the object transfer is a real one, checked out clean at 6e9ca13 with no local
+modification. The clone's governance markdown is LF where this tree's is CRLF, which is core.autocrlf
+and not a difference in content; the evidence tree is LF in both, by `-text`.

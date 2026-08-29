@@ -1,0 +1,1458 @@
+################################################################################################
+# WO-MOK-026 PREAMBLE. Everything below the second banner is the instrument's own output,
+# retained byte for byte. Everything between here and that banner is this work order's reading
+# of it and is not the instrument's.
+################################################################################################
+
+WO-MOK-025 built docs/engineering/simulation/evidence/WO-MOK-025/analysis/architecture-checks.py
+as a re-runnable instrument, and WO-MOK-026 re-runs it rather than describing what it would say:
+
+    python docs/engineering/simulation/evidence/WO-MOK-025/analysis/architecture-checks.py \
+        cc54185 target/wo026-architecture-checks.txt
+
+    candidate  6e9ca13ba70ec46696113bb742f45d78d602d41e
+    base       cc54185
+    run on     2026-08-29, natively on Windows 11
+    exit       1  ("9 checks, 5 findings" -- the instrument exits 1 whenever any check is not a
+                  bare PASS, so the status is not by itself a failure; the five texts are below)
+
+The script is unchanged from the one WO-MOK-025 verified. It is imported here, not copied: the
+file this preamble is attached to is its output, and the script's own full text is retained at the
+end of that output as WO-MOK-019's packet does.
+
+WHAT IS STALE IN THIS OUTPUT, AND WHY IT IS RETAINED ANYWAY
+-----------------------------------------------------------
+
+The instrument's *measurements* are taken at this candidate and are current. Four of its *prose*
+paragraphs, across three of the nine checks, were written for a stage that had no connector, and
+at this candidate they are false. They are retained unedited, because editing an instrument's output is the one thing that
+would make it worthless, and they are named here so that no later reader mistakes them for a
+finding:
+
+  check 4, `limit:`   "S3a is written for the stage that has a connector: it expects the spawn
+                      and the credential pass-through to exist ... Neither exists yet, so what is
+                      checked here is the absence".
+                      STALE. Both exist at this candidate. The instrument's own numbers in the
+                      same check say so: 4 process sites, all four in the engine's binary target
+                      at main.rs:448, 449, 450 and 532, and 0 elsewhere in either package. What
+                      S3a asks for is exactly that confinement, so the check passes on its
+                      measurements while its prose describes the previous stage.
+
+  check 8, `limit:`   "this is an escalation and not a pass. The obligation stands and its
+                      subject does not exist yet; the work order that builds the connector
+                      inherits it."
+                      STALE, and this work order is that work order. C1's synthetic-credential
+                      half is run at this candidate and it is a test, not a scan:
+                      `the_credential_value_reaches_no_produced_byte` at
+                      mokiterions-core/tests/connector.rs:443 sets a credential in the child's
+                      environment and asserts the value appears in no produced byte, and
+                      `the_live_evidence_carries_no_credential_and_names_the_provider_once` at
+                      mokiterions-core/tests/replay.rs:1670 asserts the same over the retained
+                      live evidence. verification-cases.txt cites those, not this scan.
+
+  check 8, verdict   "The connector, which is where SPEC-MOK-007 rules 10.5 and 13.4 place the
+                      credential, is out of this work order's scope."
+                      STALE for the same reason. The connector is in scope here; it is written
+                      outside the repository and never committed, which is a different fact and
+                      the one credential-attestation.md records.
+
+  check 9, `limit:`   "the positive half ... needs a live run, which this work order excludes."
+                      STALE. The live run happened, under live-run-authorization.md, and
+                      live-run-measurements.md carries it. The negative half this check does
+                      measure -- no socket type, no connect, no URL and no HTTP identifier
+                      anywhere in either package at any tier -- is current and is what C5 rests
+                      on.
+
+A DEFECT IN THE INSTRUMENT, FOUND BY RE-RUNNING IT
+--------------------------------------------------
+
+Check 2 reports **4 binary targets** and prints the fourth as `? at ?`. There are three:
+
+    Mokiterions          mokiterions-core/src/main.rs
+    canned-connector     mokiterions-core/tests/support/canned_connector.rs
+    mokiterions-tui      mokiterions-tui/src/main.rs
+
+The fourth is the literal string `[[bin]]` inside a *comment* at
+mokiterions-core/Cargo.toml:49, which this work order added to explain the second target. The
+instrument counts `[[bin]]` occurrences in the manifests textually and TOML comments are not
+stripped, so a manifest that explains its own targets inflates the count by one per mention.
+
+This is a defect in the instrument and not in the tree. It is **visible rather than silent** --
+`? at ?` is unmissable, and the three real targets are printed with their paths -- and it fails
+toward over-reporting, which is the safe direction for a drift check. It is recorded here rather
+than repaired, because the file lives in WO-MOK-025's evidence packet and editing a verified
+packet's contents is not this work order's to do. The count of three is the figure
+verification-cases.txt and defect-third-target-unamended.md use.
+
+THE NINE CHECKS, READ AT THIS CANDIDATE
+---------------------------------------
+
+  1  S1    The declaration did not move: Cargo.toml, Cargo.lock, mokiterions-tui/Cargo.toml and
+           rust-toolchain.toml are byte-identical to cc54185, and mokiterions-core/Cargo.toml is
+           +42 lines with no deletion. All 42 are comments, `default-run = "Mokiterions"` and the
+           `canned-connector` [[bin]] block -- **no dependency**. `Mokiterions: 0 declared, 0 in
+           the manifest`, and "Every declared set matches its resolved graph. 8.4a-8.4d pass."
+           The instrument words this FINDING rather than PASS because half of it is the
+           repository's own gate and not this scan; both halves are green.
+
+           **Read the resolved-graph half here with care.** The instrument does not run that
+           gate. It *quotes a file* -- WO-MOK-025/candidate/declared-dependencies.txt, by a
+           path baked in at architecture-checks.py line 60 -- so the "Every declared set
+           matches its resolved graph" line above and the six lines before it are
+           WO-MOK-025's reading reprinted, not a reading taken at this candidate. The
+           instrument says as much in its own `method:` sentence, so this is a property of
+           the check and not a fault in it. The gate was therefore run again here, and
+           declared-dependencies.txt beside this file is that run: exit 0, and its body
+           byte-identical to WO-MOK-025's line for line. S1's resolved-graph half rests on
+           that file, not on this quotation.
+
+  2  S2a   No path-shaped literal anywhere: 3,129 literals scanned, **path-shaped: none**. The 11
+           connector identifiers are all in the engine's binary target, which is where
+           SPEC-MOK-007 rule 13.1 puts them. The binary-target count is the defect above.
+
+  3  S3    PASS. No filesystem operation, no socket, no spawn and no environment read in lib.rs,
+           cli.rs or simulation.rs.
+
+  4  S3a   4 process sites, all four in mokiterions-core/src/main.rs, at 448, 449, 450 and 532,
+           and **0 environment reads anywhere in either package** other than `args`, `var` and
+           one `env::temp_dir` in the observer's own test module. The observer's source contains
+           no process spawn at all, which is REQ-MOK-077's prohibition measured rather than
+           assumed.
+
+  5  S5    PASS. Both hosts' usage texts carry the five-value option line and exactly one `llm`
+           entry, and neither carries the withdrawn four-source sentence outside a comment that
+           explains its withdrawal.
+
+  6  S6b   26 hits across the five vocabularies, **all 26 in the engine's library and binary and
+           observer: none**. No live-versus-replay branch inside the library target and no live
+           path in the observer at all.
+
+  7  S7    PASS. One declaration of the shared rules block, and every literal of it occurs in
+           that file alone.
+
+  8  C1/C3 The credential vocabulary is absent from product source; 8 filesystem sites, every one
+           taking its path from a variable; 0 environment reads. The stale prose is named above.
+
+  9  C5    PASS. No socket type, no connect, no URL and no HTTP identifier anywhere in either
+           package at any tier.
+
+################################################################################################
+# END OF THE WO-MOK-026 PREAMBLE. The instrument's own output begins on the next line.
+################################################################################################
+
+# VER-MOK-018: the architecture, usage and security checks with no other runner
+#
+# repository root:  C:\Users\mathi\Mokiterions-understand-20260829-1340
+# candidate:        6e9ca13ba70ec46696113bb742f45d78d602d41e
+# base commit:      cc54185
+# imported:         docs\engineering\simulation\evidence\WO-MOK-019\analysis\static-checks.py  (Source, Report, strip_rust)
+# imported:         docs\engineering\simulation\evidence\WO-MOK-025\analysis\static-checks.py  (MODE_VOCABULARY)
+#
+# command: python docs/engineering/simulation/evidence/WO-MOK-025/analysis/architecture-checks.py \
+#              <base-commit> <output-file>
+#
+# checks: 1 S1, 2 S2a, 3 S3, 4 S3a, 5 S5, 6 S6b, 7 S7, 8 C1 and C3, 9 C5.
+#
+# S2, S4, S4a, S5a, S6 and S6a are not here and are not gaps. S2 is the connector's
+# dependency surface, which does not exist. S4 and S4a are candidate/public-surface.txt.
+# S5a, S6 and S6a are tests that run on every cargo test, named in the completion
+# report's item 7 table. L3 and L11 are analysis/static-checks.py beside this file.
+#
+# Every scan runs over source with comments and literals blanked by the imported
+# module's `strip_rust`, except check 2's literal search, which says so. Line numbers
+# survive the blanking. `product_only` excludes lines inside a `#[cfg(test)]` module,
+# and a check that wants the test tier too asks for it and prints both figures.
+#
+# engine library: lib.rs, cli.rs, simulation.rs  (17,772 lines)
+# engine binary:  main.rs  (556 lines)
+# observer:       authority.rs, export.rs, layout.rs, lib.rs, main.rs, options.rs, render.rs, spatial.rs, state.rs, verification.rs  (7,347 lines)
+
+============================================================================================================
+1. S1 — the declared dependency sets, unchanged from the base commit
+============================================================================================================
+  obligation: The engine's and the observer's resolved dependency graphs equal the declared sets, unchanged from the base commit - the engine's table empty, the observer's one entry with every other crate reached transitively through `ratatui`. ARCH-MOK-001's by-name scan for a network, asynchronous-runtime, database, model-provider or user-interface crate is re-run and continues to find none.
+  method: two halves. The "unchanged from the base commit" half is a byte comparison over the manifests and the lockfile, here. The resolved-graph half needs cargo and three targets, so it is the repository's own gate, captured beside this file.
+
+  the declaration, base against candidate:
+    Cargo.toml                       unchanged
+    Cargo.lock                       unchanged
+    mokiterions-core/Cargo.toml      mokiterions-core/Cargo.toml | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+    mokiterions-tui/Cargo.toml       unchanged
+    rust-toolchain.toml              unchanged
+
+  the resolved graphs, from scripts/check_declared_dependencies.py:
+    Mokiterions — declared by SPEC-MOK-002
+      Mokiterions: 0 declared, 0 in the manifest
+      Mokiterions on aarch64-apple-darwin: 0 external crates, no figure declared
+      Mokiterions on x86_64-pc-windows-msvc: 0 external crates, no figure declared
+      Mokiterions on x86_64-unknown-linux-gnu: 0 external crates, no figure declared
+    mokiterions-tui — declared by SPEC-MOK-003
+      mokiterions-tui: 1 declared, 1 in the manifest
+      mokiterions-tui on aarch64-apple-darwin: 62 external crates, declared 62
+      mokiterions-tui on x86_64-pc-windows-msvc: 57 external crates, declared 57
+      mokiterions-tui on x86_64-unknown-linux-gnu: 63 external crates, declared 63
+      mokiterions-tui union of the declared targets: 66 external crates, declared 66
+      raw hit on aarch64-apple-darwin: mio 1.2.2 (network access)
+      raw hit on aarch64-apple-darwin: signal-hook-mio 0.2.5 (network access)
+      raw hit on x86_64-unknown-linux-gnu: mio 1.2.2 (network access)
+      raw hit on x86_64-unknown-linux-gnu: signal-hook-mio 0.2.5 (network access)
+      disclosed and accepted: mio 1.2.2 — the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+      disclosed and accepted: signal-hook-mio 0.2.5 — the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+    Every declared set matches its resolved graph. 8.4a-8.4d pass.
+
+  verdict: FINDING — no manifest and no lockfile entry moved between cc54185 and the candidate, and the captured gate reports every declared set equal to its resolved graph
+  limit:   a byte comparison establishes that the declaration did not move, not that it was right. The by-name scan's two accepted hits, mio and signal-hook-mio, are the observer's and predate this work order; VER-MOK-014 manual assessment 6 is where they were judged.
+
+============================================================================================================
+2. S2a — nothing makes a connector reachable without an operator naming it
+============================================================================================================
+  obligation: No third workspace member, no third package directory, no connector source outside the canned one, and no connector path compiled into either package as a default. A default path would make a live run reachable without the operator naming anything, which is REQ-MOK-072's gate defeated by a constant.
+  method: the workspace manifest's member list; every tracked Cargo.toml; every [[bin]] target; and a search of every raw string literal of both packages' product source for the shapes a path takes. Literals are read raw, because the blanking every other scan here depends on removes exactly what this one looks for.
+
+  [workspace] members: ['mokiterions-core', 'mokiterions-tui']
+  tracked Cargo.toml files: 3
+    Cargo.toml
+    mokiterions-core/Cargo.toml
+    mokiterions-tui/Cargo.toml
+  [[bin]] targets: 4
+    mokiterions-core: Mokiterions at src/main.rs
+    mokiterions-core: ? at ?
+    mokiterions-core: canned-connector at tests/support/canned_connector.rs
+    mokiterions-tui: mokiterions-tui at src/main.rs
+
+  raw string literals searched for a path shape:
+    3129 literal(s) across 14 file(s)
+  path-shaped literals: none
+
+  the connector, named in blanked product source:
+  connector hits: 11
+    main.rs:98  [(?i)\bconnector\b]  connector: Option<String>,
+    main.rs:112  [(?i)\bconnector\b]  connector: None,
+    main.rs:157  [(?i)\bconnector\b]  connector: argument_after(arguments, CONNECTOR_PATH_OPTION),
+    main.rs:427  [(?i)\bconnector\b]  connector,
+    main.rs:432  [(?i)\bconnector\b]  let (Some(connector), Some(output), Some(prices), Some(ceiling)) =
+    main.rs:433  [(?i)\bconnector\b]  (connector, output, prices, ceiling)
+    main.rs:447  [(?i)\bconnector\b]  let mut child = match Spawn::new(&connector)
+    main.rs:469  [(?i)\bconnector\b]  reap(&mut child, &connector, stderr);
+    main.rs:492  [(?i)\bconnector\b]  reap(&mut child, &connector, stderr);
+    main.rs:517  [(?i)\bconnector\b]  reap(&mut child, &connector, stderr);
+    main.rs:532  [(?i)\bconnector\b]  fn reap<E: Write>(child: &mut Child, connector: &str, stderr: &mut E) {
+  the same word in raw source, comments and literals included: 167
+    lib.rs:182  // "This function" and not "the process": the binary target reaps the connector
+    cli.rs:29  /// The `llm` entry names no option. Rule 20.4 puts the connector in a host's hands and the
+    cli.rs:31  /// what happens with no connector — rule 20.8's refusal, which is permanent — rather than
+    cli.rs:54  /// `--connector-path` and `--prices` began lines therefore invented two entries and shadowed th
+    cli.rs:69  "                   [--connector-path <path>] [--live]\n",
+    cli.rs:108  "                  model is reached through a separate connector program you\n",
+    these are the usage text and the comments that explain it. The sentence an operator reads is "the model is reached through a separate connector program you supply, never by this program itself", which is the absence this check measures, written down.
+
+  verdict: FINDING — 4 binary targets; 11 connector identifier(s)
+  limit:   a bare program name in a literal - "connector", say - is not distinguishable from prose by shape, so this check does not rest on the literal search alone. It rests on check 4: there is no process-spawning site in either package, so a default path would have nothing to be passed to.
+
+============================================================================================================
+3. S3 — the library target performs none of the four capabilities
+============================================================================================================
+  obligation: The library target performs no filesystem operation, opens no socket, spawns no process and reads no environment variable, extending ARCH-MOK-001's 2026-08-20 prohibition to the three new capability classes. Both of this source's streams are covered: the transcript it writes in live mode and the transcript it reads in replay both arrive as already-open handles, per SPEC-MOK-007 rules 11.1 and 12.1.1.
+  method: the four classes as identifier patterns with word boundaries, over blanked product source of lib.rs, cli.rs and simulation.rs. Word boundaries because `execute` contains `exec` and `transcript_path` contains `path`.
+
+  filesystem:
+    none
+
+  socket:
+    none
+
+  process:
+    lib.rs:59  [\bCommand\b]  use cli::Command;   <- cli::Command, this crate's own enum
+    lib.rs:123  [\bCommand\b]  Ok(Command::Help) => match stdout.write_all(cli::USAGE.as_bytes()) {   <- cli::Command, this crate's own enum
+    lib.rs:130  [\bCommand\b]  Ok(Command::Run(config)) => {   <- cli::Command, this crate's own enum
+    cli.rs:200  [\bCommand\b]  pub enum Command {   <- cli::Command, this crate's own enum
+    cli.rs:248  [\bCommand\b]  pub fn parse<I, S>(args: I) -> Result<Command, String>   <- cli::Command, this crate's own enum
+    cli.rs:452  [\bCommand\b]  return Ok(Command::Help);   <- cli::Command, this crate's own enum
+    cli.rs:571  [\bCommand\b]  Ok(Command::Run(Config {   <- cli::Command, this crate's own enum
+
+  environment:
+    none
+
+  7 hit(s) dismissed, each by a rule printed beside it. The two rules are the only ones this file has, they are declared in `DISMISSALS` at the top of it, and nothing else was dismissed.
+
+  verdict: PASS — no filesystem operation, no socket, no spawn and no environment read in lib.rs, cli.rs or simulation.rs
+  limit:   this reads the library's own source. A capability reached through a dependency would not be found here - and cannot be, because SPEC-MOK-002 rule 13 declares the engine's external set empty and check 1 measured that it is still empty. The two transcript streams arriving as open handles is visible in the signatures, not in this scan: `ReplayPort::new` takes a `BufRead` and the record sink takes a `Write`.
+
+============================================================================================================
+4. S3a — no process spawn in either package, and where the environment is read
+============================================================================================================
+  obligation: The process spawn and the environment pass-through appear in the engine's binary target and nowhere else in either package. The observer's source contains no process spawn at all, which is REQ-MOK-077's prohibition checked statically rather than assumed from its absence today.
+  method: the process class over every source file of both packages, product code and test code separately; then the environment, with `env::args` told apart from `env::var`. The distinction is not cosmetic: both binaries read the argument vector, and a check that counted that as "the environment" would report the observer as violating this.
+
+  engine library: process-class hits, product 7, all tiers 7; after the two dismissal rules, 0 and 0
+    lib.rs:59  [\bCommand\b]  use cli::Command;   <- cli::Command, this crate's own enum
+    lib.rs:123  [\bCommand\b]  Ok(Command::Help) => match stdout.write_all(cli::USAGE.as_bytes()) {   <- cli::Command, this crate's own enum
+    lib.rs:130  [\bCommand\b]  Ok(Command::Run(config)) => {   <- cli::Command, this crate's own enum
+    cli.rs:200  [\bCommand\b]  pub enum Command {   <- cli::Command, this crate's own enum
+    cli.rs:248  [\bCommand\b]  pub fn parse<I, S>(args: I) -> Result<Command, String>   <- cli::Command, this crate's own enum
+    cli.rs:452  [\bCommand\b]  return Ok(Command::Help);   <- cli::Command, this crate's own enum
+    cli.rs:571  [\bCommand\b]  Ok(Command::Run(Config {   <- cli::Command, this crate's own enum
+
+  engine binary: process-class hits, product 11, all tiers 11; after the two dismissal rules, 4 and 4
+    main.rs:34  [\bstd::process\b]  use std::process::{Child, Command as Spawn, ExitCode, Stdio};   <- std::process::ExitCode, the value `main` returns; it starts nothing
+    main.rs:34  [\bCommand\b]  use std::process::{Child, Command as Spawn, ExitCode, Stdio};   <- std::process::ExitCode, the value `main` returns; it starts nothing
+    main.rs:34  [\bChild\b]  use std::process::{Child, Command as Spawn, ExitCode, Stdio};   <- std::process::ExitCode, the value `main` returns; it starts nothing
+    main.rs:34  [\bStdio\b]  use std::process::{Child, Command as Spawn, ExitCode, Stdio};   <- std::process::ExitCode, the value `main` returns; it starts nothing
+    main.rs:36  [\bCommand\b]  use mokiterions::cli::{self, Command};   <- cli::Command, this crate's own enum
+    main.rs:152  [\bCommand\b]  Ok(Command::Run(config)) => (   <- cli::Command, this crate's own enum
+    main.rs:168  [\bCommand\b]  Ok(Command::Help) | Err(_) => (None, None, false, LiveTerms::none()),   <- cli::Command, this crate's own enum
+    main.rs:448  [\bStdio\b]  .stdin(Stdio::piped())
+    main.rs:449  [\bStdio\b]  .stdout(Stdio::piped())
+    main.rs:450  [\bspawn\b]  .spawn()
+    main.rs:532  [\bChild\b]  fn reap<E: Write>(child: &mut Child, connector: &str, stderr: &mut E) {
+
+  observer library: process-class hits, product 3, all tiers 3; after the two dismissal rules, 0 and 0
+    options.rs:8  [\bCommand\b]  use mokiterions::cli::{self, Command};   <- cli::Command, this crate's own enum
+    options.rs:315  [\bCommand\b]  Command::Help => Ok(Startup::Help),   <- cli::Command, this crate's own enum
+    options.rs:316  [\bCommand\b]  Command::Run(config) => Ok(Startup::Run(Options {   <- cli::Command, this crate's own enum
+
+  observer binary: process-class hits, product 1, all tiers 1; after the two dismissal rules, 0 and 0
+    main.rs:27  [\bstd::process\b]  use std::process::ExitCode;   <- std::process::ExitCode, the value `main` returns; it starts nothing
+
+  the environment, over every source file of both packages:
+    engine binary   main.rs:121  argument vector  let arguments: Vec<String> = env::args().skip(1).collect();
+    observer binary main.rs:176  argument vector  let mut observer = match prepare(env::args().skip(1), &mut stdout, &mu
+    observer binary main.rs:409  other            let directory = env::temp_dir().join("mokiterions-startup-export");
+  environment-variable reads (env::var, env::var_os, env::vars): 0
+
+  verdict: FINDING — 4 process site(s) and 0 environment read(s)
+  limit:   S3a is written for the stage that has a connector: it expects the spawn and the credential pass-through to exist and to be confined to the engine's binary. Neither exists yet, so what is checked here is the absence, and the absence is the stronger reading. The one `env::` site that is neither `args` nor `var` is `env::temp_dir` in the observer's own test module, which chooses a directory for an export test.
+
+============================================================================================================
+5. S5 — the fifth policy value is in both texts and the withdrawn sentence is gone
+============================================================================================================
+  obligation: The usage text's fifth policy value is present in both hosts' texts, and the sentence "None of the four learns anything or calls a model; all four are deterministic" no longer appears in either. A usage text that contradicts the program is the first defect a reader meets, so it is checked rather than reviewed.
+  method: both `USAGE` constants assembled from their `concat!` literals and searched; then the withdrawn sentence over raw source of both packages, comments included, so that a hit in a comment is reported rather than blanked away.
+
+    mokiterions-core/src/cli.rs         7270 characters   "--policy <baseline|reference|individual|social|llm>" x2   "llm" entry x1   withdrawn sentence x0
+    mokiterions-tui/src/options.rs      6256 characters   "--policy <baseline|reference|individual|social|llm>" x2   "llm" entry x1   withdrawn sentence x0
+
+  the sentence each text carries in its place, quoted from the assembled constants:
+      The first four are fixed sets
+      of rules: none of them learns anything or calls a model, and all four are
+      deterministic. The fifth asks a model and is neither. Default: reference.
+        ^ mokiterions-core/src/cli.rs
+      The first four are fixed sets
+      of rules: none of them learns anything or calls a model, and all four are
+      deterministic. The fifth asks a model and is neither. Default: reference.
+        ^ mokiterions-tui/src/options.rs
+
+  the withdrawn sentence in raw source of both packages: 1 hit(s)
+    cli.rs:21  /// change, and rule 18.3 names one of them — "None of the four learns anything or calls a
+    a doc comment, not a usage text: cli.rs states which two sentences rule 18.3 required to change and quotes the one it withdrew. A reader who greps for the sentence finds this and should find it.
+  the same sentence in blanked product source: 0 hit(s)
+
+  verdict: PASS — both texts carry the five-value option line and exactly one `llm` entry, and neither carries the withdrawn sentence outside a comment that explains its withdrawal
+  limit:   this checks that the text says the right thing, not that the program does what the text says. S5a is the byte-identity of the shared descriptions between the two hosts and is held by mokiterions-tui/tests/options.rs; case L27 is whether the shared rules block reads as an instruction, and it is a manual assessment.
+
+============================================================================================================
+6. S6b — no live-versus-replay branch, and the observer has no live path
+============================================================================================================
+  obligation: Neither host contains a live-versus-replay branch inside the library target, and the observer contains no live path at all: no ceiling parsing that reaches a run, no connector spawn, no credential read. REQ-MOK-077's prohibition is checked as an absence, and an absence nobody looks for is indistinguishable from an oversight.
+  method: the mode vocabulary imported from analysis/static-checks.py, run over the library and over the observer; then the ceiling, credential and connector vocabularies over the observer. The mode scan duplicates that file's check 2 on purpose: S6b's subject is neither host, so the observer needs the same word list, and re-running the check is cheaper than splitting it across two files.
+
+  mode vocabulary (14 words):
+    engine library: 26
+    cli.rs:278  [\blive\b]  let mut live = false;
+    cli.rs:413  [\blive\b]  if live {
+    cli.rs:416  [\blive\b]  live = true;
+    cli.rs:482  [\blive\b]  (live, "--live"),
+    cli.rs:522  [\blive\b]  if policy == Policy::Llm && !transcript_path && !live {
+    cli.rs:533  [\blive\b]  if live && !connector_path {
+    cli.rs:542  [\blive\b]  if live && !transcript_output {
+    cli.rs:552  [\blive\b]  if live && spend_ceiling.is_none() {
+    cli.rs:564  [\blive\b]  if live && prices.is_none() {
+    simulation.rs:4461  [\blive\b]  live: &'a super::LiveAccounting,
+    simulation.rs:4471  [\blive\b]  live: &'a super::LiveAccounting,
+    simulation.rs:4477  [\blive\b]  live,
+    simulation.rs:4523  [\blive\b]  optional_text(self.live.model.as_deref()),
+    simulation.rs:4524  [\blive\b]  optional_text(self.live.reasoning_level.as_deref()),
+    simulation.rs:4525  [\blive\b]  self.live.exchanges,
+    simulation.rs:4526  [\blive\b]  self.live.prompt_tokens,
+    simulation.rs:4527  [\blive\b]  self.live.cached_prompt_tokens,
+    simulation.rs:4528  [\blive\b]  self.live.output_tokens,
+    simulation.rs:4529  [\blive\b]  self.live.reasoning_tokens,
+    simulation.rs:4530  [\blive\b]  optional_figure(self.live.cache_ratio_basis_points),
+    simulation.rs:4531  [\blive\b]  self.live.cost_cents,
+    simulation.rs:4532  [\blive\b]  optional_figure(self.live.ceiling_cents),
+    simulation.rs:4533  [\blive\b]  self.live.fallbacks,
+    simulation.rs:4538  [\blive\b]  self.live.fallbacks > 0,
+    simulation.rs:5560  [\blive\b]  let live = decision_source.accounting()?;
+    simulation.rs:5561  [\blive\b]  Some(accounting::RunRecord::new(&self.config, &live, tick_reached, ended).render())
+    observer: none
+
+  observer, ceiling vocabulary: none
+  observer, credential vocabulary: none
+  observer, connector vocabulary: none
+
+  the word `cost` is excluded from the ceiling vocabulary, and the exclusion is a finding about the scan rather than about the code: the observer's layout arithmetic calls a row's height a cost.
+    render.rs:201  let cost = count(&segment) + 2;
+    render.rs:202  if used + cost + reserved <= width {
+    render.rs:203  used += cost;
+
+  verdict: FINDING — 26 hit(s) across the five vocabularies
+  limit:   a word list finds a live path that is spelled. The positive statement - that the observer reaches a decision only through a replay port - is a test: `the_observer_replays_this_source_to_the_horizon_with_every_pane` and `the_replay_source_with_no_port_is_refused_on_the_first_tick`, both in mokiterions-tui/tests/replay.rs. This check is the absence beside them.
+
+============================================================================================================
+7. S7 — the shared rules block exists in exactly one place in the source
+============================================================================================================
+  obligation: The shared rules block exists in exactly one place in the source, so that case L27's assessment has one object and a drift between two copies is impossible.
+  method: the declaration counted across both packages; then every literal of the `concat!` that builds it, each searched over every tracked Rust file. A copy that shared no literal with the original would not be a copy of it.
+
+  declarations of `const SHARED_RULES`: 1
+    simulation.rs:1437  const SHARED_RULES: &str = concat!(
+  the `concat!` holds 90 literal(s) and assembles to 5381 characters, 5385 bytes
+  tracked Rust files searched: 45
+  literals long enough to identify a copy (>= 24 characters): 69
+    mokiterions-core/src/simulation.rs: 69 literal occurrence(s)
+
+  the block by name, everywhere it is used:
+    simulation.rs:1437  const SHARED_RULES: &str = concat!(
+    simulation.rs:1550  /// [`SHARED_RULES`], so rule 3.3's byte-identity across a run is a property of the type
+    simulation.rs:1635  shared_rules: SHARED_RULES,
+    simulation.rs:2491  prefix_digest(SHARED_RULES, &actor),
+    simulation.rs:2492  escape_transcript_text(SHARED_RULES),
+    simulation.rs:13179  assert_eq!(blocks[0], SHARED_RULES);
+    simulation.rs:13212  assert_eq!(request.shared_rules(), SHARED_RULES);
+    simulation.rs:13230  let lowered = SHARED_RULES.to_lowercase();
+    simulation.rs:13258  !SHARED_RULES.contains(&agent.id),
+    simulation.rs:13265  !SHARED_RULES.contains(&food.id),
+    simulation.rs:13293  SHARED_RULES.contains(required),
+    simulation.rs:14984  assert_eq!(SHARED_RULES.len(), 5_385);
+    simulation.rs:14986  mean < SHARED_RULES.len() / 4,
+    simulation.rs:14988  SHARED_RULES.len()
+    simulation.rs:14993  SHARED_RULES.len(),
+
+  verdict: PASS — one declaration, and every literal of it occurs in that file alone
+  limit:   the rules are also written in prose in SIMULATION_RULES.md and in SPEC-MOK-001 rule 21. That is the authority the block is derived from, not a second copy, and this check does not compare the two - whether the block says what the rules say is case L27, a manual assessment. What is established here is that there is one object for that assessment to be about.
+
+============================================================================================================
+8. C1 and C3 — no credential exists to appear anywhere, and nothing hunts for one
+============================================================================================================
+  obligation: C1: no credential appears in any transcript, any record stream, any run record, any authorization record, either output stream, or any error message. Checked by pattern over retained evidence and by a test that sets a synthetic credential value and asserts it appears in no produced byte. C3: the credential is read from the process environment and from nowhere else: no file, keychain or configuration directory is opened in the search for one.
+  method: the credential vocabulary over blanked product source of both packages; every filesystem-opening site enumerated with what it opens; and the environment-read count from check 4. The pattern half over retained evidence is scripts/check_transcript_reading.py, whose L17 reading examined 1,828 text values of the committed transcript.
+
+  credential vocabulary in product source: none
+  the same vocabulary at every tier, tests included: 0 hit(s)
+    a count of zero at every tier does not mean the words are absent from the file. They are in string literals, and the blanking removes literals, so a raw search is the only way to see them. Where they are:
+      simulation.rs:14256  "authorization",
+      simulation.rs:16335  for forbidden in ["sk-", "api", "key", "authorization"] {
+      simulation.rs:14257  "bearer",
+      simulation.rs:14258  "api_key",
+      simulation.rs:14261  "credential",
+    that is the vocabulary list a test holds in order to assert its absence from a record: `a_record_states_no_response_no_usage_and_no_credential`. The list being in a test and nowhere else is the reading this check wants.
+
+  every filesystem-opening site in either package's product code, and what it does:
+    engine library: 0 site(s)
+    engine binary: 5 site(s)
+      main.rs:192  Some(path) => match fs::File::open(path) {
+          reads a path the operator wrote on the command line
+      main.rs:270  let opened = match fs::OpenOptions::new()
+          writes a path the operator wrote on the command line
+      main.rs:277  fs::File::create(&destination).map(|file| (file, false))
+          writes a path the operator wrote on the command line
+      main.rs:339  if let Err(error) = fs::remove_file(&destination) {
+          removes a destination this process created, per SPEC-MOK-007 rule 13.4
+      main.rs:480  let mut sink = match fs::OpenOptions::new()
+          writes a path the operator wrote on the command line
+    observer library: 2 site(s)
+      export.rs:40  let file = fs::File::create(path).map_err(|error| error.to_str
+          writes a path the operator wrote on the command line
+      export.rs:46  let _ = fs::remove_file(path);
+          removes a destination this process created, per SPEC-MOK-007 rule 13.4
+    observer binary: 1 site(s)
+      main.rs:115  (Policy::Llm, Some(path)) => match fs::File::open(path) {
+          reads a path the operator wrote on the command line
+    8 site(s): 0 in the engine library, 5 in the engine binary, 2 in the observer library, 1 in the observer binary. The engine's library target opens nothing, which is check 3. The 2 site(s) outside a binary are in the observer's export module, which writes and removes the file an operator asked it to export to; it predates this work order and no path of it reaches a decision. Each takes a variable, never a literal: check 2 searched the 3,129 string literals of both packages' product source and found no path-shaped one. So no site here can be a configuration directory, a keychain or a dotfile - there is no constant for one to be named by, and nothing in either package searches for a path it was not given.
+  environment-variable reads: 0
+
+  verdict: FINDING — the measurable half passes and C1's second half cannot be run at this stage: no code path reads a credential, so there is no value to set synthetically and no byte for it to appear in. The connector, which is where SPEC-MOK-007 rules 10.5 and 13.4 place the credential, is out of this work order's scope.
+  limit:   this is an escalation and not a pass. The obligation stands and its subject does not exist yet; the work order that builds the connector inherits it. What is established here is stronger than a negative test would be for the code that exists: there is no environment read at all, so no credential can enter this program by any route.
+
+============================================================================================================
+9. C5 — nothing leaves the repository, because no outbound path exists
+============================================================================================================
+  obligation: What leaves the repository in a live run is the request text only. No source, no path, no repository content and no identity beyond a Mokiterion identifier appears in any request.
+  method: the socket class and the outbound vocabulary over both packages at every tier; then a pointer to where the positive half of the sentence is measured.
+
+  socket types and connect, every tier: none
+  outbound vocabulary, every tier: none
+
+  what a request carries, measured elsewhere and named here:
+    block A  the shared rules, one constant, no identity and nothing that varies  -> block_a_gives_no_strategy_and_names_nothing_that_varies
+    block B  the deciding Mokiterion's own identifier and nothing else  -> case L15a
+    block C  the deciding Mokiterion's own observation  -> cases L12 and L13, and scripts/check_transcript_reading.py
+    block D  verb-target pairs over the core proposal list  -> case L4
+    no path, no float and no timestamp across 233 records and 1,828 text values  -> scripts/check_transcript_reading.py, case L17
+
+  verdict: PASS — no socket type, no connect, no URL and no HTTP identifier anywhere in either package, at any tier - so there is no route by which anything leaves at all
+  limit:   the positive half - that what leaves in a live run is the request text only - needs a live run, which this work order excludes. What is measurable now is the content of the request as the transcript carries it, which is the four cases named above, and the absence of any transport to carry it. An operator's connector is outside this repository and nothing here can see what it sends.
+
+============================================================================================================
+# summary
+============================================================================================================
+   1. FINDING  S1 — the declared dependency sets, unchanged from the base com no manifest and no lockfile entry moved between cc54185 and the candidate, and the captured gate reports every declared set equal to its resolved graph
+   2. FINDING  S2a — nothing makes a connector reachable without an operator  4 binary targets; 11 connector identifier(s)
+   3. PASS     S3 — the library target performs none of the four capabilities no filesystem operation, no socket, no spawn and no environment read in lib.rs, cli.rs or simulation.rs
+   4. FINDING  S3a — no process spawn in either package, and where the enviro 4 process site(s) and 0 environment read(s)
+   5. PASS     S5 — the fifth policy value is in both texts and the withdrawn both texts carry the five-value option line and exactly one `llm` entry, and neither carries the withdrawn sentence outside a comment that explains its withdrawal
+   6. FINDING  S6b — no live-versus-replay branch, and the observer has no li 26 hit(s) across the five vocabularies
+   7. PASS     S7 — the shared rules block exists in exactly one place in the one declaration, and every literal of it occurs in that file alone
+   8. FINDING  C1 and C3 — no credential exists to appear anywhere, and nothi the measurable half passes and C1's second half cannot be run at this stage: no code path reads a credential, so there is no value to set synthetically and no byte for it to appear in. The connector, which is where SPEC-MOK-007 rules 10.5 and 13.4 place the credential, is out of this work order's scope.
+   9. PASS     C5 — nothing leaves the repository, because no outbound path e no socket type, no connect, no URL and no HTTP identifier anywhere in either package, at any tier - so there is no route by which anything leaves at all
+
+# 9 checks, 5 findings
+
+# ---- full text of this script, retained as the WO-MOK-019 packet does ----
+
+"""`VER-MOK-018`'s architecture, usage and security checks that no test and no other file runs.
+
+Usage, from the repository root:
+
+    python docs/engineering/simulation/evidence/WO-MOK-025/analysis/architecture-checks.py \
+        <base-commit> <output-file>
+
+## Why this exists
+
+`WO-MOK-025`'s *Required verification* names twelve static checks and five security checks. Most of
+them have an owner already: **S4** and **S4a** are `candidate/public-surface.txt`, **S5a**, **S6**
+and **S6a** are tests that run on every `cargo test`, and **L3** and **L11**'s first clause are
+`analysis/static-checks.py`. A label-by-label search of this packet found **seven with no runner at
+all** — `S1`, `S2a`, `S3`, `S3a`, `S5`, `S6b`, `S7` — and three security checks whose measurable
+half nothing captures: `C1`, `C3` and `C5`. This file is those ten, so that item 7 of the completion
+report can state a result for each rather than leaving a row blank.
+
+Each check prints its obligation quoted from `VER-MOK-018`, the method, the hits with line numbers,
+and a verdict with a stated limit. The format is `analysis/static-checks.py`'s, because a reader
+comparing the two files should not have to learn a second one.
+
+## Nothing here is a new convention
+
+`Source`, `Report` and the comment-and-literal blanking are `WO-MOK-019`'s, **imported and called**.
+The reason is the reason its sibling gives: a copy can drift, and the day it drifts the reader who
+compares two capture files is comparing two different instruments. `MODE_VOCABULARY` is imported
+from `analysis/static-checks.py` for the same reason — check 6 below re-runs that file's check 2
+over the observer, and re-running it means the same word list.
+
+## What a scan over blanked source buys, and what it costs
+
+Every scan runs over source whose comments **and string literals** are blanked, so a doc comment
+that quotes a prohibited word is not counted as the word. That matters more here than elsewhere:
+`mokiterions-core/src/cli.rs` quotes the withdrawn sentence check 5 looks for, in a doc comment
+explaining that it was withdrawn, and the observer's usage text names the connector check 6 looks
+for, in the sentence that tells an operator this host has none. Both are reported as raw hits with
+their reason, because a reader who greps the tree and finds them deserves the explanation rather
+than a contradiction.
+
+The cost is that a literal cannot be scanned this way, so check 2's search for a compiled-in
+connector path reads the **raw** literals and says so.
+"""
+
+import importlib.util
+import io
+import os
+import re
+import subprocess
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
+
+PACKAGE = 'mokiterions-core'
+OBSERVER = 'mokiterions-tui'
+LIBRARY_SOURCES = ('lib.rs', 'cli.rs', 'simulation.rs')
+
+EVIDENCE = os.path.join('docs', 'engineering', 'simulation', 'evidence')
+WO_019 = os.path.join(EVIDENCE, 'WO-MOK-019', 'analysis', 'static-checks.py')
+SIBLING = os.path.join(EVIDENCE, 'WO-MOK-025', 'analysis', 'static-checks.py')
+DEPENDENCIES = os.path.join(EVIDENCE, 'WO-MOK-025', 'candidate', 'declared-dependencies.txt')
+
+# The manifests and the lockfile. S1's "unchanged from the base commit" is a byte comparison over
+# exactly these files: a declared set lives in a manifest, and what a declaration resolves to is
+# fixed by the lockfile, so if none of them moved then no resolved graph moved either.
+DECLARATION_FILES = (
+    'Cargo.toml',
+    'Cargo.lock',
+    'mokiterions-core/Cargo.toml',
+    'mokiterions-tui/Cargo.toml',
+    'rust-toolchain.toml',
+)
+
+# `SPEC-MOK-002` rule 1 as amended: exactly two packages, no third member.
+DECLARED_MEMBERS = ('mokiterions-core', 'mokiterions-tui')
+
+# The four capability classes S3 names, as the identifiers each would have to be spelled in. Word
+# boundaries throughout, because `execute` contains `exec` and `transcript_path` contains `path`,
+# and a substring reader would report both as capabilities.
+CAPABILITIES = {
+    'filesystem': (
+        r'\bstd::fs\b', r'\bfs::', r'\bFile\b', r'\bOpenOptions\b', r'\bPathBuf\b', r'\bPath\b',
+        r'\bread_to_string\b', r'\bcreate_dir\b', r'\bcreate_dir_all\b', r'\bremove_file\b',
+        r'\bremove_dir_all\b', r'\bcanonicalize\b', r'\bread_dir\b', r'\bDirEntry\b',
+        r'\bhard_link\b', r'\bsymlink', r'\bcurrent_dir\b', r'\btemp_dir\b',
+    ),
+    'socket': (
+        r'\bstd::net\b', r'\bTcpStream\b', r'\bTcpListener\b', r'\bUdpSocket\b', r'\bSocketAddr\b',
+        r'\bIpAddr\b', r'\bToSocketAddrs\b', r'\bconnect\b',
+    ),
+    'process': (
+        r'\bstd::process\b', r'\bCommand\b', r'\bChild\b', r'\bStdio\b', r'\bspawn\b',
+        r'\bexecvp?\b', r'\bfork\b',
+    ),
+    'environment': (
+        r'\bstd::env\b', r'\benv::', r'\bvar_os\b', r'\bvars_os\b',
+    ),
+}
+
+# Two identifiers in the process class are not processes, and both have to be dismissed by a rule
+# the report prints rather than by a filter nobody sees.
+#
+#   `mokiterions::cli::Command` is this crate's own two-variant enum for what the arguments asked
+#   for. It collides by name with `std::process::Command`.
+#   `std::process::ExitCode` is the value `main` returns. It names the `process` module and starts
+#   no process; a program that could not name it could not report a status.
+#
+# Anything else in the class is a finding.
+DISMISSALS = (
+    (r'\benum Command\b|\bcli::Command\b|\bcli::\{[^}]*\bCommand\b|\bCommand::Help\b'
+     r'|\bCommand::Run\b|\bResult<Command\b|\bCommand,',
+     "cli::Command, this crate's own enum"),
+    (r'\bExitCode\b',
+     "std::process::ExitCode, the value `main` returns; it starts nothing"),
+)
+
+# `env::args` is the argument vector, which every command-line program reads and which
+# `SPEC-MOK-002` rule 13.1 has always admitted. `env::var` is the environment, which is where a
+# credential would come from. S3a speaks of "the environment pass-through", and the two must be
+# told apart or the observer's argument parsing reads as a violation.
+ARGUMENT_FORMS = ('env::args',)
+ENVIRONMENT_READS = (r'\benv::var\b', r'\benv::var_os\b', r'\benv::vars\b', r'\benv::vars_os\b')
+
+# The sentence `SPEC-MOK-007` rule 18.3 withdraws, and the fifth policy value rule 18.1 adds.
+WITHDRAWN_SENTENCE = 'None of the four learns anything'
+FIFTH_POLICY_VALUE = 'llm'
+POLICY_OPTION_LINE = '--policy <baseline|reference|individual|social|llm>'
+
+# What a spend ceiling would have to be named. The plain word `cost` is deliberately **not** here:
+# the observer's layout arithmetic calls a row's height a cost — `used += cost;` in `render.rs` —
+# and a scan for it would report a pane-height sum as a spend ceiling. Naming the exclusion is part
+# of the check.
+CEILING_VOCABULARY = (
+    r'\bceiling\b', r'\bspend\b', r'\bbudget\b', r'\bRunAccount\b', r'\bExchangeUsage\b',
+    r'\bcost_of\b', r'\bdeclared_prices\b', r'\bprice\b', r'\bprices\b', r'\bmicro_cost\b',
+    r'\bcost_ceiling\b', r'\btokens_in\b', r'\btokens_out\b',
+)
+
+# What a credential would have to be named, and what reading one would have to call.
+CREDENTIAL_VOCABULARY = (
+    r'\bcredential\b', r'(?i)\bapi_key\b', r'(?i)\bapikey\b', r'(?i)\bbearer\b',
+    r'(?i)\bauthorization\b', r'(?i)\bsecret\b', r'\btoken\b', r'(?i)\bpassword\b',
+    r'(?i)\bkeychain\b', r'\bDPAPI\b', r'\bdotenv\b', r'\bconfig_dir\b', r'\bhome_dir\b',
+)
+
+# What the connector would have to be named or reached by.
+CONNECTOR_VOCABULARY = (r'(?i)\bconnector\b', r'\bCommand::new\b', r'\bspawn\b', r'\bStdio\b')
+
+# What an outbound call would have to be spelled in, beyond the socket types above.
+OUTBOUND_VOCABULARY = (
+    r'\bhttps?://', r'(?i)\bhttp\b', r'\breqwest\b', r'\bhyper\b', r'\bureq\b', r'\bcurl\b',
+    r'\bUrl\b', r'\bUri\b', r'\bpost\b', r'\bendpoint\b',
+)
+
+# Shapes a compiled-in connector path would take. Read over raw string literals, because the
+# blanking that makes every other scan honest removes exactly what this one is looking for.
+PATH_SHAPES = (
+    r'\.exe\b', r'\.bat\b', r'\.cmd\b', r'\.sh\b', r'\.py\b', r'\.ps1\b',
+    r'/usr/', r'/bin/', r'/opt/', r'[A-Za-z]:\\\\', r'\.\./', r'~/',
+)
+
+STRING_LITERAL = re.compile(r'"(?:[^"\\]|\\.)*"')
+COMMENT_LINE = re.compile(r'^\s*(//|/\*|\*)')
+
+
+def load(path, name):
+    """A module beside this one, imported so its code runs rather than being reimplemented."""
+    specification = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module
+
+
+def run(command, **keywords):
+    return subprocess.run(command, capture_output=True, text=True, **keywords)
+
+
+def scan(sources, patterns, product_only=True):
+    """(file, line number, raw line, pattern) for every match in blanked source."""
+    found = []
+    for source in sources:
+        for number, line in enumerate(source.lines, start=1):
+            if product_only and number in source.test_lines:
+                continue
+            for pattern in patterns:
+                if re.search(pattern, line):
+                    found.append((source.name, number, source.raw_lines[number - 1].strip(),
+                                  pattern))
+    return found
+
+
+def dismissal(line):
+    """Why a process-class hit is not a process, or None if it is one."""
+    for pattern, reason in DISMISSALS:
+        if re.search(pattern, line):
+            return reason
+    return None
+
+
+def raw_scan(sources, needle):
+    """(file, line number, raw line) for every occurrence in raw source, comments included."""
+    found = []
+    for source in sources:
+        for number, line in enumerate(source.raw_lines, start=1):
+            if needle in line:
+                found.append((source.name, number, line.strip()))
+    return found
+
+
+def literals(source):
+    """(line number, the literal with its quotes) for every string literal outside a comment."""
+    found = []
+    for number, line in enumerate(source.raw_lines, start=1):
+        if COMMENT_LINE.match(line):
+            continue
+        for match in STRING_LITERAL.finditer(line):
+            found.append((number, match.group(0)))
+    return found
+
+
+def unescape(text):
+    """The four escapes these usage texts use. Not a general Rust literal reader, and not needed
+    as one: `cargo test` holds both texts byte-for-byte, so this only has to be faithful enough to
+    search."""
+    return (
+        text.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+    )
+
+
+def usage_text(source, name='USAGE'):
+    """The assembled text of a `const <name>: &str = concat!(...)` declaration."""
+    marker = f'const {name}: &str = concat!('
+    start = source.raw.index(marker)
+    end = source.raw.index('\n);', start)
+    region = source.raw[start:end]
+    return ''.join(unescape(match.group(0)[1:-1]) for match in STRING_LITERAL.finditer(region))
+
+
+def concat_literals(source, name):
+    """Every string literal of a `concat!` declaration, unassembled, for a copy search."""
+    marker = f'const {name}: &str = concat!('
+    start = source.raw.index(marker)
+    end = source.raw.index('\n);', start)
+    region = source.raw[start:end]
+    return [match.group(0)[1:-1] for match in STRING_LITERAL.finditer(region)]
+
+
+def report_hits(report, hits, label='hits'):
+    if not hits:
+        report.say(f'{label}: none')
+        return
+    report.say(f'{label}: {len(hits)}')
+    for hit in hits:
+        if len(hit) == 4:
+            name, number, line, pattern = hit
+            report.say(f'  {name}:{number}  [{pattern}]  {line[:96]}')
+        else:
+            name, number, line = hit
+            report.say(f'  {name}:{number}  {line[:96]}')
+
+
+# ---------------------------------------------------------------------------------------------
+# 1. S1 — the declared sets did not move, and the resolved comparison is captured beside this
+# ---------------------------------------------------------------------------------------------
+
+def check_1(report, root, base):
+    report.check(1, 'S1 — the declared dependency sets, unchanged from the base commit', (
+        'The engine\'s and the observer\'s resolved dependency graphs equal the declared sets, '
+        'unchanged from the base commit - the engine\'s table empty, the observer\'s one entry '
+        'with every other crate reached transitively through `ratatui`. ARCH-MOK-001\'s by-name '
+        'scan for a network, asynchronous-runtime, database, model-provider or user-interface '
+        'crate is re-run and continues to find none.'
+    ))
+    report.method(
+        'two halves. The "unchanged from the base commit" half is a byte comparison over the '
+        'manifests and the lockfile, here. The resolved-graph half needs cargo and three targets, '
+        'so it is the repository\'s own gate, captured beside this file.'
+    )
+    report.say()
+    report.say('the declaration, base against candidate:')
+    moved = []
+    for path in DECLARATION_FILES:
+        difference = run(['git', 'diff', '--stat', base, 'HEAD', '--', path], cwd=root).stdout
+        state = 'unchanged' if not difference.strip() else difference.strip()
+        report.say(f'  {path:32} {state}')
+        if difference.strip():
+            moved.append(path)
+
+    report.say()
+    report.say('the resolved graphs, from scripts/check_declared_dependencies.py:')
+    quoted, present = [], os.path.exists(os.path.join(root, DEPENDENCIES))
+    if present:
+        text = io.open(os.path.join(root, DEPENDENCIES), encoding='utf-8').read().split('\n')
+        for line in text:
+            if line.startswith('#'):
+                continue
+            if any(word in line for word in ('declared', 'raw hit', 'disclosed', '8.4a')):
+                quoted.append(line.rstrip())
+        for line in quoted:
+            report.say(f'  {line}')
+    else:
+        report.say(f'  {DEPENDENCIES} is not present; that half is not read here')
+
+    passed = not moved and present and any('8.4a-8.4d pass' in line for line in quoted)
+    report.verdict(
+        passed,
+        f'no manifest and no lockfile entry moved between {base} and the candidate'
+        + (', and the captured gate reports every declared set equal to its resolved graph'
+           if present else ', and the resolved half is not read here'),
+        'a byte comparison establishes that the declaration did not move, not that it was right. '
+        'The by-name scan\'s two accepted hits, mio and signal-hook-mio, are the observer\'s and '
+        'predate this work order; VER-MOK-014 manual assessment 6 is where they were judged.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 2. S2a — no third member, no third package, no connector, no compiled-in path
+# ---------------------------------------------------------------------------------------------
+
+def check_2(report, root, product):
+    report.check(2, 'S2a — nothing makes a connector reachable without an operator naming it', (
+        'No third workspace member, no third package directory, no connector source outside the '
+        'canned one, and no connector path compiled into either package as a default. A default '
+        'path would make a live run reachable without the operator naming anything, which is '
+        'REQ-MOK-072\'s gate defeated by a constant.'
+    ))
+    report.method(
+        'the workspace manifest\'s member list; every tracked Cargo.toml; every [[bin]] target; '
+        'and a search of every raw string literal of both packages\' product source for the '
+        'shapes a path takes. Literals are read raw, because the blanking every other scan here '
+        'depends on removes exactly what this one looks for.'
+    )
+
+    manifest = io.open(os.path.join(root, 'Cargo.toml'), encoding='utf-8').read()
+    start = manifest.index('members')
+    members = re.findall(r'"([^"]+)"', manifest[start:manifest.index(']', start)])
+    report.say()
+    report.say(f'[workspace] members: {members}')
+
+    manifests = sorted(run(['git', 'ls-files', '*Cargo.toml'], cwd=root).stdout.split())
+    report.say(f'tracked Cargo.toml files: {len(manifests)}')
+    for path in manifests:
+        report.say(f'  {path}')
+
+    binaries = []
+    for member in members:
+        text = io.open(os.path.join(root, member, 'Cargo.toml'), encoding='utf-8').read()
+        for block in re.findall(r'\[\[bin\]\]([^\[]*)', text):
+            name = re.search(r'name\s*=\s*"([^"]+)"', block)
+            path = re.search(r'path\s*=\s*"([^"]+)"', block)
+            binaries.append((member, name.group(1) if name else '?',
+                             path.group(1) if path else '?'))
+    report.say(f'[[bin]] targets: {len(binaries)}')
+    for member, name, path in binaries:
+        report.say(f'  {member}: {name} at {path}')
+
+    report.say()
+    report.say('raw string literals searched for a path shape:')
+    counted, shaped = 0, []
+    for source in product:
+        for number, literal in literals(source):
+            counted += 1
+            for shape in PATH_SHAPES:
+                if re.search(shape, literal):
+                    shaped.append((source.name, number, literal[:88], shape))
+    report.say(f'  {counted} literal(s) across {len(product)} file(s)')
+    report_hits(report, shaped, 'path-shaped literals')
+
+    report.say()
+    report.say('the connector, named in blanked product source:')
+    connector = scan(product, (r'(?i)\bconnector\b',))
+    report_hits(report, connector, 'connector hits')
+    raw_connector = raw_scan(product, 'connector')
+    report.say(f'the same word in raw source, comments and literals included: {len(raw_connector)}')
+    for name, number, line in raw_connector[:6]:
+        report.say(f'  {name}:{number}  {line[:96]}')
+    report.say(
+        '  these are the usage text and the comments that explain it. The sentence an operator '
+        'reads is "the model is reached through a separate connector program you supply, never '
+        'by this program itself", which is the absence this check measures, written down.'
+    )
+
+    problems = []
+    if sorted(members) != sorted(DECLARED_MEMBERS):
+        problems.append(f'members are {members}')
+    if len(manifests) != 1 + len(DECLARED_MEMBERS):
+        problems.append(f'{len(manifests)} manifests')
+    if len(binaries) != 2:
+        problems.append(f'{len(binaries)} binary targets')
+    if shaped:
+        problems.append(f'{len(shaped)} path-shaped literal(s)')
+    if connector:
+        problems.append(f'{len(connector)} connector identifier(s)')
+
+    report.verdict(
+        not problems,
+        'two members, three manifests, two binary targets each in its own package, no '
+        f'path-shaped literal among {counted} and no connector identifier in either package'
+        if not problems else '; '.join(problems),
+        'a bare program name in a literal - "connector", say - is not distinguishable from prose '
+        'by shape, so this check does not rest on the literal search alone. It rests on check 4: '
+        'there is no process-spawning site in either package, so a default path would have '
+        'nothing to be passed to.',
+    )
+    return counted
+
+
+# ---------------------------------------------------------------------------------------------
+# 3. S3 — the library target's four capability classes
+# ---------------------------------------------------------------------------------------------
+
+def check_3(report, library):
+    report.check(3, 'S3 — the library target performs none of the four capabilities', (
+        'The library target performs no filesystem operation, opens no socket, spawns no process '
+        'and reads no environment variable, extending ARCH-MOK-001\'s 2026-08-20 prohibition to '
+        'the three new capability classes. Both of this source\'s streams are covered: the '
+        'transcript it writes in live mode and the transcript it reads in replay both arrive as '
+        'already-open handles, per SPEC-MOK-007 rules 11.1 and 12.1.1.'
+    ))
+    report.method(
+        'the four classes as identifier patterns with word boundaries, over blanked product '
+        'source of lib.rs, cli.rs and simulation.rs. Word boundaries because `execute` contains '
+        '`exec` and `transcript_path` contains `path`.'
+    )
+    total, dismissed = 0, []
+    for capability, patterns in CAPABILITIES.items():
+        hits = scan(library, patterns)
+        report.say()
+        report.say(f'{capability}:')
+        for name, number, line, pattern in hits:
+            reason = dismissal(line)
+            report.say(
+                f'  {name}:{number}  [{pattern}]  {line[:88]}'
+                + (f'   <- {reason}' if reason else '')
+            )
+            if reason:
+                dismissed.append((name, number))
+            else:
+                total += 1
+        if not hits:
+            report.say('  none')
+    report.say()
+    report.say(
+        f'{len(dismissed)} hit(s) dismissed, each by a rule printed beside it. The two rules are '
+        'the only ones this file has, they are declared in `DISMISSALS` at the top of it, and '
+        'nothing else was dismissed.'
+    )
+    report.verdict(
+        total == 0,
+        f'{total} capability site(s) in the library target'
+        if total else 'no filesystem operation, no socket, no spawn and no environment read in '
+                      'lib.rs, cli.rs or simulation.rs',
+        'this reads the library\'s own source. A capability reached through a dependency would '
+        'not be found here - and cannot be, because SPEC-MOK-002 rule 13 declares the engine\'s '
+        'external set empty and check 1 measured that it is still empty. The two transcript '
+        'streams arriving as open handles is visible in the signatures, not in this scan: '
+        '`ReplayPort::new` takes a `BufRead` and the record sink takes a `Write`.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 4. S3a — the spawn and the environment, located
+# ---------------------------------------------------------------------------------------------
+
+def check_4(report, tiers, library, engine_binary, observer):
+    report.check(4, 'S3a — no process spawn in either package, and where the environment is read', (
+        'The process spawn and the environment pass-through appear in the engine\'s binary target '
+        'and nowhere else in either package. The observer\'s source contains no process spawn at '
+        'all, which is REQ-MOK-077\'s prohibition checked statically rather than assumed from its '
+        'absence today.'
+    ))
+    report.method(
+        'the process class over every source file of both packages, product code and test code '
+        'separately; then the environment, with `env::args` told apart from `env::var`. The '
+        'distinction is not cosmetic: both binaries read the argument vector, and a check that '
+        'counted that as "the environment" would report the observer as violating this.'
+    )
+    spawns = {}
+    for label, sources in tiers:
+        product = scan(sources, CAPABILITIES['process'])
+        everything = scan(sources, CAPABILITIES['process'], product_only=False)
+        real = [hit for hit in product if not dismissal(hit[2])]
+        all_real = [hit for hit in everything if not dismissal(hit[2])]
+        spawns[label] = (real, all_real)
+        report.say()
+        report.say(
+            f'{label}: process-class hits, product {len(product)}, all tiers {len(everything)}; '
+            f'after the two dismissal rules, {len(real)} and {len(all_real)}'
+        )
+        for name, number, line, pattern in everything:
+            reason = dismissal(line)
+            report.say(
+                f'  {name}:{number}  [{pattern}]  {line[:80]}' + (f'   <- {reason}' if reason else '')
+            )
+        if not everything:
+            report.say('  none')
+
+    report.say()
+    report.say('the environment, over every source file of both packages:')
+    argument_sites, variable_sites = [], []
+    for label, sources in tiers:
+        for name, number, line, pattern in scan(sources, (r'\benv::',), product_only=False):
+            where = 'argument vector' if any(f in line for f in ARGUMENT_FORMS) else 'other'
+            (argument_sites if where == 'argument vector' else variable_sites).append(
+                (label, name, number, line, where)
+            )
+    for label, name, number, line, where in argument_sites + variable_sites:
+        report.say(f'  {label:15} {name}:{number}  {where:16} {line[:70]}')
+    reads = scan(library + [engine_binary] + observer, ENVIRONMENT_READS, product_only=False)
+    report.say(f'environment-variable reads (env::var, env::var_os, env::vars): {len(reads)}')
+    for name, number, line, pattern in reads:
+        report.say(f'  {name}:{number}  {line[:88]}')
+
+    spawned = sum(len(pair[1]) for pair in spawns.values())
+    report.verdict(
+        spawned == 0 and not reads,
+        'no process-spawning site in either package at any tier, and no environment variable is '
+        f'read anywhere: {len(argument_sites)} `env::args` site(s), which is the argument vector, '
+        f'and {len(variable_sites)} other `env::` site(s)'
+        if spawned == 0 and not reads
+        else f'{spawned} process site(s) and {len(reads)} environment read(s)',
+        'S3a is written for the stage that has a connector: it expects the spawn and the '
+        'credential pass-through to exist and to be confined to the engine\'s binary. Neither '
+        'exists yet, so what is checked here is the absence, and the absence is the stronger '
+        'reading. The one `env::` site that is neither `args` nor `var` is `env::temp_dir` in the '
+        'observer\'s own test module, which chooses a directory for an export test.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 5. S5 — the usage text agrees with the program
+# ---------------------------------------------------------------------------------------------
+
+def check_5(report, cli_source, options_source, product):
+    report.check(5, 'S5 — the fifth policy value is in both texts and the withdrawn sentence is gone', (
+        'The usage text\'s fifth policy value is present in both hosts\' texts, and the sentence '
+        '"None of the four learns anything or calls a model; all four are deterministic" no '
+        'longer appears in either. A usage text that contradicts the program is the first defect '
+        'a reader meets, so it is checked rather than reviewed.'
+    ))
+    report.method(
+        'both `USAGE` constants assembled from their `concat!` literals and searched; then the '
+        'withdrawn sentence over raw source of both packages, comments included, so that a hit '
+        'in a comment is reported rather than blanked away.'
+    )
+    texts = (
+        ('mokiterions-core/src/cli.rs', usage_text(cli_source)),
+        ('mokiterions-tui/src/options.rs', usage_text(options_source)),
+    )
+    report.say()
+    missing = []
+    for path, text in texts:
+        option = text.count(POLICY_OPTION_LINE)
+        entry = len(re.findall(r'^\s+' + FIFTH_POLICY_VALUE + r'\s{2,}\S', text, re.M))
+        withdrawn = text.count('None of the four learns anything')
+        report.say(
+            f'  {path:34} {len(text):5} characters   '
+            f'"{POLICY_OPTION_LINE}" x{option}   "{FIFTH_POLICY_VALUE}" entry x{entry}   '
+            f'withdrawn sentence x{withdrawn}'
+        )
+        if option < 1 or entry != 1 or withdrawn:
+            missing.append(path)
+
+    report.say()
+    report.say('the sentence each text carries in its place, quoted from the assembled constants:')
+    for path, text in texts:
+        found = re.search(r'The first four are[^\n]*\n[^\n]*\n[^\n]*', text)
+        for line in (found.group(0).split('\n') if found else ['(not found)']):
+            report.say(f'    {line.strip()}')
+        report.say(f'      ^ {path}')
+
+    report.say()
+    raw = raw_scan(product, WITHDRAWN_SENTENCE)
+    report.say(f'the withdrawn sentence in raw source of both packages: {len(raw)} hit(s)')
+    for name, number, line in raw:
+        report.say(f'  {name}:{number}  {line[:96]}')
+    if raw:
+        report.say(
+            '  a doc comment, not a usage text: cli.rs states which two sentences rule 18.3 '
+            'required to change and quotes the one it withdrew. A reader who greps for the '
+            'sentence finds this and should find it.'
+        )
+    blanked = scan(product, (re.escape(WITHDRAWN_SENTENCE),))
+    report.say(f'the same sentence in blanked product source: {len(blanked)} hit(s)')
+
+    report.verdict(
+        not missing and not blanked,
+        'both texts carry the five-value option line and exactly one `llm` entry, and neither '
+        'carries the withdrawn sentence outside a comment that explains its withdrawal'
+        if not missing and not blanked else f'{missing}, blanked hits {len(blanked)}',
+        'this checks that the text says the right thing, not that the program does what the text '
+        'says. S5a is the byte-identity of the shared descriptions between the two hosts and is '
+        'held by mokiterions-tui/tests/options.rs; case L27 is whether the shared rules block '
+        'reads as an instruction, and it is a manual assessment.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 6. S6b — no mode branch in the library, and no live path in the observer
+# ---------------------------------------------------------------------------------------------
+
+def check_6(report, library, observer, mode_vocabulary):
+    report.check(6, 'S6b — no live-versus-replay branch, and the observer has no live path', (
+        'Neither host contains a live-versus-replay branch inside the library target, and the '
+        'observer contains no live path at all: no ceiling parsing that reaches a run, no '
+        'connector spawn, no credential read. REQ-MOK-077\'s prohibition is checked as an '
+        'absence, and an absence nobody looks for is indistinguishable from an oversight.'
+    ))
+    report.method(
+        'the mode vocabulary imported from analysis/static-checks.py, run over the library and '
+        'over the observer; then the ceiling, credential and connector vocabularies over the '
+        'observer. The mode scan duplicates that file\'s check 2 on purpose: S6b\'s subject is '
+        'neither host, so the observer needs the same word list, and re-running the check is '
+        'cheaper than splitting it across two files.'
+    )
+    report.say()
+    library_mode = scan(library, [r'\b' + re.escape(word) + r'\b' for word in mode_vocabulary])
+    observer_mode = scan(observer, [r'\b' + re.escape(word) + r'\b' for word in mode_vocabulary])
+    report.say(f'mode vocabulary ({len(mode_vocabulary)} words):')
+    report_hits(report, library_mode, '  engine library')
+    report_hits(report, observer_mode, '  observer')
+
+    report.say()
+    ceiling = scan(observer, CEILING_VOCABULARY)
+    credential = scan(observer, CREDENTIAL_VOCABULARY)
+    connector = scan(observer, CONNECTOR_VOCABULARY)
+    report_hits(report, ceiling, 'observer, ceiling vocabulary')
+    report_hits(report, credential, 'observer, credential vocabulary')
+    report_hits(report, connector, 'observer, connector vocabulary')
+
+    report.say()
+    report.say(
+        'the word `cost` is excluded from the ceiling vocabulary, and the exclusion is a finding '
+        'about the scan rather than about the code: the observer\'s layout arithmetic calls a '
+        'row\'s height a cost.'
+    )
+    for name, number, line, pattern in scan(observer, (r'\bcost\b',))[:4]:
+        report.say(f'  {name}:{number}  {line[:88]}')
+
+    total = len(library_mode) + len(observer_mode) + len(ceiling) + len(credential) + len(connector)
+    report.verdict(
+        total == 0,
+        'no mode value or live-versus-replay branch in either host, and no ceiling, credential '
+        'or connector identifier anywhere in the observer'
+        if total == 0 else f'{total} hit(s) across the five vocabularies',
+        'a word list finds a live path that is spelled. The positive statement - that the '
+        'observer reaches a decision only through a replay port - is a test: '
+        '`the_observer_replays_this_source_to_the_horizon_with_every_pane` and '
+        '`the_replay_source_with_no_port_is_refused_on_the_first_tick`, both in '
+        'mokiterions-tui/tests/replay.rs. This check is the absence beside them.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 7. S7 — the shared rules block exists once
+# ---------------------------------------------------------------------------------------------
+
+def check_7(report, root, simulation, product):
+    report.check(7, 'S7 — the shared rules block exists in exactly one place in the source', (
+        'The shared rules block exists in exactly one place in the source, so that case L27\'s '
+        'assessment has one object and a drift between two copies is impossible.'
+    ))
+    report.method(
+        'the declaration counted across both packages; then every literal of the `concat!` that '
+        'builds it, each searched over every tracked Rust file. A copy that shared no literal '
+        'with the original would not be a copy of it.'
+    )
+    declarations = raw_scan(product, 'const SHARED_RULES')
+    report.say()
+    report.say(f'declarations of `const SHARED_RULES`: {len(declarations)}')
+    for name, number, line in declarations:
+        report.say(f'  {name}:{number}  {line[:96]}')
+
+    pieces = concat_literals(simulation, 'SHARED_RULES')
+    assembled = ''.join(unescape(piece) for piece in pieces)
+    report.say(
+        f'the `concat!` holds {len(pieces)} literal(s) and assembles to {len(assembled)} '
+        f'characters, {len(assembled.encode("utf-8"))} bytes'
+    )
+
+    rust_files = sorted(run(['git', 'ls-files', '*.rs'], cwd=root).stdout.split())
+    report.say(f'tracked Rust files searched: {len(rust_files)}')
+    substantial = [piece for piece in pieces if len(piece.strip()) >= 24]
+    report.say(f'literals long enough to identify a copy (>= 24 characters): {len(substantial)}')
+    elsewhere = {}
+    for path in rust_files:
+        text = io.open(os.path.join(root, path), encoding='utf-8').read()
+        count = sum(text.count(piece) for piece in substantial)
+        if count:
+            elsewhere[path] = count
+    for path, count in sorted(elsewhere.items()):
+        report.say(f'  {path}: {count} literal occurrence(s)')
+
+    report.say()
+    report.say('the block by name, everywhere it is used:')
+    for name, number, line in raw_scan(product, 'SHARED_RULES'):
+        report.say(f'  {name}:{number}  {line[:88]}')
+
+    passed = len(declarations) == 1 and list(elsewhere) == [
+        p for p in rust_files if p.endswith('mokiterions-core/src/simulation.rs')
+    ]
+    report.verdict(
+        passed,
+        'one declaration, and every literal of it occurs in that file alone'
+        if passed else f'{len(declarations)} declaration(s), literals also in {list(elsewhere)}',
+        'the rules are also written in prose in SIMULATION_RULES.md and in SPEC-MOK-001 rule 21. '
+        'That is the authority the block is derived from, not a second copy, and this check does '
+        'not compare the two - whether the block says what the rules say is case L27, a manual '
+        'assessment. What is established here is that there is one object for that assessment to '
+        'be about.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 8. C1 and C3 — no credential, and nothing opened in search of one
+# ---------------------------------------------------------------------------------------------
+
+def check_8(report, tiers, library, engine_binary, observer, literal_count):
+    report.check(8, 'C1 and C3 — no credential exists to appear anywhere, and nothing hunts for one', (
+        'C1: no credential appears in any transcript, any record stream, any run record, any '
+        'authorization record, either output stream, or any error message. Checked by pattern '
+        'over retained evidence and by a test that sets a synthetic credential value and asserts '
+        'it appears in no produced byte. C3: the credential is read from the process environment '
+        'and from nowhere else: no file, keychain or configuration directory is opened in the '
+        'search for one.'
+    ))
+    report.method(
+        'the credential vocabulary over blanked product source of both packages; every '
+        'filesystem-opening site enumerated with what it opens; and the environment-read count '
+        'from check 4. The pattern half over retained evidence is scripts/check_transcript_'
+        'reading.py, whose L17 reading examined 1,828 text values of the committed transcript.'
+    )
+    everything = library + [engine_binary] + observer
+    report.say()
+    hits = scan(everything, CREDENTIAL_VOCABULARY)
+    report_hits(report, hits, 'credential vocabulary in product source')
+    all_tiers = scan(everything, CREDENTIAL_VOCABULARY, product_only=False)
+    report.say(f'the same vocabulary at every tier, tests included: {len(all_tiers)} hit(s)')
+    for name, number, line, pattern in all_tiers:
+        report.say(f'  {name}:{number}  [{pattern}]  {line[:82]}')
+    report.say(
+        '  a count of zero at every tier does not mean the words are absent from the file. They '
+        'are in string literals, and the blanking removes literals, so a raw search is the only '
+        'way to see them. Where they are:'
+    )
+    for word in ('authorization', 'bearer', 'api_key', 'credential'):
+        for name, number, line in raw_scan(everything, f'"{word}"'):
+            report.say(f'    {name}:{number}  {line[:86]}')
+    report.say(
+        '  that is the vocabulary list a test holds in order to assert its absence from a '
+        'record: `a_record_states_no_response_no_usage_and_no_credential`. The list being in a '
+        'test and nowhere else is the reading this check wants.'
+    )
+
+    report.say()
+    report.say('every filesystem-opening site in either package\'s product code, and what it does:')
+    openers = (r'\bFile::open\b', r'\bFile::create\b', r'\bOpenOptions\b', r'\bread_to_string\b',
+               r'\bcreate_dir', r'\bremove_file\b', r'\bremove_dir')
+    purposes = (
+        ('File::open', 'reads a path the operator wrote on the command line'),
+        ('OpenOptions', 'writes a path the operator wrote on the command line'),
+        ('File::create', 'writes a path the operator wrote on the command line'),
+        ('remove_file', 'removes a destination this process created, per SPEC-MOK-007 rule 13.4'),
+        ('remove_dir', 'removes a directory this process created'),
+    )
+    opens, by_tier = [], []
+    for label, sources in tiers:
+        found = scan(sources, openers)
+        by_tier.append((label, len(found)))
+        opens.extend(found)
+        report.say(f'  {label}: {len(found)} site(s)')
+        for name, number, line, pattern in found:
+            purpose = next((text for needle, text in purposes if needle in line), 'unclassified')
+            report.say(f'    {name}:{number}  {line[:62]}')
+            report.say(f'        {purpose}')
+    report.say(
+        f'  {len(opens)} site(s): ' + ', '.join(f'{count} in the {label}' for label, count in by_tier)
+        + '. The engine\'s library target opens nothing, which is check 3. The '
+        f'{sum(count for label, count in by_tier if "library" in label)} site(s) outside a binary '
+        'are in the observer\'s export module, which writes and removes the file an operator asked '
+        'it to export to; it predates this work order and no path of it reaches a decision. '
+        'Each takes a variable, never a literal: check 2 searched the '
+        f'{literal_count:,} string literals of both packages\' product source and found no '
+        'path-shaped one. So no site here can be a '
+        'configuration directory, a keychain or a dotfile - there is no constant for one to be '
+        'named by, and nothing in either package searches for a path it was not given.'
+    )
+    reads = scan(everything, ENVIRONMENT_READS, product_only=False)
+    report.say(f'environment-variable reads: {len(reads)}')
+
+    report.verdict(
+        False,
+        'the measurable half passes and C1\'s second half cannot be run at this stage: no code '
+        'path reads a credential, so there is no value to set synthetically and no byte for it '
+        'to appear in. The connector, which is where SPEC-MOK-007 rules 10.5 and 13.4 place the '
+        'credential, is out of this work order\'s scope.',
+        'this is an escalation and not a pass. The obligation stands and its subject does not '
+        'exist yet; the work order that builds the connector inherits it. What is established '
+        'here is stronger than a negative test would be for the code that exists: there is no '
+        'environment read at all, so no credential can enter this program by any route.',
+    )
+
+
+# ---------------------------------------------------------------------------------------------
+# 9. C5 — nothing can leave, so nothing does
+# ---------------------------------------------------------------------------------------------
+
+def check_9(report, library, engine_binary, observer):
+    report.check(9, 'C5 — nothing leaves the repository, because no outbound path exists', (
+        'What leaves the repository in a live run is the request text only. No source, no path, '
+        'no repository content and no identity beyond a Mokiterion identifier appears in any '
+        'request.'
+    ))
+    report.method(
+        'the socket class and the outbound vocabulary over both packages at every tier; then a '
+        'pointer to where the positive half of the sentence is measured.'
+    )
+    everything = library + [engine_binary] + observer
+    report.say()
+    sockets = scan(everything, CAPABILITIES['socket'], product_only=False)
+    report_hits(report, sockets, 'socket types and connect, every tier')
+    outbound = scan(everything, OUTBOUND_VOCABULARY, product_only=False)
+    report_hits(report, outbound, 'outbound vocabulary, every tier')
+
+    report.say()
+    report.say('what a request carries, measured elsewhere and named here:')
+    for line in (
+        'block A  the shared rules, one constant, no identity and nothing that varies  '
+        '-> block_a_gives_no_strategy_and_names_nothing_that_varies',
+        'block B  the deciding Mokiterion\'s own identifier and nothing else  -> case L15a',
+        'block C  the deciding Mokiterion\'s own observation  -> cases L12 and L13, and '
+        'scripts/check_transcript_reading.py',
+        'block D  verb-target pairs over the core proposal list  -> case L4',
+        'no path, no float and no timestamp across 233 records and 1,828 text values  '
+        '-> scripts/check_transcript_reading.py, case L17',
+    ):
+        report.say(f'  {line}')
+
+    passed = not sockets and not outbound
+    report.verdict(
+        passed,
+        'no socket type, no connect, no URL and no HTTP identifier anywhere in either package, '
+        'at any tier - so there is no route by which anything leaves at all'
+        if passed else f'{len(sockets)} socket hit(s), {len(outbound)} outbound hit(s)',
+        'the positive half - that what leaves in a live run is the request text only - needs a '
+        'live run, which this work order excludes. What is measurable now is the content of the '
+        'request as the transcript carries it, which is the four cases named above, and the '
+        'absence of any transport to carry it. An operator\'s connector is outside this '
+        'repository and nothing here can see what it sends.',
+    )
+
+
+def main():
+    base, output_file = sys.argv[1:3]
+    root = os.getcwd()
+    wo = load(WO_019, 'wo_019_static_checks')
+    sibling = load(SIBLING, 'wo_025_static_checks')
+
+    library = [wo.Source(os.path.join(root, PACKAGE, 'src', name)) for name in LIBRARY_SOURCES]
+    by_name = {source.name: source for source in library}
+    engine_binary = wo.Source(os.path.join(root, PACKAGE, 'src', 'main.rs'))
+    observer_names = sorted(
+        name for name in os.listdir(os.path.join(root, OBSERVER, 'src')) if name.endswith('.rs')
+    )
+    observer = [wo.Source(os.path.join(root, OBSERVER, 'src', name)) for name in observer_names]
+    product = library + [engine_binary] + observer
+    observer_binary = next(source for source in observer if source.name == 'main.rs')
+    observer_library = [source for source in observer if source.name != 'main.rs']
+    # Four tiers rather than two packages, because a capability in a library module and the same
+    # capability in a binary are different facts: ARCH-MOK-001's prohibition is on a library.
+    tiers = (
+        ('engine library', library),
+        ('engine binary', [engine_binary]),
+        ('observer library', observer_library),
+        ('observer binary', [observer_binary]),
+    )
+
+    report = wo.Report()
+    report.lines.extend([
+        '# VER-MOK-018: the architecture, usage and security checks with no other runner',
+        '#',
+        f'# repository root:  {root}',
+        f'# candidate:        {run(["git", "rev-parse", "HEAD"]).stdout.strip()}',
+        f'# base commit:      {base}',
+        f'# imported:         {WO_019}  (Source, Report, strip_rust)',
+        f'# imported:         {SIBLING}  (MODE_VOCABULARY)',
+        '#',
+        '# command: python docs/engineering/simulation/evidence/WO-MOK-025/analysis/'
+        'architecture-checks.py \\',
+        '#              <base-commit> <output-file>',
+        '#',
+        '# checks: 1 S1, 2 S2a, 3 S3, 4 S3a, 5 S5, 6 S6b, 7 S7, 8 C1 and C3, 9 C5.',
+        '#',
+        '# S2, S4, S4a, S5a, S6 and S6a are not here and are not gaps. S2 is the connector\'s',
+        '# dependency surface, which does not exist. S4 and S4a are candidate/public-surface.txt.',
+        '# S5a, S6 and S6a are tests that run on every cargo test, named in the completion',
+        '# report\'s item 7 table. L3 and L11 are analysis/static-checks.py beside this file.',
+        '#',
+        '# Every scan runs over source with comments and literals blanked by the imported',
+        '# module\'s `strip_rust`, except check 2\'s literal search, which says so. Line numbers',
+        '# survive the blanking. `product_only` excludes lines inside a `#[cfg(test)]` module,',
+        '# and a check that wants the test tier too asks for it and prints both figures.',
+        '#',
+        f'# engine library: {", ".join(LIBRARY_SOURCES)}  '
+        f'({sum(len(source.raw_lines) for source in library):,} lines)',
+        f'# engine binary:  main.rs  ({len(engine_binary.raw_lines):,} lines)',
+        f'# observer:       {", ".join(observer_names)}  '
+        f'({sum(len(source.raw_lines) for source in observer):,} lines)',
+    ])
+
+    check_1(report, root, base)
+    literal_count = check_2(report, root, product)
+    check_3(report, library)
+    check_4(report, tiers, library, engine_binary, observer)
+    check_5(report, by_name['cli.rs'], next(s for s in observer if s.name == 'options.rs'), product)
+    check_6(report, library, observer, sibling.MODE_VOCABULARY)
+    check_7(report, root, by_name['simulation.rs'], product)
+    check_8(report, tiers, library, engine_binary, observer, literal_count)
+    check_9(report, library, engine_binary, observer)
+
+    findings = [result for result in report.results if result[2] != 'PASS']
+    report.lines.append('')
+    report.lines.append('=' * 108)
+    report.lines.append('# summary')
+    report.lines.append('=' * 108)
+    for number, title, word, text in report.results:
+        report.lines.append(f'  {number:>2}. {word:<8} {title[:62]:<62} {text}')
+    report.lines.append('')
+    report.lines.append(f'# {len(report.results)} checks, {len(findings)} findings')
+    report.lines.append('')
+    report.lines.append('# ---- full text of this script, retained as the WO-MOK-019 packet does ----')
+    report.lines.append('')
+    report.lines.extend(io.open(__file__, encoding='utf-8').read().split('\n'))
+
+    with io.open(output_file, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(report.lines) + '\n')
+
+    print(f'{len(report.results)} checks, {len(findings)} findings; written to {output_file}')
+    for number, title, word, text in findings:
+        print(f'  {number}. {word} {title}: {text}')
+    return 1 if findings else 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+

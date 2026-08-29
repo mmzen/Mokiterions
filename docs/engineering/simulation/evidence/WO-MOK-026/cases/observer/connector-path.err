@@ -1,0 +1,115 @@
+configuration error: --connector-path belongs to the Mokiterions binary: this program only replays --policy llm, so it starts no connector program, asks no model and spends nothing. Record a live run with that binary, then watch it back here with --transcript-path <path>
+Usage: mokiterions-tui [--seed <number>] [--ticks <number>]
+                       [--policy <baseline|reference|individual|social|llm>]
+                       [--density <percent>] [--transcript-path <path>]
+                       [--speed <1|2|4|8|16|32|64>] [--start-paused]
+                       [--export <path>]
+       mokiterions-tui --help
+
+mokiterions-tui shows one Mokiterions run as it happens, in your terminal: the
+two territories, the roster of twelve Mokiterions, a live event log, and an
+inspector for the Mokiterion you select. It only watches. The one thing you
+decide is when the next turn is taken. It needs a terminal of at least 34
+columns by 22 rows.
+
+The run is set up exactly as it is for the Mokiterions binary. These five
+options are that binary's own, parsed and validated by the same code:
+
+  --seed <number>
+      Starting number for every random draw the run makes. Change it for a
+      different world; keep it to repeat one exactly. Default: 0.
+
+  --ticks <number>
+      How many turns to run. In one turn every living Mokiterion gets one
+      decision. Must be greater than zero. A run stops earlier only when no
+      Mokiterion is left alive. Default: 100.
+
+  --policy <baseline|reference|individual|social|llm>
+      How each Mokiterion chooses its next action. The first four are fixed sets
+      of rules: none of them learns anything or calls a model, and all four are
+      deterministic. The fifth asks a model and is neither. Default: reference.
+      baseline    Chooses at random among the actions that are legal for it
+                  this turn. The control case, for comparison.
+      reference   Walks toward the nearest food it can see and eats it, but
+                  refuses food whose value it would partly waste.
+      individual  Like reference, except each Mokiterion will waste a little,
+                  by an amount the seed fixes for it alone, so two Mokiterions
+                  in the same position can act differently.
+      social      Like individual while it sees nobody else. When it does see
+                  another Mokiterion it may strike back, attack, threaten,
+                  close in, or keep away, depending on how afraid it is.
+      llm         Asks a language model, one question per Mokiterion per turn,
+                  each in its own context with no memory of any other. The
+                  model is reached through a separate connector program you
+                  supply, never by this program itself, so what it answers is
+                  not fixed by the seed and two runs may differ. A recorded
+                  run replays exactly from its transcript. Given no connector,
+                  the run is refused rather than run some other way.
+
+  --density <percent>
+      How much food the world holds, as a percentage of one territory's 8192
+      cells, written with at most two decimal places. Default: 0.75. The one
+      value sets three things together: the food present at the start, the most
+      a territory can ever hold, and the level regrowth aims for. It must leave
+      at least one resource per territory and must not exceed 100. Runs are
+      comparable only with runs at the same density.
+
+  --transcript-path <path>
+      Read this run's decisions from a transcript of an earlier run, rather
+      than asking a model for them again. This is how --policy llm replays;
+      use --live instead to make a new recording. One of the two is needed
+      with --policy llm and they may not be given together, and both are
+      refused with any other policy, which needs no transcript and would
+      ignore one. The replayed run reproduces the recorded one exactly and
+      stops with an error rather than guessing if the transcript does not
+      match the run being replayed.
+
+These belong to the observer:
+
+  --speed <1|2|4|8|16|32|64>
+      Turns advanced per second while the run is playing. Only those seven
+      values are accepted, and + and - inside the observer step through the
+      same list. Default: 8.
+
+  --start-paused
+      Open held before turn 1 rather than playing. Off unless given; either way
+      the space bar holds and releases the run.
+
+  --export <path>
+      Where the export key writes the event log the observer has kept. Nothing
+      is written, opened or created until you press that key, so a path that
+      cannot be written is not refused here. Default: a name in the working
+      directory built from the seed and the turn reached.
+
+  --help
+      Print this text and exit without opening the terminal.
+
+Options may appear in any order, and each may appear at most once.
+
+Action tracing is always on here, because the event log presents traced actions
+and the authority overlay maps each one to the requirement that permits it.
+Tracing only observes, so it cannot change a run. The Mokiterions binary's own
+--trace-actions is therefore accepted and has nothing left to switch on. Its
+--events-path is accepted and then ignored: this program writes no record
+stream. Use the Mokiterions binary for a record stream, or the export key for
+the log.
+
+This program only replays --policy llm. It reads every decision from the
+transcript you name and never asks a model for one, because a single question
+to a model takes longer than the whole turn this display is drawn in: the
+picture would stop moving and the keys would stop answering. --transcript-path
+is therefore this program's only share of that policy, and it is required.
+
+So the five options that make a recording rather than read one belong to the
+Mokiterions binary alone: --connector-path, --live, --transcript-output,
+--spend-ceiling and --prices. That binary accepts them and this one refuses
+them, saying which, rather than accepting one and doing nothing with it.
+Record a run there, then watch it back here.
+
+Press ? inside the observer for the key bindings.
+
+Exit status: 0 when the observer closed normally or this text was printed,
+2 when an option was unknown, repeated, missing its value, or outside what it
+accepts, or belongs to the Mokiterions binary alone, or the options given do
+not go together, or the terminal is smaller than the floor above, and 1 when
+output could not be written or a transcript could not be read.

@@ -1,0 +1,2 @@
+spend ceiling reached at tick 1: the run stopped before the next exchange
+{"run_record":"llm","seed":42,"ticks":1,"density":"0.75","trace_actions":false,"model":"canned-connector","reasoning":"none","exchanges":2,"tokens":{"prompt":2000,"cached_prompt":2000,"output":1974,"reasoning":0},"cache_ratio_basis_points":10000,"cost_cents":2,"ceiling_cents":2,"fallbacks":0,"unfit_to_publish":false,"tick_reached":1,"ended":"ceiling"}

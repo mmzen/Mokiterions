@@ -1,0 +1,67 @@
+# VER-MOK-018 case S1: the resolved dependency graphs against the declared sets
+#
+# The verbatim output of the repository's own gate, captured in the implementation tree on
+# feature/wo-mok-026-live-path. Nothing here is restated: the sets come out of SPEC-MOK-002
+# rule 13 and SPEC-MOK-003, which the program reads, and the graphs come out of cargo
+# metadata and cargo tree with --locked --offline on each of the three declared targets.
+#
+#     python scripts/check_declared_dependencies.py --root .
+#       -> exit 0
+#
+# candidate: 6e9ca13ba70ec46696113bb742f45d78d602d41e
+# read on:   2026-08-29
+#
+# WHY THIS FILE EXISTS RATHER THAN A CITATION. WO-MOK-025's analysis/architecture-checks.py
+# measures S1 in two halves: it compares the manifests and the lockfile against the base
+# commit itself, and for the resolved-graph half it *quotes a file* --
+# WO-MOK-025/candidate/declared-dependencies.txt, by an absolute path baked into the script
+# at its line 60. So re-running that instrument at this candidate re-measures the first half
+# and re-prints WO-MOK-025's reading of the second. That is not a defect in the instrument
+# -- its own text says the resolved-graph half "needs cargo and three targets, so it is the
+# repository's own gate, captured beside this file" -- but it does mean the gate has to be
+# run again here, or S1's second half would rest on a five-day-old reading of a tree that
+# has since gained a second binary target and 59 tests.
+#
+# It was run again, and the outcome is worth stating plainly: **the body of this capture is
+# byte-identical to WO-MOK-025's**, line for line, once each file's own comment header is
+# set aside. Nothing in the resolved graph moved. That is what SPEC-MOK-002 rule 13's empty
+# table requires of a stage that adds a connector, a live path and a second binary target,
+# and it is measured rather than inferred from the manifests not having moved.
+#
+# The two accepted network-by-name hits are in the observer's transitive graph and predate
+# this work order; VER-MOK-014 manual assessment 6 is where the technical owner judged them.
+#
+# ---- the gate's output, byte for byte ----
+targets: x86_64-pc-windows-msvc, x86_64-unknown-linux-gnu, aarch64-apple-darwin
+cargo metadata --locked reports 182 packages, which is the whole lockfile across every target and both members and is not any package's set
+[workspace.dependencies] holds no entry
+Mokiterions — declared by SPEC-MOK-002
+  Mokiterions: 0 declared, 0 in the manifest
+  Mokiterions on aarch64-apple-darwin: 0 external crates, no figure declared
+  Mokiterions on x86_64-pc-windows-msvc: 0 external crates, no figure declared
+  Mokiterions on x86_64-unknown-linux-gnu: 0 external crates, no figure declared
+  Mokiterions on aarch64-apple-darwin: 0 external crates (1 node including workspace members)
+  Mokiterions on x86_64-pc-windows-msvc: 0 external crates (1 node including workspace members)
+  Mokiterions on x86_64-unknown-linux-gnu: 0 external crates (1 node including workspace members)
+  Mokiterions: builds and tests offline from the committed lockfile
+mokiterions-tui — declared by SPEC-MOK-003
+  not an entry: Mokiterions (path ../mokiterions-core), a workspace member reached by path
+  mokiterions-tui: 1 declared, 1 in the manifest
+  ratatui 0.30.2 on aarch64-apple-darwin: features crossterm,layout-cache,std,underline-color
+  ratatui 0.30.2 on x86_64-pc-windows-msvc: features crossterm,layout-cache,std,underline-color
+  ratatui 0.30.2 on x86_64-unknown-linux-gnu: features crossterm,layout-cache,std,underline-color
+  mokiterions-tui on aarch64-apple-darwin: 62 external crates, declared 62
+  mokiterions-tui on x86_64-pc-windows-msvc: 57 external crates, declared 57
+  mokiterions-tui on x86_64-unknown-linux-gnu: 63 external crates, declared 63
+  mokiterions-tui union of the declared targets: 66 external crates, declared 66
+  mokiterions-tui on aarch64-apple-darwin: 9 build-script crates (instability 0.3.13, libc 0.2.189, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustix 1.1.4, rustversion 1.0.23, signal-hook 0.3.18, thiserror 2.0.20)
+  mokiterions-tui on x86_64-pc-windows-msvc: 7 build-script crates (instability 0.3.13, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustversion 1.0.23, thiserror 2.0.20, winapi 0.3.9)
+  mokiterions-tui on x86_64-unknown-linux-gnu: 9 build-script crates (instability 0.3.13, libc 0.2.189, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustix 1.1.4, rustversion 1.0.23, signal-hook 0.3.18, thiserror 2.0.20)
+  raw hit on aarch64-apple-darwin: mio 1.2.2 (network access)
+  raw hit on aarch64-apple-darwin: signal-hook-mio 0.2.5 (network access)
+  raw hit on x86_64-unknown-linux-gnu: mio 1.2.2 (network access)
+  raw hit on x86_64-unknown-linux-gnu: signal-hook-mio 0.2.5 (network access)
+  disclosed and accepted: mio 1.2.2 — the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+  disclosed and accepted: signal-hook-mio 0.2.5 — the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+Every declared set matches its resolved graph. 8.4a-8.4d pass.
+EXIT=0
