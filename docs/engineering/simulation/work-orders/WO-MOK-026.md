@@ -30,6 +30,7 @@ paths = [
   "mokiterions-core/tests/",
   "mokiterions-tui/src/main.rs",
   "mokiterions-tui/src/options.rs",
+  "mokiterions-tui/src/state.rs",
   "mokiterions-tui/tests/",
 ]
 
@@ -501,3 +502,35 @@ Nothing else in this artifact moves. Not `status`, not a relation — `SPEC-MOK-
 scope*, *Out of scope* or the *Expected change surface*. **Item 8** is already "the usage accounting: the provider's
 reported counts into the transcript's reserved fields", and this amendment admits the artifact that has to authorize
 the interface item 8 needs, not any new work.
+
+**2026-08-29, `mokiterions-tui/src/state.rs` admitted to `[execution_scope]`, by the repository owner acting as
+accountable engineering owner.**
+
+`mokiterions-tui/src/state.rs:319` holds `LentPort`, the observer's implementation of `simulation::Proposer`: a
+newtype over the port the observer owns, forwarding `propose` to it, which exists because `SPEC-MOK-007` rule 20.4
+puts the port in the host and the observer's own state is what holds it for the whole run. A trait method's signature
+and its implementations' cannot differ, so the amendment the row above authorizes forces this file. It was outside
+this work order's scope, measured rather than assumed:
+
+    QGP-G4I-PATHS: WEX201: changed path is outside execution scope:
+    mokiterions-tui/src/state.rs
+
+**This is a mechanical consequence of the port-shape decision and not new work, and the reason it is recorded rather
+than waved through is that all three routes put to the owner forced it.** Growing the return type, re-reading rules
+1.1 and 1.4 to admit the same growth, and adding a third method to the port each change the trait, so each obliges
+`LentPort` to follow. The file's admission was therefore entailed by that decision rather than chosen after it — and
+it is written down because nothing in this repository is approved by implication.
+
+The alternative put to the owner was a fifth governance work order scoped to this file alone, on the `WO-MOK-028`,
+`WO-MOK-029` and `WO-MOK-030` pattern. It was **declined**: its cost was a second stacked pull request for a
+forwarding change of three lines, and it would leave the port half-grown in this work order's tree until that one
+merged — a tree that does not compile, which is worse than the scope breadth it would buy back.
+
+**What this admission does not license.** The observer remains the **replay** host of rule 20.1 and gains no
+capability here. It spawns no connector, reads no credential and makes no provider call; `state.rs` may change only
+so far as `Proposer`'s signature obliges, and rule 20.3's refusal and rule 20.2's measured reason for it are
+untouched. The three new options are already **item 6**'s, which the observer refuses, and that item landed before
+this amendment.
+
+Nothing else in this artifact moves. Not `status`, not a relation, not an assurance field, not the scope prose, and
+not one item of *In scope*, *Out of scope* or the *Expected change surface*.
