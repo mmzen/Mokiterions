@@ -1324,3 +1324,283 @@ fn regenerate_the_committed_transcript() {
             .unwrap_or(0),
     );
 }
+
+/// The live transcript, relative to this package's manifest.
+///
+/// `WO-MOK-026` item 13: "Its transcript becomes the real canned transcript that replaces or
+/// supplements `WO-MOK-025`'s synthetic one." It **supplements**, and the tests below are what
+/// establish that the two fixtures are not redundant — the recorded one answers from block D and its
+/// exchange records therefore carry no response and no usage counts, which is rule 11.3.1's absent
+/// case and all a free fixture can ever reach. This one carries both, because a provider answered it.
+///
+/// It is read from the evidence path rather than copied into this directory, for two reasons that are
+/// not convenience. The path is **provenance** — `VER-MOK-018`'s *Evidence retention* fixes it before
+/// the first capture and a rename forces a fresh capture, which here means paying for another live
+/// run — so there is exactly one place it can be. And a second copy inside `tests/` would be 700 KB
+/// of bytes required to stay identical to the first, with nothing checking that they had.
+const LIVE_TRANSCRIPT: &str =
+    "../docs/engineering/simulation/evidence/WO-MOK-026/live-run-transcript.jsonl";
+
+/// The live run's configuration, as its own run record states it.
+///
+/// Six words and not seven: the live run was recorded with tracing **off**, which
+/// `live-run-record-stream.txt` reports as `"trace_actions":false`, and with the default density,
+/// which it reports as `"0.75"`. Neither can be re-derived by recording the run again, so unlike
+/// [`RECORDED_RUN`] this list is not asserted against a recording — it is transcribed from the record
+/// stream committed beside the transcript, and a replay under any other configuration is rule 12.3's
+/// mismatch rather than a comparison.
+const LIVE_RUN: [&str; 6] = ["--policy", "llm", "--seed", "0", "--ticks", "50"];
+
+/// Every exchange record of the live transcript, as raw lines.
+fn live_exchanges() -> Vec<String> {
+    let path = manifest_path(LIVE_TRANSCRIPT);
+    let text =
+        fs::read_to_string(&path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    text.lines()
+        .filter(|line| line.contains("\"transcript\":\"exchange\""))
+        .map(str::to_string)
+        .collect()
+}
+
+/// The live transcript replays through the built binary into the run its record stream describes.
+///
+/// This is the case no free fixture can stand in for. Every existing replay test compares against a
+/// recording made moments earlier in the same process, which is what lets nine of the ten sweep cells
+/// exist without a committed file — but a provider's answers cannot be re-recorded, so this transcript
+/// is the only one whose replay is checked against figures rather than against a fresh recording.
+///
+/// The figures asserted are the ones the recorded **decisions** determine, and which those are was
+/// measured rather than assumed. A replay that opened the file, matched its records and then decided
+/// for itself would still reach tick 50, and — this is the part worth writing down — it would still
+/// report eight survivors and four deaths: mutating 32 of the transcript's `eat` decisions to `wait`
+/// moves neither figure. What it moves is the **food census**, all six figures of it, because what was
+/// eaten is where 503 decisions are visible. So the summary is asserted whole, and an assertion on the
+/// survival figures alone would have been one that could not fail.
+#[test]
+fn the_live_transcript_replays_into_the_run_its_record_stream_describes() {
+    let path = manifest_path(LIVE_TRANSCRIPT);
+    let path = path.to_str().expect("a UTF-8 path").to_string();
+
+    let arguments: Vec<&str> = LIVE_RUN
+        .iter()
+        .copied()
+        .chain(["--transcript-path", path.as_str()])
+        .collect();
+    let output = invoke(&arguments);
+
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(output.stderr.is_empty(), "{}", stderr(&output));
+
+    let produced = String::from_utf8(output.stdout).expect("the run's output is UTF-8");
+
+    // The horizon, tick by tick: a replay that stopped short on a mismatch would leave a gap here
+    // rather than an empty standard error, because rule 19.4's refusal goes to the other stream.
+    for tick in 1..=50 {
+        assert!(
+            produced.contains(&format!("tick={tick} ")),
+            "the replay produced no tick={tick}"
+        );
+    }
+
+    // The outcome the recorded decisions determine, not just the horizon they were spent reaching.
+    //
+    // The **whole** summary line, and the reason is a measurement rather than thoroughness. Turning
+    // 32 of this transcript's `eat` decisions into `wait` in a scratch copy left
+    // `survivors=8 deaths=4 territory_a=4 territory_b=4` untouched and moved all six food figures —
+    // so the survival figures alone are not sensitive to the recorded decisions and an assertion on
+    // them would pass against a replay that had ignored the file. The food census is what those 503
+    // decisions are visible in.
+    assert!(
+        produced.contains(
+            "summary reason=tick_limit ticks=50 survivors=8 deaths=4 territory_a=4 territory_b=4 \
+             food_a_low=18 food_a_medium=16 food_a_high=23 food_b_low=22 food_b_medium=17 \
+             food_b_high=14"
+        ),
+        "the replay did not reach the recorded run's outcome:\n{}",
+        produced.lines().last().unwrap_or("(no output)")
+    );
+
+    println!(
+        "replayed {} exchange record(s) into {} byte(s) of output over 50 tick(s)",
+        live_exchanges().len(),
+        produced.len(),
+    );
+}
+
+/// The live transcript carries the two fields rule 11.3.1 says only a provider run can fill.
+///
+/// Rule 11.3.1 fixes that the response and the four usage counts "are present and empty until a
+/// provider is called", and names `WO-MOK-026` as "where either first carries a value". This is that
+/// commit, and this is the test that would notice if the file were ever replaced by one recorded for
+/// free — which is the only way this fixture stops being worth its 700 KB.
+///
+/// **The synthetic fixture is asserted to be the other case in the same test**, deliberately. Two
+/// fixtures whose difference is not checked are two fixtures that can silently converge, and if they
+/// ever do then one of them is dead weight and neither test says so.
+#[test]
+fn the_live_transcript_is_populated_where_the_recorded_one_is_absent() {
+    let exchanges = live_exchanges();
+    assert_eq!(exchanges.len(), 503, "the live transcript's exchange count");
+
+    for (index, record) in exchanges.iter().enumerate() {
+        // Rule 11.5's four counts, each carrying a value rather than being absent.
+        for count in [
+            "\"prompt\":",
+            "\"cached_prompt\":",
+            "\"output\":",
+            "\"reasoning\":",
+        ] {
+            assert!(
+                record.contains(count),
+                "exchange {index} carries no {count} in its usage"
+            );
+        }
+        assert!(
+            !record.contains("\"usage\":null") && !record.contains("\"response\":null"),
+            "exchange {index} is the absent case, which no provider run produces"
+        );
+        // Rule 15.2: the model that answered. Attempt 1 of this run reported a reasoning level it
+        // never sent, so a level appearing in this file is a claim the connector's own checks stand
+        // behind and this file only carries.
+        assert!(
+            record.contains("\\\"model\\\":\\\"gpt-5.6-luna\\\""),
+            "exchange {index} names no model"
+        );
+    }
+
+    // The contrast, measured rather than asserted in prose: the free fixture is rule 11.3.1's other
+    // case, and a change that made it populated would make this file redundant.
+    let recorded = fs::read_to_string(manifest_path(COMMITTED_TRANSCRIPT))
+        .expect("the committed transcript is readable");
+    let absent = recorded
+        .lines()
+        .filter(|line| line.contains("\"transcript\":\"exchange\""))
+        .filter(|line| line.contains("\"usage\":null") && line.contains("\"response\":null"))
+        .count();
+    assert_eq!(
+        absent, 221,
+        "the recorded fixture is no longer rule 11.3.1's absent case, so the two fixtures now \
+         cover the same thing and one of them is unnecessary"
+    );
+}
+
+/// The live transcript is a replay input at all, which rule 1.1c makes a property to check.
+///
+/// Rule 1.1c marks the fallback flag on the outcome record alone, so a retried exchange leaves an
+/// `error` record and a `"fallback":false` beside it — which means **a fallback count of zero does not
+/// establish a retry-free run** and reading the run record is not enough. This reads the transcript.
+///
+/// It matters because rule 1.1c also states that a transcript containing a retried exchange is not a
+/// replay input. The test above would fail on such a file, but it would fail as a mismatch and a
+/// reader would look for a bug in the engine. This fails on the file, and says so.
+#[test]
+fn the_live_transcript_records_no_fallback_and_no_retried_attempt() {
+    let path = manifest_path(LIVE_TRANSCRIPT);
+    let text = fs::read_to_string(&path).expect("the live transcript is readable");
+
+    let flagged = text.matches("\"fallback\":true").count();
+    assert_eq!(flagged, 0, "rule 9.5 fallback(s) in a fixture that replays");
+
+    let errors = text.matches("\"error\":").count();
+    assert_eq!(
+        errors, 0,
+        "retried attempt(s) recorded under rule 19.5, which rule 1.1c makes this file unreplayable \
+         as — and which its run record's fallback count of 0 does not report"
+    );
+}
+
+/// Rule 11.6's own list, over the live transcript, and the record stream accounted for beside it.
+///
+/// `REQ-MOK-073` keeps the credential out of the repository and `VER-MOK-018` check **C1** is the
+/// check. Until this work order that check had nothing to scan: no live run had happened, so no
+/// committed byte had ever been near a credential. These two files are the first, and **committed
+/// evidence carrying a credential cannot be corrected** — the history keeps it — so the guard belongs
+/// on the class of file item 13 creates rather than on this one instance of it.
+///
+/// **The transcript is held to exactly the list the recorded fixture is held to.** Rule 11.6 governs a
+/// transcript whatever produced it, and applying a weaker list to the one that actually met a provider
+/// would be the wrong way round. It passes all ten, measured and not hoped for.
+///
+/// **The record stream is a different artifact and gets a stated exception rather than a shorter list.**
+/// It is not a transcript, so rule 11.6 does not reach it, and it contains the provider endpoint once:
+/// the connector writes `connector ready: model=… endpoint=…` to standard error before the first
+/// exchange, and that line is the reason an operator can tell which provider a run reached. An
+/// endpoint is not a credential and not a provider *account* identifier — it is the same URL for every
+/// account — but it is the first time this repository commits bytes naming the provider, so the
+/// exception is pinned to that one line instead of being taken off the list. A second occurrence
+/// anywhere fails here.
+///
+/// What none of this can do is match the credential itself, which this repository has never seen. It
+/// matches the shapes one takes, which is why redacting `error.message` is the connector's obligation
+/// and this is the second line of defence rather than the first.
+#[test]
+fn the_live_evidence_carries_no_credential_and_names_the_provider_once() {
+    /// Rule 11.6's list, as `the_committed_transcript_carries_no_credential_and_no_conversion`
+    /// applies it. One list, so the two fixtures cannot drift apart in what they are checked for.
+    const FORBIDDEN: [&str; 10] = [
+        "authorization",
+        "bearer",
+        "api_key",
+        "apikey",
+        "api-key",
+        "credential",
+        "password",
+        "openai",
+        "sk-",
+        "http",
+    ];
+
+    let read = |relative: &str| -> String {
+        let path = manifest_path(relative);
+        fs::read_to_string(&path).unwrap_or_else(|error| panic!("{}: {error}", path.display()))
+    };
+
+    // The transcript: rule 11.6 in full, and no carriage return, which is the `-text` entry in
+    // `.gitattributes` doing its work on a file captured on Windows.
+    let transcript = read(LIVE_TRANSCRIPT);
+    assert!(
+        !transcript.contains('\r'),
+        "the live transcript holds a carriage return: check the `-text` entry in .gitattributes"
+    );
+    let lowered = transcript.to_lowercase();
+    for forbidden in FORBIDDEN {
+        assert!(
+            !lowered.contains(forbidden),
+            "the live transcript holds {forbidden:?}. Do not correct the file: committed evidence \
+             cannot be corrected, and a credential in it is an escalation"
+        );
+    }
+
+    // The record stream: every credential shape refused, and the endpoint allowed on its own line.
+    let stream =
+        read("../docs/engineering/simulation/evidence/WO-MOK-026/live-run-record-stream.txt");
+    let lowered = stream.to_lowercase();
+    for forbidden in FORBIDDEN {
+        let permitted = matches!(forbidden, "openai" | "http");
+        if !permitted {
+            assert!(
+                !lowered.contains(forbidden),
+                "the live record stream holds {forbidden:?}. Do not correct the file: committed \
+                 evidence cannot be corrected, and a credential in it is an escalation"
+            );
+            continue;
+        }
+        // Present exactly once, and only in the connector's own readiness diagnostic.
+        assert_eq!(
+            lowered.matches(forbidden).count(),
+            1,
+            "the live record stream names {forbidden:?} more than once; only the connector's \
+             `connector ready:` line is accounted for"
+        );
+        let carrying: Vec<&str> = stream
+            .lines()
+            .filter(|line| line.to_lowercase().contains(forbidden))
+            .collect();
+        assert_eq!(carrying.len(), 1, "{carrying:?}");
+        assert!(
+            carrying[0].starts_with("connector ready: ") && carrying[0].contains(" endpoint="),
+            "{forbidden:?} appears outside the connector's readiness line: {}",
+            carrying[0]
+        );
+    }
+}
