@@ -19,6 +19,14 @@ use mokiterions::simulation::Config;
 /// become a divergence. What the engine accepts and this program does not act on is stated
 /// rather than left silent.
 ///
+/// Amended again 2026-08-29 under `WO-MOK-026` for `SPEC-MOK-007` rule 18.4.2, which makes the
+/// option sets differ by host and requires each host's text to state which options are its own
+/// (rule 18.2). The four the engine's binary target owns are named as that binary's, together with
+/// what this program does when it is given one, because the entry for `--transcript-path` is shared
+/// verbatim with that binary and says "use --live instead to make a new recording" — true of the
+/// pair of programs and not of this one. The exit-status sentence gains the clause for that refusal.
+/// Nothing in the five shared entries moved.
+///
 /// One literal per output line, concatenated at compile time, for the reason the engine's
 /// constant gives: a single escaped literal of this length cannot be read or reviewed.
 pub const USAGE: &str = concat!(
@@ -123,13 +131,19 @@ pub const USAGE: &str = concat!(
     "picture would stop moving and the keys would stop answering. --transcript-path\n",
     "is therefore this program's only share of that policy, and it is required.\n",
     "\n",
+    "So the four options that make a recording rather than read one belong to the\n",
+    "Mokiterions binary alone: --connector-path, --live, --transcript-output and\n",
+    "--spend-ceiling. That binary accepts them and this one refuses them, saying\n",
+    "which, rather than accepting one and doing nothing with it. Record a run\n",
+    "there, then watch it back here.\n",
+    "\n",
     "Press ? inside the observer for the key bindings.\n",
     "\n",
     "Exit status: 0 when the observer closed normally or this text was printed,\n",
     "2 when an option was unknown, repeated, missing its value, or outside what it\n",
-    "accepts, or the options given do not go together, or the terminal is smaller\n",
-    "than the floor above, and 1 when output could not be written or a transcript\n",
-    "could not be read.\n",
+    "accepts, or belongs to the Mokiterions binary alone, or the options given do\n",
+    "not go together, or the terminal is smaller than the floor above, and 1 when\n",
+    "output could not be written or a transcript could not be read.\n",
 );
 
 /// The one engine option this program acts on, rather than passes through and ignores.
@@ -138,6 +152,32 @@ pub const USAGE: &str = concat!(
 /// on it re-reads the raw argument — `SPEC-MOK-007` rule 18.4. The engine's own binary target holds
 /// the same constant for the same reason; `tests/options.rs` holds all three spellings equal.
 const TRANSCRIPT_PATH_OPTION: &str = "--transcript-path";
+
+/// The engine binary's live-run options, which this program refuses rather than acts on.
+///
+/// `SPEC-MOK-007` rule 18.4.2 splits the option set by host: the engine's binary target acts on six,
+/// "the terminal observer acts on `--transcript-path` and on nothing else", and given a connector
+/// path, a live-mode selection or a spend ceiling the observer "refuses at start-up with the
+/// usage-error status and states that this host replays only". Rule 18.4.4 puts the fourth in the
+/// same list in the same words — `--transcript-output` "is the binary target's alone", and "rule
+/// 18.4.2's refusal covers it as it covers `--connector-path` and `--spend-ceiling`".
+///
+/// The refusal is necessary rather than tidy. Rule 18.4.1 records that this program hands every
+/// argument it does not recognise to the engine's parser, so an option that parser accepts arrives
+/// here whether or not this program can do anything with it — which is how `--events-path` came to
+/// be accepted and ignored, the defect GitHub issue 40 tracks and rule 18.4.1 refuses to reproduce.
+/// All four of these were accepted by the shared parser the moment it learned them, so without this
+/// list an operator would receive no connector, no recording, no ceiling and no diagnostic.
+///
+/// `--prices` is absent deliberately and is not an omission: it is a live run's unit prices, and it
+/// is refused here by the same arm the moment the shared parser learns it, at which point it joins
+/// this list. It is not in the shared parser yet.
+const LIVE_RUN_OPTIONS: [&str; 4] = [
+    "--connector-path",
+    "--live",
+    "--transcript-output",
+    "--spend-ceiling",
+];
 
 /// The speed steps `SPEC-MOK-003` fixes, ascending. `+` and `-` step through this list.
 pub const SPEED_STEPS: [u32; 7] = [1, 2, 4, 8, 16, 32, 64];
@@ -161,10 +201,13 @@ pub struct Options {
     /// opened by the binary target, which is where `SPEC-MOK-004` rules 4 and 5 put a start-up
     /// refusal that has to reach the operator's own screen.
     ///
-    /// `Some` exactly when the policy is `llm`, which is not this field's own invariant but the
-    /// parser's: rule 18.4.3 refuses a transcript under any other source and rules 13.2 and 20.3
-    /// refuse `llm` without one. Nothing here re-checks it — a second copy of a rule is a second
-    /// thing to keep in step.
+    /// `Some` exactly when the policy is `llm`, which is not this field's own invariant but the two
+    /// parsers' together. The shared parser gives one half: rule 18.4.3 refuses a transcript under
+    /// any other source. The other half was the shared parser's alone until `--live` existed —
+    /// rule 13.2's check now accepts `llm` with a transcript **or** a live-mode selection, so `llm`
+    /// with no transcript reaches this host and is refused here, by `LIVE_RUN_OPTIONS` under rule
+    /// 18.4.2, which is what leaves rule 20.3 holding. Nothing re-checks either half — a second
+    /// copy of a rule is a second thing to keep in step.
     pub transcript_path: Option<String>,
 }
 
@@ -229,6 +272,28 @@ where
                 export_path = Some(value.to_string());
                 index += 2;
             }
+            // Rule 18.4.2, before the argument reaches the shared parser. Refusing here rather than
+            // after `cli::parse` is what decides which of two applicable refusals the operator
+            // reads, and the host's is the one worth reading: rule 18.4.3 would answer
+            // `mokiterions-tui --spend-ceiling 2` with "only used by --policy llm", which is true
+            // and would send the operator to select a source that leaves this program refusing the
+            // option for a second reason. What is wrong with the invocation is the program, not the
+            // policy, so this arm says so and the value is never examined.
+            //
+            // It is not an unknown option and is not called one — the shared parser accepts all
+            // four — and it is not silently ignored, which is the whole point of rule 18.4.1. It
+            // offers no substitute source either, for rule 20.3's reason.
+            //
+            // `--help` given alongside does not win, unlike the two combination checks in the
+            // engine's parser, and for the same reason `--speed 3 --help` does not win here: this
+            // is a rejection of one named option and every such rejection in this loop is
+            // immediate. The operator is not left without the answer — a refusal writes the usage
+            // text after the message, and rule 18.2's entry for these four is what it now says.
+            option if LIVE_RUN_OPTIONS.contains(&option) => {
+                return Err(format!(
+                    "{option} belongs to the Mokiterions binary: this program only replays --policy llm, so it starts no connector program, asks no model and spends nothing. Record a live run with that binary, then watch it back here with --transcript-path <path>"
+                ));
+            }
             _ => {
                 engine_args.push(args[index].clone());
                 index += 1;
@@ -252,8 +317,15 @@ where
                 // the start-up input list is closed, so tracing cannot be an operator
                 // choice. `SPEC-MOK-001` makes tracing observational, so this cannot
                 // perturb a run.
+                //
+                // `spend_ceiling` was overridden to `None` here and no longer is. The override was
+                // the shape of defect rule 18.4.1 refuses: `--spend-ceiling` reached the shared
+                // parser, was validated, was carried into the configuration and was then discarded
+                // by this line, so an operator who named a ceiling received neither a ceiling nor a
+                // word about it. `LIVE_RUN_OPTIONS` refuses the option instead, which makes `Some`
+                // unreachable in this host rather than erased — and a defensive second copy of a
+                // rule is a second thing to keep in step with it.
                 trace_actions: true,
-                spend_ceiling: None,
                 ..config
             },
             speed: speed.unwrap_or(DEFAULT_SPEED),

@@ -379,3 +379,253 @@ fn every_target_spells_the_transcript_option_the_same_way() {
         assert!(uses <= 1, "{label} spells {spelling} {uses} times");
     }
 }
+
+/// The engine's own live-run invocation: the four options it owns, with the source that needs them.
+///
+/// All four together, because the engine's parser refuses each of them alone — rules 13.1, 19.6 and
+/// 14.6 require a connector, an output transcript and a ceiling with `--live`, so no smaller list is
+/// an invocation the engine accepts and the assertion "the shared parser accepts these" can only be
+/// made of the whole set.
+fn a_live_run() -> Vec<&'static str> {
+    vec![
+        "--policy",
+        "llm",
+        "--live",
+        "--connector-path",
+        "connector",
+        "--transcript-output",
+        "out.jsonl",
+        "--spend-ceiling",
+        "2",
+    ]
+}
+
+/// Whether a usage text opens an option entry for this option.
+///
+/// An entry begins at column two. `entry` above requires a space after the name because every option
+/// it reads takes a value; `--live` takes none, so its line ends there, exactly as `--help`'s does.
+fn has_entry(usage: &str, option: &str) -> bool {
+    usage
+        .lines()
+        .any(|line| line == format!("  {option}") || line.starts_with(&format!("  {option} ")))
+}
+
+/// The four options themselves, each with a value where it takes one.
+fn live_run_options() -> Vec<Vec<&'static str>> {
+    vec![
+        vec!["--connector-path", "connector"],
+        vec!["--live"],
+        vec!["--transcript-output", "out.jsonl"],
+        vec!["--spend-ceiling", "2"],
+    ]
+}
+
+/// `SPEC-MOK-007` rules 18.4.2 and 18.4.4, and `VER-MOK-018` case **L32**: this program refuses the
+/// options that ask for a live run, and says which host they belong to.
+///
+/// This is the case rule 18.4.1 exists for, and until 2026-08-29 this program failed it. `--live`,
+/// `--connector-path`, `--transcript-output` and `--spend-ceiling` entered the shared parser under
+/// `WO-MOK-028` and `WO-MOK-029`, and this program forwards every argument it does not recognise to
+/// that parser, so all four were accepted here from the moment they existed: a ceiling was carried
+/// into the configuration and then overwritten with `None`, and a connector path and a live-mode
+/// selection were accepted and acted on by nothing. That is the shape of GitHub issue 40 exactly.
+///
+/// The refusal has to be this program's own and not the shared parser's, which is what the last two
+/// assertions establish. Rule 18.4.3's refusal — "only used by --policy llm" — is the parser's, it
+/// fires for a different reason, and it does not fire at all under this source, so an operator who
+/// selected `llm` would reach a live run this host cannot perform.
+#[test]
+fn the_live_run_options_are_refused_and_name_the_host() {
+    // Accepted by the engine, refused here: the difference between the hosts is the whole of rule
+    // 18.4.2, and neither half of it is an accident of what the shared parser happens to reject.
+    assert!(
+        mokiterions::cli::parse(a_live_run()).is_ok(),
+        "these are no longer the engine's live-run options"
+    );
+    assert!(parse(a_live_run()).is_err());
+
+    for option in live_run_options() {
+        let name = option[0];
+
+        // With the source that makes the option meaningful, with a source that does not, and with
+        // no source named at all. The first is the one that matters: the other two are already
+        // refused by rule 18.4.3, and this program must not be relying on that.
+        for prefix in [vec!["--policy", "llm"], vec!["--policy", "social"], vec![]] {
+            let args = [prefix.clone(), option.clone()].concat();
+            let refusal =
+                parse(args.clone()).expect_err(&format!("{args:?} is refused before a run starts"));
+
+            // Names the option the operator typed, and names this host's own limit as the reason.
+            assert!(refusal.contains(name), "{refusal}");
+            assert!(refusal.contains("only replays --policy llm"), "{refusal}");
+
+            // Not called unknown, because the shared parser accepts it and calling it unknown
+            // would be false. Rule 18.4.2 says so in those words.
+            assert!(!refusal.contains("unknown"), "{refusal}");
+
+            // No substitute source is offered, for rule 20.3's reason: a run under another label
+            // is not this run.
+            for other in ["baseline", "reference", "individual", "social"] {
+                assert!(
+                    !refusal.contains(other),
+                    "{refusal} offers {other} as a substitute"
+                );
+            }
+
+            // This program's refusal and not the shared parser's. Rule 18.4.3's message is the
+            // parser's and would send the operator to select `llm`, which changes nothing here.
+            assert!(!refusal.contains("only used by --policy llm"), "{refusal}");
+            assert_ne!(
+                Some(refusal),
+                mokiterions::cli::parse(args.clone()).err(),
+                "{args:?} is refused in the engine's words"
+            );
+        }
+    }
+}
+
+/// Rule 18.4.2: a ceiling cannot reach this program's configuration, because the option is refused.
+///
+/// The assertion is that the field is unreachable rather than erased. It was erased until
+/// 2026-08-29 — `parse` overrode it to `None` after the shared parser had validated and retained
+/// the operator's amount — and an unreachable field needs no override, while an override needs a
+/// reader to keep it in step with every future option that could set one.
+#[test]
+fn no_invocation_this_program_accepts_carries_a_spend_ceiling() {
+    for args in [
+        vec![],
+        selecting("llm"),
+        selecting("social"),
+        vec!["--seed", "7", "--start-paused"],
+    ] {
+        assert_eq!(run(&args).config.spend_ceiling, None, "{args:?}");
+    }
+
+    // The engine's parser does retain it, so the `None` above is this program's refusal and not a
+    // parser that drops the value. Rule 18.4 discards the paths and keeps this one quantity.
+    match mokiterions::cli::parse(a_live_run()).expect("the engine accepts a live run") {
+        mokiterions::cli::Command::Run(config) => assert_eq!(config.spend_ceiling, Some(200)),
+        mokiterions::cli::Command::Help => panic!("expected a run"),
+    }
+
+    // And the source that would carry one is refused, so there is no accepted invocation left.
+    assert!(parse(vec!["--policy", "llm", "--spend-ceiling", "2"]).is_err());
+}
+
+/// Case **L32**'s two structural halves: no run starts and no child process is spawned.
+///
+/// Both are asserted as absences, because that is what they are. The refusal is `parse`'s, and
+/// `parse` is reached before the only call that enters the terminal — so a refused invocation
+/// cannot have altered the operator's screen, whatever it went on to do. And this package contains
+/// no process-spawning primitive at all, in any target, which is a stronger statement than "this
+/// path spawns nothing": there is no path that could.
+#[test]
+fn a_refused_live_run_enters_no_terminal_and_spawns_nothing() {
+    let host = include_str!("../src/main.rs");
+    let entry = host
+        .find("ratatui::try_init")
+        .expect("this program enters the terminal exactly once, and this is it");
+    assert!(
+        !host[entry + 1..].contains("ratatui::try_init"),
+        "this program enters the terminal in more than one place"
+    );
+    assert!(
+        host[..entry].contains("prepare(env::args()"),
+        "the terminal is entered before start-up has had its chance to refuse"
+    );
+
+    // Rule 20.4 puts the connector in the engine binary's hands, and `SPEC-MOK-003`'s *Start-up
+    // inputs* leave this program with one file it opens for reading. A spawn here would be
+    // unreachable code at best and a live run in the wrong host at worst.
+    let source_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    let mut examined = 0;
+    for entry in std::fs::read_dir(&source_root).expect("this package has a source directory") {
+        let path = entry.expect("a readable directory entry").path();
+        if path.extension().and_then(|extension| extension.to_str()) != Some("rs") {
+            continue;
+        }
+        let text = std::fs::read_to_string(&path).expect("a readable source file");
+        for primitive in ["process::Command", "Command::new"] {
+            assert!(
+                !text.contains(primitive),
+                "{} names {primitive}; this program spawns no child process",
+                path.display()
+            );
+        }
+        examined += 1;
+    }
+    assert!(examined > 1, "only {examined} source files were examined");
+}
+
+/// The refusal covers every live-run option the shared parser accepts, and no other.
+///
+/// Two lists have to agree and neither can be derived from the other: the engine's parser decides
+/// what an operator can type, and this program decides which of those it cannot honour. A fifth
+/// option added to that parser and not to this list is accepted and ignored again — rule 14.3a's
+/// `--prices` is the next one, and this fails when it lands. An option in this list the parser does
+/// not accept is worse: the refusal would claim the other binary accepts something it does not.
+#[test]
+fn the_refused_list_and_the_engines_own_options_agree() {
+    let source = include_str!("../src/options.rs");
+    let declaration = source
+        .split("const LIVE_RUN_OPTIONS")
+        .nth(1)
+        .expect("this program declares the options it refuses");
+    let declared: Vec<&str> = declaration[..declaration.find("];").expect("a closed list")]
+        .split('"')
+        .skip(1)
+        .step_by(2)
+        .collect();
+
+    let expected: Vec<&str> = live_run_options().iter().map(|option| option[0]).collect();
+    assert_eq!(declared, expected);
+
+    // Every one of them has an entry in the engine's help and none in this program's synopsis, and
+    // this program's help names all four as that binary's.
+    let text = unwrapped(USAGE);
+    for option in &declared {
+        assert!(
+            has_entry(mokiterions::cli::USAGE, option),
+            "{option} has no entry in the engine's help"
+        );
+        assert!(
+            !has_entry(USAGE, option),
+            "{option} has an option entry in this program's help, which does not act on it"
+        );
+        assert!(text.contains(*option), "{USAGE} does not name {option}");
+    }
+    assert!(
+        text.contains("belong to the mokiterions binary alone"),
+        "{USAGE}"
+    );
+    assert!(
+        text.contains("belongs to the mokiterions binary alone"),
+        "the exit-status sentence does not cover this refusal:\n{USAGE}"
+    );
+
+    // Every option the engine's help has an entry for is either shared with this program or
+    // refused by it. Nothing the operator can type is left accepted and unaccounted for — except
+    // `--trace-actions` and `--events-path`, which this program accepts and states that it
+    // ignores, the second being GitHub issue 40 and outside this work order.
+    let shared = [
+        "--seed",
+        "--ticks",
+        "--policy",
+        "--density",
+        "--transcript-path",
+    ];
+    let stated = ["--trace-actions", "--events-path", "--help"];
+    for line in mokiterions::cli::USAGE.lines() {
+        let Some(option) = line
+            .strip_prefix("  ")
+            .filter(|rest| rest.starts_with("--"))
+        else {
+            continue;
+        };
+        let option = option.split_whitespace().next().expect("a named option");
+        assert!(
+            shared.contains(&option) || stated.contains(&option) || declared.contains(&option),
+            "the engine accepts {option} and this program neither shares nor refuses it"
+        );
+    }
+}
