@@ -134,12 +134,20 @@ where
                     return Launch::Exit(1);
                 }
             },
-            // The other three pairs cannot arrive from a command line: the shared parser refuses `llm`
-            // with no transcript and refuses a transcript under any other source, so each is already an
-            // exit `2` above. They are matched rather than asserted, and they take no port — which for
-            // the four deterministic sources is what rule 20.9 requires, and for the impossible fourth
-            // pair means the engine's own rule 20.8 refusal fires on the first tick, in the engine's
-            // words rather than in a second copy of them here.
+            // The other three pairs cannot arrive from a command line. Two of them are the shared
+            // parser's: it refuses a transcript under any other source, and it refuses `llm` with
+            // neither a transcript nor a live-mode selection. The third is this host's own and was
+            // the shared parser's until 2026-08-28 — `--live` gave `llm` a second way to obtain
+            // decisions, so `llm` with no transcript now passes that parser, and what refuses it
+            // here is `options::LIVE_RUN_OPTIONS` under `SPEC-MOK-007` rule 18.4.2. Amended
+            // 2026-08-29 under `WO-MOK-026`: between the two this comment claimed a guarantee the
+            // parser had stopped giving, and `--policy llm --live` entered the alternate screen,
+            // drew a whole frame and only then failed on the first tick.
+            //
+            // So each is an exit `2` above, and all three are matched rather than asserted. They
+            // take no port, which for the four deterministic sources is what rule 20.9 requires,
+            // and for the unreachable fourth pair means the engine's own rule 20.8 refusal fires on
+            // the first tick, in the engine's words rather than in a second copy of them here.
             _ => None,
         };
 

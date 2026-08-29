@@ -1,0 +1,1 @@
+{"run_record":"llm","seed":42,"ticks":1,"density":"0.75","trace_actions":true,"model":null,"reasoning":null,"exchanges":48,"tokens":{"prompt":0,"cached_prompt":0,"output":0,"reasoning":0},"cache_ratio_basis_points":null,"cost_cents":0,"ceiling_cents":200,"fallbacks":12,"unfit_to_publish":true,"tick_reached":1,"ended":"tick_limit"}

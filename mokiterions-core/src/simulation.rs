@@ -91,6 +91,20 @@ pub struct Config {
     /// the operator's decimal into this integer, on `Density`'s precedent, so no float exists at
     /// any point.
     pub spend_ceiling: Option<u64>,
+    /// The unit prices of `SPEC-MOK-007` rule 14.3a, or `None` when none were declared.
+    /// `--prices` is the option.
+    ///
+    /// The second value the configuration retains, and the reasoning above transfers without
+    /// change: prices are not a path, and rule 14.2's cost "is computed from the reported counts and
+    /// the unit prices declared for the run" by the run itself. Rule 14.6 stops the run *before* an
+    /// exchange once the accumulated cost reaches the ceiling, and rule 15.2 reports the cost — so
+    /// the library needs the ceiling and the multipliers that turn token counts into it, and a host
+    /// can supply neither on its behalf.
+    ///
+    /// `None` on every replay and on the four deterministic sources, per rule 14.8: "a replay spends
+    /// nothing, computes no ratio and has no ceiling". `Some` on every live run, because rule 14.3
+    /// forbids a compiled-in default and `cli::parse` therefore refuses `--live` without it.
+    pub prices: Option<UnitPrices>,
 }
 
 /// Resource density as an exact count of hundredths of a percent of a territory's
@@ -196,6 +210,78 @@ impl fmt::Display for Density {
             self.hundredths_of_percent / 100,
             self.hundredths_of_percent % 100
         )
+    }
+}
+
+/// The provider's unit prices for one live run, in **US cents per million tokens**.
+///
+/// `SPEC-MOK-007` rule 14.3 makes these "inputs of the run, not compiled-in constants" — "the
+/// provider's prices are the provider's to change" — and rule 14.3a, amended 2026-08-29 under
+/// `WO-MOK-030`, fixes how they arrive: four integers, colon-separated, in the order below.
+/// `--prices 125:13:1000:0` is the rule's own example.
+///
+/// Integers rather than a decimal, in the rule's words, "so rule 14.2's arithmetic is integer
+/// arithmetic from the input onward and no rounding enters at the edge". Cents per **million**
+/// tokens rather than per token because a per-token price in cents is not an integer for any
+/// provider: the four figures above are $1.25, $0.13, $10.00 and $0.00 per million.
+///
+/// A named type rather than `[u64; 4]`, which is this work order's *Authorized decision envelope*
+/// naming "the unit-price representation and the cost unit" as the implementation's to decide. The
+/// four differ by nearly two orders of magnitude and three of them are plausible values for each
+/// other's position, so a positional array puts a silent eighty-fold cost error one transposition
+/// away — and rule 14.3a chose integers precisely to keep arithmetic error out of the edge. It costs
+/// one type and one function in `SPEC-MOK-002` rule 5's census, which its 2026-08-29 row records,
+/// and it is `Density`'s shape exactly: an operator-supplied quantity, parsed and validated once,
+/// held in [`Config`], computed with as an integer.
+///
+/// No `Default`. Rule 14.3 forbids a compiled-in default, so there is no value to give one, and a
+/// live run with no declared prices is refused by `cli::parse` rather than run at a guess.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UnitPrices {
+    /// Uncached prompt tokens.
+    pub prompt: u64,
+    /// Prompt tokens the provider reported as served from its cache.
+    pub cached: u64,
+    /// Output tokens.
+    pub output: u64,
+    /// Reasoning tokens. `0` is a legal price and is the rule's own example, because
+    /// `SPEC-MOK-007` fixes the reasoning level at `none` for this stage.
+    pub reasoning: u64,
+}
+
+impl UnitPrices {
+    /// Parses rule 14.3a's compact form: exactly four non-negative integers separated by `:`, in
+    /// the order prompt, cached, output, reasoning.
+    ///
+    /// Every rejection names what was expected rather than what was wrong, on `Density::parse`'s
+    /// precedent, because an operator who mistyped a price list needs the shape and not a diagnosis.
+    /// The count is checked before the digits so that `125:13:1000` is answered with "four" rather
+    /// than with a complaint about a field that is not there.
+    pub fn parse(value: &str) -> Result<Self, String> {
+        let fields: Vec<&str> = value.split(':').collect();
+        if fields.len() != 4 {
+            return Err(format!(
+                "expected four prices separated by colons, in the order prompt, cached, output, reasoning, such as 125:13:1000:0; {} were given",
+                fields.len()
+            ));
+        }
+        let mut prices = [0u64; 4];
+        for (field, price) in fields.iter().zip(prices.iter_mut()) {
+            if field.is_empty() || !field.bytes().all(|byte| byte.is_ascii_digit()) {
+                return Err(format!(
+                    "expected a whole number of cents per million tokens, such as 125; found {field}"
+                ));
+            }
+            *price = field
+                .parse()
+                .map_err(|_| format!("the price {field} is larger than this program can hold"))?;
+        }
+        Ok(Self {
+            prompt: prices[0],
+            cached: prices[1],
+            output: prices[2],
+            reasoning: prices[3],
+        })
     }
 }
 
@@ -1000,6 +1086,34 @@ trait DecisionSource {
         Ok(())
     }
 
+    /// Whether this source has stopped spending, asked before each opportunity is composed.
+    ///
+    /// The private half of [`Proposer::halted`], and the reason it exists on this trait too is the
+    /// reason [`DecisionSource::failure`] does: the run loop drives a `DecisionSource` and knows
+    /// nothing of a port. Only `PortDecisionSource` overrides it; the four deterministic sources take
+    /// the default, so no run that existed before the port does can reach `SPEC-MOK-007` rule 14.6's
+    /// stop, which is rule 16's non-perturbation obligation stated once more as a call graph.
+    ///
+    /// Defaulted to `false` on the same ground as the public method's default: a source that spends
+    /// nothing cannot reach a spending ceiling.
+    fn halted(&self) -> bool {
+        false
+    }
+
+    /// This source's accounting, asked once when the run loop has ended.
+    ///
+    /// The private half of [`Proposer::accounting`], on [`DecisionSource::halted`]'s exact grounds:
+    /// the run loop drives a `DecisionSource` and knows nothing of a port. Only `PortDecisionSource`
+    /// overrides it, so the four deterministic sources report no accounting and therefore no run
+    /// record — which is rule 16's non-perturbation obligation stated once more as a call graph
+    /// rather than as a branch, and is why a `baseline` run's bytes cannot move.
+    ///
+    /// Defaulted to `None` for the public method's reason: a source that spends nothing has no
+    /// account to state.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        None
+    }
+
     fn decide(&mut self, observation: &Observation, entropy: &mut DecisionEntropy<'_>) -> Action;
 
     /// A failure the source reached while deciding, which ends the run.
@@ -1526,6 +1640,219 @@ impl DecisionRequest {
     }
 }
 
+/// The four token counts a provider reported for one exchange, each present or absent.
+///
+/// **`Option<u64>` and not `u64`, because `SPEC-MOK-007` rule 11.5 fixes the difference**: "a
+/// reported count that the provider did not report is recorded as **absent**, not as zero", and
+/// rule 14.5 is what depends on telling them apart. A run whose provider reported no cached-token
+/// figure "cannot compute the ratio, and that is a failure to evaluate rather than a pass"; a run
+/// that reported a cached figure of zero computed a ratio of zero and failed `REQ-MOK-070` on the
+/// merits. Four absences and four zeros are the same bytes in any representation that loses this,
+/// and the two outcomes are not the same outcome.
+///
+/// A named type rather than four more fields on [`Proposal`], for the reason [`UnitPrices`] is one
+/// and measured the same way: the four are unlabelled integers of similar magnitude in a fixed
+/// order, and rule 14's cost arithmetic and `REQ-MOK-070`'s cache ratio are both computed from
+/// them, so a transposed pair is a wrong cost figure *and* a wrong ratio with nothing to catch
+/// either. `SPEC-MOK-002` rule 5's 2026-08-29 row enumerates the type and its four fields.
+///
+/// [`Default`] is derived and its value is four **absent** counts, which is rule 11.3.1's reading
+/// of an empty usage — "an empty usage is four **absent** counts rather than four zeros" — rather
+/// than a convenience.
+///
+/// `accounting::ExchangeUsage` is an alias of this type and not a second one, so rule 14's cost
+/// arithmetic reads the counts the port reported rather than a copy of them.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReportedUsage {
+    /// Prompt tokens as the provider reported them, rule 10.4a's `usage.prompt`, and the
+    /// denominator of `REQ-MOK-070`'s ratio.
+    pub prompt: Option<u64>,
+    /// Prompt tokens the provider reported as served from its cache, rule 10.4a's
+    /// `usage.cached_prompt`, and that ratio's numerator.
+    pub cached_prompt: Option<u64>,
+    /// Output tokens, as reported.
+    pub output: Option<u64>,
+    /// Reasoning tokens, as reported. Rule 8.5 fixes the level a run may use at `none`, so this is
+    /// where a run shows it got what it asked for. It is a **count** and not the level: rule 10.4a
+    /// puts the level at the response's top level, as a string, and names both `reasoning`.
+    pub reasoning: Option<u64>,
+}
+
+/// What a port obtained for one decision opportunity: the proposal, and the evidence of the
+/// exchange it came from.
+///
+/// `SPEC-MOK-007` rule 1.1, as rule 1.1a grew it on 2026-08-29. **The proposal is `action` and
+/// nothing else here is one.** Rule 1.4a states that plainly: the engine decides nothing from the
+/// other two fields, so rule 9's validation is reached by exactly the value it was reached by
+/// before this type existed. `response` is consumed by the transcript and by nothing else, and
+/// `usage` by rule 14's accounting and by nothing else.
+///
+/// **The two evidence fields exist because rule 11.3 obliges the record to carry them and rule 11.1
+/// obliges the engine to author it.** That rule asks for "the response as received, in full, or the
+/// error", the four reported counts, and "the action the response was parsed into, or the fact that
+/// it was not parsed **and why**" — and the port is the engine's only contact with whatever
+/// answered, so a return of `Option<Action>` alone left the engine obliged to write three things it
+/// had no route to. This module recorded that under `WO-MOK-025` as "a pre-existing tension between
+/// rule 1.1's port shape and rule 11.3's field list", naming `WO-MOK-026` as where the return type
+/// would have to grow. It grew here.
+///
+/// A port that reports a response contradicting its own action changes what the record says about
+/// the exchange and changes no decision, which rule 1.4a records as the honest outcome rather than
+/// as an oversight: rule 10.7 makes the connector untrusted in whole, and a transcript that recorded
+/// a response the engine had silently overruled would hide exactly the disagreement a reader needs
+/// to see.
+///
+/// **A fourth field arrived on 2026-08-29 for rule 19.5's retry**, and it is evidence of the same
+/// kind rather than a second mechanism: [`Self::earlier_attempts`] carries the exchanges the
+/// opportunity spent before this one, because rule 11.2 gives each attempt its own record and rule
+/// 11.1 leaves the authoring of every record with the engine. It is empty for every port that does
+/// not retry, which is every port but a live connector, and its own documentation states what the
+/// engine does with it. `SPEC-MOK-002` rule 5's amendment of that date enumerates the field.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Proposal {
+    /// The proposal, or the fact that none was obtained. Rule 1.4's value, unchanged, and still the
+    /// only field the engine acts on.
+    pub action: Option<Action>,
+    /// The response as received, in full, or the error, in the port's own bytes. `None` where there
+    /// was no response at all — a port that spoke to nothing, which is every replay of a transcript
+    /// recorded before a provider was ever called.
+    pub response: Option<String>,
+    /// The provider's reported counts. Four absences for a port with no provider behind it, which
+    /// rule 11.5 distinguishes from four zeros and rule 14.5 acts on.
+    pub usage: ReportedUsage,
+    /// The exchanges this opportunity spent **before** the one this proposal came from, oldest
+    /// first, and empty for the single-attempt case that is every exchange of every port but a
+    /// retrying one.
+    ///
+    /// Rule 19.5 retries a failed exchange a bounded number of times and rule 11.2 gives each
+    /// attempt "its own record, because it was its own billed exchange" — while rule 11.1 puts the
+    /// authoring of every record in the engine. The attempts therefore have to reach the engine,
+    /// and this is the field they reach it by. The engine writes one record per element, in this
+    /// order, before the record for the proposal itself.
+    ///
+    /// **The list is flat and every element's own list is empty.** An element is one exchange, not
+    /// a sub-run: a port fills this by pushing each attempt it abandons, so nesting would mean an
+    /// attempt of an attempt, which rule 19.5 has no notion of.
+    ///
+    /// **No element carries an action**, because an attempt that returned one would have ended the
+    /// retrying. That is an invariant of how a port fills the field rather than a shape the type
+    /// enforces, and nothing depends on it: rule 1.4 makes [`Self::action`] of *this* proposal the
+    /// whole of what the engine decides from, and an element's action would be read by nothing.
+    ///
+    /// **None of these records is rule 9.5's fallback and none is marked as one.** An attempt is not
+    /// a decision; the opportunity's decision is this proposal's, and it is a fallback exactly when
+    /// this proposal carries no action. Rule 15.4's count reconciles against the records marked as
+    /// fallbacks, which `VER-MOK-018` case **P5** checks, so a run that retried three times and then
+    /// succeeded moves that count by nothing and writes four records.
+    ///
+    /// Every element was billed. Rule 11.2's reason for the record is the reason for the field: the
+    /// attempts are what the run paid for, and a retry that vanished from the evidence would be an
+    /// exchange the transcript could not account for.
+    pub earlier_attempts: Vec<Proposal>,
+}
+
+impl Proposal {
+    /// Nothing obtained, nothing received and nothing reported: rule 9.5's case at its emptiest.
+    ///
+    /// A named function rather than a derived `Default`, because "the default proposal" names
+    /// nothing a reader can check against a rule where "nothing was obtained" is rule 9.5's own
+    /// words. [`ReportedUsage`] derives `Default` instead, four absent counts being a value rule
+    /// 11.3.1 gives a meaning to.
+    pub fn nothing() -> Self {
+        Self {
+            action: None,
+            response: None,
+            usage: ReportedUsage::default(),
+            earlier_attempts: Vec::new(),
+        }
+    }
+}
+
+/// A live run's accounting as one value: `SPEC-MOK-007` rule 15.2's figures, leaving the party that
+/// accumulates them for the party that reports them.
+///
+/// **Why it crosses the boundary at all.** Rule 15.1 makes the run record the one place every
+/// accounting figure is stated, and rule 20.4.1 keeps every accumulator in the port; the two rules
+/// meet only if the figures cross rule 1.1's boundary. Rule 1.1d is the amendment that admits them
+/// and this is the value it admits.
+///
+/// **It is also what makes rule 15.6 keepable.** [`mod accounting`](accounting) recorded the
+/// blocker: a replay reports no run record, and "[`PortDecisionSource`] cannot tell a replaying port
+/// from a live one — rule 1.1 leaves `propose` returning the same `Option<Action>` either way", so a
+/// record written by the engine would have been "an account of spending that never happened". An
+/// `Option` of this type *is* that discrimination: [`ReplayPort`] takes
+/// [`Proposer::accounting`]'s default and answers `None`, so rule 15.6 holds by the shape of a
+/// return rather than by a party guessing.
+///
+/// **A value the engine formats, over the two alternatives, and the repository owner chose it.** A
+/// port that rendered the record itself would put rule 15's field set, its spelling and its escaping
+/// behind rule 1.1's boundary, leaving the engine unable to state what its own record says while rule
+/// 11.1 makes it the author of every other one. Reading the figures out one method at a time is rule
+/// 1.1a's declined shape a third time — a set of calls whose mutual agreement is a temporal contract
+/// no type enforces. One value, taken once, when the run has ended.
+///
+/// **No decision reads it and none can.** Rule 14's *State model* forbids any accounting figure to
+/// influence a decision, and the call graph is what keeps that literal: this is asked after the run
+/// loop has returned, by the code that renders the record and by nothing else. There is no
+/// opportunity left to spend it on.
+///
+/// Every figure is an integer or an absence — rule 15.3's positive zero and rule 11.5's absence,
+/// which is why the two that can be missing are `Option` and the totals are not. **No field is a
+/// floating-point value**, case **P6**'s claim about the accounting region, which is why the ratio is
+/// basis points and not a fraction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LiveAccounting {
+    /// Every exchange the run issued, including each one rule 19.5 retried and each that yielded
+    /// nothing. Rule 15.1's authority rather than rule 15.2's enumeration: it is an accounting
+    /// figure this specification produces, and rule 14.5's threshold of 200 counts these.
+    pub exchanges: u64,
+    /// Prompt tokens over the run, as the provider reported them. Rule 11.5 makes an unreported
+    /// count contribute nothing, so a total is always a number even where an exchange reported none.
+    pub prompt_tokens: u64,
+    /// Prompt tokens the provider reported as served from its cache.
+    pub cached_prompt_tokens: u64,
+    /// Output tokens over the run.
+    pub output_tokens: u64,
+    /// Reasoning tokens over the run. A **count**, not the level: rule 15.2 asks for both and they
+    /// are two fields here as they are two members of a response.
+    pub reasoning_tokens: u64,
+    /// Rule 14.4's cache ratio in basis points, or rule 14.5's absence.
+    ///
+    /// A separate figure and not the two totals above divided, because the absence is not derivable
+    /// from them: rule 14.5 makes the ratio uncomputable once *any* exchange reported a prompt count
+    /// with no cached-prompt figure, and the partial sum of the exchanges that did report one is a
+    /// real total that the record still states. The party that saw the exchanges is the only one that
+    /// can tell those two apart, so it answers rather than leaving a reader to divide.
+    pub cache_ratio_basis_points: Option<u64>,
+    /// Rule 14.2's accumulated cost in **whole US cents**, truncated. The unit is in the name
+    /// because rule 14.2 fixes the minor unit and a field named for a unit it does not carry is the
+    /// failure this pair exists to avoid.
+    pub cost_cents: u64,
+    /// Rule 14.6's declared ceiling in whole US cents, or `None` for a run that declared none —
+    /// which for a live run rule 13.5 forbids the host to start and which rule 14.8 is the ordinary
+    /// case of.
+    pub ceiling_cents: Option<u64>,
+    /// Rule 9.5's occurrences, counted. Rule 15.4 marks the run unfit to source a published figure
+    /// when this exceeds zero, and rule 15.3 has a clean run state its zero positively.
+    pub fallbacks: u64,
+    /// The model identifier the connector reported, rule 15.2, and `None` for a run no response of
+    /// which carried one.
+    ///
+    /// **From the first response that carried it, and never replaced.** Rule 15.2 states "the model
+    /// identifier" in the singular while a connector may report a different one per exchange, and
+    /// the repository owner decided this on 2026-08-29: a run's cost was quoted against the binding
+    /// in force from its first exchange, and a figure that could change within a run is one a later
+    /// reader has to prove constant — which is rule 3.3's own reasoning about the response schema.
+    /// **A connector that changed models mid-run is not detected**, and that is disclosed rather
+    /// than repaired: detecting it costs two more fields and a `null` whose meaning rule 15.3's
+    /// idiom does not cover.
+    pub model: Option<String>,
+    /// The reasoning level the connector reported, taken with [`Self::model`] in the same act and on
+    /// the same terms. Rule 8.5 fixes the level a run may use at `none`, so this is where a run shows
+    /// it got what it asked for.
+    pub reasoning_level: Option<String>,
+}
+
 /// The engine's one interface for obtaining a proposal from outside itself.
 ///
 /// `SPEC-MOK-007` rule 1.1: it takes a request by value and returns either a proposal or the
@@ -1548,8 +1875,43 @@ impl DecisionRequest {
 ///
 /// `&mut self` for that reason: an implementation is expected to carry state across a run.
 pub trait Proposer {
-    /// Proposes one action for one decision opportunity, or reports that none was obtained.
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action>;
+    /// Whether this port has stopped spending, asked **before** each exchange is composed.
+    ///
+    /// Rule 14.6's check, at the only place it can honestly be made: the port is what spends, so the
+    /// port is what knows whether the declared ceiling has been reached, and the engine — which by
+    /// rule 14's *State model* may read no accounting figure at all — asks a question rather than
+    /// inspecting a number. A port that answers `true` is not asked for a proposal at that
+    /// opportunity: the request is not composed, nothing is written to it, and the run ends. That is
+    /// what makes the check *precede* the spending rather than trail it by one exchange.
+    ///
+    /// **Defaulted to `false`, and the default is rule 14.8.** A replay spends nothing and has no
+    /// ceiling, so [`ReplayPort`] takes this default rather than implementing it, and so does any
+    /// port with nothing behind it. A port that never spends can never halt, and stating that by
+    /// omission is the same shape [`Proposer::record`]'s replay behaviour already has.
+    ///
+    /// `&self` and not `&mut self`: asking must not move a figure. A method that could bill, count or
+    /// advance a cursor while answering would make the number the answer depends on a function of how
+    /// often the engine asked, and the engine asks once per opportunity today and is not held to
+    /// that by anything.
+    ///
+    /// This is not rule 1.1a's declined second method. That one would have returned the *previous*
+    /// exchange's evidence, so its correctness rested on a temporal contract between two calls that
+    /// no type enforces. This one is asked before an exchange exists, its answer concerns no
+    /// exchange, and a port that answered it wrongly stops a run early or spends past a ceiling —
+    /// both visible in the run's own figures rather than silently written into a record.
+    fn halted(&self) -> bool {
+        false
+    }
+
+    /// Proposes one action for one decision opportunity, or reports that none was obtained,
+    /// together with the evidence of the exchange it came from.
+    ///
+    /// [`Proposal::action`] is rule 1.4's value and the only field the engine decides from. The
+    /// other two are rule 11.3's obligations travelling to the engine that has to author the
+    /// record, and rule 1.4a states what they are not: not an answer, and not consulted by any
+    /// decision. A port with no provider behind it returns [`Proposal::nothing`] or a proposal whose
+    /// evidence fields are empty, and neither is an error.
+    fn propose(&mut self, request: DecisionRequest) -> Proposal;
 
     /// Takes one transcript record, already authored, and does whatever the host wants done with
     /// it.
@@ -1575,6 +1937,28 @@ pub trait Proposer {
     /// is the port's to keep: no credential, and no path, because the engine resolved none and has
     /// nothing to say about the one the host opened.
     fn record(&mut self, record: &str) -> io::Result<()>;
+
+    /// This port's accounting, asked **once**, after the run has ended, or `None` from a port that
+    /// spent nothing.
+    ///
+    /// Rule 1.1d's amendment and rule 15's obligation met: rule 15.1 makes the run record the one
+    /// place every accounting figure is stated and rule 20.4.1 keeps every accumulator here, so this
+    /// is the one route between them. [`LiveAccounting`] states what crosses and why it is a value
+    /// rather than a rendered line or a family of getters.
+    ///
+    /// **Defaulted to `None`, and the default is rule 15.6.** A replay reports no run record, and it
+    /// reports none by answering here rather than by a caller knowing what it is: [`ReplayPort`]
+    /// takes this default, so does any port with nothing behind it, and the engine's own question
+    /// stops being "which kind of port is this" — which rule 1.1 gives it no way to ask — and becomes
+    /// "did anything spend". A port that spends nothing has no account to state.
+    ///
+    /// `&self`, on [`Proposer::halted`]'s reason and one further one. Asking must not move a figure;
+    /// and a method that could bill while reporting would make a run's *reported* cost a function of
+    /// how often it was asked, which is the one arithmetic error here that no test comparing a record
+    /// against a transcript would catch.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        None
+    }
 }
 
 /// Block B, rule 5: the identifier and the trait constant, and rule 5.2's nothing else.
@@ -1866,15 +2250,23 @@ fn permitted_form(action: &Action) -> String {
 // The transcript is still comparable with `cmp` and still carries no floating-point value, no
 // timestamp and no path, which is the rest of rule 11.4 and the part that made it a rule.
 //
-// **What a record does not carry under this work order, and why.** Rule 11.3 asks for the response
-// as received in full and for the provider's four reported token counts. Neither is obtainable
-// here: `Proposer::propose` returns `Option<Action>`, so the engine never sees a response and is
-// never told a count, and `WO-MOK-025` has no provider, no connector and no transport to be told
-// by. So `response` is `null` and `usage` is `null` — **absent, not zero**, which is rule 11.5 and
-// which the specification's own "an exchange that yielded nothing" example writes the same way.
-// The raw response text and the four counts arrive with `WO-MOK-026`, where the port's return type
-// has to grow to carry them. This is a pre-existing tension between rule 1.1's port shape and rule
-// 11.3's field list rather than a consequence of anything decided for this work order.
+// **How the response and the four counts reach a record, and what an empty one still says.** Rule
+// 11.3 asks for the response as received in full and for the provider's four reported token counts,
+// and until `WO-MOK-026` neither was obtainable: `Proposer::propose` returned `Option<Action>`, so
+// the engine never saw a response and was never told a count. This module recorded that under
+// `WO-MOK-025` as a tension between rule 1.1's port shape and rule 11.3's field list, and named this
+// work order as where the return type would have to grow. It grew: `SPEC-MOK-007` rule 1.1a of
+// 2026-08-29 puts the evidence on [`Proposal`] beside the action, and both fields are carried here
+// from whatever the port obtained, escaped by the same function every other string value goes
+// through.
+//
+// A port with nothing behind it still authors a record, and the empty values are **absences, not
+// zeros** — rule 11.5. `response` is `null` where the port received nothing; `usage` is `null` where
+// **all four** counts are absent, and otherwise an object whose four members are each an integer or
+// `null`. `null` for four absences rather than an object of four nulls, because the specification's
+// own "an exchange that yielded nothing" example writes it that way, and because it makes every
+// transcript recorded before a provider existed replay byte-identically under rule 12.6 rather than
+// needing a version bump for a shape no reader would read differently.
 // ---------------------------------------------------------------------------------------
 
 /// The transcript's own version integer, on every record of both kinds.
@@ -2113,9 +2505,31 @@ fn prefix_record(entry: &RosterEntry<'_>) -> String {
 /// legitimately make, so a record showing `wait` with no flag would be indistinguishable from an
 /// exchange that yielded nothing — and the two must replay differently, because one moves
 /// `REQ-MOK-074`'s count and the other does not.
-fn exchange_record(request: &DecisionRequest, proposal: Option<&Action>) -> String {
+fn exchange_record(request: &DecisionRequest, proposal: &Proposal) -> String {
+    exchange_line(request, proposal, proposal.action.is_none())
+}
+
+/// One exchange record for a retried attempt: rule 11.2's "a retry is its own record, because it was
+/// its own billed exchange".
+///
+/// Identical to [`exchange_record`] in every field but one. **`fallback` is `false` whatever the
+/// attempt returned**, and that is rule 11.3's own wording rather than a convenience: the field
+/// states "whether the **decision** was rule 9.5's fallback", and an abandoned attempt is not a
+/// decision — the opportunity's decision is the proposal the retrying ended with. Rule 15.4's count
+/// is reconciled against the records marked as fallbacks, which case **P5** checks, so marking an
+/// attempt would make a run that retried once and then succeeded report a fallback it never took.
+///
+/// The request is the same request. Rule 19.5 retries *the exchange*, not the opportunity, so blocks
+/// C and D, the tick, the actor and the prefix digest are the ones already composed; a retry that
+/// recomposed them would be a second opportunity wearing the first one's tick.
+fn attempt_record(request: &DecisionRequest, attempt: &Proposal) -> String {
+    exchange_line(request, attempt, false)
+}
+
+/// The bytes both record kinds share, with `fallback` supplied by the caller rather than derived.
+fn exchange_line(request: &DecisionRequest, proposal: &Proposal, fallback: bool) -> String {
     let [shared_rules, actor, observation, permitted_set] = request.blocks();
-    let (verb, parameter) = match proposal {
+    let (verb, parameter) = match &proposal.action {
         Some(action) => action_parts(action),
         None => action_parts(&Action::Wait),
     };
@@ -2123,19 +2537,72 @@ fn exchange_record(request: &DecisionRequest, proposal: Option<&Action>) -> Stri
     let mut record = format!(
         "{{\"transcript\":\"exchange\",\"version\":{TRANSCRIPT_VERSION},\"tick\":{},\
          \"actor\":\"{}\",\"prefix\":\"{}\",\"prefix_digest\":\"{}\",\"observation\":\"{}\",\
-         \"permitted\":\"{}\",\"response\":null,\"usage\":null,\"action\":{{\"verb\":\"{verb}\"",
+         \"permitted\":\"{}\",\"response\":{},\"usage\":{},\"action\":{{\"verb\":\"{verb}\"",
         request.tick(),
         request.actor_id(),
         request.actor_id(),
         prefix_digest(shared_rules, actor),
         escape_transcript_text(observation),
         escape_transcript_text(permitted_set),
+        transcript_response_value(proposal.response.as_deref()),
+        transcript_usage_value(&proposal.usage),
     );
     if let Some(parameter) = parameter {
         record.push_str(&format!(",\"parameter\":\"{parameter}\""));
     }
-    record.push_str(&format!("}},\"fallback\":{}}}", proposal.is_none()));
+    record.push_str(&format!("}},\"fallback\":{fallback}}}"));
     record
+}
+
+/// The `response` field's value: the bytes the port received, escaped, or the format's absence.
+///
+/// Escaped by [`escape_transcript_text`] and by nothing of its own, which is what makes rule
+/// 11.4.1's round-trip obligation hold for a response as much as for a block. It matters more here
+/// than anywhere else in this module: every other string value on a record is composed by this
+/// library from its own vocabulary, and this one arrives from a program rule 10.7 declares untrusted
+/// in whole. A response is recorded **as received**, in full — not summarised, not truncated, not
+/// re-serialised from whatever the host managed to parse out of it — because rule 11.3's purpose is
+/// that a reader can see what the engine was actually sent, including the ill-formed line that
+/// became a fallback.
+fn transcript_response_value(response: Option<&str>) -> String {
+    match response {
+        Some(response) => format!("\"{}\"", escape_transcript_text(response)),
+        None => "null".to_string(),
+    }
+}
+
+/// The `usage` field's value: rule 11.5's four counts, each present or absent.
+///
+/// `null` when **all four** are absent, and otherwise an object stating all four with `null` for the
+/// ones that are. Two levels of absence for one reason: rule 11.5 fixes that an unreported count is
+/// absent and not zero, and both "the provider reported nothing" and "the provider reported three of
+/// the four" have to survive to a reader. Collapsing the first to an object of four nulls would
+/// change every record produced before a provider existed, which rule 12.6's byte-identity would
+/// then read as drift; collapsing the second by omitting members would leave a reader unable to tell
+/// an absent count from a field this module forgot to write.
+fn transcript_usage_value(usage: &ReportedUsage) -> String {
+    let counts = [
+        usage.prompt,
+        usage.cached_prompt,
+        usage.output,
+        usage.reasoning,
+    ];
+    if counts.iter().all(Option::is_none) {
+        return "null".to_string();
+    }
+    let [prompt, cached_prompt, output, reasoning] = counts.map(transcript_count_value);
+    format!(
+        "{{\"prompt\":{prompt},\"cached_prompt\":{cached_prompt},\"output\":{output},\
+         \"reasoning\":{reasoning}}}"
+    )
+}
+
+/// One reported count as a record states it: the integer, or the format's absence.
+fn transcript_count_value(count: Option<u64>) -> String {
+    match count {
+        Some(count) => count.to_string(),
+        None => "null".to_string(),
+    }
 }
 
 /// Distinguishes a transcript failure from a record-sink failure and from the engine's own,
@@ -2248,13 +2715,46 @@ impl<R: BufRead> ReplayPort<R> {
         }
     }
 
-    /// Latches a failure and returns the fallback-shaped `None` the engine expects from
+    /// Latches a failure and returns the empty proposal the engine expects from
     /// [`Proposer::propose`]. The reason reaches the run through [`Proposer::record`].
-    fn fail(&mut self, reason: String) -> Option<Action> {
+    ///
+    /// [`Proposal::nothing`] and not the recorded evidence: the record whose evidence it would be is
+    /// the one this port has just refused, and re-authoring its response under a failed replay would
+    /// put a recorded exchange's own words on a record the run is about to abandon. Nothing is lost —
+    /// rule 11.8 discards a replay's records, and the run ends on the [`Proposer::record`] call that
+    /// immediately follows.
+    fn fail(&mut self, reason: String) -> Proposal {
         if self.failure.is_none() {
             self.failure = Some(reason);
         }
-        None
+        Proposal::nothing()
+    }
+
+    /// The evidence a recorded exchange carried, read back out so that the replay's re-authored
+    /// record states it again.
+    ///
+    /// **Rule 12.6's byte-identity is what makes this necessary.** A replay authors its records
+    /// through the same lines that authored the recording's, so the response and the four counts have
+    /// to reach [`exchange_record`] on a replay exactly as they reached it on the recording, or every
+    /// record of a live run's replay would differ from the record it replays in two fields. The
+    /// response round-trips through [`unescape_transcript_text`] here and back through
+    /// [`escape_transcript_text`] there, which rule 11.4.1's round-trip obligation makes exact.
+    ///
+    /// A field this cannot read is **absent**, and that is not a mismatch: [`Self::mismatch`] checks
+    /// what rule 12.3 asks it to check, the evidence is not part of it, and a transcript recorded
+    /// before a provider existed states both fields as `null` legitimately. The four counts are read
+    /// unconditionally rather than only inside a `usage` object, because a record's `"usage":null`
+    /// contains no count for any of the four needles to find.
+    fn evidence(record: &str) -> (Option<String>, ReportedUsage) {
+        (
+            transcript_string(record, "response"),
+            ReportedUsage {
+                prompt: transcript_number(record, "prompt"),
+                cached_prompt: transcript_number(record, "cached_prompt"),
+                output: transcript_number(record, "output"),
+                reasoning: transcript_number(record, "reasoning"),
+            },
+        )
     }
 
     /// Rule 12.3's check, in full: the tick, the acting Mokiterion, the prefix the record names,
@@ -2341,9 +2841,9 @@ impl<R: BufRead> ReplayPort<R> {
 }
 
 impl<R: BufRead> Proposer for ReplayPort<R> {
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
         if self.failure.is_some() {
-            return None;
+            return Proposal::nothing();
         }
 
         let record = match self.next_exchange() {
@@ -2370,11 +2870,26 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
         }
         self.served += 1;
 
+        // The recorded exchange's own evidence, re-authored with the replayed record. It travels
+        // whether or not the record was a fallback, because the recorded fallback carried a response
+        // too — an ill-formed one, which is the one a reader most needs to still be there.
+        let (response, usage) = Self::evidence(&record);
+
         // Rule 12.7: an exchange that yielded nothing in the recorded run yields nothing here, so
         // the engine takes rule 9.5's fallback again and the count moves again. A replay reproduces
         // the run that happened, contamination included.
         if transcript_flag(&record, "fallback") != Some(false) {
-            return None;
+            return Proposal {
+                action: None,
+                response,
+                usage,
+                // A replay attempts nothing: it reads one record per opportunity, so there is no
+                // earlier attempt for it to carry even where the recorded run made several. See
+                // the note on [`Proposal::earlier_attempts`] — a transcript that holds a retried
+                // exchange is not replayable at all, and this field being empty is not what makes
+                // that so.
+                earlier_attempts: Vec::new(),
+            };
         }
 
         let verb = transcript_string(&record, "verb");
@@ -2383,7 +2898,12 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
             .as_deref()
             .and_then(|verb| action_from_parts(verb, parameter.as_deref()))
         {
-            Some(action) => Some(action),
+            Some(action) => Proposal {
+                action: Some(action),
+                response,
+                usage,
+                earlier_attempts: Vec::new(),
+            },
             None => self.fail(format!(
                 "tick {} actor {}: the record states no action this engine's grammar admits",
                 request.tick(),
@@ -2403,6 +2923,898 @@ impl<R: BufRead> Proposer for ReplayPort<R> {
         match &self.failure {
             Some(reason) => Err(io::Error::new(io::ErrorKind::InvalidData, reason.clone())),
             None => Ok(()),
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------
+// `SPEC-MOK-007` rule 10: the connector's line protocol, and the port that speaks it.
+//
+// **The library speaks the protocol and does not start the program that answers it.** Rule 10.1
+// makes the connector "an operator-named executable spawned as a child", and `SPEC-MOK-006` rule
+// 1.2 puts every path resolution and every process in the binary target — so what lives here is
+// the composition of a request, the reading of one response line and the grammar check, over two
+// already-connected streams a host owns. Nothing below opens, spawns, resolves or reads an
+// environment variable, which is `WO-MOK-026` stop-and-escalate condition 2 met rather than
+// escalated.
+//
+// **The connector's output is untrusted in whole**, rule 10.7, and that governs every line of the
+// reader below: a response is parsed without panicking on any input, without recursing without a
+// bound, and without a single figure being believed further than rule 10.8 admits. Rule 10.8 states
+// the limit plainly — the ceiling protects against an honest connector and not a dishonest one —
+// so the reader's job is to be total over its input, not to be safe against a liar.
+// ---------------------------------------------------------------------------------------
+
+/// The protocol version this engine speaks and the only one it reads.
+///
+/// On every request, and required on every response: a response stating another version fails the
+/// grammar check and becomes rule 9.5's counted fallback, exactly as an unknown verb does. The
+/// integer is on the wire in both directions rather than agreed once at start-up, because the
+/// connector is a program this repository did not build and a version negotiated out of band is a
+/// version nobody can check.
+const CONNECTOR_PROTOCOL: u64 = 1;
+
+/// Rule 19.5's bound: how many times a failed exchange is tried **again**, so an exchange is
+/// attempted at most four times.
+///
+/// The number is the rule's, as amended 2026-08-29 under `WO-MOK-030`, and not this module's — the
+/// rule gave none until then, and it records why three: an exchange costs an **estimated** $0.0001,
+/// so every exchange of a two-hundred-exchange run retrying to exhaustion is an **estimated** four
+/// cents. It sits here as a retry count rather than as an attempt count because that is the figure
+/// the rule states, and a constant one greater than the rule's would be an off-by-one nobody could
+/// see by reading either.
+const RETRY_BOUND: usize = 3;
+
+/// The eleven verbs, as the request's `schema` enumerates them for the provider's structured-output
+/// facility.
+///
+/// Rule 8.2's closed grammar, in the order `docs/CONNECTOR_PROTOCOL.md` lists it. It is a second
+/// statement of the verb set — [`action_from_parts`] is the first — and it is held equal to that one
+/// by a test rather than by care, because the two disagreeing would mean the schema offered a
+/// provider a verb this engine then refused, which is a paid exchange spent on a counted fallback.
+const RESPONSE_VERBS: [&str; 11] = [
+    "wait",
+    "sleep",
+    "eat",
+    "move",
+    "attack",
+    "fight",
+    "threaten",
+    "retreat",
+    "surrender",
+    "approach",
+    "avoid",
+];
+
+/// A [`Proposer`] that answers from a connector the host spawned, `SPEC-MOK-007` rules 10 and 13.
+///
+/// **It holds streams and not a process.** `R` is the child's standard output and `W` its standard
+/// input, both already connected by the host that spawned it; the transcript is the sink that host
+/// opened. This type never learns the connector's path, never learns whether a credential exists,
+/// and cannot start, signal or reap anything — rule 13.4's "neither host reads the credential and
+/// the library target reaches it by no route", stated as a type that has no route to reach it by.
+///
+/// **The two gates are not checked here and that is rule 13.1.** The live selection is the host's
+/// condition and the credential is the connector's, and "neither component can satisfy the other's
+/// condition". A gate this type checked would be a gate one component could pass alone. What this
+/// type does is speak to whatever the host connected: with no live selection the host spawns nothing
+/// and builds none of these (rule 13.2), and with no credential the connector answers rule 13.3's
+/// error on the first exchange and this type records it as the error it is.
+///
+/// It is built once and lent per tick, rule 20.4.1. The reason is sharper here than for
+/// [`ReplayPort`]: a port rebuilt each tick would hand the child a request on a stream nobody was
+/// reading, and it would reset the accumulated cost the ceiling of rule 14.6 is checked against — a
+/// run that never stops spending. That second half is no longer hypothetical: the account is a field
+/// of this type, so a rebuild is a reset in the literal sense the rule describes, which is what case
+/// **L30** measures.
+///
+/// **One attempt per exchange, in this stage.** Rule 19.5's retry bound is `WO-MOK-026`'s item 12
+/// and is not here yet, so a `transport` or `provider` error becomes a counted fallback where rule
+/// 19.5a asks for it to be retried first. `malformed` and `refused` are already correct — rule 19.5a
+/// makes both immediate counted fallbacks — and every kind's record is written either way, so the
+/// evidence a retry would add to is being kept from the first exchange.
+pub struct ConnectorPort<'sink, R: BufRead, W: Write> {
+    /// The child's standard output: one response object per line.
+    responses: R,
+    /// The child's standard input: one request object per line.
+    requests: W,
+    /// The transcript the host opened. Rule 11.1's destination, owned by the host and written
+    /// through here because [`Proposer::record`] is the seam the engine hands a finished record to.
+    transcript: &'sink mut dyn Write,
+    /// Rule 8.4's response schema, built once in [`ConnectorPort::new`].
+    ///
+    /// Once and not per request, and the reason is rule 3.3 rather than efficiency: the schema is
+    /// not part of the prompt, but a schema rebuilt per exchange is a value that *could* vary within
+    /// a run, and a request field that varies for no reason is a field a later reader has to prove
+    /// constant.
+    schema: String,
+    /// Rules 14.1 and 9.5's accumulators, in the party rule 20.4.1 puts them in.
+    ///
+    /// It is `accounting::RunAccount` and therefore no part of this type's public surface: the field
+    /// is private and the type is private to `simulation`, which is why `SPEC-MOK-002` rule 5's
+    /// census for this port is one item and two declarations with no field among them. The engine
+    /// never reads it — rule 14's *State model* says none of it may influence a decision, and a
+    /// figure the engine cannot see cannot.
+    account: accounting::RunAccount,
+    /// Rule 15.2's model identifier and reasoning level, **as the connector reported them**, from the
+    /// first response that carried both and never replaced.
+    ///
+    /// Retained here because rule 5 declares the binding in the connector and rule 10.3a keeps it out
+    /// of the request: the engine names no model, so the only place a run can learn which one answered
+    /// is a response. Rule 10.4c already requires every action-carrying response to name both, so a
+    /// run that obtained a single proposal has them; a run of nothing but failures has neither, and
+    /// reports the absence rather than an invented name.
+    ///
+    /// The repository owner decided *first and never replaced* on 2026-08-29, over the last reported
+    /// and over detecting a disagreement. [`LiveAccounting::model`] carries the reasoning and the
+    /// disclosure.
+    binding: Option<(String, String)>,
+}
+
+impl<'sink, R: BufRead, W: Write> ConnectorPort<'sink, R, W> {
+    /// Wraps the child's two streams and the host's transcript, and takes the run's declared prices
+    /// and ceiling. Nothing is written and nothing is read: a run refused before its first tick must
+    /// not have spoken to the connector, and rule 20.8's refusal happens after construction.
+    ///
+    /// **The prices and the ceiling arrive here rather than being read here**, rule 14.3: they are
+    /// inputs of the run, and this type has no route to an environment variable, a file or a
+    /// constant holding either. The ceiling is in whole US cents, rule 14.2, which is what
+    /// `--spend-ceiling` parses to; `None` is a run with none declared, which for a live run rule
+    /// 13.5 forbids and which this type does not police because rule 13.1 leaves the live selection's
+    /// conditions to the host.
+    ///
+    /// They are parameters of `new` and not of `propose` because rule 20.4.1 builds this once and
+    /// lends it per tick. Prices arriving per exchange could differ between exchanges of one run,
+    /// which is a cost figure no reader could reconstruct from the record.
+    pub fn new(
+        responses: R,
+        requests: W,
+        transcript: &'sink mut dyn Write,
+        prices: UnitPrices,
+        ceiling: Option<u64>,
+    ) -> Self {
+        Self {
+            responses,
+            requests,
+            transcript,
+            schema: response_schema(),
+            account: accounting::RunAccount::declared(
+                accounting::PerTokenPrices::declared(&prices),
+                ceiling,
+            ),
+            // Nothing is known about what will answer, and a constant here would be a model this
+            // engine chose — rule 14.3's principle about the prices, applied to the one input rule 5
+            // keeps on the other side of the boundary.
+            binding: None,
+        }
+    }
+
+    /// One request object, on one line, in the field order `docs/CONNECTOR_PROTOCOL.md` documents.
+    ///
+    /// **The prompt is [`DecisionRequest::blocks`] concatenated and nothing else.** Rule 3.6 refuses
+    /// an implementation that "composes the parts in this order and then serialises them through a
+    /// structure whose field order is not guaranteed", and this is that rule discharged: the order
+    /// comes from the one function that states it, the four blocks are joined with no separator of
+    /// this module's invention, and rule 3.3's byte-identical block A is byte-identical here because
+    /// [`DecisionRequest`] holds it as a `&'static str`.
+    ///
+    /// **The request names no model, no reasoning level and no credential**, rules 10.3a and 10.3.
+    /// There are five fields and the type has no field to put a sixth in.
+    ///
+    /// The escaping is [`escape_transcript_text`]'s, which is a JSON string escaper and is reused
+    /// rather than reimplemented: a second escaper would be a second place for the framing of rule
+    /// 10.2 — "no newline within an object" — to be got wrong, and the blocks are full of newlines.
+    fn request_line(&self, request: &DecisionRequest) -> String {
+        format!(
+            "{{\"protocol\":{CONNECTOR_PROTOCOL},\"tick\":{},\"actor\":\"{}\",\"prompt\":\"{}\",\
+             \"schema\":{}}}",
+            request.tick(),
+            escape_transcript_text(request.actor_id()),
+            escape_transcript_text(&request.blocks().concat()),
+            self.schema,
+        )
+    }
+
+    /// Writes one request and reads one response, rule 10.2's one-for-one ordering.
+    ///
+    /// Flushed before the read, because the child cannot answer a request sitting in this process's
+    /// buffer and the read would then block until one of the two gave up.
+    ///
+    /// End of input is an error and not an empty response: rule 10.2 fixes exactly one response per
+    /// request, so a connector that closed its output has stopped answering rather than answered
+    /// nothing. The canned connector's `close` directive is that case on purpose.
+    fn exchange(&mut self, request: &DecisionRequest) -> io::Result<String> {
+        let line = self.request_line(request);
+        self.requests.write_all(line.as_bytes())?;
+        self.requests.write_all(b"\n")?;
+        self.requests.flush()?;
+
+        let mut response = String::new();
+        if self.responses.read_line(&mut response)? == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "the connector closed its output without answering",
+            ));
+        }
+        Ok(response.trim_end_matches(['\n', '\r']).to_string())
+    }
+
+    /// One response line to one proposal, with the line itself as the evidence either way.
+    ///
+    /// **The response travels whole and unconditionally**, rule 11.3's "the response as received, in
+    /// full, or the error". The ill-formed line is the one a reader most needs, so it is recorded
+    /// exactly as it arrived — not summarised, not truncated and not re-serialised from whatever this
+    /// function managed to read out of it.
+    ///
+    /// **The counts travel even when the action does not.** An exchange whose response failed the
+    /// grammar check was still billed, so rule 14's arithmetic must see its usage and rule 11.3's
+    /// record must state it. The two halves are therefore read independently: [`Self::usage`] does
+    /// not consult the action and [`Self::action`] does not consult the counts beyond rule 10.4a's
+    /// requirement that a `usage` accompany an action at all.
+    /// The second half of the return is rule 19.5a's question: whether this response asks for
+    /// another attempt. It is answered here rather than by a second parse of the same line, and the
+    /// answer is about *this* response only — the bound belongs to [`Self::propose`], which is the
+    /// only place that knows how many attempts an opportunity has already spent.
+    ///
+    /// **`&mut self` for rule 15.2's binding and for nothing else.** The model identifier and the
+    /// reasoning level are read from the same parse the two halves above are read from, because a
+    /// second parse of one line is a second reader to keep in agreement with the first. Nothing else
+    /// here consults or moves any state of this port: the proposal is a function of the line.
+    fn interpret(&mut self, line: &str) -> (Proposal, bool) {
+        let response = Some(line.to_string());
+        let Some(parsed) = json::parse(line) else {
+            // Rule 19.5a's `malformed`: an immediate counted fallback, and the line is the whole of
+            // why. Not a parse *error* to report — the engine does not interpret a port's diagnosis,
+            // and a reader of the transcript has the bytes this reader refused. **Not retried**: a
+            // line this reader could not parse would be answered by the same request, and rule 19.5a
+            // says so of the kind a connector reports as `malformed` for the same reason.
+            return (
+                Proposal {
+                    action: None,
+                    response,
+                    usage: ReportedUsage::default(),
+                    earlier_attempts: Vec::new(),
+                },
+                false,
+            );
+        };
+        let retry = Self::asks_for_another_attempt(&parsed);
+        self.retain_binding(&parsed);
+        (
+            Proposal {
+                action: Self::action(&parsed),
+                response,
+                usage: Self::usage(&parsed),
+                earlier_attempts: Vec::new(),
+            },
+            retry,
+        )
+    }
+
+    /// Rule 15.2's model identifier and reasoning level, from the first response that carried both.
+    ///
+    /// **Both or neither.** Rule 10.4c names them together and refuses an action that has only one, so
+    /// a half-filled binding would be a record naming a model at a reasoning level nobody reported.
+    /// An empty model is not a name, exactly as [`Self::action`] refuses it: a record stating the
+    /// empty string would claim to name what answered.
+    ///
+    /// **A response that failed the grammar check still binds.** Rule 10.4c's refused response was
+    /// billed, and this is deliberately not `Self::action`'s check repeated: an exchange that named a
+    /// model and a level and then failed on its verb reported the binding the run was spending
+    /// against, and a run every one of whose responses failed that way would otherwise report no
+    /// model while having reported one on every line.
+    ///
+    /// Once and never again, which is the whole of the owner's decision: the first response to carry
+    /// both fixes the figure for the run.
+    fn retain_binding(&mut self, response: &json::Value) {
+        if self.binding.is_some() {
+            return;
+        }
+        let Some(model) = response
+            .member("model")
+            .and_then(json::Value::text)
+            .filter(|model| !model.is_empty())
+        else {
+            return;
+        };
+        let Some(level) = response.member("reasoning").and_then(json::Value::text) else {
+            return;
+        };
+        self.binding = Some((model.to_string(), level.to_string()));
+    }
+
+    /// Rule 19.5a's vocabulary, as far as this engine acts on it: `transport` and `provider` are
+    /// retried, `malformed` and `refused` are not.
+    ///
+    /// The two that are retried are the two the rule calls ordinarily transient — the connector could
+    /// not reach the provider, or the provider answered and failed, "a rate limit and a server error
+    /// being this shape". The two that are not are the two where the same request would produce the
+    /// same answer, so a retry would buy nothing and cost an exchange.
+    ///
+    /// **A kind outside the four is not retried**, which is rule 19.5a's own instruction to treat it
+    /// as `malformed`: the connector is untrusted under rule 10.7 "and that includes its error
+    /// vocabulary", so an unrecognised kind must not be able to make this engine spend four times.
+    ///
+    /// **A response that carries an action is never retried whatever else it carries.** Rule 10.4
+    /// admits exactly one of `action` and `error`, so a response carrying both fails the grammar
+    /// check in [`Self::action`] and becomes a fallback; retrying it would be this engine deciding
+    /// which of the two the connector meant, on the strength of the half it is told to distrust.
+    fn asks_for_another_attempt(response: &json::Value) -> bool {
+        if response.member("action").is_some() {
+            return false;
+        }
+        matches!(
+            response
+                .member("error")
+                .and_then(|error| error.member("kind"))
+                .and_then(json::Value::text),
+            Some("transport" | "provider")
+        )
+    }
+
+    /// Rule 10.4a's four counts, as reported, and rule 11.5's absence for everything else.
+    ///
+    /// A count that is missing, is not a number, is negative, carries a fraction or carries an
+    /// exponent is **absent**. Rule 11.5 fixes that an unreported count is absent and not zero, and
+    /// rule 10.8 is why the same treatment covers a count that is present and unusable: this figure
+    /// comes from a program rule 10.7 declares untrusted, and a `-1` coerced to `0` would be a
+    /// cost of zero for an exchange that was billed. Rule 14.5 is what acts on the absence — an
+    /// uncomputable ratio is a failure to evaluate, which is exactly the outcome wanted.
+    ///
+    /// A `usage` that is present and is not an object yields four absences rather than a rejection,
+    /// because [`Self::action`] already requires the member to be present and the two checks are
+    /// deliberately independent.
+    fn usage(response: &json::Value) -> ReportedUsage {
+        let Some(usage) = response.member("usage") else {
+            return ReportedUsage::default();
+        };
+        ReportedUsage {
+            prompt: usage.member("prompt").and_then(json::Value::count),
+            cached_prompt: usage.member("cached_prompt").and_then(json::Value::count),
+            output: usage.member("output").and_then(json::Value::count),
+            reasoning: usage.member("reasoning").and_then(json::Value::count),
+        }
+    }
+
+    /// Rule 10.4's grammar check, in full. `None` is rule 9.5's counted fallback and carries no
+    /// diagnosis, per rule 1.4.
+    ///
+    /// The checks are in the order a reader of rule 10.4 meets them, and each one's absence would be
+    /// a different silent wrong run:
+    ///
+    /// - **The protocol version.** A connector written against a later protocol may mean something
+    ///   else by every field below, so a version this engine does not read is not a response to
+    ///   interpret generously.
+    /// - **Exactly one of `action` and `error`.** Rule 10.4's own words. A response carrying both is
+    ///   two answers, and picking either would be this engine deciding which one the connector meant.
+    /// - **`model` and `reasoning` accompany the action**, rule 10.4c: "a response reporting neither
+    ///   fails the grammar check and becomes a counted fallback". An empty `model` is not a name, so
+    ///   it fails here too — a run record naming the empty string would claim to name what answered.
+    /// - **A `usage` member is present.** Rule 10.4a puts it on every response that carries an
+    ///   action, so an action arriving without one is not the documented response. Its *contents* are
+    ///   [`Self::usage`]'s and no count is required, which is rule 11.5 and not a relaxation of this.
+    /// - **The verb and its parameter**, through [`action_from_parts`], which is the same function
+    ///   [`ReplayPort`] parses a transcript with. One grammar, one implementation: a connector's
+    ///   answer and a recorded answer are admitted by the same eleven cases or by neither.
+    fn action(response: &json::Value) -> Option<Action> {
+        if response.member("protocol").and_then(json::Value::count) != Some(CONNECTOR_PROTOCOL) {
+            return None;
+        }
+        let action = response.member("action")?;
+        if response.member("error").is_some() {
+            return None;
+        }
+        if response
+            .member("model")
+            .and_then(json::Value::text)
+            .is_none_or(str::is_empty)
+        {
+            return None;
+        }
+        response.member("reasoning").and_then(json::Value::text)?;
+        response.member("usage")?;
+
+        let verb = action.member("verb").and_then(json::Value::text)?;
+        // A `parameter` that is present and is not a string is a defect and not an absence: the
+        // difference between `avoid M07` and `avoid` is the difference between two admitted actions,
+        // so a value this reader cannot read must not become the one without a parameter.
+        let parameter = match action.member("parameter") {
+            Some(value) => Some(value.text()?),
+            None => None,
+        };
+        action_from_parts(verb, parameter)
+    }
+
+    /// One exchange, billed: rules 14.1 and 11.2, where an attempt is what gets billed and recorded.
+    fn attempt(&mut self, request: &DecisionRequest) -> (Proposal, bool) {
+        let (proposal, asks_for_another) = match self.exchange(request) {
+            Ok(line) => self.interpret(&line),
+            // A pipe that failed is the connector's error, so it is recorded as one: rule 11.3
+            // asks for "the response as received, in full, **or the error**", and this is the
+            // error. It becomes rule 9.5's counted fallback rather than ending the run, per rule
+            // 9.8 — and once the child is gone every later exchange reaches here too, so a run
+            // whose connector died reports itself as a run of fallbacks rather than as a run.
+            //
+            // Rule 19.7 is kept by the message: an `io::Error` from a pipe names no credential and
+            // no path, and this target resolved neither.
+            //
+            // **Not retried, and the pipe is why.** Rule 19.5a's four kinds are kinds a connector
+            // *reports*, and a connector that cannot be written to or read from has reported nothing:
+            // the child is gone, so three more attempts would write three more identical records for
+            // one dead process. The canned connector's `close` directive is exactly this case. Which
+            // transport failures are retried is this work order's envelope, and this is the line it
+            // decides.
+            Err(error) => (
+                Proposal {
+                    action: None,
+                    response: Some(format!("connector: {error}")),
+                    usage: ReportedUsage::default(),
+                    earlier_attempts: Vec::new(),
+                },
+                false,
+            ),
+        };
+
+        // Rule 14.1, booked here because this is where the exchange happened and rule 20.4.1 puts the
+        // accumulators in this type.
+        //
+        // **Every exchange is billed, whatever it returned.** Rule 10.4c's response arrived, carried
+        // usage, and failed the grammar check on a missing model or reasoning level — `Self::interpret`
+        // returns no action and the usage it reported, and that exchange was paid for. Billing it as an
+        // absence would understate the run. The exchanges that genuinely reported nothing — the pipe
+        // failure above, rule 10.4's error response and every abandoned attempt — reach
+        // `after_exchange` with four absences, and rule 11.5 makes an absence contribute zero, so the
+        // one statement is right for all of them.
+        //
+        // Rule 9.5's count is **not** here, and rule 19.5 is why: an attempt that fails and is retried
+        // is not a fallback, so the count belongs to the opportunity and is taken in `propose` once the
+        // retrying has ended. A rejection the engine decides afterwards cannot reach either place,
+        // which is rule 9.6: the port sees what the connector answered and never learns what the world
+        // did with it.
+        self.account = self.account.after_exchange(&proposal.usage);
+        (proposal, asks_for_another)
+    }
+}
+
+impl<R: BufRead, W: Write> Proposer for ConnectorPort<'_, R, W> {
+    /// Rule 14.6: whether the accumulated cost has reached the declared ceiling.
+    ///
+    /// The whole of the answer is [`accounting::RunAccount::ceiling_reached`], compared in the unit
+    /// the cost is accumulated in rather than in the cent the ceiling was declared in, so a run whose
+    /// spending has passed a one-cent ceiling by a fraction stops on the fraction. A port built with
+    /// no ceiling answers `false` for ever, which is the same run rule 13.5 forbids the host to start
+    /// and this type does not police.
+    ///
+    /// Nothing is written and nothing is read: asking must not speak to the child. That is what lets
+    /// the engine ask before every opportunity, including the one where the answer is `true` and the
+    /// child is left with an empty input queue and a live process the host will close.
+    fn halted(&self) -> bool {
+        self.account.ceiling_reached()
+    }
+
+    /// Rule 15's figures, read out of the accumulators rule 20.4.1 puts here.
+    ///
+    /// **Always `Some`, and that is what the return type means.** This port is what spends, so it has
+    /// an account whatever the run came to: a run whose connector died on its first exchange spent one
+    /// exchange and reports it, and a run that issued none reports the zeros rule 15.3 has it state
+    /// positively. The `None` the trait defaults to is a port that *cannot* spend, which is rule
+    /// 15.6's replay, and conflating the two would give a live run of failures no record at all.
+    ///
+    /// Every figure is taken through [`accounting::RunAccount`]'s own accessors rather than read off
+    /// its fields, so the units are the ones those methods document: the two money figures are rule
+    /// 14.2's whole cents and not the microcents the accumulation runs in, and the ratio is rule
+    /// 14.4's basis points with rule 14.5's absence intact.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        Some(self.account.reported(self.binding.as_ref()))
+    }
+
+    /// Rule 19.5's bounded retry, and rule 11.2's record for every attempt of it.
+    ///
+    /// One attempt is the whole of this method for every exchange that succeeds and for every failure
+    /// rule 19.5a does not retry, which is the case the loop is written to cost nothing:
+    /// `earlier_attempts` stays an empty `Vec`, which allocates nothing.
+    ///
+    /// **Three things end the retrying, and they are checked in this order**: the bound, the kind, and
+    /// the ceiling.
+    ///
+    /// - [`RETRY_BOUND`] attempts have already been abandoned, so this exchange has been attempted
+    ///   four times and rule 19.5's bound is spent. Rule 9.5 then applies to the opportunity, which
+    ///   is the `counting_fallback` below and **not** an error: rule 19.5 says the run continues, and
+    ///   `VER-MOK-018` case **R2** checks that it does.
+    /// - The response is not one rule 19.5a retries — it succeeded, or it is `malformed`, `refused`,
+    ///   an unrecognised kind, or a pipe that failed.
+    /// - The ceiling has been reached. **This is rule 14.6's check standing before each attempt**, and
+    ///   it is the half of it that the engine cannot make: the engine asks [`Proposer::halted`] once
+    ///   per opportunity, before this method is entered, and every attempt after the first is inside
+    ///   it. Without this line a bound of three could spend three exchanges past a ceiling, which is
+    ///   the reading rule 19.5 forecloses when it says "rule 14.6's check runs before each attempt, so
+    ///   the bound cannot breach a ceiling whatever it is set to".
+    ///
+    /// **There is no delay between attempts, and that is a decision this work order's envelope leaves
+    /// here rather than an omission.** The envelope delegates "the retry count, the backoff shape and
+    /// which transport failures are retried"; the count is rule 19.5's own and is
+    /// [`RETRY_BOUND`], and the shape is none. A delay would leave no trace in the evidence — rule
+    /// 11.4 admits no timestamp in a transcript, so nothing this repository retains could show that a
+    /// backoff happened or how long it was — and case **R5** forbids making any wall-clock figure a
+    /// pass condition, so a backoff would be behaviour no verification case could check. It would also
+    /// stretch a run's wall clock by an amount no rule bounds, where rule 19.5 bounds attempts. A
+    /// successor that wants one needs a rule fixing it, because it changes what a run costs in time.
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
+        let mut earlier_attempts = Vec::new();
+        let mut proposal = loop {
+            let (proposal, asks_for_another) = self.attempt(&request);
+            if earlier_attempts.len() == RETRY_BOUND
+                || !asks_for_another
+                || self.account.ceiling_reached()
+            {
+                break proposal;
+            }
+            earlier_attempts.push(proposal);
+        };
+        proposal.earlier_attempts = earlier_attempts;
+
+        // Rule 9.5, counted once for the opportunity and not once per attempt. The billing happened
+        // in `attempt`, per exchange, because that is what rule 11.2 calls each attempt; this is the
+        // *decision*, and an opportunity has one however many exchanges it took.
+        if proposal.action.is_none() {
+            self.account = self.account.counting_fallback();
+        }
+        proposal
+    }
+
+    /// Rule 11.2's one line per exchange, appended to the host's transcript and flushed.
+    ///
+    /// **Flushed on every record, and that is not caution.** A live run's records are evidence that
+    /// was paid for, and a buffer holding the last few exchanges of a run that then died would lose
+    /// exactly the records nobody can regenerate without spending again. Rule 19.6 makes a failure
+    /// here end the run, which is the other half of the same reasoning: an exchange spent and not
+    /// recorded has produced cost and no evidence.
+    ///
+    /// The newline is written as one byte, on every platform. `SPEC-MOK-004`'s retained evidence is
+    /// `-text` and a transcript is compared byte for byte under rule 12.6, so a record terminated
+    /// differently on Windows would make a replay of a Windows recording fail on a line ending.
+    fn record(&mut self, record: &str) -> io::Result<()> {
+        self.transcript.write_all(record.as_bytes())?;
+        self.transcript.write_all(b"\n")?;
+        self.transcript.flush()
+    }
+}
+
+/// Rule 8.4's schema: the response `action` object, for the provider's structured-output facility.
+///
+/// Built rather than written out as a literal, so that [`RESPONSE_VERBS`] is the one statement of
+/// the verb set on this side and a twelfth verb cannot be added to the enumeration without appearing
+/// here. The shape is the one `docs/CONNECTOR_PROTOCOL.md` publishes, which rule 10.4b makes
+/// normative as documented: `parameter` is not required, because seven of the eleven verbs take one
+/// and four do not.
+fn response_schema() -> String {
+    let verbs: Vec<String> = RESPONSE_VERBS
+        .iter()
+        .map(|verb| format!("\"{verb}\""))
+        .collect();
+    format!(
+        "{{\"type\":\"object\",\"required\":[\"verb\"],\"properties\":{{\"verb\":{{\"enum\":[{}]}},\
+         \"parameter\":{{\"type\":\"string\"}}}}}}",
+        verbs.join(",")
+    )
+}
+
+/// A reader for the connector's responses: `SPEC-MOK-007` rule 10.7's untrusted input, read without
+/// a crate.
+///
+/// **It exists because rule 10.1 forbids the alternative.** "Neither package acquires a crate" for
+/// this binding, so the responses of a program written by somebody else are read by code in this
+/// file. `REQ-MOK-050`, `SPEC-MOK-002` rule 13 and `ARCH-MOK-001`'s conformance check all rest on
+/// that, and this module is what it costs.
+///
+/// Three properties are the whole of its defence, and each is a line of code rather than a habit:
+///
+/// - **It is total over `&str`.** Every path returns `Option`, nothing indexes without a bound and
+///   nothing unwraps. A response is a line from a child process, so a panic here would be a run
+///   ended by the connector's choice of bytes.
+/// - **Nesting is bounded** by [`MAX_DEPTH`]. A recursive-descent reader with no bound is a stack
+///   overflow one line of `[[[[…` away, and a stack overflow is not a `Result`.
+/// - **No floating-point type appears.** A number is held as the text it arrived as and is converted
+///   only where an unsigned integer is what a field means, so `1e999`, `1.5` and `-1` are each a
+///   count this engine does not have rather than a count it invented. `SPEC-MOK-007` rule 14.2's
+///   integer arithmetic and case **P6**'s claim about the accounting both depend on no `f64` ever
+///   holding a figure that reaches them.
+///
+/// It reads what rule 10.4's responses are made of and no more: objects, arrays, strings, numbers
+/// and the three literals. It is not a general JSON library and is not offered as one — it is
+/// private, and the one caller is [`ConnectorPort`].
+mod json {
+    /// The nesting this reader admits, counted in containers.
+    ///
+    /// Rule 10.4's response nests two deep — the object, then `action` or `usage`. Sixteen is far
+    /// past anything the protocol describes and far short of anything that troubles a stack, which
+    /// is the point: the bound exists to make a hostile line a refused line, not to be a limit a
+    /// conforming connector could meet.
+    const MAX_DEPTH: u32 = 16;
+
+    /// One JSON value, in the shapes rule 10.4's responses are made of.
+    ///
+    /// `Number` holds the text it arrived as, for the reason the module comment gives: this crate
+    /// holds no floating-point value, and a number's meaning is decided by the field it is read for
+    /// rather than by this type.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub(super) enum Value {
+        Null,
+        Bool(bool),
+        Number(String),
+        Text(String),
+        List(Vec<Value>),
+        /// Members in the order they arrived, with duplicates kept. [`Value::member`] returns the
+        /// first, which is a choice and is stated: JSON fixes no meaning for a repeated key, so a
+        /// reader that took the last would let a connector append an override after a value the
+        /// operator's provider produced.
+        Map(Vec<(String, Value)>),
+    }
+
+    impl Value {
+        /// One member of an object, or `None` for an absent member and for every non-object.
+        ///
+        /// The two cases are deliberately one: every caller in [`super::ConnectorPort`] is asking
+        /// "is this field here and usable", and a `usage` that arrived as a string is a field that
+        /// is not usable in exactly the way an absent one is not.
+        pub(super) fn member(&self, name: &str) -> Option<&Value> {
+            match self {
+                Self::Map(members) => members
+                    .iter()
+                    .find(|(key, _)| key == name)
+                    .map(|(_, value)| value),
+                _ => None,
+            }
+        }
+
+        /// The value as a string, and `None` for every other shape.
+        pub(super) fn text(&self) -> Option<&str> {
+            match self {
+                Self::Text(text) => Some(text.as_str()),
+                _ => None,
+            }
+        }
+
+        /// The value as an unsigned integer count, and `None` for anything else at all.
+        ///
+        /// A run of ASCII digits and nothing else: no sign, no fraction, no exponent, and no
+        /// leading `+`. `u64::from_str` refuses the rest, and where it refuses the count is
+        /// **absent** under rule 11.5 rather than coerced — a negative count, a fractional count and
+        /// `1e999` are three things a provider did not report.
+        pub(super) fn count(&self) -> Option<u64> {
+            match self {
+                Self::Number(text) => text.parse().ok(),
+                _ => None,
+            }
+        }
+    }
+
+    /// One line to one value, or `None` for anything this reader will not read.
+    ///
+    /// Trailing content after the value is a refusal and not something to ignore: rule 10.2 puts one
+    /// object on a line, so a line carrying an object and then more bytes is not that.
+    pub(super) fn parse(line: &str) -> Option<Value> {
+        let mut reader = Reader {
+            characters: line.chars().collect(),
+            at: 0,
+        };
+        let value = reader.value(0)?;
+        reader.skip_whitespace();
+        if reader.at != reader.characters.len() {
+            return None;
+        }
+        Some(value)
+    }
+
+    /// A cursor over the line's characters.
+    ///
+    /// Characters and not bytes, so that a multi-byte character in a message can never be sliced
+    /// through the middle. A response line is a few hundred characters, so the collection costs
+    /// nothing worth a byte-index reader's care.
+    struct Reader {
+        characters: Vec<char>,
+        at: usize,
+    }
+
+    impl Reader {
+        fn peek(&self) -> Option<char> {
+            self.characters.get(self.at).copied()
+        }
+
+        fn take(&mut self) -> Option<char> {
+            let character = self.peek()?;
+            self.at += 1;
+            Some(character)
+        }
+
+        /// JSON's four whitespace characters and no others. A vertical tab or a form feed between
+        /// tokens is not whitespace here, because it is not whitespace in the grammar.
+        fn skip_whitespace(&mut self) {
+            while matches!(self.peek(), Some(' ' | '\t' | '\n' | '\r')) {
+                self.at += 1;
+            }
+        }
+
+        fn expect(&mut self, expected: char) -> Option<()> {
+            (self.take()? == expected).then_some(())
+        }
+
+        fn literal(&mut self, text: &str) -> Option<()> {
+            for expected in text.chars() {
+                self.expect(expected)?;
+            }
+            Some(())
+        }
+
+        fn value(&mut self, depth: u32) -> Option<Value> {
+            if depth > MAX_DEPTH {
+                return None;
+            }
+            self.skip_whitespace();
+            match self.peek()? {
+                '{' => self.map(depth),
+                '[' => self.list(depth),
+                '"' => self.text().map(Value::Text),
+                't' => self.literal("true").map(|()| Value::Bool(true)),
+                'f' => self.literal("false").map(|()| Value::Bool(false)),
+                'n' => self.literal("null").map(|()| Value::Null),
+                '-' | '0'..='9' => self.number(),
+                _ => None,
+            }
+        }
+
+        fn map(&mut self, depth: u32) -> Option<Value> {
+            self.expect('{')?;
+            let mut members = Vec::new();
+            self.skip_whitespace();
+            if self.peek()? == '}' {
+                self.at += 1;
+                return Some(Value::Map(members));
+            }
+            loop {
+                self.skip_whitespace();
+                let key = self.text()?;
+                self.skip_whitespace();
+                self.expect(':')?;
+                members.push((key, self.value(depth + 1)?));
+                self.skip_whitespace();
+                match self.take()? {
+                    ',' => continue,
+                    '}' => return Some(Value::Map(members)),
+                    _ => return None,
+                }
+            }
+        }
+
+        fn list(&mut self, depth: u32) -> Option<Value> {
+            self.expect('[')?;
+            let mut entries = Vec::new();
+            self.skip_whitespace();
+            if self.peek()? == ']' {
+                self.at += 1;
+                return Some(Value::List(entries));
+            }
+            loop {
+                entries.push(self.value(depth + 1)?);
+                self.skip_whitespace();
+                match self.take()? {
+                    ',' => continue,
+                    ']' => return Some(Value::List(entries)),
+                    _ => return None,
+                }
+            }
+        }
+
+        /// A string, with JSON's escapes and with a surrogate pair joined into the character it
+        /// denotes.
+        ///
+        /// A lone surrogate is refused rather than replaced. `char::from_u32` cannot hold one, and
+        /// the two alternatives are a replacement character — which would silently change a message
+        /// — and a panic, which rule 10.7 makes unavailable. A response carrying one is a response
+        /// this reader does not read, and rule 9.5's fallback is what follows.
+        fn text(&mut self) -> Option<String> {
+            self.expect('"')?;
+            let mut text = String::new();
+            loop {
+                match self.take()? {
+                    '"' => return Some(text),
+                    '\\' => match self.take()? {
+                        '"' => text.push('"'),
+                        '\\' => text.push('\\'),
+                        '/' => text.push('/'),
+                        'b' => text.push('\u{8}'),
+                        'f' => text.push('\u{c}'),
+                        'n' => text.push('\n'),
+                        'r' => text.push('\r'),
+                        't' => text.push('\t'),
+                        'u' => text.push(self.escaped_character()?),
+                        _ => return None,
+                    },
+                    // Rule 10.2: no object contains a raw newline, and a control character inside a
+                    // string is outside JSON's grammar besides. Refused rather than accepted, so a
+                    // response cannot smuggle a line break past the framing.
+                    control if control.is_control() => return None,
+                    character => text.push(character),
+                }
+            }
+        }
+
+        /// One `\u` escape, and the second half of a surrogate pair where the first half needs one.
+        fn escaped_character(&mut self) -> Option<char> {
+            let first = self.hex_quad()?;
+            // The high half of a surrogate pair. The low half must follow, spelled as its own
+            // escape, which is how JSON carries a character outside the basic multilingual plane.
+            if (0xd800..0xdc00).contains(&first) {
+                self.expect('\\')?;
+                self.expect('u')?;
+                let second = self.hex_quad()?;
+                if !(0xdc00..0xe000).contains(&second) {
+                    return None;
+                }
+                let combined = 0x1_0000 + ((first - 0xd800) << 10) + (second - 0xdc00);
+                return char::from_u32(combined);
+            }
+            char::from_u32(first)
+        }
+
+        fn hex_quad(&mut self) -> Option<u32> {
+            let mut value = 0u32;
+            for _ in 0..4 {
+                value = value * 16 + self.take()?.to_digit(16)?;
+            }
+            Some(value)
+        }
+
+        /// A number, kept as the text it arrived as and validated against JSON's grammar.
+        ///
+        /// Validated rather than merely collected, so that `count` refusing a value means "this is
+        /// not an unsigned integer" and never "this reader stopped early". `01`, `1.`, `.5`, `1e`
+        /// and a bare `-` are each refused here, where refusing the whole line is the right answer,
+        /// rather than becoming a truncated value in a field.
+        fn number(&mut self) -> Option<Value> {
+            let start = self.at;
+            if self.peek() == Some('-') {
+                self.at += 1;
+            }
+            match self.take()? {
+                // A leading zero admits no further digit, which is JSON's grammar and not a
+                // strictness of this reader's.
+                '0' => {}
+                '1'..='9' => self.skip_digits(),
+                _ => return None,
+            }
+            if self.peek() == Some('.') {
+                self.at += 1;
+                self.digits()?;
+            }
+            if matches!(self.peek(), Some('e' | 'E')) {
+                self.at += 1;
+                if matches!(self.peek(), Some('+' | '-')) {
+                    self.at += 1;
+                }
+                self.digits()?;
+            }
+            Some(Value::Number(
+                self.characters[start..self.at].iter().collect(),
+            ))
+        }
+
+        /// At least one digit, for the two places JSON's grammar requires one.
+        fn digits(&mut self) -> Option<()> {
+            if !self.peek()?.is_ascii_digit() {
+                return None;
+            }
+            self.skip_digits();
+            Some(())
+        }
+
+        fn skip_digits(&mut self) {
+            while self
+                .peek()
+                .is_some_and(|character| character.is_ascii_digit())
+            {
+                self.at += 1;
+            }
         }
     }
 }
@@ -2455,6 +3867,21 @@ impl DecisionSource for PortDecisionSource<'_> {
         LLM_SOURCE_NAME
     }
 
+    /// Rule 14.6's question, forwarded and nothing more.
+    ///
+    /// This adapter holds no accounting figure and computes none — rule 14's *State model* keeps every
+    /// accumulator in the port, rule 20.4.1 keeps the port in the host, and an adapter that cached the
+    /// answer would be a third party to a two-party fact.
+    fn halted(&self) -> bool {
+        self.port.halted()
+    }
+
+    /// Rule 15's figures, forwarded and nothing more, for the same reason [`Self::halted`] forwards
+    /// rule 14.6's answer: this adapter holds no accounting figure and computes none.
+    fn accounting(&self) -> Option<LiveAccounting> {
+        self.port.accounting()
+    }
+
     /// Rule 11.1's prefix head: blocks A and B for every Mokiterion the run created, in ascending
     /// identifier order, before the first exchange.
     ///
@@ -2481,12 +3908,13 @@ impl DecisionSource for PortDecisionSource<'_> {
     /// marked as fallbacks, and a count this method incremented in the same statement that wrote the
     /// flag would satisfy P5 by construction, leaving the property nothing to catch.
     ///
-    /// What the *engine* cannot record is the **cause**. Rule 1.1 gives the port one way to say that
-    /// it obtained nothing, and `None` carries no diagnosis, so an exchange that yielded no response
-    /// and a response whose action the enumeration does not admit arrive here identically — case
-    /// **L22** distinguishes them and both distinctions are made on the port's side of rule 1.1. The
-    /// cause reaches the transcript with the response itself, in the field this record writes as
-    /// `null` until `WO-MOK-026`'s connector supplies one.
+    /// What the *engine* does not decide is the **cause**. [`Proposal::action`]'s absence carries no
+    /// diagnosis, so an exchange that yielded no response and a response whose action the enumeration
+    /// does not admit arrive here identically — case **L22** distinguishes them and both distinctions
+    /// are made on the port's side of rule 1.1. The cause reaches the transcript **with the response
+    /// itself**, in the field rule 1.1a grew the port's return to carry: the engine records the two
+    /// cases differently without telling them apart, which is rule 1.4a's point about what the
+    /// evidence is and is not.
     ///
     /// A proposal the engine then rejects is not this case and is not a fallback, rule 9.6. The port
     /// is never told that a rejection happened, which is that rule as a call graph: there is no
@@ -2505,13 +3933,25 @@ impl DecisionSource for PortDecisionSource<'_> {
         debug_assert!(observation.is_consistent());
         let request = DecisionRequest::compose(observation);
         let proposal = self.port.propose(request.clone());
-        if let Err(error) = self
-            .port
-            .record(&exchange_record(&request, proposal.as_ref()))
-        {
+        // Rule 11.2's record for every attempt the port abandoned, in the order it made them and
+        // before the one it ended with. The engine authors these as it authors every record, rule
+        // 11.1, and it learns of them the only way rule 1.1 leaves open: they arrived with the
+        // proposal, in the field rule 19.5's retry grew it by.
+        //
+        // A write failure on any of them is latched exactly as one on the record below is. The run
+        // then ends under rule 19.6 with the attempts before it recorded and the opportunity's own
+        // record missing, which is the honest shape: those exchanges were spent.
+        for attempt in &proposal.earlier_attempts {
+            if let Err(error) = self.port.record(&attempt_record(&request, attempt)) {
+                self.latch(error);
+            }
+        }
+        if let Err(error) = self.port.record(&exchange_record(&request, &proposal)) {
             self.latch(error);
         }
-        proposal.unwrap_or(Action::Wait)
+        // Rule 1.4a: the action and nothing else. The response and the counts went to the record
+        // above and reach no decision from here — there is no route by which they could.
+        proposal.action.unwrap_or(Action::Wait)
     }
 
     fn failure(&mut self) -> Option<io::Error> {
@@ -2521,27 +3961,37 @@ impl DecisionSource for PortDecisionSource<'_> {
 
 /// `SPEC-MOK-007` rules 14 and 15: what a live run accumulates, and the run record it reports.
 ///
-/// **One module with one `#[allow(dead_code)]` on it, because nothing in this crate calls any of it
-/// yet.** `WO-MOK-025`'s item 7 builds the arithmetic and exercises it against declared prices and
-/// synthetic usage; there is no live run to feed it a provider's usage, because the connector, live
-/// mode and the ceiling option are `WO-MOK-026`'s and this stage is expressly out of scope for all
-/// three. The alternative was to have the recording path emit a run record now, and rule 15.6
-/// forbids it: a replay reports no run record, [`PortDecisionSource`] cannot tell a replaying port
-/// from a live one — rule 1.1 leaves `propose` returning the same `Option<Action>` either way — and
-/// a record written by a party that had to guess would be an account of spending that never
-/// happened. `mokiterions-tui`'s `is_empty` and `camera` carry the same attribute for the same
-/// reason: an item the tests read and the product does not yet.
+/// **One module with one `#[allow(dead_code)]` on it, for six items the tests read and the product
+/// does not.** They are [`RunAccount::cost`], [`RunAccount::fallbacks`], [`RunAccount::exchanges`],
+/// [`ExchangeUsage::reported`], [`ExchangeUsage::unreported`] and
+/// [`ExchangeUsage::without_cached_figure`]: three accessors in rule 14.2's finer unit or in a form
+/// [`RunAccount::reported`] now supplies as a field, and three constructors a live run reaches only
+/// through [`ConnectorPort`]'s reading of a response. The list is enumerated rather than described,
+/// so an item that stops being called makes this paragraph wrong instead of hiding under a blanket.
 ///
-/// A module rather than an attribute per item, so the exemption is stated once and in one place —
-/// and because **case P6's second half is a claim about this region**: no floating-point type
-/// appears in the accounting code. Every figure below is a `u64`, every operation on one is integer,
-/// and a reader can check that by reading one module instead of trusting a grep.
+/// **Everything else here is now called by the product**, which is the change of 2026-08-29 and the
+/// removal of `WO-MOK-025`'s blocker. That stage's reason for the whole module being uncalled was
+/// rule 15.6: a replay reports no run record, and `PortDecisionSource` could not tell a replaying
+/// port from a live one, because rule 1.1 left `propose` returning the same `Option<Action>` either
+/// way — so a record written by a party that had to guess would be an account of spending that never
+/// happened. Rule 1.1d as amended is that discrimination, and it is a return type rather than a
+/// party's judgement: [`Proposer::accounting`] defaults to `None`, a replaying port takes the
+/// default, and [`Simulation::live_run_record`] is a `?` on the answer.
 ///
-/// Nothing here is public. `WO-MOK-025`'s constraint is that the public surface grows by exactly one
-/// interface and one request type, and the host that needs these types is the host that gains live
-/// mode. Every operation takes `self` by value and returns a new account rather than mutating one,
-/// which is also why `SPEC-MOK-002` rule 5's public-surface check cannot be disturbed by any of it:
-/// there is no `&mut self` receiver here to match, in this stage or in the stage that publishes it.
+/// A module attribute and not six item attributes, so the exemption is stated once and in one place —
+/// and because **case P6's second half is a claim about this region**: no floating-point type appears
+/// in the accounting code. Every figure below is a `u64`, every operation on one is integer, and a
+/// reader can check that by reading one module instead of trusting a grep.
+/// `mokiterions-tui`'s `is_empty` and `camera` carry the same attribute for the same reason: an item
+/// the tests read and the product does not yet.
+///
+/// **Nothing here is public, and that survived the change of 2026-08-29.** What crosses to a host is
+/// [`LiveAccounting`], which is declared outside this module and is a value with no method on it, so
+/// the surface `SPEC-MOK-002` rule 5 counts grows by a type and its fields and by nothing in here.
+/// [`RunAccount::reported`] is the one function that names it, and naming a public type is not
+/// declaring one. Every operation still takes `self` by value and returns a new account rather than
+/// mutating one, apart from that one `&self` reader, so rule 5's mutating-method check finds nothing
+/// to match in this region either.
 #[allow(dead_code)]
 mod accounting {
     use std::fmt;
@@ -2553,22 +4003,48 @@ mod accounting {
     /// floor exactly, with no decimal separator anywhere in the figure or in its computation.
     const BASIS_POINTS: u64 = 10_000;
 
-    /// The unit prices declared for a live run, in **nanodollars per token** — a nanodollar being
-    /// 10^-9 of the currency the provider prices in.
+    /// One US cent, in the unit this module accumulates in. See [`PerTokenPrices`].
+    const MICROCENTS_PER_CENT: u64 = 1_000_000;
+
+    /// The unit prices declared for a live run, in **microcents per token** — a microcent being
+    /// 10^-6 of a US cent.
     ///
-    /// Rule 14.2 requires integer arithmetic in a stated minor unit, and this is the unit stated. It
-    /// is chosen for exactness rather than for familiarity. A provider publishes a price per million
-    /// tokens, so `$1.25 per 1M` is `1_250` nanodollars per token and `$0.125 per 1M` is `125`, both
-    /// without a remainder. Cents per token would round every published price to zero. A price held
-    /// per million tokens would push a division into every exchange's cost, where the truncation
-    /// would accumulate once per exchange and rule 14.6's ceiling would then bound the run at a
-    /// figure depending on how many exchanges it happened to make.
+    /// **Rule 14.2's stated minor unit is the US cent, and every figure this specification states
+    /// is in cents**: `--spend-ceiling`'s amount, rule 15.2's accumulated cost and declared ceiling,
+    /// and `SPEC-MOK-006` rule 8.9's `cost` and `ceiling`. What is held here is finer than that, and
+    /// the reason is that the cent cannot carry one exchange's cost. Measured at rule 14.3a's own
+    /// example prices and this stage's own exchange — `--prices 125:13:1000:0` against a
+    /// 1,000-token prompt of which 900 were cached and an 8-token response — one exchange costs
+    /// **0.0322 cents**, and `WO-MOK-026` item 13 puts a 200-exchange run at an estimated 2 to 3
+    /// cents in total. An accumulation truncated to whole cents per exchange would therefore add
+    /// zero every time: rule 14.6's ceiling would never be reached and rule 15.2's cost would be
+    /// reported as `0` for a run that spent money. So the accumulation is exact and only the
+    /// reported figure is a cent, which is [`RunAccount::cost_cents`].
+    ///
+    /// **The microcent is chosen so that no arithmetic happens at the edge.** Rule 14.3a declares
+    /// prices in *cents per million tokens*, and one cent per million tokens **is** one microcent
+    /// per token — the same integer, with no multiplication, no division and therefore no rounding
+    /// between what the operator typed and what this module computes with. That is rule 14.3a's
+    /// closing sentence discharged by the unit rather than by care: "integers rather than a decimal,
+    /// so rule 14.2's arithmetic is integer arithmetic from the input onward and no rounding enters
+    /// at the edge". [`PerTokenPrices::declared`] is consequently a renaming of four fields.
+    ///
+    /// Two units were measured and rejected. **Cents per token** rounds every published price to
+    /// zero. **A price held per million tokens** pushes a division into every exchange's cost, where
+    /// the truncation accumulates once per exchange and rule 14.6's ceiling would then bound the run
+    /// at a figure depending on how many exchanges it happened to make.
     ///
     /// Rule 14.3: these are **inputs of the run**. No constant here holds a provider's number,
     /// because the provider's prices are the provider's to change and a price compiled into the
     /// engine would be a figure a release declared rather than a run.
+    ///
+    /// **The name is not [`UnitPrices`](super::UnitPrices)'s, and that is deliberate.** The public
+    /// type of that name carries the operator's four declared prices in the order rule 14.3a fixes;
+    /// this one carries the same four in the order the *arithmetic* reads them, where the first is
+    /// the price of a prompt token the cache did **not** serve. Two types of one name in one file,
+    /// differing in which of the two the first field means, is a transposition nobody would see.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-    pub(super) struct UnitPrices {
+    pub(super) struct PerTokenPrices {
         /// Per prompt token the provider did **not** serve from its cache.
         ///
         /// The uncached share and not the whole prompt count, which is a distinction rule 14.1's
@@ -2582,19 +4058,48 @@ mod accounting {
         pub(super) reasoning: u64,
     }
 
-    /// One exchange's usage, as the provider reported it.
+    impl PerTokenPrices {
+        /// The operator's declared prices, in the order this module's arithmetic reads them.
+        ///
+        /// **No arithmetic, by construction of the unit.** Rule 14.3a declares cents per million
+        /// tokens and this module holds microcents per token, which are the same integer, so the four
+        /// values cross unchanged and no rounding can enter here. The whole of the conversion is that
+        /// [`UnitPrices::prompt`](super::UnitPrices::prompt) is the price of a prompt token the cache
+        /// did not serve — which rule 14.3a's ordering implies and does not say, and which the field
+        /// name here says outright.
+        pub(super) fn declared(prices: &super::UnitPrices) -> Self {
+            Self {
+                uncached_prompt: prices.prompt,
+                cached_prompt: prices.cached,
+                output: prices.output,
+                reasoning: prices.reasoning,
+            }
+        }
+    }
+
+    /// One exchange's usage, as the provider reported it: [`ReportedUsage`] under the name this
+    /// module's arithmetic reads it by.
+    ///
+    /// **An alias and not a second struct, which is the whole point.** This module declared its own
+    /// four-`Option<u64>` type under `WO-MOK-025`, when the port's return could not carry a count and
+    /// nothing but a test could supply one. `SPEC-MOK-007` rule 1.1a of 2026-08-29 put the four on
+    /// the port's return, and two structurally identical types would then need a conversion between
+    /// them — four unlabelled integers of similar magnitude copied field by field, where a transposed
+    /// pair is a wrong cost figure *and* a wrong cache ratio with nothing in the type system to catch
+    /// either. The alias means the four values exist once and the conversion does not exist at all.
     ///
     /// Every count is optional because rule 11.5 makes a count the provider did not report
     /// **absent, not zero**, while rule 15.3 makes a reported zero a positive statement. The two
     /// stay distinguishable only if the absence has a representation, and `Option<u64>` is it.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-    pub(super) struct ExchangeUsage {
-        prompt: Option<u64>,
-        cached_prompt: Option<u64>,
-        output: Option<u64>,
-        reasoning: Option<u64>,
-    }
+    pub(super) type ExchangeUsage = super::ReportedUsage;
 
+    /// The three usages `SPEC-MOK-007` names, as named constructors.
+    ///
+    /// They live here rather than beside [`ReportedUsage`] because each one states a *rule's* case
+    /// rather than a shape, and the rules are this module's: 14.1's billed exchange, 9.4's exchange
+    /// that reported nothing, and 14.5's exchange that reported all but the cached figure. They are
+    /// `pub(super)` and are therefore no part of the public surface `SPEC-MOK-002` rule 5 enumerates,
+    /// which lists the type and its four fields and nothing else.
     impl ExchangeUsage {
         /// What a connector produces when the provider reported all four counts.
         pub(super) fn reported(
@@ -2661,9 +4166,14 @@ mod accounting {
     /// the *State model*'s own sentence and the whole reason none of it can influence a decision.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
     pub(super) struct RunAccount {
-        prices: UnitPrices,
-        /// Rule 14.6's declared ceiling, absent where none was declared. A replay declares none,
-        /// rule 14.8.
+        prices: PerTokenPrices,
+        /// Rule 14.6's declared ceiling, **in microcents**, absent where none was declared. A replay
+        /// declares none, rule 14.8.
+        ///
+        /// Converted once, in [`Self::declared`], from the cents the operator wrote. Held in the
+        /// accumulation's own unit rather than in cents, because the comparison rule 14.6 makes is
+        /// against the accumulated cost and a comparison between two units is the one place a
+        /// factor of a million goes unnoticed.
         ceiling: Option<u64>,
         /// Every exchange issued, including one that yielded nothing: rule 11.2's "a retry is its
         /// own record, because it was its own billed exchange" is the same accounting from the
@@ -2677,6 +4187,7 @@ mod accounting {
         /// cleared. Rule 14.5: the ratio then cannot be computed, and that is a failure to evaluate
         /// rather than a pass — so one such exchange has to survive to the end of the run.
         cache_unreported: bool,
+        /// The accumulated cost, **in microcents**. [`Self::cost_cents`] is rule 14.2's figure.
         cost: u64,
         fallbacks: u64,
     }
@@ -2684,10 +4195,17 @@ mod accounting {
     impl RunAccount {
         /// A run's opening account: the prices it declared, the ceiling it declared, and nothing
         /// spent.
-        pub(super) fn declared(prices: UnitPrices, ceiling: Option<u64>) -> Self {
+        ///
+        /// The ceiling arrives in **cents**, which is what `--spend-ceiling` parses to and what rule
+        /// 14.2 states, and is converted here to the accumulation's unit. Saturating, because a
+        /// ceiling so large that a million times it does not fit in a `u64` is a ceiling no run could
+        /// reach, and `u64::MAX` is that same unreachable ceiling — where a wrap would turn a very
+        /// large declared ceiling into a very small effective one, which is the one arithmetic
+        /// failure here that would stop a run early rather than late.
+        pub(super) fn declared(prices: PerTokenPrices, ceiling: Option<u64>) -> Self {
             Self {
                 prices,
-                ceiling,
+                ceiling: ceiling.map(|cents| cents.saturating_mul(MICROCENTS_PER_CENT)),
                 ..Self::default()
             }
         }
@@ -2704,20 +4222,31 @@ mod accounting {
         /// Rule 10.7 makes the provider's figures untrusted input, and a cached count larger than
         /// the prompt count is arithmetic nonsense that would otherwise underflow the uncached
         /// share into a bill of roughly eighteen quintillion tokens.
+        ///
+        /// **Two of the four reported counts are totals containing another, and both are handled
+        /// the same way**, rule 14.2a. The prompt count contains the cached count, so the uncached
+        /// share is priced at the uncached price and the cached share at the cached price. The
+        /// output count likewise contains the reasoning count, so the billable output is
+        /// `output - reasoning` and the reasoning is priced once, at the reasoning price. Pricing
+        /// the full output count *and* the reasoning count bills every reasoning token twice; that
+        /// was this function's behaviour until `WO-MOK-026` measured it against a live run at a
+        /// non-zero reasoning level, where reported output exceeded reported reasoning by the size
+        /// of one action object on every one of 567 exchanges.
+        ///
+        /// Each inclusive count is clamped to its total before the subtraction, for the one reason
+        /// rule 10.7 gives: the figures are the provider's and are not trusted.
         pub(super) fn cost_of(&self, usage: &ExchangeUsage) -> u64 {
             let prompt = usage.prompt.unwrap_or(0);
             let cached = usage.cached_prompt.unwrap_or(0).min(prompt);
             let uncached = prompt - cached;
+            let output = usage.output.unwrap_or(0);
+            let reasoning = usage.reasoning.unwrap_or(0).min(output);
+            let billable_output = output - reasoning;
             uncached
                 .saturating_mul(self.prices.uncached_prompt)
                 .saturating_add(cached.saturating_mul(self.prices.cached_prompt))
-                .saturating_add(usage.output.unwrap_or(0).saturating_mul(self.prices.output))
-                .saturating_add(
-                    usage
-                        .reasoning
-                        .unwrap_or(0)
-                        .saturating_mul(self.prices.reasoning),
-                )
+                .saturating_add(billable_output.saturating_mul(self.prices.output))
+                .saturating_add(reasoning.saturating_mul(self.prices.reasoning))
         }
 
         /// Rule 14.1: the account after one exchange, with the four totals and the accumulated cost
@@ -2741,18 +4270,32 @@ mod accounting {
             }
         }
 
-        /// Rule 9.5's occurrence, counted: an exchange that yielded no proposal.
+        /// Rule 9.5's occurrence, counted, and **nothing else**.
         ///
-        /// It is still an exchange, so the exchange count moves and the usage it reported — none, by
-        /// definition — is added like any other. What it is *not* is rule 9.6's rejected proposal:
-        /// a source that answered and a world that refused the answer leave this count alone, and
-        /// the port never learns that the refusal happened.
-        pub(super) fn after_fallback(self) -> Self {
-            let counted = Self {
+        /// It moves the fallback count and no other figure. The exchange itself is booked by
+        /// [`Self::after_exchange`], which every exchange goes through whether or not it yielded a
+        /// proposal, so a fallback is `self.after_exchange(&usage).counting_fallback()` and the
+        /// exchange count moves exactly once.
+        ///
+        /// **This shape replaces one that billed the fallback as an unreported exchange**, and the
+        /// reason is rule 10.4c. That earlier shape's own comment — "the usage it reported — none, by
+        /// definition" — was true of rule 9.4's exchange, where the transport failed or the provider
+        /// returned nothing, and it is false of rule 10.4c's, where a response arrived carrying
+        /// usage and an action naming neither the model nor the reasoning level. That exchange fails
+        /// the grammar check, becomes a counted fallback, and **was billed**:
+        /// [`ConnectorPort::interpret`](super::ConnectorPort::interpret) is explicit that "the counts
+        /// travel even when the action does not". Billing it as an absence would have understated
+        /// every such run's cost, and rule 10.8 does not cover that — it covers a connector that
+        /// under-reports, not a host that discards what was reported.
+        ///
+        /// What this is *not* is rule 9.6's rejected proposal: a source that answered and a world
+        /// that refused the answer leave this count alone, and the port never learns that the
+        /// refusal happened.
+        pub(super) fn counting_fallback(self) -> Self {
+            Self {
                 fallbacks: self.fallbacks.saturating_add(1),
                 ..self
-            };
-            counted.after_exchange(&ExchangeUsage::unreported())
+            }
         }
 
         /// Rule 14.6: whether the accumulated cost has reached the declared ceiling. Reached, not
@@ -2791,8 +4334,42 @@ mod accounting {
             )
         }
 
+        /// The accumulated cost in the unit it is accumulated in, **microcents**.
+        ///
+        /// Rule 14.2's reportable figure is [`Self::cost_cents`]. This one exists because a test that
+        /// asserted only the cent figure could not distinguish a run that spent 0.03 cents from one
+        /// that spent nothing, and rule 14.6's ceiling is compared here.
         pub(super) fn cost(&self) -> u64 {
             self.cost
+        }
+
+        /// Rule 14.2's accumulated cost, in **whole US cents**.
+        ///
+        /// **Truncated, and the truncation is the point.** Rule 14.6 compares the accumulated cost
+        /// against the ceiling in the accumulation's own unit, so truncating the *reported* figure
+        /// keeps one invariant checkable from the outside: a run that stopped at its ceiling reports
+        /// a cost at or above that ceiling, and a run that did not reports one below it. Rounding up
+        /// would break exactly that — a run one microcent short of a 2-cent ceiling would report
+        /// `2`, indistinguishable from the run that stopped, and `REQ-MOK-071` is about telling those
+        /// two apart.
+        ///
+        /// The sub-cent remainder is not lost to a reader: rule 14.1's four token totals and rule
+        /// 14.3a's declared prices are both reported, and the exact figure is their product. That is
+        /// rule 14.3's own reasoning — the prices are inputs of the run, so a record that states them
+        /// beside the counts has stated the cost to any precision.
+        pub(super) fn cost_cents(&self) -> u64 {
+            self.cost / MICROCENTS_PER_CENT
+        }
+
+        /// Rule 14.6's declared ceiling in **whole US cents**, which is the figure the operator wrote.
+        ///
+        /// Exact for every ceiling [`Self::declared`]'s conversion did not clamp, being that
+        /// conversion undone. A ceiling large enough to have clamped comes back smaller than it was
+        /// declared, and that is a ceiling of more than eighteen trillion cents — unreachable before
+        /// and after, so the only figure it misstates is one no run could have spent against.
+        pub(super) fn ceiling_cents(&self) -> Option<u64> {
+            self.ceiling
+                .map(|microcents| microcents / MICROCENTS_PER_CENT)
         }
 
         pub(super) fn fallbacks(&self) -> u64 {
@@ -2801,6 +4378,34 @@ mod accounting {
 
         pub(super) fn exchanges(&self) -> u64 {
             self.exchanges
+        }
+
+        /// This account as rule 15.2's reportable figures: [`super::LiveAccounting`], the value rule
+        /// 1.1d has cross the port's boundary.
+        ///
+        /// **The one place the conversion happens.** Every unit change is here and nowhere else —
+        /// the two money figures become rule 14.2's whole cents from the microcents this accumulates
+        /// in, and the ratio becomes rule 14.4's basis points with rule 14.5's absence intact — so a
+        /// second caller cannot state a figure in a unit this account does not mean. That is
+        /// [`super::ConnectorPort::accounting`]'s whole body and the tests' route to the same value.
+        ///
+        /// The binding is borrowed and cloned rather than taken, because the port keeps it: rule
+        /// 15.2's figure is one a run may be asked for more than once and a method that emptied a
+        /// field while reporting it would answer differently the second time.
+        pub(super) fn reported(&self, binding: Option<&(String, String)>) -> super::LiveAccounting {
+            super::LiveAccounting {
+                exchanges: self.exchanges,
+                prompt_tokens: self.prompt_tokens,
+                cached_prompt_tokens: self.cached_prompt_tokens,
+                output_tokens: self.output_tokens,
+                reasoning_tokens: self.reasoning_tokens,
+                cache_ratio_basis_points: self.cache_ratio_basis_points(),
+                cost_cents: self.cost_cents(),
+                ceiling_cents: self.ceiling_cents(),
+                fallbacks: self.fallbacks,
+                model: binding.map(|(model, _)| model.clone()),
+                reasoning_level: binding.map(|(_, level)| level.clone()),
+            }
         }
     }
 
@@ -2844,12 +4449,16 @@ mod accounting {
     /// [`exchange_record`](super::exchange_record)'s precedent.
     pub(super) struct RunRecord<'a> {
         config: &'a Config,
-        /// Rule 15.2's model identifier and reasoning level. Inputs of the run under the *Inputs*
-        /// section's "in live mode only", on rule 14.3's principle: a model named by a constant here
-        /// would be a model this engine chose.
-        model: &'a str,
-        reasoning: &'a str,
-        account: &'a RunAccount,
+        /// Rule 15.2's figures, as the port reported them across rule 1.1d's boundary, **including
+        /// the model identifier and the reasoning level**.
+        ///
+        /// A [`super::LiveAccounting`] and not a [`RunAccount`], which is the change of 2026-08-29:
+        /// this type is the engine's and the account is the port's, so a record that borrowed the
+        /// accumulator could only ever be rendered inside the party rule 20.4.1 puts it in. The two
+        /// strings arrived here as parameters while nothing reported them; rule 5 declares the binding
+        /// in the connector, so the value that crosses is where they belong and a caller can no longer
+        /// name a model the run did not use.
+        live: &'a super::LiveAccounting,
         /// Rule 15.2's tick reached, which rule 15.5 requires again for a ceiling stop, "so that a
         /// figure is never quoted at a horizon the run did not reach".
         tick_reached: u64,
@@ -2859,17 +4468,13 @@ mod accounting {
     impl<'a> RunRecord<'a> {
         pub(super) fn new(
             config: &'a Config,
-            model: &'a str,
-            reasoning: &'a str,
-            account: &'a RunAccount,
+            live: &'a super::LiveAccounting,
             tick_reached: u64,
             ended: RunEnd,
         ) -> Self {
             Self {
                 config,
-                model,
-                reasoning,
-                account,
+                live,
                 tick_reached,
                 ended,
             }
@@ -2884,40 +4489,53 @@ mod accounting {
         /// count is here on rule 15.1's authority — it is an accounting figure this specification
         /// produces, at rule 14.5's threshold of 200 — rather than on rule 15.2's enumeration.
         ///
+        /// **The two money figures are named for their unit and the unit is rule 14.2's.** They were
+        /// `cost_nanodollars` and `ceiling_nanodollars` while `WO-MOK-025` accumulated in
+        /// nanodollars; rule 14.2 as amended 2026-08-29 states the minor unit, and it is the US cent,
+        /// so they are `cost_cents` and `ceiling_cents`. The rename is a rename of the *reported*
+        /// figures only — [`PerTokenPrices`] records why the accumulation behind them is finer — and
+        /// naming a field for a unit it does not carry is the failure this pair exists to avoid.
+        ///
         /// The seed, tick limit, density and tracing selection are spelled as
         /// [`write_header_record`](super::write_header_record) spells them, including the density as
         /// a quoted two-decimal string. That is the one decimal separator in the line and it is an
         /// echoed input rather than an accounting figure: `SPEC-MOK-006` rule 4.1 prohibits a
         /// floating-point *value*, which a string is not, and a second spelling of a density across
         /// two streams would be worse than the quoting.
+        ///
+        /// **The model and the level are `null` where no response reported them**, which is rule
+        /// 11.5's absence again and not an omission: a run every one of whose exchanges failed learnt
+        /// no binding, and the empty string would claim to name what answered. They are escaped
+        /// because they are the only two free-text values in the line — rule 10.7 makes the connector
+        /// untrusted in whole, and that includes the length and the bytes of a model identifier.
         pub(super) fn render(&self) -> String {
             format!(
                 "{{\"run_record\":\"{LLM_SOURCE_NAME}\",\"seed\":{},\"ticks\":{},\"density\":\"{}\",\
-                 \"trace_actions\":{},\"model\":\"{}\",\"reasoning\":\"{}\",\"exchanges\":{},\
+                 \"trace_actions\":{},\"model\":{},\"reasoning\":{},\"exchanges\":{},\
                  \"tokens\":{{\"prompt\":{},\"cached_prompt\":{},\"output\":{},\"reasoning\":{}}},\
-                 \"cache_ratio_basis_points\":{},\"cost_nanodollars\":{},\
-                 \"ceiling_nanodollars\":{},\"fallbacks\":{},\"unfit_to_publish\":{},\
+                 \"cache_ratio_basis_points\":{},\"cost_cents\":{},\
+                 \"ceiling_cents\":{},\"fallbacks\":{},\"unfit_to_publish\":{},\
                  \"tick_reached\":{},\"ended\":\"{}\"}}",
                 self.config.seed,
                 self.config.tick_limit,
                 self.config.density,
                 self.config.trace_actions,
-                escape_transcript_text(self.model),
-                escape_transcript_text(self.reasoning),
-                self.account.exchanges,
-                self.account.prompt_tokens,
-                self.account.cached_prompt_tokens,
-                self.account.output_tokens,
-                self.account.reasoning_tokens,
-                optional_figure(self.account.cache_ratio_basis_points()),
-                self.account.cost,
-                optional_figure(self.account.ceiling),
-                self.account.fallbacks,
+                optional_text(self.live.model.as_deref()),
+                optional_text(self.live.reasoning_level.as_deref()),
+                self.live.exchanges,
+                self.live.prompt_tokens,
+                self.live.cached_prompt_tokens,
+                self.live.output_tokens,
+                self.live.reasoning_tokens,
+                optional_figure(self.live.cache_ratio_basis_points),
+                self.live.cost_cents,
+                optional_figure(self.live.ceiling_cents),
+                self.live.fallbacks,
                 // Rule 15.4's mark, and a property of the record rather than of a summary written
                 // afterwards. It is derived here from the count rather than set by a caller,
                 // because a mark a caller could forget is a mark that a run under pressure would
                 // not carry.
-                self.account.fallbacks > 0,
+                self.live.fallbacks > 0,
                 self.tick_reached,
                 self.ended,
             )
@@ -2931,6 +4549,18 @@ mod accounting {
     fn optional_figure(figure: Option<u64>) -> String {
         match figure {
             Some(figure) => figure.to_string(),
+            None => String::from("null"),
+        }
+    }
+
+    /// [`optional_figure`] for a string: the escaped value in quotation marks, or `null`.
+    ///
+    /// `null` and not `""`, on the same distinction: a model nobody reported is not a model whose
+    /// name is empty, and [`super::ConnectorPort::retain_binding`] refuses the empty name for that
+    /// reason on the other side of the boundary.
+    fn optional_text(text: Option<&str>) -> String {
+        match text {
+            Some(text) => format!("\"{}\"", escape_transcript_text(text)),
             None => String::from("null"),
         }
     }
@@ -2984,6 +4614,84 @@ impl fmt::Display for TerminationReason {
             Self::Extinction => formatter.write_str("extinction"),
         }
     }
+}
+
+/// How a recorded run ended: as a simulation, or at `SPEC-MOK-007` rule 14.6's ceiling.
+///
+/// `pub(crate)` and not `pub`, on `Simulation::run_recording`'s precedent and for the same reason:
+/// rule 20.5.2 makes that entry point the crate-private carrier between the binary target and the
+/// engine, this is what it now carries back, and `SPEC-MOK-002` rule 5's public interface grows by
+/// nothing here. `Simulation::run` keeps its `RunSummary` and its exact signature, so every host
+/// that never lends a port sees no change at all.
+///
+/// A ceiling stop is **not** a third [`TerminationReason`]. That enum is public, both hosts match on
+/// it, and it is written into `SPEC-MOK-006`'s run record as `reason` — so a third value there is a
+/// domain change and a `schema` increment that this work order is out of scope for. It is also not a
+/// simulation outcome: no rule of `SPEC-MOK-001` produced it, and the world it stopped is neither
+/// extinct nor finished. [`accounting::RunEnd`] states the same separation on the accounting side and
+/// states it first; this type is the run loop's half of it.
+/// `Debug` because `Result::unwrap_err` requires it of the success type, and four existing tests
+/// assert on a run that failed to write its record sink.
+#[derive(Debug)]
+pub(crate) enum RunOutcome {
+    /// The run reached one of `SPEC-MOK-001`'s two endings and has a summary.
+    Completed {
+        summary: RunSummary,
+        /// `SPEC-MOK-007` rule 15's record, rendered as one unframed line, or `None` from a run whose
+        /// source reported no accounting.
+        ///
+        /// **The library renders it and the host places it**, which is rule 11.1's division applied
+        /// to the *Outputs* section's fourth output: no rule fixes a destination, so the engine
+        /// authors the line and hands it back exactly as it hands a transcript record to the port.
+        /// The two streams that do have destinations are both closed to it, and rule 12.6 is why —
+        /// a replay must reproduce the recorded run's standard output and record-stream bytes while
+        /// rule 15.6 gives it no record of its own, so a record in either stream makes those two
+        /// rules contradict each other. **The binary target writes it to the diagnostic stream**,
+        /// the one stream rule 12.6 does not claim byte-identity for, on the repository owner's
+        /// decision of 2026-08-29.
+        ///
+        /// `None` is rule 15.6 kept structurally rather than by a branch: it is
+        /// [`Proposer::accounting`]'s default answer, so the four deterministic sources and every
+        /// replay reach here with nothing to report and no run in the four existing policies can
+        /// gain a byte — which is rule 16.
+        run_record: Option<String>,
+    },
+    /// Rule 14.6's stop. The tick reached is rule 15.5's figure and rule 14.7's boundary — the
+    /// streams are complete and readable to it — and it is the tick that was **in progress** when the
+    /// ceiling was met, so the last tick with a metrics record is the one before it.
+    Ceiling {
+        tick_reached: u64,
+        /// As above, and rule 15.5 is why a ceiling stop has one at all: the record "says so and
+        /// states the tick reached, so that a figure is never quoted at a horizon the run did not
+        /// reach". A stop that reported no accounting would be the one ending whose cost nobody could
+        /// state.
+        run_record: Option<String>,
+    },
+}
+
+/// What one tick's opportunities came to.
+///
+/// Private, and a two-variant enum rather than a `bool`, because the caller acts differently on each
+/// and a `bool` at a call site says nothing about which way is which.
+enum TickFlow {
+    /// Every living Mokiterion was given its opportunity.
+    Completed,
+    /// Rule 14.6's ceiling was reached before an opportunity could be issued. That opportunity and
+    /// every later one in the tick was not taken, no action was applied for it, and the tick has no
+    /// metrics record because it is not a completed tick — rule 7.1 of `SPEC-MOK-006` gives one to a
+    /// tick that *terminates* the run, which this is not.
+    CeilingReached,
+}
+
+/// What one step came to: [`TickFlow`] with the termination check folded in.
+enum StepFlow {
+    /// The tick completed and the run continues.
+    Continued,
+    /// The tick completed and terminated the run.
+    Ended(TerminationReason),
+    /// [`TickFlow::CeilingReached`], carried out unchanged. The termination check is not reached,
+    /// because a tick that was cut short cannot be asked whether it emptied the world.
+    CeilingReached,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -3747,8 +5455,28 @@ impl Simulation {
     /// The consequence is that a `Policy::Llm` run cannot be started through here: it is an
     /// invalid configuration with no port, and this reports [`MISSING_DECISION_PORT`] rather
     /// than substituting a source. That is rule 20.8 and not an oversight of rule 20.5.1.
+    ///
+    /// It reports a [`RunSummary`] and not a [`RunOutcome`], and can, because with no port there is
+    /// nothing that spends: [`DecisionSource::halted`]'s default is `false` for all four deterministic
+    /// sources and `Policy::Llm` is refused above, so rule 14.6's ceiling is unreachable from here.
+    /// The arm is still written out rather than asserted away — `ARCH-MOK-001` wants ordinary `Result`
+    /// propagation rather than a panic, and a refusal a later reader can read beats an
+    /// `unreachable!()` a later change can reach.
+    ///
+    /// **The run record is discarded here and is always `None`** for the same reason, rule 15.6's from
+    /// the other end: a source that spends nothing reports no accounting, so there is no record to
+    /// drop. Rule 20.5.1 forbids this signature to grow, and a host that wants rule 15's record is a
+    /// host that lends a port.
     pub fn run<W: Write>(&mut self, output: &mut W) -> io::Result<RunSummary> {
-        self.run_recording(output, None, None)
+        match self.run_recording(output, None, None)? {
+            RunOutcome::Completed { summary, .. } => Ok(summary),
+            RunOutcome::Ceiling { tick_reached, .. } => Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!(
+                    "a run with no decision port reported a spend ceiling at tick {tick_reached}"
+                ),
+            )),
+        }
     }
 
     /// [`Simulation::run`], additionally projecting every record `SPEC-MOK-006` fixes onto
@@ -3770,7 +5498,7 @@ impl Simulation {
         output: &mut W,
         records: Option<&mut dyn Write>,
         port: Option<&mut dyn Proposer>,
-    ) -> io::Result<RunSummary> {
+    ) -> io::Result<RunOutcome> {
         let mut sinks = Sinks {
             text: output,
             records,
@@ -3813,11 +5541,31 @@ impl Simulation {
         }
     }
 
+    /// `SPEC-MOK-007` rule 15's record for a run that had an accounting, and `None` for one that did
+    /// not.
+    ///
+    /// The whole of the live-versus-not decision is the `?`: rule 15.6 gives a replay no run record
+    /// and [`Proposer::accounting`]'s default is how a replay says so, so this asks "did anything
+    /// spend" rather than "which kind of source is this" — which rule 1.2 leaves the engine no way to
+    /// ask, there being no branch on live-versus-replay anywhere in this target.
+    ///
+    /// `&self` and the source by shared reference: rendering a record must move no figure and take no
+    /// decision. It is called at exactly two places, both after the run loop has ended.
+    fn live_run_record<D: DecisionSource>(
+        &self,
+        decision_source: &D,
+        tick_reached: u64,
+        ended: accounting::RunEnd,
+    ) -> Option<String> {
+        let live = decision_source.accounting()?;
+        Some(accounting::RunRecord::new(&self.config, &live, tick_reached, ended).render())
+    }
+
     fn run_with_source<W: Write, D: DecisionSource>(
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
-    ) -> io::Result<RunSummary> {
+    ) -> io::Result<RunOutcome> {
         if self.tick != 0 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -3868,17 +5616,51 @@ impl Simulation {
         self.emit(sinks, event)?;
 
         loop {
-            if let Some(reason) = self.step(sinks, decision_source)? {
-                let summary = self.summary(reason);
-                self.emit_summary(&mut *sinks.text, &summary)?;
-                // Rule 8.1: one run record per run, last in the stream, after the final
-                // tick's metrics record. Rule 9.3 pairs it with the summary line above, which
-                // is why it is written here and not inside `emit_summary`: the text stream has
-                // one authority and this record is the other stream's counterpart to it.
-                if let Some(sink) = sinks.records() {
-                    self.write_run_record(sink, &summary).map_err(sink_error)?;
+            match self.step(sinks, decision_source)? {
+                StepFlow::Continued => {}
+                StepFlow::Ended(reason) => {
+                    let summary = self.summary(reason);
+                    self.emit_summary(&mut *sinks.text, &summary)?;
+                    // Rule 8.1: one run record per run, last in the stream, after the final
+                    // tick's metrics record. Rule 9.3 pairs it with the summary line above, which
+                    // is why it is written here and not inside `emit_summary`: the text stream has
+                    // one authority and this record is the other stream's counterpart to it.
+                    if let Some(sink) = sinks.records() {
+                        self.write_run_record(sink, &summary).map_err(sink_error)?;
+                    }
+                    // Rule 15's record, asked for after both streams are complete. It is asked
+                    // **once** and after the run loop has returned, which is what keeps rule 14's
+                    // *State model* literal: there is no opportunity left for an accounting figure
+                    // to influence.
+                    let run_record = self.live_run_record(
+                        decision_source,
+                        summary.ticks(),
+                        accounting::RunEnd::Completed(reason),
+                    );
+                    return Ok(RunOutcome::Completed {
+                        summary,
+                        run_record,
+                    });
                 }
-                return Ok(summary);
+                // Rule 14.6's stop, leaving both streams exactly as the cut-short tick left them.
+                // No summary line, because `RunSummary` reports a `TerminationReason` and there is
+                // none — a run that stopped spending is not a run that ended, and writing the
+                // twelve-figure summary of a horizon the run did not reach is precisely what rule
+                // 15.5 exists to prevent.
+                StepFlow::CeilingReached => {
+                    // Rule 15.5: this ending's record is the one that most has to exist, because it
+                    // is the ending at which a figure could be quoted at a horizon the run did not
+                    // reach.
+                    let run_record = self.live_run_record(
+                        decision_source,
+                        self.tick,
+                        accounting::RunEnd::Ceiling,
+                    );
+                    return Ok(RunOutcome::Ceiling {
+                        tick_reached: self.tick,
+                        run_record,
+                    });
+                }
             }
         }
     }
@@ -3972,11 +5754,29 @@ impl Simulation {
         let stepped = self.step(&mut sinks, decision_source);
         let events = self.collected_events.take().unwrap_or_default();
         match stepped {
-            Ok(reason) => Ok(TickOutcome {
+            Ok(StepFlow::Continued) => Ok(TickOutcome {
                 events,
-                finished: reason.is_some(),
-                reason,
+                finished: false,
+                reason: None,
             }),
+            Ok(StepFlow::Ended(reason)) => Ok(TickOutcome {
+                events,
+                finished: true,
+                reason: Some(reason),
+            }),
+            // Rule 14.8 is why this is an error and not a fourth shape of [`TickOutcome`]: **a replay
+            // has no ceiling**, rule 20.1 makes this entry point the observer host's, and rule 18.4.2
+            // gives that host no live-mode selection to make — so a port reaching here that has
+            // stopped spending is a port this door was never meant to be given. Reporting it as an
+            // error says so; `TickOutcome { finished: true, reason: None }` is representable and would
+            // say instead that the run ended for no reason, to a host whose `is_finished` reads
+            // `self.outcome` and would answer `false` at the same moment. `TickOutcome` is public and
+            // `SPEC-MOK-002` rule 5's interface does not grow here to carry a case rule 14.8 excludes.
+            Ok(StepFlow::CeilingReached) => Err(format!(
+                "the decision port reported its spend ceiling reached at tick {}, \
+                 and this entry point has no spending to bound",
+                self.tick
+            )),
             // `io::sink` cannot fail, so a step's error is the engine's own or the port's:
             // `SPEC-MOK-007` rules 12.3 and 12.4 reach here through `DecisionSource::failure`, and
             // rule 19.4 requires the message to name the opportunity, which the port's words do.
@@ -4143,9 +5943,20 @@ impl Simulation {
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
-    ) -> io::Result<Option<TerminationReason>> {
+    ) -> io::Result<StepFlow> {
         self.tick += 1;
-        self.run_tick(sinks, decision_source)?;
+        // Rule 14.7's orderly stop, and what makes it orderly is everything this branch does not do.
+        // No metrics record for the tick that was cut short, because it is not a completed tick; no
+        // `simulation_ended` event, because the simulation did not end and `SPEC-MOK-006` admits no
+        // reason it could carry; no run record, because rule 8.1 of that specification gives one to a
+        // run and this one has no outcome to state. What was written stays written: rule 13.4's
+        // removal is for a *partial* stream nobody should read as a whole run, and this stream is
+        // complete and readable to the tick reached, which is what rule 14.7 asks for in so many
+        // words. `self.outcome` also stays `None`, so a host that asks whether the run finished is
+        // told the truth — it did not, it stopped.
+        if let TickFlow::CeilingReached = self.run_tick(sinks, decision_source)? {
+            return Ok(StepFlow::CeilingReached);
+        }
 
         let extinct = self.agents.iter().all(|agent| !agent.alive);
         let tick_limit_reached = self.tick >= self.config.tick_limit;
@@ -4161,10 +5972,10 @@ impl Simulation {
             // Rule 7.1: a tick that terminates the run is a completed tick and carries its
             // metrics record, after that tick's `simulation_ended` event.
             self.write_metrics(sinks)?;
-            return Ok(Some(reason));
+            return Ok(StepFlow::Ended(reason));
         }
         self.write_metrics(sinks)?;
-        Ok(None)
+        Ok(StepFlow::Continued)
     }
 
     /// Writes one authoritative event to the host's sink, projects it onto the record stream
@@ -4194,11 +6005,31 @@ impl Simulation {
         &mut self,
         sinks: &mut Sinks<'_, '_, W>,
         decision_source: &mut D,
-    ) -> io::Result<()> {
+    ) -> io::Result<TickFlow> {
         self.decisions.clear();
         for agent_index in 0..self.agents.len() {
             if !self.agents[agent_index].alive {
                 continue;
+            }
+
+            // `SPEC-MOK-007` rule 14.6, and its whole substance is where these three lines sit.
+            // **Before** the observation is composed, before the request is built, before anything is
+            // said to the source: the check precedes the spending, so a declared ceiling bounds a run
+            // rather than being overshot by one exchange. Moving it below `decide` would compile, pass
+            // a test that only compared the final cost against the ceiling, and spend one exchange
+            // past every ceiling ever declared.
+            //
+            // Per opportunity and not per tick, because an exchange is issued per acting Mokiterion:
+            // a tick of twelve is twelve exchanges, and a check at the tick boundary would admit
+            // eleven of them past the ceiling. `VER-MOK-018` case L30 is the measurement that makes
+            // the distinction matter — at that configuration a ceiling of eighteen falls inside the
+            // second tick.
+            //
+            // The four deterministic sources take `DecisionSource::halted`'s default and never enter
+            // this branch, so `REQ-MOK-068`'s byte-identity is untouched: no draw is taken here and no
+            // record is written, whichever way the answer goes.
+            if decision_source.halted() {
+                return Ok(TickFlow::CeilingReached);
             }
 
             let observation = self.observation(agent_index);
@@ -4258,7 +6089,7 @@ impl Simulation {
                 self.regenerate_food(sinks, territory)?;
             }
         }
-        Ok(())
+        Ok(TickFlow::Completed)
     }
 
     fn observation(&self, agent_index: usize) -> Observation {
@@ -5626,7 +7457,7 @@ fn write_attribute(
 mod tests {
     use std::collections::HashSet;
 
-    use super::accounting::{ExchangeUsage, RunAccount, RunEnd, RunRecord, UnitPrices};
+    use super::accounting::{ExchangeUsage, PerTokenPrices, RunAccount, RunEnd, RunRecord};
     use super::*;
 
     /// The historical helper. It selects the baseline source so that the foundation
@@ -5640,6 +7471,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -5664,6 +7496,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -6828,6 +8661,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: true,
                 spend_ceiling: None,
+                prices: None,
             };
             let mut first = Simulation::new(configuration).unwrap();
             let mut second = Simulation::new(configuration).unwrap();
@@ -6917,6 +8751,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -7140,6 +8975,7 @@ mod tests {
                         density: Density::parse(density).unwrap(),
                         trace_actions: false,
                         spend_ceiling: None,
+                        prices: None,
                     })
                     .unwrap();
                     assert_eq!(
@@ -9451,6 +11287,7 @@ mod tests {
                 density: Density::parse("1.50").unwrap(),
                 trace_actions: true,
                 spend_ceiling: None,
+                prices: None,
             },
         )
         .unwrap();
@@ -9639,6 +11476,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: false,
                 spend_ceiling: None,
+                prices: None,
             };
             print_entropy_trace(
                 Config {
@@ -9713,6 +11551,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: false,
                 spend_ceiling: None,
+                prices: None,
             };
             let states = match policy {
                 Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
@@ -9764,6 +11603,7 @@ mod tests {
                     density: Density::DEFAULT,
                     trace_actions: false,
                     spend_ceiling: None,
+                    prices: None,
                 };
                 let states = match policy {
                     Policy::Baseline => entropy_trace(config, BaselineDecisionSource, false).0,
@@ -9908,6 +11748,7 @@ mod tests {
                     density: Density::DEFAULT,
                     trace_actions,
                     spend_ceiling: None,
+                    prices: None,
                 };
                 assert_a_sink_is_entropy_neutral(
                     Config {
@@ -9960,6 +11801,7 @@ mod tests {
                                 density: Density::parse(density).unwrap(),
                                 trace_actions,
                                 spend_ceiling: None,
+                                prices: None,
                             };
                             observed.push((
                                 (policy, trace_actions, record),
@@ -10102,6 +11944,7 @@ mod tests {
                         density: Density::parse(density).unwrap(),
                         trace_actions: false,
                         spend_ceiling: None,
+                        prices: None,
                     };
 
                     let mut plain = Simulation::new(config).unwrap();
@@ -10111,9 +11954,11 @@ mod tests {
                     let mut recorded = Simulation::new(config).unwrap();
                     let mut recorded_text = Vec::new();
                     let mut records = Vec::new();
-                    let recorded_summary = recorded
-                        .run_recording(&mut recorded_text, Some(&mut records), None)
-                        .unwrap();
+                    let recorded_summary = completed(
+                        recorded
+                            .run_recording(&mut recorded_text, Some(&mut records), None)
+                            .unwrap(),
+                    );
 
                     assert_eq!(plain_text, recorded_text, "{seed} {density} {policy}");
                     assert_eq!(plain_summary, recorded_summary);
@@ -10149,6 +11994,7 @@ mod tests {
                     density: Density::DEFAULT,
                     trace_actions,
                     spend_ceiling: None,
+                    prices: None,
                 };
 
                 let mut plain = Simulation::new(config).unwrap();
@@ -10158,9 +12004,11 @@ mod tests {
                 let mut recorded = Simulation::new(config).unwrap();
                 let mut recorded_text = Vec::new();
                 let mut records = Vec::new();
-                let recorded_summary = recorded
-                    .run_recording(&mut recorded_text, Some(&mut records), None)
-                    .unwrap();
+                let recorded_summary = completed(
+                    recorded
+                        .run_recording(&mut recorded_text, Some(&mut records), None)
+                        .unwrap(),
+                );
 
                 assert_eq!(plain_text, recorded_text, "{policy:?} {trace_actions}");
                 assert_eq!(plain_summary, recorded_summary);
@@ -10933,6 +12781,7 @@ mod tests {
             density: Density::parse("1.50").unwrap(),
             trace_actions: true,
             spend_ceiling: None,
+            prices: None,
         })
         .unwrap();
         sizes.push(("subject.agent", simulation.agents.len()));
@@ -11015,7 +12864,15 @@ mod tests {
         account: RunAccount,
         /// The usage this port reports for an exchange that yielded a proposal. Synthetic by
         /// construction: no provider reported it and nothing here estimates it.
+        ///
+        /// It is billed *and* reported, which a real connector will also do with one figure: rule
+        /// 14's accounting and rule 11.3's record read the same counts, and a fixture that declared
+        /// them twice could pass case **P4** while a connector that disagreed with itself failed it.
         usage: ExchangeUsage,
+        /// The response rule 1.1a has the port return beside the proposal, where the test declares
+        /// one. `None` — no response at all — for every port built before this existed, so their
+        /// records still state `"response":null` byte for byte.
+        response: Option<String>,
     }
 
     impl ScriptedPort {
@@ -11041,10 +12898,35 @@ mod tests {
 
         /// Declares the run's prices, its ceiling and the usage each answered exchange reports —
         /// rule 14.3's inputs, arriving as inputs.
-        fn billing(self, prices: UnitPrices, ceiling: Option<u64>, usage: ExchangeUsage) -> Self {
+        ///
+        /// The prices arrive as [`PerTokenPrices`] and not as the public [`UnitPrices`] that
+        /// [`ConnectorPort::new`](super::ConnectorPort::new) takes, which is deliberate: the
+        /// conversion between the two is
+        /// [`PerTokenPrices::declared`](super::accounting::PerTokenPrices::declared) and it has a
+        /// case of its own. A fixture that went through it would make every assertion below depend on
+        /// that one function being right, and the field this file's figures name outright — the
+        /// *uncached* prompt price — is the field the conversion exists to name.
+        fn billing(
+            self,
+            prices: PerTokenPrices,
+            ceiling: Option<u64>,
+            usage: ExchangeUsage,
+        ) -> Self {
             Self {
                 account: RunAccount::declared(prices, ceiling),
                 usage,
+                ..self
+            }
+        }
+
+        /// Declares the response the port received, rule 1.1a's other field.
+        ///
+        /// Separate from [`Self::billing`] because the two are independent: a response arrives from a
+        /// connector whether or not the run declared prices, and rule 14.8 makes the prices live-only
+        /// while rule 11.3's record field is owed by every exchange.
+        fn receiving(self, response: &str) -> Self {
+            Self {
+                response: Some(response.to_string()),
                 ..self
             }
         }
@@ -11082,21 +12964,72 @@ mod tests {
     }
 
     impl Proposer for ScriptedPort {
-        fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+        /// Rule 14.6, answered from this port's own account exactly as
+        /// [`ConnectorPort::halted`](super::ConnectorPort::halted) answers from its own.
+        ///
+        /// The two implementations are one line each and the line is the same line, deliberately:
+        /// the fixture must not be able to stop at a ceiling the connector would run past, or the
+        /// run-level cases below would be measuring the fixture. A port built without
+        /// [`Self::billing`] has a default account with no ceiling and answers `false` for ever,
+        /// which is what leaves every test that predates rule 14.6 running exactly as it did.
+        fn halted(&self) -> bool {
+            self.account.ceiling_reached()
+        }
+
+        /// Rule 15's figures, from the same account `halted` reads, and **always `Some`** exactly as
+        /// [`ConnectorPort::accounting`](super::ConnectorPort::accounting) is always `Some`. That is
+        /// what makes this fixture a live port for rule 15.6's purposes: a run driven by it reports a
+        /// run record and a run driven by [`ReplayPort`] does not, and neither of them told the engine
+        /// which it was.
+        ///
+        /// The binding is `None`, so a record rendered from this states `"model":null` and
+        /// `"reasoning":null`. That is a run whose responses named neither, which is a shape rule 15.2
+        /// admits — and it is the honest one here, because this port parses no response and so has
+        /// nothing to have retained. **Where the binding travels is measured at the process tier**,
+        /// against the canned connector's `model=` and `level=` directives, where a real response
+        /// carries them; a fixture with a declared binding would assert its own declaration.
+        fn accounting(&self) -> Option<LiveAccounting> {
+            Some(self.account.reported(None))
+        }
+
+        fn propose(&mut self, request: DecisionRequest) -> Proposal {
             let answer = match self.answers.get(self.seen.len()) {
                 Some(answer) => answer.clone(),
                 None => self.standing.clone(),
             };
             self.seen.push(request);
             // Rule 14.1 and rule 9.5's count, in the party rule 20.4.1 puts them in and at the
-            // moment the exchange happened. An answered exchange bills the declared usage; an
-            // unanswered one reports none and moves the fallback count. A rejection the engine
-            // decides later cannot reach here, which is rule 9.6.
+            // moment the exchange happened, in the two statements
+            // [`ConnectorPort::propose`](super::ConnectorPort::propose) uses: every exchange is
+            // billed, and an unanswered one then counts a fallback. This double bills the declared
+            // usage for an answered exchange and four absences for an unanswered one, because *this*
+            // port's unanswered exchange is rule 9.4's — it reports no usage, which is not true of
+            // rule 10.4c's and is why the count and the bill are two statements rather than one.
+            // A rejection the engine decides later cannot reach here, which is rule 9.6.
             self.account = match &answer {
                 Some(_) => self.account.after_exchange(&self.usage),
-                None => self.account.after_fallback(),
+                None => self
+                    .account
+                    .after_exchange(&ExchangeUsage::unreported())
+                    .counting_fallback(),
             };
-            answer
+            // Rule 1.1a's evidence. An answered exchange reports what the port declares; an
+            // unanswered one reports the response only, because rule 11.3's `response` field is
+            // where an exchange that yielded no action says why — and the same declared response
+            // travelling with both is what lets a test assert that the record differs in the
+            // `action` and `fallback` fields alone.
+            let usage = match &answer {
+                Some(_) => self.usage,
+                None => ReportedUsage::default(),
+            };
+            Proposal {
+                action: answer,
+                response: self.response.clone(),
+                usage,
+                // This port answers from a list and retries nothing, so rule 19.5's field stays
+                // empty: it is the shape every port but a retrying one has.
+                earlier_attempts: Vec::new(),
+            }
         }
 
         fn record(&mut self, record: &str) -> io::Result<()> {
@@ -11114,7 +13047,16 @@ mod tests {
     struct ForbiddenPort;
 
     impl Proposer for ForbiddenPort {
-        fn propose(&mut self, _request: DecisionRequest) -> Option<Action> {
+        /// Panics for the third time, and this one closes the half rule 14.6 opened: an ignored port
+        /// must not be *asked* anything either. The question is asked before every opportunity, so a
+        /// source that asked it without checking whose port it held would consult an ignored port at
+        /// every tick of every run — while proposing nothing and writing nothing, which is a
+        /// consultation no other assertion in this file could see.
+        fn halted(&self) -> bool {
+            panic!("rule 20.9: a port supplied under another source must be ignored, not asked");
+        }
+
+        fn propose(&mut self, _request: DecisionRequest) -> Proposal {
             panic!(
                 "rule 20.9: a port supplied under another source must be ignored, not consulted"
             );
@@ -11127,6 +13069,18 @@ mod tests {
         /// apart from silence.
         fn record(&mut self, _record: &str) -> io::Result<()> {
             panic!("rule 20.9: a port supplied under another source must receive no record");
+        }
+
+        /// Panics for the same reason `halted` does, and closes the last of rule 20.9's four doors.
+        /// Rule 15's figures are asked for at the end of a run, after every tick and after every
+        /// other assertion in a passing case has already been made, so an ignored port asked for
+        /// its account would be a consultation that produced no wrong byte anywhere — the run
+        /// record is `None` for a deterministic source either way. The panic is the only thing
+        /// that could see it.
+        fn accounting(&self) -> Option<LiveAccounting> {
+            panic!(
+                "rule 20.9: a port supplied under another source must be ignored, not accounted"
+            );
         }
     }
 
@@ -11159,6 +13113,36 @@ mod tests {
         ]
     }
 
+    /// A proposal carrying an action and no evidence, which is what a port with nothing behind it
+    /// returns and what every case predating rule 1.1a asserted against.
+    fn proposed(action: Action) -> Proposal {
+        Proposal {
+            action: Some(action),
+            ..Proposal::nothing()
+        }
+    }
+
+    /// The summary of a run that reached one of `SPEC-MOK-001`'s two endings.
+    ///
+    /// Every test that predates `SPEC-MOK-007` rule 14.6 asserts on a summary and cannot reach the
+    /// ceiling — a deterministic source takes `DecisionSource::halted`'s default, and a scripted port
+    /// declares no ceiling unless the test says so. This states that in one place instead of at each
+    /// call site, and it panics rather than defaulting, so a run that stopped short fails the test it
+    /// was borrowed by rather than being read as a run that finished.
+    ///
+    /// It discards rule 15's run record rather than asserting anything about it, and the cases that
+    /// measure the record match the outcome themselves. That is deliberate: every case that borrows
+    /// this helper predates the record, and having it assert `None` would make each of them a claim
+    /// about accounting that its author did not write.
+    fn completed(outcome: RunOutcome) -> RunSummary {
+        match outcome {
+            RunOutcome::Completed { summary, .. } => summary,
+            RunOutcome::Ceiling { tick_reached, .. } => {
+                panic!("the run stopped at its spend ceiling at tick {tick_reached}")
+            }
+        }
+    }
+
     fn llm_config(seed: u64, tick_limit: u64, trace_actions: bool) -> Config {
         Config {
             seed,
@@ -11167,6 +13151,7 @@ mod tests {
             density: Density::DEFAULT,
             trace_actions,
             spend_ceiling: None,
+            prices: None,
         }
     }
 
@@ -11635,6 +13620,7 @@ mod tests {
                 density: Density::DEFAULT,
                 trace_actions: true,
                 spend_ceiling: None,
+                prices: None,
             };
 
             Simulation::new(config)
@@ -11805,7 +13791,13 @@ mod tests {
     /// one that states each applied action — so a replay that produced a different action fails on
     /// the bytes rather than on a summary that happened to agree.
     fn record_a_run(seed: u64, tick_limit: u64, script: Vec<Option<Action>>) -> Recording {
-        let mut port = ScriptedPort::answering(script);
+        record_a_run_with(seed, tick_limit, ScriptedPort::answering(script))
+    }
+
+    /// [`record_a_run`] against a port the case built, for the cases that declare what the port
+    /// reports as well as what it proposes.
+    fn record_a_run_with(seed: u64, tick_limit: u64, port: ScriptedPort) -> Recording {
+        let mut port = port;
         let mut text = Vec::new();
         let mut records = Vec::new();
         Simulation::new(llm_config(seed, tick_limit, true))
@@ -12041,7 +14033,7 @@ mod tests {
         // are the values a reader would most plausibly trip over.
         let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
         let request = DecisionRequest::compose(&simulation.observation(0));
-        let record = exchange_record(&request, Some(&Action::Sleep));
+        let record = exchange_record(&request, &proposed(Action::Sleep));
         assert!(request.observation().contains("tick: "));
         assert_eq!(transcript_number(&record, "tick"), Some(request.tick()));
         assert_eq!(
@@ -12397,6 +14389,234 @@ mod tests {
         // than producing a plausible wrong run.
         let error = replay(777, 20, &transcript).expect_err("rule 12.3");
         assert!(error.to_string().starts_with("transcript: "), "{error}");
+    }
+
+    /// A port that forwards to another and keeps every record the engine handed it.
+    ///
+    /// Rule 11.8 has a replay write no transcript, so the records a replay *authors* have no
+    /// destination and cannot otherwise be seen. Rule 12.6's byte-identity is a claim about exactly
+    /// those bytes, and the streams the cases above compare are the text and the record stream
+    /// rather than the transcript itself.
+    struct RecordKeeper<P: Proposer> {
+        inner: P,
+        written: Vec<String>,
+    }
+
+    impl<P: Proposer> RecordKeeper<P> {
+        fn new(inner: P) -> Self {
+            Self {
+                inner,
+                written: Vec::new(),
+            }
+        }
+
+        /// What a recording host would have written, in [`ScriptedPort::transcript`]'s framing so
+        /// that the two are comparable as whole files.
+        fn transcript(&self) -> String {
+            self.written
+                .iter()
+                .map(|record| format!("{record}\n"))
+                .collect()
+        }
+    }
+
+    impl<P: Proposer> Proposer for RecordKeeper<P> {
+        /// Forwarded, on `LentPort`'s reasoning in the observer host: a wrapper that answered rule
+        /// 14.6's question itself would be a wrapper that changed what the run does.
+        fn halted(&self) -> bool {
+            self.inner.halted()
+        }
+
+        fn propose(&mut self, request: DecisionRequest) -> Proposal {
+            self.inner.propose(request)
+        }
+
+        fn record(&mut self, record: &str) -> io::Result<()> {
+            self.written.push(record.to_string());
+            self.inner.record(record)
+        }
+    }
+
+    /// Rule 11.3 and rule 1.1a: the record carries the response as received and the provider's four
+    /// reported counts, because the port's return now carries them to the engine that authors it.
+    #[test]
+    fn a_record_carries_the_response_and_the_reported_counts() {
+        let response = "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\
+                        \"reasoning\":\"none\",\"usage\":{\"prompt\":6000,\"cached_prompt\":5400,\
+                        \"output\":40,\"reasoning\":0}}";
+        let recording = record_a_run_with(
+            42,
+            3,
+            ScriptedPort::always(Action::Sleep)
+                .billing(declared_prices(), None, synthetic_usage())
+                .receiving(response),
+        );
+
+        let exchanges = recording.port.exchanges();
+        assert!(!exchanges.is_empty());
+        for record in &exchanges {
+            assert!(
+                record.contains(
+                    "\"usage\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\
+                     \"reasoning\":0}"
+                ),
+                "{record}"
+            );
+            // "As received, in full", which for a response carrying quotation marks means the value
+            // is escaped and is therefore a string rather than a nested object. The record's own
+            // `usage` is the only object a field reader can find, and the four counts below are
+            // read past the response to prove it.
+            assert_eq!(
+                transcript_string(record, "response").as_deref(),
+                Some(response)
+            );
+            assert_eq!(transcript_number(record, "prompt"), Some(6_000));
+            assert_eq!(transcript_number(record, "cached_prompt"), Some(5_400));
+            assert_eq!(transcript_number(record, "output"), Some(40));
+            assert_eq!(transcript_number(record, "reasoning"), Some(0));
+        }
+
+        // The counts billed and the counts recorded are the same figures, which is case **P4** from
+        // the record's side: the port reports one usage and it reaches both.
+        assert_eq!(
+            recording.port.account.cost(),
+            SYNTHETIC_COST * exchanges.len() as u64
+        );
+    }
+
+    /// Rule 11.5: an unreported count is **absent, not zero**, at both levels of absence.
+    #[test]
+    fn an_unreported_count_is_absent_and_not_zero() {
+        // All four absent: the field itself is the format's absence. This is how every record
+        // authored before a provider existed states it, and it is why those transcripts replay
+        // byte-identically under rule 12.6 rather than needing a version bump.
+        let recording = record_a_run_with(42, 2, ScriptedPort::always(Action::Wait));
+        let empty = recording.port.exchanges();
+        assert!(!empty.is_empty());
+        for record in &empty {
+            assert!(
+                record.contains("\"response\":null,\"usage\":null,"),
+                "{record}"
+            );
+        }
+
+        // One of the four absent: the object states all four and the missing one is `null`, so a
+        // reader can tell an unreported count from a field this module forgot to write. Rule 14.5
+        // acts on exactly this record — the exchange succeeded and was billed, and what is missing
+        // is one figure rather than the response.
+        let recording = record_a_run_with(
+            42,
+            2,
+            ScriptedPort::always(Action::Wait).billing(
+                declared_prices(),
+                None,
+                ExchangeUsage::without_cached_figure(6_000, 40),
+            ),
+        );
+        let partial = recording.port.exchanges();
+        assert!(!partial.is_empty());
+        for record in &partial {
+            assert!(
+                record.contains(
+                    "\"usage\":{\"prompt\":6000,\"cached_prompt\":null,\"output\":40,\
+                     \"reasoning\":0}"
+                ),
+                "{record}"
+            );
+            assert_eq!(transcript_number(record, "cached_prompt"), None);
+            assert_eq!(transcript_number(record, "prompt"), Some(6_000));
+        }
+        // And the absence survived to the end of the run, which is rule 14.5's failure to evaluate
+        // rather than a ratio computed from a zero.
+        assert_eq!(recording.port.account.cache_ratio_basis_points(), None);
+    }
+
+    /// Rule 11.4.1's round trip, over the one string value this module does not compose itself.
+    ///
+    /// A response arrives from a program rule 10.7 declares untrusted in whole, so the input worth
+    /// testing is the one that attacks the framing: quotation marks, a backslash, a newline, control
+    /// characters, and the field names the record's own readers look for. The counts and the flag
+    /// asserted below are written *after* the response on the record, so a response that escaped its
+    /// value would be found first and these would read its planted figures.
+    #[test]
+    fn a_response_survives_the_framing_and_names_no_field() {
+        let hostile =
+            "\"usage\":{\"prompt\":999},\"fallback\":true, a \\ backslash\nand \u{7}\u{1b} too";
+        let recording = record_a_run_with(
+            42,
+            2,
+            ScriptedPort::always(Action::Sleep)
+                .billing(declared_prices(), None, ExchangeUsage::reported(1, 0, 2, 3))
+                .receiving(hostile),
+        );
+
+        let exchanges = recording.port.exchanges();
+        assert!(!exchanges.is_empty());
+        for record in &exchanges {
+            assert_eq!(
+                transcript_string(record, "response").as_deref(),
+                Some(hostile)
+            );
+            assert_eq!(transcript_number(record, "prompt"), Some(1));
+            assert_eq!(transcript_number(record, "cached_prompt"), Some(0));
+            assert_eq!(transcript_flag(record, "fallback"), Some(false));
+            // Rule 11.2's one line per exchange, which a raw newline in a response would break.
+            assert!(!record.contains('\n'), "{record}");
+        }
+    }
+
+    /// Rule 12.6 over rule 1.1a's two new fields: a replay re-authors the evidence it read.
+    ///
+    /// This is the half of byte-identity these fields could break, and the only half that is not
+    /// structural. Every other field on a replayed record is composed from the run — the tick, the
+    /// actor, the blocks, the digest — so a replay that reached the same opportunity states them
+    /// again by construction. The response and the counts came from outside the engine, and they
+    /// appear on a replayed record only because [`ReplayPort`] read them back out of the record it
+    /// replaced. The whole transcript is compared, head included.
+    #[test]
+    fn a_replay_re_authors_the_evidence_the_recording_carried() {
+        let response = "{\"note\":\"a \\\\ backslash, a \\\" quote and a\nnewline\",\
+                        \"usage\":{\"prompt\":9}}";
+        let recording = record_a_run_with(
+            42,
+            10,
+            ScriptedPort::answering(varied_script(200))
+                .billing(declared_prices(), None, synthetic_usage())
+                .receiving(response),
+        );
+        let transcript = recording.port.transcript();
+
+        // Not a vacuous comparison. The recording carried both fields, on records of both kinds:
+        // rule 12.7's recorded fallback carries a response too, and it is the ill-formed response
+        // that a reader most needs to still be there.
+        assert!(
+            transcript.contains("\"cached_prompt\":5400"),
+            "{transcript}"
+        );
+        let recorded = recording.port.exchanges();
+        assert!(
+            recorded
+                .iter()
+                .any(|record| record.contains("\"fallback\":true"))
+        );
+        for record in &recorded {
+            assert_eq!(
+                transcript_string(record, "response").as_deref(),
+                Some(response)
+            );
+        }
+
+        let mut keeper = RecordKeeper::new(ReplayPort::new(transcript.as_bytes()));
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        Simulation::new(llm_config(42, 10, true))
+            .unwrap()
+            .run_recording(&mut text, Some(&mut records), Some(&mut keeper))
+            .expect("a matched replay completes");
+
+        assert_eq!(text, recording.text);
+        assert_eq!(records, recording.records);
+        assert_eq!(keeper.transcript(), transcript);
     }
 
     /// Rule 20.4: the port performs no filesystem operation, and reads nothing at construction.
@@ -12788,18 +15008,40 @@ mod tests {
     // -----------------------------------------------------------------------------------
 
     /// Prices in the shape a provider publishes them, converted once: `$1.25`, `$0.125` and `$10.00`
-    /// per million tokens are `1_250`, `125` and `10_000` nanodollars per token. The reasoning price
-    /// matches the output price, which is how a provider that bills reasoning tokens bills them.
+    /// per million tokens are `125`, `13` and `1_000` **cents per million tokens**, which rule 14.3a
+    /// declares and which are the same integers as microcents per token. The reasoning price matches
+    /// the output price, which is how a provider that bills reasoning tokens bills them.
+    ///
+    /// The cached figure is `13` and not `12.5`, because rule 14.3a's four values are integers: the
+    /// operator declares a whole number of cents per million tokens and there is no finer thing to
+    /// declare. `WO-MOK-026` moved these figures from nanodollars per token, where the same three
+    /// prices were `1_250`, `125` and `10_000`, when rule 14.2 as amended 2026-08-29 stated the minor
+    /// unit as the US cent.
     ///
     /// Round numbers, and deliberately: a case about integer arithmetic should fail on the
     /// arithmetic rather than on a reader's inability to check the expected figure.
-    fn declared_prices() -> UnitPrices {
-        UnitPrices {
-            uncached_prompt: 1_250,
-            cached_prompt: 125,
-            output: 10_000,
-            reasoning: 10_000,
+    fn declared_prices() -> PerTokenPrices {
+        PerTokenPrices {
+            uncached_prompt: 125,
+            cached_prompt: 13,
+            output: 1_000,
+            reasoning: 1_000,
         }
+    }
+
+    /// An account's figures as [`Proposer::accounting`] reports them, with a model identifier and a
+    /// reasoning level standing in for the ones a live response would have carried.
+    ///
+    /// The two strings are the binding [`ConnectorPort`] retains from the first response that named
+    /// both, and they are supplied here rather than left absent so that a record rendered from this
+    /// states them. The cases that measure their *absence* pass `None` themselves — a helper that
+    /// could only produce one of the two shapes would decide rule 15.2's hardest field for every
+    /// case that borrows it.
+    fn reported(account: &RunAccount) -> LiveAccounting {
+        account.reported(Some(&(
+            String::from("a-model-identifier"),
+            String::from("none"),
+        )))
     }
 
     /// One exchange's synthetic usage: a 6,000-token prompt of which 5,400 were served from the
@@ -12813,8 +15055,31 @@ mod tests {
     }
 
     /// [`synthetic_usage`] at [`declared_prices`], computed longhand: 600 uncached prompt tokens,
-    /// 5,400 cached ones and 40 output tokens.
-    const SYNTHETIC_COST: u64 = 600 * 1_250 + 5_400 * 125 + 40 * 10_000;
+    /// 5,400 cached ones and 40 output tokens, in **microcents**.
+    ///
+    /// 185,200 microcents is 0.1852 of a cent, which is the figure that decides the unit: one
+    /// exchange of this size costs a fifth of a cent, so an accumulation in whole cents would add
+    /// zero here and rule 14.6's ceiling would never move. See [`PerTokenPrices`].
+    const SYNTHETIC_COST: u64 = 600 * 125 + 5_400 * 13 + 40 * 1_000;
+
+    /// One exchange's usage costing exactly one whole US cent at [`declared_prices`]: a
+    /// 1,000-token prompt served entirely from the provider's cache at 13 microcents each, and 987
+    /// output tokens at 1,000 each — 13,000 plus 987,000 microcents.
+    ///
+    /// **It exists because a ceiling cannot be finer than a cent and an exchange can.** Rule 14.2's
+    /// minor unit is the US cent, so rule 14.6's ceiling is declared in whole cents, while one
+    /// exchange of [`synthetic_usage`] costs 0.1852 of one. Cases **L19** and **L30** both state a
+    /// ceiling as a multiple of an exchange's cost, and that claim cannot be written down at all
+    /// unless an exchange costs a whole number of cents. This is the usage those cases spend, so
+    /// that their figures are the figures the cases name rather than figures chosen to divide.
+    fn whole_cent_usage() -> ExchangeUsage {
+        ExchangeUsage::reported(1_000, 1_000, 987, 0)
+    }
+
+    /// [`whole_cent_usage`] at [`declared_prices`], in microcents. One whole cent, by construction,
+    /// and written as the product and sum rather than as `1_000_000` so that a change to either
+    /// input fails here rather than silently making the name a lie.
+    const WHOLE_CENT: u64 = 1_000 * 13 + 987 * 1_000;
 
     /// Rules 9.5 and 9.8: the fallback is `wait`, it is counted, the run continues, and the record
     /// marks it.
@@ -12833,10 +15098,12 @@ mod tests {
         let config = llm_config(42, 6, true);
         let mut silent = ScriptedPort::silent().billing(declared_prices(), None, synthetic_usage());
         let mut text = Vec::new();
-        let summary = Simulation::new(config)
-            .unwrap()
-            .run_recording(&mut text, None, Some(&mut silent))
-            .expect("rule 9.8: a run that fell back is not aborted");
+        let summary = completed(
+            Simulation::new(config)
+                .unwrap()
+                .run_recording(&mut text, None, Some(&mut silent))
+                .expect("rule 9.8: a run that fell back is not aborted"),
+        );
 
         // Rule 9.8: the run's ticks are real and it reached its horizon.
         assert_eq!(summary.reason(), TerminationReason::TickLimit);
@@ -12868,11 +15135,10 @@ mod tests {
 
         // Rule 15.4: the mark is a property of the record, derived from the count.
         let config = llm_config(42, 6, true);
+        let live = reported(&silent.account);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &silent.account,
+            &live,
             summary.ticks(),
             RunEnd::Completed(summary.reason()),
         )
@@ -12892,11 +15158,25 @@ mod tests {
             .run_recording(&mut proposed_text, None, Some(&mut proposing))
             .expect("a run in which every exchange answered");
         assert_eq!(String::from_utf8(proposed_text).unwrap(), text);
+
+        // Two differences between the transcripts, and exactly two, each one a rule. Rule 12.7's
+        // flag; and rule 11.5's usage, because an exchange that yielded nothing reported no counts —
+        // so its record states `"usage":null` where the answered twin's states what the port
+        // reported. Both are asserted present before being substituted away, so the second
+        // difference is checked rather than tolerated, and the substitutions are then the *whole* of
+        // it: the blocks, the digests, the prefix digests, the actions and the ticks are identical.
+        // That is what leaves the flag, the count and the mark as the only things distinguishing a
+        // contaminated run from a clean one.
+        const REPORTED: &str = "\"usage\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\
+                                \"reasoning\":0}";
+        assert!(proposing.transcript().contains(REPORTED));
+        assert!(silent.transcript().contains("\"usage\":null"));
         assert_eq!(
             proposing.transcript(),
             silent
                 .transcript()
                 .replace("\"fallback\":true", "\"fallback\":false")
+                .replace("\"usage\":null", REPORTED)
         );
 
         // Rule 15.3: a clean run states its zero rather than omitting it, and rule 15.4's mark is
@@ -12905,11 +15185,10 @@ mod tests {
         assert_eq!(proposing.account.exchanges(), exchanges);
         assert_eq!(proposing.account.cost(), SYNTHETIC_COST * exchanges);
         let config = llm_config(42, 6, true);
+        let live = reported(&proposing.account);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &proposing.account,
+            &live,
             summary.ticks(),
             RunEnd::Completed(summary.reason()),
         )
@@ -12988,22 +15267,22 @@ mod tests {
     fn cost_is_integer_arithmetic_over_the_declared_prices() {
         let account = RunAccount::declared(declared_prices(), None);
         assert_eq!(account.cost_of(&synthetic_usage()), SYNTHETIC_COST);
-        assert_eq!(account.cost_of(&synthetic_usage()), 1_825_000);
+        assert_eq!(account.cost_of(&synthetic_usage()), 185_200);
 
         // Rule 11.5: an unreported count contributes nothing, and an exchange that reported nothing
         // at all costs nothing rather than costing a prompt's worth of default.
         assert_eq!(account.cost_of(&ExchangeUsage::unreported()), 0);
         // The cached share is billed once, at the cached price. An implementation that billed the
-        // prompt total *and* the cached total would report 8_575_000 here.
+        // prompt total *and* the cached total would report 828_000 here.
         assert_eq!(
             account.cost_of(&ExchangeUsage::reported(6_000, 6_000, 0, 0)),
-            6_000 * 125
+            6_000 * 13
         );
         // Rule 10.7: the provider's figures are untrusted. A cached count above the prompt count is
         // nonsense, and the arithmetic neither panics nor underflows into a bill of quintillions.
         assert_eq!(
             account.cost_of(&ExchangeUsage::reported(10, 10_000, 0, 0)),
-            10 * 125
+            10 * 13
         );
 
         // Rule 14.1 accumulates, and rule 14.2's integer arithmetic accumulates without drift: ten
@@ -13017,16 +15296,81 @@ mod tests {
 
         // Rule 14.3: the prices are the run's. The same usage under prices doubled costs double,
         // because nothing here is compiled in.
-        let doubled = UnitPrices {
-            uncached_prompt: 2_500,
-            cached_prompt: 250,
-            output: 20_000,
-            reasoning: 20_000,
+        let doubled = PerTokenPrices {
+            uncached_prompt: 250,
+            cached_prompt: 26,
+            output: 2_000,
+            reasoning: 2_000,
         };
         assert_eq!(
             RunAccount::declared(doubled, None).cost_of(&synthetic_usage()),
             SYNTHETIC_COST * 2
         );
+    }
+
+    /// Rule 14.2a: the reported output count contains the reported reasoning count, so a reasoning
+    /// token is billed once.
+    ///
+    /// This is the output/reasoning twin of the cached-share assertion in the case above, and it is
+    /// a separate case because it is the one this crate did not have. Until `WO-MOK-026` **no cost
+    /// assertion anywhere in this crate declared a non-zero reasoning count**, so an implementation
+    /// pricing the full output count *and* the reasoning count passed the whole suite. It was found
+    /// by a live run rather than by a test, which is why the figures below are chosen to fail loudly
+    /// on the arithmetic instead of on a fixture.
+    #[test]
+    fn the_reasoning_share_of_the_output_count_is_billed_once() {
+        // Prices that tell the two quantities apart. [`declared_prices`] sets the reasoning price
+        // *equal* to the output price, which is how a provider bills them and which is also what
+        // hides a misattribution between the two; here they differ, so a wrong split shows up as a
+        // wrong figure rather than as the same figure by two routes.
+        let distinct = PerTokenPrices {
+            uncached_prompt: 0,
+            cached_prompt: 0,
+            output: 1_000,
+            reasoning: 7,
+        };
+        let account = RunAccount::declared(distinct, None);
+
+        // 500 output tokens of which 200 were reasoning: 300 billable output and 200 reasoning. An
+        // implementation billing the output total *and* the reasoning total would report 501_400.
+        assert_eq!(
+            account.cost_of(&ExchangeUsage::reported(0, 0, 500, 200)),
+            300 * 1_000 + 200 * 7
+        );
+
+        // The fault is not a difference between two rates, so it is still present when the rates
+        // agree: at [`declared_prices`] the double bill is the reasoning count's entire cost. An
+        // implementation that double-billed would report 700_000 here.
+        let equal = RunAccount::declared(declared_prices(), None);
+        assert_eq!(
+            equal.cost_of(&ExchangeUsage::reported(0, 0, 500, 200)),
+            500 * 1_000
+        );
+
+        // A reported zero leaves the output count whole, which is every exchange of this
+        // repository's one accepted live run and the reason that run's cost figure does not move
+        // with rule 14.2a.
+        assert_eq!(
+            equal.cost_of(&ExchangeUsage::reported(0, 0, 500, 0)),
+            500 * 1_000
+        );
+
+        // Rule 11.5: an *absent* reasoning count subtracts nothing, and is not read as a zero that
+        // happens to subtract nothing either — there is nothing to attribute away from the output.
+        assert_eq!(
+            equal.cost_of(&ExchangeUsage {
+                prompt: None,
+                cached_prompt: None,
+                output: Some(500),
+                reasoning: None,
+            }),
+            500 * 1_000
+        );
+
+        // Rule 10.7, as for the cached count above: a reasoning count exceeding the output count is
+        // the provider's nonsense. It is clamped, so the billable output floors at zero instead of
+        // underflowing, and the whole reported output is billed at the reasoning price.
+        assert_eq!(account.cost_of(&ExchangeUsage::reported(0, 0, 2, 3)), 2 * 7);
     }
 
     /// Rules 14.4 and 14.5: the ratio is computed from the reported figures, and an unreported
@@ -13055,10 +15399,14 @@ mod tests {
             None
         );
 
-        // A fallback reports neither figure, so it is not rule 14.5's case: an exchange the provider
-        // never answered says nothing about the provider's cache.
+        // An exchange that reported neither figure is not rule 14.5's case: an exchange the provider
+        // never answered says nothing about the provider's cache. Nor is counting a fallback, which
+        // moves one figure and it is not one of these two.
         assert_eq!(
-            account.after_fallback().cache_ratio_basis_points(),
+            account
+                .after_exchange(&ExchangeUsage::unreported())
+                .counting_fallback()
+                .cache_ratio_basis_points(),
             Some(9_000)
         );
     }
@@ -13072,32 +15420,50 @@ mod tests {
     /// and only the arithmetic is in scope here.
     ///
     /// L19's first clause — "no exchange is issued whose cost would cross the ceiling" — is rule
-    /// 14.6's check exactly when the ceiling is a whole multiple of an exchange's cost, which this
-    /// one is. It cannot be more than that in general: the cost of the next exchange depends on the
-    /// usage that exchange will report, and a check made before it is issued has no such figure.
+    /// 14.6's check exactly when the ceiling is a whole multiple of an exchange's cost, which
+    /// [`whole_cent_usage`] makes this one. It cannot be more than that in general: the cost of the
+    /// next exchange depends on the usage that exchange will report, and a check made before it is
+    /// issued has no such figure.
     #[test]
     fn the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two() {
-        let usage = synthetic_usage();
-        let mut account = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 2));
+        let usage = whole_cent_usage();
+        let mut account = RunAccount::declared(declared_prices(), Some(2));
         let mut issued = 0;
         while !account.ceiling_reached() && issued < 10 {
             account = account.after_exchange(&usage);
             issued += 1;
         }
         assert_eq!(issued, 2);
-        assert_eq!(account.cost(), SYNTHETIC_COST * 2);
+        assert_eq!(account.cost(), WHOLE_CENT * 2);
+        assert_eq!(account.cost_cents(), 2);
 
-        // The check is on the accumulated cost and not on the exchange count: an account under a
-        // ceiling one nanodollar higher has not reached it and the third exchange is issued.
-        let under = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 2 + 1))
+        // The check is on the accumulated cost and not on the exchange count: two exchanges under a
+        // three-cent ceiling have not reached it and the third is issued.
+        let under = RunAccount::declared(declared_prices(), Some(3))
             .after_exchange(&usage)
             .after_exchange(&usage);
         assert!(!under.ceiling_reached());
 
+        // **The comparison is made in the accumulation's unit and not in the ceiling's**, which is
+        // the whole reason the accumulation is finer than the ceiling. One cent buys six exchanges of
+        // `synthetic_usage`'s size: five cost 926,000 microcents and the sixth crosses. An
+        // implementation that compared truncated cents against the declared cents would have admitted
+        // the first five at a reported cost of `0` — and, at a ceiling declared in cents against
+        // exchanges costing a fifth of one, would have admitted them for ever.
+        let mut cheap = RunAccount::declared(declared_prices(), Some(1));
+        let mut issued = 0;
+        while !cheap.ceiling_reached() && issued < 100 {
+            cheap = cheap.after_exchange(&synthetic_usage());
+            issued += 1;
+        }
+        assert_eq!(issued, 6);
+        assert_eq!(cheap.cost(), SYNTHETIC_COST * 6);
+        assert_eq!(cheap.cost_cents(), 1);
+
         // Rule 14.8: a run with no declared ceiling never stops here, whatever it has spent.
         let uncapped = RunAccount::declared(declared_prices(), None).after_exchange(&usage);
         assert!(!uncapped.ceiling_reached());
-        assert_eq!(uncapped.cost(), SYNTHETIC_COST);
+        assert_eq!(uncapped.cost(), WHOLE_CENT);
     }
 
     /// Case **L30**'s second half: the account belongs to the port the host lends, so a stubbed
@@ -13110,36 +15476,222 @@ mod tests {
     /// exchanges is one and a half ticks: reached in the second tick when the port is lent, and
     /// unreachable when it is rebuilt. The case's substance is checked and its illustrative figure
     /// is not.
+    ///
+    /// **Two ticks and not three, as of rule 14.6's check.** Until the check existed this drove three
+    /// ticks and recorded a cost of twelve, twenty-four and thirty-six cents — a run that noticed its
+    /// ceiling in the second tick and spent past it into the third. That reading is now impossible and
+    /// the case is stronger for it: the cost stops at the ceiling rather than at the tick boundary,
+    /// which is the whole of rule 14.6's "before spending" and is asserted below as eighteen
+    /// exchanges rather than twenty-four. The refusal from the single-tick door is
+    /// `Simulation::advance_tick`'s own, for rule 14.8's reason — a replay has no ceiling and this
+    /// entry point is the replay host's, so a port reaching it with a ceiling reached is a port it was
+    /// never meant to hold.
     #[test]
     fn a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling() {
         let mut port = ScriptedPort::always(Action::Wait).billing(
             declared_prices(),
-            Some(SYNTHETIC_COST * 18),
-            synthetic_usage(),
+            Some(18),
+            whole_cent_usage(),
         );
         let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
-        let mut costs = Vec::new();
-        let mut reached = Vec::new();
-        for _ in 0..3 {
-            simulation
-                .advance_tick(Some(&mut port))
-                .expect("a tick decided through the port");
-            costs.push(port.account.cost());
-            reached.push(port.account.ceiling_reached());
-        }
 
-        assert_eq!(port.account.exchanges(), 36, "twelve opportunities a tick");
-        assert_eq!(
-            costs,
-            vec![
-                SYNTHETIC_COST * 12,
-                SYNTHETIC_COST * 24,
-                SYNTHETIC_COST * 36
-            ]
+        simulation
+            .advance_tick(Some(&mut port))
+            .expect("the first tick is under the ceiling");
+        // The discriminator: a port rebuilt each tick would report this same figure for every tick
+        // and would never reach the ceiling at all.
+        assert_eq!(port.account.cost(), WHOLE_CENT * 12, "twelve a tick");
+        assert!(!port.account.ceiling_reached(), "not in the first tick");
+
+        let refused = simulation
+            .advance_tick(Some(&mut port))
+            .expect_err("the second tick meets the ceiling");
+        assert!(
+            refused.contains("spend ceiling reached at tick 2"),
+            "{refused}"
         );
-        // The discriminator: a port rebuilt each tick would report the first figure three times and
-        // would never reach the ceiling.
-        assert_eq!(reached, vec![false, true, true]);
+        assert!(port.account.ceiling_reached(), "in a later tick");
+
+        // Rule 14.6 as a count: the ceiling is eighteen cents, an exchange costs one, and eighteen
+        // exchanges were issued. Nineteen would be the check made after the spending, and twenty-four
+        // would be the check made at the tick boundary.
+        assert_eq!(port.account.exchanges(), 18);
+        assert_eq!(port.account.cost(), WHOLE_CENT * 18);
+        assert_eq!(port.account.cost_cents(), 18);
+    }
+
+    /// Case **L18**, and rules 14.6, 14.7 and 15.5: a run that reaches its ceiling mid-run issues no
+    /// exchange after it and leaves both streams complete to the tick reached.
+    ///
+    /// Eighteen cents at one cent an exchange, which [`whole_cent_usage`] makes exact, so the stop
+    /// falls in the second tick of a run whose horizon is ten — **mid-run**, and not at a boundary
+    /// the run would have stopped at anyway, which is what makes the absences below mean something.
+    ///
+    /// **What is absent is the case.** `SPEC-MOK-006` rule 8.1 gives a run one run record and rule
+    /// 8.9's `reason` domain has no member for a ceiling stop, so a run that stopped short writes
+    /// neither that record nor rule 9.3's summary line, rather than writing either of them about a
+    /// horizon it did not reach — which is rule 15.5's prohibition read as an instruction. The
+    /// `simulation_ended` event is absent for the same reason and for one more: the simulation did not
+    /// end, and `is_finished` is asked below and agrees. Rule 15.5's "the record says so" is met by
+    /// rule 15's own record, which is a separate output and is asserted here as of 2026-08-29:
+    /// nothing in either stream is a record that says a false thing, and the record that says the
+    /// true thing is present, names the ceiling and states the tick the run reached.
+    ///
+    /// Rule 14.7's "complete and readable to the tick reached" is asserted as the shape of what did
+    /// survive: a header first, the one completed tick's metrics record, and every line a whole
+    /// record rather than a truncation.
+    #[test]
+    fn a_run_stops_at_its_ceiling_and_leaves_both_streams_complete_to_the_tick_reached() {
+        let mut port = ScriptedPort::always(Action::Wait).billing(
+            declared_prices(),
+            Some(18),
+            whole_cent_usage(),
+        );
+        let mut text = Vec::new();
+        let mut records = Vec::new();
+        let mut simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+
+        let outcome = simulation
+            .run_recording(&mut text, Some(&mut records), Some(&mut port))
+            .expect("a ceiling stop is not an error");
+
+        let RunOutcome::Ceiling {
+            tick_reached,
+            run_record,
+        } = &outcome
+        else {
+            panic!("{outcome:?}");
+        };
+        assert_eq!(*tick_reached, 2);
+        // Rule 15.5, both halves and in one record: the stop is named and the tick reached is stated.
+        // The tick is compared against the outcome's own figure rather than against a literal, so a
+        // run that stopped at a different tick cannot pass this by agreeing with itself.
+        let record = run_record
+            .as_deref()
+            .expect("rule 15: a live run reports a run record");
+        assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
+        assert!(
+            record.contains(&format!("\"tick_reached\":{tick_reached}")),
+            "{record}"
+        );
+        // The horizon was ten and the run reached two, so the stop is the ceiling's and not the tick
+        // limit's, and the engine does not claim otherwise to a host that asks.
+        assert!(!simulation.is_finished());
+        assert_eq!(simulation.termination_reason(), None);
+
+        // Rule 14.6 as a count, and L18's "issues no exchange after the ceiling": eighteen, out of the
+        // hundred and twenty opportunities ten ticks hold. The port's own transcript agrees with the
+        // port's own account, which is rule 11.3 and rule 14.1 reading the same exchanges.
+        assert_eq!(port.account.exchanges(), 18);
+        assert_eq!(port.account.cost_cents(), 18);
+        assert_eq!(port.exchanges().len(), 18);
+
+        let text = String::from_utf8(text).unwrap();
+        let records = String::from_utf8(records).unwrap();
+        assert!(
+            !text.contains("summary reason="),
+            "a summary of a horizon the run did not reach"
+        );
+        for stream in [&text, &records] {
+            assert!(!stream.contains("simulation_ended"), "{stream}");
+        }
+        assert!(!records.contains("\"record\":\"run\""), "{records}");
+
+        let lines: Vec<&str> = records.lines().collect();
+        assert!(lines[0].contains("\"record\":\"header\""), "{}", lines[0]);
+        assert_eq!(
+            lines
+                .iter()
+                .filter(|line| line.contains("\"record\":\"metrics\""))
+                .count(),
+            1,
+            "one metrics record, for the one tick that completed"
+        );
+        for line in &lines {
+            assert!(line.starts_with('{') && line.ends_with('}'), "{line}");
+        }
+    }
+
+    /// Case **L19** at the run level: a ceiling equal to the cost of two exchanges admits exactly two.
+    ///
+    /// The arithmetic of that claim is checked in
+    /// [`the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two`], where a loop asks and
+    /// spends. What this adds is that **the engine's own seam is that loop**: the check is made per
+    /// decision opportunity, so a two-exchange ceiling stops the run inside the first tick with ten
+    /// opportunities of that tick still unspent. A check at the tick boundary would have issued all
+    /// twelve and reported a cost of twelve cents against a ceiling of two.
+    #[test]
+    fn the_engine_stops_inside_the_first_tick_when_the_ceiling_is_two_exchanges() {
+        let mut port = ScriptedPort::always(Action::Wait).billing(
+            declared_prices(),
+            Some(2),
+            whole_cent_usage(),
+        );
+        let outcome = Simulation::new(llm_config(42, 10, false))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut port))
+            .expect("a ceiling stop is not an error");
+
+        assert!(
+            matches!(
+                outcome,
+                RunOutcome::Ceiling {
+                    tick_reached: 1,
+                    ..
+                }
+            ),
+            "{outcome:?}"
+        );
+        assert_eq!(port.account.exchanges(), 2);
+        assert_eq!(port.account.cost(), WHOLE_CENT * 2);
+        assert_eq!(port.exchanges().len(), 2);
+    }
+
+    /// Rule 14.8: **a replay has no ceiling.** [`ReplayPort`] takes [`Proposer::halted`]'s default
+    /// and answers `false` for ever, whatever the run it is replaying spent.
+    ///
+    /// Stated as a pair of runs, because the interesting failure is a replay port that answered from
+    /// a figure it read out of the transcript: the recording below declares prices and a ceiling and
+    /// costs twelve cents, and the replay of the transcript it produced spends nothing, computes no
+    /// ratio, meets no ceiling and completes. The port is asked before and after, so a `halted` that
+    /// became true partway through the replay fails here as well.
+    #[test]
+    fn a_replay_never_halts_whatever_the_recorded_run_spent() {
+        let recording = record_a_run_with(
+            42,
+            1,
+            ScriptedPort::always(Action::Wait).billing(
+                declared_prices(),
+                Some(100),
+                whole_cent_usage(),
+            ),
+        );
+        assert_eq!(recording.port.account.cost_cents(), 12, "a tick of twelve");
+        assert!(!recording.port.account.ceiling_reached());
+
+        let transcript = recording.port.transcript();
+        let mut port = ReplayPort::new(transcript.as_bytes());
+        assert!(!port.halted(), "before the first exchange");
+
+        let outcome = Simulation::new(llm_config(42, 1, true))
+            .unwrap()
+            .run_recording(&mut io::sink(), None, Some(&mut port))
+            .expect("the replay completes");
+        // Rule 15.6 as well as rule 14.8, and the two are one fact here: [`ReplayPort`] takes
+        // [`Proposer::accounting`]'s default alongside `halted`'s, so the replay reports no run
+        // record. That is the whole of the discrimination rule 15.6 needs — a replaying port answers
+        // `None` and there is no branch anywhere that had to guess.
+        assert!(
+            matches!(
+                outcome,
+                RunOutcome::Completed {
+                    run_record: None,
+                    ..
+                }
+            ),
+            "{outcome:?}"
+        );
+        assert!(!port.halted(), "after the last one");
     }
 
     /// Rules 15.2 and 15.3: the record carries every figure the rule names, and states its zeros.
@@ -13149,14 +15701,14 @@ mod tests {
     #[test]
     fn the_run_record_carries_every_figure_rule_15_names() {
         let config = llm_config(7, 500, true);
-        let account = RunAccount::declared(declared_prices(), Some(1_040_000_000))
+        let account = RunAccount::declared(declared_prices(), Some(104))
             .after_exchange(&synthetic_usage())
-            .after_fallback();
+            .after_exchange(&ExchangeUsage::unreported())
+            .counting_fallback();
+        let live = reported(&account);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &account,
+            &live,
             250,
             RunEnd::Completed(TerminationReason::TickLimit),
         )
@@ -13167,10 +15719,9 @@ mod tests {
             "\"tokens\":{\"prompt\":6000,\"cached_prompt\":5400,\"output\":40,\"reasoning\":0}",
             // The ratio, unaffected by the fallback that reported nothing.
             "\"cache_ratio_basis_points\":9000",
-            // The accumulated cost and the declared ceiling. `$1.04` is rule 9.8's own estimate of
-            // what a full run costs, in the unit rule 14.2 requires it to be stated in.
-            "\"cost_nanodollars\":1825000",
-            "\"ceiling_nanodollars\":1040000000",
+            // The declared ceiling. `$1.04` is rule 9.8's own estimate of what a full run costs,
+            // and 104 is that figure in the minor unit rule 14.2 states.
+            "\"ceiling_cents\":104",
             // The fallback count and rule 15.4's mark.
             "\"fallbacks\":1",
             "\"unfit_to_publish\":true",
@@ -13190,15 +15741,24 @@ mod tests {
             assert!(record.contains(figure), "{figure} is missing from {record}");
         }
 
+        // **The reported cost of this two-exchange run is `0` cents, and that is the truncation
+        // stated rather than a figure gone missing.** One exchange of `synthetic_usage` costs 185,200
+        // microcents — 0.1852 of a cent — and rule 14.2's unit cannot carry it. Both figures are
+        // asserted, because a case that checked only the cent would pass against an account that
+        // accumulated nothing at all, which is the failure `PerTokenPrices` exists to prevent. The
+        // exact figure stays recoverable from the record: rule 14.1's four token totals are in it and
+        // rule 14.3a's prices are inputs of the run.
+        assert!(record.contains("\"cost_cents\":0"), "{record}");
+        assert_eq!(account.cost(), SYNTHETIC_COST);
+
         // Rule 15.3 against rule 11.5: a run that spent nothing states four zeros and a zero cost,
         // while the two figures that can be *absent* are `null` rather than `0`. A record that wrote
         // `0` for an uncomputable ratio would report a run that cached nothing.
         let clean = RunAccount::declared(declared_prices(), None);
+        let live = reported(&clean);
         let record = RunRecord::new(
             &config,
-            "a-model-identifier",
-            "none",
-            &clean,
+            &live,
             0,
             RunEnd::Completed(TerminationReason::Extinction),
         )
@@ -13209,14 +15769,15 @@ mod tests {
             ),
             "{record}"
         );
-        assert!(record.contains("\"cost_nanodollars\":0"), "{record}");
+        assert!(record.contains("\"cost_cents\":0"), "{record}");
+        assert_eq!(clean.cost(), 0, "and zero in the finer unit too");
         assert!(record.contains("\"fallbacks\":0"), "{record}");
         assert!(record.contains("\"unfit_to_publish\":false"), "{record}");
         assert!(
             record.contains("\"cache_ratio_basis_points\":null"),
             "{record}"
         );
-        assert!(record.contains("\"ceiling_nanodollars\":null"), "{record}");
+        assert!(record.contains("\"ceiling_cents\":null"), "{record}");
         assert!(record.contains("\"ended\":\"extinction\""), "{record}");
     }
 
@@ -13231,30 +15792,20 @@ mod tests {
     #[test]
     fn a_ceiling_stop_says_so_and_carries_no_decimal_separator() {
         let config = llm_config(7, 500, false);
-        let mut account = RunAccount::declared(declared_prices(), Some(SYNTHETIC_COST * 18));
+        let mut account = RunAccount::declared(declared_prices(), Some(18));
         while !account.ceiling_reached() {
-            account = account.after_exchange(&synthetic_usage());
+            account = account.after_exchange(&whole_cent_usage());
         }
-        let record = RunRecord::new(
-            &config,
-            "a-model-identifier",
-            "none",
-            &account,
-            250,
-            RunEnd::Ceiling,
-        )
-        .render();
+        let live = reported(&account);
+        let record = RunRecord::new(&config, &live, 250, RunEnd::Ceiling).render();
 
         assert!(record.contains("\"ended\":\"ceiling\""), "{record}");
         assert!(record.contains("\"tick_reached\":250"), "{record}");
-        assert!(
-            record.contains(&format!("\"cost_nanodollars\":{}", SYNTHETIC_COST * 18)),
-            "{record}"
-        );
-        assert!(
-            record.contains(&format!("\"ceiling_nanodollars\":{}", SYNTHETIC_COST * 18)),
-            "{record}"
-        );
+        // The reported cost is at or above the declared ceiling, which is the invariant
+        // [`RunAccount::cost_cents`]'s truncation exists to keep: a run that stopped here can be told
+        // from one that did not by its own record.
+        assert!(record.contains("\"cost_cents\":18"), "{record}");
+        assert!(record.contains("\"ceiling_cents\":18"), "{record}");
 
         // One line, unframed, on `exchange_record`'s precedent: where it goes is the host's.
         assert!(!record.contains('\n'), "{record}");
@@ -13272,5 +15823,1128 @@ mod tests {
                 .any(|pair| pair[0].is_ascii_digit() && matches!(pair[1], 'e' | 'E')),
             "{figures}"
         );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007` rule 10: the connector port, over streams assembled here.
+    //
+    // **No process is started anywhere in this section.** The port holds two streams and a sink,
+    // so an exchange is a slice of bytes going in and a `Vec<u8>` coming out, and every case rule
+    // 10.4 admits or refuses can be written down as a line of text. The host's half — the spawn,
+    // the inheritance, the reaping — is `tests/connector.rs`, which needs a real child; this tier
+    // is the reading, which does not.
+    //
+    // Rule 10.7 declares the connector's output untrusted in whole, and that is what most of the
+    // cases below are: lines no honest connector would send, each of which must become rule 9.5's
+    // counted fallback rather than a panic, a coerced figure or a plausible wrong action.
+    // -----------------------------------------------------------------------------------
+
+    /// A request composed from a real observation.
+    ///
+    /// Composed and not hand-built, because the request's own bytes are part of what is asserted:
+    /// rule 3.6 is a claim about the order and the joining of the four blocks, and a request whose
+    /// blocks this test wrote could not check it.
+    fn connector_request() -> DecisionRequest {
+        let simulation = Simulation::new(llm_config(42, 10, false)).unwrap();
+        DecisionRequest::compose(&simulation.observation(0))
+    }
+
+    /// One exchange over in-memory streams: what was sent, what came back, and the transcript.
+    ///
+    /// The record is written here rather than inside the port, because [`Proposer`] separates the
+    /// two — `propose` answers and `record` keeps — and [`PortDecisionSource::decide`] is what
+    /// pairs them in a run. Doing the same pairing here is what makes the transcript below the
+    /// transcript a run would have written.
+    ///
+    /// **Including rule 11.2's record for every abandoned attempt**, which is why the loop is here
+    /// and not only in `decide`: for the single-attempt responses most cases below supply it runs
+    /// zero times, and for a retried one a fixture that wrote the outcome alone would report a
+    /// transcript no run produces.
+    fn exchange_over(responses: &str) -> (String, Proposal, String) {
+        let request = connector_request();
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let proposal = {
+            let mut port = ConnectorPort::new(
+                responses.as_bytes(),
+                &mut requests,
+                &mut transcript,
+                connector_prices(),
+                None,
+            );
+            let proposal = port.propose(request.clone());
+            for attempt in &proposal.earlier_attempts {
+                port.record(&attempt_record(&request, attempt)).unwrap();
+            }
+            port.record(&exchange_record(&request, &proposal)).unwrap();
+            proposal
+        };
+        (
+            String::from_utf8(requests).unwrap(),
+            proposal,
+            String::from_utf8(transcript).unwrap(),
+        )
+    }
+
+    /// [`declared_prices`]'s four figures in the shape the *operator* declares them, rule 14.3a's
+    /// [`UnitPrices`], whose first field is the price of a prompt token the cache did not serve.
+    ///
+    /// The two are held equal by a case of their own, so the accounting figures asserted through this
+    /// port and those asserted through [`ScriptedPort`] are the same prices.
+    fn connector_prices() -> UnitPrices {
+        UnitPrices {
+            prompt: 125,
+            cached: 13,
+            output: 1_000,
+            reasoning: 1_000,
+        }
+    }
+
+    /// One exchange over in-memory streams, returning the proposal and the port's account.
+    ///
+    /// A sibling of [`exchange_over`] rather than a widening of it. Rule 14's accounting is what a
+    /// few cases below are about and what none of the grammar cases are, and a fixture returning a
+    /// figure every caller ignored would be a figure nothing holds.
+    fn billed_exchange_over(responses: &str) -> (Proposal, accounting::RunAccount) {
+        billed_exchange_under(responses, None)
+    }
+
+    /// [`billed_exchange_over`] with a ceiling in rule 14.2's cents.
+    ///
+    /// The ceiling is a parameter of the port's construction, rule 14.3, so a case about rule 14.6
+    /// cannot reach it by any other route than building a second port.
+    fn billed_exchange_under(
+        responses: &str,
+        ceiling: Option<u64>,
+    ) -> (Proposal, accounting::RunAccount) {
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let mut port = ConnectorPort::new(
+            responses.as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            ceiling,
+        );
+        let proposal = port.propose(connector_request());
+        (proposal, port.account)
+    }
+
+    /// Rule 15's figures as the port *reports* them, after the given number of exchanges.
+    ///
+    /// A third fixture beside [`exchange_over`] and [`billed_exchange_under`], and each of its three
+    /// differences from them is a rule:
+    ///
+    /// - it makes **several** exchanges from one stream, because rule 15.2's binding is "the first
+    ///   response that reported both" and a claim about a first is a claim about a sequence;
+    /// - it asks through [`Proposer::accounting`] rather than reading [`ConnectorPort::account`], so
+    ///   the crossing rule 1.1d added is the thing measured and not bypassed;
+    /// - it therefore carries the model identifier and the reasoning level, which no
+    ///   [`accounting::RunAccount`] holds and which are the two fields these cases are about.
+    ///
+    /// The stream is consumed front to back and an exhausted one yields end of input, which is
+    /// rule 10.4's dead-pipe case — so `exchanges` above the number of lines supplied is how a case
+    /// asks what a run reports after its connector stopped answering.
+    fn reported_over(responses: &str, exchanges: usize) -> LiveAccounting {
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let mut port = ConnectorPort::new(
+            responses.as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
+        for _ in 0..exchanges {
+            port.propose(connector_request());
+        }
+        port.accounting()
+            .expect("rule 15: a connector port always reports its account")
+    }
+
+    /// A response that every grammar case below starts from and spoils in one way.
+    ///
+    /// Well formed in full: the protocol, an action with a legal verb, what answered, at what
+    /// level, and the four counts. A case that spoils one field therefore differs from an admitted
+    /// response in exactly that field.
+    const WELL_FORMED: &str = "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\
+                               \"model\":\"a-model-identifier\",\"reasoning\":\"none\",\
+                               \"usage\":{\"prompt\":1000,\"cached_prompt\":900,\"output\":8,\
+                               \"reasoning\":0}}";
+
+    /// Rules 10.2, 10.3, 10.3a and 3.6: the request is one line of five fields, and the prompt is
+    /// the four blocks in order.
+    ///
+    /// The field order is asserted by position rather than by membership, because rule 10.4b makes
+    /// the names `docs/CONNECTOR_PROTOCOL.md` documents normative and a connector author reading
+    /// that document writes a reader against this shape.
+    ///
+    /// **The absence of a sixth field is the security-relevant half.** Rule 10.3a keeps the model,
+    /// the reasoning level and the credential off the request: the first two are the connector's
+    /// choice to make and report back, and the third is a value this process never holds.
+    #[test]
+    fn the_request_is_one_line_of_the_five_documented_fields() {
+        let request = connector_request();
+        let (sent, _, _) = exchange_over(WELL_FORMED);
+
+        // Rule 10.2's framing: one object, one terminator, and no raw newline inside — which is
+        // the whole reason the four blocks are escaped rather than sent as they are worded.
+        assert!(sent.ends_with('\n'), "{sent}");
+        assert_eq!(sent.matches('\n').count(), 1, "{sent}");
+
+        let line = sent.trim_end_matches('\n');
+        assert!(line.starts_with("{\"protocol\":1,\"tick\":"), "{line}");
+        let expected_head = format!(
+            "{{\"protocol\":1,\"tick\":{},\"actor\":\"{}\",\"prompt\":\"",
+            request.tick(),
+            request.actor_id()
+        );
+        assert!(line.starts_with(&expected_head), "{line}");
+        assert!(
+            line.ends_with(&format!(",\"schema\":{}}}", response_schema())),
+            "{line}"
+        );
+
+        // Rule 3.6: the prompt is `blocks()` concatenated, with no separator this module invented.
+        // Asserted through the round trip, so it is the *bytes* that are checked rather than a
+        // second composition agreeing with the first.
+        let prompt = line
+            .split_once("\"prompt\":\"")
+            .and_then(|(_, rest)| rest.split_once("\",\"schema\":"))
+            .map(|(prompt, _)| prompt)
+            .unwrap();
+        assert_eq!(
+            unescape_transcript_text(prompt).as_deref(),
+            Some(request.blocks().concat().as_str())
+        );
+
+        // Rule 10.3a: no sixth field. Checked as the field forms, because the prompt is prose and
+        // may legitimately contain any word.
+        let fields = format!("{}\"schema\"", line.split_once("\"prompt\"").unwrap().0);
+        for absent in ["\"model\"", "\"reasoning\"", "\"key\"", "\"credential\""] {
+            assert!(!fields.contains(absent), "{fields} names {absent}");
+        }
+    }
+
+    /// Rule 10.4: an admitted response yields the action, the counts and the line.
+    ///
+    /// All three, because rule 11.3 and rule 14 need different halves of the same exchange and the
+    /// port is the only place both are visible: the action reaches the run, the counts reach the
+    /// accounting, and the line reaches the transcript.
+    #[test]
+    fn an_admitted_response_yields_the_action_the_counts_and_the_line() {
+        let (_, proposal, transcript) = exchange_over(WELL_FORMED);
+
+        assert_eq!(proposal.action, Some(Action::Sleep));
+        assert_eq!(proposal.usage.prompt, Some(1000));
+        assert_eq!(proposal.usage.cached_prompt, Some(900));
+        assert_eq!(proposal.usage.output, Some(8));
+        assert_eq!(proposal.usage.reasoning, Some(0));
+        assert_eq!(proposal.response.as_deref(), Some(WELL_FORMED));
+
+        // Rule 11.2's one line per exchange, terminated with one byte on every platform.
+        assert_eq!(transcript.matches('\n').count(), 1, "{transcript}");
+        assert!(!transcript.contains('\r'), "{transcript}");
+        assert!(transcript.contains("\"fallback\":false"), "{transcript}");
+    }
+
+    /// Rule 10.2's one-for-one ordering, and the trailing carriage return a connector on Windows
+    /// may write.
+    ///
+    /// A response line is terminated by the connector and this engine did not choose how. A reader
+    /// that kept the `\r` would carry it into every parsed string and would fail the grammar check
+    /// on a well-formed response, for a reason no operator could see.
+    #[test]
+    fn a_response_terminated_with_a_carriage_return_is_read() {
+        let (_, proposal, _) = exchange_over(&format!("{WELL_FORMED}\r\n"));
+        assert_eq!(proposal.action, Some(Action::Sleep));
+    }
+
+    /// Rules 10.4, 10.4c and 8.2: every case the grammar refuses, and each is a counted fallback
+    /// carrying its own line.
+    ///
+    /// One test for all of them, because the assertion is identical and the cases are a list: no
+    /// action, the line recorded as received, and the record marked. What differs between them is
+    /// only which field was spoiled, and naming that in the loop is what a failure needs to say.
+    ///
+    /// The `usage` case is a reading of rule 10.4a rather than of 10.4c, and it is disclosed as
+    /// one: 10.4a puts a `usage` on the response that carries an action, so an action arriving
+    /// with no `usage` at all is not the documented response. Its *contents* are not required —
+    /// rule 11.5 makes every individual count absent-able — which the case below the list checks.
+    #[test]
+    fn every_response_the_grammar_refuses_is_a_counted_fallback() {
+        for (why, response) in [
+            (
+                "a protocol version this engine does not read",
+                "{\"protocol\":2,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "no protocol version at all",
+                "{\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\"reasoning\":\"none\",\
+                 \"usage\":{}}",
+            ),
+            (
+                "both an action and an error, which rule 10.4 admits exactly one of",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"error\":{\"kind\":\"provider\",\
+                 \"message\":\"m\"},\"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "an error, which is rule 19.5a's immediate fallback and carries no action",
+                "{\"protocol\":1,\"error\":{\"kind\":\"refused\",\"message\":\"no credential\"}}",
+            ),
+            (
+                "no model, which rule 10.4c names",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"reasoning\":\"none\",\
+                 \"usage\":{}}",
+            ),
+            (
+                "an empty model, which is not a name",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a model that is not a string",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":7,\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "no reasoning level, which rule 10.4c names beside the model",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\"usage\":{}}",
+            ),
+            (
+                "a reasoning level that is the count and not the level",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\"reasoning\":0,\
+                 \"usage\":{}}",
+            ),
+            (
+                "no usage, which rule 10.4a puts on every response carrying an action",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\"}",
+            ),
+            (
+                "a verb outside rule 8.2's eleven",
+                "{\"protocol\":1,\"action\":{\"verb\":\"negotiate\",\"parameter\":\"M02\"},\
+                 \"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a verb given a parameter it does not take",
+                "{\"protocol\":1,\"action\":{\"verb\":\"wait\",\"parameter\":\"M02\"},\
+                 \"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a verb missing the parameter it does take",
+                "{\"protocol\":1,\"action\":{\"verb\":\"eat\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "a parameter that is present and is not a string",
+                "{\"protocol\":1,\"action\":{\"verb\":\"avoid\",\"parameter\":2},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+            (
+                "an action that is not an object",
+                "{\"protocol\":1,\"action\":\"sleep\",\"model\":\"m\",\"reasoning\":\"none\",\
+                 \"usage\":{}}",
+            ),
+            (
+                "no action and no error, which answers nothing at all",
+                "{\"protocol\":1,\"model\":\"m\",\"reasoning\":\"none\",\"usage\":{}}",
+            ),
+        ] {
+            let (_, proposal, transcript) = exchange_over(response);
+            assert!(proposal.action.is_none(), "admitted {why}: {response}");
+            // Rule 11.3: as received, in full. The refused line is the one a reader needs most.
+            assert_eq!(proposal.response.as_deref(), Some(response), "{why}");
+            assert!(
+                transcript.contains("\"fallback\":true"),
+                "{why}: {transcript}"
+            );
+            // Rule 9.5's fallback is `wait`, and rule 9.7 forbids a substitute from elsewhere: the
+            // refused `sleep` must not have become the recorded action.
+            assert!(
+                transcript.contains("\"action\":{\"verb\":\"wait\"}"),
+                "{why}: {transcript}"
+            );
+        }
+    }
+
+    /// The two price shapes are the same four figures, and the conversion between them names the
+    /// field rule 14.3a's ordering only implies.
+    ///
+    /// The one place a transposition could enter the arithmetic, held by a case: `UnitPrices::prompt`
+    /// is documented "Uncached prompt tokens" and `PerTokenPrices::uncached_prompt` says so in its
+    /// name, and a conversion that crossed the first two fields would bill a cached token at the
+    /// uncached price and still pass every ratio assertion in this file.
+    #[test]
+    fn the_declared_prices_cross_into_the_arithmetics_order_unchanged() {
+        assert_eq!(
+            PerTokenPrices::declared(&connector_prices()),
+            declared_prices()
+        );
+
+        // Rule 14.3a's own example, parsed rather than written: the four integers reach the
+        // arithmetic as the four integers the operator typed, in that order and in that unit.
+        let parsed = UnitPrices::parse("125:13:1000:0").expect("rule 14.3a's example");
+        assert_eq!(
+            PerTokenPrices::declared(&parsed),
+            PerTokenPrices {
+                uncached_prompt: 125,
+                cached_prompt: 13,
+                output: 1_000,
+                reasoning: 0,
+            }
+        );
+    }
+
+    /// Rules 14.1 and 10.4c: **every** exchange is billed, and a grammar-refused one is billed *and*
+    /// counted.
+    ///
+    /// This is the case the fallback's accounting was reshaped for. A response that carries usage and
+    /// an action naming neither the model nor the reasoning level is refused by rule 10.4c and became
+    /// a counted fallback — and it was *paid for*, because the provider answered. The two figures are
+    /// asserted against the admitted twin: same response but for the missing `model`, so the cost is
+    /// identical and the only difference is the count.
+    ///
+    /// An earlier shape booked a fallback as an exchange reporting nothing, which would report `0`
+    /// here. Rule 10.8 does not cover that — it covers a connector that under-reports its usage, not
+    /// a host that discards usage the connector did report.
+    #[test]
+    fn a_grammar_refused_response_is_billed_as_well_as_counted() {
+        const BILLED: u64 = 100 * 125 + 900 * 13 + 8 * 1_000;
+
+        let (admitted, account) = billed_exchange_over(WELL_FORMED);
+        assert_eq!(admitted.action, Some(Action::Sleep));
+        assert_eq!(account.exchanges(), 1);
+        assert_eq!(account.fallbacks(), 0);
+        assert_eq!(account.cost(), BILLED);
+
+        // The same response with `model` removed, which rule 10.4c refuses.
+        let refused_line = WELL_FORMED.replace("\"model\":\"a-model-identifier\",", "");
+        let (refused, refused_account) = billed_exchange_over(&refused_line);
+        assert_eq!(refused.action, None, "{refused_line}");
+        assert_eq!(refused_account.exchanges(), 1);
+        assert_eq!(refused_account.fallbacks(), 1);
+        assert_eq!(
+            refused_account.cost(),
+            BILLED,
+            "a refused response's exchange was billed at the same figure as the admitted one"
+        );
+
+        // Rule 14.4 is unaffected: the counts reached the totals, so the ratio is the response's own.
+        assert_eq!(refused_account.cache_ratio_basis_points(), Some(9_000));
+    }
+
+    /// Rule 11.5 and rule 9.4 from the accounting's side: an exchange that reported nothing costs
+    /// nothing, and the exchange still happened.
+    ///
+    /// The counterpart of the case above, and the reason the bill and the count are two statements
+    /// rather than one. Rule 10.4's error response and a pipe that failed both carry no usage at all,
+    /// and each is a fallback whose cost is zero — so a `0` here is the absence rule 11.5 describes
+    /// and not an accounting that lost a figure.
+    #[test]
+    fn an_exchange_that_reported_nothing_costs_nothing_and_is_still_an_exchange() {
+        for response in [
+            "{\"protocol\":1,\"error\":{\"kind\":\"refused\",\"message\":\"no credential\"}}",
+            "not a response at all",
+            "",
+        ] {
+            let (proposal, account) = billed_exchange_over(response);
+            assert_eq!(proposal.action, None, "{response}");
+            assert_eq!(account.exchanges(), 1, "{response}");
+            assert_eq!(account.fallbacks(), 1, "{response}");
+            assert_eq!(account.cost(), 0, "{response}");
+            // Rule 14.5: no prompt count was reported, so the denominator is zero and the ratio is
+            // uncomputable rather than zero.
+            assert_eq!(account.cache_ratio_basis_points(), None, "{response}");
+        }
+    }
+
+    /// Rule 11.5: an unusable count is **absent**, not zero, and does not cost the exchange its
+    /// action.
+    ///
+    /// The two halves are one test because they are one design decision. Rule 10.8 says the ceiling
+    /// protects against an honest connector and not a dishonest one, so a figure this reader cannot
+    /// use is not a reason to refuse an action that is otherwise well formed — but it must not be
+    /// read as zero either, because zero is a cost and absence is a failure to evaluate, and rule
+    /// 14.5 acts on the second.
+    #[test]
+    fn an_unusable_count_is_absent_rather_than_zero() {
+        for figure in ["-1", "1.5", "1e9", "\"1000\"", "null", "true", "[]", "{}"] {
+            let response = format!(
+                "{{\"protocol\":1,\"action\":{{\"verb\":\"sleep\"}},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{{\"prompt\":{figure},\"cached_prompt\":900,\
+                 \"output\":8,\"reasoning\":0}}}}"
+            );
+            let (_, proposal, transcript) = exchange_over(&response);
+            assert_eq!(proposal.action, Some(Action::Sleep), "{figure}");
+            assert_eq!(proposal.usage.prompt, None, "{figure} became a count");
+            assert_eq!(proposal.usage.cached_prompt, Some(900), "{figure}");
+            // And the record says absent rather than omitting the member, which rule 11.5's second
+            // level of absence is for.
+            assert!(transcript.contains("\"prompt\":null"), "{transcript}");
+        }
+    }
+
+    /// Rule 19.5a's `malformed`, and rule 10.7's totality: a line that is not a response is a
+    /// counted fallback and never a panic.
+    ///
+    /// The list is what a connector goes wrong in: a truncated line, a line that is not JSON at
+    /// all, an empty line, a second object after the first, and nesting past this reader's bound.
+    /// Every one of them arrives from a child process, so a reader that panicked on any of them
+    /// would be a run ended by the connector's choice of bytes.
+    #[test]
+    fn a_line_that_is_not_a_response_is_a_counted_fallback() {
+        let deep = format!("{}1{}", "[".repeat(64), "]".repeat(64));
+        for line in [
+            "",
+            " ",
+            "not json",
+            "{",
+            "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"}",
+            "{\"protocol\":1} {\"protocol\":1}",
+            "{\"protocol\":1}trailing",
+            "{\"protocol\":01}",
+            "{\"protocol\":1,\"model\":\"\\ud800\"}",
+            "{\"protocol\":1,\"model\":\"a\tb\"}",
+            &deep,
+        ] {
+            let (_, proposal, transcript) = exchange_over(line);
+            assert!(proposal.action.is_none(), "admitted {line:?}");
+            assert_eq!(proposal.usage, ReportedUsage::default(), "{line:?}");
+            assert!(transcript.contains("\"fallback\":true"), "{line:?}");
+        }
+    }
+
+    /// Rule 10.2's exactly one response per request: a connector that closed its output has
+    /// stopped answering, which is an error and not an empty answer.
+    ///
+    /// Recorded as rule 11.3's "or the error", and a counted fallback rather than an abort under
+    /// rule 9.8. Rule 19.7 is kept by what the message can contain: an `io::Error` from a stream
+    /// names no credential, and this port resolved no path to name.
+    #[test]
+    fn a_closed_output_is_an_error_and_not_an_empty_response() {
+        let (sent, proposal, transcript) = exchange_over("");
+
+        // The request was still written: the failure is the answer's absence, not a refusal to ask.
+        assert!(sent.ends_with('\n'), "{sent}");
+        assert!(proposal.action.is_none());
+        let recorded = proposal.response.unwrap();
+        assert!(recorded.starts_with("connector: "), "{recorded}");
+        assert!(transcript.contains("\"fallback\":true"), "{transcript}");
+        for forbidden in ["sk-", "api", "key", "authorization"] {
+            assert!(!recorded.to_lowercase().contains(forbidden), "{recorded}");
+        }
+    }
+
+    /// Rule 11.2: one record per line, and the sink is flushed as each is written.
+    ///
+    /// The flush is asserted as bytes present in the sink *before* the port is dropped, which is
+    /// the only way to tell a written record from a buffered one. A live run's records are evidence
+    /// somebody paid for, and a buffer holding the last exchanges of a run that then died would
+    /// lose exactly the records nobody can regenerate without spending again.
+    #[test]
+    fn every_record_reaches_the_transcript_before_the_port_is_dropped() {
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        // No response is needed: this is the recording half of [`Proposer`], and the two halves are
+        // separate for exactly this reason — a record is written whether an exchange yielded
+        // anything or not.
+        let mut port = ConnectorPort::new(
+            "".as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
+
+        port.record("first").unwrap();
+        port.record("second").unwrap();
+        drop(port);
+
+        assert_eq!(String::from_utf8(transcript).unwrap(), "first\nsecond\n");
+    }
+
+    /// Rule 11.3 and rule 12.6: a response is recorded so that reading the record back yields the
+    /// bytes the connector sent.
+    ///
+    /// The round trip is what rule 11.4.1 asks for and what a replay of a live recording depends
+    /// on. A response is the one string on a record that this library did not compose, so it is
+    /// the one that can carry a quotation mark, a backslash or a newline of somebody else's
+    /// choosing — and a record that escaped it wrongly would replay as a different exchange.
+    #[test]
+    fn a_response_survives_the_record_it_is_written_into() {
+        let awkward = "{\"protocol\":1,\"model\":\"a \\\"quoted\\\" \\\\ name\"}";
+        let (_, proposal, transcript) = exchange_over(awkward);
+
+        assert_eq!(proposal.response.as_deref(), Some(awkward));
+        assert_eq!(transcript.lines().count(), 1, "{transcript}");
+        let recorded = transcript
+            .split_once("\"response\":\"")
+            .and_then(|(_, rest)| rest.split_once("\",\"usage\":"))
+            .map(|(response, _)| response)
+            .unwrap();
+        assert_eq!(unescape_transcript_text(recorded).as_deref(), Some(awkward));
+    }
+
+    /// Rule 15.6 from the deterministic side, and rule 16's non-perturbation obligation stated as a
+    /// call graph: **the four deterministic sources report no accounting, so no run record exists.**
+    ///
+    /// It is the same fact as the replay case above and it is not the same *route*: a replay is a port
+    /// that answers `None`, and these four are sources that never had a port to ask. Both arrive at
+    /// rule 15.6 through the shape of a return type rather than through a branch that asked what kind
+    /// of run this was, which is what makes the rule keepable at all — the party that would have had
+    /// to guess does not exist.
+    ///
+    /// All four variants, and written out rather than looped over a list this file could get short: an
+    /// omitted variant is a source that could report an account nobody would notice.
+    #[test]
+    fn a_deterministic_source_reports_no_run_record() {
+        for policy in [
+            Policy::Baseline,
+            Policy::Reference,
+            Policy::Individual,
+            Policy::Social,
+        ] {
+            let mut config = config(42, 2, false);
+            config.policy = policy;
+            let outcome = Simulation::new(config)
+                .unwrap()
+                .run_recording(&mut io::sink(), None, None)
+                .expect("a deterministic run completes");
+            assert!(
+                matches!(
+                    outcome,
+                    RunOutcome::Completed {
+                        run_record: None,
+                        ..
+                    }
+                ),
+                "{policy:?}: {outcome:?}"
+            );
+        }
+    }
+
+    /// Rule 15.2's binding, and the repository owner's decision of 2026-08-29: **the model identifier
+    /// and the reasoning level are the first ones reported, and they are never replaced.**
+    ///
+    /// Three responses naming three different models, and the record states the first. The owner's
+    /// reason is quotability — "a run's cost was quoted against that binding from its first exchange,
+    /// and a figure that could change mid-run is one a later reader has to prove constant" — and the
+    /// disclosed consequence is asserted here as well: **a connector that changed models mid-run is
+    /// not detected.** The second and third names appear nowhere in the reported figures, so this case
+    /// is also the record of what the design gives up.
+    ///
+    /// The last-reported alternative would pass a case that supplied one response, which is why three
+    /// are supplied and why the *middle* one is asserted absent as well as the last.
+    #[test]
+    fn the_binding_is_the_first_reported_and_is_never_replaced() {
+        let responses = [
+            WELL_FORMED,
+            &WELL_FORMED.replace("a-model-identifier", "a-second-model"),
+            &WELL_FORMED.replace("a-model-identifier", "a-third-model"),
+        ]
+        .join("\n");
+        let live = reported_over(&responses, 3);
+
+        assert_eq!(
+            live.exchanges, 3,
+            "three exchanges, so three chances to move"
+        );
+        assert_eq!(live.model.as_deref(), Some("a-model-identifier"));
+        assert_eq!(live.reasoning_level.as_deref(), Some("none"));
+
+        // The disclosure, as an assertion: nothing anywhere in the reported account names the models
+        // the connector switched to. A later reader of this run cannot tell that it happened.
+        let rendered = format!("{live:?}");
+        assert!(!rendered.contains("a-second-model"), "{rendered}");
+        assert!(!rendered.contains("a-third-model"), "{rendered}");
+    }
+
+    /// Rule 15.2's binding survives a connector that stops answering, which is the same decision
+    /// measured where an alternative would visibly differ.
+    ///
+    /// One well-formed response and then a dead pipe for four more exchanges. A port that retained
+    /// the *last* reported binding would report no model here, because the four failures reported
+    /// none — and a run whose connector died after answering once did have a model, spent money
+    /// against it, and must say which.
+    ///
+    /// The token totals are the same one exchange's, which is rule 11.5 beside it: a dead pipe reports
+    /// no usage and an absence is not a zero, so five exchanges bill one exchange's counts.
+    #[test]
+    fn the_binding_survives_a_connector_that_stops_answering() {
+        let live = reported_over(WELL_FORMED, 5);
+
+        assert_eq!(live.exchanges, 5);
+        assert_eq!(live.model.as_deref(), Some("a-model-identifier"));
+        assert_eq!(live.reasoning_level.as_deref(), Some("none"));
+        assert_eq!(live.prompt_tokens, 1_000);
+        assert_eq!(live.output_tokens, 8);
+        // Rule 9.5's count: four of the five opportunities obtained nothing.
+        assert_eq!(live.fallbacks, 4);
+    }
+
+    /// Rule 15.2's binding is **both or neither**, and an empty model is not a name.
+    ///
+    /// Rule 10.4c names the two fields together and refuses an action that carries only one, so a
+    /// half-filled binding would be a record naming a model at a level nobody reported — or a level
+    /// with nothing to attribute it to. Four spoilings, each of one field, and then a well-formed
+    /// response through the same port to show that none of them consumed the binding: a port that
+    /// bound the empty string or bound a lone level would answer differently on the fifth exchange.
+    ///
+    /// The empty model is the case rule 10.4c does not itself cover, because a response with
+    /// `"model":""` carries both members. [`ConnectorPort::action`] refuses an empty identifier for
+    /// the same reason and this repeats that judgement rather than inheriting it.
+    #[test]
+    fn a_binding_needs_both_fields_and_a_nonempty_model() {
+        for spoiled in [
+            // The level absent, the model named.
+            "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"model\":\"a-model-identifier\",\
+             \"usage\":{\"prompt\":1,\"cached_prompt\":0,\"output\":1,\"reasoning\":0}}",
+            // The model absent, the level named.
+            "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\"reasoning\":\"none\",\
+             \"usage\":{\"prompt\":1,\"cached_prompt\":0,\"output\":1,\"reasoning\":0}}",
+            // The model present and empty, which is not a name.
+            &WELL_FORMED.replace("\"a-model-identifier\"", "\"\""),
+            // The model present and not a string at all.
+            &WELL_FORMED.replace("\"a-model-identifier\"", "7"),
+        ] {
+            let live = reported_over(spoiled, 1);
+            assert_eq!(live.model, None, "{spoiled}");
+            assert_eq!(live.reasoning_level, None, "{spoiled}");
+
+            // And the same port binds the next well-formed response, so the refusal above left the
+            // binding open rather than consuming it.
+            let responses = format!("{spoiled}\n{WELL_FORMED}");
+            let live = reported_over(&responses, 2);
+            assert_eq!(
+                live.model.as_deref(),
+                Some("a-model-identifier"),
+                "{spoiled}"
+            );
+            assert_eq!(live.reasoning_level.as_deref(), Some("none"), "{spoiled}");
+        }
+    }
+
+    /// A response that failed rule 10.4c's grammar check **still binds**, and that is deliberate.
+    ///
+    /// The exchange was billed — rule 14.1 adds what was reported whatever the action did — so the
+    /// run spent money against a model, and a run every one of whose responses failed on its verb
+    /// would otherwise report no model while having been told one on every line. This is the one
+    /// place [`ConnectorPort::retain_binding`] is not [`ConnectorPort::action`]'s check repeated, so
+    /// it is the one place worth a case of its own.
+    ///
+    /// The verb is the spoiling, because it is the field that fails *after* the two this rule reads:
+    /// the response is otherwise complete, names both, and reports its counts.
+    #[test]
+    fn a_response_refused_on_its_verb_still_reports_what_answered() {
+        let refused = WELL_FORMED.replace("\"sleep\"", "\"hibernate\"");
+        let live = reported_over(&refused, 1);
+
+        // Rule 9.5: no action came back, so the opportunity was a counted fallback.
+        assert_eq!(live.fallbacks, 1);
+        // And rule 14.1 billed it, because it was an exchange.
+        assert_eq!(live.prompt_tokens, 1_000);
+        assert_eq!(live.model.as_deref(), Some("a-model-identifier"));
+        assert_eq!(live.reasoning_level.as_deref(), Some("none"));
+    }
+
+    /// Rule 8.4 against rule 8.2: the schema offers a provider exactly the verbs this engine
+    /// admits, and no others.
+    ///
+    /// [`RESPONSE_VERBS`] is a second statement of a set [`action_from_parts`] already fixes, and
+    /// this is the test that makes the duplication safe rather than merely small. The failure it
+    /// prevents costs money: a schema offering a twelfth verb would have a provider answer with it
+    /// under a structured-output guarantee, and the answer would be refused by the grammar check —
+    /// a paid exchange spent on a counted fallback, every time, for as long as the two disagreed.
+    #[test]
+    fn the_schema_offers_exactly_the_verbs_the_engine_admits() {
+        // Forwards: every verb the schema offers is admitted under *some* parameter. Three forms,
+        // because the eleven do not agree on what a parameter is — four take none, six take an
+        // identifier and `move` takes a direction — and the claim being checked here is that the
+        // verb is admitted at all rather than that any particular pairing is.
+        let direction = Direction::ORDERED[0].to_string();
+        for verb in RESPONSE_VERBS {
+            assert!(
+                [None, Some("M02"), Some(direction.as_str())]
+                    .into_iter()
+                    .any(|parameter| action_from_parts(verb, parameter).is_some()),
+                "the schema offers {verb}, which the grammar refuses"
+            );
+        }
+
+        // Backwards: every action the engine can carry has its verb in the schema. The eleven are
+        // written out because the enumeration has no iterator, and the count is asserted so that a
+        // twelfth variant fails here rather than being silently unlisted.
+        let every_action = [
+            Action::Wait,
+            Action::Sleep,
+            Action::Eat {
+                food_id: "F01".to_string(),
+            },
+            Action::Move {
+                direction: Direction::ORDERED[0],
+            },
+            Action::Attack {
+                target: "M02".to_string(),
+            },
+            Action::Threaten {
+                target: "M02".to_string(),
+            },
+            Action::Fight {
+                target: "M02".to_string(),
+            },
+            Action::Retreat {
+                target: "M02".to_string(),
+            },
+            Action::Surrender {
+                target: "M02".to_string(),
+            },
+            Action::Approach {
+                target: "M02".to_string(),
+            },
+            Action::Avoid {
+                target: "M02".to_string(),
+            },
+        ];
+        let verbs: std::collections::BTreeSet<&str> = every_action
+            .iter()
+            .map(|action| action_parts(action).0)
+            .collect();
+        assert_eq!(verbs.len(), every_action.len(), "two actions share a verb");
+        assert_eq!(
+            verbs,
+            RESPONSE_VERBS
+                .into_iter()
+                .collect::<std::collections::BTreeSet<&str>>()
+        );
+
+        // And the schema states them as its enumeration, in the documented order.
+        let schema = response_schema();
+        assert!(
+            schema.contains(&format!(
+                "\"enum\":[{}]",
+                RESPONSE_VERBS
+                    .iter()
+                    .map(|verb| format!("\"{verb}\""))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )),
+            "{schema}"
+        );
+        // `parameter` is offered and is not required, because four of the eleven take none.
+        assert!(schema.contains("\"required\":[\"verb\"]"), "{schema}");
+        assert!(
+            schema.contains("\"parameter\":{\"type\":\"string\"}"),
+            "{schema}"
+        );
+    }
+
+    // -----------------------------------------------------------------------------------
+    // `SPEC-MOK-007` rule 19.5: the bounded retry, over the same assembled streams.
+    //
+    // The bound, the vocabulary of rule 19.5a and rule 14.6's check before each attempt are all
+    // decisions taken inside `ConnectorPort::propose`, so they are measured here, where a response
+    // is a line of text and a retry is the next line. `VER-MOK-018` cases **R1** and **R2** are the
+    // same properties through a real child process, in `tests/connector.rs`.
+    //
+    // No case below asserts a duration, which is case **R5**: rule 11.4 admits no timestamp in a
+    // transcript, so an elapsed figure is not something this repository retains and not something a
+    // case may pass on.
+    // -----------------------------------------------------------------------------------
+
+    /// Rule 19.5a's transient kind, the one every case below retries.
+    const TRANSPORT_FAILURE: &str =
+        "{\"protocol\":1,\"error\":{\"kind\":\"transport\",\"message\":\"the socket closed\"}}";
+
+    /// A provider failure that reports what it cost, which is the case rule 14.6's check before each
+    /// attempt exists for.
+    ///
+    /// Rule 10.4a puts a `usage` on a response carrying an action, and this one carries an error
+    /// instead — but [`ConnectorPort::interpret`] reads the two halves independently, and a provider
+    /// that answered and failed has billed for it. Its counts are [`whole_cent_usage`]'s, so each
+    /// attempt costs exactly one cent and a ceiling can be declared in attempts.
+    const BILLED_PROVIDER_FAILURE: &str = "{\"protocol\":1,\"error\":{\"kind\":\"provider\",\"message\":\"rate limited\"},\
+         \"usage\":{\"prompt\":1000,\"cached_prompt\":1000,\"output\":987,\"reasoning\":0}}";
+
+    /// A response repeated as its own lines, which is what a connector failing the same way looks
+    /// like from this side of the pipe.
+    fn repeated(response: &str, times: usize) -> String {
+        vec![response; times].join("\n")
+    }
+
+    /// Rule 19.5 and case **R2**: a transient failure is attempted four times and no more, every
+    /// attempt is its own record, and the opportunity counts **one** fallback.
+    ///
+    /// The count is the load-bearing assertion and case **P5** is why. Rule 15.4's figure is
+    /// reconciled against the records marked as fallbacks, so a port that counted per attempt would
+    /// report four against one marked record and the property would fail — which is the failure this
+    /// case exists to make impossible. The bill goes the other way: rule 11.2 calls each attempt its
+    /// own billed exchange, so the exchange count is four.
+    #[test]
+    fn a_transient_failure_is_attempted_four_times_and_counts_one_fallback() {
+        let (_, proposal, transcript) = exchange_over(&repeated(TRANSPORT_FAILURE, 6));
+
+        // Rule 19.5's bound is three retries, so three attempts were abandoned and the fourth is
+        // the one the opportunity ended on. The two lines the fixture did not need were not read:
+        // the loop stops at the bound and not at the end of the stream.
+        assert_eq!(proposal.earlier_attempts.len(), RETRY_BOUND);
+        assert!(proposal.action.is_none());
+        assert_eq!(proposal.response.as_deref(), Some(TRANSPORT_FAILURE));
+
+        // Rule 11.2: one record per attempt, in the order they were made, and the last is the
+        // opportunity's own.
+        let records: Vec<&str> = transcript.lines().collect();
+        assert_eq!(records.len(), RETRY_BOUND + 1, "{transcript}");
+        for record in &records[..RETRY_BOUND] {
+            assert_eq!(transcript_flag(record, "fallback"), Some(false), "{record}");
+        }
+        assert_eq!(
+            transcript_flag(records[RETRY_BOUND], "fallback"),
+            Some(true),
+            "{transcript}"
+        );
+
+        // Every record is the same tick and the same actor, because they are one opportunity. This
+        // is also the shape no replay can read: see [`Proposal::earlier_attempts`].
+        let request = connector_request();
+        for record in &records {
+            assert!(
+                record.contains(&format!("\"tick\":{}", request.tick())),
+                "{record}"
+            );
+            assert!(record.contains(request.actor_id()), "{record}");
+        }
+
+        // Rule 14.1 against rule 9.5: four billed exchanges, one counted decision. An error
+        // response reports no usage, so the bill is zero and the *count* of exchanges is what moved.
+        let (_, account) = billed_exchange_over(&repeated(TRANSPORT_FAILURE, 6));
+        assert_eq!(account.exchanges(), (RETRY_BOUND + 1) as u64);
+        assert_eq!(account.fallbacks(), 1);
+        assert_eq!(account.cost(), 0);
+    }
+
+    /// Rule 19.5 and case **R1**: a transient failure that succeeds on a later attempt is not a
+    /// fallback at all, and the attempts before it are still recorded.
+    ///
+    /// The pair with the case above, and the reason the count cannot be taken per exchange: this run
+    /// spent three exchanges and reached a decision, so rule 15.4's mark must stay off it. A port
+    /// that counted a fallback when an attempt failed would report two here and mark a clean run as
+    /// unfit to publish.
+    #[test]
+    fn a_transient_failure_that_then_succeeds_counts_no_fallback() {
+        let script = format!(
+            "{}\n{}\n{WELL_FORMED}",
+            TRANSPORT_FAILURE, TRANSPORT_FAILURE
+        );
+        let (sent, proposal, transcript) = exchange_over(&script);
+
+        assert_eq!(proposal.action, Some(Action::Sleep));
+        assert_eq!(proposal.earlier_attempts.len(), 2);
+        assert_eq!(proposal.response.as_deref(), Some(WELL_FORMED));
+
+        // Rule 10.2's one-for-one ordering holds per *attempt*: three requests were written for one
+        // opportunity, which is what makes each attempt an exchange rather than a re-reading.
+        assert_eq!(sent.lines().count(), 3, "{sent}");
+
+        // Three records, none of them a fallback: the two abandoned attempts are marked `false`
+        // because they were not the decision, and the decision was an action.
+        let records: Vec<&str> = transcript.lines().collect();
+        assert_eq!(records.len(), 3, "{transcript}");
+        for record in &records {
+            assert_eq!(transcript_flag(record, "fallback"), Some(false), "{record}");
+        }
+        // The two abandoned attempts carry rule 11.3's response, which is the failure a reader is
+        // looking for, and rule 9.5's `wait` in the action field, because they obtained no action.
+        for record in &records[..2] {
+            assert!(
+                record.contains("\"action\":{\"verb\":\"wait\"}"),
+                "{record}"
+            );
+            assert!(record.contains("the socket closed"), "{record}");
+        }
+        assert!(
+            records[2].contains("\"action\":{\"verb\":\"sleep\"}"),
+            "{transcript}"
+        );
+
+        let (_, account) = billed_exchange_over(&script);
+        assert_eq!(account.exchanges(), 3);
+        assert_eq!(account.fallbacks(), 0);
+        // Rule 14.1: only the third exchange reported anything, and the two before it contributed
+        // nothing rather than being unbilled.
+        assert_eq!(account.cost(), 100 * 125 + 900 * 13 + 8 * 1_000);
+    }
+
+    /// Rule 19.5a: everything but `transport` and `provider` is attempted **once**.
+    ///
+    /// The four cases are the rule's own reasoning as a list. `malformed` and `refused` would be
+    /// answered identically by the same request, an unrecognised kind is treated as `malformed`
+    /// because rule 10.7 distrusts the connector's error vocabulary too, and a response carrying an
+    /// action is not an error however it is dressed. Each of them retried would cost three exchanges
+    /// per opportunity for nothing, which is why the count of requests is what is asserted.
+    #[test]
+    fn only_the_two_transient_kinds_are_attempted_more_than_once() {
+        for (why, response) in [
+            (
+                "rule 19.5a's `malformed`, reported as the kind",
+                "{\"protocol\":1,\"error\":{\"kind\":\"malformed\",\"message\":\"m\"}}",
+            ),
+            (
+                "rule 19.5a's `refused`",
+                "{\"protocol\":1,\"error\":{\"kind\":\"refused\",\"message\":\"no credential\"}}",
+            ),
+            (
+                "a kind outside the four, which rule 19.5a treats as `malformed`",
+                "{\"protocol\":1,\"error\":{\"kind\":\"transport-ish\",\"message\":\"m\"}}",
+            ),
+            (
+                "a line this reader cannot parse, which is `malformed` in fact",
+                "not a response at all",
+            ),
+            (
+                "a transient kind alongside an action, which rule 10.4 admits one of",
+                "{\"protocol\":1,\"action\":{\"verb\":\"sleep\"},\
+                 \"error\":{\"kind\":\"transport\",\"message\":\"m\"},\"model\":\"m\",\
+                 \"reasoning\":\"none\",\"usage\":{}}",
+            ),
+        ] {
+            let (sent, proposal, transcript) = exchange_over(&repeated(response, 6));
+            assert!(proposal.earlier_attempts.is_empty(), "retried {why}");
+            assert_eq!(sent.lines().count(), 1, "retried {why}");
+            assert_eq!(transcript.lines().count(), 1, "retried {why}");
+            assert_eq!(
+                transcript_flag(transcript.trim_end(), "fallback"),
+                Some(true),
+                "{why}: {transcript}"
+            );
+        }
+    }
+
+    /// Rule 19.5's own sentence: "rule 14.6's check runs before each attempt, so the bound cannot
+    /// breach a ceiling whatever it is set to".
+    ///
+    /// The ceiling is declared in attempts, one cent each, and the measurement is the count of
+    /// exchanges the port issued. Without the check inside the loop a bound of three would spend up
+    /// to three exchanges past a ceiling, which is the reading the rule forecloses — and it would do
+    /// it invisibly, because the engine's own check happens once per opportunity and every attempt
+    /// after the first is inside a single call to `propose`.
+    ///
+    /// The unbounded row is the control: the same response with no ceiling reaches the bound, so a
+    /// low count in the rows above is the ceiling stopping the retrying rather than the response
+    /// failing to be retried at all.
+    #[test]
+    fn the_ceiling_stops_the_retrying_before_the_bound() {
+        for (ceiling, attempts) in [
+            (Some(1), 1),
+            (Some(2), 2),
+            (Some(3), 3),
+            (Some(4), RETRY_BOUND + 1),
+            // A ceiling the four attempts cannot reach, and none at all: the bound is what stops it.
+            (Some(99), RETRY_BOUND + 1),
+            (None, RETRY_BOUND + 1),
+        ] {
+            let (proposal, account) =
+                billed_exchange_under(&repeated(BILLED_PROVIDER_FAILURE, 8), ceiling);
+            assert_eq!(
+                account.exchanges(),
+                attempts as u64,
+                "under a ceiling of {ceiling:?} cents"
+            );
+            assert_eq!(proposal.earlier_attempts.len(), attempts - 1);
+            // Whatever stopped it, the opportunity counts one fallback and costs a cent an attempt.
+            assert_eq!(account.fallbacks(), 1, "under {ceiling:?}");
+            assert_eq!(
+                account.cost(),
+                WHOLE_CENT * attempts as u64,
+                "under {ceiling:?}"
+            );
+        }
+    }
+
+    /// A pipe that failed is not retried, and the reason is that there is nothing left to ask.
+    ///
+    /// Which transport failures are retried is `WO-MOK-026`'s envelope, and this is the line it
+    /// draws: rule 19.5a's kinds are kinds a connector *reports*, and a connector whose output has
+    /// closed has reported nothing. Three further attempts would write three more identical records
+    /// for a process that is gone.
+    ///
+    /// The second half is the one that shows the retrying is not merely unreachable: the port's
+    /// first exchange succeeded, so it was in working order when the pipe went.
+    #[test]
+    fn a_pipe_that_failed_is_not_retried() {
+        // Closed before answering anything.
+        let (proposal, account) = billed_exchange_over("");
+        assert!(proposal.earlier_attempts.is_empty());
+        assert_eq!(account.exchanges(), 1);
+        assert!(
+            proposal
+                .response
+                .unwrap_or_default()
+                .starts_with("connector: "),
+            "rule 11.3's \"or the error\""
+        );
+
+        // Closed after one answer, over a port that is reused as a run reuses it.
+        let one_answer = format!("{WELL_FORMED}\n");
+        let mut requests = Vec::new();
+        let mut transcript = Vec::new();
+        let mut port = ConnectorPort::new(
+            one_answer.as_bytes(),
+            &mut requests,
+            &mut transcript,
+            connector_prices(),
+            None,
+        );
+        let first = port.propose(connector_request());
+        assert_eq!(first.action, Some(Action::Sleep));
+        assert!(first.earlier_attempts.is_empty());
+
+        let second = port.propose(connector_request());
+        assert!(second.action.is_none());
+        assert!(
+            second.earlier_attempts.is_empty(),
+            "the dead pipe was retried"
+        );
+        assert_eq!(port.account.exchanges(), 2);
+    }
+
+    /// The gap this work order **discloses and does not repair**: a transcript holding a retried
+    /// exchange cannot be replayed.
+    ///
+    /// Rule 11.2 gives every attempt its own record and rule 12.3 has a replay read one record per
+    /// decision opportunity, checking the tick and the actor. The two do not reconcile. The first
+    /// attempt's record matches the first opportunity and is consumed by it — an attempt record is
+    /// marked `"fallback":false` under rule 11.3, because the attempt was not the decision, and it
+    /// carries rule 9.5's `wait`, so it is indistinguishable from a legitimately recorded `wait` —
+    /// and the *second* opportunity then meets a record for the first actor and fails rule 12.3's
+    /// check.
+    ///
+    /// **The failure is loud, which is the whole reason this is a disclosure rather than a stop.**
+    /// Rule 12.3 refuses and names the disagreement, so no replay silently invents a run. What it
+    /// names is the wrong record, and repairing that means either a field on the exchange record
+    /// distinguishing an attempt — which amends rule 11.3 — or rule 12.3 reading a group per
+    /// opportunity. Both are changes of substance in an approved artifact, which this work order's
+    /// stop-and-escalate condition 6 reserves to the owner.
+    ///
+    /// This case exists so the behaviour is pinned rather than discovered by a live run: a live
+    /// transcript that retried is not a replay input, and case **L30**'s replay identity would have
+    /// to be captured from a run that did not retry.
+    #[test]
+    fn a_transcript_holding_a_retried_exchange_cannot_be_replayed() {
+        // One opportunity's worth of records, written the way `PortDecisionSource::decide` writes
+        // them: two abandoned attempts and the decision.
+        let script = format!(
+            "{}\n{}\n{WELL_FORMED}",
+            TRANSPORT_FAILURE, TRANSPORT_FAILURE
+        );
+        let (_, _, transcript) = exchange_over(&script);
+        assert_eq!(transcript.lines().count(), 3, "{transcript}");
+
+        // The first record is not distinguishable from a recorded `wait` by any field rule 11.3
+        // fixes, which is the half a replay cannot see.
+        let first = transcript.lines().next().unwrap();
+        assert_eq!(transcript_flag(first, "fallback"), Some(false), "{first}");
+        assert!(first.contains("\"action\":{\"verb\":\"wait\"}"), "{first}");
     }
 }

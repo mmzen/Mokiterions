@@ -1,0 +1,2 @@
+connector ready: model=gpt-5.6-luna endpoint=https://api.openai.com/v1/chat/completions
+{"run_record":"llm","seed":0,"ticks":50,"density":"0.75","trace_actions":false,"model":"gpt-5.6-luna","reasoning":"none","exchanges":503,"tokens":{"prompt":776963,"cached_prompt":0,"output":9429,"reasoning":0},"cache_ratio_basis_points":0,"cost_cents":16,"ceiling_cents":200,"fallbacks":0,"unfit_to_publish":false,"tick_reached":50,"ended":"tick_limit"}

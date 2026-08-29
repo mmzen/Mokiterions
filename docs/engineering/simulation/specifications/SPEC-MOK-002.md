@@ -5,7 +5,7 @@ title = "Crate targets, public interface, and test placement"
 status = "approved"
 owners = ["technical owner"]
 created = "2026-08-17"
-updated = "2026-08-24"
+updated = "2026-08-29"
 
 [relations]
 specifies = [
@@ -41,6 +41,13 @@ specifies = [
 | 2026-08-24 | **The last two amendments `ADR-MOK-007` requires of this specification, which the 2026-08-23 row declined to write because no commit had yet made them true. Both take a target scope this specification has never needed, and both are written as far as this tree makes them true and no further.** ***Security and privacy properties*, first bullet.** *"No network access, credential read, filesystem access, environment read, or wall-clock read is introduced"* now says of **which target**. Of the **library target** all five continue to hold, and that half is the load-bearing one: `src/lib.rs`, `src/cli.rs` and `src/simulation.rs` contain no `std::fs`, no `File::`, no `OpenOptions`, no `remove_file`, no `env::`, no process spawn, no socket and no clock, **measured at the candidate rather than asserted**, which is what lets the port arrive already constructed and the transcript already open. Of the **binary target** filesystem access holds no longer and has not since 2026-08-20; it now interprets **two** operator-supplied paths, `--events-path` written and `--transcript-path` read, and the other four properties still hold of it — the command line is read and no environment variable, no socket is opened, no process is spawned and no clock is read. ***Actors and external systems*.** The closing bullet takes the same scope: of the library target it stands word for word, and of the binary target a filesystem location **does** participate — since 2026-08-20 as the record stream's destination, which nothing reads back, and now as **a source the run's decisions come from**, which is the stronger case because the transcript's bytes decide what is proposed. No external service, no network endpoint and no credential participates in either target. **What is not written, and why.** `ADR-MOK-007` states that three of the five properties stop holding of the engine **package** and that this section gains the connector as a process the binary target starts; the third and fourth are the spawn and the environment passed to that child, and **neither exists in this tree.** `WO-MOK-025`'s *Out of scope* excludes the connector, its protocol implementation, the canned connector and any process spawn, so the only decision source outside the engine that exists here is a replay, which starts nothing. Both are **`WO-MOK-026`'s to write**, in the target-scoped form these two amendments establish, and each section says so in as many words rather than leaving a reader to infer it. **The 2026-08-23 row's forecast is corrected here and that row is not edited.** It said these two *"land with the code they describe, under `WO-MOK-025` scope item 14"*. Item 14 is where they land, and the transcript's half of them is written; the connector's half cannot be, because the same work order excludes the code it describes. A row records the act it recorded, so the correction is a later row — the `ARCH-MOK-001` precedent of the same date. **Nothing else moves.** No rule is amended: rules 4 and 5 were amended on 2026-08-23 and are untouched here, rules 6 and 13 stand as that row recorded them, the ten prohibited names stay ten, the dependency table is still empty, no target or package changes, no `Config` field is added, no public signature moves and no mechanical check is restated. A process spawn appears in the **public-tier tests**, which invoke the compiled binary in order to observe a process boundary from outside it; that predates this amendment, it is what a process-boundary test is, and it is not a target spawning a child. | Approved 2026-08-23 by the repository owner acting as technical owner, in the act *"i approve the artifact pack"*, and by way of `ADR-MOK-007`, whose *Required amendments* section states both provisions in full — the same act that approved the 2026-08-23 row above, which is why these two carry that date's authority and this date's text. The implementation agent wrote the text under `WO-MOK-025` and decided none of the substance; the target scope is `ADR-MOK-007`'s own instruction, *"the sentence gains the target scope it has not needed until now"*. **Stop condition 6 of `WO-MOK-025` was not invoked**: both provisions are ones this ADR names, and the two partial landings are the form `SPEC-MOK-002`'s own approved *"What this row does not do"* paragraph fixed and which `SPEC-MOK-001`, `SPEC-MOK-003` and `ARCH-MOK-002` used on the same authorization. **The measured figures in this row were taken at the candidate commit and none is inferred from an unchanged total**: the library-target absence of all five properties, the count of two interpreted paths, and the location of every filesystem call in `src/main.rs` alone. Sibling rows for the same act stand in `SPEC-MOK-004`, `SPEC-MOK-007`, `SPEC-MOK-003`, `ARCH-MOK-002`, `ARCH-MOK-001`, `INT-MOK-001` and `SPEC-MOK-001`. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
 | 2026-08-24 | **Rule 5's additions list gains `ReplayPort` and two `DecisionRequest` accessors, and rule 6 states that a reference into a value the caller owns is outside it.** Two findings, both raised by `WO-MOK-025`'s own static checks against this rule at its candidate, and both about this specification rather than about the build. **Rule 5's closing prohibition** — "nothing outside the three lists becomes public" — was contradicted by four of the twelve added public declarations. `simulation::ReplayPort` and `ReplayPort::new` were authorized in substance and unenumerated in form: `ARCH-MOK-002` names the type — "the transcript's parsing is the engine's `ReplayPort`, in the engine package" — and `SPEC-MOK-007` rule 12.1.1 puts the opening of the transcript in the host, so **two crates construct it**, `mokiterions-core/src/main.rs:85` and `mokiterions-tui/src/main.rs:118`, and it cannot be narrowed to `pub(crate)` without contradicting one of those two artifacts. It gains a growth row and an admissibility row. `DecisionRequest::tick` and `DecisionRequest::actor_id` were outside the 2026-08-23 row's wording, which described "per-part accessors returning `&str` and one accessor returning them in the composition order" — five accessors, the four blocks and `blocks` — where these are a sixth and a seventh and `tick` returns `u64`; they bind a proposal to the opportunity it answers, and their only callers outside the crate are public-tier tests. The growth arithmetic becomes `1 + 1 + 1 + 1 + 1`. **The two counting conventions are now both stated with their decomposition**, because the arithmetic disagreeing with a `pub` census was itself a source of doubt: five items, twelve declarations, and which expands into which. **Rule 6 gains a stated non-example.** Its first bullet forbids a reference into seven named things, and a `&str` borrowed from a `DecisionRequest` handed to the caller by value is none of them — the referent's owner is the caller. The rule now says so and says what follows for its mechanical form: the carve-out must admit both a `'static` referent and a caller-owned one, because a form admitting only the first reports every accessor of every value type this rule admits and so **fails a conforming build**. That is the same hazard this rule's 2026-08-23 row identified for `execute`'s grep, in the same position, found the same way. **What this row does not do**: no capability is relaxed, no prohibited name becomes public, no mutating method is added — the grep still returns exactly `run` and `advance_tick` — rule 13 is untouched, and no check is edited to pass. The build is unchanged by this row: no source file is amended for it. | **Approved 2026-08-24 by the repository owner acting as accountable technical owner.** Both findings were raised by the implementation agent as `WO-MOK-025`'s escalations **E13** and **E14**, put to the owner together with nine siblings with each measurement displayed, and approved in the turn the question was asked. Neither was repaired when found: `candidate/static-checks.txt` records both as FINDING and states why it does not repair them — "a check edited to pass is not the same check" — and `WO-MOK-025` stop-and-escalate condition 6 forbids amending an approved artifact on an implementation agent's judgement. **The agent's recommendation on E14 was wrong in its mechanism and the record says so**: it proposed naming `EventType::as_str` in the carve-out, where `as_str` is already carved out by the `'static` clause and the six references actually remaining are `DecisionRequest`'s accessors. The owner approved the correction the measurement supports, not the one first proposed. The implementation agent measured every figure in this row and wrote the text; it decided none of the substance. No record bound to a commit is re-opened. |
 | 2026-08-29 | **Rule 5's census gains `simulation::Config`'s `spend_ceiling` field, which a commit had already added.** The census enumerated that struct's public fields as exactly `seed`, `tick_limit`, `policy`, `density` and `trace_actions`; commit `c13c327` under `WO-MOK-026` added a sixth, `spend_ceiling: Option<u64>`, and so falsified the census **before** an amendment authorized it. That ordering is wrong and is recorded rather than tidied: it was found by the 2026-08-29 conformance pass and not by a gate, because `validate` reads this census as prose and cannot compare it to a struct. The field is **not removable** without stalling `WO-MOK-026` items 9 to 11 — `SPEC-MOK-007` rule 14.6 stops the run *before* an exchange and rule 15.2 puts the ceiling in the run record, neither of which a host can do on the library's behalf without the library knowing the number, and every alternative route is also an interface change: a sixth `execute` parameter moves rule 4, and putting the ceiling on the port leaves the library unable to write the run record rule 15.2 requires. This row is therefore **the census catching up with a change already made**, which is the same shape as this table's 2026-08-20 row for `EventDetail::ActionTrace` and is disclosed for the same reason that row disclosed itself. **What this row does not do**: rule 4 is untouched and `execute` keeps five parameters; rule 6's ten prohibited names stay ten and stay private, a `u64` behind an `Option` granting no path into engine-owned state; rule 13's declared dependency set is untouched and still empty; and no mechanical check is restated, the field being a public field of an already-public struct rather than a new item or a moved signature. | **Approved 2026-08-29 by the repository owner acting as accountable technical owner**, in four decisions taken in the turn each question was asked: the US cent as the minor unit; `--prices` as a compact option rather than a file; a retry bound of three; and the provider binding staying in the connector with the response reporting it back, over the two alternatives of telling the engine or leaving the request's fields advisory. A fifth decision routed the work into one chain rather than four. The implementation agent ran the pass, measured every figure and wrote the text; it decided none of the substance. |
+| 2026-08-29 | **Rule 5's census gains `simulation::Config`'s `prices` field and its additions list gains `simulation::UnitPrices`, before the commit that adds either.** `SPEC-MOK-007` rule 14.3a, approved the same day under `WO-MOK-030`, puts the run's four unit prices on the command line as `--prices <prompt:cached:output:reasoning>` and obliges the shared parser to **retain** them, unlike the paths it validates and discards. A retained value has to be somewhere on this interface, and rule 4 is not it: a sixth `execute` parameter would move a signature this specification freezes and checks with three greps. So `Config` gains `prices: Option<UnitPrices>` and the additions list gains the value type it names, with its four public `u64` fields and its one associated function `parse`. **Growth is one item and seven public declarations**, both figures stated with their decomposition under the 2026-08-24 convention, and a growth table at the rule enumerates it. **The type is a named type rather than four bare `u64` fields or a `[u64; 4]`**, which is the one substantive choice here and is the implementation agent's under `WO-MOK-026`'s decision envelope, that envelope reserving the unit-price *representation* to the agent while the *unit* — the US cent — was the owner's decision of the same day: three of the four prices are plausible values for each other's position, so a positional or unnamed form puts a silent eighty-fold cost error one transposition away from a run this repository pays for. **The four fields are public where `Density`'s single field is private**, and that difference is disclosed rather than glossed: only a public-tier test that reads the four separately can establish that a transposed `--prices` is refused rather than accepted, comparing one `parse` against another proving nothing about order, and public-tier tests are the type's only callers outside the crate because rules 14.1, 14.2 and 14.6's arithmetic is inside it. There is no `Default`, rule 14.3 forbidding a compiled-in price, and a live run with none declared is refused by `cli::parse` rather than run at a guess. **What this row does not do**: rule 4 is untouched and `execute` keeps five parameters, its three greps standing word for word; the mutating-method grep still returns exactly `run` and `advance_tick`, `parse` having no receiver; rule 6 is **not** amended and is re-checked instead, the ten prohibited names staying ten and four `u64` copies of the operator's own command line granting no path into engine-owned state, on the grounds this rule already admits `Coordinate`'s two public `u8` fields; and rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed, `parse` being hand-written against `str::split` and `str::parse`. **The ordering is deliberately the opposite of the row above.** | **Authorized 2026-08-29 by the repository owner acting as accountable technical owner**, in two acts. The substance is `SPEC-MOK-007` rule 14.3a, which that owner approved the same day under `WO-MOK-030` together with the US cent as rule 14.2's minor unit; this specification decides nothing about the option, its four integers, their order or their retention. The **authority to edit this file at all** is the second act: `WO-MOK-026`'s execution scope did not admit it, `harnessctl check … --changed-path docs/engineering/simulation/specifications/SPEC-MOK-002.md --changes-complete` measured `QGP-G4I-PATHS: WEX201` and directed the escalation under `DR-REMEDIATION-SCOPE`, and the owner was shown that measurement with two routes — a scope amendment to `WO-MOK-026` or a separate governance work order — and chose the scope amendment, the alternative being declined and recorded in that work order's own amendment record. The implementation agent wrote this text and decided only what the decision envelope reserves to it, disclosed above and in the source's own documentation. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
+| 2026-08-29 | **Rule 5's census records the port's grown return: `simulation::Proposal` and `simulation::ReportedUsage` are added, and `simulation::Proposer`'s proposing method returns the first where it returned `Option<Action>`.** `SPEC-MOK-007` rules 1.1a and 1.4a, approved the same day under `WO-MOK-026`, grow the port's return to carry "the evidence of the exchange the proposal came from — the response as received, and the provider's four reported token counts", because rule 11.3 obliges the exchange record to carry all three, rule 11.1 puts the authoring of every record in the engine, and the port is the engine's only contact with what answered. A trait on this interface cannot change shape without this rule saying so, and rule 5 closes with "nothing outside the three lists becomes public". **Growth is two items and ten public declarations**, both figures stated with their decomposition under the 2026-08-24 convention, and a growth table at the rule enumerates it: `Proposal`, its three public fields and `Proposal::nothing`, then `ReportedUsage` and its four public `Option<u64>` fields — with `Proposer`'s row counting `0`, a return type changing being a change of shape on an item this rule already encloses, which is the `ActionTrace` form of the 2026-08-20 row and the form `Config`'s row of one day earlier takes. **Two substantive choices are recorded rather than left in a diff, and both are the implementation agent's under `WO-MOK-026`'s decision envelope.** The counts are a **named type** rather than four bare fields on `Proposal`, on `UnitPrices`' measured ground: four unlabelled integers of similar magnitude in a fixed order, from which rule 14's cost and `REQ-MOK-070`'s ratio are both computed, put a transposition one keystroke from a wrong figure in a run this repository pays for. And the four are `Option<u64>` and not `u64`, which is rule 11.5 in a signature — "a reported count that the provider did not report is recorded as **absent**, not as zero", and rule 14.5 depends on telling the two apart. **What this row does not do**: rule 4 is untouched and `execute` keeps five parameters with its three greps word for word, the port parameter's type naming the trait and not its return; the mutating-method grep still returns exactly `run` and `advance_tick`, `Proposal::nothing` having no receiver; `Simulation::advance_tick`'s signature stays one line, no parameter of it moving; rule 6 is **not** amended and is re-checked instead, the ten prohibited names staying ten and what the return gained being an owned `String` the port composed and four `Option<u64>` copies of figures a provider reported; and rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed, nothing here being parsed by a crate. The 2026-08-23 and 2026-08-24 rows are **not edited**: each records the growth it recorded, and the two places where rule 5 states the old return carry a dated parenthetical pointing at this row rather than a rewritten claim. | **Authorized 2026-08-29 by the repository owner acting as accountable engineering owner**, in two acts. The substance is `SPEC-MOK-007` rules 1.1a and 1.4a, which that owner approved the same day under `WO-MOK-026` over two measured alternatives — recording the growth's admissibility here while leaving those rules word for word, and a second port method the engine called after each proposal, whose cost was a temporal contract between two calls that no type enforces so that a port returning the previous exchange's evidence would write a wrong record in silence. This specification decides nothing about the port's shape. The **authority to edit `SPEC-MOK-007` at all** is the second act, recorded in `WO-MOK-026`'s amendment record together with a second admission the trait change forces, `mokiterions-tui/src/state.rs`, whose `LentPort` implements this trait. This file was already in that work order's execution scope, admitted earlier the same day for `Config`'s `prices` field. The implementation agent wrote this text and decided only what the decision envelope reserves to it, disclosed above and in the source's own documentation. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
+| 2026-08-29 | **Rule 5's census gains `simulation::ConnectorPort`, the port `SPEC-MOK-007` rule 10's connector binding requires, and the frontmatter's `updated` field is corrected.** Rule 10.1 puts the live provider behind "an executable the operator names by path as a host option" that "the host spawns as a child process", rule 20.1 makes the engine's binary target that recording host, and `SPEC-MOK-006` rule 1.2 keeps every process and every path resolution out of the library target. The two halves of one live exchange therefore fall on opposite sides of a crate boundary — the host connects the pipes, the engine composes the request and applies rule 10.4's grammar check to the response — and something public has to carry the second half to the first. A trait implementation cannot be `pub(crate)` when its one constructor is reached from `src/main.rs`, which is a separate crate from `src/lib.rs`, and rule 5 closes with "nothing outside the three lists becomes public". **Growth is one item and two public declarations**, both figures stated with their decomposition under the 2026-08-24 convention, and a growth table and an admissibility table at the rule enumerate it: `ConnectorPort` and `ConnectorPort::new`, which is `ReplayPort`'s decomposition of 2026-08-24 item for item — a type and its one associated function. **No field is public**, unlike `UnitPrices`', `Proposal`'s and `ReportedUsage`'s, because nothing outside the crate assembles a port from its parts or reads one back: its four fields are the child's two streams, the host's transcript sink and rule 8.4's response schema, and the associated function is the only way any of them is set. No `pub const` changes. **One substantive choice is recorded rather than left in a diff, and it is the implementation agent's under `WO-MOK-026`'s decision envelope, made on a measurement rather than a preference.** The alternative was to build the port in `mokiterions-core/src/main.rs`, where the streams already are, and admit nothing here at all; it was rejected because rule 20.4.1 lends one port for the whole run while `PortDecisionSource` is constructed per opportunity, so the accumulation of rule 14's cost lives in the port — and a port in the binary target would reach rules 14 and 15's arithmetic only by this specification publishing `accounting::RunAccount` together with the price and usage types it computes with, which is a larger surface than one type and one associated function and puts the cost arithmetic's own mutable state on the interface. **A finding is recorded and not repaired.** The 2026-08-24 row cites `ReplayPort`'s two callers as `mokiterions-core/src/main.rs:85` and `mokiterions-tui/src/main.rs:118`; at `d96cced`, the commit this work order branched from and so before any change of this branch's, the two constructions stand at lines 99 and 130. **Neither number holds and both had already decayed before this work order began.** That row is not edited — it records what it recorded — and the new admissibility row therefore names the function `run_live` rather than a line a later commit falsifies. **What this amendment does not do**: rule 4 is untouched and `execute` keeps five parameters with its three greps word for word, the port arriving through the `Option<&mut dyn Proposer>` parameter that already exists; the mutating-method grep still returns exactly `run` and `advance_tick`, measured at the candidate, `ConnectorPort::new` having no receiver and a trait method not being a `pub fn` declaration; `Simulation::advance_tick`'s signature stays one line; rule 6 is **not** amended and is re-checked instead, the ten prohibited names staying ten and staying private, the transcript sink being a referent the caller owns under that rule's own 2026-08-24 carve-out and the two streams being owned outright; rule 8's table is **not** amended, `tests/connector.rs` entering the public tier under that rule's standing clause admitting "a further file when a further public subject appears", the spawn, the environment inheritance and the reaping being that subject; and rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed, because rule 10.1's "neither Rust package acquires a crate" is what makes the response line's reader a hand-written private module in `src/simulation.rs`. The frontmatter's `updated` field read `2026-08-24` while this record already carried a 2026-08-29 row written before this branch existed; it now reads `2026-08-29`. That is a corrected fact and not an amendment: no provision moves with it. | **Authorized 2026-08-29 by the repository owner acting as accountable engineering owner**, and the two acts are separate. The substance is `SPEC-MOK-007` rules 10.1 through 10.8 and 20.1 through 20.4.1, which are original content of that specification, approved 2026-08-23 by that owner by way of `ADR-MOK-007` and not amended here or by this work order. This specification decides nothing about the connector binding, the framing, the grammar or which host spawns; it records what the binding makes public and why that is admissible. The **authority to edit this file at all** is the second act: `SPEC-MOK-002.md` was admitted to `WO-MOK-026`'s `[execution_scope]` and `[relations].specifications` on 2026-08-29 by the same owner, over the declined alternative of a fourth governance work order scoped to this file alone, and that decision is recorded in full in that work order's own amendment record — including its measured cost, that the formal snapshot moves and that no evidence was yet bound to the snapshot it moves from. That admission is standing and this amendment needs no further scope act. The implementation agent measured every figure in this row and wrote the text; it decided only what the envelope reserves to it, disclosed above and in the source's own documentation. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
+| 2026-08-29 | **Rule 5's census records `simulation::ConnectorPort::new`'s grown signature: the run's declared unit prices and its ceiling are added as parameters, and the growth is nil.** `SPEC-MOK-007` rule 14.2 computes a live run's cost from the reported counts and the prices declared for the run, rule 14.6 stops the run once that cost reaches the declared ceiling, and rule 20.4.1 builds one port per run and lends it per tick — so the accumulation lives in the port, and the two figures it accumulates against are inputs the port cannot obtain for itself. Rule 14.3 forbids the alternative outright: prices are inputs of the run and never constants, so there is nothing for this item to read and nowhere to read it from. **Growth is nought items and nought public declarations**, both figures stated with their decomposition under the 2026-08-24 convention, and a growth table at the rule enumerates it: a signature changing on an item this rule already encloses is a change of shape, which is the `ActionTrace` form of the 2026-08-20 row and the form `simulation::Proposer`'s row of earlier this same day takes. Both parameter types are already enclosed — `simulation::UnitPrices` was admitted to the additions list earlier this same day for rule 14.3a's `--prices`, and `Option<u64>` is a primitive over a primitive — and **no field becomes public**, the item gaining a fifth field whose type, `accounting::RunAccount`, is private to a private module. **One substantive choice is recorded rather than left in a diff, and it is the implementation agent's under `WO-MOK-026`'s decision envelope, made on a measurement.** The ceiling crosses this interface in whole US cents and nothing finer, which is rule 14.2's stated minor unit, `--spend-ceiling`'s own parsed unit and the unit `simulation::Config`'s `spend_ceiling` already carries; the accumulation *behind* the parameter is finer, because one exchange at rule 14.3a's own example prices was measured at about 0.03 of a cent, so a cost accumulated in whole cents would add nought every exchange, rule 14.6's ceiling would never be reached and rule 15.2's cost would report `0` for a run that spent money. That finer unit is private to `src/simulation.rs` and is recorded there; **no unit conversion is asked of any caller**, which is the property the parameter's type is chosen for. **What this row does not do**: rule 4 is untouched and `execute` keeps five parameters with its three greps word for word, the prices reaching the library through `simulation::Config` and the port still arriving through the `Option<&mut dyn Proposer>` parameter that already exists; the mutating-method grep still returns exactly `run` and `advance_tick`, measured at the candidate, `ConnectorPort::new` still having no receiver; `Simulation::advance_tick`'s signature stays one line; rule 6 is **not** amended and is re-checked instead, the ten prohibited names staying ten and staying private, the fifth field holding four `u64` copies of the operator's own command line and six accumulators derived from figures a provider reported; rule 8's table is **not** amended and no file joins the public tier; and rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed. The 2026-08-29 row above that admitted `ConnectorPort` is **not edited** — it records the growth it recorded — and the two places where rule 5 states that item's earlier shape carry a dated parenthetical pointing at this row rather than a rewritten claim, which is the form the 2026-08-24 return-type row already fixed. | **Authorized 2026-08-29 by the repository owner acting as accountable engineering owner**, and no new act of authority is needed for either half. The substance is `SPEC-MOK-007` rules 14.1 through 14.8 and 20.4.1, which are original content of that specification, approved 2026-08-23 by that owner by way of `ADR-MOK-007`, together with rule 14.2's minor unit and rule 14.3a's `--prices`, which that owner approved 2026-08-29 under `WO-MOK-030`. This specification decides nothing about the arithmetic, the unit or the ceiling; it records what the arithmetic makes visible on this interface, which is two parameters and no declaration. The **authority to edit this file** is the standing admission of `SPEC-MOK-002.md` to `WO-MOK-026`'s `[execution_scope]` and `[relations].specifications`, taken 2026-08-29 by the same owner and recorded in full in that work order's amendment record; the row above it rests on the same admission and no further scope act is required. The implementation agent measured every figure in this row and wrote the text; it decided only what the envelope reserves to it — the unit the accumulation is held in, and that the parameter's own unit is the specification's — disclosed above and in the source's own documentation. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
+| 2026-08-29 | **Rule 4 gains a fourth exit code, the first it has ever added, and rule 5's census gains the constant that names it and the port method that stops the run.** `SPEC-MOK-007` rule 14.6 stops a live run once its accumulated cost reaches the declared ceiling and rule 19.3 requires that stop to report "a status distinct from a clean completion and from an error", fixing no number. **Rule 4**: the signature does not move and keeps its five parameters with its three greps word for word; one code is added, `3`, and one diagnostic line on standard error, without the usage text. Why none of the three standing codes can carry it is recorded at the rule as three different reasons: `0` is the clean completion rule 19.3 names; `2` is an invalid configuration and the configuration was valid, the operator having declared the ceiling the run obeyed; and `1` is an output failure where nothing failed to write, which would be worse than imprecise, because `SPEC-MOK-006` rule 13.4 has the binary target remove a record sink it created when the run fails while rule 14.7 requires a ceiling-stopped run's streams to survive "complete and readable to the tick reached" — a `1` would instruct the host to delete the evidence the other rule preserves. **Rule 5**: the census gains `CEILING_STOP_EXIT`, a `u8` constant in `src/lib.rs`, and records `simulation::Proposer`'s third method, `halted`, taking `&self` and returning `bool` with a default body of `false`. **Growth is one item and one public declaration**, both figures stated with their decomposition under the 2026-08-24 convention: the constant is the one, and the trait method is nought on that convention's own wording — "its two trait methods not being `pub fn` declarations" — a method added to a trait this rule already encloses being a change of shape, the `ActionTrace` form of the 2026-08-20 row and the form this same trait's return took earlier the same day. **It is the first `pub const` any amendment to this rule has added**, the four amendments above each closing by recording that none changed. The three places where rule 5 states the trait's method count carry a dated parenthetical pointing at this amendment rather than a rewritten claim, which is the form the 2026-08-24 return-type row fixed. **The status is a named constant and not a literal** because it crosses a crate boundary — `src/main.rs` is a separate crate from `src/lib.rs` and rule 13.4's removal exception is the binary target's to apply — and the contrast is recorded because it is why this is one declaration and not two: `simulation::MISSING_DECISION_PORT` is shared between two *modules* of this crate, stays `pub(crate)`, and is not widened. The public-tier test asserts the literal `3` and not the constant, a test reading the constant agreeing with any value it took. **The *Observability* section is amended too**, for one sentence: it enumerated the exit codes as "exactly as verified" and would otherwise be false. The line it now records is a diagnostic this specification records rather than adds, rules 14.7 and 15.5 fixing what it may say; the event stream, the action-trace lines and the summary line are unchanged in form, and a ceiling-stopped run writes no summary line at all. **What this row does not do**: the mutating-method grep still returns exactly `run` and `advance_tick`, measured at the candidate, `halted` taking `&self` and being a trait method in any case; `Simulation::advance_tick`'s signature stays one line; the *Authorized additions* table is **not** edited, the amendment block's growth table being the enumeration, which is the form `simulation::Proposer` and `simulation::ConnectorPort` already take; rule 6 is **not** amended and is re-checked instead, the constant being a process status in the process-boundary module and not a simulation constant, `halted` returning a copy of a fact by value, and the ten prohibited names staying ten and staying private; rule 8's table is **not** amended and no file joins the public tier, `tests/connector.rs` having joined it earlier the same day; rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed; and `SPEC-MOK-003` is **not** amended, the observer offering none of the three live options. | **Authorized 2026-08-29 by the repository owner acting as accountable engineering owner**, in one act, and the rest is standing authority. The substance of the stop is `SPEC-MOK-007` rules 14.6, 14.7, 14.8 and 19.3, original content of that specification approved 2026-08-23 by that owner by way of `ADR-MOK-007`. The substance of the *question* is that specification's rule 1.1b, which the same owner approved the same day under `WO-MOK-026`, over the measured alternative of a field on `Proposal` — nought items and one or two declarations, cheaper on this census and dearer everywhere else, having no ordering contract at all and putting "no exchange was issued" one field away from rule 9.5's "the exchange yielded nothing", which a reader who confused them would answer by writing a fallback record for an exchange that never happened. The **authority to edit this file** is the standing admission of `SPEC-MOK-002.md` to `WO-MOK-026`'s `[execution_scope]` and `[relations].specifications`, taken 2026-08-29 by the same owner and recorded in full in that work order's amendment record; the four rows above rest on the same admission and no further scope act is required. **Two things are the implementation agent's under that work order's decision envelope and are marked as such.** The number `3` is one: rule 19.3 fixes a status and no value, and three is the first value the standing three leave free. The second is that the status is stated as a public constant rather than a literal, which is what grows this rule's census by the one declaration above; it was forced by the crate boundary rather than preferred, and the alternative — a `3` written out in both crates — is a figure that can drift with nothing to catch it. Neither is a decision this envelope reserves to the owner: that list names the model identifier, the reasoning level, whether both gates are required, whether the ceiling check precedes the exchange, whether reported usage or an estimate is authoritative, the observer's options, a compiled-in connector default, and the live run's horizon, seed set, ceiling and existence. The implementation agent measured every figure in this row and wrote the text. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
+| 2026-08-29 | **Rule 5's census records a fourth public field on `simulation::Proposal`: the exchanges an opportunity spent before the one it ended on.** `SPEC-MOK-007` rule 19.5 retries a failed exchange up to three times, rule 11.2 gives each attempt its own transcript record "because it was its own billed exchange", and rule 11.1 puts the authoring of every record in the engine — so the attempts have to cross the interface, and that specification's rule 1.1c, approved the same day, fixes that they cross on the proposal. **Rule 5**: `Proposal` gains `earlier_attempts: Vec<Proposal>`, oldest first and empty for every port that does not retry. **Growth is nought items and one public declaration**, both figures stated with their decomposition. No item is added, so the item count is nought and the *Authorized additions* table is not touched; the declaration is the field, and **a field is a declaration on this rule's own reckoning even where the item carrying it is unmoved** — the earlier row of this same date measured `Proposal` at five declarations, "`Proposal`, its three fields and `Proposal::nothing`", so a fourth field is one more of exactly what that row counted three of. That is where this row parts from the `ActionTrace` form: a return type that moves declares nothing that was not declared already, and a field that arrives does. The row and the sentence stating the earlier ten each carry a dated parenthetical pointing here rather than a rewritten claim, which is the form the 2026-08-24 return-type row fixed, and the ten are stated not to move. **Why a field and not a type**: the owner decided it on the shape rather than the census — the evidence travels with the proposal that carries it, with no contract between two calls, which is the ground rule 1.1a stood on when it declined a second method for the response and the four counts. Both alternatives were measured on this rule's scale before the question was put: a named `Attempt` type at one item and four declarations, restating the three fields `Proposal` already has and needing a rule fixing which the engine reads; and a proposing method returning a list at nought and nought, cheaper here and dearer everywhere else, because *which element is the outcome* is an invariant no type enforces. **Two facts are disclosed at the rule rather than repaired.** The type is recursive and the bound on it is a documented invariant, not a signature: rule 1.1c fixes that no element carries an action, and the engine additionally relies on every element's own list being empty, which the field's documentation and the port that fills it state and the type does not enforce — a property of a value arriving from outside, which `SPEC-MOK-007` rule 10.7 already declares untrusted in whole, and enforceable only by the `Attempt` type the owner declined or by a flattening obligation that is that specification's to fix. And a transcript holding a retried exchange is not a replay input, rules 11.2 and 12.3 not reconciling; that is recorded in full at `SPEC-MOK-007` rule 1.1c, where the rules in tension live. **What this row does not do**: rule 4 is untouched and **no exit code is added**, the fourth having been added by the row above; `execute` keeps five parameters and its three greps stand word for word; the mutating-method grep still returns exactly `run` and `advance_tick`, measured at the candidate, no method being added to any item; `Simulation::advance_tick`'s signature stays one line; `Proposer` keeps the three methods the row above gave it; rule 6 is **not** amended and is re-checked instead, the field carrying values only — an `Option<Action>`, an owned `String` the port wrote and four `Option<u64>` copies of reported figures — granting no path into engine-owned state, no mutable borrow and no handle, with the ten prohibited names staying ten and staying private; rule 8's table is **not** amended and no file joins the public tier; rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed, `Vec` being the standard library; and `SPEC-MOK-003` is **not** amended, the observer's `LentPort` forwarding the whole proposal already and gaining no line. | **Authorized 2026-08-29 by the repository owner acting as accountable engineering owner**, in one act, and the rest is standing authority. The substance is `SPEC-MOK-007` rule 1.1c, which the same owner approved the same day under `WO-MOK-026` with all three options' growth measured and their previews displayed, choosing **earlier attempts on the proposal** — a single new public field of type `Vec<Proposal>` — over a named `Attempt` type and over a proposing method returning a list. The retry itself is that specification's rule 19.5, original content approved 2026-08-23 by that owner by way of `ADR-MOK-007`, as amended 2026-08-29 to fix the bound at three. The **authority to edit this file** is the standing admission of `SPEC-MOK-002.md` to `WO-MOK-026`'s `[execution_scope]` and `[relations].specifications`, taken 2026-08-29 by the same owner and recorded in full in that work order's amendment record; the five rows above rest on the same admission and no further scope act is required. **What is the implementation agent's under that work order's decision envelope is marked as such**, and it is the backoff shape: the envelope delegates "the retry count, the backoff shape and which transport failures are retried", the count is rule 19.5's own three, the shape chosen is none, and the failures chosen are rule 19.5a's two transient kinds with a failed pipe excluded because a connector that cannot be written to has reported nothing. None of the three is a decision the envelope reserves to the owner, and no figure in this row's census depends on any of them. The implementation agent measured every figure and wrote the text. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
+| 2026-08-29 | **Rule 5's census gains `simulation::LiveAccounting`, the value a live port reports its account as, and records `simulation::Proposer`'s fourth method.** `SPEC-MOK-007` rule 15.1 makes the run record the one place every accounting figure is stated, rule 20.4.1 keeps every accumulator in the port, and rule 11.1 makes the engine the author of every record — so the figures have to cross this interface, and that specification's rule 1.1d, approved the same day, fixes that they cross as a value the engine formats. **Rule 5**: the additions list gains `LiveAccounting`, a value type of eleven public fields and no method — seven `u64` totals, `cache_ratio_basis_points` and `ceiling_cents` as `Option<u64>`, `model` and `reasoning_level` as `Option<String>` — and the census records `Proposer::accounting`, taking `&self` and returning `Option<LiveAccounting>` with a default body of `None`. **Growth is one item and twelve public declarations**, both figures stated with their decomposition under the 2026-08-24 convention: the type and its eleven fields, with the trait method counting `0` on that convention's own wording, a method added to a trait this rule already encloses being a change of shape — the `ActionTrace` form of the 2026-08-20 row and the form this same trait's return and its `halted` method already took. No `pub const` changes. **The figure the owner was shown was ten declarations and this row measures twelve, and the discrepancy is recorded rather than reconciled away.** The framing costed the option from rule 15.2's field list at "1 item / 10 declarations"; the built type carries two fields beyond that reading, `cache_ratio_basis_points` and `ceiling_cents`, both of them named in rule 15.2 and neither of them capable of reversing a decision that was between a value, a rendered line and a family of getters. A wrong cost figure in a framing is a wrong figure in the decision record even where the decision stands, which is why it is stated here. **The ratio is a field and not a derivation of two other fields**, because rule 14.5's own last sentence — "when the provider reported no cached-token figure the ratio cannot be computed" — is not recoverable from two `u64` totals that both read `0` for a run that reported nothing cached and for a run that reported a genuine zero; rule 11.5's absence is what the `Option` carries. **What this row does not do**: rule 4 is untouched and `execute` keeps five parameters with its three greps word for word, re-measured at the candidate, and **no exit code is added**, the fourth having arrived two amendments earlier the same day; `Simulation::run`'s row is **not** amended, as it was not on 2026-08-20 or 2026-08-23, and rule 20.5.1 states in terms that its enumerated form is unchanged — a run record cannot reach a caller through it without the return type growing, so a host that wants rule 15's record is a host that lends a port; the mutating-method grep still returns exactly `run` and `advance_tick`, re-measured at the candidate, `accounting` taking `&self` and being a trait method in any case; `Simulation::advance_tick`'s signature stays one line; rule 6 is **not** amended and is re-checked instead, the ten prohibited names staying ten and staying private, and **the accumulators this type reports stay off the interface** — `accounting::RunAccount`, `ExchangeUsage` and the module holding them are private to `src/simulation.rs`, and one private function naming a public type is not a declaration of one; rule 8's table is **not** amended and no file joins the public tier; rule 13's declared dependency set is untouched and **still empty**, measured rather than assumed, `cargo tree -p Mokiterions -e normal --locked --offline` resolving to one crate at the candidate; and `SPEC-MOK-003` is **not** amended, the observer lending a port and taking no run record. | **Authorized 2026-08-29 by the repository owner acting as accountable engineering owner**, in one act, and the rest is standing authority. The substance is `SPEC-MOK-007` rule 1.1d, which the same owner approved the same day under `WO-MOK-026`, choosing **a value type the engine formats** over a port that rendered rule 15's line itself — nought items and one declaration, cheaper on this census and putting the record's field set, spelling and escaping behind rule 1.1's boundary — and over a family of getters, rule 1.1a's declined shape a third time. Rule 15 itself is original content of that specification, approved 2026-08-23 by that owner by way of `ADR-MOK-007`, and is not amended. The **authority to edit this file** is the standing admission of `SPEC-MOK-002.md` to `WO-MOK-026`'s `[execution_scope]` and `[relations].specifications`, taken 2026-08-29 by the same owner and recorded in full in that work order's amendment record; the six rows above rest on the same admission and no further scope act is required. **What is the implementation agent's under that work order's decision envelope is marked as such**: the eleven field names and their types, the basis-point representation of the ratio, and that no field is a floating-point value — the last being case **P6**'s claim about the accounting region rather than a preference. None is a decision the envelope reserves to the owner: that list names the model identifier, the reasoning level, whether both gates are required, whether the ceiling check precedes the exchange, whether reported usage or an estimate is authoritative, the observer's options, a compiled-in connector default, and the live run's horizon, seed set, ceiling and existence. The implementation agent measured every figure in this row and wrote the text. No record bound to a commit is re-opened: `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this specification and are not edited. |
 
 ## Scope
 
@@ -279,6 +286,40 @@ that proceeded would be a run of a different source reported under this one's na
 port and `simulation::Config` gains no field. Every item this change adds to rule 5's lists is enumerated by rule 5's
 own 2026-08-23 amendment and by nothing here, which is what keeps this rule's amendment to one parameter.
 
+**Amended 2026-08-29 for `SPEC-MOK-007` rule 19.3's ceiling stop, under `WO-MOK-026`.** The signature does not move: five
+parameters in the order the two amendments above fixed, and the three greps rule 5's checks compare against stand word
+for word. **One exit code is added, and it is the first this rule has added.** A run that reached its declared spend
+ceiling and stopped before the next exchange exits `3`, which the library states as the public constant
+`CEILING_STOP_EXIT` rather than as a literal.
+
+Rule 19.3 is what requires a fourth: a ceiling stop must report "a status distinct from a clean completion and from an
+error", and that rule fixes no number. None of the three already here can carry it, and the reasons are three different
+reasons rather than one.
+
+- `0` is the clean completion rule 19.3 names, so a ceiling stop reported as `0` is the one thing that rule forbids
+  outright.
+- `1` is an output failure, and nothing failed to write. Reporting one here would be worse than imprecise:
+  `SPEC-MOK-006` rule 13.4 has the binary target remove a record sink it created when the run fails, while rule 14.7 of
+  `SPEC-MOK-007` requires a ceiling-stopped run's streams to survive "complete and readable to the tick reached" — so a
+  `1` would instruct the host to delete the evidence the other rule preserves.
+- `2` is an invalid configuration, and the configuration was valid. The operator declared a ceiling and the run obeyed
+  it; a configuration code would report the operator's own instruction back to them as their mistake.
+
+`3` is the value, and it is the implementation agent's under `WO-MOK-026`'s decision envelope rather than any artifact's:
+rule 19.3 fixes a status and no number, and three is the first number the three above leave free. It is a named constant
+because it crosses a crate boundary — `src/main.rs` is a separate crate from `src/lib.rs` and has to act on this value to
+satisfy rule 13.4's exception, so a `3` written out in both crates is a `3` that can drift. The other three stay literals
+inside `execute`, where no host acts differently on any of them. The constant is enumerated as an item by rule 5's
+amendment of the same date and is **not** counted a second time here, which is the division of labour the 2026-08-20 row
+fixed in the other direction for `execute`'s parameter.
+
+**One diagnostic line is added, and the usage text is not.** The stop is reported to standard error, naming the tick the
+run reached and no figure. Standard error and not standard output, because rule 14.7 requires the text stream complete and
+readable *to the tick reached* and a line after the last tick's events is a line no replay of that stream produces; and no
+figure, because rule 15.5 puts the ceiling and the accumulated cost in the run record, where a reader has the seed, the
+horizon and the token totals beside them. The usage text does not follow it, on `Simulation::new`'s precedent rather than
+the argument parser's and for that precedent's reason: the operator's command line was well formed.
+
 ### 5. Authorized public interface
 
 The library target's public interface is exactly the union of the three lists below.
@@ -290,7 +331,7 @@ The library target's public interface is exactly the union of the three lists be
 | `cli::USAGE` | `&'static str` constant |
 | `cli::Command` | enum with variants `Help` and `Run(Config)` |
 | `cli::parse` | function returning `Result<Command, String>` |
-| `simulation::Config` | struct with public fields `seed`, `tick_limit`, `policy`, `density`, `trace_actions`, `spend_ceiling` |
+| `simulation::Config` | struct with public fields `seed`, `tick_limit`, `policy`, `density`, `trace_actions`, `spend_ceiling`, `prices` |
 | `simulation::Density` | value type with associated constant `DEFAULT` and function `parse` |
 | `simulation::Policy` | enum with variants `Baseline`, `Reference`, `Individual`, `Social` and `Llm`, with `parse` and `Default` |
 | `simulation::RunSummary` | opaque value type; its fields stay private |
@@ -306,6 +347,8 @@ The library target's public interface is exactly the union of the three lists be
 | `RunSummary` accessors | each returns a copy: the termination reason, the tick count, survivors, deaths, population per territory, and resource counts per territory by calorie class | Every value is already printed in the summary line |
 | `Density::resources_per_territory` | `self` in, `usize` out | A pure function of a value; the resolved count is already reported |
 | `simulation::CELLS_PER_TERRITORY` | `usize` constant | A fixed world dimension, already implied by `SPEC-MOK-001` |
+| `simulation::UnitPrices` | **added** *(2026-08-29)*: value type with four public `u64` fields — `prompt`, `cached`, `output`, `reasoning` — and associated function `parse`; `Density`'s derive set item for item, and no `Default` | Four copies of the operator's own input, admissible on `Density`'s grounds: a value with a parser and no interior state, granting no path into engine-owned state. It is public at all because `Config`'s field is and `Config` is already public. **The four fields are public where `Density`'s one is private**, which is the one way this item is not `Density`, and the reason is the hazard the named type exists for: three of the four prices are plausible values for each other's position, so only a public-tier test that reads the fields separately can establish that a transposed `--prices` is not silently accepted — comparing one `parse` against another proves nothing about order. Public-tier tests are its only callers outside the crate, the arithmetic of `SPEC-MOK-007` rules 14.1, 14.2 and 14.6 being inside it; that is the `DecisionRequest::tick` ground of this table's 2026-08-24 row. It carries no `Default` because rule 14.3 forbids a compiled-in price |
+| `simulation::LiveAccounting` | **added** *(2026-08-29)*: value type with eleven public fields and **no method, no associated function and no parser** — `exchanges`, `prompt_tokens`, `cached_prompt_tokens`, `output_tokens`, `reasoning_tokens`, `cost_cents` and `fallbacks` as `u64`, `cache_ratio_basis_points` and `ceiling_cents` as `Option<u64>`, `model` and `reasoning_level` as `Option<String>` | The figures `SPEC-MOK-007` rule 15.2 obliges a live run's run record to state, crossing from the port that accumulated them to the engine that renders them. It is public because it is [`simulation::Proposer::accounting`]'s return type and that trait is implemented in a host, so both directions cross the crate boundary, exactly as `Proposal`'s and `ReportedUsage`'s fields do. Every field is an integer or an absence and none is a floating-point value, so nothing here is a path into engine-owned state: the totals are copies of figures a provider reported, the ceiling and the prices behind the cost are copies of the operator's own command line, and the two strings are owned copies of what a response reported. **`Option` marks rule 11.5's absence and not rule 15.3's zero**, which is why the two figures a run can genuinely lack are optional and the totals are not. It carries no `parse` because nothing outside the crate constructs one — a host receives it, and a port composes it from accumulators rule 20.4.1 keeps private |
 
 **The additions list is a ceiling, not a checklist.** An item on it that no relocated test requires must not be
 added. Nothing outside the three lists becomes public. `Simulation` itself is reachable, but it exposes no public
@@ -424,7 +467,7 @@ removed:
 |---|---|---|
 | `simulation::Policy` | one variant, `Llm`, last. `Default` is unchanged and still resolves to `Reference`, so no existing caller's behaviour moves | 1 |
 | `simulation::Simulation::advance_tick` | one parameter, `Option<&mut dyn Proposer>`, appended. A caller that passes `None` is the caller that exists today | 1 |
-| `simulation::Proposer` | **added**: trait with one method taking a request by value and returning `Option<Action>` | 1 |
+| `simulation::Proposer` | **added**: trait with one method taking a request by value and returning `Option<Action>`. *(The return became `Proposal` on 2026-08-29 under `SPEC-MOK-007` rule 1.1a; this row records the 2026-08-23 growth and is not edited for it, the later growth being enumerated in its own table below.)* | 1 |
 | `simulation::DecisionRequest` | **added**: opaque value type of four owned or `'static` string parts, with per-part accessors returning `&str`, one accessor returning them in the composition order, and two accessors naming the opportunity the request is for — `tick` returning `u64` and `actor_id` returning `&str` | 1 |
 | `simulation::ReplayPort` | **added** *(2026-08-24)*: generic struct over `BufRead` implementing `Proposer` from a retained transcript, with one associated function, `new`, taking the reader by value. It is the port a replay host hands the engine | 1 |
 
@@ -436,13 +479,14 @@ for the other.** The five rows above are five *items*, this rule's convention be
 Counted as public declarations instead — which is what a `pub` census returns — the same growth is **twelve**, and the
 decomposition is given so a later check need not guess it: `DecisionRequest` and its **seven** accessors (`actor`,
 `actor_id`, `blocks`, `observation`, `permitted_set`, `shared_rules`, `tick`) is eight; `Proposer` is one, its two trait
-methods not being `pub fn` declarations; `ReplayPort` and `ReplayPort::new` are two; and `Simulation::advance_tick` is
+methods not being `pub fn` declarations *(three from 2026-08-29, when the amendment below adds `halted`; the count of
+declarations is unmoved for this same reason)*; `ReplayPort` and `ReplayPort::new` are two; and `Simulation::advance_tick` is
 one. `Policy` gains a variant and not a declaration, so it does not appear in the twelve. A check comparing a census
 against this table must expand the rows first, and `WO-MOK-025`'s `candidate/static-checks.txt` check 6 is that check.
 
 | Item | Form | Why it is admissible |
 |---|---|---|
-| `simulation::Proposer` | `&mut self` and a `DecisionRequest` in, `Option<Action>` out | `SPEC-MOK-007` rule 1.1: the engine's one means of obtaining a proposal from outside itself. It must be public because rule 20.4 puts the implementation in a host, and it names no provider, no transport, no model, no credential, no file and no mode |
+| `simulation::Proposer` | `&mut self` and a `DecisionRequest` in, `Proposal` out *(`Option<Action>` until 2026-08-29)*; and, as amended 2026-08-29 below, a `&self` question answered `false` unless a port overrides it | `SPEC-MOK-007` rule 1.1: the engine's one means of obtaining a proposal from outside itself. It must be public because rule 20.4 puts the implementation in a host, and it names no provider, no transport, no model, no credential, no file and no mode |
 | `simulation::DecisionRequest` | struct of four string parts — the shared rules, the actor block, the observation block, the permitted set — carried by value | `SPEC-MOK-007` rule 1.3: what crosses is a copy. It holds no reference into engine state, no mutable borrow and no handle, so an implementation cannot reach what it was told about |
 | `simulation::ReplayPort` | generic over `BufRead`, constructed from the caller's own reader, implementing `Proposer` | `SPEC-MOK-007` rule 12.1.1 puts the opening of the transcript in the host, and `ARCH-MOK-002` puts its parsing in the engine package by name. **Two crates therefore construct it** — `mokiterions-core/src/main.rs:85` and `mokiterions-tui/src/main.rs:118` — so it cannot be narrowed to `pub(crate)` without moving the parsing out of the engine or the opening into it, and each would contradict one of those two artifacts. Its type parameter is the caller's reader, so it holds nothing of the engine's |
 
@@ -485,6 +529,406 @@ commit, exactly as this amendment changes `execute`'s.
 The pattern must also not appear in prose in that file. It matched a documentation comment during this stage's
 implementation, which is a third way the check reports the wrong number, and the comment was reworded rather than the
 check loosened.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rule 14.3a's declared unit prices, and the growth is enumerated as the two
+amendments above enumerate theirs.** One item is added, one already-public struct gains one field, and nothing is
+removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::UnitPrices` | **added**: value type of four `u64` fields with one associated function, `parse`. `Density`'s shape, `Density`'s derive set, and no `Default` | 1 |
+| `simulation::Config` | one field, `prices: Option<UnitPrices>`, appended after `spend_ceiling`. A caller that leaves it `None` is every caller that exists today, and it is `None` for every replay — rule 14.8 gives a replay no cost, no ratio and no ceiling | 0 |
+
+**Counted as items the growth is one, and counted as public declarations it is seven**, both figures being stated for
+the reason the 2026-08-24 row states them: a check comparing a `pub` census against this rule must expand the rows and
+must not guess the expansion. The seven are `UnitPrices`, its four public fields, `UnitPrices::parse`, and `Config`'s
+new field. The item count is one because this rule's convention makes a type and its accessors one item, and because a
+field appended to a struct this rule already encloses adds no item — which is why the second row's count is `0` and its
+growth is nonetheless enumerated, that being exactly the form of growth the 2026-08-20 `ActionTrace` row exists to
+catch. No `pub const` changes.
+
+**Why the item is admitted rather than avoided.** Rule 14.3a obliges the shared parser to *retain* the four values,
+unlike the paths it validates and discards, because the run computes with them; a retained value has to be somewhere,
+and rule 4 is not it — a sixth `execute` parameter would move a signature this rule freezes and three greps check. The
+alternative of four separate `u64` fields on `Config` was rejected on the ground the type's own documentation records:
+three of the four prices are plausible values for each other's position, so four bare integers put a silent eighty-fold
+cost error one transposition away from a run this repository pays for. **The additions list's ceiling clause is
+satisfied on its own terms**: that clause forbids an item no relocated test requires, and this item is not admitted for
+a test at all — rule 14.3a requires it of the parser, and the public-tier tests are the consequence rather than the
+ground.
+
+**What this amendment does not do.** Rule 4 is untouched and `execute` keeps five parameters, so its three greps stand
+word for word. The mutating-method grep still returns exactly `run` and `advance_tick`: `UnitPrices::parse` is an
+associated function with no receiver, so `pub fn .*&mut self` does not match it, and no method is added to any item that
+was already on the interface. Rule 6 is **not** amended and is re-checked instead — the ten prohibited names stay ten
+and stay private, and four `u64` copies of the operator's own command line grant no path into engine-owned state, no
+mutable borrow and no handle, on the identical grounds this rule admits `Coordinate`'s two public `u8` fields. Rule 13
+is untouched and the declared dependency set is **still empty**, measured rather than assumed: `parse` is hand-written
+against `str::split` and `str::parse`, so no crate is added to read a colon-separated list. No target, package or
+formatting obligation moves.
+
+**The ordering here is deliberately the opposite of its predecessor's.** The amendment record's other 2026-08-29 row,
+for `spend_ceiling`, records a census falsified by a commit that preceded its authorization. This one lands in the same commit as the type
+and the field it enumerates, so at no commit does the census describe a struct that does not exist or omit a field that
+does.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rules 1.1a and 1.4a's grown port return, and the growth is enumerated as the
+three amendments above enumerate theirs.** Two items are added, one already-public item changes shape, and nothing is
+removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::Proposal` | **added**: value type of three public fields — `action: Option<Action>`, `response: Option<String>`, `usage: ReportedUsage` *(four from 2026-08-29, when the amendment below adds `earlier_attempts` for rule 1.1c's retried attempts)* — with one associated function, `nothing`, returning the proposal a port makes when it obtained nothing and has nothing to say about why | 1 |
+| `simulation::ReportedUsage` | **added**: value type of four public `Option<u64>` fields — `prompt`, `cached_prompt`, `output`, `reasoning` — deriving `Default`, whose value is four **absent** counts | 1 |
+| `simulation::Proposer` | its one proposing method's return becomes `Proposal` where it was `Option<Action>`. No method is added and none is removed, so the trait's two methods stay two *(a third, `halted`, is added by the amendment of later the same day below)* | 0 |
+
+**Counted as items the growth is two, and counted as public declarations it is ten.** The ten are `Proposal`, its three
+fields and `Proposal::nothing`, then `ReportedUsage` and its four fields. *(The ten do not move: the fourth field the
+amendment of later the same day adds is that amendment's one declaration and not an eleventh here.)* `Proposer`'s row counts `0` because a return
+type changing is a change of shape on an item this rule already encloses and not an added item, which is the
+`ActionTrace` form the 2026-08-20 row established and the same reason `Config`'s row above counts `0`. **A trait
+method is not a `pub fn` declaration**, which the 2026-08-24 row already fixed for these same two methods, so nothing
+in the ten is `propose` itself. No `pub const` changes.
+
+**Why two items and not one.** The counts could have been four bare `Option<u64>` fields on `Proposal`, which would
+have added no second item. They are a named type for the reason `UnitPrices` is one and measured the same way: the four
+are unlabelled integers of similar magnitude in a fixed order, three of them plausible values for each other's
+position, and rule 14's cost arithmetic and `REQ-MOK-070`'s cache ratio are both computed from them — so a transposed
+pair is a wrong cost figure and a wrong ratio in a run this repository pays for, with nothing to catch it. The type
+also carries rule 11.5's distinction in its own signature: `Option<u64>` and not `u64`, because "a reported count that
+the provider did not report is recorded as **absent**, not as zero", and rule 14.5 depends on telling them apart.
+
+**Why the fields are public.** `Proposal` and `ReportedUsage` are constructed by every implementation of a public
+trait, which rule 20.4 puts in a host, and read by the engine that authors the record. Both directions cross the crate
+boundary, so a private-field form would need a constructor taking seven arguments and seven accessors to read them
+back — fourteen declarations where ten suffice, and a positional constructor is the transposition hazard the previous
+paragraph rejects. They are admissible on the grounds this rule already recorded for `UnitPrices` and before it for
+`Coordinate`: values with no interior state, granting no path into engine-owned state, no mutable borrow and no handle.
+`Proposal::nothing` exists rather than a derived `Default` because "the default proposal" names nothing a reader can
+check, where "nothing was obtained" is exactly rule 9.5's case; `ReportedUsage` derives `Default` instead, four absent
+counts being a value rule 11.5 gives a meaning to.
+
+**What this amendment does not do.** Rule 4 is untouched and `execute` keeps five parameters, its three greps standing
+word for word — the port parameter's type is `Option<&mut dyn Proposer>` and the trait's name does not move. The
+mutating-method grep still returns exactly `run` and `advance_tick`: `Proposal::nothing` is an associated function with
+no receiver, and no method is added to any item already on the interface. Rule 6 is **not** amended and is re-checked
+instead, above, at the paragraph that records the port as a use of that rule rather than an exception to it: the ten
+prohibited names stay ten and stay private, and what the return gained is an owned `String` the port composed and four
+`Option<u64>` copies of figures a provider reported. Rule 13 is untouched and the declared dependency set is **still
+empty**, measured rather than assumed: nothing here is parsed by a crate. No target, package or formatting obligation
+moves, and `Simulation::advance_tick`'s signature stays one line, this amendment changing no parameter of it.
+
+**The ordering follows its predecessor's rather than the row before that.** This lands in the same commit as the two
+types and the changed return, so at no commit does the census describe a type that does not exist or a return the build
+does not have.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rules 10.1 and 20.4's connector port, and the growth is enumerated as the four
+amendments above enumerate theirs.** One item is added, nothing already public changes shape, and nothing is removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::ConnectorPort` | **added**: struct generic over `BufRead` and `Write`, implementing `Proposer` over a connector's two already-connected streams and a transcript sink borrowed for the port's life, with one associated function, `new`, taking the two streams by value and the sink by mutable borrow (and, as amended later the same day below, the run's declared prices and ceiling). It is the port a recording host hands the engine | 1 |
+
+**Counted as items the growth is one, and counted as public declarations it is two** — `ConnectorPort` and
+`ConnectorPort::new` — which is `ReplayPort`'s decomposition of 2026-08-24 exactly, that row's two being the type and its
+one associated function. **No field is public.** Unlike `Proposal`'s three and `ReportedUsage`'s four, admitted above
+because a host constructs them from parts and the engine reads them back, nothing outside this crate assembles a
+`ConnectorPort` from its parts or reads one back: the four fields are the streams, the sink and rule 8.4's schema (a
+fifth, equally private, is added by the amendment below), and the associated function is the only way any of them is
+set. No `pub const` changes; the protocol version and the verb
+enumeration rule 8.4 builds the schema from are private constants in `src/simulation.rs`.
+
+**Why the item is admitted rather than avoided, and the alternative was measured rather than dismissed.** Rule 10.1 makes
+the connector "an executable the operator names by path as a host option" that "the host spawns as a child process", and
+rule 20.1 makes the engine's binary target that recording host, while `SPEC-MOK-006` rule 1.2 keeps every process and
+every path resolution out of the library target. The two halves of one live exchange therefore fall on opposite sides of
+a crate boundary: the host starts the program and connects the two pipes, and the engine composes the request, frames
+it, reads the response line and applies rule 10.4's grammar check. Something public has to carry the second half to the
+first, and this is it.
+
+The alternative was to build the port in `mokiterions-core/src/main.rs`, where the streams already are, and admit
+nothing here at all. It was rejected on a measurement of what it would have cost instead. Rule 20.4.1 lends one port for
+the whole run and rule 14 accumulates the run's cost inside it — `PortDecisionSource` is constructed per opportunity and
+so cannot hold an accumulation — so a port in the binary target reaches rules 14 and 15's arithmetic only by this
+specification publishing `accounting::RunAccount`, the per-token prices it computes with and the per-exchange usage it
+consumes. That is a larger surface than one type and one associated function, and it puts the cost arithmetic's own
+mutable state on the interface, which is the thing rule 6 exists to keep off it.
+
+| Item | Form | Why it is admissible |
+|---|---|---|
+| `simulation::ConnectorPort` | generic over `BufRead` and `Write`, constructed from the caller's own two streams and a `&mut dyn Write` transcript sink — and, as amended later the same day below, the run's declared prices and ceiling — implementing `Proposer` | `SPEC-MOK-007` rule 10.1 puts the spawn in a host and rule 20.1 makes that host the engine's binary target, while `SPEC-MOK-006` rule 1.2 keeps every process out of the library target, so the streams are connected in one crate and read in another. **`src/main.rs` is a separate crate from `src/lib.rs`**, so `pub(crate)` does not reach the one construction site — `run_live` in `mokiterions-core/src/main.rs`, this item's only caller outside the crate. That is the fact that admits `ReplayPort`, reached by one caller here rather than two: the observer is a read-only host and `SPEC-MOK-003` gives it no live path, so it constructs no connector port and gets none of the three live options. It holds two streams the caller owns, a mutable borrow of a sink the caller owns and one owned `String`, so it holds nothing of the engine's; and it can neither start, signal nor reap a process, having been given no path and no handle |
+
+**The construction site is cited by name and not by line, and the reason is a measurement.** The 2026-08-24 row cites
+`ReplayPort`'s two callers as `mokiterions-core/src/main.rs:85` and `mokiterions-tui/src/main.rs:118`. **Neither line
+number holds.** At `d96cced`, the commit this work order branched from and therefore before any change of this branch's,
+the two constructions stand at lines 99 and 130; a line citation in an approved artifact decays with every commit that
+touches the file above it, and this one had already decayed twice over. That row is **not edited** — it records what it
+recorded, and `VREC-MOK-003`, `VREC-MOK-010` and `VREC-MOK-012` bind earlier content of this file — but the drift is
+recorded here as a finding rather than reproduced, which is why this row names a function a reader can grep for instead
+of a number the next commit falsifies.
+
+**What this amendment does not do.** Rule 4 is untouched and `execute` keeps five parameters, its three greps standing
+word for word: the port reaches the run through the `Option<&mut dyn Proposer>` parameter that already exists, which is
+the whole point of rule 1.1 naming an interface rather than a type. The mutating-method grep still returns exactly `run`
+and `advance_tick` — `ConnectorPort::new` is an associated function with no receiver, and `Proposer`'s two methods take
+`&mut self` on an implementation and are not `pub fn` declarations, which the 2026-08-24 row already fixed for them. No
+method is added to any item already on the interface.
+
+Rule 6 is **not** amended and is re-checked instead. The ten prohibited names stay ten and stay private. What this item
+holds a reference into is a sink the caller opened, which the 2026-08-24 paragraph on that rule already carves out — a
+referent the caller owns is not a reference into engine state — and the two streams are owned outright, having been moved
+in. `DecisionSource` and `Observation` stay private, per `SPEC-MOK-007` rule 20.6, so an implementation of this port sees
+a composed request and never the observation behind it.
+
+Rule 13 is untouched and the declared dependency set is **still empty**, measured rather than assumed, and this is the
+amendment where that costs something. Rule 10.1 states of this binding that "**neither Rust package acquires a crate**"
+and names this rule 13 among the provisions it therefore leaves untouched, so the responses of a program this repository
+did not write are read by a hand-written reader in `src/simulation.rs`: a private
+module, total over `&str`, bounded in nesting, with no floating-point type anywhere. No crate is added, no
+dev-dependency is added, and rule 8's public tier gains `tests/connector.rs` under that rule's own clause admitting "a
+further file when a further public subject appears" — the spawn, the inheritance and the reaping are that subject, and
+they need a real child process to observe.
+
+**The ordering follows the two rows above it.** This lands in the same commit as the type it enumerates, so at no commit
+does the census describe a type that does not exist.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rule 14's accounting, which the connector port accumulates, and the growth is
+nil.** Nothing is added, nothing is removed, and one item already on this interface changes shape:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::ConnectorPort::new` | **shape**: two parameters are added after the transcript sink — the run's four declared unit prices as `simulation::UnitPrices`, and its ceiling as `Option<u64>` in whole US cents | 0 |
+
+**Counted as items the growth is nought, and counted as public declarations it is nought.** A signature changing on an
+item this rule already encloses is a change of shape and not a growth of the interface, which is the `ActionTrace` form of
+the 2026-08-20 row and the form `simulation::Proposer`'s row of earlier the same day takes. Both parameter types are
+already enclosed: `simulation::UnitPrices` was admitted to the additions list earlier this same day for rule 14.3a's
+`--prices`, and `Option<u64>` is a primitive over a primitive. **No field becomes public.** The item gains a fifth
+private field, `accounting::RunAccount`, whose type is private to a private module of `src/simulation.rs`; the four fields
+the row above enumerates are unchanged. No `pub const` changes, no method is added, and no trait gains or loses one.
+
+**Why two parameters rather than none, and why on `new` rather than on `propose`.** Rule 14.2 computes a live run's cost
+"from the reported counts and the unit prices declared for the run", rule 14.6 stops the run once that cost reaches the
+declared ceiling, and rule 20.4.1 builds one port per run and lends it per tick — so the accumulation lives in the port,
+and the two figures it accumulates against are inputs the port cannot obtain for itself. Rule 14.3 is what forbids the
+alternative: prices are "inputs of the run" and never constants, so there is nothing for this item to read and nowhere to
+read it from. They arrive on `new` and not on the proposing method because prices arriving per exchange could differ
+between exchanges of one run, which is a cost figure no reader of the record could reconstruct — and because rule 1.1's
+proposing method is the engine's, and the engine may not see an accounting figure at all under rule 14's *State model*.
+
+**The ceiling crosses this interface in whole US cents and nothing finer.** Rule 14.2 as amended 2026-08-29 under
+`WO-MOK-030` states the minor unit and it is the cent, `--spend-ceiling` parses to it, and `simulation::Config` already
+carries `spend_ceiling: Option<u64>` in it. That the accumulation behind this parameter is finer than the parameter is a
+private matter of `src/simulation.rs` and is recorded there: one exchange at rule 14.3a's own example prices costs about
+0.03 of a cent, so a cost accumulated in whole cents would add nought every exchange and rule 14.6's ceiling would never
+be reached. **No unit conversion is asked of any caller**, which is the property this parameter's type is chosen for.
+
+**What this amendment does not do.** Rule 4 is untouched and `execute` keeps five parameters, its three greps standing
+word for word: the prices reach the library through `simulation::Config`, which rule 14.3a's own amendment of earlier this
+day admitted them to, and the port still reaches the run through the `Option<&mut dyn Proposer>` parameter that already
+exists. The mutating-method grep still returns exactly `run` and `advance_tick`, measured at the candidate —
+`ConnectorPort::new` still has no receiver, and the two parameters added to it are values. `Simulation::advance_tick`'s
+signature stays one line, no parameter of it moving. Rule 6 is **not** amended and is re-checked instead: the ten
+prohibited names stay ten and stay private, and the fifth field holds four `u64` copies of the operator's own command
+line and six accumulators derived from figures a provider reported, so it is neither a reference into engine state nor a
+name rule 6 lists. Rule 8's table is **not** amended and no file joins the public tier, the two parameters being
+observable only through the run record a later scope item writes. Rule 13's declared dependency set is untouched and
+**still empty**, measured rather than assumed, the arithmetic behind these two parameters being integer arithmetic in
+`src/simulation.rs` with no crate anywhere near it.
+
+**The ordering follows the three rows above it.** This lands in the same commit as the signature it enumerates.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rule 19.3's status and rule 1.1b's question, and the growth is one declaration.**
+One item is added, one item already on this interface changes shape, and nothing is removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `CEILING_STOP_EXIT` | **added**: `u8` constant in `src/lib.rs`, the process status rule 19.3 requires a ceiling-stopped run to report. Rule 4's amendment of the same date fixes its meaning and its value | 1 |
+| `simulation::Proposer` | **shape**: a third method, `halted`, taking `&self` and returning `bool`, with a default body of `false`. Nothing is removed and no signature already here moves, so the trait's two methods become three | 0 |
+
+**Counted as items the growth is one, and counted as public declarations it is one**, both figures stated with their
+decomposition under the 2026-08-24 convention. The one is the constant. The trait's new method is not a `pub fn`
+declaration, which is that convention's own wording — "`Proposer` is one, its two trait methods not being `pub fn`
+declarations" — and a method added to a trait this rule already encloses is a change of shape rather than a growth of the
+interface, which is the `ActionTrace` form of the 2026-08-20 row and the form this same trait's return took earlier the
+same day. **It is the first `pub const` any amendment to this rule has added.** The four amendments above each close by
+recording that no `pub const` changed; this one does change one, and says so where they said the opposite.
+
+**Why the status is a constant when the other three are literals.** Rule 4's amendment gives the reason and this rule
+gives the consequence: the value crosses a crate boundary, `src/main.rs` being a separate crate from `src/lib.rs` and
+`SPEC-MOK-006` rule 13.4's removal exception being the binary target's to apply, so `pub(crate)` cannot express it. The
+contrast is inside this crate and is worth stating, because it is the reason this is one declaration and not two:
+`simulation::MISSING_DECISION_PORT`, which rule 4's 2026-08-23 amendment reports through `execute`, is shared between two
+*modules* of this crate and is `pub(crate)`, no host reading it. It stays `pub(crate)` and is not widened, so rule 6's
+last clause is not engaged. The public-tier test in `tests/connector.rs` asserts the literal `3` and not this constant,
+which is deliberate: a test reading the constant would agree with any value the constant took, and what rule 4 fixes is
+the value.
+
+**Why the question is a method on the port and not a figure the engine reads.** `SPEC-MOK-007` rule 1.1b, approved the
+same day under `WO-MOK-026`, puts it there: rule 14.6 requires the check *before* the spending, rule 20.4.1 puts the
+accumulation in the port because the port is what spends, and rule 14's *State model* lets the engine read no accounting
+figure at all — so the engine asks a question it cannot answer for itself, at the decision opportunity it already has,
+before the request is composed. The alternative the owner declined was a field on `Proposal`, measured at nought items and
+one or two declarations: cheaper on this rule's census and dearer everywhere else, because it has no ordering contract at
+all, and because "no exchange was issued" and rule 9.5's "the exchange yielded nothing" would become two absences one
+field apart, which a reader who confused them would answer by writing a fallback record for an exchange that never
+happened. `&self` and not `&mut self` is part of the shape and not an implementation detail: asking must move no figure,
+or the number the answer depends on becomes a function of how often the engine asked.
+
+**The default body is rule 14.8, and it is why this costs no implementor anything.** A replay spends nothing, computes no
+ratio and has no ceiling, so `simulation::ReplayPort` takes the default and gains no line, and so does any port with
+nothing behind it. One implementation in this workspace does override it and it is not a spending one: `mokiterions-tui`'s
+`LentPort` wraps a port the observer was handed and forwards the question, because a wrapper that answered from the default
+would answer *for* the port it wraps. That is the only obligation this method creates, it falls on wrappers alone, and
+`SPEC-MOK-003` is not amended — the observer offers none of the three live options and constructs no connector port.
+
+**What this amendment does not do.** Rule 4 **is** amended, in its own block above, and this is the first of these five
+amendments where it moves: the fourth exit code is that rule's and is not counted again here. `execute` keeps five
+parameters and its three greps stand word for word, the status crossing as the function's return value and no parameter
+being added. The mutating-method grep still returns exactly `run` and `advance_tick`, measured at the candidate — `halted`
+takes `&self`, and it is a trait method rather than a `pub fn` in any case, so it matches neither half of the pattern.
+`Simulation::advance_tick`'s signature stays one line, no parameter of it moving. The *Authorized additions* table above
+is **not** edited: the enumeration is this block's growth table, which is the form `simulation::Proposer` and
+`simulation::ConnectorPort` already take. Rule 6 is **not** amended and is re-checked instead — the constant is a `u8`
+process status in the process-boundary module and not a simulation constant, naming no world dimension, no rate and no
+threshold, so rule 6's clause reserving `CELLS_PER_TERRITORY` is untouched; `halted` returns a copy of a fact by value and
+grants no path into engine-owned state; and the ten prohibited names stay ten and stay private. Rule 8's table is **not**
+amended and no file joins the public tier, `tests/connector.rs` having joined it earlier the same day. Rule 13's declared
+dependency set is untouched and **still empty**, measured rather than assumed.
+
+**The ordering follows the four rows above it.** This lands in the same commit as the constant and the method it
+enumerates, so at no commit does the census describe an item that does not exist.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rule 1.1c's retried attempts, and the growth is one declaration.** No item is
+added, one item already on this interface changes shape, and nothing is removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::Proposal` | **shape**: a fourth public field, `earlier_attempts: Vec<Proposal>`, the exchanges the decision opportunity spent before the one this proposal came from, oldest first and empty for every port that does not retry. No field is removed and no field already here changes type | 0 |
+
+**Counted as items the growth is nought, and counted as public declarations it is one**, both figures stated with their
+decomposition under the 2026-08-24 convention. The one is the field. **A field is a declaration on this rule's own
+reckoning even where the item carrying it is unmoved**, which is the earlier row of this same date measuring `Proposal`
+at five declarations — "`Proposal`, its three fields and `Proposal::nothing`" — so a fourth field is one more of exactly
+the thing that row counted three of. That is where this row parts from the `ActionTrace` form the return-type change
+took: a return type that moves declares nothing that was not already declared, and a field that arrives does. No item
+is added, so the item count is nought and the *Authorized additions* table is not touched. No `pub const` changes and
+no method is added to any item, so the mutating-method grep and rule 4's three greps are unmoved and were re-measured
+at the candidate rather than assumed.
+
+**Why a field on the proposal and not a type of its own.** `SPEC-MOK-007` rule 1.1c, approved the same day under
+`WO-MOK-026`, decides it, and the owner's reason is the shape rather than the census: the evidence travels with the
+proposal that carries it, with no contract between two calls — which is the same ground rule 1.1a stood on when it
+declined a second method for the response and the four counts. The two alternatives were measured on this rule's own
+scale before the decision was put. A named `Attempt` type is one item and four declarations to restate the three fields
+`Proposal` already has, and needs a rule fixing which of them the engine reads. A proposing method returning a list of
+proposals is nought items and nought declarations, cheaper here than what was chosen and dearer everywhere else: *which
+element is the outcome* is an invariant no type enforces, so a port that returned them in the other order would have
+the engine author the outcome as an attempt and mark no record as rule 9.5's fallback.
+
+**Why the field is public, and why it costs no implementor a line.** It is public for the reason the three fields
+beside it are: `Proposal` is constructed by every implementation of a public trait, which rule 20.4 puts in a host, and
+read by the engine that authors the record, so both directions cross the crate boundary. Every implementation in this
+workspace but the retrying one leaves it empty and gains no line — `simulation::ReplayPort`, `mokiterions-tui`'s
+`LentPort`, which forwards the whole proposal already, and every test double, all of them constructing it through
+`Proposal::nothing` or a struct update from it. An empty `Vec` allocates nothing, so the single-attempt case that is
+every exchange of every port but one costs nothing at run time either.
+
+**The type is recursive, and the bound on it is a documented invariant rather than a type.** `Proposal` holding a
+`Vec<Proposal>` is well formed because the vector is an indirection, and rule 1.1c fixes that no element carries an
+action; the engine additionally relies on every element's own list being empty, which is stated in the field's
+documentation and in the port that fills it and is **not** enforced by the signature. A port nesting attempts inside
+attempts would have the engine author records for the outer list alone. That is a property of a value arriving from
+outside, which rule 10.7 already declares untrusted in whole, and it is disclosed here rather than repaired: enforcing
+it needs either a second type — the `Attempt` the owner declined — or a rule obliging the engine to flatten, which is
+`SPEC-MOK-007`'s to fix and not this rule's.
+
+**What this amendment does not do.** Rule 4 is untouched: `execute` keeps five parameters, the three greps stand word
+for word, and **no exit code is added, the fourth having been added by the amendment of earlier the same day**. Rule 6
+is **not** amended and is re-checked instead: the field carries values only — proposals composed of an `Option<Action>`,
+an owned `String` the port wrote and four `Option<u64>` copies of figures a provider reported — granting no path into
+engine-owned state, no mutable borrow and no handle, and the ten prohibited names stay ten and stay private. Rule 13's
+declared dependency set is untouched and **still empty**, measured rather than assumed: `Vec` is the standard library.
+Rule 8's table is **not** amended and no file joins the public tier. `Simulation::advance_tick`'s signature stays one
+line and `Proposer` keeps the three methods the amendment above gave it.
+
+**The ordering follows the five rows above it.** This lands in the same commit as the field it enumerates, so at no
+commit does the census describe a shape the build does not have.
+
+**Amended 2026-08-29 for `SPEC-MOK-007` rule 1.1d's reported accounting, and the growth is one item and twelve
+declarations.** One item is added, one item already on this interface changes shape, and nothing is removed:
+
+| Item | Growth | Count |
+|---|---|---|
+| `simulation::LiveAccounting` | **added**: a value type of eleven public fields and no method, holding the figures rule 15.2 obliges a live run's run record to state. Seven `u64` totals, two `Option<u64>` figures a run can genuinely lack, and two `Option<String>` fields naming what answered. Enumerated in the *Authorized additions* table above | 1 + 11 |
+| `simulation::Proposer` | **shape**: a fourth method, `accounting`, taking `&self` and returning `Option<LiveAccounting>`, with a default body of `None`. No method is removed and no method already here changes signature | 0 |
+
+**Counted as items the growth is one, and counted as public declarations it is twelve**, both figures stated with their
+decomposition under the 2026-08-24 convention. The one item is `LiveAccounting`. The twelve declarations are that type
+and its eleven public fields, which is `UnitPrices`' decomposition of earlier the same day in form — a type plus its
+public fields — and `Proposal`'s. The fourth trait method is **nought** on that convention's own wording, "its two trait
+methods not being `pub fn` declarations": a method added to a trait this rule already encloses is a change of shape, the
+`ActionTrace` form of the 2026-08-20 row and the form this same trait's return took earlier the same day and its
+`halted` method took in the amendment three above. No `pub const` changes, the one this rule has ever gained having
+arrived with `CEILING_STOP_EXIT`.
+
+**The figure the owner was shown when the decision was taken was ten declarations, and this row measures twelve.** That
+is disclosed rather than reconciled away. The framing put to the repository owner on 2026-08-29 costed this option at
+"1 item / 10 declarations" from the field list rule 15.2 enumerates; the built type carries eleven fields, and the two
+this rule counts beyond the framing's ten are `cache_ratio_basis_points` and `ceiling_cents`. Neither is a figure the
+framing forgot to mention — both are named in rule 15.2 — and neither changes the decision the owner took, which was
+between a value type, a rendered line and a family of getters, and which no count of two either way reverses. What was
+wrong was the arithmetic in the framing, and the correction is recorded here because a wrong cost figure in a framing
+is a wrong figure in the decision record even where the decision stands. **`cache_ratio_basis_points` is a field rather
+than a derivation of two other fields** for a reason this rule has to state, because a reader who assumed the
+derivation would call the field redundant: rule 14.5's absence — a provider that reported no cached figure at all — is
+not recoverable from `prompt_tokens` and `cached_prompt_tokens`, both of which are `u64` and both of which read `0` for
+a run that reported nothing cached and for a run that reported a genuine zero. The `Option` is the distinction, and
+rule 11.5 is what obliges it to survive.
+
+**Why a value the engine formats, and why the type has no method at all.** `SPEC-MOK-007` rule 1.1d, approved the same
+day under `WO-MOK-026`, decides it, and both alternatives were measured on this rule's own scale before the question was
+put. A port that **rendered** the record itself is nought items and one declaration — a method returning
+`Option<String>` — and it is cheaper here and dearer everywhere else: it puts rule 15's field set, its spelling and its
+escaping behind rule 1.1's boundary, so the engine that rule 11.1 makes the author of every other record would be
+unable to state what its own run record says. A **family of getters** is nought items and eleven declarations, all of
+them trait methods and so nought on this rule's reckoning, and it is rule 1.1a's declined shape a third time: a set of
+calls whose mutual agreement is a temporal contract no type enforces. The type carries no method because there is
+nothing for one to do — every field is already the figure rule 15.2 names, and a derived accessor would be a second
+place a figure is computed.
+
+**Why the fields are public, and why the type is not `Density`.** They are public for `Proposal`'s and `UnitPrices`'
+reason: the type crosses the crate boundary in both directions, composed by an implementation of a public trait that
+rule 20.4 puts in a host and read by the engine that renders the record, and a public-tier test that cannot read the
+figures separately cannot establish that the record states the run's own totals rather than plausible ones. The
+contrast with `Density`, whose single field is private, is the same one the `UnitPrices` row of earlier the same day
+records and rests on the same measurement.
+
+**What this amendment does not do.** Rule 4 is untouched: `execute` keeps five parameters and its three greps stand
+word for word — `grep -c "pub fn execute"`, `grep -c "records: Option<&mut dyn Write>"` and
+`grep -c "port: Option<&mut dyn Proposer>"` each returning `1`, re-measured at the candidate — and **no exit code is
+added**, the fourth having arrived two amendments above. `Simulation::run`'s row in the first list is **not** amended,
+as it was not on 2026-08-20 or 2026-08-23: it still takes `&mut self` and a writer and still returns
+`io::Result<RunSummary>`, and it reports no accounting because it delegates with the port absent. **That row is
+load-bearing for this amendment and not merely unmoved.** A run record cannot reach a caller through it without the
+return type growing, and rule 20.5.1 states in terms that this row's "enumerated form is unchanged"; a host that wants
+rule 15's record is a host that lends a port, which is what keeps the whole-run entry point of `REQ-MOK-010` the shape
+it has been since 2026-08-17. The
+mutating-method grep still returns exactly `run` and `advance_tick`, re-measured at the candidate, `accounting` taking
+`&self` and being a trait method in any case; `Simulation::advance_tick`'s signature stays one line. Rule 6 is **not**
+amended and is re-checked instead: the type carries values only — integers and owned strings — with no mutable borrow,
+no handle and no reference into the world grid, the agent collection, the resource collection, the tick counter, the
+entropy state or the event log, and the ten prohibited names stay ten and stay private, which is the load-bearing half
+here because **the accumulators this type reports are not on the interface**. `accounting::RunAccount`, `ExchangeUsage`
+and the module holding them stay private to `src/simulation.rs`, and one private function naming a public type is not a
+declaration of one. Rule 8's table is **not** amended and no file joins the public tier, `tests/connector.rs` having
+joined it earlier the same day. Rule 13's declared dependency set is untouched and **still empty**, measured rather than
+assumed: `cargo tree -p Mokiterions -e normal --locked --offline` resolves to one crate at the candidate, the record's
+rendering being hand-written against `std::fmt`. And `SPEC-MOK-003` is **not** amended: the observer lends a port and
+takes no run record, rule 15.6's ground reaching it as the same `None` a deterministic source produces.
+
+**The ordering follows the six rows above it.** This lands in the same commit as the item and the method it enumerates,
+so at no commit does the census describe an interface the build does not have.
 
 ### 6. Prohibited public interface
 
@@ -572,8 +1016,10 @@ nothing public becomes a path to anything on it.
 rule and states why: the decision port is a **use** of it, not an exception to it. A reader would expect the opposite,
 because the port is a public trait a caller implements and this rule's opening sentence names "trait method, callback,
 or closure argument" among the ways a prohibited item must not be reachable — so the check is worth stating rather than
-assuming. The port's one method takes a `DecisionRequest` **by value** and returns an `Option<Action>` by value. Both
-are values; neither is a borrow of engine state, an index into a collection or a handle. An implementation therefore
+assuming. The port's one method takes a `DecisionRequest` **by value** and returns a `Proposal` by value — an
+`Option<Action>` by value until `SPEC-MOK-007` rule 1.1a grew it on 2026-08-29, and the check reaches the same
+conclusion for the same reason. Both are values; neither is a borrow of engine state, an index into a collection or a
+handle, and the two fields the return gained are an owned `String` and four `Option<u64>`. An implementation therefore
 receives a rendered copy of what one Mokiterion perceived and can reach nothing behind it, which is `SPEC-MOK-007` rule
 1.3 and this rule's first bullet meeting at the same conclusion.
 
@@ -776,6 +1222,15 @@ target, and each public-tier file becomes an additional test target, so `cargo t
 
 Unchanged. The event stream, the action-trace lines, the summary line, and the exit codes are exactly as verified.
 This specification adds no log, metric, or diagnostic.
+
+**Amended 2026-08-29 under `WO-MOK-026`: the exit codes are no longer exactly as verified.** Rule 4's amendment of that
+date adds a fourth, `3`, for `SPEC-MOK-007` rule 19.3's ceiling stop, and one line on standard error reports it. This
+section is amended because the sentence above enumerates the codes and would otherwise be false, which is the only reason
+it is amended: the line is a diagnostic this specification records rather than one it adds, rules 14.7 and 15.5 of
+`SPEC-MOK-007` fixing what it may and may not say. The event stream, the action-trace lines and the summary line are
+unchanged in form, and a ceiling-stopped run writes no summary line at all — rule 14.7 ends its text stream at the last
+tick it completed, and rule 15.5 forbids quoting a figure at a horizon the run did not reach. No log and no metric is
+added.
 
 ## Compatibility and migration
 

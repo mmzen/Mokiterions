@@ -1,0 +1,1 @@
+{"run_record":"llm","seed":42,"ticks":1,"density":"0.75","trace_actions":false,"model":"canned-connector","reasoning":"none","exchanges":14,"tokens":{"prompt":12000,"cached_prompt":10800,"output":96,"reasoning":0},"cache_ratio_basis_points":9000,"cost_cents":0,"ceiling_cents":200,"fallbacks":0,"unfit_to_publish":false,"tick_reached":1,"ended":"tick_limit"}

@@ -10,6 +10,12 @@
 //! applies, so the two are held equal here. None of them compares the text to a literal
 //! declared in this file, which would move the drift one level up rather than remove it.
 //!
+//! `WO-MOK-026` adds `simulation::UnitPrices` to the imports above, which is the first thing
+//! this file needs that was not already public before it needed it. It is here because
+//! `--prices` is the one option in this parser whose value is **retained**: the tests for the
+//! three paths assert that a different value produces the same configuration, and the test for
+//! this one has to assert the opposite, which cannot be done without reading the four fields.
+//!
 //! `WO-MOK-019` adds one option, and most of what has to be true of it is already asserted by
 //! the tests above, which read the parser's own match arms rather than a list: an option added
 //! to the parser and left out of the help fails there without being named. What the three tests
@@ -18,7 +24,7 @@
 //! resolved, spells the option the same way the parser does.
 
 use mokiterions::cli::{Command, USAGE, parse};
-use mokiterions::simulation::{Config, Density, Policy};
+use mokiterions::simulation::{Config, Density, Policy, UnitPrices};
 
 #[test]
 fn defaults_are_stable() {
@@ -31,6 +37,7 @@ fn defaults_are_stable() {
             density: Density::DEFAULT,
             trace_actions: false,
             spend_ceiling: None,
+            prices: None,
         })
     );
 }
@@ -57,6 +64,7 @@ fn options_work_in_any_order() {
             density: Density::parse("1.50").unwrap(),
             trace_actions: true,
             spend_ceiling: None,
+            prices: None,
         })
     );
 }
@@ -180,6 +188,7 @@ fn config_with(policy: Policy) -> Config {
         density: Density::DEFAULT,
         trace_actions: false,
         spend_ceiling: None,
+        prices: None,
     }
 }
 
@@ -877,4 +886,277 @@ fn the_binary_and_the_parser_spell_the_transcript_option_the_same_way() {
         uses, 1,
         "the host must spell {spelling} only in its constant"
     );
+}
+
+/// A complete live-run invocation, with the prices under test and everything else rule 13.1, rule
+/// 19.6 and rule 14.6 require of one.
+///
+/// The engine's parser refuses `--live` without a connector, without an output transcript and
+/// without a ceiling, each with its own message, so no shorter argument list reaches the prices at
+/// all and an assertion about a price value can only be made of a whole invocation. None of the
+/// three paths is opened by anything this file calls: `SPEC-MOK-006` rule 1.2 keeps every path out
+/// of the library target, so they name no file that has to exist.
+fn a_live_run(prices: &str) -> Vec<String> {
+    [
+        "--policy",
+        "llm",
+        "--live",
+        "--connector-path",
+        "connector",
+        "--transcript-output",
+        "out.jsonl",
+        "--spend-ceiling",
+        "2",
+        "--prices",
+        prices,
+    ]
+    .iter()
+    .map(|argument| argument.to_string())
+    .collect()
+}
+
+/// `SPEC-MOK-007` rule 14.3a: the parser validates the prices and **retains** the four values.
+///
+/// This is the one option in this parser whose test is the negation of the three above it. The
+/// sink, the transcript and the two other paths are validated and discarded, and their tests assert
+/// that a different value produces the same configuration; `VER-MOK-018` case `S6a` scopes that
+/// discard rule to paths, and rule 14.3a says of this one that the run computes with the values, so
+/// a configuration that forgot them would leave rule 14.2's arithmetic nothing to arithmetic with.
+///
+/// What the parser rejects it rejects for a stated reason, and every rejection below is a value an
+/// operator could plausibly type: a decimal where cents are asked for, a price list with a field
+/// missing or one too many, a thousands separator, a signed number, a space after a colon. The unit
+/// is not checkable from the value — `125` is a legal number of cents and a legal number of dollars
+/// — so the entry states the unit and `the_prices_entry_states_its_unit_and_its_order` holds it to
+/// it. That is the whole of what protects an operator from a hundred-fold error here, and it is
+/// stated rather than left implicit.
+#[test]
+fn the_prices_option_is_validated_and_its_four_values_are_retained() {
+    let config = run_config(a_live_run("125:13:1000:0"));
+    assert_eq!(
+        config.prices,
+        Some(UnitPrices {
+            prompt: 125,
+            cached: 13,
+            output: 1000,
+            reasoning: 0,
+        })
+    );
+
+    // Retained, not discarded: a different price list is a different configuration. The three path
+    // options' tests assert the equality this asserts the inequality of, and the difference between
+    // them is rule 14.3a's word "retains".
+    assert_ne!(
+        run_config(a_live_run("126:13:1000:0")).prices,
+        config.prices
+    );
+    assert_ne!(
+        run_config(a_live_run("125:13:1000:1")).prices,
+        config.prices
+    );
+
+    // Zero is a legal price and is the rule's own example, `SPEC-MOK-007` fixing the reasoning
+    // level at `none` for this stage. A parser that rejected it would refuse the documented value.
+    assert!(parse(a_live_run("0:0:0:0")).is_ok());
+
+    // The widest value the type holds is accepted and the next one is refused for saying so, rather
+    // than wrapping to a small price and costing the run a hundredfold less than it was told.
+    assert!(parse(a_live_run(&format!("{}:0:0:0", u64::MAX))).is_ok());
+    let refusal = parse(a_live_run("18446744073709551616:0:0:0"))
+        .expect_err("a price this program cannot hold is a usage error");
+    assert!(refusal.contains("18446744073709551616"), "{refusal}");
+
+    // Rejected, each for a reason the message states.
+    for value in [
+        "",
+        "125",
+        "125:13",
+        "125:13:1000",
+        "125:13:1000:0:0",
+        "125:13:1000:",
+        ":13:1000:0",
+        "1.25:13:1000:0",
+        "125:13:1000:0.0",
+        "-125:13:1000:0",
+        "+125:13:1000:0",
+        "1,250:13:1000:0",
+        "125: 13:1000:0",
+        "125;13;1000;0",
+        "one:13:1000:0",
+        "0x7d:13:1000:0",
+    ] {
+        let refusal = match parse(a_live_run(value)) {
+            Err(refusal) => refusal,
+            Ok(_) => panic!("--prices {value} was accepted"),
+        };
+        assert!(
+            refusal.contains("--prices"),
+            "the refusal of {value} does not name the option: {refusal}"
+        );
+    }
+
+    // Validated exactly as every other value-taking option is: a missing value, a value that is
+    // really the next option, and a repetition.
+    let mut missing = a_live_run("125:13:1000:0");
+    missing.pop();
+    assert!(parse(missing).is_err());
+    let mut next_option = a_live_run("125:13:1000:0");
+    next_option.pop();
+    next_option.push("--seed".to_string());
+    assert!(parse(next_option).is_err());
+    let mut twice = a_live_run("125:13:1000:0");
+    twice.push("--prices".to_string());
+    twice.push("125:13:1000:0".to_string());
+    assert!(parse(twice).is_err());
+}
+
+/// The four prices are read in the stated order, and a transposition is a different run.
+///
+/// This is why `UnitPrices` is a named type rather than four bare integers or a `[u64; 4]`, and
+/// `SPEC-MOK-002` rule 5's 2026-08-29 amendment records that as the ground for admitting it. Three
+/// of the four values are plausible in each other's positions and they differ by nearly two orders
+/// of magnitude, so a parser that filled the fields in the wrong order would pass every assertion
+/// above — each value is a legal price — and would cost a run eighty times what it was told.
+///
+/// The four fields are read separately rather than compared against a second `parse`, which is the
+/// reason they are public: comparing one `parse` against another proves nothing about order,
+/// because a transposed parser transposes both sides of the comparison equally.
+#[test]
+fn the_prices_are_read_in_the_stated_order_and_a_transposition_is_a_different_run() {
+    let prices = run_config(a_live_run("1:2:3:4"))
+        .prices
+        .expect("a live run retains its prices");
+    assert_eq!(prices.prompt, 1);
+    assert_eq!(prices.cached, 2);
+    assert_eq!(prices.output, 3);
+    assert_eq!(prices.reasoning, 4);
+
+    // The order the help states, read out of the text rather than restated here, so that a
+    // placeholder renamed in the entry and not in the parser fails rather than passing quietly.
+    let placeholder = entry("--prices")
+        .split_once('<')
+        .expect("the entry states a placeholder")
+        .1
+        .split_once('>')
+        .expect("a placeholder is closed")
+        .0
+        .to_string();
+    assert_eq!(
+        placeholder.split(':').collect::<Vec<_>>(),
+        ["prompt", "cached", "output", "reasoning"],
+        "the entry states an order the parser does not apply"
+    );
+
+    // Any transposition of two distinct prices is a different configuration.
+    assert_ne!(
+        run_config(a_live_run("13:125:1000:0")).prices,
+        run_config(a_live_run("125:13:1000:0")).prices
+    );
+}
+
+/// Rule 14.3: a live run with no declared prices is refused, and not run at a guess.
+///
+/// The refusal is the whole of what keeps rule 14.3's prohibition enforceable. With no prices a
+/// live run cannot do rule 14.2's arithmetic, cannot make rule 14.6's check before an exchange and
+/// cannot report rule 15.2's cost, so the only thing left for an implementation to do is compile
+/// the prices in — which is the one thing that rule forbids. Refused before any tick, beside the
+/// ceiling's own refusal, because a run that discovered it had no prices after its first exchange
+/// has already spent money it cannot account for.
+#[test]
+fn a_live_run_with_no_prices_is_refused_before_any_tick() {
+    let mut without = a_live_run("125:13:1000:0");
+    without.truncate(without.len() - 2);
+    let refusal = parse(without).expect_err("a live run with no prices is a usage error");
+    assert!(refusal.contains("--prices"), "{refusal}");
+    assert!(refusal.contains("--live"), "{refusal}");
+
+    // Not a fallback to a compiled-in list, asserted as the absence of any number in the message: a
+    // refusal that named a price would be offering one.
+    assert!(
+        !refusal.chars().any(char::is_numeric),
+        "the refusal offers a price of its own: {refusal}"
+    );
+
+    // The type has no `Default` for the same reason, which is a compile-time fact and is asserted
+    // here as the absence of the trait's own spelling from the declaration.
+    let source = include_str!("../src/simulation.rs");
+    let declaration = source
+        .split_once("pub struct UnitPrices")
+        .expect("the engine declares the price type")
+        .0;
+    let derives = declaration
+        .lines()
+        .next_back()
+        .expect("the declaration is preceded by its attributes");
+    assert!(
+        !derives.contains("Default"),
+        "UnitPrices derives Default, which rule 14.3 forbids: {derives}"
+    );
+}
+
+/// Rule 18.4.3: prices under a source that obtains its own decisions are refused, not accepted and
+/// ignored.
+///
+/// A named sibling of the transcript option's test, against the same failure. Prices for a
+/// `social` run are a stated intent that cannot be honoured — that source spends nothing and has no
+/// cost to compute — and the default source is enough to trigger it, a price list with no
+/// `--policy` at all being a price list for `reference`.
+#[test]
+fn the_prices_option_is_refused_under_every_source_that_decides_for_itself() {
+    for policy in ["baseline", "reference", "individual", "social"] {
+        let refusal = parse(["--policy", policy, "--prices", "125:13:1000:0"])
+            .expect_err("prices under a self-deciding source are a usage error");
+        assert!(refusal.contains("--prices"), "{refusal}");
+        assert!(refusal.contains(policy), "{refusal} does not name {policy}");
+    }
+
+    let refusal = parse(["--prices", "125:13:1000:0"])
+        .expect_err("prices with no source are prices for the default source");
+    assert!(refusal.contains("reference"), "{refusal}");
+}
+
+/// The prices entry states the unit, the order and where to find the values, and states no default.
+///
+/// The unit is the load-bearing claim and the one a value cannot carry: `125` is a legal number of
+/// cents and an equally legal number of dollars, so an entry that omitted the unit would leave an
+/// operator one hundred-fold error away from a run this repository pays for, and no assertion about
+/// the parser could catch it. `SPEC-MOK-007` rule 14.2 fixes the unit as the US cent and rule 14.3a
+/// fixes the denominator as a million tokens; both are asserted against the printed text here.
+///
+/// There is no default, and the entry must not print one: a price printed in the help is a
+/// compiled-in price wherever an operator copies it from, which is what rule 14.3 forbids.
+#[test]
+fn the_prices_entry_states_its_unit_and_its_order() {
+    let entry = entry("--prices");
+    let effect = description("--prices").to_lowercase();
+
+    // Rule 14.2's unit and rule 14.3a's denominator.
+    assert!(effect.contains("us cents"), "{effect}");
+    assert!(effect.contains("per million tokens"), "{effect}");
+    assert!(effect.contains("whole numbers"), "{effect}");
+
+    // Rule 14.3a's separator and order, and the one field an operator is most likely to misread.
+    assert!(effect.contains("colons"), "{effect}");
+    assert!(effect.contains("in that order"), "{effect}");
+    assert!(effect.contains("from its cache"), "{effect}");
+
+    // Rule 14.3's prohibition, stated to the operator rather than only enforced: the prices are the
+    // provider's to change, so the program carries none and the run states the ones it used.
+    assert!(effect.contains("no built-in list"), "{effect}");
+    assert!(effect.contains("required with"), "{effect}");
+    assert!(effect.contains("--live"), "{effect}");
+
+    // The example is a value this parser accepts, so the text cannot document a form it refuses.
+    let example = effect
+        .split_whitespace()
+        .find(|token| token.matches(':').count() == 3)
+        .unwrap_or_else(|| panic!("the entry gives no example price list: {effect}"))
+        .trim_end_matches(|character: char| !character.is_ascii_digit());
+    assert!(
+        parse(a_live_run(example)).is_ok(),
+        "the entry gives {example} as an example, which the parser refuses"
+    );
+
+    assert!(!entry.contains("Default:"), "{entry}");
+    assert_eq!(documented_default("--prices"), None, "{entry}");
 }

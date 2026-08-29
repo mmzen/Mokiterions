@@ -49,7 +49,7 @@ const SOURCE: [&str; 4] = ["llm", "Llm", "LLM_SOURCE_NAME", "PortDecisionSource"
 ///
 /// **`floor` and `ceiling` are deliberately not here**, and the reason was measured rather than
 /// assumed: with them in the list this check failed on three assertions about the **spend ceiling** —
-/// `ceiling_nanodollars` and `"ended":"ceiling"` — which is a cost bound `SPEC-MOK-007` rule 9.8
+/// `ceiling_cents` and `"ended":"ceiling"` — which is a cost bound `SPEC-MOK-007` rule 9.8
 /// *requires* of this source and the opposite of what `VER-MOK-018` case L26 forbids. Nothing is lost:
 /// L26's own examples are a "survivor floor" and a "death ceiling", and both name their population, so
 /// the entries below catch them.
@@ -199,8 +199,7 @@ fn no_outcome_threshold_exists_for_the_model_backed_source() {
         "the detector reads a termination reason as a threshold"
     );
     assert!(
-        outcome_in_assertion("        assert!(record.contains(\"ceiling_nanodollars\"));")
-            .is_empty(),
+        outcome_in_assertion("        assert!(record.contains(\"ceiling_cents\"));").is_empty(),
         "the detector reads the spend ceiling as an outcome threshold"
     );
 

@@ -2,10 +2,10 @@
 id = "WO-MOK-026"
 type = "work_order"
 title = "Stage 5b: the connector, the live path, the two gates, the usage accounting and the spend ceiling"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-23"
-updated = "2026-08-28"
+updated = "2026-08-29"
 
 [assurance]
 commit_bound_verification = "required"
@@ -17,8 +17,10 @@ paths = [
   "docs/CONNECTOR_PROTOCOL.md",
   "docs/engineering/REPOSITORY_CONTEXT.md",
   "docs/engineering/simulation/evidence/WO-MOK-026/",
+  "docs/engineering/simulation/specifications/SPEC-MOK-002.md",
   "docs/engineering/simulation/specifications/SPEC-MOK-003.md",
   "docs/engineering/simulation/specifications/SPEC-MOK-004.md",
+  "docs/engineering/simulation/specifications/SPEC-MOK-007.md",
   "docs/engineering/simulation/work-orders/WO-MOK-026.md",
   "mokiterions-core/Cargo.toml",
   "mokiterions-core/src/cli.rs",
@@ -28,12 +30,13 @@ paths = [
   "mokiterions-core/tests/",
   "mokiterions-tui/src/main.rs",
   "mokiterions-tui/src/options.rs",
+  "mokiterions-tui/src/state.rs",
   "mokiterions-tui/tests/",
 ]
 
 [relations]
 implements = ["REQ-MOK-069", "REQ-MOK-070", "REQ-MOK-071", "REQ-MOK-072", "REQ-MOK-077"]
-specifications = ["SPEC-MOK-001", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
+specifications = ["SPEC-MOK-001", "SPEC-MOK-002", "SPEC-MOK-003", "SPEC-MOK-004", "SPEC-MOK-007"]
 verification = ["VER-MOK-018"]
 architecture = ["ARCH-MOK-001", "ARCH-MOK-002", "ADR-MOK-007"]
 
@@ -42,6 +45,12 @@ from = "approved"
 to = "in_progress"
 decided_at = "2026-08-28T21:15:16Z"
 decided_by = "engineering owner"
+
+[[lifecycle_events]]
+from = "in_progress"
+to = "implemented"
+decided_at = "2026-08-29T18:46:30Z"
+decided_by = "engineering-owner"
 +++
 
 # Work Order: Stage 5b — the connector, the live path and the ceiling
@@ -393,3 +402,141 @@ requires a connector protocol document without saying where it lives.
 Nothing else in this artifact moves. Not `status`, not a relation, not an assurance field, and not one word of
 the scope prose the table is derived from. This amendment changes what this work order *declares*, never what
 it delivers.
+
+**2026-08-29, `SPEC-MOK-002.md` admitted to `[execution_scope]` and to `[relations].specifications`, by the
+repository owner acting as accountable engineering owner.**
+
+`WO-MOK-030` added `SPEC-MOK-007` rule 14.3a on 2026-08-29 — the unit prices "arrive through `--prices`", and
+"the shared parser validates it and **retains** the four values, like `--spend-ceiling` and unlike the paths,
+because the run computes with them". The library is what computes with them: `SPEC-MOK-007` rule 14.6 stops the
+run *before* an exchange and rule 15.2 puts the cost in the run record, which the library writes to a sink the
+host lends it. So retaining the four values means a sixth public field on `simulation::Config`, and `SPEC-MOK-002`
+rule 5's census enumerates that struct's public fields **exactly** and closes with "nothing outside the three
+lists becomes public".
+
+That file was outside this work order's scope, measured rather than assumed:
+
+    QGP-G4I-PATHS: WEX201: changed path is outside execution scope:
+    docs/engineering/simulation/specifications/SPEC-MOK-002.md
+
+and the harness's own next step was to escalate under `DR-REMEDIATION-SCOPE`, which is what happened. So this is
+a seventh gap of the same kind as the six `WO-MOK-030` closed, found one commit into the implementation rather
+than by the conformance pass: that pass amended the census for `spend_ceiling`, which a commit had already added,
+and did not amend it for the field the option it was creating in the same act would require.
+
+Every alternative route was also an interface change, and `SPEC-MOK-002`'s own 2026-08-29 row had already worked
+the identical question through for `spend_ceiling` one day earlier: "a sixth `execute` parameter moves rule 4,
+and putting the ceiling on the port leaves the library unable to write the run record rule 15.2 requires". The
+same holds of the prices, for the same two reasons, so nothing here re-derives it.
+
+The alternative put to the owner was a fourth governance work order scoped to `SPEC-MOK-002.md` alone, following
+`WO-MOK-028`, `WO-MOK-029` and `WO-MOK-030`. It was **declined** in favour of this amendment. Its cost was two
+stacked pull requests; this amendment's cost is that this work order's own diff carries a specification amendment
+and that the formal snapshot moves from `47aad296aa8686c64d37453fe230124226823260881163bd9da670714d7eac3e`.
+The second cost is nil at this moment and only at this moment: the `handoff` check reports no evidence bound to
+that snapshot, and no verification record is prepared, so nothing has to be re-captured. A later amendment would
+have paid for a live run twice.
+
+**The ordering is right this time and that is the point of the amendment.** The census is amended before the
+field exists, not after — which is what `SPEC-MOK-002`'s 2026-08-29 row recorded as wrong about `spend_ceiling`
+and "recorded rather than tidied". No gate would have caught the alternative: `validate` reads that census as
+prose and cannot compare it to a struct.
+
+Nothing else in this artifact moves. Not `status`, not an assurance field, not the scope prose, and not one item
+of *In scope*, *Out of scope* or the *Expected change surface*. The prices are already **item 5**'s — "the engine
+needs them for its ceiling arithmetic, so they are declared to the engine per rule 14. The engine holds prices;
+it holds no endpoint" — and items 9, 10 and 11 are what compute with them. What this amendment admits is the
+artifact that has to authorize the field, not any new work.
+
+**2026-08-29, `SPEC-MOK-007.md` admitted to `[execution_scope]`, by the repository owner acting as accountable
+engineering owner.**
+
+Two provisions of that specification have to move before **item 8** can be written, and both were found by reading
+the specification against the code rather than by a gate.
+
+**The port's return type, rules 1.1 and 1.4.** Rule 11.3 obliges an exchange record to carry "the response as
+received, in full, or the error", the provider's four reported counts, and "the action the response was parsed
+into, or the fact that it was not parsed **and why**". Rule 11.1 puts the authoring of every record in the engine,
+so the engine has to be told all three. It cannot be: rule 1.1's interface "returns either a proposal or the fact
+that none was obtained" and rule 1.4 fixes that as "a value of the engine's existing action type, or as the absence
+of one", which carries no response text, no count and no reason. `mokiterions-core/src/simulation.rs` has recorded
+this since `WO-MOK-025` as "a pre-existing tension between rule 1.1's port shape and rule 11.3's field list", and
+named this work order as where "the port's return type has to grow to carry them". Rule 11.3.1 says the same from
+the other side: the two fields are "present and empty until a provider is called" and "`WO-MOK-026` is where either
+first carries a value".
+
+**Rule 19.2's credential condition cannot be reached.** It makes "a live-mode selection with no credential" a usage
+error exiting "before any tick runs and before any provider call". Rule 13.1 puts that condition's check in the
+connector — "the selection by the host, the credential by the connector — and neither component can satisfy the
+other's condition" — rule 13.3 has the refusal "arrive after the connector was spawned", on the first exchange, and
+rule 13.4 forbids either host to read the credential at all. So no host can detect the condition before a tick, and
+rule 19.5a, amended one day later, makes a `refused` response an unconditional "immediate counted fallback" which a
+host cannot except the credential case out of without interpreting a message rule 13.3 has it pass through in the
+connector's own terms. The list item is a defect and is to be recorded as one at the rule.
+
+That file was outside this work order's scope, measured rather than assumed:
+
+    QGP-G4I-PATHS: WEX201: changed path is outside execution scope:
+    docs/engineering/simulation/specifications/SPEC-MOK-007.md
+
+and the harness's own next step was again to escalate under `DR-REMEDIATION-SCOPE`, which is what happened.
+
+**Three routes were put to the owner with each one's cost measured, and the other two were declined.** The first
+declined route was to leave rules 1.1 and 1.4 word for word and record in `SPEC-MOK-002` rule 5 that they already
+admit evidence travelling beside the proposal, on the ground that rule 1.4's own stated purpose — "nothing arriving
+through it can bypass rule 9's validation by being expressed in some other form" — holds either way. Its cost was
+that a later reader meets a rule whose plain words and whose build disagree, reconciled in a different artifact. The
+second declined route was a third method on the port, leaving both rules untouched and amending only the census: the
+engine would ask the port for the exchange's evidence after each proposal. Its cost was a temporal contract between
+two calls that no type enforces, so a port returning the previous exchange's evidence writes a wrong record in
+silence — the one hazard the chosen route closes in the type. The chosen route's cost is that this work order's diff
+carries a second specification amendment and that the formal snapshot moves again, from
+`670b8733a05aa5af74157a2f2e78dfa8401fe14b1c502f4ae7f16d42eba39309`. That cost is still nil and still only at this
+moment, for the reason the row above gives: the `handoff` check reports no evidence bound to that snapshot and no
+verification record is prepared, so nothing has to be re-captured.
+
+**Neither provision is a relaxation.** The proposal still crosses back as an action or its absence and the engine
+still reads nothing else to decide, so rule 9's validation is untouched; what grows is what the *record* can say
+about the exchange the proposal came from. And rule 19.2's defect is recorded rather than repaired by weakening a
+gate: the run follows rule 19.5a, which is both the more specific rule and the later-dated one, and the connector's
+message reaches the transcript's `response` field verbatim, which is what rule 13.3 and `VER-MOK-018` case `L20`
+actually require — `L20` says "no provider call occurs and the run reports which condition was missing without
+printing any value", and says nothing about an early exit.
+
+Nothing else in this artifact moves. Not `status`, not a relation — `SPEC-MOK-007` has been in
+`[relations].specifications` since approval — not an assurance field, not the scope prose, and not one item of *In
+scope*, *Out of scope* or the *Expected change surface*. **Item 8** is already "the usage accounting: the provider's
+reported counts into the transcript's reserved fields", and this amendment admits the artifact that has to authorize
+the interface item 8 needs, not any new work.
+
+**2026-08-29, `mokiterions-tui/src/state.rs` admitted to `[execution_scope]`, by the repository owner acting as
+accountable engineering owner.**
+
+`mokiterions-tui/src/state.rs:319` holds `LentPort`, the observer's implementation of `simulation::Proposer`: a
+newtype over the port the observer owns, forwarding `propose` to it, which exists because `SPEC-MOK-007` rule 20.4
+puts the port in the host and the observer's own state is what holds it for the whole run. A trait method's signature
+and its implementations' cannot differ, so the amendment the row above authorizes forces this file. It was outside
+this work order's scope, measured rather than assumed:
+
+    QGP-G4I-PATHS: WEX201: changed path is outside execution scope:
+    mokiterions-tui/src/state.rs
+
+**This is a mechanical consequence of the port-shape decision and not new work, and the reason it is recorded rather
+than waved through is that all three routes put to the owner forced it.** Growing the return type, re-reading rules
+1.1 and 1.4 to admit the same growth, and adding a third method to the port each change the trait, so each obliges
+`LentPort` to follow. The file's admission was therefore entailed by that decision rather than chosen after it — and
+it is written down because nothing in this repository is approved by implication.
+
+The alternative put to the owner was a fifth governance work order scoped to this file alone, on the `WO-MOK-028`,
+`WO-MOK-029` and `WO-MOK-030` pattern. It was **declined**: its cost was a second stacked pull request for a
+forwarding change of three lines, and it would leave the port half-grown in this work order's tree until that one
+merged — a tree that does not compile, which is worse than the scope breadth it would buy back.
+
+**What this admission does not license.** The observer remains the **replay** host of rule 20.1 and gains no
+capability here. It spawns no connector, reads no credential and makes no provider call; `state.rs` may change only
+so far as `Proposer`'s signature obliges, and rule 20.3's refusal and rule 20.2's measured reason for it are
+untouched. The three new options are already **item 6**'s, which the observer refuses, and that item landed before
+this amendment.
+
+Nothing else in this artifact moves. Not `status`, not a relation, not an assurance field, not the scope prose, and
+not one item of *In scope*, *Out of scope* or the *Expected change surface*.

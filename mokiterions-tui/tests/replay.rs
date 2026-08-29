@@ -27,7 +27,7 @@ use ratatui::buffer::Buffer;
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::layout::Rect;
 
-use mokiterions::simulation::{Action, DecisionRequest, Direction, Proposer};
+use mokiterions::simulation::{Action, DecisionRequest, Direction, Proposal, Proposer};
 use mokiterions_tui::options::{self, Options, Startup};
 use mokiterions_tui::state::{Observer, Progression};
 use mokiterions_tui::{layout, render};
@@ -91,13 +91,19 @@ impl ScriptedPort {
 }
 
 impl Proposer for ScriptedPort {
-    fn propose(&mut self, request: DecisionRequest) -> Option<Action> {
+    fn propose(&mut self, request: DecisionRequest) -> Proposal {
         let mut ledger = self.ledger.borrow_mut();
         ledger
             .proposed
             .push((request.tick(), request.actor_id().to_string()));
+        // Rule 1.1a's evidence fields stay empty throughout: this port answers from a counter, so
+        // there is no response to carry and rule 11.5's four counts are absent.
+        let proposing = |action| Proposal {
+            action: Some(action),
+            ..Proposal::nothing()
+        };
         if !self.moving {
-            return Some(Action::Wait);
+            return proposing(Action::Wait);
         }
         // The four cardinals in turn. A step off the grid is not a valid move, and rule 9.5's
         // fallback covers it, so the port needs no knowledge of where the Mokiterion stands.
@@ -107,7 +113,7 @@ impl Proposer for ScriptedPort {
             Direction::South,
             Direction::West,
         ];
-        Some(Action::Move {
+        proposing(Action::Move {
             direction: CARDINALS[ledger.proposed.len() % 4],
         })
     }
