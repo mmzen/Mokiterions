@@ -29,15 +29,23 @@
 //! run and a test states only what it cares about.
 //!
 //! ```text
-//! ok <verb> [<parameter>] [prompt=N] [cached=N] [output=N] [reasoning=N]
+//! ok <verb> [<parameter>] [prompt=N] [cached=N] [output=N] [reasoning=N] [model=ID] [level=TEXT]
 //! error <kind> <message ...>
 //! malformed <raw text>
 //! close
 //! ```
 //!
-//! - `ok` answers with an action and usage counts. Counts default to `prompt=1000 cached=900
-//!   output=8 reasoning=0`, a ratio of 0.9, which is above `REQ-MOK-070`'s 0.85 and therefore the
-//!   uninteresting case a test has to opt out of rather than into.
+//! - `ok` answers with an action, what answered, and usage counts. Counts default to `prompt=1000
+//!   cached=900 output=8 reasoning=0`, a ratio of 0.9, which is above `REQ-MOK-070`'s 0.85 and
+//!   therefore the uninteresting case a test has to opt out of rather than into. `model` and `level`
+//!   default to `canned-connector` and `none`.
+//! - **The level is `level=` and not `reasoning=`** because `reasoning=` is already the reasoning
+//!   *token count*. Rule 10.4a puts both on one response — a level that is a string beside a count
+//!   that is an integer, at two levels of the object — and one script key could not set two values.
+//! - A response that answers without naming what answered is reachable through `malformed`, which
+//!   writes a raw line. That is how the host's rule 10.4c handling gets exercised — an action with
+//!   neither field fails the grammar check and becomes a counted fallback under rule 9.5 — without a
+//!   directive of its own, and every `ok` therefore names both.
 //! - `error` answers with rule 10.4's error form. `<kind>` is any of the four the protocol fixes;
 //!   the connector does not police it, because a connector that could only emit valid errors could
 //!   not exercise the host's handling of an invalid one.
@@ -73,10 +81,33 @@ impl Default for Usage {
     }
 }
 
+/// What answered, as rule 10.4a has a response report it: the model identifier and the reasoning
+/// level, both accompanying the action. A response that carries an action and names neither fails
+/// the host's grammar check under rule 10.4c, so every `ok` directive names both.
+struct Answered {
+    model: String,
+    level: String,
+}
+
+impl Default for Answered {
+    fn default() -> Self {
+        Self {
+            // This fixture, not a provider. The module's first claim is that it names none, and a
+            // default of `gpt-5.6-luna` would have every test that does not care about the
+            // identifier assert a real model's name — and would read, in a run record produced
+            // from a script, exactly as a live run's record reads.
+            model: "canned-connector".to_string(),
+            // Rule 8.5 fixes the level a run may use at `none`.
+            level: "none".to_string(),
+        }
+    }
+}
+
 enum Directive {
     Ok {
         verb: String,
         parameter: Option<String>,
+        answered: Answered,
         usage: Usage,
     },
     Error {
@@ -116,6 +147,7 @@ impl Directive {
                     .ok_or_else(|| "ok needs a verb".to_string())?
                     .to_string();
                 let mut parameter = None;
+                let mut answered = Answered::default();
                 let mut usage = Usage::default();
                 for word in words {
                     match word.split_once('=') {
@@ -123,6 +155,8 @@ impl Directive {
                         Some(("cached", value)) => usage.cached = number(value)?,
                         Some(("output", value)) => usage.output = number(value)?,
                         Some(("reasoning", value)) => usage.reasoning = number(value)?,
+                        Some(("model", value)) => answered.model = value.to_string(),
+                        Some(("level", value)) => answered.level = value.to_string(),
                         Some((key, _)) => return Err(format!("unknown field `{key}`")),
                         // The first bare word after the verb is the parameter; a second is a
                         // defect rather than a value silently dropped.
@@ -133,6 +167,7 @@ impl Directive {
                 Ok(Self::Ok {
                     verb,
                     parameter,
+                    answered,
                     usage,
                 })
             }
@@ -153,6 +188,7 @@ impl Directive {
             Self::Ok {
                 verb,
                 parameter,
+                answered,
                 usage,
             } => {
                 let mut action = format!("{{\"verb\":\"{}\"", escape(verb));
@@ -160,10 +196,20 @@ impl Directive {
                     action.push_str(&format!(",\"parameter\":\"{}\"", escape(parameter)));
                 }
                 action.push('}');
+                // The field order rule 10.4a lists and `docs/CONNECTOR_PROTOCOL.md`'s worked
+                // exchange shows: the action, then what answered, then what it cost. JSON does not
+                // care and a host reading this must not either, but a fixture whose lines differ in
+                // shape from the document a connector author reads is a second thing to keep true.
                 Some(format!(
-                    "{{\"protocol\":1,\"action\":{action},\"usage\":{{\"prompt\":{},\
-                     \"cached_prompt\":{},\"output\":{},\"reasoning\":{}}}}}",
-                    usage.prompt, usage.cached, usage.output, usage.reasoning
+                    "{{\"protocol\":1,\"action\":{action},\"model\":\"{}\",\"reasoning\":\"{}\",\
+                     \"usage\":{{\"prompt\":{},\"cached_prompt\":{},\"output\":{},\
+                     \"reasoning\":{}}}}}",
+                    escape(&answered.model),
+                    escape(&answered.level),
+                    usage.prompt,
+                    usage.cached,
+                    usage.output,
+                    usage.reasoning
                 ))
             }
         }
@@ -187,6 +233,7 @@ fn load_script() -> Result<Vec<Directive>, String> {
         return Ok(vec![Directive::Ok {
             verb: "wait".to_string(),
             parameter: None,
+            answered: Answered::default(),
             usage: Usage::default(),
         }]);
     };
