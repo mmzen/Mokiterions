@@ -1,0 +1,301 @@
+A 80-cell batch interrupted 3 s in, by CTRL_BREAK_EVENT to its own process group,
+translated to KeyboardInterrupt by the launcher retained beside this file.
+
+  exit                  3
+  sweep record written  True
+  batch record written  True
+  cell records          41
+  requested / retained  80 / 41
+  complete              False
+  missing by stage      {'not_attempted': 39}
+  leftover_streams      []
+  files left on disk    none
+
+the batch record as written:
+{
+ "record": "batch",
+ "complete": false,
+ "requested": 80,
+ "retained": 41,
+ "missing": [
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 1,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 2,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 3,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 4,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 5,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 6,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 7,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 8,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 9,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 10,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 11,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 12,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 13,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 14,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 15,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 16,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 17,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 18,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "individual",
+   "density": "0.75",
+   "seed": 19,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 0,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 1,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 2,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 3,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 4,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 5,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 6,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 7,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 8,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 9,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 10,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 11,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 12,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 13,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 14,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 15,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 16,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 17,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 18,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  },
+  {
+   "source": "social",
+   "density": "0.75",
+   "seed": 19,
+   "stage": "not_attempted",
+   "reason": "interrupted by operator"
+  }
+ ],
+ "leftover_streams": []
+}
+
+the driver's own report:
+engine binary: target\release\Mokiterions.exe (release)
+temporary stream directory: C:/Users/mathi/mok-scratch/ver019/phase-e/streams-interrupted
+retained 41 of 80 cells in C:/Users/mathi/mok-scratch/ver019/phase-e/interrupted.jsonl

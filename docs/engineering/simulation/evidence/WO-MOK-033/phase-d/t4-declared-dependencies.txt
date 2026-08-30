@@ -1,0 +1,35 @@
+$ python scripts/check_declared_dependencies.py --root .
+exit 0
+
+targets: x86_64-pc-windows-msvc, x86_64-unknown-linux-gnu, aarch64-apple-darwin
+cargo metadata --locked reports 182 packages, which is the whole lockfile across every target and both members and is not any package's set
+[workspace.dependencies] holds no entry
+Mokiterions � declared by SPEC-MOK-002
+  Mokiterions: 0 declared, 0 in the manifest
+  Mokiterions on aarch64-apple-darwin: 0 external crates, no figure declared
+  Mokiterions on x86_64-pc-windows-msvc: 0 external crates, no figure declared
+  Mokiterions on x86_64-unknown-linux-gnu: 0 external crates, no figure declared
+  Mokiterions on aarch64-apple-darwin: 0 external crates (1 node including workspace members)
+  Mokiterions on x86_64-pc-windows-msvc: 0 external crates (1 node including workspace members)
+  Mokiterions on x86_64-unknown-linux-gnu: 0 external crates (1 node including workspace members)
+  Mokiterions: builds and tests offline from the committed lockfile
+mokiterions-tui � declared by SPEC-MOK-003
+  not an entry: Mokiterions (path ../mokiterions-core), a workspace member reached by path
+  mokiterions-tui: 1 declared, 1 in the manifest
+  ratatui 0.30.2 on aarch64-apple-darwin: features crossterm,layout-cache,std,underline-color
+  ratatui 0.30.2 on x86_64-pc-windows-msvc: features crossterm,layout-cache,std,underline-color
+  ratatui 0.30.2 on x86_64-unknown-linux-gnu: features crossterm,layout-cache,std,underline-color
+  mokiterions-tui on aarch64-apple-darwin: 62 external crates, declared 62
+  mokiterions-tui on x86_64-pc-windows-msvc: 57 external crates, declared 57
+  mokiterions-tui on x86_64-unknown-linux-gnu: 63 external crates, declared 63
+  mokiterions-tui union of the declared targets: 66 external crates, declared 66
+  mokiterions-tui on aarch64-apple-darwin: 9 build-script crates (instability 0.3.13, libc 0.2.189, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustix 1.1.4, rustversion 1.0.23, signal-hook 0.3.18, thiserror 2.0.20)
+  mokiterions-tui on x86_64-pc-windows-msvc: 7 build-script crates (instability 0.3.13, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustversion 1.0.23, thiserror 2.0.20, winapi 0.3.9)
+  mokiterions-tui on x86_64-unknown-linux-gnu: 9 build-script crates (instability 0.3.13, libc 0.2.189, parking_lot_core 0.9.12, proc-macro2 1.0.107, quote 1.0.47, rustix 1.1.4, rustversion 1.0.23, signal-hook 0.3.18, thiserror 2.0.20)
+  raw hit on aarch64-apple-darwin: mio 1.2.2 (network access)
+  raw hit on aarch64-apple-darwin: signal-hook-mio 0.2.5 (network access)
+  raw hit on x86_64-unknown-linux-gnu: mio 1.2.2 (network access)
+  raw hit on x86_64-unknown-linux-gnu: signal-hook-mio 0.2.5 (network access)
+  disclosed and accepted: mio 1.2.2 � the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+  disclosed and accepted: signal-hook-mio 0.2.5 � the technical owner's judgement is recorded (`VER-MOK-014` manual assessment 6)
+Every declared set matches its resolved graph. 8.4a-8.4d pass.

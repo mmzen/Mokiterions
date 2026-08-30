@@ -1,0 +1,84 @@
+How this directory was produced
+assembled 2026-08-30T18:17:18Z
+
+The verification ran in a working tree outside the repository:
+
+  work tree   C:/Users/mathi/mok-scratch/ver019
+  repository  C:/Users/mathi/Mokiterions-understand-20260829-1340
+
+`SPEC-MOK-008` rule 15.1 refuses a batch whose `--out` is under `docs/engineering/`, and case T7
+measures that refusal, so neither instrument could have written this directory. It was copied by
+`harness/package_evidence.py`, which is itself retained here. That script performs, in order:
+
+  1. remove and recreate docs/engineering/simulation/evidence/WO-MOK-033/
+  2. copy the 20 harness files to harness/
+  3. walk phase-a .. phase-f and fixture-streams, copying every file of 400,000 bytes or fewer to
+     the same relative path, and reducing every larger one to a line in not-committed.txt
+  4. write not-committed.txt, case-index.md, findings/, README.md, this file
+  5. write manifest.sha256 over everything above, excluding itself
+
+Copies are `shutil.copyfile` on binary bytes: no line-ending translation, and the modification time
+is not carried, because the bytes are the evidence and the timestamp is not. Files written by step 4
+and 5 are written with `\n` endings.
+
+What was left out, and why
+
+  40 captures over 400,000 bytes: stated in not-committed.txt with digest, bytes and
+  lines. They are engine record streams and scan inputs; the largest single one is a 24 MB
+  concatenation built as an input to a memory measurement. Committing 141 MB of streams into a
+  governance packet is not retention, it is storage.
+
+  The working tree's own root held four files produced before the phases existed, listed at the foot
+  of not-committed.txt. One of them, an early 400-cell sweep, is byte-identical to the sweep the
+  phases produce; the fact is recorded in README.md and the duplicate is not committed. The other
+  three came from a state of the classifier before rule 9.6's attempted-and-effective split, so they
+  are not readings at this candidate at all.
+
+  bite2/run_simulation_batch.py and bite2/test_run_simulation_batch.py were patched copies of the
+  driver and its suite, used to measure whether a regression test fails on the defect it claims to
+  catch. The instrument that makes those copies is retained (harness/bite/check.py) along with its
+  output; the patched copies are not, because a copy of the driver with a defect put back into it,
+  sitting in a governance packet, is a second and wrong reading of a file the repository already
+  holds. harness/bite/check.py deletes its own copies when it finishes.
+
+Line endings
+
+  `.gitattributes` marks this tree `-text`, so git stores and checks out these bytes unchanged and
+  `manifest.sha256` reproduces on any platform. Files written by this script use `\n`. The captures
+  below were taken from a Windows process's standard output and carry `\r\n`; the count is of CRLF
+  pairs. They are recorded as captured, because a capture corrected after the fact is not one.
+
+  4874    phase-f/distribution-source-density.json
+  3909    phase-f/distribution-source.json
+  306     phase-d/gates.txt
+  272     phase-c/q6-after.json
+  272     phase-c/q6-before.json
+  74      phase-f/distribution-source-density.md
+  60      phase-b/q16-distribution.md
+  42      phase-f/distribution-source.md
+  40      phase-b/s4-distribution.md
+  32      harness/bite/bite-output.txt
+  32      phase-d/t4-declared-dependencies.txt
+  11      phase-a/b1-transcript.txt
+  4       phase-e/long-run-1000.log
+  4       phase-e/long-run-12000.log
+  3       phase-b/b13-transcript.txt
+  3       phase-b/b17-transcript.txt
+  3       phase-b/b19-transcript.txt
+  3       phase-b/b23-complete-transcript.txt
+  3       phase-b/b24-total-transcript.txt
+  3       phase-b/s4-transcript.txt
+  3       phase-e/default-sweep-jobs1.log
+  3       phase-e/default-sweep-jobs4.log
+  3       phase-e/interrupted.log
+  3       phase-e/real-1000.log
+  3       phase-e/real-250.log
+  3       phase-e/scan-10.log
+  3       phase-e/scan-1000.log
+  3       phase-e/scan-4000.log
+  1       phase-d/t7-governance.txt
+
+  No credential, and no value that could be mistaken for one, is in any byte of this packet. The
+  privacy cases in phase D use a decoy whose value is self-describing -- "decoy-not-a-credential-"
+  and 16 random bytes -- and retain only its length and digest, so a reader scanning this packet for
+  a leaked secret finds a decoy rather than a candidate.

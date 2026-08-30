@@ -1,0 +1,9 @@
+25 retained outputs and 4 classifier outputs scanned for a float value and for an unquoted decimal
+
+classifier ['(default)']: 85847 bytes
+classifier ['--group-by', 'source']: 69849 bytes
+classifier ['--group-by', 'seed']: 85199 bytes
+classifier ['--group-by', 'source,density,seed']: 469318 bytes
+
+findings:
+none

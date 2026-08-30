@@ -1,0 +1,60 @@
+Scenario 6: the instrument finds a defect. The threat inertness of SPEC-MOK-008 rule 9.6,
+reproduced over the 400-cell default sweep and retained as the *before* measurement for a
+later repair chain.
+
+whole sweep: 7701 threats resolved, 8 of them raised fear (0.10388% effective)
+
+WO-MOK-033 stage 2's figure at c90edc9, over 35 runs: 1448 resolved, 1 effective.
+
+Per source, 100 cells each:
+
+source      attempted  effective
+----------  ---------  ---------
+baseline    0          0
+reference   0          0
+individual  0          0
+social      7701       8
+
+Per density, 80 cells each:
+
+density  attempted  effective
+-------  ---------  ---------
+0.10     2828       1
+0.25     1861       1
+0.50     1793       2
+0.75     577        2
+1.00     642        2
+
+Per source and density, 20 cells each:
+
+source      density  attempted  effective
+----------  -------  ---------  ---------
+baseline    0.10     0          0
+baseline    0.25     0          0
+baseline    0.50     0          0
+baseline    0.75     0          0
+baseline    1.00     0          0
+reference   0.10     0          0
+reference   0.25     0          0
+reference   0.50     0          0
+reference   0.75     0          0
+reference   1.00     0          0
+individual  0.10     0          0
+individual  0.25     0          0
+individual  0.50     0          0
+individual  0.75     0          0
+individual  1.00     0          0
+social      0.10     2828       1
+social      0.25     1861       1
+social      0.50     1793       2
+social      0.75     577        2
+social      1.00     642        2
+
+rows in which a threat resolved at all      99 of 400
+rows in which one raised fear              8 of 400
+
+This is retained as a *before* measurement and nothing here repairs it. The contract's
+words: the scenario "passes when the instrument surfaces it; it does not require the
+defect to be absent, and it does not require it to be repaired". INT-MOK-012 principle 7
+is the ground. The repair is a later chain by the owner's decision of 2026-08-30, and this
+figure is what that chain will be measured against.

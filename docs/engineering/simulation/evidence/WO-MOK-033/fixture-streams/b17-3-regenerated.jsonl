@@ -1,0 +1,29 @@
+{"record": "header", "schema": 3, "engine": "0.1.0", "config": {"seed": 0, "ticks": 50, "policy": "social", "density": "0.75", "trace_actions": false}}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M02"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M03"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M04"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M05"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M06"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M07"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M08"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M09"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M10"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M11"}
+{"record": "event", "tick": 1, "event": "agent_initialized", "subject": "M12"}
+{"record": "event", "tick": 1, "event": "territory_crossed", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "territory_crossed", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "food_consumed", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "food_consumed", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "food_consumed", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "food_regenerated", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "food_regeneration_skipped", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "agent_died", "subject": "M01"}
+{"record": "event", "tick": 1, "event": "attack_resolved", "subject": "M01", "result": {"damage": 5, "target_died": "no"}}
+{"record": "event", "tick": 1, "event": "attack_resolved", "subject": "M01", "result": {"damage": 0, "target_died": "no"}}
+{"record": "event", "tick": 1, "event": "attack_resolved", "subject": "M01", "result": {"damage": 9, "target_died": "yes"}}
+{"record": "event", "tick": 1, "event": "threat_resolved", "subject": "M01", "result": {"increase": 4}}
+{"record": "event", "tick": 1, "event": "threat_resolved", "subject": "M01", "result": {"increase": 0}}
+{"record": "event", "tick": 1, "event": "surrender_resolved", "subject": "M01", "result": {"transferred": 2}}
+{"record": "event", "tick": 1, "event": "surrender_resolved", "subject": "M01", "result": {"transferred": 0}}
+{"record": "run", "reason": "tick_limit", "ticks": 50, "survivors": 11, "deaths": 1, "crossings": 2, "consumed": {"low": 3, "medium": 0, "high": 0}, "regenerated": 2, "regeneration_skipped": {"depleted": 0, "capacity": 1}, "final": {"territories": {"A": {"population": 6, "low": 8, "medium": 8, "high": 8}, "B": {"population": 5, "low": 8, "medium": 8, "high": 8}}}, "agents": [{"id": "M01", "name": "N01", "territory": "A", "died_at": 10}, {"id": "M02", "name": "N02", "territory": "A", "died_at": null}, {"id": "M03", "name": "N03", "territory": "A", "died_at": null}, {"id": "M04", "name": "N04", "territory": "A", "died_at": null}, {"id": "M05", "name": "N05", "territory": "A", "died_at": null}, {"id": "M06", "name": "N06", "territory": "A", "died_at": null}, {"id": "M07", "name": "N07", "territory": "A", "died_at": null}, {"id": "M08", "name": "N08", "territory": "A", "died_at": null}, {"id": "M09", "name": "N09", "territory": "A", "died_at": null}, {"id": "M10", "name": "N10", "territory": "A", "died_at": null}, {"id": "M11", "name": "N11", "territory": "A", "died_at": null}, {"id": "M12", "name": "N12", "territory": "A", "died_at": null}]}

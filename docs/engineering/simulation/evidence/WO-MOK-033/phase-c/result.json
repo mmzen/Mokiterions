@@ -1,0 +1,117 @@
+{
+ "phase": "phase C: the declared sweep and the classes",
+ "cases": 22,
+ "failed": [],
+ "entries": [
+  {
+   "case": "B4 the declared default",
+   "ok": true,
+   "detail": "with no axis option: 4 sources, 5 densities, 20 seeds, 1000 ticks, 400 cells, defaulted_axes ['sources', 'densities', 'seeds', 'ticks']"
+  },
+  {
+   "case": "B4 a given axis leaves the other three defaulted",
+   "ok": true,
+   "detail": "with --seeds 0-2: defaulted_axes ['sources', 'densities', 'ticks'], seeds [0, 1, 2], 60 cells"
+  },
+  {
+   "case": "B3 cell enumeration and order",
+   "ok": true,
+   "detail": "400 cells enumerated, 400 rows in rule 4.3 order, and --jobs 4 produced byte-identical output (275132 bytes)"
+  },
+  {
+   "case": "B11 no ambient value in a cell record",
+   "ok": true,
+   "detail": "400 cell records checked field by field and by pattern for a path, a timestamp, a duration, a process identifier and an environment name; findings none"
+  },
+  {
+   "case": "B6 nine usage errors",
+   "ok": true,
+   "detail": "all 9 of rule 15.1's conditions exited 2, wrote nothing and each said why; the stand-in binary recorded 0 invocations across all nine; faults none"
+  },
+  {
+   "case": "Q2 each predicate fires, and the order carries meaning",
+   "ok": true,
+   "detail": "five fixtures assigned ['extinction', 'famine', 'asymmetric_collapse', 'collapse', 'coexistence']; a row satisfying clause 1 and clause 4 was assigned 'extinction' by clause 1; faults none"
+  },
+  {
+   "case": "Q8 class counts sum to the row count",
+   "ok": true,
+   "detail": "6 groups, six counters each (five classes and unclassified); mismatches none"
+  },
+  {
+   "case": "Q11 an unobserved class is stated as zero",
+   "ok": true,
+   "detail": "over rows in which no run meets the predicate, famine is present in every group with count 0 and is omitted from none (1 groups)"
+  },
+  {
+   "case": "Q10 attempted stays distinct",
+   "ok": true,
+   "detail": "every group states attempted and effective separately for all three kinds; no key merges them (confirmed)"
+  },
+  {
+   "case": "Q4 a missing fact",
+   "ok": true,
+   "detail": "a row without roster was reported 'unclassified' with reason 'missing fact: roster', and was not classified on the fields present"
+  },
+  {
+   "case": "Q13 two engines are two experiments",
+   "ok": true,
+   "detail": "two rows differing only in engine produced 2 groups keyed ['0.1.0', '0.2.0'], never merged, at one source and one density"
+  },
+  {
+   "case": "Q14 small and empty groups",
+   "ok": true,
+   "detail": "a one-row group is reported with its order statistics equal ({'min': 8, 'median': 8, 'max': 8}); a sweep with no rows produced 0 groups at status 0 rather than an error"
+  },
+  {
+   "case": "Q12 the sweep travels",
+   "ok": true,
+   "detail": "the sweep record is restated whole (10 fields) with density 0.10 that produced no row; the engine version is stated on every group"
+  },
+  {
+   "case": "Q9 both axes from the same rows",
+   "ok": true,
+   "detail": "the same 12 rows aggregated over source (2 groups) and over density (2 groups); each group states rule 17.1's counts and order statistics"
+  },
+  {
+   "case": "Q15 classifier determinism",
+   "ok": true,
+   "detail": "two runs over the same rows with the same options produced byte-identical output (6549 bytes)"
+  },
+  {
+   "case": "P3 classification is a function of the row",
+   "ok": true,
+   "detail": "the row classified alone is 'coexistence' by clause 5, and identical within a 12-row file"
+  },
+  {
+   "case": "Q6 revisability, by digest",
+   "ok": true,
+   "detail": "the classes changed from ['coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence', 'coexistence'] to ['collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse', 'collapse'] while the retained rows' digest stayed e4fb3348aed830e6... throughout"
+  },
+  {
+   "case": "Scenario 3 a threshold is revised after publication",
+   "ok": true,
+   "detail": "the regenerated distribution differs from the published one, the rows are byte-identical, and reverting the edit reproduces the original distribution byte for byte"
+  },
+  {
+   "case": "Q3 the residual, and its removal",
+   "ok": true,
+   "detail": "a row matching none of clauses 1 to 4 is coexistence by clause 5; with clause 5 removed it is 'unclassified' because 'no clause matched', still present as one of one rows and counted as unclassified rather than defaulted or dropped"
+  },
+  {
+   "case": "P4 rows are immutable",
+   "ok": true,
+   "detail": "4 retained files digested, then read by the classifier three ways each; changed none"
+  },
+  {
+   "case": "Q7 rows alone",
+   "ok": true,
+   "detail": "the classifier ran from a directory holding nothing -- no target/, no stream, no checkout -- and produced a distribution at status 0; its source names none of the process or network tokens (confirmed absent)"
+  },
+  {
+   "case": "Q5 no judgement in a row",
+   "ok": true,
+   "detail": "rule 16.5's whole vocabulary and every judgement word checked by pattern over 400 shim rows and every engine-produced row of two sweeps; findings none"
+  }
+ ]
+}

@@ -1,0 +1,32 @@
+--- the explicit binary path is normalised
+    test: TestBinaryResolution.test_an_explicit_path_is_normalised_to_the_platforms_separator
+    exit 1 on the pre-fix copy
+    | ?       ^       ^
+    | + target\release\Mokiterions.exe
+    | ?       ^       ^
+    | ----------------------------------------------------------------------
+    | Ran 1 test in 0.005s
+    | FAILED (failures=1)
+    BITES
+--- no two concurrent cells share a reusable path
+    test: TestRetainedFileAndStream.test_no_two_concurrent_cells_share_a_reusable_path
+    exit 1 on the pre-fix copy
+    | + []
+    | - [('C:\\Users\\mathi\\AppData\\Local\\Temp\\tmp_xa30phh\\batch-stream-0.jsonl',
+    | -   'C:\\Users\\mathi\\AppData\\Local\\Temp\\tmp_xa30phh\\batch-stream-0.jsonl')] : two concurrent cells were given one reusable path
+    | ----------------------------------------------------------------------
+    | Ran 1 test in 0.216s
+    | FAILED (failures=1)
+    BITES
+--- the stream is removed when a cell is interrupted
+    test: TestRetainedFileAndStream.test_the_stream_is_removed_when_a_cell_is_interrupted
+    exit 1 on the pre-fix copy
+    | 'batch-stream-0.jsonl'
+    | - ['batch-stream-0.jsonl']
+    | + [] : rule 7.3's removal did not happen on an interrupt
+    | ----------------------------------------------------------------------
+    | Ran 1 test in 0.005s
+    | FAILED (failures=1)
+    BITES
+
+3 of 3 tests fail on their own pre-fix copy

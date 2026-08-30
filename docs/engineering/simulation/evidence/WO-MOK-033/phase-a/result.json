@@ -1,0 +1,104 @@
+{
+ "phase": "phase A: real engine",
+ "cases": 19,
+ "failed": [],
+ "entries": [
+  {
+   "case": "B1 real-engine conformance",
+   "ok": true,
+   "detail": "status 0, 8 of 8 rows, order as rule 4.3, shape faults none"
+  },
+  {
+   "case": "P1 one row per completed cell",
+   "ok": true,
+   "detail": "cell records 8, retained 8, missing 0, requested 8, sweep cells 8"
+  },
+  {
+   "case": "P7/T9 integers only in retained output",
+   "ok": true,
+   "detail": "10 records scanned, floats none"
+  },
+  {
+   "case": "B9 hashed as written",
+   "ok": true,
+   "detail": "8 streams digested independently over raw bytes, disagreements none"
+  },
+  {
+   "case": "B9 one altered byte changes the digest",
+   "ok": true,
+   "detail": "byte 1236555 flipped in 2473110 bytes; digest a74d388c532658d3... became 0421a20b5d924f4e..."
+  },
+  {
+   "case": "B12 independent attempted counts",
+   "ok": true,
+   "detail": "three kinds over 8 real streams; disagreements none"
+  },
+  {
+   "case": "B13 independent effective counts (real half)",
+   "ok": true,
+   "detail": "rule 9.2's three predicates recomputed; disagreements none",
+   "note": "the fixture half -- damage 0, increase 0, transferred 0 -- is phase B"
+  },
+  {
+   "case": "B14 lethality is not a narrowing",
+   "ok": true,
+   "detail": "lethal_attacks recomputed as target_died == 'yes'; disagreements none"
+  },
+  {
+   "case": "P6 attempted bounds effective",
+   "ok": true,
+   "detail": "checked over 8 rows; violations none"
+  },
+  {
+   "case": "B16 the seven cross-checks pass",
+   "ok": true,
+   "detail": "7 equalities recomputed over 8 real streams = 56 comparisons; disagreements none"
+  },
+  {
+   "case": "B7 the digest reproduces from both profiles",
+   "ok": true,
+   "detail": "8 cells re-executed from coordinates alone under release and debug; failures none"
+  },
+  {
+   "case": "B2 transparency to the engine",
+   "ok": true,
+   "detail": "the batch's stream and the hand run's stream are byte-identical over 2473110 bytes; the hand run's standard output is byte-identical across two executions (1130069 bytes)",
+   "note": "met in part by substitution: rule 5.2 has the driver read the child's standard output and drop it, so the batch child's standard output is not observable from outside the driver and cannot be compared byte for byte. The observable half -- the stream -- is compared, and the engine's standard output is shown reproducible for the same arguments."
+  },
+  {
+   "case": "B18 tracing independence",
+   "ok": true,
+   "detail": "--trace-actions present: 21469 records, 5213088 bytes; absent: 11647 records, 2473110 bytes; every derived count and the whole run record identical"
+  },
+  {
+   "case": "B10 --keep-stream changes no row",
+   "ok": true,
+   "detail": "the eight-cell batch with eight kept streams and the same batch with none produced byte-identical retained output (5895 bytes)"
+  },
+  {
+   "case": "B8 the stream is gone",
+   "ok": true,
+   "detail": "the stream directory of a batch with no --keep-stream holds nothing after eight cells; the batch record's leftover_streams is empty"
+  },
+  {
+   "case": "B8/P5 peak disk is one stream",
+   "ok": true,
+   "detail": "20 cells at --jobs 1, 842 samples at 2 ms: peak 1 file(s) and 2944395 bytes on disk, against the largest of the same sweep's 20 streams at 2944395 bytes (smallest 2373619)"
+  },
+  {
+   "case": "B27/P2 batch determinism under --jobs 1 and --jobs 4",
+   "ok": true,
+   "detail": "--jobs 4 produced byte-identical retained output to --jobs 1 over the same eight cells"
+  },
+  {
+   "case": "P2 a row is a function of its cell, across build profiles",
+   "ok": true,
+   "detail": "the debug build's eight rows are identical to the release build's; the sweep record states binary_profile 'debug'"
+  },
+  {
+   "case": "Q1 exactly one class, traceable to its clause",
+   "ok": true,
+   "detail": "status 0, 8 classified rows, disagreements with the independent classifier none"
+  }
+ ]
+}

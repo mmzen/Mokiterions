@@ -1,0 +1,77 @@
+Scenario 5: a stream that no longer exists is re-derived from its coordinates alone.
+
+The 400 rows' file has sha256 a22e3e6b678e07b33c9cb13f249d06e353d34e53666c153e5794e18797874cdc.
+Its first 16 hex digits seed a Mersenne twister, which chooses index 133 of 400.
+That row's coordinates are source=reference density=0.25 seed=13, ticks=1000.
+
+The original stream was removed by rule 7.3 when the sweep read it. The cell is re-executed
+from the coordinates, with nothing carried over but the coordinates and the horizon:
+
+  exit                    0
+  fields differing        none
+  stream_sha256 original  edae218a6c75f78b54b626538c33fd3f33fdcdee222820dfa5952c0bba6a77a3
+  stream_sha256 again     edae218a6c75f78b54b626538c33fd3f33fdcdee222820dfa5952c0bba6a77a3
+
+And the re-executed stream is counted from its bytes by this contract's own oracle, so the
+reproduction is not checked against the instrument that produced the claim:
+
+  independent digest      edae218a6c75f78b54b626538c33fd3f33fdcdee222820dfa5952c0bba6a77a3
+  independent bytes       1391113
+  independent records     6235
+  independent attempted   {"attack_resolved": 0, "threat_resolved": 0, "surrender_resolved": 0}
+  independent effective   {"attack_resolved": 0, "threat_resolved": 0, "surrender_resolved": 0}
+  rule 10 equalities      7 of 7 hold
+  oracle faults           none
+
+The whole row, as retained the second time:
+{
+ "record": "cell",
+ "source": "reference",
+ "density": "0.25",
+ "seed": 13,
+ "ticks": 1000,
+ "engine": "0.1.0",
+ "stream_sha256": "edae218a6c75f78b54b626538c33fd3f33fdcdee222820dfa5952c0bba6a77a3",
+ "reason": "tick_limit",
+ "run_ticks": 1000,
+ "roster": 12,
+ "survivors": 3,
+ "deaths": 9,
+ "crossings": 8,
+ "consumed": {
+  "low": 46,
+  "medium": 47,
+  "high": 41
+ },
+ "regenerated": 134,
+ "regeneration_skipped": {
+  "depleted": 0,
+  "capacity": 100
+ },
+ "territories": {
+  "A": {
+   "population": 2,
+   "low": 7,
+   "medium": 4,
+   "high": 9
+  },
+  "B": {
+   "population": 1,
+   "low": 6,
+   "medium": 6,
+   "high": 8
+  }
+ },
+ "attempted": {
+  "attack_resolved": 0,
+  "threat_resolved": 0,
+  "surrender_resolved": 0
+ },
+ "effective": {
+  "attack_resolved": 0,
+  "threat_resolved": 0,
+  "surrender_resolved": 0
+ },
+ "lethal_attacks": 0,
+ "crosschecks_passed": 7
+}

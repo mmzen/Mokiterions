@@ -1,0 +1,65 @@
+Scenario 2: the density axis, and the seed re-measured at twenty seeds.
+
+Class counts per source and density, 20 seeds each.
+
+source      density  extinction  famine  asymmetric_collapse  collapse  coexistence  rows
+----------  -------  ----------  ------  -------------------  --------  -----------  ----
+baseline    0.10     20          0       0                    0         0            20
+baseline    0.25     20          0       0                    0         0            20
+baseline    0.50     20          0       0                    0         0            20
+baseline    0.75     20          0       0                    0         0            20
+baseline    1.00     20          0       0                    0         0            20
+reference   0.10     20          0       0                    0         0            20
+reference   0.25     9           0       6                    4         1            20
+reference   0.50     0           0       1                    9         10           20
+reference   0.75     0           0       0                    1         19           20
+reference   1.00     0           0       0                    0         20           20
+individual  0.10     20          0       0                    0         0            20
+individual  0.25     6           0       8                    6         0            20
+individual  0.50     0           0       1                    6         13           20
+individual  0.75     0           0       0                    0         20           20
+individual  1.00     0           0       0                    1         19           20
+social      0.10     20          0       0                    0         0            20
+social      0.25     6           0       14                   0         0            20
+social      0.50     0           0       2                    9         9            20
+social      0.75     0           0       0                    2         18           20
+social      1.00     0           0       0                    1         19           20
+
+Distinct class-count vectors among the five densities, at fixed source. One would mean
+density moves nothing for that source.
+
+  baseline    1 of 5 distinct
+  reference   5 of 5 distinct
+  individual  5 of 5 distinct
+  social      5 of 5 distinct
+
+A source whose five densities give one vector is at a floor or a ceiling rather than
+indifferent to density, and that is measured rather than argued: the class counts below
+are the whole 100 cells, and the run figures are summed per density, so a source whose
+class is pinned can still be seen to respond.
+
+  baseline    classes over 100 cells [('extinction', 100)]; distinct (deaths, crossings, consumed, ticks) vectors across the five densities: 5 of 5
+
+The seed, at twenty rather than five. WO-MOK-033 stage 2 measured, over 35 runs, that the
+seed varies the figures without changing the class. Re-measured over all 20 groups of 20
+seeds:
+
+  groups whose figures move with the seed        20 of 20
+  groups whose *class* moves with the seed       10 of 20
+
+    individual:0.25: asymmetric_collapse, collapse, extinction
+    individual:0.50: asymmetric_collapse, coexistence, collapse
+    individual:1.00: coexistence, collapse
+    reference:0.25: asymmetric_collapse, coexistence, collapse, extinction
+    reference:0.50: asymmetric_collapse, coexistence, collapse
+    reference:0.75: coexistence, collapse
+    social:0.25: asymmetric_collapse, extinction
+    social:0.50: asymmetric_collapse, coexistence, collapse
+    social:0.75: coexistence, collapse
+    social:1.00: coexistence, collapse
+
+The contract's own words: "whichever way it comes out is recorded -- a reversal at twenty
+seeds is a finding, not a failure". It came out as a reversal: at twenty seeds the seed
+does change the class in some groups, which five seeds did not reach. That is a finding
+about the earlier measurement's reach, not about either instrument, and it is reported
+unrepaired.

@@ -1,0 +1,38 @@
+{
+ "phase": "phase E: performance and resilience",
+ "cases": 6,
+ "failed": [],
+ "entries": [
+  {
+   "case": "The default sweep's cost is measured and reported",
+   "ok": true,
+   "detail": "400 of 400 cells retained at --jobs 1 in 29.226 s against a ~19.0 s prediction, 278734 bytes retained against ~500000, and the classifier scanned them in 0.093 s against a ~16.0 s prediction, on Windows-11-10.0.26200-SP0",
+   "note": "The scanning prediction is the divergence, and it is a finding about the extrapolation rather than about the instrument. ADR-MOK-008's ~16 s is the cost of scanning 400 full event streams, which is what the throwaway script did; the instrument as specified scans each stream once inside the batch, as part of the cell, and the classifier then reads only the retained rows. So the ~16 s is inside the batch figure and the classifier's own cost is three orders of magnitude below the prediction. The prediction was of a different design, not of this one."
+  },
+  {
+   "case": "P5 peak disk is one stream, over the default sweep",
+   "ok": true,
+   "detail": "over 11401 samples of the stream directory at 2 ms during a 400-cell batch, at most 1 file(s) existed at once and the peak was 2961956 bytes -- against a whole sweep of roughly 1200000000 bytes -- and the directory is empty afterwards at both job counts"
+  },
+  {
+   "case": "B3, B27 and P2 hold under --jobs 4 on the default sweep",
+   "ok": true,
+   "detail": "the 400-cell default sweep at --jobs 4 produced output byte-identical to --jobs 1 (a22e3e6b678e07b3..., 278734 bytes) in 18.464 s against 29.226 s, with at most 4 concurrent streams and peak 8760101 bytes"
+  },
+  {
+   "case": "Scanning cost is linear in stream bytes",
+   "ok": true,
+   "detail": "with the 0.195 s per-cell constant measured on a 58244-byte stream and subtracted, the marginal cost is 0.02279 s per megabyte at 1,000 ticks and 0.02147 at 4,000 -- a spread of 1.06x over a 3.17x change in stream size, where a quadratic scan would have put them 3.17x apart"
+  },
+  {
+   "case": "A long run, and the driver's memory high-water",
+   "ok": true,
+   "detail": "one 12,000-tick cell produced a 12346617-byte stream, 4.53x ADR-MOK-008's measured 2,723,014, in 0.517 s -- the run ended at 9801 ticks by extinction; the batch's own peak working set was 34144256 bytes over 25 samples against 27013120 at 1,000 ticks, which is 0.7148 per added stream byte. In isolation scan_file added 0.0225 per byte at 2370203, 0.0146 per byte at 12346617, 0.0023 per byte at 24693234 -- a falling share of a growing stream, so the file is scanned and not held"
+  },
+  {
+   "case": "Interruption",
+   "ok": true,
+   "detail": "a 80-cell batch interrupted 3 s in exited 3 having written its sweep and batch records and 41 cell records; 39 cells are named not_attempted, completeness is False, missing by stage is {'not_attempted': 39}, and 0 stream(s) remain on disk; faults none"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+25 retained outputs scanned, 998784 bytes, occurrences of /retreat/i: none
+
+SPEC-MOK-001's resolved-event vocabulary (4 kinds):
+  attack_resolved encounter_resolved surrender_resolved threat_resolved
+  retreat_resolved present: False
+
+SPEC-MOK-001's targeted actions, as the specification names them (7):
+  approach attack avoid fight retreat surrender threaten
+  retreat present as an action: True
+
+event kinds the engine actually emitted, over 8 real streams (14 kinds):
+  agent_died agent_initialized attack_resolved decision_source_selected food_consumed food_initialized food_regenerated food_regeneration_skipped simulation_ended surrender_resolved survival_changed territory_crossed threat_resolved world_initialized
+  any kind naming retreat: none
+
+SPEC-MOK-001 against c90edc9: 0 bytes of diff
+
+docs/ROADMAP.md, searched for retreat:
+HEAD:docs/ROADMAP.md:93:- The seven targeted actions `attack`, `fight`, `threaten`, `surrender`, `approach`, `avoid`, `retreat`, each with
+HEAD:docs/ROADMAP.md:782:**Goal.** Complete the action contract: `approach`, `avoid`, `threaten`, `attack`, `fight`, `retreat`,

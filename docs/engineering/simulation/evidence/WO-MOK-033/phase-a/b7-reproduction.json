@@ -1,0 +1,50 @@
+[
+ {
+  "cell": "reference:0.50:0",
+  "retained": "a74d388c532658d3d42498bcad559c6e2e1c9eed80f3c3ecd31378350c856c94",
+  "release": "a74d388c532658d3d42498bcad559c6e2e1c9eed80f3c3ecd31378350c856c94",
+  "debug": "a74d388c532658d3d42498bcad559c6e2e1c9eed80f3c3ecd31378350c856c94"
+ },
+ {
+  "cell": "reference:0.50:1",
+  "retained": "1f37b1df372176476e40753e0758809672d4303defb2251eeb0e991d7d6012f8",
+  "release": "1f37b1df372176476e40753e0758809672d4303defb2251eeb0e991d7d6012f8",
+  "debug": "1f37b1df372176476e40753e0758809672d4303defb2251eeb0e991d7d6012f8"
+ },
+ {
+  "cell": "reference:0.75:0",
+  "retained": "8c0580b828d363b4d74486339241cf1d403c2e255f3b85abfec5ddaab9dcbd21",
+  "release": "8c0580b828d363b4d74486339241cf1d403c2e255f3b85abfec5ddaab9dcbd21",
+  "debug": "8c0580b828d363b4d74486339241cf1d403c2e255f3b85abfec5ddaab9dcbd21"
+ },
+ {
+  "cell": "reference:0.75:1",
+  "retained": "7b00beda7b44da7f4ad292cb5b908bfe2f560d9394e64ce859ced3a74cc7ae0a",
+  "release": "7b00beda7b44da7f4ad292cb5b908bfe2f560d9394e64ce859ced3a74cc7ae0a",
+  "debug": "7b00beda7b44da7f4ad292cb5b908bfe2f560d9394e64ce859ced3a74cc7ae0a"
+ },
+ {
+  "cell": "social:0.50:0",
+  "retained": "8b5cc313892c081020129e8a7d2cd7f31ea436540c96b13fe82eb4a05d229458",
+  "release": "8b5cc313892c081020129e8a7d2cd7f31ea436540c96b13fe82eb4a05d229458",
+  "debug": "8b5cc313892c081020129e8a7d2cd7f31ea436540c96b13fe82eb4a05d229458"
+ },
+ {
+  "cell": "social:0.50:1",
+  "retained": "3f3272676a044695cae77e57260dbccad61f927310b9522779b6540e11ff722d",
+  "release": "3f3272676a044695cae77e57260dbccad61f927310b9522779b6540e11ff722d",
+  "debug": "3f3272676a044695cae77e57260dbccad61f927310b9522779b6540e11ff722d"
+ },
+ {
+  "cell": "social:0.75:0",
+  "retained": "76e49b24e55b3311fff01431a0d2cb81a689c738de598d7c0f77469b50a2c03c",
+  "release": "76e49b24e55b3311fff01431a0d2cb81a689c738de598d7c0f77469b50a2c03c",
+  "debug": "76e49b24e55b3311fff01431a0d2cb81a689c738de598d7c0f77469b50a2c03c"
+ },
+ {
+  "cell": "social:0.75:1",
+  "retained": "0e6dd3cb052b0b4b94152bf6bc68bccfcf01952276ec3c2606c80963571b7dc4",
+  "release": "0e6dd3cb052b0b4b94152bf6bc68bccfcf01952276ec3c2606c80963571b7dc4",
+  "debug": "0e6dd3cb052b0b4b94152bf6bc68bccfcf01952276ec3c2606c80963571b7dc4"
+ }
+]

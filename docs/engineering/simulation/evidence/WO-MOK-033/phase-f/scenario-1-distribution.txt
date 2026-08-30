@@ -1,0 +1,33 @@
+Scenario 1: a distribution that discriminates, over the 400-cell default sweep.
+
+Class counts per source, 100 cells each. Grouped by source alone, which is not the
+classifier's default grouping and is asked for here because the scenario is about the
+sources.
+
+source      extinction  famine  asymmetric_collapse  collapse  coexistence  survivors med  deaths med
+----------  ----------  ------  -------------------  --------  -----------  -------------  ----------
+baseline    100         0       0                    0         0            0              12
+reference   29          0       7                    14        50           6              5
+individual  26          0       9                    13        52           7              5
+social      26          0       16                   12        46           6              6
+
+The same 400 rows classified again by this contract's own straight-line reading of rule
+16.5's five clauses in order: 0 disagreement(s) with the classifier.
+Both class and clause number are compared, so a row reaching the right class by the wrong
+clause is a disagreement.
+
+  oracle baseline    {"extinction": 100, "famine": 0, "asymmetric_collapse": 0, "collapse": 0, "coexistence": 0}
+  oracle reference   {"extinction": 29, "famine": 0, "asymmetric_collapse": 7, "collapse": 14, "coexistence": 50}
+  oracle individual  {"extinction": 26, "famine": 0, "asymmetric_collapse": 9, "collapse": 13, "coexistence": 52}
+  oracle social      {"extinction": 26, "famine": 0, "asymmetric_collapse": 16, "collapse": 12, "coexistence": 46}
+
+Direction, against what the approved artifacts already say. None of these is a pass
+condition: SPEC-MOK-008 rule 17.7 forbids a passing shape, and the contract requires the
+distribution to be legible rather than to come out any particular way.
+
+  SPEC-MOK-001's data-and-interface paragraph: none of the three conflict events ever appears under baseline, reference or individual, because no targeted verb is proposed there
+    measured: attempted totals are {"baseline": {"attack_resolved": 0, "threat_resolved": 0, "surrender_resolved": 0}, "reference": {"attack_resolved": 0, "threat_resolved": 0, "surrender_resolved": 0}, "individual": {"attack_resolved": 0, "threat_resolved": 0, "surrender_resolved": 0}, "social": {"attack_resolved": 892, "threat_resolved": 7701, "surrender_resolved": 569}}; the sources with none at all are ['baseline', 'reference', 'individual']
+  baseline selects uniformly over rule 4's candidate list and does not seek food, so it should fare worse than the three sources that do
+    measured: survivors summed over 100 cells per source: {"baseline": 0, "reference": 529, "individual": 534, "social": 501}; extinctions: {"baseline": 100, "reference": 29, "individual": 26, "social": 26}
+  REQ-MOK-058 states a survivor floor for social three below REQ-MOK-014's for the default, so social should not outlive reference
+    measured: reference 529 survivors against social 501, which holds

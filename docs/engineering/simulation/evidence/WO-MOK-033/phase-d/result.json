@@ -1,0 +1,86 @@
+{
+ "phase": "phase D: static, architecture, security and privacy",
+ "cases": 15,
+ "failed": [],
+ "entries": [
+  {
+   "case": "T1 no third package",
+   "ok": true,
+   "detail": "workspace members ['mokiterions-core', 'mokiterions-tui']; the root manifest is byte-identical to c90edc9's; 3 Cargo.toml files exist in the tree and they are ['Cargo.toml', 'mokiterions-core/Cargo.toml', 'mokiterions-tui/Cargo.toml']"
+  },
+  {
+   "case": "T1 the structural census is unchanged",
+   "ok": true,
+   "detail": "40 paths under rule 1's layout, blob for blob identical to c90edc9, with the worktree clean over all of them: engine src 4 files, engine tests 13, observer src 10, observer tests 9",
+   "note": "Rule 1's layout sketch says the engine's tests are five files and the observer's eight. The tree carries more, and every arrival is recorded in that specification's own amendment record, which took the engine's and the observer's public-tier target counts to nine each under SPEC-MOK-002 rule 8's closing sentence. The divergence between the sketch and the tree predates this work order by six commits and is not caused by it; what T1 measures is identity with the base, which holds."
+  },
+  {
+   "case": "T2 no product file is touched",
+   "ok": true,
+   "detail": "16 paths differ from c90edc9 or are untracked -- ['docs/engineering/simulation/architecture/adr/ADR-MOK-008.md', 'docs/engineering/simulation/capabilities/CAP-MOK-012.md', 'docs/engineering/simulation/intent/INT-MOK-012.md', 'docs/engineering/simulation/requirements/REQ-MOK-078.md', 'docs/engineering/simulation/requirements/REQ-MOK-079.md', 'docs/engineering/simulation/requirements/REQ-MOK-080.md', 'docs/engineering/simulation/requirements/REQ-MOK-081.md', 'docs/engineering/simulation/requirements/REQ-MOK-082.md', 'docs/engineering/simulation/requirements/REQ-MOK-083.md', 'docs/engineering/simulation/specifications/SPEC-MOK-008.md', 'docs/engineering/simulation/verification/VER-MOK-019.md', 'docs/engineering/simulation/work-orders/WO-MOK-033.md', 'scripts/classify_simulation_runs.py', 'scripts/run_simulation_batch.py', 'scripts/test_classify_simulation_runs.py', 'scripts/test_run_simulation_batch.py'] -- and none is under either package's src/, either Cargo.toml, the root Cargo.toml or Cargo.lock; offenders none"
+  },
+  {
+   "case": "T3 the schema is still 3",
+   "ok": true,
+   "detail": "a freshly produced stream's first record is a header stating schema 3, and SPEC-MOK-006 is byte-identical to c90edc9 (0 bytes of diff)"
+  },
+  {
+   "case": "T3 an existing bound record-stream digest reproduces",
+   "ok": true,
+   "detail": "both record-stream digests WO-MOK-025's evidence binds reproduce at this candidate, with their byte counts, and so do the two standard-output digests above them; faults none"
+  },
+  {
+   "case": "T4 declared dependency sets unchanged",
+   "ok": true,
+   "detail": "scripts/check_declared_dependencies.py exited 0; every dependency table of both package manifests is byte-identical to c90edc9's, and the declared sets are {'mokiterions-core': [], 'mokiterions-tui': ['Mokiterions', 'ratatui']}"
+  },
+  {
+   "case": "T5 standard library only",
+   "ok": true,
+   "detail": "every import of all four files resolves to the running interpreter's own standard module set: 43 import names over 4 files, foreign none"
+  },
+  {
+   "case": "T6 the instruments are not targets",
+   "ok": true,
+   "detail": "neither instrument is named by any of the three Cargo.toml files, and the target census reads 25 targets, none of them a Python file; findings none (with 3 pre-existing comment reference(s) to the declared-dependency checker, retained above)",
+   "note": "The census is enumerated at the candidate and shown unchanged by the byte-identity of every input that determines it -- both package manifests, the root manifest and every file under either package's src/ and tests/ -- which T1's blob-digest census establishes against the base. That is a substitution for diffing two `cargo metadata` outputs, and a stronger one: a manifest edit that left the target list identical would pass the diff and fail T1. VER-MOK-019 cites SPEC-MOK-002 rule 5 for the census; that rule records the library target's authorized public interface rather than a target list, so the enumeration is taken from cargo itself and the discrepancy is recorded rather than resolved by reinterpreting the bullet."
+  },
+  {
+   "case": "T7 nothing writes into governance",
+   "ok": true,
+   "detail": "a batch whose --out named a path under docs/engineering/ exited 2 and created nothing; 1 occurrence(s) of a governance path in the two instruments, all of them refusal conditions rather than write paths, and 0 on a write call"
+  },
+  {
+   "case": "T8 no retreat field is synthesised",
+   "ok": true,
+   "detail": "no retained byte of 25 outputs (998784 bytes) contains a field or value named for retreat; SPEC-MOK-001's resolved-event vocabulary is ['attack_resolved', 'encounter_resolved', 'surrender_resolved', 'threat_resolved'] and declares no retreat_resolved; and the engine emitted 14 kinds over the real streams, none of them naming retreat",
+   "note": "The measured gap, and it is sharper than the word being absent: `retreat` is one of SPEC-MOK-001's seven targeted actions and the specification's 2026-08-20 amendment discusses when rule 26 selects it, but the resolved-event vocabulary carries no retreat_resolved kind, and none was emitted in any real stream measured. So an outcome the engine can produce leaves no record any instrument could count, and docs/ROADMAP.md's Phase 6 wording -- which speaks of what agents do when threatened -- has no measurable counterpart for that verb. Recorded as a gap rather than repaired: synthesising a retreat figure from the three kinds that do exist is exactly the fabrication rule 8.7 and case B22 forbid, and adding an event kind is an amendment to an approved specification, which WO-MOK-033 stop-and-escalate condition 6 forbids on an implementation agent's judgement."
+  },
+  {
+   "case": "T9 integers only",
+   "ok": true,
+   "detail": "25 retained outputs and 4 classifier JSON outputs carry no float value and no unquoted decimal; density is carried as the engine's own string; findings none"
+  },
+  {
+   "case": "No credential, and no path by which one could arrive",
+   "ok": true,
+   "detail": "neither instrument contains an environment read (0 findings); a batch run with a decoy variable named OPENAI_API_KEY exited 0 and the decoy appears in no retained byte, neither of the batch's streams, and no classifier output; leaks none"
+  },
+  {
+   "case": "No provider is reachable",
+   "ok": true,
+   "detail": "no network-capable module is imported by any of the four files; a four-cell batch and a classifier run completed under a guard that raises on any socket creation (exits 0 and 0, no breach recorded), and the guard is reachable -- a bare socket() under the same environment exits 1 and does record a breach"
+  },
+  {
+   "case": "Rule 4.4 passes no connector, credential or live selection",
+   "ok": true,
+   "detail": "4 child invocations captured from the child's own side; the whole option set is ['--density', '--events-path', '--policy', '--seed', '--ticks'], none of it a connector, price, ceiling, transcript or credential option, and the child's environment adds nothing to the operator's (nothing, excluding cmd.exe's own ['PROMPT'])"
+  },
+  {
+   "case": "Lint, format and the product's own gates",
+   "ok": true,
+   "detail": "py_compile clean on all four files; the two instrument suites and cargo clippy, cargo fmt --check and cargo test --locked --workspace all exited 0; {'test_run_simulation_batch.py': ['OK'], 'test_classify_simulation_runs.py': ['OK'], 'cargo test': ['test result: ok. 173 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 6.73s', 'test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s', 'test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s', 'test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s', 'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s', 'test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s', 'test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s', 'test result: ok. 19 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.66s', 'test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s', 'test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.33s', 'test result: ok. 59 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.63s', 'test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s', 'test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s', 'test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s', 'test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s', 'test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s', 'test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.25s', 'test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', 'test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s']}; faults none",
+   "note": "The repository declares no Python linter or formatter -- no ruff, flake8, black or setup.cfg configuration exists, and the two workflows that run Python run scripts and their test files directly. So `the repository's existing Python checks` are met by byte-compiling all four files and executing both suites, which is what those workflows do for the other scripts under scripts/. Recorded as a substitution rather than as the bullet as written."
+  }
+ ]
+}

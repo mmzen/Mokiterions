@@ -1,0 +1,57 @@
+Captures over 400,000 bytes: not committed, stated instead
+
+Each is an engine record stream or a scan input produced by a retained phase script. A packet
+is read by a person; 141 MB of streams is not read. Each line is the path the phase wrote, the
+byte count, the sha256 of the bytes as written, and the count of newline bytes. Reproduce any of
+them by running the phase script that names it -- the streams are deterministic in the engine's
+seed, which is what phase A case B7 measures.
+
+40 files, 141111666 bytes withheld.
+
+bytes        lines     sha256                                                            path
+5213088      21469     e951cd0d67a157a26c80446655012038d8e26a5bed5e596a278503827bdcd584  phase-a/b18-traced.jsonl
+2473110      11647     a74d388c532658d3d42498bcad559c6e2e1c9eed80f3c3ecd31378350c856c94  phase-a/b2-hand-1.jsonl
+2473110      11647     a74d388c532658d3d42498bcad559c6e2e1c9eed80f3c3ecd31378350c856c94  phase-a/b2-hand-2.jsonl
+2473110      11647     0421a20b5d924f4ea76cccc07a0cbdc18e9a821b7c57dea31f8ef995fbe10144  phase-a/b9-altered.jsonl
+2324016      10932     0e6dd3cb052b0b4b94152bf6bc68bccfcf01952276ec3c2606c80963571b7dc4  phase-a/repro-debug.jsonl
+2324016      10932     0e6dd3cb052b0b4b94152bf6bc68bccfcf01952276ec3c2606c80963571b7dc4  phase-a/repro-release.jsonl
+2526352      11908     8c0580b828d363b4d74486339241cf1d403c2e255f3b85abfec5ddaab9dcbd21  phase-a/streams-peak-sizes/kept-reference-0.75-0.jsonl
+2611307      12357     7b00beda7b44da7f4ad292cb5b908bfe2f560d9394e64ce859ced3a74cc7ae0a  phase-a/streams-peak-sizes/kept-reference-0.75-1.jsonl
+2475296      11649     d6980699dc532ffc2fa3e5066e31b244be5906ed7e8c4a9f2f964830828cee12  phase-a/streams-peak-sizes/kept-reference-0.75-10.jsonl
+2640063      12479     b0876acad2c7dc717c2f98aa88e42835616392dd8ddafd3644470e495824ff68  phase-a/streams-peak-sizes/kept-reference-0.75-11.jsonl
+2580645      12169     0689042a605efbfc8be94d8b676ff047a390dc3f37b3f2c4b5603d178b0206a6  phase-a/streams-peak-sizes/kept-reference-0.75-12.jsonl
+2733880      12949     90dad1033e6a361a4ab83cdb9d1bdfa3250429b952d7a8fda681708552733243  phase-a/streams-peak-sizes/kept-reference-0.75-13.jsonl
+2944395      14027     0843d9a3f8f016048384eaecd4ea368d6a0cd8dcbb6bf5fdff31d67e76aef06f  phase-a/streams-peak-sizes/kept-reference-0.75-14.jsonl
+2589294      12223     538982cd3a7635aa5b9c76153c4c4364afd6c768135a2733c2d0a15e96772b6c  phase-a/streams-peak-sizes/kept-reference-0.75-15.jsonl
+2752415      13055     4c5373fcc98d207b00cb858488f0efa6f681610a7504a51a9fec4c6311111e1f  phase-a/streams-peak-sizes/kept-reference-0.75-16.jsonl
+2705723      12825     0c5c6473b91baecd4fe2a5c7682b904cee523fcf38a35869e0c03784d015f898  phase-a/streams-peak-sizes/kept-reference-0.75-17.jsonl
+2862425      13573     8144c583a8ec5750c51011e62b302a8646b2a06623b4b59e8b0fbc911990e3ed  phase-a/streams-peak-sizes/kept-reference-0.75-18.jsonl
+2873015      13640     472f8c112439788ad9aa749d80df283256812cd3151fa41af4730a22274e9012  phase-a/streams-peak-sizes/kept-reference-0.75-19.jsonl
+2629378      12417     9ec89d495a9ae7734e5390ac35c1ecf4b84718f779617e32259fabaafea2f615  phase-a/streams-peak-sizes/kept-reference-0.75-2.jsonl
+2641182      12492     91d7f96098b7fa52022ad38eeaaa663a45bde435d3c54d9c3550cb3ba2c08b55  phase-a/streams-peak-sizes/kept-reference-0.75-3.jsonl
+2696370      12779     42e0a406862f70df15121310a4c00d849ffde4eedb3000f6e7d2f1216955c9de  phase-a/streams-peak-sizes/kept-reference-0.75-4.jsonl
+2373619      11150     555375cc45463367f233391d12d87246829b96d5b662bb92afc1630c6ddb2603  phase-a/streams-peak-sizes/kept-reference-0.75-5.jsonl
+2636489      12468     a9b75064274ce437e8d92271f7238bf0d0a8695333c74893e8973fed156d4e40  phase-a/streams-peak-sizes/kept-reference-0.75-6.jsonl
+2853752      13563     958a0513663c4f984ed2f2874d83dff13a9edf561de13e0876106d2637085879  phase-a/streams-peak-sizes/kept-reference-0.75-7.jsonl
+2706842      12818     2b07f8a9e3382e4e79c01e7f8c60b30fae55a219cb8f107f261cca2f56b1c5d9  phase-a/streams-peak-sizes/kept-reference-0.75-8.jsonl
+2744249      12995     25bbf36d52b514931040fd60cd1948c781be01bab25669472db4b521bb95e359  phase-a/streams-peak-sizes/kept-reference-0.75-9.jsonl
+2473110      11647     a74d388c532658d3d42498bcad559c6e2e1c9eed80f3c3ecd31378350c856c94  phase-a/streams/kept-reference-0.50-0.jsonl
+2180529      10184     1f37b1df372176476e40753e0758809672d4303defb2251eeb0e991d7d6012f8  phase-a/streams/kept-reference-0.50-1.jsonl
+2526352      11908     8c0580b828d363b4d74486339241cf1d403c2e255f3b85abfec5ddaab9dcbd21  phase-a/streams/kept-reference-0.75-0.jsonl
+2611307      12357     7b00beda7b44da7f4ad292cb5b908bfe2f560d9394e64ce859ced3a74cc7ae0a  phase-a/streams/kept-reference-0.75-1.jsonl
+2082353      9727      8b5cc313892c081020129e8a7d2cd7f31ea436540c96b13fe82eb4a05d229458  phase-a/streams/kept-social-0.50-0.jsonl
+2646881      12540     3f3272676a044695cae77e57260dbccad61f927310b9522779b6540e11ff722d  phase-a/streams/kept-social-0.50-1.jsonl
+2723014      12961     76e49b24e55b3311fff01431a0d2cb81a689c738de598d7c0f77469b50a2c03c  phase-a/streams/kept-social-0.75-0.jsonl
+2324016      10932     0e6dd3cb052b0b4b94152bf6bc68bccfcf01952276ec3c2606c80963571b7dc4  phase-a/streams/kept-social-0.75-1.jsonl
+24693234     108494    94da4ae62c785ee16c6c2cf7e6416c3642364aaf726a3d82ef0b34b3a9db947c  phase-e/doubled-stream.jsonl
+2370203      11199     b5bcbbd30e90fe96ae6b3547894608b2095ff370492f5f7987018fa97c0424ad  phase-e/scan-stream-1000.jsonl
+7515593      34635     501f99dfb60b5861fe179ab1b677b513d423526b3351e33b5e8770d01200106d  phase-e/scan-stream-4000.jsonl
+2370203      11199     b5bcbbd30e90fe96ae6b3547894608b2095ff370492f5f7987018fa97c0424ad  phase-e/streams-long-1000/kept-social-1.00-0.jsonl
+12346617     54247     9f5a9f369d053e9e67ccde3caf08986208839c593733e110e04eee325438e8ed  phase-e/streams-long-12000/kept-social-1.00-0.jsonl
+1391113      6235      edae218a6c75f78b54b626538c33fd3f33fdcdee222820dfa5952c0bba6a77a3  phase-f/rederive-streams/kept-reference-0.25-13.jsonl
+
+Excluded from this packet for a different reason, from the working tree's own root:
+  default-sweep.jsonl: byte-identical to phase-f/default-sweep.jsonl; the fact is kept, the duplicate is not
+  default-sweep.log: the standard output of that duplicate run
+  dist-source-density.json: produced before rule 9.6's attempted-and-effective split existed, so not a reading at the candidate
+  dist-source-density.md: same, in the markdown form

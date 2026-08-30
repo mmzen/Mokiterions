@@ -1,0 +1,16 @@
+status 0
+--- stdout ---
+engine binary: C:\Users\mathi\Mokiterions-understand-20260829-1340\target\release\Mokiterions.exe (release)
+temporary stream directory: C:/Users/mathi/mok-scratch/ver019/phase-a/streams
+kept stream for reference:0.50:0 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-reference-0.50-0.jsonl
+kept stream for reference:0.50:1 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-reference-0.50-1.jsonl
+kept stream for reference:0.75:0 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-reference-0.75-0.jsonl
+kept stream for reference:0.75:1 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-reference-0.75-1.jsonl
+kept stream for social:0.50:0 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-social-0.50-0.jsonl
+kept stream for social:0.50:1 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-social-0.50-1.jsonl
+kept stream for social:0.75:0 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-social-0.75-0.jsonl
+kept stream for social:0.75:1 at C:/Users/mathi/mok-scratch/ver019/phase-a/streams\kept-social-0.75-1.jsonl
+retained 8 of 8 cells in C:/Users/mathi/mok-scratch/ver019/phase-a/b1.jsonl
+
+--- stderr ---
+

@@ -1,0 +1,28 @@
+1. Environment reads in either instrument, statically:
+   none
+
+2. A decoy variable named OPENAI_API_KEY, and a second named MOK_DECOY_NOT_A_CREDENTIAL,
+   set in the batch's environment. The value is a self-describing decoy; its sha256 is
+   dc3ab5c85504d62441ded268a3d2cec9392028c6e4cf6a38dc2dda23bdd16d3a and it is 55 characters. The batch exited
+   0 and retained 3062 bytes.
+   Occurrences of the value or of either variable name in the retained output, in either
+   of the batch's streams, or in the classifier's output: none
+
+3. Network-capable imports in the two instruments and their two test files: none
+   A four-cell batch and a classifier run, both under a sitecustomize that raises on any
+   socket creation: batch exit 0, classifier exit 0, breach log
+   absent after both.
+   The guard is reachable: `import socket; socket.socket()` under the same environment
+   exits 1 with ['RuntimeError: VER-MOK-019 socket guard: socket.socket was called'], and
+   the breach log is present after it -- so the absence
+   above is the instruments not opening a socket, not the guard failing to load.
+
+4. Rule 4.4's vector, captured by the child rather than read off the driver's source.
+   4 invocations, option flags ['--density', '--events-path', '--policy', '--seed', '--ticks'].
+   Options matching a live-run or credential name: none.
+   Variables in the child's environment that are not in the operator's: none,
+   excluding cmd.exe's own ['PROMPT'], which the .bat stand-in introduces.
+
+5. No live selection: no case in this contract passes --policy llm to a sweep other than
+   B5, which requires the refusal, and no case supplies a connector or a credential.
+   REQ-MOK-072 is untouched by this contract.

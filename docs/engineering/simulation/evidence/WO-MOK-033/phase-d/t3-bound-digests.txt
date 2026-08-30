@@ -1,0 +1,8 @@
+WO-MOK-025 candidate/replay-identity.txt:132's two record streams, and the two standard
+outputs above them, reproduced at this candidate from the committed transcript.
+
+cell           sha256                                                             bytes
+traceon sink   467e02feddd3468574e7df77d2881ac0f21b54fea10265e54dfa0d8ef2874557   139638  recorded 467e02feddd3468574e7df77d2881ac0f21b54fea10265e54dfa0d8ef2874557   139638
+traceon stdout e35cc3a107a2abaa1885a1c2e423fc98e842438b2800f66deb2066d83c035772    78315  recorded e35cc3a107a2abaa1885a1c2e423fc98e842438b2800f66deb2066d83c035772    78315
+traceoff sink   15c22de2e82e53cf271e789877d88dd7cafbe35dfaf76118a6b76326e67e06ad    77820  recorded 15c22de2e82e53cf271e789877d88dd7cafbe35dfaf76118a6b76326e67e06ad    77820
+traceoff stdout a9c1da0d05378c83964dd7cdc09776a627c94c934a98ce8b88b07380319932b5    39543  recorded a9c1da0d05378c83964dd7cdc09776a627c94c934a98ce8b88b07380319932b5    39543

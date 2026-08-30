@@ -1,0 +1,386 @@
+[
+ {
+  "cell": "reference:0.50:0",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 25,
+    "right": 25,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 7,
+    "right": 7,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 339,
+    "right": 339,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 339,
+    "right": 339,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 18,
+    "right": 18,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "reference:0.50:1",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 51,
+    "right": 51,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 9,
+    "right": 9,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 275,
+    "right": 275,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 275,
+    "right": 275,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 37,
+    "right": 37,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "reference:0.75:0",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 37,
+    "right": 37,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 4,
+    "right": 4,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 361,
+    "right": 361,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 356,
+    "right": 356,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 10,
+    "right": 10,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "reference:0.75:1",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 51,
+    "right": 51,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 3,
+    "right": 3,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 387,
+    "right": 387,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 380,
+    "right": 380,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 5,
+    "right": 5,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "social:0.50:0",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 5,
+    "right": 5,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 300,
+    "right": 300,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 300,
+    "right": 300,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 24,
+    "right": 24,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "social:0.50:1",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 17,
+    "right": 17,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 6,
+    "right": 6,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 367,
+    "right": 367,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 367,
+    "right": 367,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 10,
+    "right": 10,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "social:0.75:0",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 35,
+    "right": 35,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 3,
+    "right": 3,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 408,
+    "right": 408,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 391,
+    "right": 391,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 4,
+    "right": 4,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ },
+ {
+  "cell": "social:0.75:1",
+  "instrument_crosschecks_passed": 7,
+  "oracle": [
+   {
+    "check": "territory_crossed = crossings",
+    "left": 27,
+    "right": 27,
+    "equal": true
+   },
+   {
+    "check": "agent_died = deaths",
+    "left": 5,
+    "right": 5,
+    "equal": true
+   },
+   {
+    "check": "food_consumed = consumed sum",
+    "left": 343,
+    "right": 343,
+    "equal": true
+   },
+   {
+    "check": "food_regenerated = regenerated",
+    "left": 343,
+    "right": 343,
+    "equal": true
+   },
+   {
+    "check": "food_regeneration_skipped = skipped sum",
+    "left": 11,
+    "right": 11,
+    "equal": true
+   },
+   {
+    "check": "agent_initialized = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   },
+   {
+    "check": "survivors + deaths = agents length",
+    "left": 12,
+    "right": 12,
+    "equal": true
+   }
+  ]
+ }
+]

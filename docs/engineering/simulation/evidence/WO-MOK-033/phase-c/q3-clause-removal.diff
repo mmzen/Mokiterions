@@ -1,0 +1,4 @@
+--- scripts/classify_simulation_runs.py (before)
++++ scripts/classify_simulation_runs.py (after: clause 5 removed from the definitions)
+-("coexistence", is_coexistence),
++(removed)

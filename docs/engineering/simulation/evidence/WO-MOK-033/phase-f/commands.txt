@@ -1,0 +1,8 @@
+The commands that produced every file in this directory, in order, run from the repository
+root with the release binary resolved by the driver's own rule 3.
+
+python scripts\run_simulation_batch.py --out C:/Users/mathi/mok-scratch/ver019/phase-f/default-sweep.jsonl --stream-dir C:/Users/mathi/mok-scratch/ver019/phase-f/streams   -> exit 0
+python scripts\classify_simulation_runs.py default-sweep.jsonl --group-by source --format json   -> exit 0, 69849 bytes, kept as distribution-source.json
+python scripts\classify_simulation_runs.py default-sweep.jsonl --group-by source --format markdown   -> exit 0, 1737 bytes, kept as distribution-source.md
+python scripts\classify_simulation_runs.py default-sweep.jsonl --group-by source,density --format json   -> exit 0, 85847 bytes, kept as distribution-source-density.json
+python scripts\classify_simulation_runs.py default-sweep.jsonl --group-by source,density --format markdown   -> exit 0, 4817 bytes, kept as distribution-source-density.md

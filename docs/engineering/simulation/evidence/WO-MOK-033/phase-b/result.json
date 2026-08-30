@@ -1,0 +1,89 @@
+{
+ "phase": "phase B: refusals and incompleteness",
+ "cases": 16,
+ "failed": [],
+ "entries": [
+  {
+   "case": "B17 the seven cross-checks bite",
+   "ok": true,
+   "detail": "status 3, 7 fixtures each breaking one equality by one produced 0 rows and 7 refusals at stage crosscheck; faults none"
+  },
+  {
+   "case": "B13 an ineffective conflict counts as attempted and not as effective",
+   "ok": true,
+   "detail": "damage 0, increase 0 and transferred 0 each gave attempted 1 and effective 0; faults none"
+  },
+  {
+   "case": "B14 a lethal attack reports 1, 1 and 1",
+   "ok": true,
+   "detail": "attempted 1, effective 1, lethal_attacks 1"
+  },
+  {
+   "case": "B15 zero is stated, not omitted",
+   "ok": true,
+   "detail": "every row states all three kinds in both maps; faults none"
+  },
+  {
+   "case": "B19 incompleteness is per-cell",
+   "ok": true,
+   "detail": "status 3, requested 60, retained 57, complete False, 3 named by full coordinates with a stage and a reason; faults none"
+  },
+  {
+   "case": "B20 three failure stages, distinguishable",
+   "ok": true,
+   "detail": "stages produced here: ['derive', 'read', 'run']; reasons: derive=could not derive the row: 'final'; read=could not read the record stream: [Errno 2] No such file or directory:; run=engine exited 2: error: --density must leave at least one resource per",
+   "note": "B20's remaining three stages: `crosscheck` is B17 above, `not_attempted` is phase E's interruption, and `refused` is unreachable through the command line -- rule 4.2 refuses a live source at the sweep level with status 2 before any cell executes, so rule 12.3's per-cell `refused` stage cannot be produced by any invocation. Disclosed as a specification gap; the driver's own suite reaches it through the module."
+  },
+  {
+   "case": "B21 the engine's own words, byte for byte",
+   "ok": true,
+   "detail": "reason is 'engine exited 2: error: --density must leave at least one resource per territory\\nUsage: Mokiterions [--seed <number>] [--ticks <number>]\\n'; the child's standard error appears unaltered, including its newlines and its usage line"
+  },
+  {
+   "case": "B22 nothing is fabricated",
+   "ok": true,
+   "detail": "no row exists at the 3 failed coordinates (confirmed absent); no coordinate appears twice (confirmed); cell record count 57 equals retained 57"
+  },
+  {
+   "case": "B26 partial rows survive",
+   "ok": true,
+   "detail": "all 57 surviving rows classified, 0 unclassified; none was discarded because another cell failed"
+  },
+  {
+   "case": "Q16 the distribution carries the incompleteness",
+   "ok": true,
+   "detail": "machine-readable report states complete false, requested 60, retained 57, missing 3; the rendering carries the incompleteness above the figures"
+  },
+  {
+   "case": "Scenario 4 an axis value lost at one end",
+   "ok": true,
+   "detail": "density 0.10 is stated in the sweep record, absent from the 6 rows (rows carry ['0.75']), and named in all 6 missing entries; the rendering shows it in the sweep and not in the class table"
+  },
+  {
+   "case": "B23 the four exit statuses",
+   "ok": true,
+   "detail": "0 for a complete sweep, 3 for an incomplete one whose output was written, 2 for a usage error, 1 for a driver failure; observed 0, 3, 2, 1"
+  },
+  {
+   "case": "B5 the llm refusal",
+   "ok": true,
+   "detail": "status 2, output file absent, message names REQ-MOK-072: configuration error: refused: decision source 'llm' obtains its decisions from a model and is refused before any cell executes, per REQ-MOK-072; no sw"
+  },
+  {
+   "case": "B24 total failure",
+   "ok": true,
+   "detail": "the retained file holds exactly ['sweep', 'batch'] with complete False and 3 requested; the classifier states 0 groups and carries the incompleteness",
+   "note": "read as: the classifier states no distribution *of outcomes* over a sweep with no rows. It exits 0 with an empty group list rather than refusing, which is Q14's requirement that a zero-row aggregation is not an error; rule 17.8's refusal is reserved for a missing sweep record, which Q17 covers."
+  },
+  {
+   "case": "B25 unwritable output",
+   "ok": true,
+   "detail": "status 1, nothing retained (confirmed absent); message: error: retained output is not writable: [Errno 2] No such file or directory: 'C:/Users/mathi/mok-scratch/ver019/phase-b/"
+  },
+  {
+   "case": "Q17 no sweep record",
+   "ok": true,
+   "detail": "status 2 over a file holding 4 records and no sweep record, nothing on standard output; message: configuration error: C:/Users/mathi/mok-scratch/ver019/phase-b/q17-no-sweep.jsonl carries no sweep record, so the sweep it covers and its co"
+  }
+ ]
+}
