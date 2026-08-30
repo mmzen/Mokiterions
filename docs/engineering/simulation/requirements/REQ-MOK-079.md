@@ -2,7 +2,7 @@
 id = "REQ-MOK-079"
 type = "requirement"
 title = "Bind each retained row to the stream it came from, then discard the stream"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -11,6 +11,13 @@ verification_method = "automated-test"
 
 [relations]
 derives_from = ["CAP-MOK-012"]
+
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-08-30T16:11:24Z"
+decided_by = "product owner"
+reason = "Approved by the repository owner on 2026-08-30, by selecting the presented option, as part of the twelve-artifact Phase 4b chain. The chain converts docs/ROADMAP.md's Phase 4b open question into an approved shape on the strength of the measurement the roadmap reserved that decision to, taken at c90edc9 and recorded in ADR-MOK-008. It carries three disclosed and unrepaired findings: the threat mechanism is inert in 1447 of 1448 firings, the famine predicate is unreached in the swept space with food still standing at extinction, and no retreat event kind exists."
 +++
 
 # Requirement: Bind each retained row to the stream it came from, then discard the stream
@@ -126,6 +133,8 @@ row.
 
 ## Open decisions
 
-None. The choice of digest algorithm is the technical owner's in `SPEC-MOK-008`. The product decision — that streams
+None.
+
+The choice of digest algorithm is the technical owner's in `SPEC-MOK-008`. The product decision — that streams
 are discarded and rows are bound rather than streams being retained or rows being trusted — is settled here and by
 `INT-MOK-012` principle 4, on the measured determinism this rationale states.

@@ -2,21 +2,34 @@
 id = "ADR-MOK-008"
 type = "adr"
 title = "The measuring instrument is a pair of standard-library scripts beside the governance instruments, and the third-package prohibition is not touched"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
 
 [relations]
 decides = ["ARCH-MOK-001"]
+
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-08-30T16:11:24Z"
+decided_by = "technical owner"
+reason = "Approved by the repository owner on 2026-08-30, by selecting the presented option, as part of the twelve-artifact Phase 4b chain. The chain converts docs/ROADMAP.md's Phase 4b open question into an approved shape on the strength of the measurement the roadmap reserved that decision to, taken at c90edc9 and recorded in ADR-MOK-008. It carries three disclosed and unrepaired findings: the threat mechanism is inert in 1447 of 1448 firings, the famine predicate is unreached in the swept space with food still standing at extinction, and no retreat event kind exists."
 +++
 
 # ADR: The measuring instrument is a pair of standard-library scripts, and the third-package prohibition is not touched
 
 ## Status
 
-`draft`. This record is the conversion of `docs/ROADMAP.md`'s Phase 4b open question into a decision, and that
-document reserved the answer to a measurement rather than to an argument.
+**Accepted 2026-08-30 by the repository owner acting as accountable technical owner**, by selecting the presented
+option in an interactive session. The same act approved `INT-MOK-012`, `CAP-MOK-012`, `REQ-MOK-078` through
+`REQ-MOK-083`, `SPEC-MOK-008` and `VER-MOK-019`, and authorized `WO-MOK-033` to begin.
+
+This record is the conversion of `docs/ROADMAP.md`'s Phase 4b open question into a decision, and that document reserved
+the answer to a measurement rather than to an argument. The measurement was taken first and is recorded below; the
+acceptance rests on it. Approving it is not approving silence about the three findings `WO-MOK-033` discloses and does
+not repair.
 
 ## Context
 

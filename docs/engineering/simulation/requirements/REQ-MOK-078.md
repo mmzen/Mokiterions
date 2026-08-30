@@ -2,7 +2,7 @@
 id = "REQ-MOK-078"
 type = "requirement"
 title = "Execute a declared sweep and retain one fact row per run"
-status = "draft"
+status = "approved"
 owners = ["product owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -11,6 +11,13 @@ verification_method = "automated-test"
 
 [relations]
 derives_from = ["CAP-MOK-012"]
+
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-08-30T16:11:24Z"
+decided_by = "product owner"
+reason = "Approved by the repository owner on 2026-08-30, by selecting the presented option, as part of the twelve-artifact Phase 4b chain. The chain converts docs/ROADMAP.md's Phase 4b open question into an approved shape on the strength of the measurement the roadmap reserved that decision to, taken at c90edc9 and recorded in ADR-MOK-008. It carries three disclosed and unrepaired findings: the threat mechanism is inert in 1447 of 1448 firings, the famine predicate is unreached in the swept space with food still standing at extinction, and no retreat event kind exists."
 +++
 
 # Requirement: Execute a declared sweep and retain one fact row per run
@@ -148,7 +155,9 @@ not produce, which is the measured basis for density being an axis.
 
 ## Open decisions
 
-None at this level. Whether a batch may run in continuous integration, and whether any sweep's output is committed
+None.
+
+Whether a batch may run in continuous integration, and whether any sweep's output is committed
 rather than produced on demand, are `SPEC-MOK-008`'s and the work order's respectively. The product decisions — that
 the sweep is declared rather than ad hoc, that the axes are source, density and seed, and that the retained unit is
 one small row per run rather than a stream — are settled here and by `INT-MOK-012` principles 2 and 4.

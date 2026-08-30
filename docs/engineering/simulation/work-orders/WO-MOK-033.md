@@ -2,7 +2,7 @@
 id = "WO-MOK-033"
 type = "work_order"
 title = "Build the measuring instrument: a batch sweep, bound fact rows, and a revisable outcome classification"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -45,13 +45,20 @@ implements = [
 ]
 specifications = ["SPEC-MOK-008"]
 verification = ["VER-MOK-019"]
+
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-08-30T16:11:24Z"
+decided_by = "engineering owner"
+reason = "Approved for execution by the repository owner acting as accountable engineering owner on 2026-08-30, by selecting the presented option, together with the eleven definitions this packet carries. Assurance is required and not discretionary: the change is executable, and three of VER-MOK-019's claims are only meaningful bound to a commit - that a retained row's digest reproduces a stream that was destroyed, that editing a threshold changes no retained row, and that no file under either package's src or either Cargo.toml was touched. ADR-MOK-008's substance is that no amendment is required, which is falsifiable only as a check at a commit."
 +++
 
 # Work Order: Build the measuring instrument
 
 ## Lifecycle
 
-`draft` to `approved` authorizes execution and, in the same act, approves the ten governance artifacts this packet
+`draft` to `approved` authorizes execution and, in the same act, approves the eleven governance artifacts this packet
 carries. `approved` to `in_progress` starts it. `in_progress` to `implemented` requires both instruments, both test
 files, every `VER-MOK-019` case executed, and the retained evidence. Assurance is `required`, so this work order does
 not stop at `implemented`: `VREC-MOK-027` covers it.
@@ -74,7 +81,7 @@ happens in this simulation is a re-runnable command over retained rows rather th
 
 ## The chain this packet carries
 
-Ten artifacts, all drafted for approval with this work order:
+Eleven artifacts, drafted with this work order and approved in the same act as it:
 
 | Artifact | What it fixes |
 |---|---|

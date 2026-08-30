@@ -2,7 +2,7 @@
 id = "SPEC-MOK-008"
 type = "specification"
 title = "Batch sweep, bound fact rows, and a revisable outcome classification"
-status = "draft"
+status = "approved"
 owners = ["technical owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -16,6 +16,13 @@ specifies = [
   "REQ-MOK-082",
   "REQ-MOK-083",
 ]
+
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-08-30T16:11:24Z"
+decided_by = "technical owner"
+reason = "Approved by the repository owner on 2026-08-30, by selecting the presented option, as part of the twelve-artifact Phase 4b chain. The chain converts docs/ROADMAP.md's Phase 4b open question into an approved shape on the strength of the measurement the roadmap reserved that decision to, taken at c90edc9 and recorded in ADR-MOK-008. It carries three disclosed and unrepaired findings: the threat mechanism is inert in 1447 of 1448 firings, the famine predicate is unreached in the swept space with food still standing at extinction, and no retreat event kind exists."
 +++
 
 # Specification: Batch sweep, bound fact rows, and a revisable outcome classification
@@ -24,7 +31,7 @@ specifies = [
 
 | Date | Change | Approval |
 |---|---|---|
-| 2026-08-30 | Original content for `REQ-MOK-078` through `REQ-MOK-083`. | Drafted under `WO-MOK-033`. Every figure in it is measured at `c90edc9` and stated with its measurement; no threshold is asserted without saying whether measurement supports it. Awaiting the repository owner's approval as accountable technical owner. |
+| 2026-08-30 | Original content for `REQ-MOK-078` through `REQ-MOK-083`. | Drafted under `WO-MOK-033`. Every figure in it is measured at `c90edc9` and stated with its measurement; no threshold is asserted without saying whether measurement supports it. Approved 2026-08-30 by the repository owner acting as accountable technical owner, by selecting the presented option, together with the rest of the Phase 4b chain. |
 
 ## Scope
 
@@ -150,9 +157,13 @@ distribution and the operator should say which was meant.
 4.3 Cells are ordered by decision source in the order given, then density in the order given, then seed ascending. The
 retained output is written in this order whatever order cells completed in.
 
-4.4 Each cell is executed as `<binary> --seed <seed> --ticks <ticks> --policy <source> --density <density>
---events-path <stream path>` and with no other option. In particular `--trace-actions` is off, no transcript option is
-passed, and no live option is passed.
+4.4 Each cell is executed with exactly these arguments and no others:
+
+```
+BINARY --seed SEED --ticks TICKS --policy SOURCE --density DENSITY --events-path STREAM_PATH
+```
+
+In particular `--trace-actions` is off, no transcript option is passed, and no live option is passed.
 
 4.5 The driver passes no environment variable to the child beyond what the operator's own environment supplies, and
 reads none itself.

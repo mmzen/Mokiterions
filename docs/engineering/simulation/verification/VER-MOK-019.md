@@ -2,7 +2,7 @@
 id = "VER-MOK-019"
 type = "verification"
 title = "A sweep's rows are bound to streams that no longer exist, its counts are independently reproduced, and its classification is revisable without touching a retained row"
-status = "draft"
+status = "approved"
 owners = ["assurance owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -16,6 +16,13 @@ verifies = [
   "REQ-MOK-082",
   "REQ-MOK-083",
 ]
+
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-08-30T16:11:24Z"
+decided_by = "assurance owner"
+reason = "Approved by the repository owner on 2026-08-30, by selecting the presented option, as part of the twelve-artifact Phase 4b chain. The chain converts docs/ROADMAP.md's Phase 4b open question into an approved shape on the strength of the measurement the roadmap reserved that decision to, taken at c90edc9 and recorded in ADR-MOK-008. It carries three disclosed and unrepaired findings: the threat mechanism is inert in 1447 of 1448 firings, the famine predicate is unreached in the swept space with food still standing at extinction, and no retreat event kind exists."
 +++
 
 # Verification Contract: Batch sweep, bound rows, and revisable classification
