@@ -2,7 +2,7 @@
 id = "WO-MOK-033"
 type = "work_order"
 title = "Build the measuring instrument: a batch sweep, bound fact rows, and a revisable outcome classification"
-status = "approved"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -52,6 +52,20 @@ to = "approved"
 decided_at = "2026-08-30T16:11:24Z"
 decided_by = "engineering owner"
 reason = "Approved for execution by the repository owner acting as accountable engineering owner on 2026-08-30, by selecting the presented option, together with the eleven definitions this packet carries. Assurance is required and not discretionary: the change is executable, and three of VER-MOK-019's claims are only meaningful bound to a commit - that a retained row's digest reproduces a stream that was destroyed, that editing a threshold changes no retained row, and that no file under either package's src or either Cargo.toml was touched. ADR-MOK-008's substance is that no amendment is required, which is falsifiable only as a check at a commit."
+
+[[lifecycle_events]]
+from = "approved"
+to = "in_progress"
+decided_at = "2026-08-30T16:18:11Z"
+decided_by = "engineering owner"
+reason = "Execution started 2026-08-30 under the owner's approval of the chain in the same interactive session, by selecting the presented option. Scope is the two instruments under scripts/, their two test files, VER-MOK-019's cases and the retained evidence packet. No engine file, Cargo.toml or Cargo.lock is in scope."
+
+[[lifecycle_events]]
+from = "in_progress"
+to = "implemented"
+decided_at = "2026-08-30T18:18:07Z"
+decided_by = "engineering-owner"
+reason = "Marked implemented by the repository owner acting as accountable engineering owner on 2026-08-30, by selecting the presented option to approve and execute the chain through to preparing and verifying VREC-MOK-027 -- an endpoint unreachable without this transition. Both instruments and both suites are built (143 tests, all passing), the 400-cell default sweep is retained at 278,734 bytes with the same digest from four separate productions including one at --jobs 4, and 84 of VER-MOK-019's cases pass across six phases. The evidence packet is retained under docs/engineering/simulation/evidence/WO-MOK-033/ with a SHA-256 manifest over 147 files. Four defects were found and repaired with tests that fail on the pre-fix code; nine gaps in SPEC-MOK-008 and one wrong citation in VER-MOK-019 are disclosed rather than amended, per condition 6. VER-MOK-019's eight manual assessments are reserved to the product, technical and assurance owners and are NOT recorded; VREC-MOK-027 discloses that gap rather than closing it."
 +++
 
 # Work Order: Build the measuring instrument
