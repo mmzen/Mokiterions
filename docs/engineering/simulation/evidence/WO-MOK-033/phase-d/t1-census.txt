@@ -1,0 +1,51 @@
+census of SPEC-MOK-004 rule 1's layout, path and blob digest
+base c90edc9
+
+824003e1cbd4757f28d09849e2faca0a4546e99f  Cargo.lock
+420ec1c540547f811296362f1177d8e4932f7146  Cargo.toml
+879431ec4a3d50cc5efe796829f8eacf9c202474  mokiterions-core/Cargo.toml
+ec9719d68fd811d6fe284692102186b9fc139c7d  mokiterions-core/src/cli.rs
+3dcc718d1b6f3e678b470e330cdb372ee4633df0  mokiterions-core/src/lib.rs
+3264c7962bddc6231e725937266ab72ef96ccabf  mokiterions-core/src/main.rs
+c62f22da6d682032f539ad7ea950b3f195cac468  mokiterions-core/src/simulation.rs
+53ab59d03048c8b9f2ecd49cf3d14948ab56880c  mokiterions-core/tests/cli.rs
+e6293f4155bc41207dfc87590ea7a496a358c6e3  mokiterions-core/tests/connector.rs
+ec63a9eb116df0d04596aef2088c6c4797fb89bc  mokiterions-core/tests/decisions.rs
+2b76af7fed5e822868d7e1543a465c60af6af1ae  mokiterions-core/tests/density.rs
+ddb0f0c6578fc5e92c3cdb116822e2443ca1e800  mokiterions-core/tests/naming.rs
+c17123857e9562b226a61da04848b1080cfaee44  mokiterions-core/tests/no_outcome_threshold.rs
+b5c0e1eceb904f57a59cc33c6ef7e322134be363  mokiterions-core/tests/process.rs
+27cf588173aad5af31ed10dc7eee1f15f8a7e590  mokiterions-core/tests/records.rs
+8bdf627ba549ca691a86688ac97b9499d0a25a3a  mokiterions-core/tests/replay.rs
+4c749fe455ef71a03a9a6c18956d832f990d3c4e  mokiterions-core/tests/support/canned_connector.rs
+f5e1386e6b0e13dd6dcf57c6e7cad52f47c1a9a5  mokiterions-core/tests/termination.rs
+9cc20e91148bbb8f682c2095540fd501ad1ca7af  mokiterions-core/tests/transcript-seed0-ticks20-hunting.jsonl
+02796b5e326db2b2e95f87355659a12b6d67ea37  mokiterions-core/tests/viability.rs
+3f6b9ab2157544537b1a187b0a3c871c93e78c13  mokiterions-tui/Cargo.toml
+dd027fe1969e7447d9e18e92697e6f81345ba31a  mokiterions-tui/src/authority.rs
+51dc79837fe7f396fae7148d237117ee99dab53f  mokiterions-tui/src/export.rs
+8d0dae67e70b355e2b40c03665ea4d43f4e5c407  mokiterions-tui/src/layout.rs
+fd8f4dadf52381c774d88708a98c3a40eb07a32f  mokiterions-tui/src/lib.rs
+ac9d76eca3806b055cf452d687f48738ef95668a  mokiterions-tui/src/main.rs
+bbe2007b1f9c834a763ab253c8991790e7398df7  mokiterions-tui/src/options.rs
+8758ff684020833d827979dcd21b78d2638f4914  mokiterions-tui/src/render.rs
+78c7021b21b4cbc6a4a8a79e9047e943d4883e4e  mokiterions-tui/src/spatial.rs
+648fa0de6afca655594fdb8cfa63affbdf088c13  mokiterions-tui/src/state.rs
+9775bcb0f45a8bb47374d3c7874960beaf66dff8  mokiterions-tui/src/verification.rs
+0c8eeb8e5ac459bcfe5bd06b234b96c78b5e33f7  mokiterions-tui/tests/authority.rs
+8289b52fb8881161c33b13878420011ce419e357  mokiterions-tui/tests/export.rs
+2fef156a694bded0292c55aefcd1b768f0c2ccc4  mokiterions-tui/tests/layout.rs
+e345ce96f5abd56c5278c2b5c99fc3e22c64fa15  mokiterions-tui/tests/options.rs
+a2b23165db50154b585c7aaca9112afe38805ae9  mokiterions-tui/tests/render.rs
+5b729764e957e117b1e953271514fddd9957a324  mokiterions-tui/tests/replay.rs
+13c3f06b3ab0fcf2574a47dfa007f3e257a09a05  mokiterions-tui/tests/spatial.rs
+bf545ef014541cc6225e9524b74dd33e928843be  mokiterions-tui/tests/state.rs
+3af700b42634895219ba19ba5ad52efce4296d95  mokiterions-tui/tests/verification.rs
+
+counts at HEAD
+  engine src: 4
+  engine tests: 13
+  observer src: 10
+  observer tests: 9
+
+worktree status over these paths: clean

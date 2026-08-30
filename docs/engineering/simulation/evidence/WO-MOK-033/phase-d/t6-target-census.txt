@@ -1,0 +1,32 @@
+cargo metadata --no-deps --locked, one line per target
+
+Mokiterions bin Mokiterions mokiterions-core/src/main.rs
+Mokiterions bin canned-connector mokiterions-core/tests/support/canned_connector.rs
+Mokiterions lib mokiterions mokiterions-core/src/lib.rs
+Mokiterions test cli mokiterions-core/tests/cli.rs
+Mokiterions test connector mokiterions-core/tests/connector.rs
+Mokiterions test decisions mokiterions-core/tests/decisions.rs
+Mokiterions test density mokiterions-core/tests/density.rs
+Mokiterions test naming mokiterions-core/tests/naming.rs
+Mokiterions test no_outcome_threshold mokiterions-core/tests/no_outcome_threshold.rs
+Mokiterions test process mokiterions-core/tests/process.rs
+Mokiterions test records mokiterions-core/tests/records.rs
+Mokiterions test replay mokiterions-core/tests/replay.rs
+Mokiterions test termination mokiterions-core/tests/termination.rs
+Mokiterions test viability mokiterions-core/tests/viability.rs
+mokiterions-tui bin mokiterions-tui mokiterions-tui/src/main.rs
+mokiterions-tui lib mokiterions_tui mokiterions-tui/src/lib.rs
+mokiterions-tui test authority mokiterions-tui/tests/authority.rs
+mokiterions-tui test export mokiterions-tui/tests/export.rs
+mokiterions-tui test layout mokiterions-tui/tests/layout.rs
+mokiterions-tui test options mokiterions-tui/tests/options.rs
+mokiterions-tui test render mokiterions-tui/tests/render.rs
+mokiterions-tui test replay mokiterions-tui/tests/replay.rs
+mokiterions-tui test spatial mokiterions-tui/tests/spatial.rs
+mokiterions-tui test state mokiterions-tui/tests/state.rs
+mokiterions-tui test verification mokiterions-tui/tests/verification.rs
+
+pre-existing comment references to a script in a manifest, at the base commit too:
+mokiterions-core/Cargo.toml:62: # rule 13's declared set is untouched and `scripts/check_declared_dependencies.py` reads the same
+mokiterions-core/Cargo.toml:83: # `python scripts/check_declared_dependencies.py` is the check, at pull-request time and again
+mokiterions-tui/Cargo.toml:22: # and that section differ in either direction — `python scripts/check_declared_dependencies.py`

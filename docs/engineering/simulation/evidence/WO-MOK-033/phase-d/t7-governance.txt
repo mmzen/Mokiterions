@@ -1,0 +1,10 @@
+$ python scripts/run_simulation_batch.py --out docs/engineering/simulation/evidence/WO-MOK-033/must-not-appear.jsonl ...
+exit 2
+file created: False
+
+
+configuration error: --out may not name a path under docs/engineering/: 'docs/engineering/simulation/evidence/WO-MOK-033/must-not-appear.jsonl'; retained output is not a governance artifact and a batch does not write one
+
+
+occurrences of a governance path in either instrument:
+run_simulation_batch.py:153: f"--out may not name a path under docs/engineering/: {path!r}; retained output is not "

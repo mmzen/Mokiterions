@@ -1,0 +1,18 @@
+git diff --name-only c90edc9, plus untracked files
+
+docs/engineering/simulation/architecture/adr/ADR-MOK-008.md
+docs/engineering/simulation/capabilities/CAP-MOK-012.md
+docs/engineering/simulation/intent/INT-MOK-012.md
+docs/engineering/simulation/requirements/REQ-MOK-078.md
+docs/engineering/simulation/requirements/REQ-MOK-079.md
+docs/engineering/simulation/requirements/REQ-MOK-080.md
+docs/engineering/simulation/requirements/REQ-MOK-081.md
+docs/engineering/simulation/requirements/REQ-MOK-082.md
+docs/engineering/simulation/requirements/REQ-MOK-083.md
+docs/engineering/simulation/specifications/SPEC-MOK-008.md
+docs/engineering/simulation/verification/VER-MOK-019.md
+docs/engineering/simulation/work-orders/WO-MOK-033.md
+scripts/classify_simulation_runs.py
+scripts/run_simulation_batch.py
+scripts/test_classify_simulation_runs.py
+scripts/test_run_simulation_batch.py

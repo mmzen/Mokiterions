@@ -1,0 +1,8 @@
+status 3
+--- stdout ---
+engine binary: C:\Users\mathi\mok-scratch\ver019\shim.bat (other)
+temporary stream directory: C:/Users/mathi/mok-scratch/ver019/phase-b/streams-b17
+retained 0 of 7 cells in C:/Users/mathi/mok-scratch/ver019/phase-b/b17.jsonl
+
+--- stderr ---
+

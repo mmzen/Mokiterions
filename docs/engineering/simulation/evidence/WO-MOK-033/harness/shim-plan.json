@@ -1,0 +1,6 @@
+{
+ "_log": "phase-c/child-calls.log",
+ "*": {
+  "stream": "fixture-streams/small.jsonl"
+ }
+}

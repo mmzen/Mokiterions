@@ -1,0 +1,117 @@
+The famine measurement: regeneration_skipped.depleted across the whole 400-cell sweep, and
+the standing-food figures at density 0.10 at the final tick.
+
+depleted, summed over 400 runs      0
+capacity, summed over 400 runs      12827
+runs with any depleted skip         0 of 400
+famine rows in the distribution     0
+groups omitting the famine class    none
+
+depleted per density:
+
+density  depleted
+-------  --------
+0.10     0
+0.25     0
+0.50     0
+0.75     0
+1.00     0
+
+Density 0.10, where WO-MOK-033 stage 2 recorded that the population goes extinct in every
+seed while both territories still hold 8 units of food. All 80 cells at that density, food
+standing at the final tick:
+
+source      seed  reason      survivors  food A  food B  food total
+----------  ----  ----------  ---------  ------  ------  ----------
+baseline    0     extinction  0          8       8       16
+baseline    1     extinction  0          8       8       16
+baseline    2     extinction  0          8       8       16
+baseline    3     extinction  0          8       8       16
+baseline    4     extinction  0          8       8       16
+baseline    5     extinction  0          8       8       16
+baseline    6     extinction  0          8       8       16
+baseline    7     extinction  0          8       8       16
+baseline    8     extinction  0          8       8       16
+baseline    9     extinction  0          8       8       16
+baseline    10    extinction  0          8       8       16
+baseline    11    extinction  0          8       8       16
+baseline    12    extinction  0          8       8       16
+baseline    13    extinction  0          8       8       16
+baseline    14    extinction  0          8       8       16
+baseline    15    extinction  0          8       8       16
+baseline    16    extinction  0          8       8       16
+baseline    17    extinction  0          8       8       16
+baseline    18    extinction  0          8       8       16
+baseline    19    extinction  0          8       8       16
+individual  0     extinction  0          8       8       16
+individual  1     extinction  0          8       8       16
+individual  2     extinction  0          8       8       16
+individual  3     extinction  0          8       8       16
+individual  4     extinction  0          8       8       16
+individual  5     extinction  0          8       8       16
+individual  6     extinction  0          8       8       16
+individual  7     extinction  0          8       8       16
+individual  8     extinction  0          8       8       16
+individual  9     extinction  0          8       8       16
+individual  10    extinction  0          8       8       16
+individual  11    extinction  0          8       8       16
+individual  12    extinction  0          8       8       16
+individual  13    extinction  0          8       8       16
+individual  14    extinction  0          8       8       16
+individual  15    extinction  0          8       8       16
+individual  16    extinction  0          8       8       16
+individual  17    extinction  0          8       8       16
+individual  18    extinction  0          8       8       16
+individual  19    extinction  0          8       8       16
+reference   0     extinction  0          8       8       16
+reference   1     extinction  0          8       8       16
+reference   2     extinction  0          8       8       16
+reference   3     extinction  0          8       8       16
+reference   4     extinction  0          8       8       16
+reference   5     extinction  0          8       8       16
+reference   6     extinction  0          8       8       16
+reference   7     extinction  0          8       8       16
+reference   8     extinction  0          8       8       16
+reference   9     extinction  0          8       8       16
+reference   10    extinction  0          8       8       16
+reference   11    extinction  0          8       8       16
+reference   12    extinction  0          8       8       16
+reference   13    extinction  0          8       8       16
+reference   14    extinction  0          8       8       16
+reference   15    extinction  0          8       8       16
+reference   16    extinction  0          8       8       16
+reference   17    extinction  0          8       8       16
+reference   18    extinction  0          8       8       16
+reference   19    extinction  0          8       8       16
+social      0     extinction  0          8       8       16
+social      1     extinction  0          8       8       16
+social      2     extinction  0          8       8       16
+social      3     extinction  0          8       8       16
+social      4     extinction  0          8       8       16
+social      5     extinction  0          8       8       16
+social      6     extinction  0          8       8       16
+social      7     extinction  0          8       8       16
+social      8     extinction  0          8       8       16
+social      9     extinction  0          8       8       16
+social      10    extinction  0          8       8       16
+social      11    extinction  0          8       8       16
+social      12    extinction  0          8       8       16
+social      13    extinction  0          8       8       16
+social      14    extinction  0          8       8       16
+social      15    extinction  0          8       8       16
+social      16    extinction  0          8       8       16
+social      17    extinction  0          8       8       16
+social      18    extinction  0          8       8       16
+social      19    extinction  0          8       8       16
+
+distinct standing-food totals at 0.10   [16]
+cells extinct at 0.10                   80 of 80
+stage 2's figure per territory          8
+
+What this measures and what it does not. The famine predicate is rule 16.5's second
+clause, and it reads depleted > 0. Across 400 runs the swept space does not reach it, and
+at the density where the population always dies the food is still standing, so the deaths
+are not starvation by this predicate's own terms. VER-MOK-019's residual uncertainty 4 is
+the boundary here: the class is verified as stated and disclosed, not as correct, and
+redefining the predicate is a semantics decision for the product owner. This measurement
+is the disclosure, not a proposal.

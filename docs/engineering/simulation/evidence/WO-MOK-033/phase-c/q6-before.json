@@ -1,0 +1,272 @@
+{
+ "report": "distribution",
+ "format": 1,
+ "sweep": {
+  "record": "sweep",
+  "format": 1,
+  "sources": [
+   "reference",
+   "social"
+  ],
+  "densities": [
+   "0.25",
+   "0.75"
+  ],
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "ticks": 1000,
+  "cells": 12,
+  "binary_profile": "release",
+  "digest_algorithm": "sha256",
+  "defaulted_axes": []
+ },
+ "batch": {
+  "complete": true,
+  "requested": 12,
+  "retained": 12,
+  "missing": 0
+ },
+ "group_by": [
+  "source"
+ ],
+ "classes": [
+  "extinction",
+  "famine",
+  "asymmetric_collapse",
+  "collapse",
+  "coexistence"
+ ],
+ "groups": [
+  {
+   "key": {
+    "engine": "0.1.0",
+    "source": "reference"
+   },
+   "rows": 6,
+   "class_counts": {
+    "extinction": 0,
+    "famine": 0,
+    "asymmetric_collapse": 0,
+    "collapse": 0,
+    "coexistence": 6,
+    "unclassified": 0
+   },
+   "survivors": {
+    "min": 7,
+    "median": 8,
+    "max": 9
+   },
+   "deaths": {
+    "min": 3,
+    "median": 4,
+    "max": 5
+   },
+   "attempted": {
+    "attack_resolved": {
+     "min": 9,
+     "median": 9,
+     "max": 9
+    },
+    "threat_resolved": {
+     "min": 40,
+     "median": 40,
+     "max": 40
+    },
+    "surrender_resolved": {
+     "min": 5,
+     "median": 5,
+     "max": 5
+    }
+   },
+   "effective": {
+    "attack_resolved": {
+     "min": 3,
+     "median": 3,
+     "max": 3
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 1,
+     "median": 1,
+     "max": 1
+    }
+   }
+  },
+  {
+   "key": {
+    "engine": "0.1.0",
+    "source": "social"
+   },
+   "rows": 6,
+   "class_counts": {
+    "extinction": 0,
+    "famine": 0,
+    "asymmetric_collapse": 0,
+    "collapse": 0,
+    "coexistence": 6,
+    "unclassified": 0
+   },
+   "survivors": {
+    "min": 7,
+    "median": 8,
+    "max": 9
+   },
+   "deaths": {
+    "min": 3,
+    "median": 4,
+    "max": 5
+   },
+   "attempted": {
+    "attack_resolved": {
+     "min": 9,
+     "median": 9,
+     "max": 9
+    },
+    "threat_resolved": {
+     "min": 40,
+     "median": 40,
+     "max": 40
+    },
+    "surrender_resolved": {
+     "min": 5,
+     "median": 5,
+     "max": 5
+    }
+   },
+   "effective": {
+    "attack_resolved": {
+     "min": 3,
+     "median": 3,
+     "max": 3
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 1,
+     "median": 1,
+     "max": 1
+    }
+   }
+  }
+ ],
+ "rows": [
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.25",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.25",
+   "seed": 1,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.25",
+   "seed": 2,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.75",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.75",
+   "seed": 1,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.75",
+   "seed": 2,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.25",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.25",
+   "seed": 1,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.25",
+   "seed": 2,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.75",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.75",
+   "seed": 1,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.75",
+   "seed": 2,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  }
+ ]
+}

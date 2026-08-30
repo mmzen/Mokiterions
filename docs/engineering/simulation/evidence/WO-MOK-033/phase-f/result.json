@@ -1,0 +1,38 @@
+{
+ "phase": "phase F: acceptance scenarios and the famine measurement",
+ "cases": 6,
+ "failed": [],
+ "entries": [
+  {
+   "case": "The default sweep and both distributions are produced and retained",
+   "ok": true,
+   "detail": "the 400-cell default sweep exited 0 with all 400 cells retained (278734 bytes, sha256 a22e3e6b678e07b3..., byte-identical to phase E's separate invocation) and the classifier produced four reports, two groupings in both formats; the commands are retained beside them"
+  },
+  {
+   "case": "Scenario 1: the distribution is stated, legible, and agrees with the oracle",
+   "ok": true,
+   "detail": "four groups of 100 cells, every class named in each with zeros stated; the classifier and this contract's oracle agree on all 400 rows including the clause number; measured distribution baseline extinction=100; reference extinction=29,asymmetric_collapse=7,collapse=14,coexistence=50; individual extinction=26,asymmetric_collapse=9,collapse=13,coexistence=52; social extinction=26,asymmetric_collapse=16,collapse=12,coexistence=46",
+   "note": "the direction statements are retained in scenario-1-distribution.txt and are measurements, not conditions: conflict events appear under social only (['baseline', 'reference', 'individual'] have none), and survivors per source are {\"baseline\": 0, \"reference\": 529, \"individual\": 534, \"social\": 501}"
+  },
+  {
+   "case": "Scenario 2: density moves the class distribution, and the seed is re-measured at twenty",
+   "ok": true,
+   "detail": "at fixed source the five densities produce baseline 1/5, reference 5/5, individual 5/5, social 5/5 distinct class-count vectors, so density moves the outcome for reference, individual, social; baseline does not move because it is at a floor -- all 100 of its cells are extinction at every density -- and its run figures still answer to density in 5 of 5 distinct vectors; the seed moves the figures in 20 of 20 groups and moves the class in 10 (individual:0.25, individual:0.50, individual:1.00, reference:0.25, reference:0.50, reference:0.75, social:0.25, social:0.50, social:0.75, social:1.00), which reverses the 2026-08-30 five-seed finding and is recorded as a finding rather than a failure"
+  },
+  {
+   "case": "Scenario 5: a chosen row is reproduced from its coordinates alone",
+   "ok": true,
+   "detail": "row 133 of 400, chosen by the sweep's own digest, is reference:0.25:13; re-executing that cell reproduced every field of the record including stream_sha256 edae218a6c75f78b..., and an independent count over the re-executed stream's bytes reproduced the digest, all three attempted and effective counts, lethal_attacks, survivors, deaths, crossings and regenerated, with 7 of 7 rule 10 equalities holding"
+  },
+  {
+   "case": "Scenario 6: the instrument surfaces the threat inertness as a figure",
+   "ok": true,
+   "detail": "over 400 cells the engine resolved 7701 threats and 8 raised fear (0.1039%), against 1 of 1448 measured over 35 runs at c90edc9; the figure is reported per source (only social resolves any: 7701) and per density 0.10 2828/1, 0.25 1861/1, 0.50 1793/2, 0.75 577/2, 1.00 642/2; it is retained as the before measurement for a later repair chain and is not repaired here"
+  },
+  {
+   "case": "The famine measurement is taken across the sweep and at density 0.10",
+   "ok": true,
+   "detail": "regeneration_skipped.depleted is 0 over all 400 runs -- reproducing stage 2's figure of 0 over 35 -- against 12827 capacity skips, so no row reaches rule 16.5's famine clause and the class is reported with a count of zero in all 20 groups rather than omitted; at density 0.10 80 of 80 cells end extinct with standing food totals of [16] units across the two territories, so the population dies with food on the ground; disclosed and not repaired"
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+A stream materially larger than ADR-MOK-008's measured 2,723,014 bytes, to establish that
+the driver scans rather than loading a file into memory.
+
+one cell each, social at density 1.00, seed 0, at two horizons:
+
+    1000 ticks: {"status": 0, "wall_seconds": 0.204, "stream_bytes": 2370203, "run_ticks": 1000, "reason": "tick_limit", "peak_working_set": 27013120, "memory_samples": 10}
+   12000 ticks: {"status": 0, "wall_seconds": 0.517, "stream_bytes": 12346617, "run_ticks": 9801, "reason": "extinction", "peak_working_set": 34144256, "memory_samples": 25}
+
+  ADR-MOK-008's 1,000-tick figure   2723014
+  long horizon against it           4.53x
+  stream bytes added                9976414
+  peak working set added            7131136
+  added memory per added byte       0.7148
+
+The working set is the driver's own process, sampled at 20 ms through
+GetProcessMemoryInfo on its process handle. The engine's memory is a separate process
+and is not the claim: what is being checked is that the process that reads the stream
+does not grow with it. That figure is reported and not tested, for two reasons. A bare
+CPython interpreter is already about 27 MB, which is larger than the long horizon's
+stream and is nothing to do with this driver; and a batch process does more than scan --
+it starts an interpreter, spawns an engine and captures the engine's output -- so its
+high-water answers the question only indirectly.
+
+The scan in isolation. One fresh process per stream, importing the repository's own
+scripts/run_simulation_batch.py and calling scan_file once; the working set is read after
+the import and before the scan, and the process's lifetime peak after it.
+
+  {"stream_bytes": 2370203, "records": 10197, "digest": "b5bcbbd30e90fe96...", "baseline_current": 23511040, "baseline_peak": 23511040, "after_current": 23564288, "after_peak": 23564288, "added_peak": 53248, "added_per_stream_byte": 0.0225}
+  {"stream_bytes": 12346617, "records": 44444, "digest": "9f5a9f369d053e9e...", "baseline_current": 23629824, "baseline_peak": 23629824, "after_current": 23810048, "after_peak": 23810048, "added_peak": 180224, "added_per_stream_byte": 0.0146}
+  {"stream_bytes": 24693234, "records": 88888, "digest": "94da4ae62c785ee1...", "baseline_current": 23683072, "baseline_peak": 23683072, "after_current": 23740416, "after_peak": 23740416, "added_peak": 57344, "added_per_stream_byte": 0.0023}
+
+The third stream is the 12,000-tick one doubled, because this engine's population at
+density 1.00 dies at about 9,800 ticks and no single run reaches 25 MB. It carries two
+header records and two run records, which scan_file accepts and keeps the last of; it is
+an input to this memory measurement and to nothing else, and no cell row comes from it.
+
+A reader that held the file would add at least the stream's bytes to its high-water, and
+one that parsed it whole several times more, since a parsed record is larger than its own
+JSON text. What the three rows show instead is a roughly fixed addition, so the added
+bytes per stream byte fall as the stream grows. Nothing here is a threshold except the
+1.0 that separates scanning from holding, which is not chosen but is what the words mean.
+
+engine binary: target\release\Mokiterions.exe (release)
+temporary stream directory: C:/Users/mathi/mok-scratch/ver019/phase-e/streams-long-1000
+kept stream for social:1.00:0 at C:/Users/mathi/mok-scratch/ver019/phase-e/streams-long-1000\kept-social-1.00-0.jsonl
+retained 1 of 1 cells in C:/Users/mathi/mok-scratch/ver019/phase-e/long-run-1000.jsonl
+
+
+engine binary: target\release\Mokiterions.exe (release)
+temporary stream directory: C:/Users/mathi/mok-scratch/ver019/phase-e/streams-long-12000
+kept stream for social:1.00:0 at C:/Users/mathi/mok-scratch/ver019/phase-e/streams-long-12000\kept-social-1.00-0.jsonl
+retained 1 of 1 cells in C:/Users/mathi/mok-scratch/ver019/phase-e/long-run-12000.jsonl

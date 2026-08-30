@@ -1,0 +1,231 @@
+{
+ "instrument": [
+  {
+   "cell": "reference:0.50:0",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "reference:0.50:1",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "reference:0.75:0",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "reference:0.75:1",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "social:0.50:0",
+   "attempted": {
+    "attack_resolved": 17,
+    "threat_resolved": 8,
+    "surrender_resolved": 6
+   },
+   "effective": {
+    "attack_resolved": 17,
+    "threat_resolved": 0,
+    "surrender_resolved": 6
+   },
+   "lethal_attacks": 3
+  },
+  {
+   "cell": "social:0.50:1",
+   "attempted": {
+    "attack_resolved": 4,
+    "threat_resolved": 10,
+    "surrender_resolved": 4
+   },
+   "effective": {
+    "attack_resolved": 4,
+    "threat_resolved": 0,
+    "surrender_resolved": 4
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "social:0.75:0",
+   "attempted": {
+    "attack_resolved": 9,
+    "threat_resolved": 12,
+    "surrender_resolved": 6
+   },
+   "effective": {
+    "attack_resolved": 9,
+    "threat_resolved": 0,
+    "surrender_resolved": 6
+   },
+   "lethal_attacks": 1
+  },
+  {
+   "cell": "social:0.75:1",
+   "attempted": {
+    "attack_resolved": 10,
+    "threat_resolved": 7,
+    "surrender_resolved": 6
+   },
+   "effective": {
+    "attack_resolved": 10,
+    "threat_resolved": 0,
+    "surrender_resolved": 6
+   },
+   "lethal_attacks": 2
+  }
+ ],
+ "oracle": [
+  {
+   "cell": "reference:0.50:0",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "reference:0.50:1",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "reference:0.75:0",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "reference:0.75:1",
+   "attempted": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "effective": {
+    "attack_resolved": 0,
+    "threat_resolved": 0,
+    "surrender_resolved": 0
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "social:0.50:0",
+   "attempted": {
+    "attack_resolved": 17,
+    "threat_resolved": 8,
+    "surrender_resolved": 6
+   },
+   "effective": {
+    "attack_resolved": 17,
+    "threat_resolved": 0,
+    "surrender_resolved": 6
+   },
+   "lethal_attacks": 3
+  },
+  {
+   "cell": "social:0.50:1",
+   "attempted": {
+    "attack_resolved": 4,
+    "threat_resolved": 10,
+    "surrender_resolved": 4
+   },
+   "effective": {
+    "attack_resolved": 4,
+    "threat_resolved": 0,
+    "surrender_resolved": 4
+   },
+   "lethal_attacks": 0
+  },
+  {
+   "cell": "social:0.75:0",
+   "attempted": {
+    "attack_resolved": 9,
+    "threat_resolved": 12,
+    "surrender_resolved": 6
+   },
+   "effective": {
+    "attack_resolved": 9,
+    "threat_resolved": 0,
+    "surrender_resolved": 6
+   },
+   "lethal_attacks": 1
+  },
+  {
+   "cell": "social:0.75:1",
+   "attempted": {
+    "attack_resolved": 10,
+    "threat_resolved": 7,
+    "surrender_resolved": 6
+   },
+   "effective": {
+    "attack_resolved": 10,
+    "threat_resolved": 0,
+    "surrender_resolved": 6
+   },
+   "lethal_attacks": 2
+  }
+ ],
+ "diff": "no disagreement"
+}

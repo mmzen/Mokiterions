@@ -1,0 +1,992 @@
+$ python -m py_compile run_simulation_batch.py
+exit 0
+
+
+$ python -m py_compile classify_simulation_runs.py
+exit 0
+
+
+$ python -m py_compile test_run_simulation_batch.py
+exit 0
+
+
+$ python -m py_compile test_classify_simulation_runs.py
+exit 0
+
+
+$ python scripts/test_run_simulation_batch.py
+exit 0
+test_a_batch_where_every_cell_failed_writes_no_cell_record (__main__.TestBatchRecord.test_a_batch_where_every_cell_failed_writes_no_cell_record)
+Rule 12.6. ... ok
+test_a_complete_batch_states_complete_true_explicitly (__main__.TestBatchRecord.test_a_complete_batch_states_complete_true_explicitly)
+Rule 12.2: a reader must not infer completeness from the absence of a warning. ... ok
+test_an_incomplete_batch_names_every_missing_cell_with_a_stage_and_reason (__main__.TestBatchRecord.test_an_incomplete_batch_names_every_missing_cell_with_a_stage_and_reason)
+Rule 12.3, and rule 12.4: nothing is filled with a zero, a default or a neighbour. ... ok
+test_one_cells_failure_does_not_discard_another_cells_row (__main__.TestBatchRecord.test_one_cells_failure_does_not_discard_another_cells_row)
+Rule 12.5, and rule 13.3: a cell failure does not stop the batch. ... ok
+test_rows_are_written_in_rule_4_3s_order_whatever_order_they_completed_in (__main__.TestBatchRecord.test_rows_are_written_in_rule_4_3s_order_whatever_order_they_completed_in)
+Rule 4.3 and rule 18.1, which is what makes `--jobs` greater than 1 safe. ... ok
+test_a_wholly_inert_mechanism_reads_zero_effective_against_nonzero_attempted (__main__.TestBehaviouralCounters.test_a_wholly_inert_mechanism_reads_zero_effective_against_nonzero_attempted)
+Rule 9.6's measured case: threats that fired and changed nothing. ... ok
+test_a_zero_count_is_stated_rather_than_omitted (__main__.TestBehaviouralCounters.test_a_zero_count_is_stated_rather_than_omitted)
+Rule 9.4: a mechanism that never fired is distinguishable from one that was not counted. ... ok
+test_attempted_counts_every_occurrence (__main__.TestBehaviouralCounters.test_attempted_counts_every_occurrence)
+Rule 9.1. ... ok
+test_each_effectiveness_test_reads_its_own_field (__main__.TestBehaviouralCounters.test_each_effectiveness_test_reads_its_own_field)
+Rule 9.2: damage, increase and transferred, each greater than zero. ... ok
+test_lethal_attacks_is_a_third_figure_not_a_narrowing (__main__.TestBehaviouralCounters.test_lethal_attacks_is_a_third_figure_not_a_narrowing)
+Rule 9.3: a lethal attack is also an effective one, and the two counts coexist. ... ok
+test_no_retreat_field_is_synthesised (__main__.TestBehaviouralCounters.test_no_retreat_field_is_synthesised)
+Rule 9.7: the vocabulary has no `retreat_resolved`, so no field is invented for it. ... ok
+test_the_driver_states_no_difference_of_two_counters (__main__.TestBehaviouralCounters.test_the_driver_states_no_difference_of_two_counters)
+Rule 9.5: a consumer may subtract; the driver states no such difference. ... ok
+test_a_named_binary_that_is_absent_is_a_driver_error (__main__.TestBinaryResolution.test_a_named_binary_that_is_absent_is_a_driver_error)
+Rule 2.3, and rule 14.1's status 1 rather than a per-cell failure 400 times over. ... ok
+test_an_explicit_path_is_normalised_to_the_platforms_separator (__main__.TestBinaryResolution.test_an_explicit_path_is_normalised_to_the_platforms_separator)
+A forward-slash relative path on Windows passes `isfile` and then fails to launch. ... ok
+test_the_profile_is_read_from_the_containing_directory (__main__.TestBinaryResolution.test_the_profile_is_read_from_the_containing_directory)
+Rule 6.3: `release`, `debug`, or `other` for a path that is neither. ... ok
+test_a_stream_with_no_trailing_newline_hashes_as_written (__main__.TestCellRecord.test_a_stream_with_no_trailing_newline_hashes_as_written)
+Rule 11.2: the digest is over the bytes the engine wrote, not over a normalised form. ... ok
+test_density_is_the_engines_own_string (__main__.TestCellRecord.test_density_is_the_engines_own_string)
+Rule 8.2: not a computed decimal, which is how rule 17.2 is satisfied on this axis. ... ok
+test_engine_comes_from_the_header_record (__main__.TestCellRecord.test_engine_comes_from_the_header_record)
+Rule 8.3: not a version the driver inferred. ... ok
+test_no_class_label_verdict_or_threshold_appears (__main__.TestCellRecord.test_no_class_label_verdict_or_threshold_appears)
+Rule 8.6 and `SPEC-MOK-006` rule 8.7: a row carrying a label would not be revisable. ... ok
+test_no_float_appears_anywhere_in_a_row (__main__.TestCellRecord.test_no_float_appears_anywhere_in_a_row)
+Rule 8.7 and rule 18.3. ... ok
+test_no_path_host_pid_or_clock_appears (__main__.TestCellRecord.test_no_path_host_pid_or_clock_appears)
+Rule 11.6: a retained row carrying a duration would not be comparable between machines. ... ok
+test_one_altered_byte_changes_the_digest (__main__.TestCellRecord.test_one_altered_byte_changes_the_digest)
+`VER-MOK-019` case B9's second half. ... ok
+test_roster_is_retained_and_the_agents_array_is_not (__main__.TestCellRecord.test_roster_is_retained_and_the_agents_array_is_not)
+Rule 8.5: a deliberate loss, recorded as one and recoverable by re-running the cell. ... ok
+test_run_ticks_is_distinct_from_the_requested_horizon (__main__.TestCellRecord.test_run_ticks_is_distinct_from_the_requested_horizon)
+Rule 8.4: conflating the two would make every early termination unreadable. ... ok
+test_scanning_from_disk_and_from_memory_agree_byte_for_byte (__main__.TestCellRecord.test_scanning_from_disk_and_from_memory_agree_byte_for_byte)
+The driver scans a line at a time so a long horizon is not held in memory whole. ... ok
+test_the_digest_is_over_the_streams_exact_bytes (__main__.TestCellRecord.test_the_digest_is_over_the_streams_exact_bytes)
+Rule 11.2 and 11.3: over the stream, never over the row. ... ok
+test_exactly_rule_4_4s_arguments_and_no_others (__main__.TestChildArguments.test_exactly_rule_4_4s_arguments_and_no_others)
+Rule 4.4: no tracing option, no transcript option, no live option, no connector option. ... ok
+test_a_consistent_stream_passes_all_seven (__main__.TestCrossChecks.test_a_consistent_stream_passes_all_seven)
+Rule 10.2: all seven held in all 35 streams measured at c90edc9. ... ok
+test_a_failed_check_produces_a_missing_cell_and_no_row (__main__.TestCrossChecks.test_a_failed_check_produces_a_missing_cell_and_no_row)
+Rule 10.3: the row is not retained with the disagreement recorded, and neither figure wins. ... ok
+test_a_retained_row_always_states_seven_passed (__main__.TestCrossChecks.test_a_retained_row_always_states_seven_passed)
+Rule 10.3's consequence: a row with a failed check is never retained, so the field is 7. ... ok
+test_each_of_the_seven_equalities_has_a_failing_case (__main__.TestCrossChecks.test_each_of_the_seven_equalities_has_a_failing_case)
+Rule 10.1, one fixture per equality, each breaking exactly that one. ... ok
+test_cells_are_ordered_source_then_density_then_seed_ascending (__main__.TestDefaultSweep.test_cells_are_ordered_source_then_density_then_seed_ascending)
+Rule 4.3. The seed axis is ascending whatever order it was given in. ... ok
+test_declared_default_is_four_by_five_by_twenty_at_one_thousand (__main__.TestDefaultSweep.test_declared_default_is_four_by_five_by_twenty_at_one_thousand)
+Rule 3.1 and 3.2. The default sweep is a value in the specification, not in help text. ... ok
+test_no_axis_option_selects_the_default_sweep (__main__.TestDefaultSweep.test_no_axis_option_selects_the_default_sweep)
+Rule 2.6. ... ok
+test_partially_defaulted_sweep_names_only_the_defaulted_axes (__main__.TestDefaultSweep.test_partially_defaulted_sweep_names_only_the_defaulted_axes)
+Rule 2.6 and rule 6.5: a partially defaulted sweep is legible without knowing the default. ... ok
+test_seed_ranges_are_inclusive_and_mix_with_integers (__main__.TestDefaultSweep.test_seed_ranges_are_inclusive_and_mix_with_integers)
+Rule 2.4. ... ok
+test_no_network_credential_or_live_option_appears (__main__.TestDivisionOfLabour.test_no_network_credential_or_live_option_appears)
+Rule 19.4: neither instrument can reach a provider. ... ok
+test_the_driver_does_not_import_the_classifier (__main__.TestDivisionOfLabour.test_the_driver_does_not_import_the_classifier)
+Rule 1.5: each instrument runs without the other. ... ok
+test_the_driver_holds_no_threshold_and_names_no_class (__main__.TestDivisionOfLabour.test_the_driver_holds_no_threshold_and_names_no_class)
+Rule 19.1: the driver executes and derives; it classifies nothing. ... ok
+test_the_driver_imports_only_the_standard_library (__main__.TestDivisionOfLabour.test_the_driver_imports_only_the_standard_library)
+Rule 1.3. ... ok
+test_status_0_when_every_cell_produced_a_row (__main__.TestExitStatuses.test_status_0_when_every_cell_produced_a_row) ... ok
+test_status_1_when_the_binary_is_not_found (__main__.TestExitStatuses.test_status_1_when_the_binary_is_not_found) ... error: engine binary not found: 'C:\\Users\\mathi\\AppData\\Local\\Temp\\tmp52b5ro8d\\no-such-engine'
+ok
+test_status_1_when_the_retained_output_is_unwritable (__main__.TestExitStatuses.test_status_1_when_the_retained_output_is_unwritable)
+Rule 12.7: the driver retains nothing rather than rows whose completeness is unrecorded. ... error: retained output is not writable: [Errno 2] No such file or directory: 'C:\\Users\\mathi\\AppData\\Local\\Temp\\tmpk1cwytvz\\no-such-directory\\out.jsonl'
+ok
+test_status_2_for_a_usage_error_writes_nothing (__main__.TestExitStatuses.test_status_2_for_a_usage_error_writes_nothing) ... configuration error: refused: decision source 'llm' obtains its decisions from a model and is refused before any cell executes, per REQ-MOK-072; no sweep may include it
+ok
+test_status_3_when_a_cell_is_missing_and_the_output_is_written (__main__.TestExitStatuses.test_status_3_when_a_cell_is_missing_and_the_output_is_written)
+Rule 14.2: 3 is distinct from 0 so an incomplete sweep cannot be consumed by ignoring output. ... ok
+test_every_stage_in_the_closed_vocabulary_is_reachable (__main__.TestFailureStages.test_every_stage_in_the_closed_vocabulary_is_reachable)
+Rule 12.3's vocabulary is closed, and rule 20.1 requires a case for each of the six. ... ok
+test_stage_crosscheck (__main__.TestFailureStages.test_stage_crosscheck)
+Rule 12.3 `crosscheck`, which rule 10.3 defines. ... ok
+test_stage_derive (__main__.TestFailureStages.test_stage_derive)
+Rule 12.3 `derive`: the cross-checks agree but the row cannot be built. ... ok
+test_stage_not_attempted (__main__.TestFailureStages.test_stage_not_attempted)
+Rule 12.3 `not_attempted`: the batch stopped first, and rule 12.4 fills nothing in. ... ok
+test_stage_read_when_the_stream_is_absent (__main__.TestFailureStages.test_stage_read_when_the_stream_is_absent)
+Rule 12.3 `read`. ... ok
+test_stage_read_when_the_stream_lacks_a_run_record (__main__.TestFailureStages.test_stage_read_when_the_stream_lacks_a_run_record)
+Rule 12.3 `read`: an incomplete stream is unreadable, not a row with holes. ... ok
+test_stage_refused (__main__.TestFailureStages.test_stage_refused)
+Rule 12.3 `refused`, and rule 4.2's refusal repeated at the cell level. ... ok
+test_stage_run (__main__.TestFailureStages.test_stage_run)
+Rule 12.3 `run`, with rule 13.2's verbatim engine message. ... ok
+test_concurrent_and_serial_batches_are_byte_identical (__main__.TestRetainedFileAndStream.test_concurrent_and_serial_batches_are_byte_identical)
+Rule 2.8: `--jobs` changes no row, because a row is a function of its cell. ... ok
+test_keep_stream_retains_one_cells_stream_and_changes_no_row (__main__.TestRetainedFileAndStream.test_keep_stream_retains_one_cells_stream_and_changes_no_row)
+Rule 2.7 and 7.4. ... ok
+test_line_endings_are_newline_on_every_platform (__main__.TestRetainedFileAndStream.test_line_endings_are_newline_on_every_platform)
+Rule 6.1: fixed because the file is compared for equality and hashed. ... ok
+test_no_float_appears_anywhere_in_the_retained_output (__main__.TestRetainedFileAndStream.test_no_float_appears_anywhere_in_the_retained_output)
+Rule 18.3. ... ok
+test_no_two_concurrent_cells_share_a_reusable_path (__main__.TestRetainedFileAndStream.test_no_two_concurrent_cells_share_a_reusable_path)
+Rule 7.1 under rule 2.8, as an exclusion property rather than as an output comparison. ... ok
+test_one_reusable_path_at_the_default_jobs (__main__.TestRetainedFileAndStream.test_one_reusable_path_at_the_default_jobs)
+Rule 7.1: peak disk is one stream, which is why the path is reused. ... ok
+test_the_record_names_are_not_the_engine_streams (__main__.TestRetainedFileAndStream.test_the_record_names_are_not_the_engine_streams)
+Rule 6.2: so no reader confuses this file with an engine stream. ... ok
+test_the_stream_is_removed_after_being_read (__main__.TestRetainedFileAndStream.test_the_stream_is_removed_after_being_read)
+Rule 7.3. ... ok
+test_the_stream_is_removed_when_a_cell_is_interrupted (__main__.TestRetainedFileAndStream.test_the_stream_is_removed_when_a_cell_is_interrupted)
+Rule 7.3 where it matters: an interrupt arrives inside a cell, not between two. ... ok
+test_the_stream_path_is_not_under_docs_or_scripts (__main__.TestRetainedFileAndStream.test_the_stream_path_is_not_under_docs_or_scripts)
+Rule 7.2. ... ok
+test_the_sweep_record_states_every_axis_value (__main__.TestRetainedFileAndStream.test_the_sweep_record_states_every_axis_value)
+Rule 6.6: including values that produce no rows. ... ok
+test_three_record_kinds_in_rule_6_2s_order (__main__.TestRetainedFileAndStream.test_three_record_kinds_in_rule_6_2s_order) ... ok
+test_two_batches_over_the_same_sweep_are_byte_identical (__main__.TestRetainedFileAndStream.test_two_batches_over_the_same_sweep_are_byte_identical)
+Rule 18.1. ... ok
+test_a_density_the_engine_does_not_accept (__main__.TestUsageErrors.test_a_density_the_engine_does_not_accept) ... configuration error: the engine does not accept density '0.755'; a density is written with at most two decimal places
+configuration error: the engine does not accept density 'abc'; a density is written with at most two decimal places
+configuration error: the engine does not accept density '101'; it must be greater than 0 and must not exceed 100
+configuration error: the engine does not accept density '0'; it must be greater than 0 and must not exceed 100
+configuration error: the engine does not accept density '-1'; a density is written with at most two decimal places
+ok
+test_a_docs_path_that_is_not_docs_engineering_is_allowed (__main__.TestUsageErrors.test_a_docs_path_that_is_not_docs_engineering_is_allowed)
+The prohibition is on governance artifacts, not on the word `docs`. ... ok
+test_a_source_the_engine_does_not_accept (__main__.TestUsageErrors.test_a_source_the_engine_does_not_accept) ... configuration error: the engine does not accept decision source 'cooperative'; it accepts baseline, reference, individual, social, llm
+ok
+test_an_abbreviated_option_is_unknown (__main__.TestUsageErrors.test_an_abbreviated_option_is_unknown)
+`allow_abbrev=False`: an abbreviation is not silently accepted as the option it prefixes. ... usage: run_simulation_batch.py [-h] --out OUT [--binary BINARY]
+                               [--sources SOURCES] [--densities DENSITIES]
+                               [--seeds SEEDS] [--ticks TICKS]
+                               [--keep-stream SOURCE:DENSITY:SEED]
+                               [--jobs JOBS] [--stream-dir STREAM_DIR]
+run_simulation_batch.py: error: unrecognized arguments: --source social
+ok
+test_duplicate_value_on_any_axis (__main__.TestUsageErrors.test_duplicate_value_on_any_axis)
+Rule 4.1: refused rather than collapsed, because the two differ in every distribution. ... configuration error: duplicate value on axis sources: 'social'
+configuration error: duplicate value on axis densities: '0.75'
+configuration error: duplicate value on axis seeds: 1
+configuration error: duplicate value on axis seeds: 2
+ok
+test_empty_axis (__main__.TestUsageErrors.test_empty_axis) ... configuration error: malformed sources: ''; values are comma-separated and none may be empty
+ok
+test_jobs_below_one (__main__.TestUsageErrors.test_jobs_below_one) ... configuration error: --jobs must be at least 1: 0
+ok
+test_llm_among_the_sources (__main__.TestUsageErrors.test_llm_among_the_sources)
+Rule 4.2: refused before any cell executes, and the refusal names REQ-MOK-072. ... configuration error: refused: decision source 'llm' obtains its decisions from a model and is refused before any cell executes, per REQ-MOK-072; no sweep may include it
+ok
+test_malformed_seed_specification (__main__.TestUsageErrors.test_malformed_seed_specification) ... configuration error: malformed seed specification: '0-'; expected an integer or an inclusive range a-b
+configuration error: malformed seed specification: '-3'; expected an integer or an inclusive range a-b
+configuration error: malformed seed specification: '1,,2'; no element may be empty
+configuration error: malformed seed specification: 'x'; expected an integer or an inclusive range a-b
+configuration error: malformed seed specification: '3-1'; a range is inclusive and written low-high
+configuration error: malformed seed specification: '1.5'; expected an integer or an inclusive range a-b
+ok
+test_non_positive_tick_horizon (__main__.TestUsageErrors.test_non_positive_tick_horizon) ... configuration error: non-positive tick horizon: 0; a horizon is greater than zero
+configuration error: non-positive tick horizon: -5; a horizon is greater than zero
+ok
+test_out_under_docs_engineering (__main__.TestUsageErrors.test_out_under_docs_engineering)
+Rule 15.1: no batch can write into governance artifacts. ... configuration error: --out may not name a path under docs/engineering/: 'docs/engineering/x.jsonl'; retained output is not a governance artifact and a batch does not write one
+ok
+test_unknown_option (__main__.TestUsageErrors.test_unknown_option) ... usage: run_simulation_batch.py [-h] --out OUT [--binary BINARY]
+                               [--sources SOURCES] [--densities DENSITIES]
+                               [--seeds SEEDS] [--ticks TICKS]
+                               [--keep-stream SOURCE:DENSITY:SEED]
+                               [--jobs JOBS] [--stream-dir STREAM_DIR]
+run_simulation_batch.py: error: unrecognized arguments: --sweep-everything
+ok
+
+----------------------------------------------------------------------
+Ran 78 tests in 0.439s
+
+OK
+
+
+$ python scripts/test_classify_simulation_runs.py
+exit 0
+test_asymmetric_collapse_precedes_collapse (__main__.TestClauseOrdering.test_asymmetric_collapse_precedes_collapse) ... ok
+test_every_row_gets_exactly_one_class_and_the_clause_that_assigned_it (__main__.TestClauseOrdering.test_every_row_gets_exactly_one_class_and_the_clause_that_assigned_it)
+Rule 16.7: a class is traceable to its clause rather than to the classifier as a whole. ... ok
+test_extinction_precedes_collapse (__main__.TestClauseOrdering.test_extinction_precedes_collapse)
+Nobody survived and everybody died. Both clause 1 and clause 4 match; clause 1 decides. ... ok
+test_extinction_precedes_famine (__main__.TestClauseOrdering.test_extinction_precedes_famine)
+The earliest matching clause decides however many later ones also match. ... ok
+test_famine_precedes_collapse (__main__.TestClauseOrdering.test_famine_precedes_collapse) ... ok
+test_a_class_observed_zero_times_is_reported_as_zero (__main__.TestDistribution.test_a_class_observed_zero_times_is_reported_as_zero)
+Rule 16.9: an unobserved class is a finding about the simulation or about the sweep. ... ok
+test_a_distribution_over_zero_rows_is_a_report_with_no_groups (__main__.TestDistribution.test_a_distribution_over_zero_rows_is_a_report_with_no_groups)
+An empty sweep is reported rather than crashing: rule 17.6's principle at the limit. ... ok
+test_a_group_with_one_row_is_reported_with_equal_order_statistics (__main__.TestDistribution.test_a_group_with_one_row_is_reported_with_equal_order_statistics)
+Rule 17.6: not suppressed, and not presented as a distribution. ... ok
+test_a_retained_file_with_no_batch_record_is_treated_as_incomplete (__main__.TestDistribution.test_a_retained_file_with_no_batch_record_is_treated_as_incomplete)
+Rule 17.4 and 17.8's principle: unknown completeness is not completeness. ... ok
+test_attempted_and_effective_stay_distinct_through_aggregation (__main__.TestDistribution.test_attempted_and_effective_stay_distinct_through_aggregation)
+Rule 17.3: no group figure merges the two, which is the threat finding's whole point. ... ok
+test_both_counters_are_reported_for_all_three_kinds (__main__.TestDistribution.test_both_counters_are_reported_for_all_three_kinds)
+`VER-MOK-019` case Q10, on rule 17.3's reading. ... ok
+test_class_counts_within_a_group_sum_to_its_row_count (__main__.TestDistribution.test_class_counts_within_a_group_sum_to_its_row_count)
+Rule 16.6's consequence, which is the check that exactly one class was assigned per run. ... ok
+test_dispersion_is_minimum_median_and_maximum (__main__.TestDistribution.test_dispersion_is_minimum_median_and_maximum)
+Rule 17.1. ... ok
+test_engine_is_in_the_key_even_when_group_by_names_only_seed (__main__.TestDistribution.test_engine_is_in_the_key_even_when_group_by_names_only_seed)
+Rule 17.5 holds unconditionally, not only for the default axes. ... ok
+test_grouping_by_all_three_axes_gives_one_group_per_row (__main__.TestDistribution.test_grouping_by_all_three_axes_gives_one_group_per_row) ... ok
+test_groups_appear_in_first_encountered_order (__main__.TestDistribution.test_groups_appear_in_first_encountered_order)
+Rule 18.2's determinism: group order is a function of the retained row order. ... ok
+test_no_figure_in_the_report_is_a_floating_point_value (__main__.TestDistribution.test_no_figure_in_the_report_is_a_floating_point_value)
+Rule 17.2 and 18.3: no mean, so no float, so no figure claims unearned precision. ... ok
+test_the_engine_version_is_always_a_grouping_axis (__main__.TestDistribution.test_the_engine_version_is_always_a_grouping_axis)
+Rule 17.5: two engine versions are two experiments and are never merged silently. ... ok
+test_the_median_of_an_even_sized_group_is_the_lower_central_value (__main__.TestDistribution.test_the_median_of_an_even_sized_group_is_the_lower_central_value)
+Rule 17.2, fixed in the specification so it is not an implementation accident. ... ok
+test_the_rendering_states_both_counters_side_by_side (__main__.TestDistribution.test_the_rendering_states_both_counters_side_by_side)
+Rule 16.3: a rendering of the same figures, so it carries both columns per kind. ... ok
+test_the_sweep_is_restated_in_full_and_completeness_travels_with_it (__main__.TestDistribution.test_the_sweep_is_restated_in_full_and_completeness_travels_with_it)
+Rule 17.4: an incomplete sweep's distribution cannot be read without its incompleteness. ... ok
+test_every_threshold_lives_in_this_pair_of_files_and_nowhere_retained (__main__.TestDivisionOfLabour.test_every_threshold_lives_in_this_pair_of_files_and_nowhere_retained)
+Rule 19.3, and `REQ-MOK-081`. The clause bodies are the only place a threshold is written. ... ok
+test_no_network_credential_or_live_option_appears (__main__.TestDivisionOfLabour.test_no_network_credential_or_live_option_appears)
+Rule 19.4: neither instrument can reach a provider. ... ok
+test_the_classifier_does_not_import_the_batch_driver (__main__.TestDivisionOfLabour.test_the_classifier_does_not_import_the_batch_driver)
+Rule 1.5 and `REQ-MOK-082`: it works in a checkout with no engine binary present. ... ok
+test_the_classifier_executes_no_process (__main__.TestDivisionOfLabour.test_the_classifier_executes_no_process)
+Rule 19.2: the classifier reads retained output and nothing else. ... ok
+test_the_classifier_imports_only_the_standard_library (__main__.TestDivisionOfLabour.test_the_classifier_imports_only_the_standard_library)
+Rule 1.3. ... ok
+test_a_refused_group_by_exits_2_and_writes_no_report (__main__.TestGroupByOption.test_a_refused_group_by_exits_2_and_writes_no_report) ... ok
+test_a_repeated_axis_is_refused (__main__.TestGroupByOption.test_a_repeated_axis_is_refused) ... ok
+test_an_abbreviated_option_is_unknown (__main__.TestGroupByOption.test_an_abbreviated_option_is_unknown)
+`allow_abbrev=False`, matching the driver's parser. ... usage: classify_simulation_runs.py [-h] [--group-by GROUP_BY]
+                                   [--format {json,markdown}]
+                                   retained
+classify_simulation_runs.py: error: unrecognized arguments: --group
+ok
+test_an_axis_outside_the_three_is_refused (__main__.TestGroupByOption.test_an_axis_outside_the_three_is_refused) ... ok
+test_an_empty_axis_is_refused (__main__.TestGroupByOption.test_an_empty_axis_is_refused) ... ok
+test_every_groupable_axis_is_accepted (__main__.TestGroupByOption.test_every_groupable_axis_is_accepted) ... ok
+test_the_default_is_source_and_density (__main__.TestGroupByOption.test_the_default_is_source_and_density)
+Rule 16.2: density was the axis measured to move the outcome. ... ok
+test_a_complete_retained_file_is_read (__main__.TestInput.test_a_complete_retained_file_is_read) ... ok
+test_a_malformed_line_names_its_line_number (__main__.TestInput.test_a_malformed_line_names_its_line_number) ... ok
+test_a_missing_file_is_refused_rather_than_raising (__main__.TestInput.test_a_missing_file_is_refused_rather_than_raising) ... ok
+test_a_retained_file_with_no_sweep_record_is_refused (__main__.TestInput.test_a_retained_file_with_no_sweep_record_is_refused)
+Rule 17.8: without the sweep record neither the space swept nor its completeness is known. ... ok
+test_an_unknown_record_kind_is_refused (__main__.TestInput.test_an_unknown_record_kind_is_refused)
+A retained file the classifier does not fully understand is not partially understood. ... ok
+test_blank_lines_are_skipped (__main__.TestInput.test_blank_lines_are_skipped) ... ok
+test_a_complete_sweep_says_so_rather_than_staying_silent (__main__.TestOutput.test_a_complete_sweep_says_so_rather_than_staying_silent) ... ok
+test_an_incomplete_sweep_is_marked_incomplete_in_the_rendering (__main__.TestOutput.test_an_incomplete_sweep_is_marked_incomplete_in_the_rendering)
+Rule 17.4 and `REQ-MOK-083`: it cannot be read as a distribution over the stated sweep. ... ok
+test_defaulted_axes_are_named_in_the_rendering (__main__.TestOutput.test_defaulted_axes_are_named_in_the_rendering)
+Rule 6.5's `defaulted_axes` reaches the reader, who need not know the default sweep. ... ok
+test_json_is_the_default_format (__main__.TestOutput.test_json_is_the_default_format) ... ok
+test_markdown_is_a_rendering_and_states_the_same_counts (__main__.TestOutput.test_markdown_is_a_rendering_and_states_the_same_counts)
+Rule 16.3: regenerable, and not the authority for any figure. ... ok
+test_seeds_are_rendered_as_the_ranges_the_driver_accepts (__main__.TestOutput.test_seeds_are_rendered_as_the_ranges_the_driver_accepts) ... ok
+test_the_rendering_names_no_stream_digest (__main__.TestOutput.test_the_rendering_names_no_stream_digest)
+A digest belongs to the retained row that binds it, not to a rendering of a distribution. ... ok
+test_the_rendering_states_no_conclusion_expectation_or_passing_shape (__main__.TestOutput.test_the_rendering_states_no_conclusion_expectation_or_passing_shape)
+Rule 17.7: counts, and nothing that reads as a verdict on them. ... ok
+test_two_runs_over_the_same_input_are_byte_identical (__main__.TestOutput.test_two_runs_over_the_same_input_are_byte_identical)
+Rule 18.2. ... ok
+test_an_emptied_territory_beside_an_emptied_one_is_not_asymmetric (__main__.TestPredicates.test_an_emptied_territory_beside_an_emptied_one_is_not_asymmetric)
+Rule 16.5: asymmetry needs one emptied and another not. Both emptied is extinction's case. ... ok
+test_an_odd_roster_at_the_boundary (__main__.TestPredicates.test_an_odd_roster_at_the_boundary)
+`deaths * 2 >= roster` is stated in integers, so an odd roster has no rounding question. ... ok
+test_clause_1_extinction (__main__.TestPredicates.test_clause_1_extinction) ... ok
+test_clause_2_famine (__main__.TestPredicates.test_clause_2_famine) ... ok
+test_clause_3_asymmetric_collapse (__main__.TestPredicates.test_clause_3_asymmetric_collapse) ... ok
+test_clause_4_collapse (__main__.TestPredicates.test_clause_4_collapse) ... ok
+test_clause_5_coexistence_is_the_residual (__main__.TestPredicates.test_clause_5_coexistence_is_the_residual) ... ok
+test_collapse_is_at_least_half_the_roster_not_more_than_half (__main__.TestPredicates.test_collapse_is_at_least_half_the_roster_not_more_than_half)
+Rule 16.5's threshold, at its boundary. Six of twelve is a collapse; five is not. ... ok
+test_famines_predicate_reads_depleted_and_not_standing_supply (__main__.TestPredicates.test_famines_predicate_reads_depleted_and_not_standing_supply)
+Rule 16.8: the clause is retained and no threshold over standing food is invented for it. ... ok
+test_the_vocabulary_has_exactly_five_members_in_the_specified_order (__main__.TestPredicates.test_the_vocabulary_has_exactly_five_members_in_the_specified_order)
+Rule 16.5: the order is part of the definition, so it is asserted rather than assumed. ... ok
+test_editing_a_threshold_changes_classes_and_changes_no_retained_byte (__main__.TestThresholdInvariance.test_editing_a_threshold_changes_classes_and_changes_no_retained_byte)
+`SPEC-MOK-006` rule 8.7 and `REQ-MOK-081`, checked as a digest either side of the edit. ... ok
+test_the_classifier_never_opens_the_retained_output_for_writing (__main__.TestThresholdInvariance.test_the_classifier_never_opens_the_retained_output_for_writing)
+`REQ-MOK-081`: a retained row is immutable once written, so nothing here writes one. ... ok
+test_a_group_whose_rows_all_lack_a_figure_states_it_as_absent (__main__.TestUnclassified.test_a_group_whose_rows_all_lack_a_figure_states_it_as_absent)
+A figure no row carries is `null` rather than a fabricated zero. ... ok
+test_a_nested_fact_is_named_by_its_path (__main__.TestUnclassified.test_a_nested_fact_is_named_by_its_path)
+A row carrying `regeneration_skipped` without `depleted` is as unclassifiable as one without it. ... ok
+test_a_row_lacking_a_fact_a_predicate_reads_is_reported_with_that_fact_named (__main__.TestUnclassified.test_a_row_lacking_a_fact_a_predicate_reads_is_reported_with_that_fact_named)
+`VER-MOK-019` case Q4: not classified on the facts that happen to be present. ... ok
+test_a_row_matching_no_clause_is_reported_rather_than_defaulted_or_dropped (__main__.TestUnclassified.test_a_row_matching_no_clause_is_reported_rather_than_defaulted_or_dropped)
+Rule 16.10: reachable only if the clause set is edited so clause 5 is not the residual. ... ok
+test_an_unclassifiable_row_does_not_stop_the_distribution (__main__.TestUnclassified.test_an_unclassifiable_row_does_not_stop_the_distribution)
+The other rows in its group are still aggregated, and the group's figures still hold. ... ok
+
+----------------------------------------------------------------------
+Ran 65 tests in 0.072s
+
+OK
+
+
+$ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+exit 0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
+
+
+$ cargo fmt --check
+exit 0
+
+
+$ cargo test --locked --workspace
+exit 0
+
+running 175 tests
+test simulation::tests::a_ceiling_stop_says_so_and_carries_no_decimal_separator ... ok
+test simulation::tests::a_metrics_record_over_an_empty_living_population_reports_null_extrema ... ok
+test simulation::tests::a_field_name_inside_a_value_is_not_a_field ... ok
+test simulation::tests::a_dead_mokiterion_reports_no_fear_and_no_decision ... ok
+test simulation::tests::a_closed_output_is_an_error_and_not_an_empty_response ... ok
+test simulation::tests::a_defender_below_its_attackers_identifier_answers_on_the_next_tick ... ok
+test simulation::tests::a_full_health_mokiterion_falls_in_four_strikes_at_most_and_ten_at_least ... ok
+test simulation::tests::a_mokiterion_killed_mid_tick_takes_no_further_opportunity ... ok
+test simulation::tests::a_grammar_refused_response_is_billed_as_well_as_counted ... ok
+test simulation::tests::a_lent_ports_cost_rises_across_ticks_and_reaches_a_ceiling ... ok
+test simulation::tests::a_record_sink_that_fails_at_once_ends_the_run_before_any_text_is_written ... ok
+test simulation::tests::a_pipe_that_failed_is_not_retried ... ok
+test simulation::tests::a_deterministic_source_reports_no_run_record ... ok
+test simulation::tests::a_record_sink_that_fails_mid_run_leaves_no_run_record ... ok
+test simulation::tests::a_binding_needs_both_fields_and_a_nonempty_model ... ok
+test simulation::tests::a_line_that_is_not_a_response_is_a_counted_fallback ... ok
+test simulation::tests::a_proposed_wait_and_a_fallback_wait_are_distinguishable ... ok
+test simulation::tests::a_rejected_targeted_proposal_mutates_nothing_and_reports_nothing ... ok
+test simulation::tests::a_record_carries_the_response_and_the_reported_counts ... ok
+test simulation::tests::a_port_lent_for_the_run_accumulates_across_ticks ... ok
+test simulation::tests::a_rejected_proposal_is_not_a_fallback_and_the_count_matches_the_transcript ... ok
+test simulation::tests::a_replay_never_halts_whatever_the_recorded_run_spent ... ok
+test simulation::tests::a_record_carries_the_variable_part_and_the_head_carries_the_rest ... ok
+test simulation::tests::a_replay_failure_is_latched_and_produces_no_further_ticks ... ok
+test simulation::tests::a_replay_reads_nothing_until_the_run_needs_a_record ... ok
+test simulation::tests::a_resolution_touches_nobody_but_its_two_parties ... ok
+test simulation::tests::a_record_states_no_response_no_usage_and_no_credential ... ok
+test simulation::tests::a_recorded_fallback_replays_as_the_fallback ... ok
+test simulation::tests::a_response_refused_on_its_verb_still_reports_what_answered ... ok
+test simulation::tests::a_response_survives_the_record_it_is_written_into ... ok
+test simulation::tests::a_response_terminated_with_a_carriage_return_is_read ... ok
+test simulation::tests::a_replay_refuses_a_transcript_recorded_against_another_prefix ... ok
+test simulation::tests::a_response_survives_the_framing_and_names_no_field ... ok
+test simulation::tests::a_strike_that_empties_health_kills_through_rule_13_and_no_other_path ... ok
+test simulation::tests::a_surrender_buys_no_immunity_and_is_paid_again ... ok
+test simulation::tests::a_run_stops_at_its_ceiling_and_leaves_both_streams_complete_to_the_tick_reached ... ok
+test simulation::tests::a_surrender_forfeits_half_its_own_satiety_and_discards_what_does_not_fit ... ok
+test simulation::tests::a_replay_re_authors_the_evidence_the_recording_carried ... ok
+test simulation::tests::a_threat_composes_with_rule_12_in_turn_order_and_outlasts_its_tick ... ok
+test simulation::tests::a_replay_writes_no_transcript ... ok
+test simulation::tests::a_threat_moves_the_targets_fear_and_nothing_else ... ok
+test simulation::tests::a_trait_difference_alone_decides_whether_a_clipped_resource_is_eaten ... ok
+test simulation::tests::a_transcript_holding_a_retried_exchange_cannot_be_replayed ... ok
+test simulation::tests::a_transcript_that_cannot_be_written_ends_the_run ... ok
+test simulation::tests::a_targeted_move_is_a_rule_8_move_on_rule_5s_axis ... ok
+test simulation::tests::a_transient_failure_is_attempted_four_times_and_counts_one_fallback ... ok
+test simulation::tests::an_admitted_response_yields_the_action_the_counts_and_the_line ... ok
+test simulation::tests::an_escape_this_module_never_writes_is_not_read_generously ... ok
+test simulation::tests::a_transient_failure_that_then_succeeds_counts_no_fallback ... ok
+test simulation::tests::a_saturated_counter_neither_wraps_nor_panics ... ok
+test simulation::tests::an_exchange_that_reported_nothing_costs_nothing_and_is_still_an_exchange ... ok
+test simulation::tests::action_tracing_is_optional_complete_and_observational ... ok
+test simulation::tests::answering_one_attack_closes_the_window_on_every_attack_in_it ... ok
+test simulation::tests::a_replay_refuses_a_record_that_is_not_the_opportunity_reached ... ok
+test simulation::tests::an_unusable_count_is_absent_rather_than_zero ... ok
+test simulation::tests::block_a_gives_no_strategy_and_names_nothing_that_varies ... ok
+test simulation::tests::a_port_under_another_source_is_ignored_and_is_not_an_error ... ok
+test simulation::tests::block_c_states_the_observation_in_order_and_states_its_empty_lists ... ok
+test simulation::tests::block_c_states_the_same_cell_as_a_word ... ok
+test simulation::tests::block_d_enumerates_a_targeted_verb_only_where_its_preconditions_are_met ... ok
+test simulation::tests::both_parties_may_die_within_one_tick ... ok
+test simulation::tests::an_unreported_count_is_absent_and_not_zero ... ok
+test simulation::tests::branch_one_answers_the_earliest_attacker_and_precedes_every_other_branch ... ok
+test simulation::tests::at_tolerance_zero_the_trait_aware_source_proposes_what_the_reference_source_proposes ... ok
+test simulation::tests::block_a_is_one_string_for_the_run_and_block_b_is_one_per_mokiterion ... ok
+test simulation::tests::branch_one_answers_the_first_attack_at_the_specified_fear_thresholds ... ok
+test simulation::tests::building_an_observation_consumes_no_entropy_and_mutates_nothing ... ok
+test simulation::tests::branch_two_puts_survival_before_society_and_draws_nothing ... ok
+test simulation::tests::co_located_entities_are_reported_at_distance_zero_without_a_direction ... ok
+test simulation::tests::contact_and_resolution_span_the_territory_boundary ... ok
+test simulation::tests::contact_is_recomputed_from_position_and_needs_two_living_neighbors ... ok
+test simulation::tests::cost_is_integer_arithmetic_over_the_declared_prices ... ok
+test simulation::tests::a_transcript_that_ends_early_fails_and_names_the_opportunity ... ok
+test simulation::tests::eating_is_atomic_bounded_and_single_use ... ok
+test simulation::tests::every_block_survives_the_escaping_unchanged ... ok
+test simulation::tests::every_closed_domain_that_reaches_a_record_is_on_the_alphabet ... ok
+test simulation::tests::branches_four_and_five_choose_by_distance_then_by_the_engagement_threshold ... ok
+test simulation::tests::every_event_kind_has_its_exact_record_shape ... ok
+test simulation::tests::every_proposal_shape_is_the_action_word_and_the_one_value_it_carries ... ok
+test simulation::tests::every_record_reaches_the_transcript_before_the_port_is_dropped ... ok
+test simulation::tests::a_surplus_tail_is_unread_and_the_run_is_unaffected ... ok
+test simulation::tests::every_targeted_rejection_names_the_first_unmet_condition ... ok
+test simulation::tests::exchanging_the_two_identifiers_changes_no_outcome ... ok
+test simulation::tests::extinction_takes_precedence_at_the_tick_limit ... ok
+test simulation::tests::every_response_the_grammar_refuses_is_a_counted_fallback ... ok
+test simulation::tests::fear_ignores_how_many_are_perceived_how_far_and_in_which_direction ... ok
+test simulation::tests::fear_rises_at_the_perception_boundary_and_decays_one_cell_beyond_it ... ok
+test simulation::tests::fear_saturates_at_both_bounds_and_is_reported_every_tick ... ok
+test simulation::tests::food_regeneration_respects_capacity ... ok
+test simulation::tests::food_regenerates_only_in_nonempty_nonfull_territories ... ok
+test simulation::tests::initial_world_population_and_food_match_the_contract ... ok
+test simulation::tests::initialization_is_seeded_and_reproducible ... ok
+test simulation::tests::invalid_move_does_not_mutate_action_state ... ok
+test simulation::tests::movement_crosses_territory_and_is_observable ... ok
+test simulation::tests::naming_draws_nothing_and_reads_neither_the_seed_nor_the_configuration ... ok
+test simulation::tests::attributes_stay_within_bounds_across_a_long_reference_run ... ok
+test simulation::tests::no_resolution_and_no_targeted_move_touches_the_shared_stream ... ok
+test simulation::tests::no_proposal_obtained_is_wait_and_nothing_else ... ok
+test simulation::tests::a_replay_reproduces_the_recorded_runs_bytes ... ok
+test simulation::tests::both_sources_run_are_reported_and_are_byte_identically_reproducible ... ok
+test simulation::tests::only_the_two_transient_kinds_are_attempted_more_than_once ... ok
+test simulation::tests::perception_crosses_the_territory_boundary ... ok
+test simulation::tests::perception_excludes_distant_resources_and_dead_neighbours ... ok
+test simulation::tests::perception_grants_no_ability_to_act_at_a_distance ... ok
+test simulation::tests::perception_is_symmetric_between_living_mokiterions ... ok
+test simulation::tests::perception_order_is_stable_and_independent_of_collection_order ... ok
+test simulation::tests::perception_reports_in_radius_food_with_class_direction_and_distance ... ok
+test simulation::tests::print_base_commit_entropy_literals ... ignored, instrument: prints the base-commit constant in source form, run it by name
+test simulation::tests::perception_reports_living_neighbours_and_never_the_observer ... ok
+test simulation::tests::regeneration_adds_only_what_remaining_capacity_allows ... ok
+test simulation::tests::sleep_restores_energy_without_exceeding_the_maximum ... ok
+test simulation::tests::splitmix64_sequence_is_stable ... ok
+test simulation::tests::density_binds_initialization_capacity_and_the_replenishment_target ... ok
+test simulation::tests::survival_decay_saturates_and_death_is_final ... ok
+test simulation::tests::the_action_grammar_round_trips_and_refuses_what_it_does_not_admit ... ok
+test simulation::tests::strike_damage_is_the_strikers_own_condition_and_the_cost_is_flat ... ok
+test simulation::tests::the_action_vocabulary_is_eleven_kinds_and_seven_name_a_target ... ok
+test simulation::tests::the_binding_is_the_first_reported_and_is_never_replaced ... ok
+test simulation::tests::block_d_offers_exactly_what_the_engine_would_accept_from_the_observation ... ok
+test simulation::tests::repeated_runs_are_byte_identical ... ok
+test simulation::tests::the_cache_ratio_is_the_reported_figures_or_nothing ... ok
+test simulation::tests::the_binding_survives_a_connector_that_stops_answering ... ok
+test simulation::tests::the_ceiling_is_checked_before_the_exchange_and_admits_exactly_two ... ok
+test simulation::tests::the_corrected_non_waste_condition_admits_the_specified_boundaries ... ok
+test simulation::tests::the_declared_prices_cross_into_the_arithmetics_order_unchanged ... ok
+test simulation::tests::the_ceiling_stops_the_retrying_before_the_bound ... ok
+test simulation::tests::the_engine_stops_inside_the_first_tick_when_the_ceiling_is_two_exchanges ... ok
+test simulation::tests::the_escaping_survives_the_framing_and_round_trips ... ok
+test simulation::tests::one_exchange_is_one_record_naming_its_opportunity ... ok
+test simulation::tests::the_four_existing_sources_entropy_state_at_every_tick_boundary ... ignored, instrument: prints ~20,000 lines for an external capture, run it by name
+test simulation::tests::the_fallback_is_wait_counted_and_marks_the_run ... ok
+test simulation::tests::no_rule_reads_a_cumulative_counter ... ok
+test simulation::tests::the_header_record_states_the_resolved_configuration_and_never_a_path ... ok
+test simulation::tests::the_names_are_the_specified_twelve ... ok
+test simulation::tests::the_llm_source_reaches_both_record_domains_under_schema_three ... ok
+test simulation::tests::the_port_renders_a_targeted_action_with_its_target ... ok
+test simulation::tests::the_port_source_draws_no_entropy ... ok
+test simulation::tests::the_head_declares_every_mokiterion_once_in_identifier_order ... ok
+test simulation::tests::the_reasoning_share_of_the_output_count_is_billed_once ... ok
+test simulation::tests::the_radius_boundary_is_inclusive_and_exclusive_by_one_cell ... ok
+test simulation::tests::the_reference_source_approaches_then_consumes_a_perceived_resource ... ok
+test simulation::tests::the_reference_source_cannot_mutate_authoritative_state ... ok
+test simulation::tests::the_reference_source_does_not_approach_a_resource_it_would_decline ... ok
+test simulation::tests::the_reference_source_does_not_consume_a_resource_it_does_not_need ... ok
+test simulation::tests::the_reference_source_prefers_the_horizontal_axis_on_a_diagonal_approach ... ok
+test simulation::tests::the_reference_source_prefers_the_nearest_then_richest_resource ... ok
+test simulation::tests::the_reference_source_searches_rather_than_waiting_when_it_perceives_nothing ... ok
+test simulation::tests::the_reference_source_sustains_itself_before_seeking_or_searching ... ok
+test simulation::tests::the_reported_record_carries_the_name_the_agent_holds ... ok
+test simulation::tests::the_request_carries_four_blocks_in_the_cacheable_order ... ok
+test simulation::tests::the_request_is_one_line_of_the_five_documented_fields ... ok
+test simulation::tests::the_run_record_carries_every_figure_rule_15_names ... ok
+test simulation::tests::the_schema_offers_exactly_the_verbs_the_engine_admits ... ok
+test simulation::tests::the_entropy_state_after_initialization_is_the_seed_and_the_density_alone ... ok
+test simulation::tests::the_suffered_window_opens_in_resolution_order_and_closes_at_the_next_opportunity ... ok
+test simulation::tests::the_tolerant_test_governs_seeking_as_well_as_eating ... ok
+test simulation::tests::the_trace_reports_the_fear_the_survival_record_then_changes ... ok
+test simulation::tests::the_reference_source_never_waits_and_never_runs_its_energy_to_zero ... ok
+test simulation::tests::the_trait_reads_the_seed_and_not_only_the_identifier ... ok
+test simulation::tests::the_twelve_traits_are_the_recorded_ones_and_are_neither_uniform_nor_out_of_range ... ok
+test simulation::tests::the_social_source_draws_at_most_once_and_never_for_a_targeted_proposal ... ok
+test simulation::tests::this_source_with_no_port_refuses_and_runs_nothing ... ok
+test simulation::tests::the_same_configuration_composes_the_same_requests ... ok
+test simulation::tests::a_recorded_run_writes_the_same_text_bytes_as_an_unrecorded_one ... ok
+test simulation::tests::untrusted_decisions_are_validated_and_traced ... ok
+test simulation::tests::trait_derivation_leaves_the_shared_stream_where_it_found_it ... ok
+test simulation::tests::a_name_is_the_same_value_at_both_ends_of_a_run ... ok
+test simulation::tests::the_trait_is_fixed_for_the_run_and_independent_of_every_configuration ... ok
+test simulation::tests::with_no_company_and_an_empty_record_the_social_source_is_the_individual_source ... ok
+test simulation::tests::every_cumulative_counter_equals_its_event_count_in_the_text_stream ... ok
+test simulation::tests::individual_runs_are_reported_and_byte_identically_reproducible ... ok
+test simulation::tests::no_source_but_rule_26s_opens_the_suffered_window ... ok
+test simulation::tests::a_record_sink_moves_no_entropy_draw_at_any_tick_boundary ... ok
+test simulation::tests::the_four_existing_sources_draw_what_the_base_commit_drew ... ok
+test simulation::tests::the_entropy_state_at_the_thousandth_tick_is_unmoved_by_a_sink ... ok
+
+test result: ok. 173 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 6.73s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 33 tests
+test defaults_are_stable ... ok
+test a_live_run_with_no_connector_is_refused_before_any_tick ... ok
+test a_live_run_with_no_prices_is_refused_before_any_tick ... ok
+test both_policies_are_selectable_and_reference_is_the_default ... ok
+test density_is_accepted_in_the_specified_forms_and_rejected_otherwise ... ok
+test a_live_run_with_no_transcript_output_is_refused_before_any_tick ... ok
+test help_survives_both_combination_refusals ... ok
+test a_live_run_with_no_ceiling_is_refused_before_any_tick ... ok
+test duplicates_and_missing_values_are_rejected ... ok
+test each_documented_default_parses_to_the_applied_default ... ok
+test options_work_in_any_order ... ok
+test each_declared_default_is_stated_once ... ok
+test the_exit_status_states_the_refused_combination_and_the_unreadable_transcript ... ok
+test the_help_text_states_order_and_repetition ... ok
+test the_prices_option_is_refused_under_every_source_that_decides_for_itself ... ok
+test the_replay_source_with_no_transcript_is_refused_and_the_refusal_names_the_option ... ok
+test the_prices_are_read_in_the_stated_order_and_a_transposition_is_a_different_run ... ok
+test the_flags_state_their_effect_and_no_default_value ... ok
+test the_entries_state_the_constraints_that_decide_validity ... ok
+test the_sink_option_is_validated_and_its_value_is_not_retained ... ok
+test the_documented_options_are_exactly_the_options_the_parser_accepts ... ok
+test the_prices_option_is_validated_and_its_four_values_are_retained ... ok
+test the_social_policy_is_selectable_and_does_not_become_the_default ... ok
+test the_trait_aware_policy_is_selectable_and_does_not_become_the_default ... ok
+test the_transcript_option_is_refused_under_every_source_that_decides_for_itself ... ok
+test the_binary_and_the_parser_spell_the_sink_option_the_same_way ... ok
+test the_prices_entry_states_its_unit_and_its_order ... ok
+test the_transcript_option_is_validated_and_its_value_is_not_retained ... ok
+test the_sink_option_states_what_it_writes_and_what_it_replaces ... ok
+test the_binary_and_the_parser_spell_the_transcript_option_the_same_way ... ok
+test the_unknown_policy_diagnostic_names_every_accepted_value ... ok
+test every_option_the_synopsis_names_has_an_options_entry ... ok
+test the_transcript_option_states_when_it_is_required_and_when_it_is_refused ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test a_connector_that_cannot_be_started_creates_no_transcript ... ok
+test a_connector_that_exits_badly_is_reported_without_changing_the_exit_code ... ok
+test a_transport_failure_is_retried_and_every_attempt_is_recorded ... ok
+test a_response_that_names_neither_model_nor_level_is_a_fallback ... ok
+test a_live_run_spawns_the_connector_and_records_every_exchange ... ok
+test a_connector_that_dies_mid_run_leaves_a_run_of_fallbacks ... ok
+test an_existing_transcript_destination_is_refused_and_left_untouched ... ok
+test a_live_run_stops_at_its_ceiling_and_leaves_the_record_stream_behind ... ok
+test an_empty_credential_is_treated_as_absent ... ok
+test a_transcript_holding_a_retried_exchange_is_refused_by_its_own_replay ... ok
+test no_credential_refuses_on_the_first_exchange ... ok
+test exhausted_retries_are_a_counted_fallback_and_the_run_continues ... ok
+test the_credential_value_reaches_no_produced_byte ... ok
+test no_connector_is_spawned_without_the_live_selection ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 3 tests
+test the_trait_aware_source_never_waits_and_proposes_only_valid_actions ... ok
+test the_acting_order_is_one_ascending_pass_per_tick_under_the_social_source ... ok
+test every_targeted_verb_applies_somewhere_in_the_declared_matrix ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+
+running 2 tests
+test a_density_resolving_to_no_resources_is_rejected ... ok
+test density_resolves_to_the_specified_resource_count ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test the_initialization_record_keeps_the_name_first_and_the_trait_last ... ok
+test every_run_reports_the_specified_twelve_names_in_identifier_order ... ok
+test a_name_is_reported_once_and_on_no_other_record ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 1 test
+test no_outcome_threshold_exists_for_the_model_backed_source ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 8 tests
+test help_exits_successfully ... ok
+test the_diagnostic_path_appends_the_whole_usage_text ... ok
+test a_density_resolving_to_no_resources_exits_with_code_two_before_initialization ... ok
+test invalid_configuration_exits_with_code_two ... ok
+test output_failure_exits_with_code_one ... ok
+test the_library_never_opens_the_transcript_it_was_told_about ... ok
+test the_trait_aware_source_runs_to_completion_and_reports_each_trait_once ... ok
+test the_social_source_runs_to_completion_and_exits_successfully ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 17 tests
+test a_failed_run_removes_the_destination_it_created ... ok
+test an_unopenable_destination_exits_one_and_runs_no_tick ... ok
+test help_opens_no_file ... ok
+test a_destination_the_process_did_not_create_is_not_removed ... ok
+test an_existing_destination_is_replaced_by_the_new_run ... ok
+test a_sink_diagnostic_is_distinguishable_from_a_text_stream_diagnostic ... ok
+test a_malformed_sink_argument_exits_two_and_writes_nothing ... ok
+test the_record_stream_is_byte_identical_across_runs ... ok
+test null_appears_only_where_a_fact_does_not_exist ... ok
+test every_metrics_record_is_internally_consistent ... ok
+test every_cumulative_figure_equals_its_event_record_count ... ok
+test the_run_record_reconstructs_the_summary_line ... ok
+test the_stream_is_one_record_per_line_in_the_order_the_specification_fixes ... ok
+test no_record_carries_a_path_or_the_sinks_own_destination ... ok
+test the_text_stream_is_byte_identical_with_and_without_a_sink ... ok
+test every_text_event_line_is_reconstructible_from_its_event_record ... ok
+test every_key_in_the_stream_is_a_key_the_specification_names ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+
+running 20 tests
+test regenerate_the_committed_transcript ... ignored, writes into the working tree; run deliberately when the recorded run changes
+test the_binary_refuses_the_replay_source_with_no_transcript ... ok
+test the_committed_transcript_carries_no_credential_and_no_conversion ... ok
+test the_committed_transcript_covers_what_the_reading_cases_rest_on ... ok
+test the_binary_refuses_a_transcript_under_a_source_that_decides_for_itself ... ok
+test the_committed_transcript_is_the_run_it_says_it_is ... ok
+test the_live_transcript_records_no_fallback_and_no_retried_attempt ... ok
+test a_transcript_that_cannot_be_read_creates_no_record_file ... ok
+test a_transcript_that_cannot_be_read_exits_one_and_names_it ... ok
+test both_of_rule_twenty_fives_doors_carry_the_port ... ok
+test a_refused_replay_names_no_provider_and_no_credential ... ok
+test the_live_transcript_is_populated_where_the_recorded_one_is_absent ... ok
+test a_replay_at_another_density_fails_and_names_the_mismatch ... ok
+test the_binary_replays_the_committed_transcript_into_the_recorded_runs_bytes ... ok
+test attempt_ones_transcript_replays_into_its_retained_output ... ok
+test the_live_evidence_carries_no_credential_and_names_the_provider_once ... ok
+test the_live_transcript_replays_into_the_run_its_record_stream_describes ... ok
+test the_record_stream_names_the_source_once_before_any_tick_at_every_declared_seed ... ok
+test no_record_form_is_unique_to_the_port_at_any_declared_seed ... ok
+test a_recording_and_its_replay_agree_at_every_declared_seed_with_tracing_on_and_off ... ok
+
+test result: ok. 19 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+
+running 5 tests
+test tick_limit_terminates_with_one_summary ... ok
+test a_long_configured_run_is_bounded_and_does_not_panic ... ok
+test a_long_run_is_bounded_under_the_trait_aware_source ... ok
+test a_long_run_is_bounded_under_either_source ... ok
+test a_long_run_is_bounded_under_the_social_source ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
+
+
+running 5 tests
+test the_social_source_keeps_the_world_habitable_and_combat_lethal ... ok
+test the_reference_source_sustains_the_population_at_every_declared_density ... ok
+test the_trait_aware_source_sustains_the_population_at_every_declared_density ... ok
+test no_identifier_series_is_monotone_in_identifier ... ok
+test survival_by_turn_position_stays_inside_the_stated_bound ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.33s
+
+
+running 59 tests
+test render::tests::a_bar_row_shrinks_to_its_pane_and_never_overflows_it ... ok
+test render::tests::a_band_reads_only_the_value_it_is_given ... ok
+test render::tests::a_zero_value_is_a_zero_and_an_absent_value_is_a_dash ... ok
+test render::tests::a_depleted_territory_is_stated_in_words_at_every_width ... ok
+test render::tests::an_entry_carries_the_name_before_the_identifier_and_takes_six_columns ... ok
+test render::tests::each_gauge_carries_its_own_band_and_nothing_else_carries_one ... ok
+test render::tests::the_bar_row_reproduces_the_specified_form ... ok
+test render::tests::no_labelling_changes_a_value ... ok
+test render::tests::the_collapsed_form_takes_no_band ... ok
+test render::tests::a_commit_variable_set_to_the_empty_string_is_not_a_supplied_commit ... ok
+test render::tests::fields_leave_the_footer_in_the_order_clause_4_fixes ... ok
+test render::tests::the_footer_survives_the_narrowest_viewport ... ok
+test render::tests::the_help_overlay_lists_every_bound_key ... ok
+test render::tests::the_entropy_seed_survives_the_floor_across_the_whole_u64_range ... ok
+test render::tests::banding_changes_no_character_of_an_entry ... ok
+test render::tests::an_overlay_covers_the_body_and_leaves_the_header_and_the_footer ... ok
+test render::tests::the_survival_bands_are_the_three_the_rule_fixes ... ok
+test render::tests::the_authority_overlay_names_identifiers_for_every_event_type ... ok
+test render::tests::the_authority_overlay_shows_every_source_at_a_width_that_would_have_cut_one ... ok
+test render::tests::the_territory_rule_marks_the_row_between_the_territories ... ok
+test render::tests::a_resize_changes_the_layout_and_nothing_else ... ok
+test state::tests::a_death_carries_no_attribute_the_engine_never_reported_for_its_subject ... ok
+test render::tests::the_retained_count_and_its_marker_are_never_separated ... ok
+test render::tests::the_log_shows_the_newest_records_and_reports_an_empty_filter ... ok
+test render::tests::the_footer_sheds_no_more_fields_than_the_width_requires ... ok
+test state::tests::a_kind_that_never_happened_presents_a_measured_zero_while_an_uncomputed_value_stays_absent ... ok
+test render::tests::no_footer_value_is_ever_cut_at_any_width ... ok
+test render::tests::the_inspector_states_absence_rather_than_inventing_a_subject ... ok
+test state::tests::before_the_first_completed_tick_the_pane_states_so_and_presents_no_figure ... ok
+test state::tests::every_kind_of_the_action_contract_reaches_the_pane_under_its_own_label ... ok
+test state::tests::extinction_clears_the_selection_and_presents_the_completed_totals_unprompted ... ok
+test state::tests::selection_clears_itself_when_no_living_mokiterion_remains ... ok
+test state::tests::the_highlighted_record_is_the_newest_until_the_operator_scrolls ... ok
+test state::tests::no_total_moves_with_the_action_trace_flag ... ok
+test state::tests::the_log_cursor_scrolls_only_inside_the_log_overlay ... ok
+test state::tests::the_population_pane_states_the_engine_s_own_tick_living_and_death_counts ... ok
+test state::tests::each_total_the_engine_states_twice_agrees_with_its_second_record ... ok
+test state::tests::a_dead_selection_is_retained_and_the_next_control_finds_a_living_neighbour ... ok
+test state::tests::every_population_total_is_the_independent_sum_at_every_tick ... ok
+test state::tests::a_dead_mokiterion_s_totals_stop_moving_and_are_never_removed ... ok
+test state::tests::the_killed_total_is_the_engine_s_fatal_strikes_where_both_verbs_occur ... ok
+test state::tests::the_death_split_accounts_for_every_death_and_names_no_cause_it_cannot ... ok
+test state::tests::two_decision_sources_produce_profiles_that_differ_in_the_stated_direction ... ok
+test verification::a_subject_whose_record_was_never_ingested_is_presented_without_a_name ... ok
+test verification::every_presented_value_is_the_snapshots ... ok
+test verification::every_distinction_survives_the_loss_of_colour ... ok
+test verification::overview_encodes_no_resource_class_and_detail_zoom_does ... ok
+test verification::the_presented_verdict_is_the_snapshots_and_a_rejection_is_not_a_fault ... ok
+test verification::a_filter_changes_what_is_presented_and_nothing_else ... ok
+test verification::drawing_is_pure ... ok
+test verification::a_degenerate_world_still_draws_a_frame ... ok
+test state::tests::the_verb_totals_and_the_rejections_account_for_every_opportunity ... ok
+test state::tests::every_total_equals_an_independent_count_on_every_declared_seed ... ok
+test state::tests::no_total_ever_decreases_on_any_declared_seed ... ok
+test render::tests::the_candidate_commit_is_shed_before_every_field_rule_8_requires ... ok
+test verification::presentation_state_survives_every_resize ... ok
+test render::tests::a_ten_point_step_moves_the_fill_at_the_reference_viewport ... ok
+test render::tests::every_bar_width_the_roster_can_produce_resolves_a_ten_point_step ... ok
+test state::tests::totals_survive_the_event_buffer_dropping_its_oldest_record ... ok
+
+test result: ok. 59 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.63s
+
+
+running 8 tests
+test tests::a_cadence_that_has_never_run_is_due_and_one_just_run_is_not ... ok
+test tests::an_invalid_input_is_refused_before_the_terminal_with_code_two ... ok
+test tests::help_exits_successfully_on_standard_output ... ok
+test tests::the_tick_interval_is_a_thousand_milliseconds_over_the_speed ... ok
+test tests::the_idle_wait_never_exceeds_the_nearest_deadline ... ok
+test tests::an_export_path_is_not_touched_at_start_up ... ok
+test tests::a_viewport_below_the_floor_is_refused_with_both_dimensions_and_code_two ... ok
+test tests::a_run_the_operator_ended_reports_itself_as_ended_early ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test an_ordinary_record_resolves_from_its_own_payload ... ok
+test every_event_type_the_observer_can_present_has_an_entry ... ok
+test the_mapping_is_the_specified_one ... ok
+test the_decision_source_maps_by_the_source_the_record_names ... ok
+test the_source_row_names_every_source_and_agrees_with_the_mapping ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test the_default_path_is_relative_and_derived_from_the_run ... ok
+test records_use_the_engines_own_line_format_in_authoritative_order ... ok
+test the_same_records_always_produce_the_same_bytes ... ok
+test nothing_environment_specific_reaches_the_file ... ok
+test an_unwritable_path_is_reported_and_leaves_nothing_behind ... ok
+test a_written_file_holds_exactly_the_rendered_records ... ok
+test the_closing_line_states_the_count_and_the_truncation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 11 tests
+test every_region_stays_inside_the_viewport_and_the_body_rows_are_contiguous ... ok
+test the_floor_is_the_specified_one ... ok
+test the_declared_viewports_yield_the_declared_canvases ... ok
+test each_pane_appears_at_its_threshold_on_the_axis_that_constrains_it ... ok
+test the_one_to_one_threshold_with_the_inspector_shown_is_157_columns ... ok
+test the_one_to_one_threshold_with_the_roster_alone_is_113_columns ... ok
+test the_reference_roster_interior_holds_the_whole_population ... ok
+test the_vertical_one_to_one_threshold_is_44_rows ... ok
+test excluded_panes_are_the_ones_the_viewport_omits ... ok
+test the_log_is_six_rows_wherever_it_is_present ... ok
+test enlarging_the_viewport_never_removes_a_pane ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 18 tests
+test help_wins_over_every_other_input ... ok
+test defaults_match_the_specified_values ... ok
+test no_invocation_this_program_accepts_carries_a_spend_ceiling ... ok
+test simulation_inputs_keep_the_engine_parser_and_its_rejections ... ok
+test an_export_path_is_taken_verbatim_as_data ... ok
+test the_replay_source_with_no_transcript_is_refused_at_start_up ... ok
+test observer_inputs_are_validated ... ok
+test speed_steps_are_clamped_at_both_ends ... ok
+test the_live_run_options_are_refused_and_name_the_host ... ok
+test the_shared_entries_are_the_engines_own_words ... ok
+test the_transcript_option_is_never_accepted_and_ignored ... ok
+test the_usage_text_advertises_every_policy_the_engine_accepts ... ok
+test the_transcript_path_is_re_read_verbatim_and_reaches_no_configuration ... ok
+test tracing_is_always_on_and_cannot_be_turned_off ... ok
+test every_target_spells_the_transcript_option_the_same_way ... ok
+test the_usage_text_states_that_this_host_only_replays ... ok
+test the_refused_list_and_the_engines_own_options_agree ... ok
+test a_refused_live_run_enters_no_terminal_and_spawns_nothing ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 29 tests
+test below_the_floor_nothing_is_presented ... ok
+test detail_zoom_places_every_visible_entity_at_its_mapped_cell ... ok
+test a_reported_failure_reaches_the_header ... ok
+test a_region_states_the_world_range_it_presents ... ok
+test a_selected_entry_keeps_its_bands_under_reversed_video ... ok
+test the_announcement_appears_and_disappears_with_the_pane_it_names ... ok
+test the_announcement_is_emphasised_and_the_optional_segments_are_not ... ok
+test both_pane_states_present_the_same_figures_as_the_overlay_below_the_threshold ... ok
+test the_footer_carries_the_provenance_and_nothing_environment_specific ... ok
+test the_fourth_gauge_is_a_proportional_bar_at_zero_and_away_from_it ... ok
+test the_header_names_the_panes_that_are_only_overlays ... ok
+test every_declared_viewport_renders_and_annotates_what_it_presents ... ok
+test the_announcement_states_the_axis_and_the_value_the_layout_decides_presence_from ... ok
+test the_population_pane_states_what_it_is_not_above_every_total ... ok
+test a_selected_mokiterion_that_dies_keeps_its_death_lines_and_its_frozen_totals ... ok
+test every_living_mokiterion_has_an_entry_at_the_reference_viewport ... ok
+test no_line_the_inspector_presents_is_clipped_or_wrapped_at_either_width ... ok
+test the_totals_are_beneath_the_decision_record_and_displace_none_of_its_lines ... ok
+test the_announcement_and_the_hint_read_nothing_but_the_viewport ... ok
+test the_survival_bands_reach_the_frame_and_three_differ_in_one_entry ... ok
+test traversing_the_selection_states_resets_no_total ... ok
+test the_hint_displaces_neither_the_announcement_nor_the_footer ... ok
+test drawing_never_advances_the_simulation ... ok
+test the_key_binding_hint_is_on_screen_in_the_first_frame_at_every_viewport ... ok
+test two_frames_of_the_same_tick_present_identical_figures ... ok
+test the_roster_presents_four_gauges_at_every_declared_viewport_that_presents_it ... ok
+test no_entry_is_lost_silently_at_any_viewport_presenting_the_roster ... ok
+test a_declining_mokiterion_shows_a_declining_bar ... ok
+test the_hint_is_present_after_two_hundred_ticks_in_both_run_states ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s
+
+
+running 5 tests
+test the_replay_source_with_no_port_is_refused_on_the_first_tick ... ok
+test a_port_failure_ends_the_run_in_the_ports_own_words ... ok
+test a_source_that_decides_for_itself_needs_no_port ... ok
+test one_port_serves_the_whole_run_and_is_never_rebuilt ... ok
+test the_observer_replays_this_source_to_the_horizon_with_every_pane ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 7 tests
+test glyphs_are_the_assigned_ones ... ok
+test a_character_cell_covers_two_by_four_world_cells_in_overview_and_one_in_detail ... ok
+test territory_a_is_above_territory_b ... ok
+test the_whole_world_needs_both_axes_and_never_width_alone ... ok
+test the_territory_rule_is_present_exactly_when_the_boundary_is_visible ... ok
+test the_camera_is_clamped_so_the_region_never_leaves_the_world ... ok
+test the_overview_dot_grid_is_one_dot_per_world_cell ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 22 tests
+test escape_closes_an_overlay_before_it_clears_a_selection ... ok
+test a_subject_filter_needs_a_selection ... ok
+test an_unbound_key_changes_nothing ... ok
+test a_whole_world_overview_cannot_be_panned_off_the_world ... ok
+test a_key_release_is_not_a_press ... ok
+test every_overlay_has_its_bound_key ... ok
+test a_single_step_is_accepted_only_while_held_and_advances_exactly_one_tick ... ok
+test following_centres_the_selection_and_clamps_identically ... ok
+test filtering_changes_presentation_only ... ok
+test a_finished_run_refuses_to_advance_and_stays_inspectable ... ok
+test initialization_events_are_retained_in_authoritative_order ... ok
+test panning_moves_one_world_cell_and_clamps_at_every_edge ... ok
+test quit_is_the_only_key_that_asks_to_exit ... ok
+test selection_cycles_in_roster_order_and_escape_clears_it ... ok
+test speed_steps_through_the_fixed_ladder_and_clamps ... ok
+test shared_cells_are_counted_at_the_rendered_granularity ... ok
+test the_type_filter_cycles_the_whole_vocabulary_then_returns_to_none ... ok
+test the_world_extent_matches_the_engine ... ok
+test initial_state_is_the_specified_one ... ok
+test a_death_carries_the_fear_the_engine_last_reported_for_its_subject ... ok
+test a_death_carries_the_tick_and_the_engine_computed_final_values ... ok
+test the_event_buffer_drops_the_oldest_record_and_says_so ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 31 tests
+test an_injected_export_failure_leaves_the_tick_intact ... ok
+test layout_reads_nothing_but_the_dimensions ... ok
+test a_finished_run_stays_inspectable_and_exportable ... ok
+test every_glyph_drawn_is_its_own_subjects_initial_in_both_zooms ... ok
+test no_total_can_reach_an_observation_or_a_decision_source ... ok
+test no_profile_type_or_accessor_appears_in_the_engine ... ok
+test a_death_removes_the_subject_from_the_presentation_and_is_corroborated ... ok
+test one_advance_is_one_tick_and_a_finished_run_refuses ... ok
+test every_declared_viewport_has_its_derived_canvas_with_a_header_and_a_footer ... ok
+test an_operator_ended_run_is_a_prefix_of_the_unobserved_run ... ok
+test the_announcement_and_the_hint_survive_the_loss_of_colour ... ok
+test every_pane_identifying_a_mokiterion_presents_its_own_reported_name ... ok
+test the_declared_sets_are_the_contracts ... ok
+test the_engine_declares_no_dependency_on_the_observer ... ok
+test the_engine_still_exposes_exactly_two_mutating_entry_points ... ok
+test the_applied_action_presented_is_always_the_engines ... ok
+test the_footer_sheds_the_specified_fields_at_the_floor ... ok
+test no_total_is_a_float_and_no_presented_figure_is_a_ratio ... ok
+test a_smaller_world_row_never_renders_below_a_larger_one ... ok
+test no_source_confined_to_the_valid_action_list_has_a_proposal_rejected ... ok
+test the_inspector_presents_a_dead_subject_s_final_fear ... ok
+test the_inspector_identifies_a_dead_subject_by_name_and_identifier ... ok
+test the_social_source_is_rejected_only_as_the_specification_admits ... ok
+test exports_are_reproducible_and_are_the_engines_own_records ... ok
+test per_tick_records_match_so_the_observer_draws_no_entropy ... ok
+test holding_consumes_nothing_however_long_it_is_held ... ok
+test no_total_reaches_the_export_and_it_stays_the_engines_records ... ok
+test observed_and_unobserved_runs_are_identical_on_every_declared_seed ... ok
+test no_frame_carries_an_environment_value ... ok
+test presenting_the_totals_perturbs_no_run_on_any_declared_seed ... ok
+test the_footer_never_clips_a_value_at_any_declared_viewport ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.25s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
+     Running unittests src\lib.rs (target\debug\deps\mokiterions-3867f5b7d4d681ad.exe)
+     Running unittests src\main.rs (target\debug\deps\Mokiterions-c8f7f3eae82c82c7.exe)
+     Running unittests tests\support\canned_connector.rs (target\debug\deps\canned_connector-9bc90fc09d703df9.exe)
+     Running tests\cli.rs (target\debug\deps\cli-6a4bfc2db32fdad7.exe)
+     Running tests\connector.rs (target\debug\deps\connector-95eecc13e88f908d.exe)
+     Running tests\decisions.rs (target\debug\deps\decisions-9af12986a3f24f9f.exe)
+     Running tests\density.rs (target\debug\deps\density-e676721ad98e14c8.exe)
+     Running tests\naming.rs (target\debug\deps\naming-594f0cd82b186653.exe)
+     Running tests\no_outcome_threshold.rs (target\debug\deps\no_outcome_threshold-58649e29052e2642.exe)
+     Running tests\process.rs (target\debug\deps\process-7fbe765a68f4fe7f.exe)
+     Running tests\records.rs (target\debug\deps\records-a3fd595c4378954e.exe)
+     Running tests\replay.rs (target\debug\deps\replay-dd7bd96083e0801c.exe)
+     Running tests\termination.rs (target\debug\deps\termination-cc4dfaa38a14773d.exe)
+     Running tests\viability.rs (target\debug\deps\viability-3c2bc33906734a95.exe)
+     Running unittests src\lib.rs (target\debug\deps\mokiterions_tui-2fbcc6609753ce76.exe)
+     Running unittests src\main.rs (target\debug\deps\mokiterions_tui-cacaff985fad9c9e.exe)
+     Running tests\authority.rs (target\debug\deps\authority-eff95bcdd131dbd9.exe)
+     Running tests\export.rs (target\debug\deps\export-a7c26a0bd291cfde.exe)
+     Running tests\layout.rs (target\debug\deps\layout-428970b899246a03.exe)
+     Running tests\options.rs (target\debug\deps\options-9145103ef3454b8b.exe)
+     Running tests\render.rs (target\debug\deps\render-672d1ffbd6e3eb65.exe)
+     Running tests\replay.rs (target\debug\deps\replay-7777d478be90f7f8.exe)
+     Running tests\spatial.rs (target\debug\deps\spatial-6b42680631cd88b2.exe)
+     Running tests\state.rs (target\debug\deps\state-269098bb3c362ab5.exe)
+     Running tests\verification.rs (target\debug\deps\verification-eddf947fada740f8.exe)
+   Doc-tests mokiterions
+   Doc-tests mokiterions_tui

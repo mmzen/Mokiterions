@@ -1,0 +1,25 @@
+Scanning cost against stream bytes, at two horizons plus a constant-term measurement.
+
+The stand-in writes a prepared stream, so the engine's part of a cell is held still and
+only the bytes scanned vary. It is a Python process behind a .bat, so each cell carries an
+interpreter startup; the 10-tick row measures that constant, and it is subtracted before
+the two horizons are compared. 10 cells per row.
+
+stand-in, 10 ticks: {"stream_bytes": 58244, "cells": 10, "status": 0, "wall_seconds": 1.9534, "bytes_scanned": 582440, "seconds_per_megabyte": 3.51669}
+stand-in, 1000 ticks: {"stream_bytes": 2370203, "cells": 10, "status": 0, "wall_seconds": 2.4559, "bytes_scanned": 23702030, "seconds_per_megabyte": 0.10865}
+stand-in, 4000 ticks: {"stream_bytes": 7515593, "cells": 10, "status": 0, "wall_seconds": 3.4802, "bytes_scanned": 75155930, "seconds_per_megabyte": 0.04856}
+real engine, 250 ticks over 10 cells: {"status": 0, "wall_seconds": 0.5234, "run_ticks": 2500, "peak_stream_bytes": 760994}
+real engine, 1000 ticks over 10 cells: {"status": 0, "wall_seconds": 1.1613, "run_ticks": 10000, "peak_stream_bytes": 2925923}
+
+per-cell constant    0.1953 s, from a 58244-byte stream
+stream bytes ratio   3.171  (2370203 -> 7515593)
+raw wall time ratio  1.417  (2.4559 s -> 3.4802 s)  -- the constant is still in this one
+
+marginal cost, with the constant subtracted:
+  1,000 ticks  0.02279 s per megabyte
+  4,000 ticks  0.02147 s per megabyte
+  spread       1.061x
+
+A linear scan makes the two marginal figures equal. A quadratic one makes the second
+the byte ratio times the first -- here that would be about 0.0723 s per megabyte rather than 0.02147. Neither figure is a threshold; both are retained so a later
+regression has a baseline.

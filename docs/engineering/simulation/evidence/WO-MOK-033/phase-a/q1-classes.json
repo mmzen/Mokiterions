@@ -1,0 +1,358 @@
+{
+ "report": "distribution",
+ "format": 1,
+ "sweep": {
+  "record": "sweep",
+  "format": 1,
+  "sources": [
+   "reference",
+   "social"
+  ],
+  "densities": [
+   "0.50",
+   "0.75"
+  ],
+  "seeds": [
+   0,
+   1
+  ],
+  "ticks": 1000,
+  "cells": 8,
+  "binary_profile": "release",
+  "digest_algorithm": "sha256",
+  "defaulted_axes": []
+ },
+ "batch": {
+  "complete": true,
+  "requested": 8,
+  "retained": 8,
+  "missing": 0
+ },
+ "group_by": [
+  "source",
+  "density"
+ ],
+ "classes": [
+  "extinction",
+  "famine",
+  "asymmetric_collapse",
+  "collapse",
+  "coexistence"
+ ],
+ "groups": [
+  {
+   "key": {
+    "engine": "0.1.0",
+    "source": "reference",
+    "density": "0.50"
+   },
+   "rows": 2,
+   "class_counts": {
+    "extinction": 0,
+    "famine": 0,
+    "asymmetric_collapse": 0,
+    "collapse": 2,
+    "coexistence": 0,
+    "unclassified": 0
+   },
+   "survivors": {
+    "min": 3,
+    "median": 3,
+    "max": 5
+   },
+   "deaths": {
+    "min": 7,
+    "median": 7,
+    "max": 9
+   },
+   "attempted": {
+    "attack_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    }
+   },
+   "effective": {
+    "attack_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    }
+   }
+  },
+  {
+   "key": {
+    "engine": "0.1.0",
+    "source": "reference",
+    "density": "0.75"
+   },
+   "rows": 2,
+   "class_counts": {
+    "extinction": 0,
+    "famine": 0,
+    "asymmetric_collapse": 0,
+    "collapse": 0,
+    "coexistence": 2,
+    "unclassified": 0
+   },
+   "survivors": {
+    "min": 8,
+    "median": 8,
+    "max": 9
+   },
+   "deaths": {
+    "min": 3,
+    "median": 3,
+    "max": 4
+   },
+   "attempted": {
+    "attack_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    }
+   },
+   "effective": {
+    "attack_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    }
+   }
+  },
+  {
+   "key": {
+    "engine": "0.1.0",
+    "source": "social",
+    "density": "0.50"
+   },
+   "rows": 2,
+   "class_counts": {
+    "extinction": 0,
+    "famine": 0,
+    "asymmetric_collapse": 0,
+    "collapse": 1,
+    "coexistence": 1,
+    "unclassified": 0
+   },
+   "survivors": {
+    "min": 6,
+    "median": 6,
+    "max": 7
+   },
+   "deaths": {
+    "min": 5,
+    "median": 5,
+    "max": 6
+   },
+   "attempted": {
+    "attack_resolved": {
+     "min": 4,
+     "median": 4,
+     "max": 17
+    },
+    "threat_resolved": {
+     "min": 8,
+     "median": 8,
+     "max": 10
+    },
+    "surrender_resolved": {
+     "min": 4,
+     "median": 4,
+     "max": 6
+    }
+   },
+   "effective": {
+    "attack_resolved": {
+     "min": 4,
+     "median": 4,
+     "max": 17
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 4,
+     "median": 4,
+     "max": 6
+    }
+   }
+  },
+  {
+   "key": {
+    "engine": "0.1.0",
+    "source": "social",
+    "density": "0.75"
+   },
+   "rows": 2,
+   "class_counts": {
+    "extinction": 0,
+    "famine": 0,
+    "asymmetric_collapse": 0,
+    "collapse": 0,
+    "coexistence": 2,
+    "unclassified": 0
+   },
+   "survivors": {
+    "min": 7,
+    "median": 7,
+    "max": 9
+   },
+   "deaths": {
+    "min": 3,
+    "median": 3,
+    "max": 5
+   },
+   "attempted": {
+    "attack_resolved": {
+     "min": 9,
+     "median": 9,
+     "max": 10
+    },
+    "threat_resolved": {
+     "min": 7,
+     "median": 7,
+     "max": 12
+    },
+    "surrender_resolved": {
+     "min": 6,
+     "median": 6,
+     "max": 6
+    }
+   },
+   "effective": {
+    "attack_resolved": {
+     "min": 9,
+     "median": 9,
+     "max": 10
+    },
+    "threat_resolved": {
+     "min": 0,
+     "median": 0,
+     "max": 0
+    },
+    "surrender_resolved": {
+     "min": 6,
+     "median": 6,
+     "max": 6
+    }
+   }
+  }
+ ],
+ "rows": [
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.50",
+   "seed": 0,
+   "class": "collapse",
+   "clause": 4,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.50",
+   "seed": 1,
+   "class": "collapse",
+   "clause": 4,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.75",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "reference",
+   "density": "0.75",
+   "seed": 1,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.50",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.50",
+   "seed": 1,
+   "class": "collapse",
+   "clause": 4,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.75",
+   "seed": 0,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  },
+  {
+   "engine": "0.1.0",
+   "source": "social",
+   "density": "0.75",
+   "seed": 1,
+   "class": "coexistence",
+   "clause": 5,
+   "reason": null
+  }
+ ]
+}

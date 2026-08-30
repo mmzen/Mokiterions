@@ -1,0 +1,19 @@
+platform: Windows-11-10.0.26200-SP0
+processor: Intel64 Family 6 Model 167 Stepping 1, GenuineIntel
+logical processors: 12
+python: 3.14.6 (CPython)
+engine: target/release/Mokiterions.exe, release profile
+
+--jobs 1: {"status": 0, "wall_seconds": 29.226, "retained_bytes": 278734, "cells": 400, "retained": 400, "complete": true, "peak_stream_bytes": 2961956, "peak_stream_files": 1, "stream_samples": 11401, "peak_working_set_bytes": 28798976, "digest": "a22e3e6b678e07b33c9cb13f249d06e353d34e53666c153e5794e18797874cdc", "leftover": []}
+--jobs 4: {"status": 0, "wall_seconds": 18.464, "retained_bytes": 278734, "cells": 400, "retained": 400, "complete": true, "peak_stream_bytes": 8760101, "peak_stream_files": 4, "stream_samples": 7201, "peak_working_set_bytes": 34115584, "digest": "a22e3e6b678e07b33c9cb13f249d06e353d34e53666c153e5794e18797874cdc", "leftover": []}
+
+classifier source,density json: {"status": 0, "wall_seconds": 0.093, "output_bytes": 85847}
+classifier source,density markdown: {"status": 0, "wall_seconds": 0.083, "output_bytes": 4817}
+classifier seed json: {"status": 0, "wall_seconds": 0.089, "output_bytes": 85199}
+
+beside ADR-MOK-008's extrapolation from 20 runs (that record's table, rows 1 to 8):
+  batch wall time   predicted ~19.0 s   measured 29.226 s at --jobs 1, 18.464 s at --jobs 4
+  scanning          predicted ~16.0 s   measured 0.093 s
+  retained bytes    predicted ~500000        measured 278734
+  peak stream bytes predicted one stream, ~2723014   measured 2961956 at --jobs 1 over 11401 samples, 8760101 at --jobs 4
+  streams if kept   predicted ~1200000000 bytes; not kept, so not measured
