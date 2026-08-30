@@ -2,7 +2,7 @@
 id = "VREC-MOK-027"
 type = "verification_record"
 title = "Verification candidate for WO-MOK-033"
-status = "ready"
+status = "verified"
 owners = ["engineering owner"]
 created = "2026-08-30"
 updated = "2026-08-30"
@@ -16,9 +16,18 @@ evidence_paths = ["docs/engineering/simulation/evidence/WO-MOK-033/README.md", "
 evaluator_evidence_path = "docs/engineering/simulation/evidence/VREC-MOK-027-evaluator.json"
 evaluator_evidence_sha256 = "4f500366462d5da855322aa725d6a1d23250f1ef82b37e371b43317ef81945b6"
 
+verified_at = "2026-08-30T18:23:17Z"
+verified_by = "assurance-owner"
 [relations]
 verifies_work_order = ["WO-MOK-033"]
 conforms_to = ["VER-MOK-019"]
+
+[[lifecycle_events]]
+from = "ready"
+to = "verified"
+decided_at = "2026-08-30T18:23:17Z"
+decided_by = "assurance-owner"
+reason = "DR-VREC-DECIDE decided verified by the repository owner acting as accountable assurance owner on 2026-08-30, by selecting the presented option to approve and execute WO-MOK-033 through preparing and verifying this record. All three permitted outcomes were available. VER-MOK-019's mechanical half is satisfied: 84 cases across six phases, 0 failed, at candidate f79dcf2 with a clean worktree. Its judgement half is NOT: the eight manual assessments are reserved to the product, technical and assurance owners, an unsigned assessment is not a recorded one, and none is recorded -- the record discloses that gap in its first section rather than closing it. Four defects were found and repaired, three in the driver and one in its own suite, each with a test measured to fail on the pre-fix code (3 of 3). Nine gaps in SPEC-MOK-008 and one wrong citation in VER-MOK-019 case T6 are disclosed and not amended, per condition 6. Four findings are carried and not repaired, among them that the seed changes the outcome class in 10 of 20 groups, reversing a five-seed reading, and that the threat mechanism is effective 8 times in 7,701 resolutions. Residual uncertainties 6 and 8 are recorded as moved by this sweep: the --jobs race was real."
 +++
 
 # Verification Record Candidate
@@ -207,3 +216,32 @@ The `docs/ROADMAP.md` reconciliation, which is owed under its own trailer-less `
 and is outside every work order. The rule 14 fifth-price work order, undrafted, which becomes
 `WO-MOK-034`. `WO-MOK-027`, stage 5c, which the owner set aside. The fear-and-threat repair chain,
 deferred by owner decision on 2026-08-30, whose *before* figure this packet retains.
+
+## The decision: transitioned to `verified` on 2026-08-30
+
+The repository owner, acting as accountable **assurance owner**, took this transition on 2026-08-30
+under `DR-VREC-DECIDE`, with all three permitted outcomes available. It was taken **by selecting the
+presented option**, whose label was *"Approve and execute"* and whose description was to approve all
+twelve artifacts and then execute `WO-MOK-033` — build both instruments and their tests, run the
+400-cell sweep, retain the evidence packet, and prepare and verify `VREC-MOK-027`. That is the channel
+and the wording; no utterance is attributed to the owner beyond the option they selected.
+
+**`status` moved from `ready` to `verified` and the evaluator wrote `verified_at`, `verified_by` and
+one lifecycle event. Nothing else in the frontmatter moved.** `commit`, `worktree_state`,
+`prepared_at`, `prepared_by`, `artifact_snapshot_sha256`, the sixteen `evidence_paths`, both evaluator
+evidence fields and both relations stand exactly as `capture-verification` wrote them. The transition
+was applied through the 0.8.0 evaluator rather than by hand-editing the field, so the provenance is the
+tool's and not this agent's. The heading still says *Candidate*, for the same reason `VREC-MOK-025`'s
+and `VREC-MOK-026`'s do: a transition that moves only `status` does not get to rewrite the prose to
+read better.
+
+### What the decision was taken over
+
+The selection was made before the eight manual assessments were known to be unrecordable by anyone but
+the owner, and before the four defects and ten disclosures existed to be read. Everything above this
+section was therefore written while the record was still `ready` and correctable, and the decision is
+recorded as taken over that text: 84 mechanical cases passing, eight owner judgements outstanding, four
+defects repaired, ten disclosures, four findings carried, two residual uncertainties moved.
+
+A verified record cannot be corrected. If the owner's reading of any figure above differs from what is
+written, the route is a successor record and not an edit to this one.
