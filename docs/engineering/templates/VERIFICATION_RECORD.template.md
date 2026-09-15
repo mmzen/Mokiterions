@@ -31,6 +31,18 @@ conforms_to = ["VER-001", "VER-002"]
 
 # Verification Record Candidate
 
-Identify the exact clean final candidate commit, retained work-order evidence, and canonical released-evaluator evidence for every listed work order. The verification-contract set must equal the union declared by those work orders. A single work order remains valid. Keep status `ready` until the accountable assurance owner verifies the evidence. Preparation metadata records who assembled the candidate, not an assurance decision. Commit this governance record and its evaluator evidence after the candidate commit it names.
+Identify the final candidate, the work it covers, and evidence of testing the
+combined result. Earlier verified records at different commits may support
+this evidence; they remain unchanged. One shared integration report can cover
+several work orders. `conforms_to` must contain all their verification contracts.
+Keep the record `ready` until an assurance owner explicitly verifies it. Commit
+the record and evaluator evidence after the candidate it names.
+
+After a rebase that leaves relevant files unchanged, run
+`harnessctl refresh-verification . --from VREC-OLD-001 --id VREC-NEW-001`.
+The command compares relevant Git entries and governing inputs, preserves the
+original record, and creates a ready successor with a reuse explanation. It
+refuses changed relevant contents; test those with `capture-verification`.
+Refresh never changes an assurance decision or rewrites verified history.
 
 If a later verified or released VREC fully covers this record's work, a separate accountable governance decision may change only a `ready` record to `superseded`, add the structured fields and one typed successor relation shown above, and retain a decision note. Preserve the original commit, object format, worktree state, `prepared_at`, `prepared_by`, snapshot hash, evidence paths, work orders, and verification contracts. Do not add `verified_at` or `verified_by`: supersession retires the proposal but does not verify it. Superseded records remain historical and are not release-eligible. Historical records without preparation fields may retain their earlier `verified_at` capture timestamp without migration or a fabricated `verified_by`.

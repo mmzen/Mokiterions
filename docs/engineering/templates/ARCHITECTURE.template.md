@@ -20,6 +20,9 @@ assessed_by = "<accountable technical owner>"
 
 # Architecture: <title>
 
+Before approval, apply the shared design principle and `architecture` checklist in
+`docs/engineering/ARTIFACT_AUTHORING.md`.
+
 ## Context and scope
 
 Use `addresses` only for architecturally significant requirement drivers: requirements that materially shape boundaries, responsibilities, interfaces, data ownership, trust, deployment, technology, or quality-attribute tactics. Do not add every routine requirement merely to create nominal coverage. Use `conforms_to` for the detailed specifications whose behavior or interfaces this architecture must respect. Every addressed requirement must be specified by at least one conforming specification.

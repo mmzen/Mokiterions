@@ -1,8 +1,8 @@
-# Managed by SE Harness. Runs the exact released evaluator outside the checkout:
-# work-order selection and review preflight on pull requests, then doctor,
-# validate and the dashboard. Trigger policy: pull requests, and pushes to
-# main, release/** and candidate/** only; a newer push to the same ref cancels
-# the older run.
+# Install the exact released evaluator. Read the live pull-request body.
+# Check the selected work orders and combined PR scope. Qualify the root with
+# its exact released evaluator. Generate Harness Explorer. Upload the
+# harness-dashboard artifact. Trigger policy: pull requests, and pushes to
+# main, release/** and candidate/** only; newer runs cancel older ones.
 name: Engineering Harness
 
 on:
@@ -19,16 +19,17 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 env:
-  SE_HARNESS_VERSION: "0.8.0"
+  SE_HARNESS_VERSION: "0.18.0"
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
       - name: Install the exact released evaluator
@@ -38,55 +39,37 @@ jobs:
           "$RUNNER_TEMP/se-harness-env/bin/python" -m pip install \
             --disable-pip-version-check --no-deps --only-binary=:all: \
             "se-harness==$SE_HARNESS_VERSION"
-      - name: Select the pull-request work order
+      - name: Read the live pull-request body
         if: github.event_name == 'pull_request'
-        id: work_order
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          work_order="$("$RUNNER_TEMP/se-harness-env/bin/python" -I -m se_harness \
-            select-work-order --event "$GITHUB_EVENT_PATH")"
-          printf 'work_order=%s\n' "$work_order" >> "$GITHUB_OUTPUT"
-      - name: Review preflight
+          # ECP-LPB-002, -003: the declarations are selected from the pull request
+          # as it is now, not from the stored trigger snapshot, so a corrected
+          # body is honoured by re-running this check without a new push.
+          curl --fail --silent --show-error \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST_NUMBER" \
+            > "$RUNNER_TEMP/pull-request.json"
+          "$RUNNER_TEMP/se-harness-env/bin/python" - "$RUNNER_TEMP/pull-request.json" "$RUNNER_TEMP/live-event.json" <<'PY'
+          import json, sys
+          with open(sys.argv[1], encoding="utf-8") as source:
+              pull_request = json.load(source)
+          with open(sys.argv[2], "w", encoding="utf-8") as target:
+              json.dump({"pull_request": {"body": pull_request.get("body")}}, target)
+          PY
+      - name: Check the selected work orders and combined PR scope
         if: github.event_name == 'pull_request'
         env:
-          HARNESS_WORK_ORDER: ${{ steps.work_order.outputs.work_order }}
-        run: >-
-          "$RUNNER_TEMP/se-harness-env/bin/python" -I -m se_harness preflight .
-          --work-order "$HARNESS_WORK_ORDER" --phase review
-      - name: Verify a declared restitution digest
-        if: github.event_name == 'pull_request'
-        env:
-          HARNESS_WORK_ORDER: ${{ steps.work_order.outputs.work_order }}
           HARNESS_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         shell: bash
         run: |
-          declared="$("$RUNNER_TEMP/se-harness-env/bin/python" -I -m se_harness \
-            select-work-order --event "$GITHUB_EVENT_PATH" --field restitution-digest)"
-          if [ -z "$declared" ]; then
-            echo "No Harness-Restitution line is declared; nothing to verify."
-            exit 0
-          fi
           git fetch --depth=1 origin "$HARNESS_BASE_SHA"
-          args=()
-          while IFS= read -r path; do
-            [ -n "$path" ] && args+=(--changed-path "$path")
-          done < <(git diff --name-only "$HARNESS_BASE_SHA" HEAD)
-          "$RUNNER_TEMP/se-harness-env/bin/python" -I -m se_harness check . \
-            --artifact "$HARNESS_WORK_ORDER" --checkpoint handoff \
-            "${args[@]}" --changes-complete --json \
-            > "$RUNNER_TEMP/restitution.json" || true
-          recomputed="$("$RUNNER_TEMP/se-harness-env/bin/python" - "$RUNNER_TEMP/restitution.json" <<'PY'
-          import json, sys
-          result = json.load(open(sys.argv[1], encoding="utf-8"))
-          print(result.get("result_sha256", ""))
-          print(result.get("compliance", {}).get("formal_snapshot_sha256", ""), file=sys.stderr)
-          PY
-          )"
-          if [ "$declared" != "$recomputed" ]; then
-            echo "Declared Harness-Restitution $declared does not match the recomputed result_sha256 $recomputed at this formal snapshot." >&2
-            exit 1
-          fi
-          echo "Declared restitution digest matches the recomputed block."
+          "$RUNNER_TEMP/se-harness-env/bin/python" -I -m se_harness check-pr . \
+            --event "$RUNNER_TEMP/live-event.json" --from-git "$HARNESS_BASE_SHA" --json
       - name: Qualify the root with its exact released evaluator
         shell: bash
         run: |
@@ -99,7 +82,7 @@ jobs:
       - name: Generate Harness Explorer
         run: |
           "$RUNNER_TEMP/se-harness-env/bin/python" -I -m se_harness dashboard .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: harness-dashboard

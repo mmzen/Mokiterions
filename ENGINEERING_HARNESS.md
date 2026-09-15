@@ -1,6 +1,6 @@
 # Engineering Harness for Mokiterions
 
-This repository uses SE Harness 0.8.0.
+This repository uses SE Harness 0.18.0.
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**,
 **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **NOT RECOMMENDED**, **MAY**, and
@@ -12,7 +12,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**,
 This harness makes engineering authority explicit, limits execution to approved
 scope, binds assurance and release claims to exact evidence, and gives every
 actor the same deterministic next step. These goals are informative; the rules
-below and the routed policies are normative.
+below and the installed evaluator's machine policy are normative.
 
 ## Global invariants
 
@@ -62,15 +62,26 @@ a formal result.
 
 Before acting on a lifecycle stage, read `docs/engineering/OPERATING_CARD.md`,
 the selected work order, and every governing artifact listed by the phase
-reading manifest. The routed policies below are reference for humans and for
-the evaluator; an agent is not required to read them to act.
+reading manifest. For authoring, design or review, also read and apply
+[the authoring and review policy](docs/engineering/ARTIFACT_AUTHORING.md), including
+its shared design principle and the questions relevant to the selected work.
+This applies whether or not a skill is used. Other routed policies below are
+reference material unless the selected procedure requires them.
 
 ## Routing
 
-Each subject has one policy owner. Other documents MUST reference the owner and
-MUST NOT restate its rules.
+The installed evaluator owns executable policy. Its machine `WORKFLOW.json`
+and `QUALITY_GATES.json`, this router, and the instruction/ignore fragments are
+locked. Human explanations, artifact templates, CI and owner settings are
+editable files. Editing the selected version is not an upgrade; it must agree
+with the installation record.
 
-| Subject | Normative owner |
+An explicit upgrade keeps editable files by default. Use `--replace-file PATH`
+for each editable file that should receive the supplied template. Owner content
+beside managed fragments is preserved. The guides below explain policy; they
+do not replace the installed evaluator's decisions.
+
+| Subject | Guide and machine policy |
 | --- | --- |
 | Lifecycle states, transitions, procedures, next actions, and handoff fields | `docs/engineering/WORKFLOW.md` and its machine-readable `WORKFLOW.json` |
 | Roles, accountabilities, delegation, and reserved decisions | `docs/engineering/DECISION_RIGHTS.md` |
@@ -78,7 +89,7 @@ MUST NOT restate its rules.
 | Normative chain, artifact applicability, relation types, and coverage | `docs/engineering/TRACEABILITY.md` |
 | Eligible operator and technical-artifact English prose | `docs/engineering/TECHNICAL_COMMUNICATION.md` |
 | Artifact authoring locations and templates | `docs/engineering/templates/README.md` |
-| Authoring rules for formal artifacts | `docs/engineering/ARTIFACT_AUTHORING.md` |
+| Authoring, design simplicity and review questions | `docs/engineering/ARTIFACT_AUTHORING.md` |
 | Repository-specific facts and commands | the owner-controlled region of `AGENTS.md` |
 
 `docs/engineering/README.md` is an index. It MUST NOT become a second policy
@@ -101,9 +112,9 @@ work from remaining work, identify any required accountable decision, and
 recommend exactly one next action. Complete alternatives MAY be shown
 separately. It MUST NOT add an unrelated finding or another recommendation.
 
-When exact headings or bytes are required, the application or automation MUST
-invoke the deterministic human renderer directly. Model transcription MUST NOT
-be used as the enforcement mechanism. The complete procedure is
+Automation reads the structured JSON result. Human wording is not evidence
+identity: new result digests bind machine fields, including candidate, lifecycle
+state, and command arguments. The complete handoff procedure is
 `WORKFLOW.md#lifecycle-handoff-procedure`.
 
 ## Stop conditions
@@ -112,7 +123,7 @@ The actor MUST stop before changing state or scope when any of these conditions
 is true:
 
 - managed integrity fails;
-- the formal graph is invalid;
+- the selected governing chain is invalid or artifact IDs are ambiguous;
 - no phase-eligible selected work order exists;
 - a required governing artifact or gate is missing;
 - a required check fails;

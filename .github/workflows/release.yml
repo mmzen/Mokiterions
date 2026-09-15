@@ -61,7 +61,7 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
   # Must equal `[harness].tool_version` in `.engineering-harness.toml`. The compliance job
   # asserts that rather than trusting this line.
-  SE_HARNESS_VERSION: "0.8.0"
+  SE_HARNESS_VERSION: "0.18.0"
   CARGO_TERM_COLOR: always
 
 jobs:
@@ -204,7 +204,7 @@ jobs:
       - name: Managed-file integrity and formal graph validity
         run: |
           python -m se_harness doctor .
-          python scripts/validate_engineering_artifacts.py --root .
+          python -m se_harness validate .
 
       - name: Review preflight for every released work order
         shell: bash
@@ -228,7 +228,7 @@ jobs:
           echo "review preflight passes for ${WORK_ORDERS:-no work orders}"
 
       - name: Harness Explorer for the released commit
-        run: python scripts/generate_harness_dashboard.py --root .
+        run: python -m se_harness dashboard .
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -56,6 +56,12 @@ listed below. A validator MUST reject an undeclared pair.
 | `TRC-REL-017` | `includes_verification` | `RLS -> VREC` | A release record names one or more eligible VRECs at its candidate commit. |
 | `TRC-REL-018` | `releases_work` | `RLS -> WO` | The released-work set equals the union of work covered by the included VRECs. |
 | `TRC-REL-019` | `assures` | `OPS -> REQ` | An operating contract names every requirement for which it claims continuing assurance. |
+| `TRC-REL-020` | `concerns` | `DEC -> any type` | A decision names every artifact its question is about. |
+| `TRC-REL-021` | `blocks` | `DEC -> REQ, SPEC, VER, ARCH, ADR or WO` | A decision names the artifacts that cannot change state while it is open; each is also in `concerns`. |
+| `TRC-REL-022` | `produces` | `DEC -> REQ, SPEC, VER, ARCH, ADR or WO` | A decided decision names the artifact its answer created or amended, when the answer created one. |
+| `TRC-REL-023` | `threatens` | `RISK -> any type` | A risk names every artifact the threat would damage; the decision that answers it blocks exactly that set. |
+| `TRC-REL-024` | `mitigated_by` | `RISK -> WO` | A mitigating or mitigated risk names the work orders that reduce the threat; written by the disposing act. |
+| `TRC-REL-025` | `avoided_by` | `RISK -> ADR or DEC` | An avoided risk names the one design record that removes the threat; written by the disposing act. |
 
 `TRC-003` - A selected work order MUST have complete `INT -> CAP -> REQ`
 upstream coverage and complete selected `SPEC` and `VER` coverage for every
@@ -83,7 +89,7 @@ false.
 | --- | --- | --- | --- | --- | --- | --- |
 | `intent` | `INT-` | Records the approved problem, desired outcome, and accountability boundary. | Governed work needs an approved purpose at G0. | Reuse an active intent when its purpose and outcome still cover the work; do not create one per work order. | Product or domain owner. | `CAP.derives_from -> INT` |
 | `capability` | `CAP-` | Describes an actor-visible ability that realizes intent. | Active requirements need an approved capability in their upstream chain. | Reuse when the same actor ability is extended; create a new capability when the observable ability is materially different. | Product or domain owner. | `CAP.derives_from -> INT`; `REQ.derives_from -> CAP` |
-| `requirement` | `REQ-` | States one observable normative obligation containing `SHALL`. | Behavior, quality, governance, or operational obligations need explicit active requirements. | Reuse only when the obligation is unchanged; create or revise requirements when the normative obligation changes. | Requirements steward or product owner. | `REQ.derives_from -> CAP`; `SPEC.specifies -> REQ`; `VER.verifies -> REQ` |
+| `requirement` | `REQ-` | States an observable obligation and its acceptance condition; `SHALL` is optional. | Behavior, quality, governance, or operational obligations need explicit active requirements. | Reuse only when the obligation is unchanged; create or revise requirements when the normative obligation changes. | Requirements steward or product owner. | `REQ.derives_from -> CAP`; `SPEC.specifies -> REQ`; `VER.verifies -> REQ` |
 | `specification` | `SPEC-` | Defines the exact behavior, interface, constraints, and rejection conditions that satisfy requirements. | Every active requirement selected for implementation needs selected active specification coverage at G1. | One specification may cover several requirements and may be reused while its detailed contract remains applicable. | Technical owner. | `SPEC.specifies -> REQ`; `ARCH.conforms_to -> SPEC`; `WO.specifications -> SPEC` |
 | `architecture` | `ARCH-` | Defines structural boundaries and tactics for architecturally significant requirement drivers. | It applies when active architecture directly `addresses` a requirement implemented by the work order. | Omit from routine work when no active architecture addresses an implemented requirement; never fabricate nominal coverage. | Technical owner. | `ARCH.addresses -> REQ`; `ARCH.conforms_to -> SPEC`; `ADR.decides -> ARCH`; `WO.architecture -> ARCH` |
 | `adr` | `ADR-` | Records one coherent significant architectural decision, alternatives, and consequences. | Selected architecture with `decision_assessment.outcome = "adr_required"` needs at least one active deciding ADR. | Omit when selected architecture has an accepted `no_significant_decision` assessment; one ADR may decide several related architectures. | Technical owner. | `ADR.decides -> ARCH`; `WO.architecture -> ADR` |
@@ -92,6 +98,8 @@ false.
 | `verification_record` | `VREC-` | Binds work, verification contracts, retained evidence, and one clean candidate commit for assurance review. | Create after candidate commit C for work explicitly classified `assurance.commit_bound_verification = "required"`; verified or released claims require an eligible VREC. | Omit while assurance is not required or not yet proposed; one aggregate record may cover several work orders at the same commit. | Assurance owner. | `VREC.verifies_work_order -> WO`; `VREC.conforms_to -> VER`; optional `VREC.superseded_by -> VREC` |
 | `release_contract` | `REL-` | Defines the work scope, gates, rollback conditions, and authority boundary for a release. | Every release record needs an applicable active contract that gates its complete released-work set. | Omit while no release is proposed; a contract may gate several work orders when its policy genuinely covers them. | Release owner. | `REL.gates -> WO`; `RLS.satisfies -> REL` |
 | `release_record` | `RLS-` | Records the accountable release decision for eligible verified work at one exact candidate commit. | Create only when a release is proposed; `released` requires eligible VRECs and matching commit identity. | Omit for unreleased continuous delivery; one aggregate record may release several work orders through included verification. | Release owner. | `RLS.satisfies -> REL`; `RLS.includes_verification -> VREC`; `RLS.releases_work -> WO` |
+| `decision` | `DEC-` | Records one pending question with its options, its decider and the artifacts it blocks, or one implementation deviation against one rule of one specification, with the verbatim disposition. | A question blocks a transition, concerns more than one artifact, or must survive approval; or an implementation cannot meet one specification rule under a work order. | Below the threshold the answer stays in a transition's `reason`; a settled architectural decision is an ADR, not a decision. | Owner of the blocked artifact; for a deviation, the owner of the departed specification. | `DEC.concerns -> any`; `DEC.blocks -> REQ, SPEC, VER, ARCH, ADR, WO`; `DEC.produces -> REQ, SPEC, VER, ARCH, ADR, WO` |
+| `risk` | `RISK-` | Records a description, owner and next action; scores and taxonomy are optional. | Record a concern worth following up. | A blocking decision is created only when explicitly requested; retained dispositions remain unchanged. | Named risk owner. | `RISK.threatens -> any`; `RISK.mitigated_by -> WO`; `RISK.avoided_by -> ADR or DEC`; `DEC.concerns -> RISK` |
 | `operating_contract` | `OPS-` | Defines continuing service, support, observability, or operational assurance obligations. | It applies when repository or service policy declares ongoing operational commitments at G5. | Omit when no operational assurance is claimed; absence never implies that an operational obligation is satisfied. | Service owner. | `OPS.assures -> REQ` |
 
 Evidence, acceptance scenarios, source files, candidate commits, dashboards, tickets, and conversations are not formal artifact types. They may be retained or referenced as observations, but they do not establish product authority, work authorization, verification, or release by themselves.
@@ -110,9 +118,10 @@ MUST be decided by a selected active ADR. `ADR.decides -> ARCH` establishes cove
 `no_significant_decision` MUST include an accepted rationale and MUST have no
 active decision trigger.
 
-`TRC-008` - `ARCH.constrains` is compatibility-only. A validator MAY classify
-an unambiguous completed historical relation and MUST report the migration. It
-MUST reject a mixed or ambiguous target set. Installation and upgrade MUST NOT
+`TRC-008` - `ARCH.constrains` is retired. A validator MUST refuse every
+`constrains` relation with `E016`, whatever the architecture's status; it
+classifies no historical relation and reports no migration. `ARCH.addresses`
+and `ARCH.conforms_to` are the only form. Installation and upgrade MUST NOT
 rewrite repository-owned artifacts.
 
 `TRC-009` - A VREC MUST bind one or more work orders, all their declared
@@ -138,6 +147,19 @@ Mixed scope MUST be split or classified `required`.
 and verification-contract facts unchanged. Its `superseded_by` target MUST be a
 distinct `verified` or `released` VREC covering every original work order. A
 superseded VREC MUST NOT qualify a release.
+
+`TRC-015` - A `DEC` in `open` blocks every transition of the artifacts in its
+`blocks` relation; a `DEC` in `deferred` blocks those its disposition's scope
+does not admit. An accepted deviation stands on the specification it departs
+from, on the work orders it concerns, and on every verification or release
+record covering that work, until a later decided deviation against the same
+rule chose `amend` or `supersede` (`SPEC-DCM-001`).
+
+`TRC-016` - A `RISK` in `raised` MUST be named in `concerns` by exactly one
+`DEC` in `open` or `deferred`, and that decision's `blocks` MUST equal the
+risk's `threatens`. The risk blocks nothing itself: the decision's stop holds
+the threatened artifacts, and disposing it moves the risk in the same act
+(`SPEC-RSK-010`).
 
 `TRC-014` - An active `OPS.assures -> REQ` claim requires an active assured
 requirement and at least one completed implementing work order. When verified

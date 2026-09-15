@@ -26,4 +26,8 @@ releases_work = ["WO-001", "WO-002"]
 
 # Release Record Candidate
 
-Copy the one shared commit from the included verified verification records and bind the canonical lock-matching released-evaluator evidence produced during preparation. The released-work set must equal their verification-coverage union, and every work order must be gated by the release contract. A single work order remains valid. Keep status `ready` until the accountable release owner authorizes the instance. Preparation metadata is not release authorization. Repository-specific payload or publication policy remains outside this portable template. This document does not create a tag or publish a release.
+Identify the release contract, one explicitly verified final-candidate VREC,
+and all released work. The final VREC must cover every work order and its
+verification contracts at the RLS candidate commit. Evidence may refer to
+earlier records; their commits need not match the final candidate. Keep this
+record `ready` until the release owner explicitly authorizes release.

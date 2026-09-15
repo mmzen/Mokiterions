@@ -6,13 +6,8 @@ status = "draft"
 owners = ["<product/domain owner>"]
 created = "YYYY-MM-DD"
 updated = "YYYY-MM-DD"
-# One obligation per requirement; split on "and SHALL". Pick one shape:
-#   THE SYSTEM SHALL <response>.                          (always)
-#   WHEN <event>, THE SYSTEM SHALL <response>.            (event)
-#   WHILE <state>, THE SYSTEM SHALL <response>.           (state)
-#   IF <unwanted condition>, THEN THE SYSTEM SHALL <response>.   (unwanted)
-#   WHERE <feature is present>, THE SYSTEM SHALL <response>.     (optional feature)
-statement = "WHEN <event>, THE SYSTEM SHALL <observable response>."
+# State an observable behavior. SHALL is optional.
+statement = "<The observable behavior the system provides.>"
 verification_method = ["test"]
 priority = "must"
 source = "<stakeholder, standard clause, incident, or artifact ID>"
@@ -24,26 +19,29 @@ derives_from = ["CAP-xxx"]
 
 # Requirement: <title>
 
-## Rationale
+Before approval, apply the shared design principle and `requirement` checklist in
+`docs/engineering/ARTIFACT_AUTHORING.md`.
 
-Why this obligation exists, not what it does.
+## In plain words
+
+<One or two sentences a newcomer understands. A project term used here is
+defined in this repository's own glossary, `GLOSSARY.md` at the repository
+root, which this repository writes.>
+
+## Why
+
+<Why the obligation exists. How
+it is met belongs in the specification that specifies this requirement.>
 
 ## Behavior
 
-- Trigger: <the observable condition or event; "always" for an invariant>
-- Response: <what the reader can check>
-- On failure: <what happens when the response cannot be given>
+| Trigger | Response | On failure |
+| --- | --- | --- |
+| <the observable condition or event; "always" for an invariant> | <what the reader can check> | <what happens when the response cannot be given> |
 
-## Assumptions and dependencies
+## Examples
 
-<What this obligation relies on; not how it is built — that is a specification's job.>
-
-## Acceptance examples
-
-Executable scenarios live in `acceptance/<REQ-ID>.feature` and are named by
-the verification contract that covers this requirement.
-
-### Example: normal behavior
+### Normal
 
 **Given** ...
 
@@ -51,14 +49,10 @@ the verification contract that covers this requirement.
 
 **Then** ...
 
-### Example: failure behavior
+### Failure
 
 **Given** ...
 
 **When** ...
 
 **Then** ...
-
-## Open decisions
-
-None.
