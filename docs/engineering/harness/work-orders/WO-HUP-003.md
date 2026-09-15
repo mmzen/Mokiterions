@@ -2,7 +2,7 @@
 id = "WO-HUP-003"
 type = "work_order"
 title = "Adopt exact public se_harness 0.18.0 as the standard root, replace the inherited guides and templates, move skill ownership to the verity-plane plugin, and re-check every approved work order"
-status = "draft"
+status = "approved"
 owners = ["engineering owner"]
 created = "2026-09-15"
 updated = "2026-09-15"
@@ -52,6 +52,14 @@ paths = [
 implements = ["REQ-HUP-001", "REQ-HUP-002"]
 specifications = ["SPEC-HUP-001"]
 verification = ["VER-HUP-001", "VER-HUP-002"]
+[[lifecycle_events]]
+from = "draft"
+to = "approved"
+decided_at = "2026-09-15T18:42:41Z"
+decided_by = "engineering-owner"
+reason = "Approved by the repository owner acting as engineering owner on 2026-09-15, by selecting the presented option 'Approve as drafted'. In the same act the owner selected the replacement of the 19 inherited seeds, the repair of WO-MOK-027 inside this scope, and push plus one ready pull request as the authorized delivery action. Recorded by hand in the adopted evaluator's shape: the 0.18.0 evaluator refuses to mutate a 0.8.0 root (MG005 RID002) and the 0.8.0 evaluator writes no scope_paths."
+scope_paths = [".agents/", ".claude/", ".engineering-harness.lock", ".engineering-harness.toml", ".github/workflows/engineering-harness.yml", ".github/workflows/release.yml", ".gitignore", "AGENTS.md", "CLAUDE.md", "ENGINEERING_HARNESS.md", "GLOSSARY.md", "docs/RELEASE_RUNBOOK.md", "docs/engineering/ARTIFACT_AUTHORING.md", "docs/engineering/DECISION_RIGHTS.md", "docs/engineering/OPERATING_CARD.md", "docs/engineering/QUALITY_GATES.json", "docs/engineering/QUALITY_GATES.md", "docs/engineering/TECHNICAL_COMMUNICATION.md", "docs/engineering/TRACEABILITY.md", "docs/engineering/WORKFLOW.json", "docs/engineering/WORKFLOW.md", "docs/engineering/harness/", "docs/engineering/simulation/work-orders/WO-MOK-027.md", "docs/engineering/templates/", "scripts/artifact_layout_registry.py", "scripts/check_engineering_harness.ps1", "scripts/check_engineering_harness.sh", "scripts/generate_harness_dashboard.py", "scripts/harness_explorer/", "scripts/inspect_engineering_artifacts.py", "scripts/select_harness_work_order.py", "scripts/validate_engineering_artifacts.py"]
+
 +++
 
 # Work Order: adopt exact public se_harness 0.18.0
@@ -198,15 +206,17 @@ things around it are not, and each was found by rehearsing the adoption in a dis
 
 The engineering owner may, without further authorization: choose the exact evidence paths below
 `docs/engineering/harness/evidence/WO-HUP-003/`; re-run either plan and apply on a settled tree after a
-refusal; word the retained summaries and the two amendment records; and commit on the branch
-`harness/wo-hup-003-adopt-se-harness-0.18.0`.
+refusal; word the retained summaries and the two amendment records; commit on the branch
+`harness/wo-hup-003-adopt-se-harness-0.18.0`; and, once the work order is `implemented` and its verification
+record is prepared, push that branch to `origin` and open **one** ready pull request against `main` carrying
+the `Harness-Work-Order: WO-HUP-003` trailer — the delivery action the owner selected on 2026-09-15.
 
 The engineering owner may **not**, under this work order: adopt a version other than exact public
 `0.18.0`; install the evaluator from anywhere but the wheel whose SHA-256 is
 `a683dbdf485d42aa20ea8502122c171a4c61c7d60f85db5b5f264bd336371c54`, which is the public index's; name a
 seed to `--replace-file` that is not byte-identical to its 0.8.0 template; edit a locked file by hand;
 select `repository` as the skill provider; change any field of `WO-MOK-027` beyond item 5; amend any other
-artifact; or push, open a pull request, merge or tag. Each of those is a fresh decision.
+artifact; open a second pull request; or merge or tag. Each of those is a fresh decision.
 
 ## Constraints
 
