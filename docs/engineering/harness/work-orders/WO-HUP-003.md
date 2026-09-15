@@ -2,7 +2,7 @@
 id = "WO-HUP-003"
 type = "work_order"
 title = "Adopt exact public se_harness 0.18.0 as the standard root, replace the inherited guides and templates, move skill ownership to the verity-plane plugin, and re-check every approved work order"
-status = "in_progress"
+status = "implemented"
 owners = ["engineering owner"]
 created = "2026-09-15"
 updated = "2026-09-15"
@@ -66,6 +66,13 @@ to = "in_progress"
 decided_at = "2026-09-15T18:45:24Z"
 decided_by = "engineering-owner"
 reason = "Execution of DR-WO-START under recorded engineering-owner approval; relevant local gates passed."
+
+[[lifecycle_events]]
+from = "in_progress"
+to = "implemented"
+decided_at = "2026-09-15T18:54:07Z"
+decided_by = "delegated-executor"
+reason = "Execution of DR-WO-COMPLETE under recorded engineering-owner approval; relevant local gates passed."
 +++
 
 # Work Order: adopt exact public se_harness 0.18.0

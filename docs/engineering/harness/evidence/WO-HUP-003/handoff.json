@@ -71,7 +71,7 @@
               }
             ],
             "id": "QGP-G4I-PATHS",
-            "message": "All 82 declared changed path(s) are within execution scope.",
+            "message": "All 84 declared changed path(s) are within execution scope.",
             "status": "pass"
           },
           {
@@ -423,7 +423,7 @@
     "not_done": [],
     "outcome": "completed"
   },
-  "result_sha256": "9adf6c7f3e5ef19e1f2fd154eb1b9ec55b7b4f487b1a517e1b87fed8f1456d74",
+  "result_sha256": "4bfb7e3df4d0b7299a63d177400f60d2701c59ed233f6f164f0aafc547aa1d90",
   "schema": "se-harness-workflow-result-v2",
   "scope": {
     "change_set_complete": true,
@@ -468,6 +468,8 @@
       "docs/engineering/harness/evidence/WO-HUP-003/b1-start-before.md",
       "docs/engineering/harness/evidence/WO-HUP-003/b2-start-after.md",
       "docs/engineering/harness/evidence/WO-HUP-003/b3-p1-p2-wo-mok-027.md",
+      "docs/engineering/harness/evidence/WO-HUP-003/completion-summary.md",
+      "docs/engineering/harness/evidence/WO-HUP-003/handoff-check.md",
       "docs/engineering/harness/evidence/WO-HUP-003/handoff.json",
       "docs/engineering/harness/evidence/WO-HUP-003/identity.md",
       "docs/engineering/harness/evidence/WO-HUP-003/n2-doctor.md",
