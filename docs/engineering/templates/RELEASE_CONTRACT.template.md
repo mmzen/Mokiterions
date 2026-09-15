@@ -6,9 +6,8 @@ status = "draft"
 owners = ["<release owner>"]
 created = "YYYY-MM-DD"
 updated = "YYYY-MM-DD"
-# The release unit is one candidate commit. Its work-order census is measured,
-# not declared: `harnessctl release-unit . --from <previous_release_tag> --to <candidate_commit> --toml`
-# writes the gates array below, and `--contract <this id>` re-measures it.
+# Choose the final candidate and the work to release.
+# `harnessctl release-unit . --from <tag> --to <commit>` gives advisory history.
 candidate_commit = "<full commit id, 40 or 64 hex>"
 previous_release_tag = "v<version>"
 
@@ -20,16 +19,14 @@ gates = ["WO-xxx", "VER-xxx"]
 
 ## Release unit
 
-The unit is candidate commit `<candidate_commit>`, cut from `main`. The
-`gates` array is the census `harnessctl release-unit` derives from the
-`Harness-Work-Order` trailers on the first-parent history from
-`<previous_release_tag>` to that commit; every listed work order is
-`implemented`. A commit on that path with no trailer is listed here under an
-explicit exemption, with the reason, or the derivation fails.
+Name the final candidate commit and the work the release owner approves in
+`gates`. Use `harnessctl release-unit` to inspect history if useful; missing
+trailers and differences from this scope do not require exemptions.
 
-A merge to `main` after the cut changes nothing about this unit. A fix to the
-release itself is a new candidate commit on `candidate/<version>` and a new
-contract that names it.
+One explicitly verified final-candidate VREC must cover every released work
+order and its required verification contracts. Its evidence may cite earlier
+records at different commits, but must demonstrate testing of the final
+integration. The RLS binds that final VREC at the exact candidate commit.
 
 ## Required evidence
 
@@ -43,9 +40,6 @@ contract that names it.
 
 ## Rollback criteria and procedure
 
-Stop condition: the candidate commit is not an ancestor of the ref being
-released, or `harnessctl release-unit --contract <this id>` reports
-`E-CIP-001` (the derived census differs from `gates`). The remedy is a new
-contract naming a new candidate commit, never an in-place edit of `gates`.
+Stop if the final candidate lacks complete verified coverage or release approval.
 
 ## Post-release observation window

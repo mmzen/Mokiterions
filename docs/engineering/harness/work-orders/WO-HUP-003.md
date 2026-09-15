@@ -2,7 +2,7 @@
 id = "WO-HUP-003"
 type = "work_order"
 title = "Adopt exact public se_harness 0.18.0 as the standard root, replace the inherited guides and templates, move skill ownership to the verity-plane plugin, and re-check every approved work order"
-status = "approved"
+status = "in_progress"
 owners = ["engineering owner"]
 created = "2026-09-15"
 updated = "2026-09-15"
@@ -60,6 +60,12 @@ decided_by = "engineering-owner"
 reason = "Approved by the repository owner acting as engineering owner on 2026-09-15, by selecting the presented option 'Approve as drafted'. In the same act the owner selected the replacement of the 19 inherited seeds, the repair of WO-MOK-027 inside this scope, and push plus one ready pull request as the authorized delivery action. Recorded by hand in the adopted evaluator's shape: the 0.18.0 evaluator refuses to mutate a 0.8.0 root (MG005 RID002) and the 0.8.0 evaluator writes no scope_paths."
 scope_paths = [".agents/", ".claude/", ".engineering-harness.lock", ".engineering-harness.toml", ".github/workflows/engineering-harness.yml", ".github/workflows/release.yml", ".gitignore", "AGENTS.md", "CLAUDE.md", "ENGINEERING_HARNESS.md", "GLOSSARY.md", "docs/RELEASE_RUNBOOK.md", "docs/engineering/ARTIFACT_AUTHORING.md", "docs/engineering/DECISION_RIGHTS.md", "docs/engineering/OPERATING_CARD.md", "docs/engineering/QUALITY_GATES.json", "docs/engineering/QUALITY_GATES.md", "docs/engineering/TECHNICAL_COMMUNICATION.md", "docs/engineering/TRACEABILITY.md", "docs/engineering/WORKFLOW.json", "docs/engineering/WORKFLOW.md", "docs/engineering/harness/", "docs/engineering/simulation/work-orders/WO-MOK-027.md", "docs/engineering/templates/", "scripts/artifact_layout_registry.py", "scripts/check_engineering_harness.ps1", "scripts/check_engineering_harness.sh", "scripts/generate_harness_dashboard.py", "scripts/harness_explorer/", "scripts/inspect_engineering_artifacts.py", "scripts/select_harness_work_order.py", "scripts/validate_engineering_artifacts.py"]
 
+[[lifecycle_events]]
+from = "approved"
+to = "in_progress"
+decided_at = "2026-09-15T18:45:24Z"
+decided_by = "engineering-owner"
+reason = "Execution of DR-WO-START under recorded engineering-owner approval; relevant local gates passed."
 +++
 
 # Work Order: adopt exact public se_harness 0.18.0

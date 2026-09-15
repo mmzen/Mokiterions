@@ -14,7 +14,6 @@
   ],
   "agentic_operations": [
     {"id": "delegated-work-order-start", "decision_right": "DR-WO-START", "current_status": "approved", "result_status": "in_progress", "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "procedure_id": "PROC-WO-START", "mutation_operation": "delegated-work-order-start"},
-    {"id": "change-bundle-apply", "decision_right": null, "current_status": "in_progress", "result_status": "in_progress", "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "procedure_id": "PROC-WO-IMPLEMENT", "mutation_operation": "change-bundle-apply"},
     {"id": "delegated-work-order-complete", "decision_right": "DR-WO-COMPLETE", "current_status": "in_progress", "result_status": "implemented", "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "procedure_id": "PROC-WO-IMPLEMENT", "mutation_operation": "delegated-work-order-complete"},
     {"id": "delegated-vrec-prepare", "decision_right": "DR-VREC-PREPARE", "current_status": "implemented", "result_status": "implemented", "gate_ids": ["QG-G4-CANDIDATE-READY"], "procedure_id": "PROC-WO-PREPARE-VREC", "mutation_operation": "delegated-vrec-prepare"}
   ],
@@ -52,6 +51,21 @@
       "ready": {"transitions_to": ["released", "rejected"], "grants_authority": false, "reserves_version": true, "transitionable": true, "must_remain_visible": true, "predecessor_adapter": "none"},
       "released": {"transitions_to": [], "grants_authority": true, "reserves_version": true, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"},
       "rejected": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "required"}
+    },
+    "decision": {
+      "open": {"transitions_to": ["decided", "deferred", "withdrawn"], "grants_authority": false, "reserves_version": false, "transitionable": true, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "deferred": {"transitions_to": ["decided", "withdrawn"], "grants_authority": false, "reserves_version": false, "transitionable": true, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "decided": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "withdrawn": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"}
+    },
+    "risk": {
+      "identified": {"transitions_to": ["raised", "withdrawn"], "grants_authority": false, "reserves_version": false, "transitionable": true, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "raised": {"transitions_to": ["accepted", "avoided", "mitigating", "withdrawn"], "grants_authority": false, "reserves_version": false, "transitionable": true, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "mitigating": {"transitions_to": ["mitigated", "withdrawn"], "grants_authority": false, "reserves_version": false, "transitionable": true, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "accepted": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "avoided": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "mitigated": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"},
+      "withdrawn": {"transitions_to": [], "grants_authority": false, "reserves_version": false, "transitionable": false, "must_remain_visible": true, "predecessor_adapter": "none"}
     }
   },
   "failure": {
@@ -98,6 +112,7 @@
       "non_effects": ["Selecting a delivery path does not change {artifact_id} or {related_id}."],
       "restitution": {"done": ["{artifact_id} is implemented and has verified assurance coverage in {related_id}."], "current_lifecycle_state": ["{artifact_id} is implemented; {related_id} is {related_status}."]}
     },
+    {"id": "WFL-WO-NO-VREC", "procedure_id": "PROC-FOCUS-SELECTED", "alternative_procedure_ids": [], "selector": {"artifact_types": ["work_order"], "statuses": ["implemented"], "commit_bound_verification": "not_required"}, "gate_ids": [], "decision_right": "DR-RELATED-RECORD-SELECT", "effects": [], "non_effects": ["Completion does not authorize external delivery."], "restitution": {"done": ["{artifact_id} is implemented; its approved assurance classification requires no new VREC."], "current_lifecycle_state": ["{artifact_id} is implemented."]}},
     {
       "id": "WFL-WO-PREPARE-VREC",
       "procedure_id": "PROC-WO-PREPARE-VREC",
@@ -116,7 +131,7 @@
       "selector": {"artifact_types": ["work_order"], "statuses": ["approved"]},
       "gate_ids": ["QG-G3-WORK-AUTHORIZATION"],
       "decision_right": "DR-WO-START",
-      "effects": ["An explicit start decision permits the approved implementation scope to begin."],
+      "effects": ["The executor starts the selected scope under its recorded work-order approval."],
       "non_effects": ["Preflight does not change lifecycle state."],
       "restitution": {"done": ["Projected the selected scope for {artifact_id}."], "current_lifecycle_state": ["{artifact_id} is approved."]}
     },
@@ -127,7 +142,7 @@
       "selector": {"artifact_types": ["work_order"], "statuses": ["in_progress"]},
       "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"],
       "decision_right": "DR-WO-COMPLETE",
-      "effects": ["An explicit completion decision changes only the selected work order."],
+      "effects": ["The executor records completion of only the selected work order under its approval."],
       "non_effects": ["Implementation does not verify work or release software."],
       "restitution": {"done": ["Projected the selected scope for {artifact_id}."], "current_lifecycle_state": ["{artifact_id} is in_progress."]}
     },
@@ -237,6 +252,34 @@
       "restitution": {"done": ["Recorded implemented definition state for {artifact_id}."], "current_lifecycle_state": ["{artifact_id} is implemented and terminal."]}
     },
     {
+      "id": "WFL-DEC-OPEN",
+      "procedure_id": "PROC-DEC-DISPOSE",
+      "alternative_procedure_ids": [],
+      "selector": {
+        "artifact_types": ["decision"],
+        "statuses": ["open", "deferred"]
+      },
+      "gate_ids": [],
+      "decision_right": "DR-DECISION-DISPOSE",
+      "effects": ["The disposition changes only {artifact_id}."],
+      "non_effects": ["Disposing a decision does not change the artifacts it concerns or blocks; their own transitions follow separately."],
+      "restitution": {"done": ["Projected the pending decision {artifact_id}."], "current_lifecycle_state": ["{artifact_id} is {status}; the artifacts it blocks cannot change state until it is disposed."]}
+    },
+    {
+      "id": "WFL-DEC-CLOSED",
+      "procedure_id": "PROC-FOCUS-SELECTED",
+      "alternative_procedure_ids": [],
+      "selector": {
+        "artifact_types": ["decision"],
+        "statuses": ["decided", "withdrawn"]
+      },
+      "gate_ids": [],
+      "decision_right": "DR-RELATED-RECORD-SELECT",
+      "effects": [],
+      "non_effects": ["A disposed decision is retained history; it blocks nothing and is never rewritten."],
+      "restitution": {"done": ["Projected the disposed decision {artifact_id}."], "current_lifecycle_state": ["{artifact_id} is {status} and terminal."]}
+    },
+    {
       "id": "WFL-DEFAULT-REVIEW",
       "procedure_id": "PROC-FOCUS-SELECTED",
       "alternative_procedure_ids": [],
@@ -253,48 +296,40 @@
       "id": "PROC-WO-START",
       "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
       "steps": [
-        {"id": "STEP-WO-START-FOCUS", "kind": "command", "argv": ["harnessctl", "focus", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Projected selected scope for {artifact_id}."], "non_effects": ["Focus does not change lifecycle state."]},
-        {"id": "STEP-WO-START-PREFLIGHT", "kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "start"], "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "corrective": {"QGP-G3-STATUS": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-PREFLIGHT": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}}, "effects": ["Evaluated start readiness for {artifact_id}."], "non_effects": ["Preflight does not authorize or start implementation."]},
-        {"id": "STEP-WO-START-DECIDE", "kind": "decision", "decision_right": "DR-WO-START", "role": "engineering-owner", "artifact": "{artifact_id}", "decision": "whether implementation may start", "outcomes": ["start", "stop"], "response": "Start {artifact_id} implementation.", "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "effects": ["An explicit start decision authorizes bounded implementation."], "non_effects": ["The decision does not itself edit a file."]},
-        {"id": "STEP-WO-START-PREVIEW", "kind": "command", "argv": ["harnessctl", "transition", ".", "--set", "{artifact_id}=in_progress", "--decision", "{artifact_id}=engineering-owner"], "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "corrective": {"QGP-G3-STATUS": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "start"]}}, "effects": ["Planned the explicit transition for {artifact_id}."], "non_effects": ["A preview does not change lifecycle state."]},
-        {"id": "STEP-WO-START-APPLY", "kind": "command", "argv": ["harnessctl", "transition", ".", "--set", "{artifact_id}=in_progress", "--decision", "{artifact_id}=engineering-owner", "--apply"], "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "corrective": {"QGP-G3-STATUS": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "start"]}}, "effects": ["Changed only {artifact_id} to in_progress."], "non_effects": ["Related artifacts remain unchanged."]},
-        {"id": "STEP-WO-START-FINAL-FOCUS", "kind": "command", "argv": ["harnessctl", "focus", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Projected the resulting state for {artifact_id}."], "non_effects": ["Focus does not change lifecycle state."]}
+        {"id": "STEP-WO-START-PREFLIGHT", "kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "start"], "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "corrective": {"QGP-G3-STATUS": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-PREFLIGHT": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}, "effects": ["Evaluated start readiness for {artifact_id}."], "non_effects": ["Preflight does not authorize or start implementation."]},
+        {"id": "STEP-WO-START-PREVIEW", "kind": "command", "argv": ["harnessctl", "transition", ".", "--set", "{artifact_id}=in_progress", "--decision", "{artifact_id}=delegated-executor"], "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "corrective": {"QGP-G3-STATUS": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "start"]}, "QGP-G3-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}, "effects": ["Planned the explicit transition for {artifact_id}."], "non_effects": ["A preview does not change lifecycle state."]},
+        {"id": "STEP-WO-START-APPLY", "kind": "command", "argv": ["harnessctl", "transition", ".", "--set", "{artifact_id}=in_progress", "--decision", "{artifact_id}=delegated-executor", "--apply"], "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "corrective": {"QGP-G3-STATUS": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G3-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G3-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "start"]}, "QGP-G3-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}, "effects": ["Changed only {artifact_id} to in_progress."], "non_effects": ["Related artifacts remain unchanged."]},
+        {"id": "STEP-WO-START-FINAL-FOCUS", "kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Projected the resulting state for {artifact_id}."], "non_effects": ["Focus does not change lifecycle state."]}
       ]
     },
     {
       "id": "PROC-WO-IMPLEMENT",
       "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
       "steps": [
-        {"id": "STEP-WO-IMPLEMENT-CHECK", "kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff"], "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "corrective": {"QGP-G4I-STATUS": {"kind": "escalation", "decision_right": "DR-WO-START"}, "QGP-G4I-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G4I-COMPLETE": {"kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff", "--changed-path", "<changed-path>", "--changes-complete"]}, "QGP-G4I-PATHS": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "review"]}, "QGP-G4I-EVIDENCE": {"kind": "response", "value": "Retain evidence for {artifact_id} under an evidence directory keyed by {artifact_id}, containing the lines 'artifact: {artifact_id}', 'checkpoint: handoff', and 'formal_snapshot_sha256: <formal-snapshot>'; then rerun the handoff check with the complete changed-path set."}}, "effects": ["Evaluated implementation handoff for {artifact_id}."], "non_effects": ["A checkpoint does not complete or verify work."]},
-        {"id": "STEP-WO-IMPLEMENT-DECIDE", "kind": "decision", "decision_right": "DR-WO-COMPLETE", "role": "engineering-owner", "artifact": "{artifact_id}", "decision": "whether the authorized implementation and evidence are complete", "outcomes": ["implemented", "continue", "reject"], "response": "Mark {artifact_id} implemented.", "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "effects": ["An explicit completion decision permits only {artifact_id} to become implemented."], "non_effects": ["Completion does not verify or release the work."]}
+        {"id": "STEP-WO-IMPLEMENT-CHECK", "kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff"], "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "corrective": {"QGP-G4I-STATUS": {"kind": "escalation", "decision_right": "DR-WO-START"}, "QGP-G4I-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G4I-COMPLETE": {"kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff", "--from-git", "<base>"]}, "QGP-G4I-PATHS": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "review"]}, "QGP-G4I-EVIDENCE": {"kind": "command", "argv": ["harnessctl", "evidence", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff"]}, "QGP-G4I-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}, "effects": ["Evaluated implementation handoff for {artifact_id}."], "non_effects": ["A checkpoint does not complete or verify work."]},
+        {"id": "STEP-WO-IMPLEMENT-PREVIEW", "kind": "command", "argv": ["harnessctl", "transition", ".", "--set", "{artifact_id}=implemented", "--decision", "{artifact_id}=delegated-executor"], "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "effects": ["Plan completion of {artifact_id}."], "non_effects": ["Completion does not verify, release or deliver the work."], "corrective": {"QGP-G4I-STATUS": {"kind": "escalation", "decision_right": "DR-WO-START"}, "QGP-G4I-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G4I-COMPLETE": {"kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff", "--from-git", "<base>"]}, "QGP-G4I-PATHS": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "review"]}, "QGP-G4I-EVIDENCE": {"kind": "command", "argv": ["harnessctl", "evidence", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff"]}, "QGP-G4I-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}},
+        {"id": "STEP-WO-IMPLEMENT-APPLY", "kind": "command", "argv": ["harnessctl", "transition", ".", "--set", "{artifact_id}=implemented", "--decision", "{artifact_id}=delegated-executor", "--apply"], "gate_ids": ["QG-G4-IMPLEMENTATION-EVIDENCE"], "effects": ["Record completion of only {artifact_id} under its approved execution scope."], "non_effects": ["Completion does not verify, release or deliver the work."], "corrective": {"QGP-G4I-STATUS": {"kind": "escalation", "decision_right": "DR-WO-START"}, "QGP-G4I-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-SCOPE": {"kind": "escalation", "decision_right": "DR-WO-SELECT"}, "QGP-G4I-COMPLETE": {"kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff", "--from-git", "<base>"]}, "QGP-G4I-PATHS": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4I-PREFLIGHT": {"kind": "command", "argv": ["harnessctl", "preflight", ".", "--work-order", "{artifact_id}", "--phase", "review"]}, "QGP-G4I-EVIDENCE": {"kind": "command", "argv": ["harnessctl", "evidence", ".", "--artifact", "{artifact_id}", "--checkpoint", "handoff"]}, "QGP-G4I-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}}
       ]
     },
     {
       "id": "PROC-WO-PREPARE-VREC",
       "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
       "steps": [
-        {"id": "STEP-WO-PREPARE-VREC-DECIDE", "kind": "decision", "decision_right": "DR-VREC-PREPARE", "role": "engineering-owner", "artifact": "{artifact_id}", "decision": "whether to prepare one ready verification record with exact approved inputs", "outcomes": ["prepare", "stop"], "response": "Prepare one ready VREC for {artifact_id} with the exact approved verification contract and retained evidence.", "gate_ids": ["QG-G4-CANDIDATE-READY"], "effects": ["Permits preparation of one ready VREC."], "non_effects": ["Preparation does not verify {artifact_id}."]}
-      ]
-    },
-    {
-      "id": "PROC-CANDIDATE-COMMIT",
-      "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
-      "steps": [
-        {"id": "STEP-CANDIDATE-COMMIT-AUTHORIZE", "kind": "decision", "decision_right": "DR-EXTERNAL-ACTION", "role": "repository-owner", "artifact": "{artifact_id}", "decision": "whether the exact candidate commit may be created", "outcomes": ["authorize", "stop"], "response": "Authorize creating the exact candidate commit for {artifact_id}.", "gate_ids": ["QG-G4-CANDIDATE-READY"], "effects": ["Permits only creation of the exact candidate commit."], "non_effects": ["This decision request does not stage, commit, branch, push, merge, or verify anything."]}
+        {"id": "STEP-WO-PREPARE-VREC-CAPTURE", "kind": "command", "argv": ["harnessctl", "capture-verification", ".", "--work-order", "{artifact_id}", "--owner", "delegated-executor", "--id", "VREC-...", "--verification", "VER-...", "--evidence", "..."], "gate_ids": ["QG-G4-CANDIDATE-READY"], "effects": ["Prepare one ready VREC using the selected approved inputs."], "non_effects": ["Substitute inspected record, verification and evidence inputs before running this command. Preparation does not verify {artifact_id}."], "corrective": {"QGP-G4C-STATUS": {"kind": "response", "value": "Resolve QGP-G4C-STATUS for {artifact_id} using the reported candidate-readiness failure, then retry preparation."}, "QGP-G4C-GRAPH": {"kind": "response", "value": "Resolve QGP-G4C-GRAPH for {artifact_id} using the reported candidate-readiness failure, then retry preparation."}, "QGP-G4C-INTEGRITY": {"kind": "response", "value": "Resolve QGP-G4C-INTEGRITY for {artifact_id} using the reported candidate-readiness failure, then retry preparation."}}}
       ]
     },
     {
       "id": "PROC-FOCUS-SELECTED",
       "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
       "steps": [
-        {"id": "STEP-FOCUS-SELECTED", "kind": "command", "argv": ["harnessctl", "focus", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Projected selected state for {artifact_id}."], "non_effects": ["Focus changes no lifecycle state."]}
+        {"id": "STEP-FOCUS-SELECTED", "kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Projected selected state for {artifact_id}."], "non_effects": ["Focus changes no lifecycle state."]}
       ]
     },
     {
       "id": "PROC-FOCUS-RELATED",
       "parameters": [{"name": "related_id", "type": "artifact_id", "cardinality": "one", "source": "selection.related"}],
       "steps": [
-        {"id": "STEP-FOCUS-RELATED", "kind": "command", "argv": ["harnessctl", "focus", ".", "--artifact", "{related_id}"], "gate_ids": ["QG-G4-ASSURANCE-DECISION"], "corrective": {"QGP-G4A-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4A-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}}, "effects": ["Projected selected state for {related_id}."], "non_effects": ["Focus changes no lifecycle state."]}
+        {"id": "STEP-FOCUS-RELATED", "kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{related_id}"], "gate_ids": ["QG-G4-ASSURANCE-DECISION"], "corrective": {"QGP-G4A-GRAPH": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4A-INTEGRITY": {"kind": "escalation", "decision_right": "DR-REMEDIATION-SCOPE"}, "QGP-G4A-DECISION": {"kind": "escalation", "decision_right": "DR-DECISION-DISPOSE"}}, "effects": ["Projected selected state for {related_id}."], "non_effects": ["Focus changes no lifecycle state."]}
       ]
     },
     {
@@ -364,7 +399,7 @@
       "id": "PROC-REMEDIATE",
       "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
       "steps": [
-        {"id": "STEP-REMEDIATE-FOCUS", "kind": "command", "argv": ["harnessctl", "focus", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Re-evaluated selected state for {artifact_id}."], "non_effects": ["Remediation does not expand scope or change state."]}
+        {"id": "STEP-REMEDIATE-FOCUS", "kind": "command", "argv": ["harnessctl", "check", ".", "--artifact", "{artifact_id}"], "gate_ids": [], "effects": ["Re-evaluated selected state for {artifact_id}."], "non_effects": ["Remediation does not expand scope or change state."]}
       ]
     },
     {
@@ -379,6 +414,13 @@
       "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
       "steps": [
         {"id": "STEP-DEFINITION-WORK", "kind": "decision", "decision_right": "DR-WO-SELECT", "role": "engineering-owner", "artifact": "{artifact_id}", "decision": "which exact approved work order to select", "outcomes": ["select", "stop"], "response": "Select the exact approved work order related to {artifact_id}.", "gate_ids": ["QG-G3-WORK-AUTHORIZATION"], "effects": ["Selects one bounded work order."], "non_effects": ["An implemented definition authorizes no work by itself."]}
+      ]
+    },
+    {
+      "id": "PROC-DEC-DISPOSE",
+      "parameters": [{"name": "artifact_id", "type": "artifact_id", "cardinality": "one", "source": "selection.primary"}],
+      "steps": [
+        {"id": "STEP-DEC-DISPOSE", "kind": "decision", "decision_right": "DR-DECISION-DISPOSE", "role": "owner of the blocked artifact, or of the departed specification for a deviation", "artifact": "{artifact_id}", "decision": "which declared option answers the pending decision", "outcomes": ["decided", "deferred", "withdrawn"], "response": "harnessctl decide . --artifact {artifact_id} --option OPTION-ID --decision ROLE --reason TEXT", "gate_ids": [], "effects": ["Records the selected option verbatim as the disposition of {artifact_id} only."], "non_effects": ["The artifacts {artifact_id} concerns or blocks are not changed by the disposition."]}
       ]
     }
   ]

@@ -9,6 +9,5 @@ authoritative. Present a clear human handoff that preserves actual artifact
 IDs, observed effects, material non-effects, blockers, final lifecycle state,
 the accountable decision, and exactly one typed next step. Adapt wording and
 structure to the interaction, but preserve command argument boundaries or the
-suggested response's meaning. Exact-format consumers must use the direct
-renderer. Do not add unrelated findings or provider-specific workflow rules.
+suggested response's meaning. Automation reads the JSON result; human wording does not define its digest. Do not add unrelated findings or provider-specific workflow rules.
 <!-- se-harness:end -->

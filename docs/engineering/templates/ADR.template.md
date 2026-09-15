@@ -13,6 +13,9 @@ decides = ["ARCH-xxx"]
 
 # ADR: <title>
 
+Before approval, apply the shared design principle and `adr` checklist in
+`docs/engineering/ARTIFACT_AUTHORING.md`.
+
 Create an ADR for one coherent significant decision identified by an architecture's `decision_assessment`. One ADR may decide several architectures or affect several requirements; do not create ceremonial ADRs merely to satisfy a per-artifact quota. Every architecture covered by this decision must appear in `relations.decides`.
 
 ## Status

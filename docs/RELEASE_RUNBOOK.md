@@ -162,7 +162,7 @@ Then the harness:
 
 ```bash
 python -m se_harness doctor .
-python scripts/validate_engineering_artifacts.py --root .
+python -m se_harness validate .
 for wo in 001 002 003 004 005 006; do
   python -m se_harness preflight . --work-order "WO-MOK-$wo" --phase review
 done
